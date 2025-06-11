@@ -21,10 +21,6 @@
 *//**
     @file           ptt_view.js
 
-    @author         Anja Bertard, Oke Schwien
-
-    @date           2019-04-10
-
     @ingroup        vocs
 
     @brief          handel and display ptt view

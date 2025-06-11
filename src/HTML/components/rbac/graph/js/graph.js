@@ -21,10 +21,6 @@
 *//**
     @file           graph.js
 
-    @author         Anja Bertard
-
-    @date           2023-09-27
-
     @ingroup        components/rbac/graph
 
     @brief          create and handle edges

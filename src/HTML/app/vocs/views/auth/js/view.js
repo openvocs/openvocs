@@ -20,10 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           view.js
-        
-    @author         Anja Bertard
-
-    @date           2023-08-14
 
     @ingroup        views/authentication_authorization
 
@@ -121,6 +117,7 @@ export async function init(view_id) {
     const urlParams = new URLSearchParams(window.location.search);
     const keyset = urlParams.get('keysetname')
     document.getElementById("keyset").innerText = keyset;
+    document.getElementById("version").innerText = VERSION_NUMBER;
 }
 
 export function display_disconnect_notice(error) {

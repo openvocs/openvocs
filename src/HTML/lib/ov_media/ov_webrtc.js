@@ -20,10 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           ov_webrtc.js
-        
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2019-08-21
 
     @ingroup        ov_media
 

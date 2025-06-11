@@ -20,10 +20,6 @@
     ------------------------------------------------------------------------
 *//**
     @file           ov_audio_activity_detection.js
-        
-    @author         Dr.-Ing. Falk Schiffner
-
-    @date           2021-10-05
 
     @ingroup        ov_lib/ov_media
 

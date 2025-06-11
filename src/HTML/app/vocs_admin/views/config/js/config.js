@@ -21,10 +21,6 @@
 *//**
     @file           config.js
 
-    @author         Anja Bertard
-
-    @date           2023-08-31
-
     @ingroup        vocs_admin/views/config
 
     @brief          init and load admin config view

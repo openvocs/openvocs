@@ -21,10 +21,6 @@
 *//**
     @file           default_config.js
 
-    @author         Anja Bertard
-
-    @date           2017-01-16
-
     @ingroup        vocs/views/auth
 
     @brief          global vars for auth, other config files might
@@ -57,3 +53,5 @@ DEBUG_LOG_INCOMING_EVENTS = true;
 DEBUG_LOG_OUTGOING_EVENTS = true;
 
 BROADCAST_REGISTRATION = true;
+
+VERSION_NUMBER = "2.0.0";

@@ -21,10 +21,6 @@
 *//**
     @file           default_config.js
 
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2018-09-25
-
     @ingroup        vocs
 
     @brief          vars for openvocs voice client
@@ -103,6 +99,6 @@ DEBUG_USE_MEDIA_STREAM_FROM_FILE = false;
 DEBUG_MEDIA_STREAM_FILE = "./resources/sounds/Apollo13-wehaveaproblem.ogg";
 
 // developer vars -------------------------------------------------------------
-VERSION_NUMBER = "1.0.0";
 RETRIES_ON_TEMP_ERROR = 5;
 DEFAULT_LOOP_VOLUME = "50";
+VERSION_NUMBER = "2.0.0";

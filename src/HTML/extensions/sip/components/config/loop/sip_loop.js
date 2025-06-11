@@ -21,10 +21,6 @@
 *//**
     @file           sip_loop.js
 
-    @author         Anja Bertard
-
-    @date           2024-09-06
-
     @ingroup        extensions/sip/config/loop
 
     @brief          custom web component

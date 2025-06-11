@@ -21,10 +21,6 @@
 *//**
     @file           login_form.js
 
-    @author         Anja Bertard
-
-    @date           2023-08-14
-
     @ingroup        components/authentication_form
 
     @brief          custom web component
@@ -183,6 +179,8 @@ export default class ov_Login_Form extends HTMLElement {
 
     clear_password_field() {
         this.#dom.password_field.value = "";
+        if (this.#login_keyboard)
+            this.#login_keyboard.clearInput(this.#dom.password_field.id);
         this.#check_form();
     }
 

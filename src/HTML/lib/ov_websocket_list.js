@@ -21,10 +21,6 @@
 *//**
     @file           ov_websocket_list.js
 
-    @author         Anja Bertard
-
-    @date           2023-08-16
-
     @ingroup        ov_lib
 
     @brief          an array of ov_websockets

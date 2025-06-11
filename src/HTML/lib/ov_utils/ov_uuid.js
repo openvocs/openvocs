@@ -21,10 +21,6 @@
 *//**
     @file           ov_uuid.js
 
-    @author         Anja Bertard
-
-    @date           2019-08-21
-
     @ingroup        ov_lib/ov_utils
 
     @brief          

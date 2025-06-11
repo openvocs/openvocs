@@ -21,10 +21,6 @@
 *//**
     @file           default_config.js
 
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2018-09-25
-
     @ingroup        vocs
 
     @brief          vars for openvocs voice client

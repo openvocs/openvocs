@@ -21,10 +21,6 @@
 *//**
     @file           loop.js
 
-    @author         Anja Bertard
-
-    @date           2024-05-27
-
     @ingroup        components/loops/loop
 
     @brief          custom web component

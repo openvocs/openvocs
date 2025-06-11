@@ -21,10 +21,6 @@
 *//**
     @file           ov_Websocket.js
 
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2018-09-25
-
     @ingroup        ov_lib
 
     @brief          implements openvocs signaling protocol and wraps it

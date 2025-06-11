@@ -20,10 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           view.js
-        
-    @author         Anja Bertard
-
-    @date           2016-02-15
 
     @ingroup        vocs_admin/views/auth
 
@@ -71,6 +67,8 @@ export async function init(view_id) {
             display_disconnect_notice();
         }
     });
+
+    document.getElementById("version").innerText = VERSION_NUMBER;
 }
 
 export function display_disconnect_notice(error) {

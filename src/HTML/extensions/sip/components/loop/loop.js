@@ -21,10 +21,6 @@
 *//**
     @file           loop.js
 
-    @author         Anja Bertard
-
-    @date           2024-06-05
-
     @ingroup        components/sip/loop
 
     @brief          custom web component

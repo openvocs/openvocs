@@ -21,10 +21,6 @@
 *//**
     @file           overview.js
 
-    @author         Anja Bertard
-
-    @date           2023-08-16
-
     @ingroup        vocs_admin/views/overview
 
     @brief          init and load overview view

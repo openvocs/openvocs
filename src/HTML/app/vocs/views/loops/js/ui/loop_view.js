@@ -21,10 +21,6 @@
 *//**
     @file           loop_view.js
 
-    @author         Anja Bertard, Fabian Junge, Oke Schwien
-
-    @date           2018-09-25
-
     @ingroup        vocs
 
     @brief          handel display of loops

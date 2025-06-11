@@ -21,10 +21,6 @@
 *//**
     @file           ov_webrtc_list.js
 
-    @author         Anja Bertard
-
-    @date           2024-07-10
-
     @ingroup        ov_lib/ov_media
 
     @brief          an array of ov_webrtc connections

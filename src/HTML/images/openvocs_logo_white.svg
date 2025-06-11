@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
    sodipodi:docname="openvocs_logo_white.svg"
-   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   inkscape:version="1.4 (86a8ad7, 2024-10-11)"
    version="1.1"
    id="svg4185"
    viewBox="0 0 600.00005 600.00002"
@@ -20,14 +20,14 @@
      inkscape:document-rotation="0"
      units="px"
      inkscape:window-maximized="1"
-     inkscape:window-y="-8"
-     inkscape:window-x="-8"
-     inkscape:window-height="1017"
+     inkscape:window-y="1341"
+     inkscape:window-x="-9"
+     inkscape:window-height="991"
      inkscape:window-width="1920"
      showgrid="false"
      inkscape:current-layer="layer1"
      inkscape:document-units="px"
-     inkscape:cy="358.63468"
+     inkscape:cy="359.47261"
      inkscape:cx="-408.07264"
      inkscape:zoom="0.59670749"
      inkscape:pageshadow="2"
@@ -47,7 +47,6 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -62,7 +61,7 @@
        cy="752.36218"
        cx="300.00003"
        id="path839"
-       style="fill:#ffffff;stroke:#000000;fill-opacity:0.25" />
+       style="fill:#ffffff;stroke:#000000;fill-opacity:0.5" />
     <rect
        y="452.36215"
        x="0"

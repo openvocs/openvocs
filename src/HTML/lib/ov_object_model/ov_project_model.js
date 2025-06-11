@@ -20,11 +20,7 @@
     ---------------------------------------------------------------------------
 *//**
     @file           ov_project_model.js
-        
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2017-05-19
-
+	
     @ingroup        lib
 
 	@brief          Blueprint for Project object

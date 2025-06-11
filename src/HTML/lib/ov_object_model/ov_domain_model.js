@@ -20,10 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           ov_domain_model.js
-        
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2021-06-15
 
     @ingroup        lib
 

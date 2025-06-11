@@ -19,11 +19,7 @@
 		
 	---------------------------------------------------------------------------
 *//**         
-	@file           ov_loop_list.js       
-		  
-	@author         Anja Bertard, Fabian Junge  
-			   
-	@date           2017-05-19   
+	@file           ov_loop_list.js        
 			  
 	@ingroup        lib 
 				

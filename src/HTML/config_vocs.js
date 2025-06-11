@@ -41,8 +41,6 @@ SIGNALING_SERVERS = [
     // }
 ];
 
-VERSION_NUMBER = "1.2.0";
-
 // audio connection -----------------------------------------------------------
 ICE_SERVERS = [
     {

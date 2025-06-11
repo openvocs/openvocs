@@ -21,10 +21,6 @@
 *//**
     @file           view.js
 
-    @author         Anja Bertard, Fabian Junge, Oke Schwien
-
-    @date           2018-09-25
-
     @ingroup        vocs
 
     @brief          init and load the voice client view

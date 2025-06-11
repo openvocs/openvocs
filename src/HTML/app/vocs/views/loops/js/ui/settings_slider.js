@@ -21,10 +21,6 @@
 *//**
     @file           settings_slider.js
 
-    @author         Anja Bertard, Oke Schwien
-
-    @date           2019-06-19
-
     @ingroup        vocs
 
     @brief          handel display of settings slider with admin options

@@ -21,10 +21,6 @@
 *//**
     @file           rbac.js
 
-    @author         Anja Bertard
-
-    @date           2023-09-07
-
     @ingroup        vocs_admin/views/config_rbac
 
     @brief          init and load admin project rbac view

@@ -21,10 +21,6 @@
 *//**
     @file           ov_web_storage.js
 
-    @author         Anja Bertard
-
-    @date           2024-03-12
-
     @ingroup        ov_lib
 
     @brief          save to local web storage

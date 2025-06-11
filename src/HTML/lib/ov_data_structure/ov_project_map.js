@@ -20,10 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           ov_project_list.js
-        
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2017-05-19
 
     @ingroup        lib
 

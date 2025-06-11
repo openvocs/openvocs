@@ -20,11 +20,7 @@
     ---------------------------------------------------------------------------
 *//**
     @file           nav.js
-
-    @author         Anja Bertard
-
-    @date           2023-09-04
-
+    
     @ingroup        components/nav
 
     @brief          custom web component, extents <nav>

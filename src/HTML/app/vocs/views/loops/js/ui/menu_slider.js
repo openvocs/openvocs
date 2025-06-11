@@ -21,10 +21,6 @@
 *//**
     @file           menu_slider.js
 
-    @author         Anja Bertard, Oke Schwien, Fabian Junge
-
-    @date           2019-06-19
-
     @ingroup        vocs
 
     @brief          handel display of settings slider with user options

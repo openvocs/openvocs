@@ -271,12 +271,6 @@
     width: 5rem;
 }
 
-#settings_slider .logo_dlr {
-    width: 4rem;
-    margin-top: 1rem;
-    content: var(--dlr_logo);
-}
-
 @media(max-width: 28.75rem) {
     #settings_slider .dialog_content {
         grid-template-columns: 1fr;
@@ -409,4 +403,17 @@
 
 div:has(> #keyset_name) {
     margin-bottom: 1rem;
+}
+
+div:has(> #keyset_name:empty) {
+    display: none;
+}
+
+#R {
+    font-size: 1rem;
+    vertical-align: super;
+}
+
+#settings_slider .logo_dlr {
+    width: 4rem;
 }

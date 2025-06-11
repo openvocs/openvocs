@@ -21,10 +21,6 @@
 *//**
     @file           ov_sip.js
 
-    @author         Anja Bertard
-
-    @date           2024-06-13
-
     @ingroup        extensions/sip
 
     @brief          implements openvocs sip protocol and wraps it

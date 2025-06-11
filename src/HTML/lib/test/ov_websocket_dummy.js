@@ -21,10 +21,6 @@
 *//**
     @file           test/ov_websocket_dummy.js
 
-    @author         Anja Bertard
-
-    @date           2023-08-17
-
     @ingroup        ov_lib
 
     @brief          implements a stub ov_websocket for testing purpose

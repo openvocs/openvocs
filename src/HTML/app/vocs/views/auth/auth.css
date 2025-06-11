@@ -51,3 +51,19 @@
     height: 2rem;
     margin: 0 auto;
 }
+
+p {
+    margin: 0;
+}
+
+p:has(> #keyset:empty) {
+    display: none;
+}
+
+#dlr_logo {
+    vertical-align: middle;
+    height: 3.5rem;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}

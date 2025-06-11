@@ -21,10 +21,6 @@
 *//**
     @file           ov_monitor.js
 
-    @author         Anja Bertard
-
-    @date           2025-04-09
-
     @ingroup        ov_lib
 
     @brief          implements openvocs monitor protocol and wraps it

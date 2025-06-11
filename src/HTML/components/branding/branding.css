@@ -1,29 +1,34 @@
 #branding {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: 3rem 3rem 2.5rem;
+    grid-template-columns: 1fr;
+    grid-template-rows: 3rem 2.5rem;
     grid-column-gap: 0.125rem;
     grid-row-gap: 0.25rem;
     justify-items: center;
     align-items: center;
+    margin-top: 1rem;
 }
 
 .logo {
-    height: 100%;
+    height: 3rem;
     padding: 0.125rem;
     min-width: 1px;
+    display: inline-block;
 }
 
-.logo.logo_dlr {
-    height: 90%;
+#title {
+    display: inline;
+    vertical-align: 0.7rem;
 }
 
-#title, #subtitle {
-    grid-column: 1 / -1;
+#title span {
+    font-size: 1.5rem;
+    vertical-align: text-top;
 }
+
 
 #branding.subtitle_unset {
-    grid-template-rows: 3rem 3rem;
+    grid-template-rows: 3rem 0.5rem;
 }
 
 #branding.subtitle_unset #subtitle {

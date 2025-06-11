@@ -21,10 +21,6 @@
 *//**
     @file           whitelist.js
 
-    @author         Anja Bertard
-
-    @date           2024-09-05
-
     @ingroup        extensions/sip/config/whitelist_entry
 
     @brief          custom web component

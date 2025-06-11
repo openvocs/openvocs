@@ -20,10 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           ov_audio.js
-        
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2021-11-12
 
     @ingroup        ov_media
 

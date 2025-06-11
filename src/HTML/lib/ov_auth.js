@@ -21,10 +21,6 @@
 *//**
     @file           ov_auth.js
 
-    @author         Anja Bertard
-
-    @date           2023-08-16
-
     @ingroup        ov_lib
 
     @brief          implements openvocs auth protocol and wraps it

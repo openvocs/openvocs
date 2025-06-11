@@ -21,10 +21,6 @@
 *//**
     @file           ov_vocs.js
 
-    @author         Anja Bertard
-
-    @date           2024-04-24
-
     @ingroup        ov_lib
 
     @brief          implements openvocs vocs protocol and wraps it

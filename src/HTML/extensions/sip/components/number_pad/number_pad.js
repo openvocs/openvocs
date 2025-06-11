@@ -21,10 +21,6 @@
 *//**
     @file           sip.js
 
-    @author         Tobias Kolb, Anja Bertard
-
-    @date           2023-08-02
-
     @ingroup        extensions/sip/number_pad
 
     @brief          custom web component

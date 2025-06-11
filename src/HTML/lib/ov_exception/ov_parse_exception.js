@@ -20,9 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           ov_parse_exception.js
-    @author         Anja Bertard
-
-    @date           2020-04-06
 
     @ingroup        lib
 

@@ -21,10 +21,6 @@
 *//**
     @file           rbac_node.js
 
-    @author         Anja Bertard
-
-    @date           2023-09-11
-
     @ingroup        components/rbac/node
 
     @brief          custom web component

@@ -21,10 +21,6 @@
 *//**
     @file           settings.js
 
-    @author         Anja Bertard
-
-    @date           2023-09-06
-
     @ingroup        vocs_admin/views/project_settings
 
     @brief          init and load admin project settings view

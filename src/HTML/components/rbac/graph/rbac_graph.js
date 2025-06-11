@@ -21,10 +21,6 @@
 *//**
     @file           rbac_graph.js
 
-    @author         Anja Bertard
-
-    @date           2023-09-18
-
     @ingroup        components/rbac/graph
 
     @brief          custom web component

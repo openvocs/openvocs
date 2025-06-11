@@ -21,10 +21,6 @@
 *//**
     @file           monitor.js
 
-    @author         Anja Bertard
-
-    @date           2025-04-29
-
     @ingroup        vocs_monitor
 
     @brief          init and load the monitor client

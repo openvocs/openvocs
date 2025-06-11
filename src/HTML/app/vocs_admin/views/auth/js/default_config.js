@@ -21,10 +21,6 @@
 *//**
     @file           default_config.js
 
-    @author         Anja Bertard
-
-    @date           2017-01-16
-
     @ingroup        vocs_admin/views/auth
 
     @brief          global vars for auth, other config files might

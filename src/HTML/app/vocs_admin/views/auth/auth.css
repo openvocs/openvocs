@@ -21,3 +21,15 @@ ov-branding {
     text-align: center;
     color: var(--red);
 }
+
+#dlr_logo {
+    vertical-align: middle;
+    height: 3.5rem;
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+}
+
+p {
+    margin: 0;
+}

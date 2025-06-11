@@ -21,10 +21,6 @@
 *//**
     @file           dialog.js
 
-    @author         Anja Bertard
-
-    @date           2023-09-11
-
     @ingroup        components/dialog/dialog
 
     @brief          custom web component

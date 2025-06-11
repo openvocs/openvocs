@@ -21,10 +21,6 @@
 *//**
     @file           vocs.js
 
-    @author         Anja Bertard, Fabian Junge
-
-    @date           2018-09-25
-
     @ingroup        vocs
 
     @brief          init and load the voice client
@@ -66,7 +62,6 @@ export async function render(container) {
             console.log("(vc) unload voice client");
         }
     });
-
 
     ov_Websockets.addEventListener("broadcast", (event) => {
         if (event.detail.message.type === "page_update") {

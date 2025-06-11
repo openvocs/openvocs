@@ -21,10 +21,6 @@
 *//**
     @file           css.js
         
-    @author         Anja Bertard
-
-    @date           2023-09-22
-
     @ingroup        css
 
     @brief          create constructed style sheets for common ov css files

@@ -21,10 +21,6 @@
 *//**
     @file           layout.js
 
-    @author         Anja Bertard
-
-    @date           2024-10-29
-
     @ingroup        vocs_admin/views/layout
 
     @brief          init and load admin layout view

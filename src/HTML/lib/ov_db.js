@@ -21,10 +21,6 @@
 *//**
     @file           ov_db.js
 
-    @author         Anja Bertard
-
-    @date           2023-08-16
-
     @ingroup        ov_lib
 
     @brief          implements openvocs db protocol and wraps it

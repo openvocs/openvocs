@@ -20,10 +20,6 @@
     ---------------------------------------------------------------------------
 *//**
     @file           file_handler.js
-        
-    @author         Anja Bertard
-
-    @date           2017-01-17
 
     @ingroup        rbac_client
 
