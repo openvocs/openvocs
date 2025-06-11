@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Testing Tool Template</title>
+    <meta name="description" content="template for openvocs testing tools">
+    <meta name="author" content="openvocs">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="style.css">
+
+</head>
+
+<body>
+    <div class="panel">
+        <section id="introduction">
+            <p>Import the following css files</p>
+            <code>@import "/css/ov_basic.css";</code>
+            <p>To use the dark color schema add the class <code>dark</code> to the body or a div sourounding your
+                HTML code.
+                To use the light color schema add the class <code>light</code>.<br>
+                If the interface is indeted for touch interaction add the class <code>touch</code> to the body or a div
+                sourounding your
+                HTML code.</p>
+        </section>
+        <section id="branding">
+            <h2>Branding</h2>
+            <div class="light">
+                <div class="logo_openvocs"></div>
+            </div>
+            <div class="dark">
+                <div class="logo_openvocs"></div>
+            </div>
+            <details>
+                <summary>HTML</summary>
+                <code>
+                    <pre>&lt;div class="light"&gt;
+    &lt;img class="logo_openvocs"&gt;
+&lt;/div&gt;</pre>
+                </code>
+                <code>
+                    <pre>&lt;div class="dark"&gt;
+    &lt;img class="logo_openvocs"&gt;
+&lt;/div&gt;</pre>
+                </code>
+            </details>
+            <p>openvocs logo © 2025 by DLR e.V. is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;"></p>
+        </section>
+
+        <section id="color">
+            <h2>Color</h2>
+            <div>
+                <div class="color primary">
+                    <div class="white"></div>
+                    #FFFEFC<br>
+                    <code title="CSS variable">var(--white)</code><br>
+                    primary background (light mode)
+                </div>
+                <div class="color primary">
+                    <div class="black"></div>
+                    #242124<br>
+                    <code title="CSS variable">var(--black)</code><br>
+                    primary background (dark mode)
+                </div>
+                <div class="color">
+                    <div class="ov_blue_background"></div>
+                    #2A52BE<br>
+                    <code title="CSS variable">var(--blue)</code><br>
+                    <code class="ov_blue_text">.ov_blue_text</code><br>
+                    <code>.ov_blue_background</code>
+                    monitor<br>
+                </div>
+                <div class="color">
+                    <div class="ov_green_background"></div>
+                    #419F59<br>
+                    <code title="CSS variable">var(--green)</code><br>
+                    <code class="ov_green_text">.ov_green_text</code><br>
+                    <code>.ov_green_background</code>
+                    talk/okay<br>
+                </div>
+                <div class="color">
+                    <div class="ov_red_background"></div>
+                    #C02E4C<br>
+                    <code title="CSS variable">var(--red)</code><br>
+                    <code class="ov_red_text">.ov_red_text</code><br>
+                    <code>.ov_red_background</code>
+                    warning/error<br>
+                </div>
+                <div class="color">
+                    <div class="ov_orange_background"></div>
+                    #FFA32C<br>
+                    <code title="CSS variable">var(--orange)</code><br>
+                    <code class="ov_orange_text">.ov_orange_text</code><br>
+                    <code>.ov_orange_background</code>
+                    hightlighting<br>
+                </div>
+            </div>
+            <div>
+                <p>
+                    Color variations can be achived with white or black semi transparent overlays.
+                    Elements are styled with transparency values.
+                </p>
+                <div class="light">
+                    <div class="color_matrix">
+                        <div><b>semi transparent black overlay</b></div>
+                        <div class="ov_blue_background"></div>
+                        <div class="ov_green_background"></div>
+                        <div class="ov_red_background"></div>
+                        <div class="ov_orange_background"></div>
+                        <div>92% transparency<br><code title="CSS variable">var(--black_transparent_92)</code></div>
+                        <div class="black_transparent_92"></div>
+                        <div class="black_transparent_92 ov_blue_background"></div>
+                        <div class="black_transparent_92 ov_green_background"></div>
+                        <div class="black_transparent_92 ov_red_background"></div>
+                        <div class="black_transparent_92 ov_orange_background"></div>
+                        <div>78% transparency<br><code title="CSS variable">var(--black_transparent_78)</code></div>
+                        <div class="black_transparent_78"></div>
+                        <div class="black_transparent_78 ov_blue_background"></div>
+                        <div class="black_transparent_78 ov_green_background"></div>
+                        <div class="black_transparent_78 ov_red_background"></div>
+                        <div class="black_transparent_78 ov_orange_background"></div>
+                        <div>64% transparency<br><code title="CSS variable">var(--black_transparent_64)</code></div>
+                        <div class="black_transparent_64"></div>
+                        <div class="black_transparent_64 ov_blue_background"></div>
+                        <div class="black_transparent_64 ov_green_background"></div>
+                        <div class="black_transparent_64 ov_red_background"></div>
+                        <div class="black_transparent_64 ov_orange_background"></div>
+                        <div>50% transparency<br><code title="CSS variable">var(--black_transparent_50)</code></div>
+                        <div class="black_transparent_50"></div>
+                        <div class="black_transparent_50 ov_blue_background"></div>
+                        <div class="black_transparent_50 ov_green_background"></div>
+                        <div class="black_transparent_50 ov_red_background"></div>
+                        <div class="black_transparent_50 ov_orange_background"></div>
+                        <div>34% transparency<br><code title="CSS variable">var(--black_transparent_36)</code></div>
+                        <div class="black_transparent_36"></div>
+                        <div class="black_transparent_36 ov_blue_background"></div>
+                        <div class="black_transparent_36 ov_green_background"></div>
+                        <div class="black_transparent_36 ov_red_background"></div>
+                        <div class="black_transparent_36 ov_orange_background"></div>
+                        <div>22% transparency<br><code title="CSS variable">var(--black_transparent_22)</code></div>
+                        <div class="black_transparent_22"></div>
+                        <div class="black_transparent_22 ov_blue_background"></div>
+                        <div class="black_transparent_22 ov_green_background"></div>
+                        <div class="black_transparent_22 ov_red_background"></div>
+                        <div class="black_transparent_22 ov_orange_background"></div>
+                        <div>8% transparency<br><code title="CSS variable">var(--black_transparent_8)</code></div>
+                        <div class="black_transparent_8"></div>
+                        <div class="black_transparent_8 ov_blue_background"></div>
+                        <div class="black_transparent_8 ov_green_background"></div>
+                        <div class="black_transparent_8 ov_red_background"></div>
+                        <div class="black_transparent_8 ov_orange_background"></div>
+                    </div>
+                </div>
+                <div class="dark">
+                    <div class="color_matrix">
+                        <div><b>semi transparent white overlay</b></div>
+                        <div class="ov_blue_background"></div>
+                        <div class="ov_green_background"></div>
+                        <div class="ov_red_background"></div>
+                        <div class="ov_orange_background"></div>
+                        <div>92% transparency<br><code title="CSS variable">var(--white_transparent_92)</code></div>
+                        <div class="white_transparent_92"></div>
+                        <div class="white_transparent_92 ov_blue_background"></div>
+                        <div class="white_transparent_92 ov_green_background"></div>
+                        <div class="white_transparent_92 ov_red_background"></div>
+                        <div class="white_transparent_92 ov_orange_background"></div>
+                        <div>78% transparency<br><code title="CSS variable">var(--white_transparent_78)</code></div>
+                        <div class="white_transparent_78"></div>
+                        <div class="white_transparent_78 ov_blue_background"></div>
+                        <div class="white_transparent_78 ov_green_background"></div>
+                        <div class="white_transparent_78 ov_red_background"></div>
+                        <div class="white_transparent_78 ov_orange_background"></div>
+                        <div>64% transparency<br><code title="CSS variable">var(--white_transparent_64)</code></div>
+                        <div class="white_transparent_64"></div>
+                        <div class="white_transparent_64 ov_blue_background"></div>
+                        <div class="white_transparent_64 ov_green_background"></div>
+                        <div class="white_transparent_64 ov_red_background"></div>
+                        <div class="white_transparent_64 ov_orange_background"></div>
+                        <div>50% transparency<br><code title="CSS variable">var(--white_transparent_50)</code></div>
+                        <div class="white_transparent_50"></div>
+                        <div class="white_transparent_50 ov_blue_background"></div>
+                        <div class="white_transparent_50 ov_green_background"></div>
+                        <div class="white_transparent_50 ov_red_background"></div>
+                        <div class="white_transparent_50 ov_orange_background"></div>
+                        <div>34% transparency<br><code title="CSS variable">var(--white_transparent_36)</code></div>
+                        <div class="white_transparent_36"></div>
+                        <div class="white_transparent_36 ov_blue_background"></div>
+                        <div class="white_transparent_36 ov_green_background"></div>
+                        <div class="white_transparent_36 ov_red_background"></div>
+                        <div class="white_transparent_36 ov_orange_background"></div>
+                        <div>22% transparency<br><code title="CSS variable">var(--white_transparent_22)</code></div>
+                        <div class="white_transparent_22"></div>
+                        <div class="white_transparent_22 ov_blue_background"></div>
+                        <div class="white_transparent_22 ov_green_background"></div>
+                        <div class="white_transparent_22 ov_red_background"></div>
+                        <div class="white_transparent_22 ov_orange_background"></div>
+                        <div>8% transparency<br><code title="CSS variable">var(--white_transparent_8)</code></div>
+                        <div class="white_transparent_8"></div>
+                        <div class="white_transparent_8 ov_blue_background"></div>
+                        <div class="white_transparent_8 ov_green_background"></div>
+                        <div class="white_transparent_8 ov_red_background"></div>
+                        <div class="white_transparent_8 ov_orange_background"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="typography">
+            <h2>Typography</h2>
+            <h1>Abel</h1>
+            <p>Regular<br>
+                Open Source under the SIL Open Font License, Version 1.1<br>
+                Documentation under www.madtype.com
+            </p>
+        </section>
+
+        <section id="icons">
+            <h2>Icons</h2>
+            <div>
+                <div class="icon ">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
+                    </svg>
+                </div>
+                <code>ov_microphone</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_headphone"></use>
+                    </svg>
+                </div>
+                <code>ov_headphone</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_speaker_loud"></use>
+                    </svg>
+                </div>
+                <code>ov_speaker_loud</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_speaker_moderate"></use>
+                    </svg>
+                </div>
+                <code>ov_speaker_moderate</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_speaker_soft"></use>
+                    </svg>
+                </div>
+                <code>ov_speaker_soft</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_speaker_silent"></use>
+                    </svg>
+                </div>
+                <code>ov_speaker_silent</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_user"></use>
+                    </svg>
+                </div>
+                <code>ov_user</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_admin"></use>
+                    </svg>
+                </div>
+                <code>ov_admin</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_cog"></use>
+                    </svg>
+                </div>
+                <code>ov_cog</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_bars"></use>
+                    </svg>
+                </div>
+                <code>ov_bars</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_network"></use>
+                    </svg>
+                </div>
+                <code>ov_network</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_link"></use>
+                    </svg>
+                </div>
+                <code>ov_link</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_unlink"></use>
+                    </svg>
+                </div>
+                <code>ov_unlink</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_exit"></use>
+                    </svg>
+                </div>
+                <code>ov_exit</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_close"></use>
+                    </svg>
+                </div>
+                <code>ov_close</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_plus"></use>
+                    </svg>
+                </div>
+                <code>ov_plus</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_phone"></use>
+                    </svg>
+                </div>
+                <code>ov_phone</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_reload"></use>
+                    </svg>
+                </div>
+                <code>ov_reload</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_eye"></use>
+                    </svg>
+                </div>
+                <code>ov_eye</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_badge_1"></use>
+                    </svg>
+                </div>
+                <code>ov_badge_1</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_badge_2"></use>
+                    </svg>
+                </div>
+                <code>ov_badge_2</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_badge_3"></use>
+                    </svg>
+                </div>
+                <code>ov_badge_3</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_badge_4"></use>
+                    </svg>
+                </div>
+                <code>ov_badge_4</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_badge_5"></use>
+                    </svg>
+                </div>
+                <code>ov_badge_5</code>
+            </div>
+            <div>
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_badge_6"></use>
+                    </svg>
+                </div>
+                <code>ov_badge_6</code>
+            </div>
+            
+            <details>
+                <summary>HTML</summary>
+                <code>
+                <pre>&lt;div class="icon"&gt;
+    &lt;svg&gt;
+        &lt;use xlink:href="/images/ov_icons.svg#name"&gt;&lt;/use&gt;
+    &lt;/svg&gt;
+&lt;/div&gt;</pre>
+                </code>
+            </details>
+            <details>
+                <summary>CSS example for larger red icons</summary>
+                <code>
+                <pre>.icon {
+    width: 4rem;
+    height: 4rem;
+}
+.icon svg {
+    fill: var(--red);
+}</pre>
+                </code>
+            </details>
+            <p>openvocs icons © 2025 by DLR e.V. is licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a><img src="https://mirrors.creativecommons.org/presskit/icons/cc.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;"><img src="https://mirrors.creativecommons.org/presskit/icons/by.svg" style="max-width: 1em;max-height:1em;margin-left: .2em;"></p>
+        </section>
+
+        <section id="buttons">
+            <h2>Buttons</h2>
+            <div class="light">
+                <button>Normal</button>
+                <button disabled>Disabled</button>
+                <button class="green_button">Green</button>
+                <button class="red_button">Red</button>
+            </div>
+            <div class="dark">
+                <button>Normal</button>
+                <button disabled>Disabled</button>
+                <button class="green_button">Green</button>
+                <button class="red_button">Red</button>
+            </div>
+            <details>
+                <summary>CSS</summary>
+                <code>
+                    <pre>:root { --touch: 0; }</pre>
+                </code>
+            </details>
+            <details>
+                <summary>HTML</summary>
+                <code>
+                    <pre>&lt;div class="light"&gt;
+    &lt;button&gt;Normal&lt;/button&gt;
+    &lt;button disabled&gt;Disabled&lt;/button&gt;
+    &lt;button class="green_button"&gt;Green&lt;/button&gt;
+    &lt;button class="red_button"&gt;Red&lt;/button&gt;
+&lt;/div&gt;</pre>
+                </code>
+                <code>
+                    <pre>&lt;div class="dark"&gt;
+    &lt;button&gt;Normal&lt;/button&gt;
+    &lt;button disabled&gt;Disabled&lt;/button&gt;
+    &lt;button class="green_button"&gt;Green&lt;/button&gt;
+    &lt;button class="red_button"&gt;Red&lt;/button&gt;
+&lt;/div&gt;</pre>
+                </code>
+            </details>
+            
+            <h4>Touch first</h4>
+            <div class="light touch">
+                <button>Normal</button>
+                <button disabled>Disabled</button>
+            </div>
+            <div class="dark touch">
+                <button>Normal</button>
+                <button disabled>Disabled</button>
+            </div>
+            <details>
+                <summary>CSS</summary>
+                <code>
+                    <pre>:root { --touch: 1; }</pre>
+                </code>
+            </details>
+            <details>
+                <summary>HTML</summary>
+                <code>
+                    <pre>&lt;div class="light"&gt;
+    &lt;button&gt;Normal&lt;/button&gt;
+    &lt;button disabled&gt;Disabled&lt;/button&gt;
+&lt;/div&gt;</pre>
+                </code>
+                <code>
+                    <pre>&lt;div class="dark"&gt;
+    &lt;button&gt;Normal&lt;/button&gt;
+    &lt;button disabled&gt;Disabled&lt;/button&gt;
+&lt;/div&gt;</pre>
+                </code>
+            </details>
+        </section>
+
+        <section id="forms">
+            <h2>Forms</h2>
+            <div>
+                <form>
+                    <label for="text_input">Input</label>
+                    <input type="text" id="text_input">
+
+                    <label for="text_input_disabled">Input disabled</label>
+                    <input type="text" id="text_input_disabled" disabled>
+
+                    <input checked type="checkbox" id="checkbox_checked">
+                    <label for="checkbox_checked">Checkbox checked</label><br>
+
+                    <input type="checkbox" id="checkbox_unchecked">
+                    <label for="checkbox_unchecked">Checkbox</label><br>
+
+                    <input checked type="checkbox" id="checkbox_disabled" disabled>
+                    <label for="checkbox_disabled">Checkbox disabled</label><br>
+
+                    <label for="select">Select</label>
+                    <select id="select">
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select><br>
+
+                    <label for="select_disabled">Select disabled</label>
+                    <select id="select_disabled" disabled>
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select>
+
+                    <input type="button" class="button" value="OKAY">
+                </form>
+            </div>
+            <div class="dark">
+                <form>
+                    <label for="text_input_dark">Input</label>
+                    <input type="text" id="text_input_dark">
+
+                    <label for="text_input_dark_disabled">Input disabled</label>
+                    <input type="text" id="text_input_dark_disabled" disabled>
+
+                    <input checked type="checkbox" id="checkbox_dark_checked">
+                    <label for="checkbox_dark_checked">Checkbox checked</label><br>
+
+                    <input type="checkbox" id="checkbox_dark_unchecked">
+                    <label for="checkbox_dark_unchecked">Checkbox</label><br>
+
+                    <input checked type="checkbox" id="checkbox_dark_disabled" disabled>
+                    <label for="checkbox_dark_disabled">Checkbox disabled</label><br>
+
+                    <label for="select_dark">Select</label>
+                    <select id="select_dark">
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select><br>
+
+                    <label for="select_dark_disabled">Select disabled</label>
+                    <select id="select_dark_disabled" disabled>
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select>
+
+                    <input type="button" class="button" value="OKAY">
+                </form>
+            </div>
+            <details>
+                <summary>CSS</summary>
+                <code>
+                    <pre>:root { --touch: 0; }</pre>
+                </code>
+            </details>
+            <details>
+                <summary>HTML</summary>
+                <code>
+                    <pre>&lt;div class="light"&gt;
+&lt;form&gt;
+    &lt;label for="text_input"&gt;Input&lt;/label&gt;
+    &lt;input type="text" id="text_input"&gt;
+    ...
+    &lt;input type="checkbox" id="checkbox"&gt;
+    &lt;label for="checkbox"&gt;Checkbox&lt;/label&gt;
+    &lt;br&gt;
+    ...
+    &lt;label for="select"&gt;Select&lt;/label&gt;
+    &lt;select id="select"&gt;
+        &lt;option value="1"&gt;option 1&lt;/option&gt;
+        &lt;option value="2"&gt;option 2&lt;/option&gt;
+    &lt;/select&gt;
+    ...
+    &lt;input type="button" class="button" 
+        value="OKAY"&gt;
+&lt;/form&gt;
+&lt;/div&gt;</pre>
+                </code>
+                <code>
+                    <pre>&lt;div class="dark"&gt;
+&lt;form&gt;
+    &lt;label for="text_input"&gt;Input&lt;/label&gt;
+    &lt;input type="text" id="text_input"&gt;
+    ...
+    &lt;input type="checkbox" id="checkbox"&gt;
+    &lt;label for="checkbox"&gt;Checkbox&lt;/label&gt;
+    &lt;br&gt;
+    ...
+    &lt;label for="select"&gt;Select&lt;/label&gt;
+    &lt;select id="select"&gt;
+        &lt;option value="1"&gt;option 1&lt;/option&gt;
+        &lt;option value="2"&gt;option 2&lt;/option&lt;
+    &lt;/select&gt;
+    ...
+    &lt;input type="button" class="button" 
+        value="OKAY"&gt;
+&lt;/form&gt;
+&lt;/div&gt;</pre>
+                </code>
+            </details>
+            
+            <h4>Touch first</h4>
+            <div class="touch">
+                <form>
+                    <label for="text_input_touch">Input</label>
+                    <input type="text" id="text_input_touch">
+
+                    <label for="text_input_touch_disabled">Input disabled</label>
+                    <input type="text" id="text_input_touch_disabled" disabled>
+
+                    <input checked type="checkbox" id="checkbox_touch_checked">
+                    <label for="checkbox_touch_checked">Checkbox checked</label><br>
+
+                    <input type="checkbox" id="checkbox_touch_unchecked">
+                    <label for="checkbox_touch_unchecked">Checkbox</label><br>
+
+                    <input checked type="checkbox" id="checkbox_touch_disabled" disabled>
+                    <label for="checkbox_touch_disabled">Checkbox disabled</label><br>
+
+                    <label for="select_touch">Select</label>
+                    <select id="select_touch">
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select><br>
+
+                    <label for="select_touch_disabled">Select disabled</label>
+                    <select id="select_touch_disabled" disabled>
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select>
+
+                    <input type="button" class="button" value="OKAY">
+                </form>
+            </div>
+            <div class="dark touch">
+                <form>
+                    <label for="text_input_dark_touch">Input</label>
+                    <input type="text" id="text_input_dark_touch">
+
+                    <label for="text_input_dark_touch_disabled">Input disabled</label>
+                    <input type="text" id="text_input_dark_touch_disabled" disabled>
+
+                    <input checked type="checkbox" id="checkbox_dark_touch_checked">
+                    <label for="checkbox_dark_touch_checked">Checkbox checked</label><br>
+
+                    <input type="checkbox" id="checkbox_dark_touch_unchecked">
+                    <label for="checkbox_dark_touch_unchecked">Checkbox</label><br>
+
+                    <input checked type="checkbox" id="checkbox_dark_touch_disabled" disabled>
+                    <label for="checkbox_dark_touch_disabled">Checkbox disabled</label><br>
+
+                    <label for="select_dark_touch">Select</label>
+                    <select id="select_dark_touch">
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select><br>
+
+                    <label for="select_dark_touch_disabled">Select disabled</label>
+                    <select id="select_dark_touch_disabled" disabled>
+                        <option value="option 1">option 1</option>
+                        <option value="option 2">option 2</option>
+                    </select>
+
+                    <input type="button" class="button" value="OKAY">
+                </form>
+            </div>
+            <details>
+                <summary>CSS</summary>
+                <code>
+                    <pre>:root { --touch: 1; }</pre>
+                </code>
+            </details>
+            <details>
+                <summary>HTML</summary>
+                <code>
+                    <pre>&lt;div class="light touch"&gt;
+&lt;form&gt;
+    &lt;label for="text_input"&gt;Input&lt;/label&gt;
+    &lt;input type="text" id="text_input"&gt;
+    ...
+    &lt;input type="checkbox" id="checkbox"&gt;
+    &lt;label for="checkbox"&gt;Checkbox&lt;/label&gt;
+    &lt;br&gt;
+    ...
+    &lt;label for="select"&gt;Select&lt;/label&gt;
+    &lt;select id="select"&gt;
+        &lt;option value="1"&gt;option 1&lt;/option&gt;
+        &lt;option value="2"&gt;option 2&lt;/option&gt;
+    &lt;/select&gt;
+    ...
+    &lt;input type="button" class="button" 
+        value="OKAY"&gt;
+&lt;/form&gt;
+&lt;/div&gt;</pre>
+                </code>
+                <code>
+                    <pre>&lt;div class="dark touch"&gt;
+&lt;form&gt;
+    &lt;label for="text_input"&gt;Input&lt;/label&gt;
+    &lt;input type="text" id="text_input"&gt;
+    ...
+    &lt;input type="checkbox" id="checkbox"&gt;
+    &lt;label for="checkbox"&gt;Checkbox&lt;/label&gt;
+    &lt;br&gt;
+    ...
+    &lt;label for="select"&gt;Select&lt;/label&gt;
+    &lt;select id="select"&gt;
+        &lt;option value="1"&gt;option 1&lt;/option&gt;
+        &lt;option value="2"&gt;option 2&lt;/option&gt;
+    &lt;/select&gt;
+    ...
+    &lt;input type="button" class="button" 
+        value="OKAY"&gt;
+&lt;/form&gt;
+&lt;/div&gt;</pre>
+                </code>
+            </details>
+            
+        </section>
+        <!-- <section id="dialogs">
+            <h2>Dialogs</h2>
+            <button id="dialog_left_button">slider left</button>
+            <button id="dialog_center_button">dialog center</button>
+            <button id="dialog_right_button">slider right</button>
+            <details>
+                <summary>HTML</summary>
+                <code>
+                    <pre>&lt;button id="dialog_left_button"&gt;slider left&lt;/button&gt;
+&lt;section id="dialog_left" class="dialog hidden"&gt;
+    &lt;div class="dialog_exit_area"&gt;&lt;/div&gt;
+    &lt;div class="dialog_content slider left"&gt;
+        &lt;h2 class="dialog_title"&gt;Slider left&lt;/h2&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+        
+&lt;button id="dialog_center_button"&gt;dialog center&lt;/button&gt;
+&lt;section id="dialog_center" class="dialog hidden"&gt;
+    &lt;div class="dialog_exit_area"&gt;&lt;/div&gt;
+    &lt;div class="dialog_content center"&gt;
+        &lt;button class="close_button"&gt;
+            &lt;div class="icon"&gt;
+                &lt;svg&gt;&lt;use xlink:href="/images/ov_icons.svg#ov_close"&gt;&lt;/use&gt;&lt;/svg&gt;
+            &lt;/div&gt;
+        &lt;/button&gt;
+        &lt;h2 class="dialog_title"&gt;Dialog center&lt;/h2&gt;
+    &lt;/div&gt;
+&lt;/section&gt;
+        
+&lt;button id="dialog_right_button"&gt;slider right&lt;/button&gt;
+&lt;section id="dialog_right" class="dialog hidden"&gt;
+    &lt;div class="dialog_exit_area"&gt;&lt;/div&gt;
+    &lt;div class="dialog_content slider right"&gt;
+        &lt;h2 class="dialog_title"&gt;Slider right&lt;/h2&gt;
+    &lt;/div&gt;
+&lt;/section&gt;</pre>
+                    </code>
+            </details>
+            <details>
+                <summary>JS example for dialog center</summary>
+                <code>
+                    <pre>document.querySelector("#dialog_center_button").onclick = function () {
+    document.querySelector("#dialog_center").classList.remove("hidden");
+}
+document.querySelector("#dialog_center .dialog_exit_area").onclick = function () {
+    document.querySelector("#dialog_center").classList.add("hidden");
+}
+document.querySelector("#dialog_center .close_button").onclick = function () {
+    document.querySelector("#dialog_center").classList.add("hidden");
+}</pre>
+                </code>
+            </details>   
+        </section>
+    </div>
+
+    <section id="dialog_left" class="dialog hidden">
+        <div class="dialog_exit_area"></div>
+        <div class="dialog_content slider left">
+            <h2 class="dialog_title">Slider left</h2>
+        </div>
+    </section>
+
+    <section id="dialog_right" class="dialog hidden">
+        <div class="dialog_exit_area"></div>
+        <div class="dialog_content slider right">
+            <h2 class="dialog_title">Slider right</h2>
+        </div>
+    </section>
+
+    <section id="dialog_center" class="dialog hidden">
+        <div class="dialog_exit_area"></div>
+        <div class="dialog_content center">
+            <button class="close_button">
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_close"></use>
+                    </svg>
+                </div>
+            </button>
+
+            <h2 class="dialog_title">Dialog center</h2>
+        </div>
+    </section>
+    <script>
+        document.querySelector("#dialog_center_button").onclick = function () {
+            document.querySelector("#dialog_center").classList.remove("hidden");
+        }
+        document.querySelector("#dialog_center .dialog_exit_area").onclick = function () {
+            document.querySelector("#dialog_center").classList.add("hidden");
+        }
+        document.querySelector("#dialog_center .close_button").onclick = function () {
+            document.querySelector("#dialog_center").classList.add("hidden");
+        }
+
+        document.querySelector("#dialog_left_button").onclick = function () {
+            document.querySelector("#dialog_left").classList.remove("hidden");
+        }
+        document.querySelector("#dialog_left .dialog_exit_area").onclick = function () {
+            document.querySelector("#dialog_left").classList.add("hidden");
+        }
+
+        document.querySelector("#dialog_right_button").onclick = function () {
+            document.querySelector("#dialog_right").classList.remove("hidden");
+        }
+        document.querySelector("#dialog_right .dialog_exit_area").onclick = function () {
+            document.querySelector("#dialog_right").classList.add("hidden");
+        }
+    </script> -->
+</body>
+</html>

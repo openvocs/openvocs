@@ -1,0 +1,6 @@
+{
+    "pdf" : {
+        "mime" : "application/pdf",
+        "extension" : [ "pdf"]
+    }
+}

@@ -1,0 +1,30 @@
+<template id="authentication_form_template">
+    <form action="" id="login_form">
+        <label for="username">Username</label>
+        <input type="text" name="username" id="username">
+
+        <div>
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password">
+
+            <span id="show_password" class="icon">
+                <svg id="eye">
+                    <use xlink:href="/images/ov_icons.svg#ov_eye"></use>
+                </svg>
+                <svg id="eye_close">
+                    <use xlink:href="/images/ov_icons.svg#ov_eye_close"></use>
+                </svg>
+            </span>
+        </div>
+
+        <!-- <input type="checkbox" id="show_password">
+        <label for="show_password">show password</label> -->
+
+        <button id="login_button" class="green_button" type="submit">LOGIN
+            <div class="lds_dual_ring">
+                <div></div>
+            </div>
+        </button>
+    </form>
+    <div class="simple-keyboard"></div>
+</template>

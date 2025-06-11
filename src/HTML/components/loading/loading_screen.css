@@ -1,0 +1,60 @@
+#loading_screen {
+    display: none;
+    height: 100%;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    background: var(--black_transparent_50);
+    opacity: 0;
+    visibility: hidden;
+}
+
+#loading_screen.loading {
+    display: block;
+    animation: 1ms ease-in 500ms fade_in;
+    animation-fill-mode: forwards;
+
+}
+
+@keyframes fade_in {
+    0% {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    100% {
+        opacity: 1;
+        visibility: visible;
+    }
+}
+
+#content {
+    top: 40%;
+    position: fixed;
+    width: 100%;
+}
+
+#loading_screen #loading_icon {
+    height: 40px;
+    width: 40px;
+    margin: 1rem auto;
+}
+
+#message {
+    margin: 1rem auto;
+    width: max-content;
+    background-color: var(--secondary_background_color);
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.1rem;
+}
+
+#button {
+    margin: 1rem auto;
+    display: block;
+    padding: 0.7rem;
+    background-color: var(--secondary_background_color);
+}
+
+.hidden {
+    display: none;
+}

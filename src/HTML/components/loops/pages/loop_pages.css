@@ -1,0 +1,100 @@
+:host {
+    --grid_gap: 0.5rem;
+    --rows: 4;
+    --columns: 4;
+    --loop_width: 15.625rem;
+    --loop_height: 15.625rem;
+}
+
+.loops_grid {   
+    height: calc(100vh - var(--menu_bar_height) - var(--default_space));
+    display: grid;
+    grid-template-columns: repeat(var(--columns), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--rows), minmax(0, 1fr));
+    grid-gap: calc(var(--grid_gap) - 0.2rem);
+    overflow: auto;
+}
+
+.loops_grid.auto_grid {
+    grid-template-columns: repeat(auto-fit, minmax(var(--loop_width), 1fr));
+    /*grid-template-rows: repeat(auto-fit, minmax(var(--loop_height), 1fr));*/
+}
+
+.loopelement_grid_empty {
+    background-color: var(--element_disabled_background_color);
+    border: solid 0.2rem var(--base_color);
+}
+
+
+.loops_list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.313rem;
+    overflow: auto;
+    height: calc(100vh - (2 * var(--menu_bar_height)));
+}
+
+.loopelement_list {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-areas:
+        "join join join join join join join leave"
+        "volume volume volume volume volume volume sip leave";
+    grid-template-rows: 1fr auto;
+}
+
+.loopelement_list .leave_loop {
+    grid-area: leave;
+
+    display: grid;
+    align-items: center;
+
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.loopelement_list .join_loop {
+    grid-area: join;
+
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-template-areas: "name name name permission activity activity participants";
+    align-items: center;
+    min-height: 5rem;
+}
+
+.loopelement_list .join_loop .loop_permission {
+    grid-area: permission;
+    text-align: center;
+}
+
+.loopelement_list .join_loop .loop_activity {
+    grid-area: activity;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+.loopelement_list .join_loop .loop_participants {
+    grid-area: participants;
+    text-align: center;
+}
+
+.loopelement_list .join_loop .loop_name {
+    grid-area: name;
+    text-align: left;
+    vertical-align: middle;
+    padding-left: 0.5em;
+}
+
+.loopelement_list .loop_volume {
+    grid-area: volume;
+
+    min-height: 1.875rem;
+    display: flex;
+    align-items: center;
+    padding: 0.5em;
+}
+
+.loopelement_list .loop_volume .loop_volume_input {
+    width: 95%;
+}

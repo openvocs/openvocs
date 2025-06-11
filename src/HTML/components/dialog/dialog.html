@@ -1,0 +1,16 @@
+<template>
+    <section id="dialog" class="center">
+        <div id="dialog_exit_area"></div>
+        <div id="dialog_content">
+            <button id="close_button" class="dialog_button">
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_close"></use>
+                    </svg>
+                </div>
+            </button>
+            <h3 id="dialog_title"></h3>
+            <slot name="dialog-content">This is a Dialog!</slot>
+        </div>
+    </section>
+</template>

@@ -1,0 +1,15 @@
+[Unit]
+Description=ov_mc_alsa
+PartOf=ov_mc.target
+Wants=sound.target
+After=sound.target
+Wants=networking.service
+After=networking.service
+
+[Service]
+LimitNOFILE=65536
+ExecStart=/usr/bin/ov_alsa_gateway -c /etc/openvocs/ov_mc_alsa/config.json
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

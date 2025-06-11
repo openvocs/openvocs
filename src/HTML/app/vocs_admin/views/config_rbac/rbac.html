@@ -1,0 +1,20 @@
+<div id="config_rbac" class="view">
+    <button id="open_graph_menu">
+        <div class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_bars"></use>
+            </svg>
+        </div>
+    </button>
+    <dialog id="graph_menu">
+        <input type="checkbox" id="hide_users" name="hide_users" checked>
+        <label for="hide_users">hide unused users</label>
+
+        <input type="checkbox" id="hide_roles" name="hide_roles">
+        <label for="hide_roles">hide unused domain roles</label>
+
+        <input type="checkbox" id="hide_loops" name="hide_loops">
+        <label for="hide_loops">hide unused domain loops</label>
+    </dialog>
+    <ov-rbac-graph></ov-rbac-graph>
+</div>

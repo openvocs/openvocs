@@ -1,0 +1,57 @@
+<main id="overview" class="view">
+    <!--ov-branding subtitle="Admin Interface"></ov-branding-->
+
+    <section>
+        <div id="domains">
+        </div>
+
+        <button id="add_domain" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_plus"></use>
+            </svg>
+        </button>
+    </section>
+
+    <template id="domain_template"><!--todo create component from template-->
+        <details open>
+            <summary>
+                <div class="domain_header">
+                    <h3 class="domain_name"></h3>
+                    <button class="domain_settings_button icon">
+                        <svg>
+                            <use xlink:href="/images/ov_icons.svg#ov_cog"></use>
+                        </svg>
+                    </button>
+                </div>
+            </summary>
+            <!-- <ov-selection-list class="projects"></ov-selection-list> -->
+            <ov-nav direction="column" class="projects"></ov-nav>
+            <button class="add_project icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_plus"></use>
+                </svg>
+            </button>
+        </details>
+    </template>
+
+    <ov-dialog id="menu_slider" position="left">
+        <div slot="dialog-content">
+            <!--
+                <input type="file" id="open_file_dialog" style="display:none" />
+                <button id="import_button">Import</button>  
+
+                <button id="export_button">Export</button>
+            -->
+            <div>
+                <button id="logout_button" class="red_button">Logout</button>
+            </div>
+        </div>
+    </ov-dialog>
+
+    <menu id="menu_bar" class="menu_bar bottom">
+        <button id="menu_button">
+            <div class="logo logo_openvocs"></div>
+        </button>
+        <h1>VOCS Admin Interface</h1>
+    </menu>
+</main>

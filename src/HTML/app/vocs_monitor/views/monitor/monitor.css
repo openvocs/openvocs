@@ -1,0 +1,11 @@
+.view {
+    --touch: 0;
+}
+
+option.off, select.off {
+    color: var(--red);
+}
+
+select {
+    width: 15rem;
+}

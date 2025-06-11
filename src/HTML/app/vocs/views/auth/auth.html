@@ -1,0 +1,33 @@
+<main id="login_area" class="view">
+    <button id="reload_page">
+        <div class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_reload"></use>
+            </svg>
+        </div>
+    </button>
+    <ov-branding></ov-branding>
+
+    <section id="login">
+        <div id="authentication_step" class="step">
+            <div class="step_body">
+                <ov-login-form></ov-login-form>
+            </div>
+        </div>
+
+        <div id="authorization_step" class="step">
+            <div class="step_body">
+                <ov-nav direction="column" id="authorization_list"></ov-nav>
+            </div>
+        </div>
+
+        <div id="server">
+            <span>server: </span>
+            <span id="server_address"></span>
+            </br>
+            <span>keyset:</span>
+            <span id="keyset"></span>
+        </div>
+        <div id="login_message"></div>
+    </section>
+</main>

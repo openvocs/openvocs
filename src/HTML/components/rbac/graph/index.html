@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>ov_components</title>
+    <style>
+        @import "/css/ov_basic.css";
+        @import "/components/rbac/graph/rbac_graph.css";
+
+        :root {
+            --touch: 0;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+    </style>
+    <script type="module" src="rbac_graph.js"></script>
+</head>
+
+<body>
+    <ov-rbac-graph></ov-rbac-graph>
+</body>
+
+<script>
+    SIGNALING_SERVERS = [{ NAME: "stub" }];
+    SIGNALING_REQUEST_TIMEOUT = 10000;
+    TEMP_ERROR_TIMEOUT = 4000;
+
+    DEBUG_LOG_INCOMING_EVENTS = true;
+    DEBUG_LOG_OUTGOING_EVENTS = true;
+</script>
+<script type="module">
+    import ov_Websocket from "/lib/test/ov_websocket_dummy.js";
+    import * as ov_Websockets from "/lib/ov_websocket_list.js";
+    import * as ov_Auth from "/lib/ov_auth.js"
+    import * as ov_Admin from "/lib/ov_admin.js";
+
+    await ov_Websockets.setup_connections(ov_Websocket);
+    await ov_Auth.login("test", "test", ov_Websockets.prime_websocket);
+    await ov_Admin.domains();
+    await ov_Admin.projects();
+    ov_Websockets.user().project = "p0_1";
+    ov_Websockets.user().domain = "domain_1";
+
+    let project = ov_Websockets.user().projects.get(ov_Websockets.user().project);
+    let project_conf = await ov_Admin.project_config(project.id);
+
+    let graph = document.querySelector("ov-rbac-graph");
+    graph.data = project_conf;
+</script>
+
+</html>

@@ -1,0 +1,67 @@
+# Implementation of the ov_mc_interconnect service. 
+
+The interconnect service may be used to interconnect different VOCS instances. 
+
+The interconnect may run as server or client and will try to connect all loops given in the loops configuration. 
+
+# How to start ov_mc_interconnect
+
+ov_mc_interconnect is build like all executables under the build folder. To start ov_mc_interconnect you may use 
+
+`markus@RB-BA0007:~/openvocs/code$ ./build/bin/ov_mc_interconnect`
+
+you may add a config with -c like done in most of the openvocs services. 
+
+# How to configure ov_mc_interconnect
+
+## Configure a server 
+
+The client flag in the sokcet config of interconnect must be set to false.
+A password must be choosen for access of the interconnect service. This password is used by a client to connect the loops. 
+The signaling socket must be configured for a listener interface. 
+Media socket must be configured for the external interface to connect media pathes. 
+Internal must be configured to the internal core network of the openvocs instance running. 
+
+## Configure a client
+
+The client flag in the sokcet config of interconnect must be set to true.
+The password must match the server provided password for the interconnect. 
+Signaling socket must match the signaling socket of the server. 
+must be configured for the external interface to connect media pathes. 
+Internal must be configured to the internal core network of the openvocs instance running.
+
+## Configure TLS
+
+Domains may be configured within the domains section. One domain must be set for operations. 
+For client connections a CA file must be provided to verify the server file during connection setup. 
+For server instances the DTLS part must be configured with valid certificate and key pathes. 
+
+## Configure LOOPS
+
+Within the loops section a local loop will be configured e.g. Loop 1 of form:
+
+`"loop1" : {
+	"host" : "224.0.0.1",
+	"port" : 12345
+}`
+
+The host and port must match the internal Loop configuration of the instance running the interconnect. 
+
+## Copyright
+
+    Copyright (c) 2019 German Aerospace Center DLR e.V. (GSOC)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    This file is part of the openvocs project. https://openvocs.org
+

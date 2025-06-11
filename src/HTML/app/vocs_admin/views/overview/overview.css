@@ -1,0 +1,86 @@
+section {
+    height: calc(100vh - var(--menu_bar_height) - var(--default_space));
+    overflow: auto;
+}
+
+#domains {
+    margin: 0.5rem 0.5rem 1rem;
+    display: grid;
+    gap: var(--default_space);
+    grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+    /*border-bottom: solid 0.1rem var(--element_art_color);*/
+    padding-bottom: 1rem;
+}
+
+#domains details {
+    border: solid 0.1rem;
+    border-radius: 0.25rem;
+    border-color: var(--element_art_color);
+    padding: var(--default_space);
+    height: 5.3rem;
+}
+
+#domains details[open] {
+    align-self: stretch;
+    height: auto;
+}
+
+#domains .domain_header {
+    display: inline-flex;
+    width: calc(100% - 1.5rem);
+    justify-content: space-between;
+    height: 4.1rem;
+}
+
+#domains details[open] summary {
+    border-bottom: var(--element_art_color) 0.1rem solid;
+    padding-bottom: var(--default_space);
+    margin-bottom: var(--default_space);
+}
+
+#domains .domain_name {
+    align-self: center;
+}
+
+#domains .domain_settings_button {
+    padding: 0.25rem;
+    margin: 0;
+    width: 2.5rem;
+}
+
+#domains details:not(.domain_admin) .domain_settings_button,
+#domains details:not(.domain_admin) .add_project {
+    display: none;
+}
+
+#add_domain {
+    margin: 0 calc(50% - 1.25rem) var(--default_space);
+    padding: 0.4rem;
+    width: 2.5rem;
+    display: none;
+}
+
+.add_project {
+    width: 4rem;
+    margin: var(--default_space) calc(50% - 2rem) 0;
+    padding: 0.4rem;
+}
+
+menu[is="ov-nav"] li:first-child {
+    margin-top: 0;
+}
+
+#menu_slider {
+    bottom: var(--menu_bar_height);
+    width: 15rem;
+}
+
+#menu_slider div[slot=dialog-content] {
+    display: flex;
+    flex-direction: column-reverse;
+    height: calc(100% - 3rem);
+}
+
+#menu_slider button {
+    width: 5.8rem;
+}

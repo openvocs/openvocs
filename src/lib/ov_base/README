@@ -1,0 +1,6 @@
+ov_base is the basic module for openvocs development. It contains data structures, base implementations and base protocols.
+
+ov_base is developed against POSIX. No other external library is used to create functions within ov_base. (exept libov_log)
+
+This module is self supported and may be build, tested, installed and
+run independently.

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>ov_components</title>
+    <style>
+        @import "/css/ov_basic.css";
+
+        root {
+            --touch: 1;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+    </style>
+    <script type="module" src="nav.js"></script>
+</head>
+
+<body>
+    <ov-nav name="group_name"></ov-nav>
+</body>
+<script>
+    let list = document.querySelector("ov-nav");
+
+    list.addEventListener("loaded", function () {
+        console.log("pre set name: " + list.name);
+        list.name = "alt_name";
+        console.log("new name: " + list.name);
+
+        list.add_item("r0", "role 0", "role_0", true);
+
+        list.clear();
+
+        list.add_item("r1", "role 1", "role_1", true);
+        list.add_item("r2", "role 2", "role_2");
+        list.add_item("r3", "role 3", "role_3");
+
+        console.log("currently selected value: " + list.value);
+        list.value = "role_2";
+    });
+    list.addEventListener("change", (event) => {
+        console.log("value changed: " + event.target.value);
+    });
+</script>
+
+</html>

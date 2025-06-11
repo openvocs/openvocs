@@ -1,0 +1,3 @@
+This module SHALL become the interface to all encryption related functions within openvocs. It will contain and manage external depencies for all encryption related functions.
+
+TBD / TODO some ov_base functions may be moved to here, based on their type e.g. UTF8.

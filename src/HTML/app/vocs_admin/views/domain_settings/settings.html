@@ -1,0 +1,38 @@
+<div id="domain_settings" class="view">
+    <!--div id="edit_error_message"></div-->
+
+    <label for="edit_id">ID</label>
+    <input id="edit_id" name="id" type="text">
+
+    <label for="edit_name">Name</label>
+    <input id="edit_name" name="name" type="text">
+
+    <details id="ldap_import">
+        <summary>
+            LDAP user import
+        </summary>
+        <fieldset>
+            <label for="ldap_host">Host</label>
+            <input id="ldap_host" name="ldap_host" type="text">
+
+            <label for="ldap_base">Base</label>
+            <input id="ldap_base" name="ldap_base" type="text">
+
+            <label for="ldap_user">User</label>
+            <input id="ldap_user" name="ldap_user" type="text">
+
+            <label for="ldap_password">Password</label>
+            <input id="ldap_password" name="ldap_password" type="password">
+
+            <button id="ldap_import_button" class="green_button">Import</button>
+            <div id="ldap_notice" class="ov_red_text">Importing users from LDAP may take some time. After starting the import, please wait up to 5 min and than reopen the domain. If the users are not there, please try again.</div>
+        </fieldset>
+    </details>
+
+    <details id="delete_domain">
+        <summary>
+            Delete
+        </summary>
+        <button id="delete_button" class="button red_button">Delete</button>
+    </details>
+</div>

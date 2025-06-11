@@ -1,0 +1,20 @@
+Which licenses may NOT be included within Apache products?
+
+    Binary Code License (BCL)
+    Special exceptions to the GNU GPL (e.g. GNU Classpath)
+    GNU GPL 1, 2, 3
+    GNU LGPL 2, 2.1, 3
+    GNU Affero GPL 3
+    NPL 1.0/NPL 1.1
+    QPL
+    Sleepycat License
+    Code Project Open License (CPOL)
+    BSD-4-Clause/BSD-4-Clause (University of California-Specific)
+    Field of use restrictions:
+        Microsoft Limited Public License
+        Amazon Software License (ASL)
+        JSON License
+    Non-commercial licenses:
+        Creative Commons Non-Commercial variants
+        Sun Community Source License 3.0
+    Facebook BSD+Patents license

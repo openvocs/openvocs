@@ -1,0 +1,1 @@
+ov_vocs is the core code for the openvocs server installation. In ov_vocs the different sub components e.g. CLIENT, ICE, SIP, MIXER are connected and programmed accordingly to the states the client will set. 

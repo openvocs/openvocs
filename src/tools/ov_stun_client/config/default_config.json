@@ -1,0 +1,54 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+
+	"stun" : {
+
+		"client" :
+		{
+			"host" : "0.0.0.0",
+			"port" : 0,
+			"type" : "UDP"
+		},
+
+		"max_wait_usecs" : 5000000,
+
+		"server" : 
+		{
+			"socket" :
+			{
+				"host" : "129.247.113.93",
+				"port" : 3478,
+				"type" : "UDP"
+			},
+
+			"range" : {
+				"start" : 3478,
+				"end" : 3478
+			}
+		},
+
+		"servers" :
+		[
+			{
+	            "host" : "openvocs.net",
+	            "port" : 33479,
+	            "type" : "UDP"
+	        },
+	        {
+	            "host" : "openvocs.net",
+	            "port" : 33533,
+	            "type" : "UDP"
+	        },
+	        {
+	            "host" : "openvocs.net",
+	            "port" : 43478,
+	            "type" : "UDP"
+	        }
+	    ]
+ 	}
+}

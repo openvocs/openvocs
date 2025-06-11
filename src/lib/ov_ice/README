@@ -1,0 +1,1 @@
+ov_ice implementation of ICE basic functionalities. This implementation may be used to implement an ICE layer within some other code. 

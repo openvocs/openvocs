@@ -1,0 +1,66 @@
+#config_name {
+    flex-grow: 2;
+    border-right: solid 0.1rem var(--element_art_color);
+    margin-right: 0.5rem;
+    padding-right: 1rem;
+}
+
+.offline #config_name::after {
+    content: "OFFLINE";
+    color: var(--red);
+    font-size: 1.2rem;
+    border: solid 0.1rem var(--red);
+    margin-left: 0.5rem;
+    padding: 0 0.2rem;
+}
+
+#save_button {
+    width: 6rem;
+}
+
+#select_subview {
+    margin: 0 var(--default_space) var(--default_space);
+    padding-left: 1rem;
+    border-left: solid 0.1rem var(--element_art_color);
+}
+
+#config_administration {
+    height: calc(100vh - var(--menu_bar_height) + var(--default_space));
+    overflow-y: auto;
+}
+
+#config_administration .container {
+    display: none;
+}
+
+#config_administration.settings #settings_page,
+#config_administration.rbac #rbac_page,
+#config_administration.layout #layout_page,
+#config_administration.sip #sip_page,
+#config_administration.recorder #recorder_page {
+    display: inherit;
+    height: 100%;
+}
+
+#menu_slider {
+    bottom: var(--menu_bar_height);
+    width: 15rem;
+}
+
+#menu_slider div[slot=dialog-content] {
+    display: flex;
+    flex-direction: column-reverse;
+    height: calc(100% - 3rem);
+}
+
+#menu_slider button {
+    width: 5.8rem;
+}
+
+#error_dialog {
+    width: 30rem;
+}
+
+#error_report {
+    background-color: var(--red);
+}

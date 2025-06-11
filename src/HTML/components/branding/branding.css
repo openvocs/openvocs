@@ -1,0 +1,31 @@
+#branding {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 3rem 3rem 2.5rem;
+    grid-column-gap: 0.125rem;
+    grid-row-gap: 0.25rem;
+    justify-items: center;
+    align-items: center;
+}
+
+.logo {
+    height: 100%;
+    padding: 0.125rem;
+    min-width: 1px;
+}
+
+.logo.logo_dlr {
+    height: 90%;
+}
+
+#title, #subtitle {
+    grid-column: 1 / -1;
+}
+
+#branding.subtitle_unset {
+    grid-template-rows: 3rem 3rem;
+}
+
+#branding.subtitle_unset #subtitle {
+    display: none;
+}

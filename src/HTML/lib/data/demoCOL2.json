@@ -1,0 +1,3156 @@
+{
+    "id": "p1_1",
+    "domain": "GSOC",
+    "name": "Demo",
+    "logo": null,
+    "users": {
+        "U0@demo.localhost": {
+            "id": "U0@demo.localhost",
+            "name": "Anna A.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U1@demo.localhost": {
+            "id": "U1@demo.localhost",
+            "name": "Jan B.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U2@demo.localhost": {
+            "id": "U2@demo.localhost",
+            "name": "Julia C.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U3@demo.localhost": {
+            "id": "U3@demo.localhost",
+            "name": "Lukas D.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U4@demo.localhost": {
+            "id": "U4@demo.localhost",
+            "name": "Sara F.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U5@demo.localhost": {
+            "id": "U5@demo.localhost",
+            "name": "Philip G.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U6@demo.localhost": {
+            "id": "U6@demo.localhost",
+            "name": "Lisa H.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U7@demo.localhost": {
+            "id": "U7@demo.localhost",
+            "name": "Tim I.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U8@demo.localhost": {
+            "id": "U8@demo.localhost",
+            "name": "Laura J.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U9@demo.localhost": {
+            "id": "U9@demo.localhost",
+            "name": "Alexander K.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U10@demo.localhost": {
+            "id": "U10@demo.localhost",
+            "name": "Katharina L.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U11@demo.localhost": {
+            "id": "U11@demo.localhost",
+            "name": "Daniel M.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U12@demo.localhost": {
+            "id": "U12@demo.localhost",
+            "name": "Vanessa N.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U13@demo.localhost": {
+            "id": "U13@demo.localhost",
+            "name": "Tobias O.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U14@demo.localhost": {
+            "id": "U14@demo.localhost",
+            "name": "Lena P.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U15@demo.localhost": {
+            "id": "U15@demo.localhost",
+            "name": "Kevin R.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U16@demo.localhost": {
+            "id": "U16@demo.localhost",
+            "name": "Jennifer S.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U17@demo.localhost": {
+            "id": "U17@demo.localhost",
+            "name": "Marcel T.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U18@demo.localhost": {
+            "id": "U18@demo.localhost",
+            "name": "Anika U.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U19@demo.localhost": {
+            "id": "U19@demo.localhost",
+            "name": "Denis V.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U20@demo.localhost": {
+            "id": "U20@demo.localhost",
+            "name": "Jana W.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U21@demo.localhost": {
+            "id": "U21@demo.localhost",
+            "name": "Felix A.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U22@demo.localhost": {
+            "id": "U22@demo.localhost",
+            "name": "Lea B.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U23@demo.localhost": {
+            "id": "U23@demo.localhost",
+            "name": "Florian C.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U24@demo.localhost": {
+            "id": "U24@demo.localhost",
+            "name": "Marie D.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U25@demo.localhost": {
+            "id": "U25@demo.localhost",
+            "name": "Niklas F.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U26@demo.localhost": {
+            "id": "U26@demo.localhost",
+            "name": "Jasmin G.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U27@demo.localhost": {
+            "id": "U27@demo.localhost",
+            "name": "Maximilian H.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U28@demo.localhost": {
+            "id": "U28@demo.localhost",
+            "name": "Jessika I.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U29@demo.localhost": {
+            "id": "U29@demo.localhost",
+            "name": "Patrick J.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U30@demo.localhost": {
+            "id": "U30@demo.localhost",
+            "name": "Franziska K.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U31@demo.localhost": {
+            "id": "U31@demo.localhost",
+            "name": "Fabian L.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U32@demo.localhost": {
+            "id": "U32@demo.localhost",
+            "name": "Michelle M.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U33@demo.localhost": {
+            "id": "U33@demo.localhost",
+            "name": "Jonas N.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U34@demo.localhost": {
+            "id": "U34@demo.localhost",
+            "name": "Nina O.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U35@demo.localhost": {
+            "id": "U35@demo.localhost",
+            "name": "Sebastian P.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U36@demo.localhost": {
+            "id": "U36@demo.localhost",
+            "name": "Hanna R.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U37@demo.localhost": {
+            "id": "U37@demo.localhost",
+            "name": "Christian S.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U38@demo.localhost": {
+            "id": "U38@demo.localhost",
+            "name": "Alina T.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U39@demo.localhost": {
+            "id": "U39@demo.localhost",
+            "name": "Yannik U.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U40@demo.localhost": {
+            "id": "U40@demo.localhost",
+            "name": "Johanna V.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U41@demo.localhost": {
+            "id": "U41@demo.localhost",
+            "name": "Julian W.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U42@demo.localhost": {
+            "id": "U42@demo.localhost",
+            "name": "Kim A.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U43@demo.localhost": {
+            "id": "U43@demo.localhost",
+            "name": "Marvin B.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U44@demo.localhost": {
+            "id": "U44@demo.localhost",
+            "name": "Nadine C.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U45@demo.localhost": {
+            "id": "U45@demo.localhost",
+            "name": "Timo D.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U46@demo.localhost": {
+            "id": "U46@demo.localhost",
+            "name": "Jaqueline F.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U47@demo.localhost": {
+            "id": "U47@demo.localhost",
+            "name": "David G.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U48@demo.localhost": {
+            "id": "U48@demo.localhost",
+            "name": "Caroline H.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U49@demo.localhost": {
+            "id": "U49@demo.localhost",
+            "name": "Nico I.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U50@demo.localhost": {
+            "id": "U50@demo.localhost",
+            "name": "Christina J.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U51@demo.localhost": {
+            "id": "U51@demo.localhost",
+            "name": "Mark K.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U52@demo.localhost": {
+            "id": "U52@demo.localhost",
+            "name": "Ann L.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U53@demo.localhost": {
+            "id": "U53@demo.localhost",
+            "name": "Finn M.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U54@demo.localhost": {
+            "id": "U54@demo.localhost",
+            "name": "Svenja N.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U55@demo.localhost": {
+            "id": "U55@demo.localhost",
+            "name": "Leon O.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U56@demo.localhost": {
+            "id": "U56@demo.localhost",
+            "name": "Luisa P.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U57@demo.localhost": {
+            "id": "U57@demo.localhost",
+            "name": "Lennard R.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U58@demo.localhost": {
+            "id": "U58@demo.localhost",
+            "name": "Natalie S.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U59@demo.localhost": {
+            "id": "U59@demo.localhost",
+            "name": "Max T.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U60@demo.localhost": {
+            "id": "U60@demo.localhost",
+            "name": "Sophie U.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U61@demo.localhost": {
+            "id": "U61@demo.localhost",
+            "name": "Tom V.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U62@demo.localhost": {
+            "id": "U62@demo.localhost",
+            "name": "Lara W.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U63@demo.localhost": {
+            "id": "U63@demo.localhost",
+            "name": "Nils A.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U64@demo.localhost": {
+            "id": "U64@demo.localhost",
+            "name": "Sandra B.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U65@demo.localhost": {
+            "id": "U65@demo.localhost",
+            "name": "Pascal C.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U66@demo.localhost": {
+            "id": "U66@demo.localhost",
+            "name": "Janina D.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U67@demo.localhost": {
+            "id": "U67@demo.localhost",
+            "name": "Simon F.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U68@demo.localhost": {
+            "id": "U68@demo.localhost",
+            "name": "Sabrina G.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U69@demo.localhost": {
+            "id": "U69@demo.localhost",
+            "name": "Dominik H.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U70@demo.localhost": {
+            "id": "U70@demo.localhost",
+            "name": "Melanie I.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U71@demo.localhost": {
+            "id": "U71@demo.localhost",
+            "name": "Christopher J.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U72@demo.localhost": {
+            "id": "U72@demo.localhost",
+            "name": "Isabel K.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U73@demo.localhost": {
+            "id": "U73@demo.localhost",
+            "name": "Benjamin L.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U74@demo.localhost": {
+            "id": "U74@demo.localhost",
+            "name": "Antonia M.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U75@demo.localhost": {
+            "id": "U75@demo.localhost",
+            "name": "Moritz N.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U76@demo.localhost": {
+            "id": "U76@demo.localhost",
+            "name": "Leoni O.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U77@demo.localhost": {
+            "id": "U77@demo.localhost",
+            "name": "Lars P.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U78@demo.localhost": {
+            "id": "U78@demo.localhost",
+            "name": "Saskia R.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U79@demo.localhost": {
+            "id": "U79@demo.localhost",
+            "name": "Paul S.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U80@demo.localhost": {
+            "id": "U80@demo.localhost",
+            "name": "Denise T.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U81@demo.localhost": {
+            "id": "U81@demo.localhost",
+            "name": "Marco U.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U82@demo.localhost": {
+            "id": "U82@demo.localhost",
+            "name": "Eileen V.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U83@demo.localhost": {
+            "id": "U83@demo.localhost",
+            "name": "Sven W.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U84@demo.localhost": {
+            "id": "U84@demo.localhost",
+            "name": "Nele A.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U85@demo.localhost": {
+            "id": "U85@demo.localhost",
+            "name": "Robin B.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U86@demo.localhost": {
+            "id": "U86@demo.localhost",
+            "name": "Stefanie C.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U87@demo.localhost": {
+            "id": "U87@demo.localhost",
+            "name": "Christoph D.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U88@demo.localhost": {
+            "id": "U88@demo.localhost",
+            "name": "Pia F.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U89@demo.localhost": {
+            "id": "U89@demo.localhost",
+            "name": "Malte G.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U90@demo.localhost": {
+            "id": "U90@demo.localhost",
+            "name": "Melina H.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U91@demo.localhost": {
+            "id": "U91@demo.localhost",
+            "name": "Torben I.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U92@demo.localhost": {
+            "id": "U92@demo.localhost",
+            "name": "Sina J.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U93@demo.localhost": {
+            "id": "U93@demo.localhost",
+            "name": "Johannes K.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U94@demo.localhost": {
+            "id": "U94@demo.localhost",
+            "name": "Janin L.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U95@demo.localhost": {
+            "id": "U95@demo.localhost",
+            "name": "Mike M.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U96@demo.localhost": {
+            "id": "U96@demo.localhost",
+            "name": "Vivien N.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U97@demo.localhost": {
+            "id": "U97@demo.localhost",
+            "name": "Jakob O.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U98@demo.localhost": {
+            "id": "U98@demo.localhost",
+            "name": "Sophia P.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U99@demo.localhost": {
+            "id": "U99@demo.localhost",
+            "name": "Michael R.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U100@demo.localhost": {
+            "id": "U100@demo.localhost",
+            "name": "Alexandra S.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U101@demo.localhost": {
+            "id": "U101@demo.localhost",
+            "name": "Martin T.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U102@demo.localhost": {
+            "id": "U102@demo.localhost",
+            "name": "Katrin U.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U103@demo.localhost": {
+            "id": "U103@demo.localhost",
+            "name": "André V.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U104@demo.localhost": {
+            "id": "U104@demo.localhost",
+            "name": "Rebecca W.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U105@demo.localhost": {
+            "id": "U105@demo.localhost",
+            "name": "Stefan A.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U106@demo.localhost": {
+            "id": "U106@demo.localhost",
+            "name": "Lina B.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U107@demo.localhost": {
+            "id": "U107@demo.localhost",
+            "name": "Matthias C.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U108@demo.localhost": {
+            "id": "U108@demo.localhost",
+            "name": "Josephine D.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U109@demo.localhost": {
+            "id": "U109@demo.localhost",
+            "name": "Hendrik F.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U110@demo.localhost": {
+            "id": "U110@demo.localhost",
+            "name": "Anne G.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U111@demo.localhost": {
+            "id": "U111@demo.localhost",
+            "name": "Björn H.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U112@demo.localhost": {
+            "id": "U112@demo.localhost",
+            "name": "Merle I.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U113@demo.localhost": {
+            "id": "U113@demo.localhost",
+            "name": "Luca J.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U114@demo.localhost": {
+            "id": "U114@demo.localhost",
+            "name": "Miriam K.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U115@demo.localhost": {
+            "id": "U115@demo.localhost",
+            "name": "Nikolas L.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U116@demo.localhost": {
+            "id": "U116@demo.localhost",
+            "name": "Mareike M.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U117@demo.localhost": {
+            "id": "U117@demo.localhost",
+            "name": "Steven N.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U118@demo.localhost": {
+            "id": "U118@demo.localhost",
+            "name": "Nicole O.",
+            "avatar": null,
+            "owner": "demo"
+        },
+        "U119@demo.localhost": {
+            "id": "U119@demo.localhost",
+            "name": "René P.",
+            "avatar": null,
+            "owner": "demo"
+        }
+    },
+    "loops": {
+        "L0@demo.localhost": {
+            "id": "L0@demo.localhost",
+            "type": "audio",
+            "name": "Andromeda",
+            "abbreviation": "AND",
+            "roles": {
+                "R12@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L1@demo.localhost": {
+            "id": "L1@demo.localhost",
+            "type": "audio",
+            "name": "Antlia",
+            "abbreviation": "ANT",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L2@demo.localhost": {
+            "id": "L2@demo.localhost",
+            "type": "audio",
+            "name": "Apus",
+            "abbreviation": "APS",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L3@demo.localhost": {
+            "id": "L3@demo.localhost",
+            "type": "audio",
+            "name": "Aquarius",
+            "abbreviation": "AQR",
+            "roles": {
+                "R3@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L4@demo.localhost": {
+            "id": "L4@demo.localhost",
+            "type": "audio",
+            "name": "Aquila",
+            "abbreviation": "AQL",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R22@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L5@demo.localhost": {
+            "id": "L5@demo.localhost",
+            "type": "audio",
+            "name": "Ara",
+            "abbreviation": "ARA",
+            "roles": {
+                "R3@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L6@demo.localhost": {
+            "id": "L6@demo.localhost",
+            "type": "audio",
+            "name": "Aries",
+            "abbreviation": "ARI",
+            "roles": {
+                "R3@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L7@demo.localhost": {
+            "id": "L7@demo.localhost",
+            "type": "audio",
+            "name": "Auriga",
+            "abbreviation": "AUR",
+            "roles": {
+                "R3@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L8@demo.localhost": {
+            "id": "L8@demo.localhost",
+            "type": "audio",
+            "name": "Boötes",
+            "abbreviation": "BOO",
+            "roles": {
+                "R11@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R8@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L9@demo.localhost": {
+            "id": "L9@demo.localhost",
+            "type": "audio",
+            "name": "Caelum",
+            "abbreviation": "CAE",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L10@demo.localhost": {
+            "id": "L10@demo.localhost",
+            "type": "audio",
+            "name": "Camelopardalis",
+            "abbreviation": "CAM",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L11@demo.localhost": {
+            "id": "L11@demo.localhost",
+            "type": "audio",
+            "name": "Cancer",
+            "abbreviation": "CNC",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L12@demo.localhost": {
+            "id": "L12@demo.localhost",
+            "type": "audio",
+            "name": "Canes Venatici",
+            "abbreviation": "CVN",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R5@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L13@demo.localhost": {
+            "id": "L13@demo.localhost",
+            "type": "audio",
+            "name": "Canis Major",
+            "abbreviation": "CMA",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R17@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L14@demo.localhost": {
+            "id": "L14@demo.localhost",
+            "type": "audio",
+            "name": "Canis Minor",
+            "abbreviation": "CMI",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R7@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R17@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L15@demo.localhost": {
+            "id": "L15@demo.localhost",
+            "type": "audio",
+            "name": "Capricornus",
+            "abbreviation": "CAP",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R7@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R19@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L16@demo.localhost": {
+            "id": "L16@demo.localhost",
+            "type": "audio",
+            "name": "Carina",
+            "abbreviation": "CAR",
+            "roles": {
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L17@demo.localhost": {
+            "id": "L17@demo.localhost",
+            "type": "audio",
+            "name": "Cassiopeia",
+            "abbreviation": "CAS",
+            "roles": {
+                "R15@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L18@demo.localhost": {
+            "id": "L18@demo.localhost",
+            "type": "audio",
+            "name": "Centaurus",
+            "abbreviation": "CEN",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R7@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R19@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L19@demo.localhost": {
+            "id": "L19@demo.localhost",
+            "type": "audio",
+            "name": "Cepheus",
+            "abbreviation": "CEP",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R7@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R19@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L20@demo.localhost": {
+            "id": "L20@demo.localhost",
+            "type": "audio",
+            "name": "Cetus",
+            "abbreviation": "CET",
+            "roles": {
+                "R4@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L21@demo.localhost": {
+            "id": "L21@demo.localhost",
+            "type": "audio",
+            "name": "Chamaeleon",
+            "abbreviation": "CHA",
+            "roles": {
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R7@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L22@demo.localhost": {
+            "id": "L22@demo.localhost",
+            "type": "audio",
+            "name": "Circinus",
+            "abbreviation": "CIR",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L23@demo.localhost": {
+            "id": "L23@demo.localhost",
+            "type": "audio",
+            "name": "Columba",
+            "abbreviation": "COL",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R15@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L24@demo.localhost": {
+            "id": "L24@demo.localhost",
+            "type": "audio",
+            "name": "Coma Berenices",
+            "abbreviation": "COM",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L25@demo.localhost": {
+            "id": "L25@demo.localhost",
+            "type": "audio",
+            "name": "Corona Australis",
+            "abbreviation": "CRA",
+            "roles": {
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L26@demo.localhost": {
+            "id": "L26@demo.localhost",
+            "type": "audio",
+            "name": "Corona Borealis",
+            "abbreviation": "CRB",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R7@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R19@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L27@demo.localhost": {
+            "id": "L27@demo.localhost",
+            "type": "audio",
+            "name": "Corvus",
+            "abbreviation": "CRV",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R14@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L28@demo.localhost": {
+            "id": "L28@demo.localhost",
+            "type": "audio",
+            "name": "Crater",
+            "abbreviation": "CRT",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L29@demo.localhost": {
+            "id": "L29@demo.localhost",
+            "type": "audio",
+            "name": "Crux",
+            "abbreviation": "CRU",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L30@demo.localhost": {
+            "id": "L30@demo.localhost",
+            "type": "audio",
+            "name": "Cygnus",
+            "abbreviation": "CYG",
+            "roles": {
+                "R5@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L31@demo.localhost": {
+            "id": "L31@demo.localhost",
+            "type": "audio",
+            "name": "Delphinus",
+            "abbreviation": "DEL",
+            "roles": {
+                "R4@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R19@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L32@demo.localhost": {
+            "id": "L32@demo.localhost",
+            "type": "audio",
+            "name": "Dorado",
+            "abbreviation": "DOR",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L33@demo.localhost": {
+            "id": "L33@demo.localhost",
+            "type": "audio",
+            "name": "Draco",
+            "abbreviation": "DRA",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L34@demo.localhost": {
+            "id": "L34@demo.localhost",
+            "type": "audio",
+            "name": "Equuleus",
+            "abbreviation": "EQU",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R19@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L35@demo.localhost": {
+            "id": "L35@demo.localhost",
+            "type": "audio",
+            "name": "Eridanus",
+            "abbreviation": "ERI",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R8@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L36@demo.localhost": {
+            "id": "L36@demo.localhost",
+            "type": "audio",
+            "name": "Fornax",
+            "abbreviation": "FOR",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L37@demo.localhost": {
+            "id": "L37@demo.localhost",
+            "type": "audio",
+            "name": "Gemini",
+            "abbreviation": "GEM",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R6@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L38@demo.localhost": {
+            "id": "L38@demo.localhost",
+            "type": "audio",
+            "name": "Grus",
+            "abbreviation": "GRU",
+            "roles": {
+                "R15@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L39@demo.localhost": {
+            "id": "L39@demo.localhost",
+            "type": "audio",
+            "name": "Hercules",
+            "abbreviation": "HER",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R8@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L40@demo.localhost": {
+            "id": "L40@demo.localhost",
+            "type": "audio",
+            "name": "Horologium",
+            "abbreviation": "HOR",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L41@demo.localhost": {
+            "id": "L41@demo.localhost",
+            "type": "audio",
+            "name": "Hydra",
+            "abbreviation": "HYA",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L42@demo.localhost": {
+            "id": "L42@demo.localhost",
+            "type": "audio",
+            "name": "Hydrus",
+            "abbreviation": "HYI",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L43@demo.localhost": {
+            "id": "L43@demo.localhost",
+            "type": "audio",
+            "name": "Indus",
+            "abbreviation": "IND",
+            "roles": {
+                "R17@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L44@demo.localhost": {
+            "id": "L44@demo.localhost",
+            "type": "audio",
+            "name": "Lacerta",
+            "abbreviation": "LAC",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L45@demo.localhost": {
+            "id": "L45@demo.localhost",
+            "type": "audio",
+            "name": "Leo",
+            "abbreviation": "LEO",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L46@demo.localhost": {
+            "id": "L46@demo.localhost",
+            "type": "audio",
+            "name": "Leo Minor",
+            "abbreviation": "LMI",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L47@demo.localhost": {
+            "id": "L47@demo.localhost",
+            "type": "audio",
+            "name": "Lepus",
+            "abbreviation": "LEP",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R15@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L48@demo.localhost": {
+            "id": "L48@demo.localhost",
+            "type": "audio",
+            "name": "Libra",
+            "abbreviation": "LIB",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L49@demo.localhost": {
+            "id": "L49@demo.localhost",
+            "type": "audio",
+            "name": "Lupus",
+            "abbreviation": "LUP",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L50@demo.localhost": {
+            "id": "L50@demo.localhost",
+            "type": "audio",
+            "name": "Lynx",
+            "abbreviation": "LYN",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L51@demo.localhost": {
+            "id": "L51@demo.localhost",
+            "type": "audio",
+            "name": "Lyra",
+            "abbreviation": "LYR",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R8@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L52@demo.localhost": {
+            "id": "L52@demo.localhost",
+            "type": "audio",
+            "name": "Mensa",
+            "abbreviation": "MEN",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R8@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L53@demo.localhost": {
+            "id": "L53@demo.localhost",
+            "type": "audio",
+            "name": "Microscopium",
+            "abbreviation": "MIC",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R8@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L54@demo.localhost": {
+            "id": "L54@demo.localhost",
+            "type": "audio",
+            "name": "Monoceros",
+            "abbreviation": "MON",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R1@demo.localhost": false,
+                "R2@demo.localhost": false,
+                "R3@demo.localhost": false,
+                "R4@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R8@demo.localhost": false,
+                "R11@demo.localhost": false,
+                "R12@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R16@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R18@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R23@demo.localhost": false,
+                "R24@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L55@demo.localhost": {
+            "id": "L55@demo.localhost",
+            "type": "audio",
+            "name": "Musca",
+            "abbreviation": "MUS",
+            "roles": {
+                "R3@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R10@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R19@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L56@demo.localhost": {
+            "id": "L56@demo.localhost",
+            "type": "audio",
+            "name": "Norma",
+            "abbreviation": "NOR",
+            "roles": {
+                "R4@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L57@demo.localhost": {
+            "id": "L57@demo.localhost",
+            "type": "audio",
+            "name": "Octans",
+            "abbreviation": "OCT",
+            "roles": {
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L58@demo.localhost": {
+            "id": "L58@demo.localhost",
+            "type": "audio",
+            "name": "Ophiuchus",
+            "abbreviation": "OPH",
+            "roles": {
+                "R13@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R25@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L59@demo.localhost": {
+            "id": "L59@demo.localhost",
+            "type": "audio",
+            "name": "Orion",
+            "abbreviation": "ORI",
+            "roles": {
+                "R5@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R4@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R15@demo.localhost": false,
+                "R19@demo.localhost": false,
+                "R25@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L60@demo.localhost": {
+            "id": "L60@demo.localhost",
+            "type": "audio",
+            "name": "Pavo",
+            "abbreviation": "PAV",
+            "roles": {
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L61@demo.localhost": {
+            "id": "L61@demo.localhost",
+            "type": "audio",
+            "name": "Pegasus",
+            "abbreviation": "PEG",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L62@demo.localhost": {
+            "id": "L62@demo.localhost",
+            "type": "audio",
+            "name": "Perseus",
+            "abbreviation": "PER",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L63@demo.localhost": {
+            "id": "L63@demo.localhost",
+            "type": "audio",
+            "name": "Phoenix",
+            "abbreviation": "PHE",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L64@demo.localhost": {
+            "id": "L64@demo.localhost",
+            "type": "audio",
+            "name": "Pictor",
+            "abbreviation": "PIC",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R22@demo.localhost": true,
+                "R24@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L65@demo.localhost": {
+            "id": "L65@demo.localhost",
+            "type": "audio",
+            "name": "Pisces",
+            "abbreviation": "PSC",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R12@demo.localhost": true,
+                "R13@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R0@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L66@demo.localhost": {
+            "id": "L66@demo.localhost",
+            "type": "audio",
+            "name": "Piscis Austrinus",
+            "abbreviation": "PSA",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R12@demo.localhost": true,
+                "R13@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R0@demo.localhost": true,
+                "R25@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L67@demo.localhost": {
+            "id": "L67@demo.localhost",
+            "type": "audio",
+            "name": "Puppis",
+            "abbreviation": "PUP",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L68@demo.localhost": {
+            "id": "L68@demo.localhost",
+            "type": "audio",
+            "name": "Pyxis",
+            "abbreviation": "PYX",
+            "roles": {
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L69@demo.localhost": {
+            "id": "L69@demo.localhost",
+            "type": "audio",
+            "name": "Reticulum",
+            "abbreviation": "RET",
+            "roles": {
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R21@demo.localhost": true,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L70@demo.localhost": {
+            "id": "L70@demo.localhost",
+            "type": "audio",
+            "name": "Sagitta",
+            "abbreviation": "SGE",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R17@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L71@demo.localhost": {
+            "id": "L71@demo.localhost",
+            "type": "audio",
+            "name": "Sagittarius",
+            "abbreviation": "SGR",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L72@demo.localhost": {
+            "id": "L72@demo.localhost",
+            "type": "audio",
+            "name": "Scorpius",
+            "abbreviation": "SCO",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L73@demo.localhost": {
+            "id": "L73@demo.localhost",
+            "type": "audio",
+            "name": "Sculptor",
+            "abbreviation": "SCL",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L74@demo.localhost": {
+            "id": "L74@demo.localhost",
+            "type": "audio",
+            "name": "Scutum",
+            "abbreviation": "SCT",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L75@demo.localhost": {
+            "id": "L75@demo.localhost",
+            "type": "audio",
+            "name": "Serpens",
+            "abbreviation": "SER",
+            "roles": {
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L76@demo.localhost": {
+            "id": "L76@demo.localhost",
+            "type": "audio",
+            "name": "Sextans",
+            "abbreviation": "SET",
+            "roles": {
+                "R7@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R6@demo.localhost": false,
+                "R19@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L77@demo.localhost": {
+            "id": "L77@demo.localhost",
+            "type": "audio",
+            "name": "Taurus",
+            "abbreviation": "TAU",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R13@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R0@demo.localhost": true,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L78@demo.localhost": {
+            "id": "L78@demo.localhost",
+            "type": "audio",
+            "name": "Telescopium",
+            "abbreviation": "TEL",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R9@demo.localhost": false,
+                "R10@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L79@demo.localhost": {
+            "id": "L79@demo.localhost",
+            "type": "audio",
+            "name": "Triangulum",
+            "abbreviation": "TRI",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R9@demo.localhost": false,
+                "R10@demo.localhost": false,
+                "R13@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false,
+                "R0@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L80@demo.localhost": {
+            "id": "L80@demo.localhost",
+            "type": "audio",
+            "name": "Triangulum Australe",
+            "abbreviation": "TRA",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L81@demo.localhost": {
+            "id": "L81@demo.localhost",
+            "type": "audio",
+            "name": "Tucana",
+            "abbreviation": "TUC",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R9@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L82@demo.localhost": {
+            "id": "L82@demo.localhost",
+            "type": "audio",
+            "name": "Ursa Major",
+            "abbreviation": "UMA",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R9@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R21@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L83@demo.localhost": {
+            "id": "L83@demo.localhost",
+            "type": "audio",
+            "name": "Ursa Minor",
+            "abbreviation": "UMI",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L84@demo.localhost": {
+            "id": "L84@demo.localhost",
+            "type": "audio",
+            "name": "Vela",
+            "abbreviation": "VEL",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L85@demo.localhost": {
+            "id": "L85@demo.localhost",
+            "type": "audio",
+            "name": "Virgo",
+            "abbreviation": "VIR",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R2@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R17@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R14@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L86@demo.localhost": {
+            "id": "L86@demo.localhost",
+            "type": "audio",
+            "name": "Volans",
+            "abbreviation": "VOL",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R5@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L87@demo.localhost": {
+            "id": "L87@demo.localhost",
+            "type": "audio",
+            "name": "Vulpecula",
+            "abbreviation": "VUL",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R3@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R11@demo.localhost": true,
+                "R15@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L88@demo.localhost": {
+            "id": "L88@demo.localhost",
+            "type": "audio",
+            "name": "Vulpecula 2",
+            "abbreviation": "VUL 2",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R8@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R16@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L89@demo.localhost": {
+            "id": "L89@demo.localhost",
+            "type": "audio",
+            "name": "Tucana 2",
+            "abbreviation": "TUC 2",
+            "roles": {
+                "R3@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R8@demo.localhost": false,
+                "R9@demo.localhost": false,
+                "R10@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R22@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L90@demo.localhost": {
+            "id": "L90@demo.localhost",
+            "type": "audio",
+            "name": "Octans 2",
+            "abbreviation": "OCT 2",
+            "roles": {
+                "R3@demo.localhost": true,
+                "R14@demo.localhost": true,
+                "R18@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R22@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R8@demo.localhost": false,
+                "R9@demo.localhost": false,
+                "R10@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L91@demo.localhost": {
+            "id": "L91@demo.localhost",
+            "type": "audio",
+            "name": "Lyra 2",
+            "abbreviation": "LYR 2",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L92@demo.localhost": {
+            "id": "L92@demo.localhost",
+            "type": "audio",
+            "name": "Mensa 2",
+            "abbreviation": "MEN 2",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R24@demo.localhost": true,
+                "R3@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L93@demo.localhost": {
+            "id": "L93@demo.localhost",
+            "type": "audio",
+            "name": "Auriga 2",
+            "abbreviation": "AUR 2",
+            "roles": {
+                "R1@demo.localhost": true,
+                "R4@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R19@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R23@demo.localhost": true,
+                "R2@demo.localhost": false,
+                "R14@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L94@demo.localhost": {
+            "id": "L94@demo.localhost",
+            "type": "audio",
+            "name": "Boötes 2",
+            "abbreviation": "BOO 2",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R20@demo.localhost": true
+            },
+            "owner": "demo"
+        },
+        "L95@demo.localhost": {
+            "id": "L95@demo.localhost",
+            "type": "audio",
+            "name": "Caelum 2",
+            "abbreviation": "CAE 2",
+            "roles": {
+                "R2@demo.localhost": true,
+                "R5@demo.localhost": true,
+                "R6@demo.localhost": true,
+                "R7@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R3@demo.localhost": false,
+                "R17@demo.localhost": false,
+                "R25@demo.localhost": false,
+                "R26@demo.localhost": false
+            },
+            "owner": "demo"
+        },
+        "L96@demo.localhost": {
+            "id": "L96@demo.localhost",
+            "type": "audio",
+            "name": "Crater 2",
+            "abbreviation": "CRT 2",
+            "roles": {
+                "R12@demo.localhost": true,
+                "R20@demo.localhost": true,
+                "R0@demo.localhost": true
+            },
+            "owner": "demo"
+        }
+    },
+    "roles": {
+        "R0@demo.localhost": {
+            "id": "R0@demo.localhost",
+            "name": "Flight Director",
+            "abbreviation": "FD",
+            "color": null,
+            "users": {
+                "U16@demo.localhost": null,
+                "U116@demo.localhost": null,
+                "U92@demo.localhost": null,
+                "U73@demo.localhost": null,
+                "U1@demo.localhost": null,
+                "U60@demo.localhost": null,
+                "U21@demo.localhost": null,
+                "U104@demo.localhost": null,
+                "U9@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R1@demo.localhost": {
+            "id": "R1@demo.localhost",
+            "name": "Spacecraft Communicator",
+            "abbreviation": "CAPCOM",
+            "color": null,
+            "users": {
+                "U79@demo.localhost": null,
+                "U92@demo.localhost": null,
+                "U54@demo.localhost": null,
+                "U86@demo.localhost": null,
+                "U47@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R2@demo.localhost": {
+            "id": "R2@demo.localhost",
+            "name": "Flight Dynamics Officer",
+            "abbreviation": "FDO",
+            "color": null,
+            "users": {
+                "U86@demo.localhost": null,
+                "U24@demo.localhost": null,
+                "U38@demo.localhost": null,
+                "U102@demo.localhost": null,
+                "U105@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R3@demo.localhost": {
+            "id": "R3@demo.localhost",
+            "name": "Guidance Procedures Officer",
+            "abbreviation": "GPO",
+            "color": null,
+            "users": {
+                "U25@demo.localhost": null,
+                "U74@demo.localhost": null,
+                "U18@demo.localhost": null,
+                "U84@demo.localhost": null,
+                "U82@demo.localhost": null,
+                "U20@demo.localhost": null,
+                "U112@demo.localhost": null,
+                "U52@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R4@demo.localhost": {
+            "id": "R4@demo.localhost",
+            "name": "Data Processing System (Engineer)",
+            "abbreviation": "DPS",
+            "color": null,
+            "users": {
+                "U58@demo.localhost": null,
+                "U116@demo.localhost": null,
+                "U76@demo.localhost": null,
+                "U119@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R5@demo.localhost": {
+            "id": "R5@demo.localhost",
+            "name": "Surgeon",
+            "abbreviation": "SURGEON",
+            "color": null,
+            "users": {
+                "U45@demo.localhost": null,
+                "U9@demo.localhost": null,
+                "U69@demo.localhost": null,
+                "U57@demo.localhost": null,
+                "U106@demo.localhost": null,
+                "U102@demo.localhost": null,
+                "U5@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R6@demo.localhost": {
+            "id": "R6@demo.localhost",
+            "name": "Booster Engineer",
+            "abbreviation": "BOOSTER",
+            "color": null,
+            "users": {
+                "U1@demo.localhost": null,
+                "U104@demo.localhost": null,
+                "U60@demo.localhost": null,
+                "U90@demo.localhost": null,
+                "U112@demo.localhost": null,
+                "U57@demo.localhost": null,
+                "U33@demo.localhost": null,
+                "U63@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R7@demo.localhost": {
+            "id": "R7@demo.localhost",
+            "name": "Payload Deploy Retrieval System",
+            "abbreviation": "PDRS",
+            "color": null,
+            "users": {
+                "U60@demo.localhost": null,
+                "U4@demo.localhost": null,
+                "U98@demo.localhost": null,
+                "U68@demo.localhost": null,
+                "U40@demo.localhost": null,
+                "U70@demo.localhost": null,
+                "U25@demo.localhost": null,
+                "U26@demo.localhost": null,
+                "U11@demo.localhost": null,
+                "U77@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R8@demo.localhost": {
+            "id": "R8@demo.localhost",
+            "name": "Propulsion Engineer",
+            "abbreviation": "PROP",
+            "color": null,
+            "users": {
+                "U74@demo.localhost": null,
+                "U2@demo.localhost": null,
+                "U79@demo.localhost": null,
+                "U73@demo.localhost": null,
+                "U94@demo.localhost": null,
+                "U13@demo.localhost": null,
+                "U10@demo.localhost": null,
+                "U29@demo.localhost": null,
+                "U6@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R9@demo.localhost": {
+            "id": "R9@demo.localhost",
+            "name": "Guidance, Navigation and Controls System Engineer",
+            "abbreviation": "GNC",
+            "color": null,
+            "users": {
+                "U69@demo.localhost": null,
+                "U33@demo.localhost": null,
+                "U25@demo.localhost": null,
+                "U18@demo.localhost": null,
+                "U28@demo.localhost": null,
+                "U99@demo.localhost": null,
+                "U35@demo.localhost": null,
+                "U64@demo.localhost": null,
+                "U7@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R10@demo.localhost": {
+            "id": "R10@demo.localhost",
+            "name": "Electrical, Environmental and Consumables Manager",
+            "abbreviation": "EECOM",
+            "color": null,
+            "users": {
+                "U62@demo.localhost": null,
+                "U16@demo.localhost": null,
+                "U113@demo.localhost": null,
+                "U67@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R11@demo.localhost": {
+            "id": "R11@demo.localhost",
+            "name": "Electrical Generation and Illumination Engineer",
+            "abbreviation": "EGIL",
+            "color": null,
+            "users": {
+                "U65@demo.localhost": null,
+                "U80@demo.localhost": null,
+                "U83@demo.localhost": null,
+                "U34@demo.localhost": null,
+                "U54@demo.localhost": null,
+                "U45@demo.localhost": null,
+                "U93@demo.localhost": null,
+                "U91@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R12@demo.localhost": {
+            "id": "R12@demo.localhost",
+            "name": "Instrumentation and Communications Officer",
+            "abbreviation": "INCO",
+            "color": null,
+            "users": {
+                "U58@demo.localhost": null,
+                "U97@demo.localhost": null,
+                "U83@demo.localhost": null,
+                "U89@demo.localhost": null,
+                "U14@demo.localhost": null,
+                "U114@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R13@demo.localhost": {
+            "id": "R13@demo.localhost",
+            "name": "Russian Interface Operator",
+            "abbreviation": "RIO",
+            "color": null,
+            "users": {
+                "U81@demo.localhost": null,
+                "U103@demo.localhost": null,
+                "U35@demo.localhost": null,
+                "U57@demo.localhost": null,
+                "U86@demo.localhost": null,
+                "U36@demo.localhost": null,
+                "U49@demo.localhost": null,
+                "U115@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R14@demo.localhost": {
+            "id": "R14@demo.localhost",
+            "name": "Ground Controller",
+            "abbreviation": "GC",
+            "color": null,
+            "users": {
+                "U12@demo.localhost": null,
+                "U20@demo.localhost": null,
+                "U28@demo.localhost": null,
+                "U100@demo.localhost": null,
+                "U119@demo.localhost": null,
+                "U31@demo.localhost": null,
+                "U15@demo.localhost": null,
+                "U108@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R15@demo.localhost": {
+            "id": "R15@demo.localhost",
+            "name": "Flight Activities Officer",
+            "abbreviation": "FAO",
+            "color": null,
+            "users": {
+                "U3@demo.localhost": null,
+                "U97@demo.localhost": null,
+                "U30@demo.localhost": null,
+                "U19@demo.localhost": null,
+                "U110@demo.localhost": null,
+                "U39@demo.localhost": null,
+                "U33@demo.localhost": null,
+                "U59@demo.localhost": null,
+                "U60@demo.localhost": null,
+                "U17@demo.localhost": null,
+                "U53@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R16@demo.localhost": {
+            "id": "R16@demo.localhost",
+            "name": "Payloads Officer",
+            "abbreviation": "PAYLOAD",
+            "color": null,
+            "users": {
+                "U112@demo.localhost": null,
+                "U39@demo.localhost": null,
+                "U85@demo.localhost": null,
+                "U114@demo.localhost": null,
+                "U58@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R17@demo.localhost": {
+            "id": "R17@demo.localhost",
+            "name": "Maintenance, Mechanical, Arm and Crew Systems",
+            "abbreviation": "MMACS",
+            "color": null,
+            "users": {
+                "U80@demo.localhost": null,
+                "U36@demo.localhost": null,
+                "U45@demo.localhost": null,
+                "U37@demo.localhost": null,
+                "U32@demo.localhost": null,
+                "U99@demo.localhost": null,
+                "U1@demo.localhost": null,
+                "U13@demo.localhost": null,
+                "U42@demo.localhost": null,
+                "U111@demo.localhost": null,
+                "U22@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R18@demo.localhost": {
+            "id": "R18@demo.localhost",
+            "name": "Public Affairs Officer",
+            "abbreviation": "PAO",
+            "color": null,
+            "users": {
+                "U60@demo.localhost": null,
+                "U95@demo.localhost": null,
+                "U0@demo.localhost": null,
+                "U30@demo.localhost": null,
+                "U112@demo.localhost": null,
+                "U119@demo.localhost": null,
+                "U52@demo.localhost": null,
+                "U84@demo.localhost": null,
+                "U59@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R19@demo.localhost": {
+            "id": "R19@demo.localhost",
+            "name": "Mission Operations Directorate Manager",
+            "abbreviation": "MOD",
+            "color": null,
+            "users": {
+                "U68@demo.localhost": null,
+                "U16@demo.localhost": null,
+                "U91@demo.localhost": null,
+                "U60@demo.localhost": null,
+                "U67@demo.localhost": null,
+                "U95@demo.localhost": null,
+                "U50@demo.localhost": null,
+                "U87@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R20@demo.localhost": {
+            "id": "R20@demo.localhost",
+            "name": "GSOC Interface Operator",
+            "abbreviation": "GIO",
+            "color": null,
+            "users": {
+                "U47@demo.localhost": null,
+                "U111@demo.localhost": null,
+                "U79@demo.localhost": null,
+                "U25@demo.localhost": null,
+                "U51@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R21@demo.localhost": {
+            "id": "R21@demo.localhost",
+            "name": "ESA Interface Operator",
+            "abbreviation": "EIO",
+            "color": null,
+            "users": {
+                "U39@demo.localhost": null,
+                "U118@demo.localhost": null,
+                "U113@demo.localhost": null,
+                "U102@demo.localhost": null,
+                "U25@demo.localhost": null,
+                "U19@demo.localhost": null,
+                "U64@demo.localhost": null,
+                "U88@demo.localhost": null,
+                "U94@demo.localhost": null,
+                "U23@demo.localhost": null,
+                "U43@demo.localhost": null,
+                "U46@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R22@demo.localhost": {
+            "id": "R22@demo.localhost",
+            "name": "CNES Interface Operator",
+            "abbreviation": "CIO",
+            "color": null,
+            "users": {
+                "U21@demo.localhost": null,
+                "U93@demo.localhost": null,
+                "U103@demo.localhost": null,
+                "U73@demo.localhost": null,
+                "U45@demo.localhost": null,
+                "U68@demo.localhost": null,
+                "U71@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R23@demo.localhost": {
+            "id": "R23@demo.localhost",
+            "name": "ASI Interface Operator",
+            "abbreviation": "AIO",
+            "color": null,
+            "users": {
+                "U94@demo.localhost": null,
+                "U27@demo.localhost": null,
+                "U55@demo.localhost": null,
+                "U75@demo.localhost": null,
+                "U64@demo.localhost": null,
+                "U44@demo.localhost": null,
+                "U109@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R24@demo.localhost": {
+            "id": "R24@demo.localhost",
+            "name": "SSC Interface Operator",
+            "abbreviation": "SIO",
+            "color": null,
+            "users": {
+                "U12@demo.localhost": null,
+                "U106@demo.localhost": null,
+                "U96@demo.localhost": null,
+                "U24@demo.localhost": null,
+                "U118@demo.localhost": null,
+                "U103@demo.localhost": null,
+                "U55@demo.localhost": null,
+                "U56@demo.localhost": null,
+                "U36@demo.localhost": null,
+                "U66@demo.localhost": null,
+                "U61@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R25@demo.localhost": {
+            "id": "R25@demo.localhost",
+            "name": "JAXA Interface Operator",
+            "abbreviation": "JIO",
+            "color": null,
+            "users": {
+                "U48@demo.localhost": null,
+                "U50@demo.localhost": null,
+                "U106@demo.localhost": null,
+                "U119@demo.localhost": null,
+                "U34@demo.localhost": null,
+                "U41@demo.localhost": null,
+                "U101@demo.localhost": null,
+                "U107@demo.localhost": null,
+                "U117@demo.localhost": null,
+                "U72@demo.localhost": null,
+                "U78@demo.localhost": null
+            },
+            "owner": "demo"
+        },
+        "R26@demo.localhost": {
+            "id": "R26@demo.localhost",
+            "name": "CNSA Interface Operator",
+            "abbreviation": "CNIO",
+            "color": null,
+            "users": {
+                "U116@demo.localhost": null,
+                "U113@demo.localhost": null,
+                "U111@demo.localhost": null,
+                "U58@demo.localhost": null,
+                "U80@demo.localhost": null,
+                "U8@demo.localhost": null
+            },
+            "owner": "demo"
+        }
+    }
+}

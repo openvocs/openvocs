@@ -1,0 +1,65 @@
+<template>
+    <main id="graph">
+        <div class="column_header" id="user_header">
+            <button class="add_entry">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_plus"></use>
+                </svg>
+            </button>
+            <h3>Users</h3>
+        </div>
+        <div class="column_header" id="role_header">
+            <button class="add_entry">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_plus"></use>
+                </svg>
+            </button>
+            <h3>Roles</h3>
+        </div>
+        <div class="column_header" id="loop_header">
+            <button class="add_entry">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_plus"></use>
+                </svg>
+            </button>
+            <h3>Loops</h3>
+        </div>
+
+        <div id="user_nodes"></div>
+        <div id="role_nodes"></div>
+        <div id="loop_nodes"></div>
+        <div class="svg_container" id="user_role_connections">
+            <svg preserveAspectRatio="xMinYMin" xmlns="http://www.w3.org/2000/svg" class="svg_content"></svg>
+        </div>
+        <div class="svg_container" id="role_loop_connections">
+            <svg preserveAspectRatio="xMinYMin" xmlns="http://www.w3.org/2000/svg" class="svg_content"></svg>
+        </div>
+    </main>
+
+    <!-- todo : tool bar incl.
+    <div class="icon headphone_icon">
+        <svg>
+            <use xlink:href="/images/ov_icons.svg#ov_headphone"></use>
+        </svg>
+    </div>
+    <span>= monitor</span>
+    <div class="icon microphone_icon">
+        <svg>
+            <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
+        </svg>
+    </div>
+    <span>= talk</span>
+    <input type="text" id="node_search" placeholder="Search for entries..">
+
+    #project_header .icon {
+        height: 1.1rem;
+        margin: auto 0;
+    }
+
+    #project_header span {
+        margin: auto 0;
+        font-size: 0.9rem;
+    }
+    -->
+
+</template>

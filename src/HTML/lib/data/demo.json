@@ -1,0 +1,354 @@
+{
+    "id": "project@localhost",
+    "name": "Demo Project",
+    "domain": "localhost",
+    "users": {
+        "user1": {
+            "id": "user1"
+        },
+        "user10": {
+            "id": "user10"
+        },
+        "user2": {
+            "id": "user2"
+        },
+        "user3": {
+            "id": "user3"
+        },
+        "user4": {
+            "id": "user4"
+        },
+        "user5": {
+            "id": "user5"
+        },
+        "user6": {
+            "id": "user6"
+        },
+        "user7": {
+            "id": "user7"
+        },
+        "user8": {
+            "id": "user8"
+        },
+        "user9": {
+            "id": "user9"
+        }
+    },
+    "roles": {
+        "admin": {
+            "id": "admin",
+            "users": {
+                "user1": null
+            }
+        },
+        "role1": {
+            "id": "role1",
+            "users": {
+                "user1": null,
+                "user10": null,
+                "user2": null,
+                "user3": null,
+                "user4": null,
+                "user5": null,
+                "user6": null,
+                "user7": null,
+                "user8": null,
+                "user9": null
+            }
+        },
+        "role2": {
+            "id": "role2",
+            "users": {
+                "user1": null,
+                "user2": null,
+                "user3": null,
+                "user4": null,
+                "user5": null
+            }
+        },
+        "role3": {
+            "id": "role3",
+            "users": {
+                "user10": null,
+                "user6": null,
+                "user7": null,
+                "user8": null,
+                "user9": null
+            }
+        }
+    },
+    "loops": {
+        "loop0": {
+            "id": "loop0",
+            "layout_position": [{
+                "page": "1",
+                "row": "1",
+                "column": "2"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": false,
+                "role3": false
+            }
+        },
+        "loop1": {
+            "id": "loop1",
+            "layout_position": [{
+                "page": "1",
+                "row": "1",
+                "column": "1"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": false,
+                "role3": false
+            }
+        },
+        "loop10": {
+            "id": "loop10",
+            "layout_position": [{
+                "page": "2",
+                "row": "1",
+                "column": "1"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop11": {
+            "id": "loop11",
+            "layout_position": [{
+                "page": "2",
+                "row": "1",
+                "column": "3"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop12": {
+            "id": "loop12",
+            "layout_position": [{
+                "page": "2",
+                "row": "1",
+                "column": "5"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop13": {
+            "id": "loop13",
+            "layout_position": [{
+                "page": "2",
+                "row": "2",
+                "column": "2"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop14": {
+            "id": "loop14",
+            "layout_position": [{
+                "page": "2",
+                "row": "2",
+                "column": "4"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop15": {
+            "id": "loop15",
+            "layout_position": [{
+                "page": "2",
+                "row": "3",
+                "column": "1"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop16": {
+            "id": "loop16",
+            "layout_position": [{
+                "page": "2",
+                "row": "3",
+                "column": "3"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop17": {
+            "id": "loop17",
+            "layout_position": [{
+                "page": "3",
+                "row": "3",
+                "column": "5"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop18": {
+            "id": "loop18",
+            "layout_position": [{
+                "page": "2",
+                "row": "2",
+                "column": "1"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop19": {
+            "id": "loop19",
+            "layout_position": [{
+                "page": "2",
+                "row": "3",
+                "column": "4"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop2": {
+            "id": "loop2",
+            "layout_position": [{
+                "page": "1",
+                "row": "1",
+                "column": "3"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop20": {
+            "id": "loop20",
+            "layout_position": [{
+                "page": "3",
+                "row": "2",
+                "column": "3"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop3": {
+            "id": "loop3",
+            "layout_position": [{
+                "page": "1",
+                "row": "1",
+                "column": "5"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": false,
+                "role3": true
+            }
+        },
+        "loop4": {
+            "id": "loop4",
+            "layout_position": [{
+                "page": "1",
+                "row": "2",
+                "column": "1"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true
+            }
+        },
+        "loop5": {
+            "id": "loop5",
+            "layout_position": [{
+                "page": "1",
+                "row": "2",
+                "column": "2"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": true
+            }
+        },
+        "loop6": {
+            "id": "loop6",
+            "layout_position": [{
+                "page": "1",
+                "row": "2",
+                "column": "4"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": false,
+                "role3": false
+            }
+        },
+        "loop7": {
+            "id": "loop7",
+            "layout_position": [{
+                "page": "1",
+                "row": "2",
+                "column": "5"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop8": {
+            "id": "loop8",
+            "layout_position": [{
+                "page": "1",
+                "row": "3",
+                "column": "1"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        },
+        "loop9": {
+            "id": "loop9",
+            "layout_position": [{
+                "page": "1",
+                "row": "3",
+                "column": "3"
+            }],
+            "roles": {
+                "role1": true,
+                "role2": true,
+                "role3": false
+            }
+        }
+    }
+}

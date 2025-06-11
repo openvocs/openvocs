@@ -1,0 +1,30 @@
+{
+        "sip_gateway": {
+            "resource_manager": {
+                "host": "127.0.0.1",
+                "port": 12344,
+                "type": "TCP"
+            },
+            "sip_server": {
+                "host": "127.0.0.1",
+                "port": 5062,
+                "type": "TCP"
+            },
+            "signaling": {
+                "host": "127.0.0.1",
+                "port": 20001,
+                "type": "TCP"
+            },
+            "log": {
+                "level": "debug",
+                "systemd": false,
+                "file": "/tmp/ov_sip_gateway.log"
+            },
+            "reconnect_interval_secs": 5,
+            "local_sip_tcp_socket": {
+                "host": "127.0.0.1",
+                "port": 5061,
+                "type": "TCP"
+            }
+        }
+    }

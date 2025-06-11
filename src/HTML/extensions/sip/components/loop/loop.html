@@ -1,0 +1,71 @@
+<template id="loop_template">
+    <button id="join_loop">
+        <div id="loop_permission">
+            <div class="icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_headphone"></use>
+                </svg>
+            </div>
+            <div class="icon talk_icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
+                </svg>
+            </div>
+        </div>
+        <div id="loop_participants">
+            <div class="icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_user"></use>
+                </svg>
+            </div>
+            <span id="loop_participants_indicator_value"></span>
+        </div>
+        <div id="loop_name"></div>
+        <div id="loop_activity"></div>
+    </button>
+    <div id="loop_volume" class="button">
+        <div class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_speaker_loud"></use>
+            </svg>
+        </div>
+        <div id="loop_volume_input_container">
+            <input min="0" max="100" step="1" id="loop_volume_input" type="range">
+        </div>
+        <span id="loop_volume_indicator_value"></span>
+    </div>
+    <button id="loop_sip">
+        <div class="icon sip-phone-icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_phone"></use>
+            </svg>
+        </div>
+        <div id="sip_badge_icon" class="icon">
+            <svg id="sip_badge_1">
+                <use xlink:href="/images/ov_icons.svg#ov_badge_1"></use>
+            </svg>
+            <svg id="sip_badge_2">
+                <use xlink:href="/images/ov_icons.svg#ov_badge_2"></use>
+            </svg>
+            <svg id="sip_badge_3">
+                <use xlink:href="/images/ov_icons.svg#ov_badge_3"></use>
+            </svg>
+            <svg id="sip_badge_4">
+                <use xlink:href="/images/ov_icons.svg#ov_badge_4"></use>
+            </svg>
+            <svg id="sip_badge_5">
+                <use xlink:href="/images/ov_icons.svg#ov_badge_5"></use>
+            </svg>
+            <svg id="sip_badge_6">
+                <use xlink:href="/images/ov_icons.svg#ov_badge_6"></use>
+            </svg>
+        </div>
+    </button>
+    <button id="leave_loop"><span>OFF</span></button>
+    <dialog id="sip_number_pad" class="sip_dialog">
+        <ov-sip-number-pad></ov-sip-number-pad>
+    </dialog>
+    <dialog id="sip_calls" class="sip_dialog">
+        <ov-sip-calls></ov-sip-calls>
+    </dialog>
+</template>

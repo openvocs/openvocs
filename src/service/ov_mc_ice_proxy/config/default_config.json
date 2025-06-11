@@ -1,0 +1,76 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+
+    "proxy" : {
+
+    	"multiplexing" : false,
+
+    	"ssl" :
+		{
+			"certificate" : "resources/certificate/openvocs.test.crt",
+			"key" :  "resources/certificate/openvocs.test.key",
+			"CA file" : "resources/certificate/openvocs.test.crt"
+		},
+
+		"dynamic" :
+		{
+			"port" :
+			{
+				"min" : 1025,
+				"max" : 65535
+			},
+			"stun" : 
+			{
+				"server" : 
+				{
+					"host" : "87.238.197.166",
+					"type" : "UDP",
+					"port" : 3478
+				}
+			},
+
+			"turn" : 
+			{
+				"server" : 
+				{
+					"host" : "127.0.0.1",
+					"type" : "UDP",
+					"port" : 12345
+				},
+				"user" : "user1",
+				"password" : "user1"
+			}
+		},
+
+    	"manager" :
+    	{
+    		"host": "127.0.0.1",
+    		"port": 12345,
+    		"type": "TCP"
+    	},
+
+    	"external" :
+    	{
+    		"host": "192.168.2.113",
+    		"port": 50000,
+    		"type": "UDP"
+    	},
+
+    	"internal" :
+    	{
+    		"host": "192.168.2.113",
+    		"port": 0,
+    		"type": "UDP"
+    	},
+
+    	"limits":
+    	{
+
+    	}
+	}
+}

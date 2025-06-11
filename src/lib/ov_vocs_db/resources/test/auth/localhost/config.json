@@ -1,0 +1,43 @@
+{
+	"id":"localhost",
+	"roles":
+	{
+		"admin":
+		{
+			"id":"admin",
+			"users":
+			{
+				"admin":null
+			}
+		}
+	},
+	"users":
+	{
+		"admin":
+		{
+			"id":"admin",
+			"password":
+			{
+				"hash":"eVdIYBxDWtNJS/abbv6+dJzwZNzCY6khgXdgEDS+PqQ=",
+				"salt":"tkIYyKSI9Fjmi6YakGpQAOl3kp24fORGTizZ2nEfBBI="
+			}
+		}
+	},
+	"layout" :
+	{
+		"default" :
+		{
+			"SITE_SCALING_FACTOR" : 1.0,
+			"LOOP_VIEW_LAYOUT" : "auto_grid",
+			"LOOP_GRID_AUTO_SIZE" : "15.625rem",
+			"LOOP_GRID_COLUMNS" : 6,
+			"LOOP_GRID_ROWS" : 4,
+			"LOOP_ELEMENT_NAME_SIZE" : 1.5,
+			"LOOP_ELEMENT_PERMISSION_SIZE": 1.0,
+			"LOOP_ELEMENT_LEAVE_SIZE": 1.0,
+			"LOOP_ELEMENT_ACTIVITY_SIZE" : 1.0,
+			"LOOP_ELEMENT_PARTICIPANTS_SIZE" : 1.0,
+			"LOOP_ELEMENT_VOLUME_SIZE" : 1.0
+		}
+	}
+}

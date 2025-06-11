@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>openvocs admin overview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/css/ov_basic.css" />
+</head>
+
+<body>
+    <div class="container" id="view_container"></div>
+    <script>
+        SIGNALING_SERVERS = [{ NAME: "stub" }];
+        SIGNALING_REQUEST_TIMEOUT = 10000;
+        TEMP_ERROR_TIMEOUT = 4000;
+
+        DEBUG_LOG_INCOMING_EVENTS = true;
+        DEBUG_LOG_OUTGOING_EVENTS = true;
+    </script>
+    <script type="module">
+        import ov_Websocket from "/lib/test/ov_websocket_dummy.js";
+        import * as ov_Websockets from "/lib/ov_websocket_list.js";
+        import * as ov_Auth from "/lib/ov_auth.js"
+        import * as Overview from "./js/overview.js";
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            let view_container = document.getElementById("view_container");
+
+            ov_Websockets.setup_connections(ov_Websocket);
+            ov_Auth.login("test", "test", ov_Websockets.prime_websocket);
+
+            await Overview.render(view_container);
+        });
+    </script>
+</body>

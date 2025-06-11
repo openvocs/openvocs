@@ -1,0 +1,33 @@
+{
+    "projects": "/etc/openvocs/projects",
+    "mixer": {
+        "signalling_server": {
+            "host": "127.0.0.1",
+            "port": 10001,
+            "type": "TCP",
+            "reconnect_interval_secs": 10
+        },
+        "num_threads": 4,
+        "lock_timeout_msecs": 1000,
+        "message_queue_capacity": 100,
+        "log": {
+            "level": "warning",
+            "systemd": true
+        },
+        "cache": {
+            "enabled": true,
+            "sizes": {
+                "buffers": 27,
+                "lists": 27,
+                "rtp_frame": 27,
+                "values": 27,
+                "frame_data": 27,
+                "frame_data_list": 27,
+                "frame_data_message": 27,
+                "ov_rtp_frame_message": 27,
+                "ov_rtp_list_message": 27,
+                "mixed_data_message": 27
+            }
+        }
+    }
+}

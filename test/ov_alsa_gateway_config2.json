@@ -1,0 +1,30 @@
+{
+    "alsa_gateway": {
+        "log": {
+            "level": "debug",
+            "systemd": false,
+            "file": "/tmp/ov_alsa_gateway2.log"
+        },
+        "reconnect_interval_secs": 5,
+        "alsa": {
+            "channels": {
+                "output": [
+                    {
+                        "device": "3,0",
+                        "volume": 0.5,
+                        "mixer": "Headset",
+                        "loop": "224.0.0.2"
+                    }
+                ],
+                "input": [
+                    {
+                        "device": "3,0",
+                        "volume": 0.5,
+                        "mixer": "Headset",
+                        "loop": "224.0.0.2"
+                    }
+                ]
+            }
+        }
+    }
+}

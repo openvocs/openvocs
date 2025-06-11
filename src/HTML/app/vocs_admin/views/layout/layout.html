@@ -1,0 +1,57 @@
+<div id="loop_layout" class="view">
+    <button id="open_menu">
+        <div class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_bars"></use>
+            </svg>
+        </div>
+    </button>
+    <dialog id="menu">
+        <div id="loop_options_panel" class="fieldset">
+            <label for="number_pages">Number of Pages</label>
+            <input type="number" min="1" step="1" id="number_pages">
+
+            <div class="fieldset">
+                <legend>Page</legend>
+                <label for="page_zoom_input">Scale</label>
+                <input type="number" min="0.1" step="0.1" id="page_zoom_input">
+
+                <label for="loop_layout_select">Layout</label>
+                <select id="loop_layout_select">
+                    <option value="grid">Grid</option>
+                    <option value="list">List</option>
+                    <option value="auto_grid">Auto</option>
+                </select>
+
+                <div id="grid_options_panel">
+                    <div>
+                        <label for="grid_columns_input">Columns</label>
+                        <input type="number" min="1" step="1" id="grid_columns_input">
+                    </div>
+                    <div>
+                        <label for="grid_rows_input">Rows</label>
+                        <input type="number" min="1" step="1" id="grid_rows_input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="fieldset">
+                <legend>Loop</legend>
+                <div>
+                    <label for="loop_name_size_input">Name scaling</label>
+                    <input type="number" min="0.1" step="0.1" id="loop_name_size_input">
+                </div>
+                <div>
+                    <label for="loop_font_size_input">Font scaling</label>
+                    <input type="number" min="0.1" step="0.1" id="loop_font_size_input">
+                </div>
+            </div>
+        </div>
+    </dialog>
+    <select id="choose_role"></select>
+    <select id="choose_page"></select>
+    <ov-loop-pages id="loops"></ov-loop-pages>
+    <dialog id="choose_loop_dialog">
+        <select id="loop_chooser"></select>
+    </dialog>
+</div>

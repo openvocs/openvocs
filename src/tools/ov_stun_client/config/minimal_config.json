@@ -1,0 +1,23 @@
+{
+	"stun" : {
+
+		"servers" :
+		[
+			{
+	            "host" : "openvocs.org",
+	            "port" : 33478,
+	            "type" : "UDP"
+	        },
+	        {
+	            "host" : "openvocs.org",
+	            "port" : 43478,
+	            "type" : "UDP"
+	        },
+	        {
+	            "host" : "openvocs.net",
+	            "port" : 33479,
+	            "type" : "UDP"
+	        }
+	    ]
+	}
+}

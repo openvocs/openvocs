@@ -1,0 +1,165 @@
+<main id="mainframe" class="view">
+
+    <!-- LOOP GRID/LIST Inline styles in this element -->
+    <ov-loop-pages id="loops"></ov-loop-pages>
+
+    <menu id="menu_bar" class="menu_bar bottom" aria-hidden="true">
+
+        <button id="open_menu_button" class="menu_button">
+            <div class="logo logo_openvocs"></div>
+        </button>
+
+        <div id="audio_input_indicator">
+            <canvas id="audio_input_visualization"></canvas>
+        </div>
+
+        <div id="push_to_talk_menu">
+            <button id="toggle_to_talk_button" class="menu_button">
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
+                    </svg>
+                </div>
+            </button>
+            <button id="push_to_talk_button" class="menu_button">
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
+                    </svg>
+                </div>
+                PTT
+            </button>
+            <div id="menu_fullscreen_option">
+                <input checked type="checkbox" id="menu_fullscreen_checkbox">
+                <label for="menu_fullscreen_checkbox">fullscreen<br>PTT</label>
+                <div id="fptt_area">
+                    <div id="fptt_text_wrapper">
+                        <p id="fptt_text">Fullscreen PTT</p>
+                        <p id="fptt_close_hint">Press ESC to close</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="menu_warnings">
+            <button id="open_login" class="menu_button">&#9888</button>
+        </div>
+        <ov-nav id="pagination" name="page"></ov-nav>
+    </menu>
+
+
+    <ov-loading id="loading_screen"></ov-loading>
+
+    <ov-dialog id="login_dialog" position="center_top" close-button value="Re-login to backup server">
+        <div slot="dialog-content">
+            Please enter your password again to restore redundancy after a server restart. This is required to ensure that your connection remains stable.</div>
+        <ov-login-form slot="dialog-content"></ov-login-form>
+        <div slot="dialog-content"></div>
+    </ov-dialog>
+
+    <ov-dialog id="menu_slider" position="left">
+        <div slot="dialog-content">
+            <div id="user_data" class="fieldset">
+                <label for="switch_role_select">Role:</label>
+                <ov-nav id="switch_role_select" name="role" direction="column"></ov-nav>
+                <!--select id="switch_role_select"></select-->
+            </div>
+            <div id="server_list" class="fieldset">
+                <span id="server_label">Server:</span>
+                <template id="server_template">
+                    <button class="server_button">
+                        <span class="server_name"></span>
+                        <div class="server_sync_level"></div>
+                    </button>
+                </template>
+            </div>
+            <div>
+                <button id="page_reload_button">
+                    <div class="icon">
+                        <svg>
+                            <use xlink:href="/images/ov_icons.svg#ov_reload"></use>
+                        </svg>
+                    </div>
+                </button>
+                <button id="open_settings_button">
+                    <div class="icon">
+                        <svg>
+                            <use xlink:href="/images/ov_icons.svg#ov_cog"></use>
+                        </svg>
+                    </div>
+                </button>
+                <button id="logout_button" class="red_button">Logout</button>
+            </div>
+        </div>
+    </ov-dialog>
+
+    <ov-dialog id="settings_slider" position="right">
+        <div slot="dialog-content">
+            <details open id="audio_options" class="fieldset main_fieldset">
+                <summary>audio</summary>
+                <label for="speaker_test">Speaker</label>
+                <button id="speaker_test">&#8227;</button>
+                <audio loop src="/app/vocs/resources/sounds/bass.ogg" id="speaker_test_audio"></audio>
+                <label for="microphone_test">Microphone</label>
+                <div id="microphone_test"><canvas loop="true"></canvas></div>
+            </details>
+
+            <details open id="ui_options" class="fieldset main_fieldset">
+                <summary>user interface</summary>
+                <label for="color_mode_select">color mode</label>
+                <select id="color_mode_select">
+                    <option label="dark" value="dark"></option>
+                    <option label="light" value="light"></option>
+                </select>
+                <label for="activity_content">activity indicator</label>
+                <select id="activity_content">
+                    <option value="id">ID</option>
+                    <!--option value="name">name</option-->
+                    <option value="role">role ID</option>
+                </select>
+            </details>
+
+            <details id="advanced_options" class="fieldset main_fieldset">
+                <summary>advanced</summary>
+                <label for="page_zoom_input">page scale</label>
+                <input type="text" id="page_zoom_input">
+                <label for="talk_options">talk options</label>
+                <div id="talk_options" class="fieldset">
+                    <input checked type="checkbox" id="hardware_checkbox">
+                    <label for="hardware_checkbox" class="checkbox_label">microphone with secure voice PTT</label>
+
+                    <!--input checked type="checkbox" id="multi_talk_checkbox">
+                <label for="multi_talk_checkbox">Multiple loops<br> in talk</label-->
+
+                    <div id="ptt_mute_options">
+
+                        <input checked type="checkbox" id="ptt_checkbox">
+                        <label for="ptt_checkbox" class="checkbox_label">PTT</label>
+
+                        <label for="talk_trigger_options">trigger for PTT / (un)mute</label>
+                        <div id="talk_trigger_options" class="fieldset">
+                            <input checked type="checkbox" id="fullscreen_checkbox">
+                            <label for="fullscreen_checkbox" class="checkbox_label">fullscreen PTT</label>
+
+                            <input checked type="checkbox" id="key_checkbox">
+                            <label for="key_checkbox" id="key_checkbox_label" class="checkbox_label"></label>
+
+                            <input checked type="checkbox" id="mousewheel_checkbox">
+                            <label for="mousewheel_checkbox" class="checkbox_label">mouse wheel click</label>
+
+                            <button id="add_HID">add HID</button>
+                        </div>
+                    </div>
+                </div>
+            </details>
+
+            <div id="imprint">
+                <div>Keyset: <span id="keyset_name"></span> </div>
+                <div class="logo logo_openvocs"></div>
+                openvocs by DLR<br />
+                <span id="version_number"></span>
+                <div class="logo logo_dlr"></div>
+            </div>
+        </div>
+    </ov-dialog>
+
+</main>

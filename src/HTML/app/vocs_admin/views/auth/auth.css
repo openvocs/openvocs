@@ -1,0 +1,23 @@
+#login_area {
+    width: 22rem;
+    margin: 0 auto;
+}
+
+ov-branding {
+    width: 100%;
+    display: grid;
+}
+
+#login {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+#server {
+    margin-top: 0.375rem;
+}
+
+#login_message {
+    text-align: center;
+    color: var(--red);
+}

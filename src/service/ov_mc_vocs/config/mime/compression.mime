@@ -1,0 +1,28 @@
+{
+    "epub" : {
+        "mime" : "application/epub+zip",
+        "extension" : [ "epub"]
+    },
+    "bzip" : {
+        "mime" : "application/x-bzip",
+        "extension" : [ "bz"]
+    },
+    "bzip2" : {
+        "mime" : "application/x-bzip2",
+        "extension" : [ "bz2"]
+    },
+    "tar" : {
+        "mime" : "application/x-tar",
+        "extension" : [ "tar"]
+    },
+
+    "gzip" : {
+        "mime" : "application/gzip",
+        "extension" : [ "gzip"]
+    },
+
+    "zip" : {
+        "mime" : "application/zip",
+        "extension" : [ "zip"]
+    }
+}

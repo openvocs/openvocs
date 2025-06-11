@@ -1,0 +1,40 @@
+<template id="loop_template">
+        <button id="join_loop">
+            <div id="loop_permission">
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_headphone"></use>
+                    </svg>
+                </div>
+                <div class="icon talk_icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
+                    </svg>
+                </div>
+            </div>
+            <div id="loop_participants">
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_user"></use>
+                    </svg>
+                </div>
+                <span id="loop_participants_indicator_value"></span>
+            </div>
+            <div id="loop_name"></div>
+            <div id="loop_activity"></div>
+        </button>
+        <div id="loop_volume" class="button">
+            <div class="icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_speaker_loud"></use>
+                </svg>
+            </div>
+            
+            <span id="loop_volume_indicator_value"></span>
+            <div id="loop_volume_input_container">
+                <input min="0" max="100" step="1" id="loop_volume_input" type="range">
+            </div>
+        </div>
+        <button id="leave_loop"><span>OFF</span></button>
+  
+</template>

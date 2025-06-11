@@ -1,0 +1,29 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+	"vad" : 
+	{
+		"socket" :
+		{
+			"host" : "127.0.0.1",
+			"port" : 40001,
+			"type" : "TCP"
+		},
+		"vad" : {
+			"zero_crossings_rate_hertz" : 8000,
+			"powerlevel_density_dbfs" : 100
+		},
+		"limits" : 
+		{
+			"activate" : 3,
+			"deactivate" : 25,
+			"threads" : 0,
+			"threadlock timeout (usec)" : 0,
+			"message_queue_capacity" : 0
+		}
+	}
+}

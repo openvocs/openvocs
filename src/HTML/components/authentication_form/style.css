@@ -1,0 +1,78 @@
+#login_form {
+    width: 100%;
+    margin: 0;
+}
+
+#login_button .lds_dual_ring {
+    display: none;
+    position: fixed;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-left: 0.2rem;
+}
+
+#login_button.loading .lds_dual_ring {
+    display: inline-block;
+}
+
+#password {
+    padding-right: 3rem;
+}
+
+#show_password {
+    position: fixed;
+    margin-left: -2.5rem;
+    margin-top: 0.25rem;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+}
+
+#show_password svg {
+    fill: var(--black);
+}
+
+#show_password.close #eye {
+    display: none;
+}
+
+#show_password:not(.close) #eye_close {
+    display: none;
+}
+
+/* #password[type="text"]+#show_password::before {
+    content: "/";
+    position: fixed;
+    margin-left: 0.6rem;
+} */
+
+.simple-keyboard {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+}
+
+.simple-keyboard.ov_dark_keyboard {
+    background-color: var(--base_color);
+    border-radius: 0;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.simple-keyboard.ov_dark_keyboard .hg-button {
+    height: 4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--element_background_color);
+    color: var(--base_text_color);
+}
+
+.simple-keyboard.ov_dark_keyboard .hg-button:active {
+    background: var(--white);
+    color: var(--black);
+}
+
+#root .simple-keyboard.ov_dark_keyboard+.simple-keyboard-preview {
+    background: var(--white);
+}

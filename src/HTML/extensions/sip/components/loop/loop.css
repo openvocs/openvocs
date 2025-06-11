@@ -1,0 +1,142 @@
+#loop_sip {
+    height: inherit;
+    border-radius: 0;
+    margin: 0;
+    line-height: 1rem;
+}
+
+:host([state=recv]) #loop_sip,
+:host([state=recv][layout=grid_element]) #loop_volume #loop_volume_input_container {
+    background-color: var(--blue);
+}
+
+:host([state=send]) #loop_sip,
+:host([state=send][layout=grid_element]) #loop_volume #loop_volume_input_container {
+    background-color: var(--green);
+}
+
+#loop_volume #loop_volume_input.vertical {
+    writing-mode: vertical-lr;
+    direction: rtl;
+}
+
+.icon.sip-phone-icon {
+    width: 1.2rem;
+    height: 1.2rem;
+    transform: rotate(135deg);
+}
+
+:host([sip_status=off]) .icon.sip-phone-icon::before {
+    content: "/";
+    position: absolute;
+    font-size: 1.5rem;
+    margin-left: 0.35rem;
+    margin-top: 0.25rem;
+}
+
+:host([sip_status=call]) .icon.sip-phone-icon {
+    transform: rotate(0deg);
+}
+
+:host:not([permission=send]) .icon.sip-phone-icon {
+    display: none;
+}
+
+/**
+loops for grid layout ---------------------------------------------------------
+*/
+
+:host([layout=grid_element]) {
+    display: grid;
+    position: relative;
+    grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr) minmax(min-content, 1fr);
+    grid-template-rows: minmax(min-content, 3fr) minmax(min-content, 1fr);
+    grid-template-areas: "join join join" "volume sip leave";
+}
+
+
+:host([layout=grid_element]) #loop_sip {
+    grid-area: sip;
+    text-align: center;
+}
+
+:host([layout=grid_element]) #loop_volume .icon {
+    width: 50%;
+    margin-left: 0.5em;
+    margin-right: 0.25rem;
+}
+
+:host([layout=grid_element]) #loop_volume #loop_volume_input {
+    width: initial;
+    height: 100%;
+    padding: 0 auto;
+    background-clip: content-box;
+}
+
+#loop_volume #loop_volume_indicator_value {
+    width: 2em;
+    text-align: right;
+    margin-right: 0.5em;
+}
+
+:host([layout=grid_element]) #loop_volume #loop_volume_input_container {
+    position: absolute;
+    bottom: calc(100% + 0.1rem);
+    background-color: var(--secondary_background_color);
+    width: 100%;
+    padding-top: 0.5rem;
+    border: inherit;
+    box-shadow: inherit;
+    border-bottom: 0;
+    display: none;
+    padding-right: 0;
+    height: 8rem;
+}
+
+/**
+loops for list layout ---------------------------------------------------------
+*/
+
+:host([layout=list_element]) {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-areas:
+        "join join join join join join join leave"
+        "volume volume volume volume volume volume sip leave";
+    grid-template-rows: 1fr auto;
+}
+
+#sip_badge_icon {
+    position: absolute;
+    margin-top: -0.4rem;
+    margin-left: -0.3rem;
+    width: 1rem;
+}
+
+#sip_badge_icon svg {
+    display: none;
+}
+
+#sip_badge_icon.sip_badge_1 #sip_badge_1 {
+    display: inherit;
+}
+
+#sip_badge_icon.sip_badge_2 #sip_badge_2 {
+    display: inherit;
+}
+
+#sip_badge_icon.sip_badge_3 #sip_badge_3 {
+    display: inherit;
+}
+
+#sip_badge_icon.sip_badge_4 #sip_badge_4 {
+    display: inherit;
+}
+
+#sip_badge_icon.sip_badge_5 #sip_badge_5 {
+    display: inherit;
+}
+
+#sip_badge_icon.sip_badge_6 #sip_badge_6 {
+    display: inherit;
+}

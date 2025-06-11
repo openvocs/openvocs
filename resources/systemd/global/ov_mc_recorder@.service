@@ -1,0 +1,10 @@
+[Unit]
+Description="Recorder #%i"
+PartOf=ov_mc_recorder.target
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/ov_recorder -c /etc/openvocs/ov_mc_recorder/config.json
+Restart=on-failure

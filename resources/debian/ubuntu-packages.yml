@@ -1,0 +1,33 @@
+ov_basic_packages:
+  - libssl1.1
+  - libopus0
+  - openssh-server
+  - python3
+
+ov_dev_packages:
+  - libopus-dev
+  - libssl-dev
+  - libsystemd-dev
+  - libpulse-dev
+  - libldap2-dev
+  - libsasl2-dev
+  - libsrtp2-dev
+  - git
+  - gcc
+  - make
+  - pkg-config
+  - valgrind
+  - vim
+  - libpipewire-0.3-dev
+  - libwireplumber-0.4-dev
+  - libasound2-dev
+  - dpkg-dev
+
+ov_dev_helper_packages:
+  - clang
+  - clangd
+  - gperf
+  - tcpdump
+  - htop
+  - netcat
+  - python3-pip

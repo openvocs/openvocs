@@ -1,0 +1,27 @@
+{
+	"id":"localhost",
+	"layout":{},
+	"roles":
+	{
+		"admin":
+		{
+			"id":"admin",
+			"users":
+			{
+				"admin":null
+			}
+		}
+	},
+	"users":
+	{
+		"admin":
+		{
+			"id":"admin",
+			"password":
+			{
+				"hash":"4Ky/Oh0Z9OSrG1vx4gZ4LVAFqhBmHoIb0h8vsxi/u/M=",
+				"salt":"hb8E2Yax40N7kjmKzseDkB16/flfYZBUT0ihBXwT5pY="
+			}
+		}
+	}
+}

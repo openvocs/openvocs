@@ -1,0 +1,202 @@
+:host {
+    display: inline-block;
+    width: 10rem;
+    user-select: text;
+}
+
+:host .button,
+:host button {
+    margin: 0;
+}
+
+:host #node_area {
+    height: 1.7rem;
+    border: solid 0.063rem var(--white_transparent_64);
+    display: grid;
+    grid-template-columns: 1.5rem 1fr 1.5rem;
+    grid-template-areas: "left_side node_name right_side";
+    background-color: var(--secondary_background_color);
+}
+
+:host(.highlight) #node_area {
+    border-color: var(--white_transparent_8);
+    background-image: linear-gradient(var(--white_transparent_64), var(--white_transparent_64));
+}
+
+:host(.select) #node_area {
+    border-color: var(--yellow);
+    color: var(--yellow);
+}
+
+:host(.edit.select) #node_area {
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+:host #node_name {
+    grid-area: node_name;
+    pointer-events: none;
+    letter-spacing: 0;
+    text-anchor: middle;
+    opacity: 0.5;
+}
+
+:host([frozen]) #node_name::before {
+    content: "*";
+}
+
+:host(.highlight) #node_name,
+:host(.select) #node_name {
+    opacity: 1;
+}
+
+:host button.icon {
+    width: 4.95rem;
+    height: 1.55rem;
+    padding: 0.1rem 0.2rem;
+    display: none;
+    opacity: 0.5;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+}
+
+:host .icon#edit_icon,
+:host .icon#headphone_icon,
+:host .icon#exit_network_icon,
+:host([type=role]) .icon#deconnect_icon,
+:host([type=role]) .icon#connect_icon,
+:host([type=loop]) .icon#deconnect_icon {
+    grid-area: left_side;
+    text-align: left;
+}
+
+:host .icon#network_icon,
+:host .icon#microphone_icon,
+:host([type=user]) .icon#deconnect_icon,
+:host([type=user]) .icon#connect_icon,
+:host([type=role].select_talk) .icon#deconnect_icon,
+:host([type=loop].select_talk) .icon#deconnect_icon {
+    grid-area: right_side;
+    justify-self: right;
+    text-align: right;
+}
+
+:host(.highlight) .icon,
+:host(.select) .icon {
+    opacity: 1;
+}
+
+:host button.icon:not(#exit_network_icon):hover {
+    background-color: var(--white_transparent_78);
+}
+
+:host .icon svg {
+    height: 1.2rem;
+    width: 1.2rem;
+    vertical-align: sub;
+}
+
+:host .icon:hover svg {
+    fill: var(--white_true);
+}
+
+:host(:hover) #edit_icon,
+:host(:hover) #network_icon,
+:host(.highlight_talk) #microphone_icon,
+:host(.highlight_monitor) #headphone_icon,
+:host(.select_talk) #microphone_icon,
+:host(.select_monitor) #headphone_icon {
+    display: initial;
+}
+
+:host(:hover.edit) #exit_network_icon {
+    display: initial;
+    width: 9.9rem;
+}
+
+:host(.edit_loop_edges:hover) #edit_icon,
+:host(.edit_loop_edges:hover) #network_icon,
+:host(.edit_role_edges:hover) #edit_icon,
+:host(.edit_role_edges:hover) #network_icon,
+:host(.edit_user_edges:hover) #edit_icon,
+:host(.edit_user_edges:hover) #network_icon,
+:host([type=loop].edit_role_edges.select_talk:hover) #microphone_icon,
+:host([type=loop].edit_role_edges.select_monitor:hover) #headphone_icon,
+:host([type=role].edit_loop_edges.select_talk:hover) #microphone_icon,
+:host([type=role].edit_loop_edges.select_monitor:hover) #headphone_icon {
+    display: none !important;
+}
+
+:host([type=role].edit_user_edges:not(.select):hover) #connect_icon,
+:host([type=role].edit_user_edges.select:hover) #deconnect_icon,
+:host([type=user].edit_role_edges:not(.select):hover) #connect_icon,
+:host([type=user].edit_role_edges.select:hover) #deconnect_icon {
+    display: initial;
+    width: 9.9rem;
+}
+
+:host([type=loop].edit_role_edges:not(.select_talk):hover) #microphone_icon,
+:host([type=loop].edit_role_edges:not(.select_monitor):hover) #headphone_icon,
+:host([type=loop].edit_role_edges.select:hover) #deconnect_icon,
+:host([type=role].edit_loop_edges:not(.select_talk):hover) #microphone_icon,
+:host([type=role].edit_loop_edges:not(.select_monitor):hover) #headphone_icon,
+:host([type=role].edit_loop_edges.select:hover) #deconnect_icon {
+    display: initial;
+}
+
+dialog {
+    text-align: left;
+    width: 20rem;
+}
+
+dialog button {
+    width: 4rem;
+    margin-top: 1rem;
+}
+
+dialog input,
+dialog label,
+dialog span {
+    display: none;
+}
+
+dialog input {
+    margin-bottom: 0.5rem;
+}
+
+#edit_multicast_ip {
+    width: 14.5rem;
+}
+
+#edit_multicast_port {
+    width: 3.7rem;
+}
+
+#delete_element,
+#edit_id,
+label[for=edit_id],
+#edit_name,
+label[for=edit_name],
+:host([type=user]) #edit_password,
+:host([type=user]) label[for=edit_password],
+:host([type=role]) #edit_abbreviation,
+:host([type=role]) label[for=edit_abbreviation],
+:host([type=loop]) #edit_abbreviation,
+:host([type=loop]) label[for=edit_abbreviation],
+:host([type=loop]) #edit_multicast_ip,
+:host([type=loop]) label[for=edit_multicast_ip],
+:host([type=loop]) #edit_multicast_port,
+:host([type=loop]) #edit_multicast_split {
+    display: initial;
+}
+
+#save_element {
+    float: right;
+}
+
+#dialog_error_message {
+    text-align: center;
+    margin-bottom: 0.5rem;
+    display: block;
+}

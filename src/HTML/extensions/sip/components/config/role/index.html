@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>SIP number pad</title>
+    <style>
+        @import "/css/ov_basic.css";
+
+        root {
+            --touch: 1;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+    </style>
+    <script type="module" src="sip_role.js"></script>
+</head>
+
+<body>
+    <ov-sip-config-role></ov-sip-config-role>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            let role = document.querySelector("ov-sip-config-role");
+            role.name = "Role Name";
+        });
+    </script>
+</body>
+
+</html>

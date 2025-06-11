@@ -1,0 +1,169 @@
+:host {
+    pointer-events: none;
+}
+
+:host([position=center]),
+:host([position=center_top]) {
+    top: 0;
+    left: 0;
+    width: 20rem;
+    height: 10rem;
+}
+
+:host([position=left]) {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 10rem;
+}
+
+:host([position=right]) {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 10rem;
+}
+
+#dialog_exit_area {
+    position: fixed;
+    top: inherit;
+    bottom: inherit;
+    left: 0;
+    width: 100vw;
+    height: inherit;
+    z-index: 10;
+    background-color: var(--black_transparent_36);
+}
+
+:host([position=center]) #dialog_exit_area,
+:host([position=center_top]) #dialog_exit_area {
+    height: 100vh;
+    top: 0;
+    bottom: unset;
+}
+
+#dialog {
+    pointer-events: initial;
+    width: inherit;
+    height: inherit;
+    inset: inherit;
+}
+
+#dialog:not(.open) {
+    display: none;
+}
+
+#dialog_content {
+    position: fixed;
+    border-style: solid;
+    border-width: 0.06rem;
+    z-index: 20;
+    padding: 0.5rem;
+
+    background-color: var(--secondary_background_color);
+    border-color: var(--element_border_color);
+
+    width: inherit;
+    height: inherit;
+    inset: inherit;
+
+    overflow: hidden auto;
+}
+
+:host([position=center]) #dialog_content {
+    top: 50vh;
+    left: 50vw;
+    bottom: unset;
+    right: unset;
+    box-shadow: var(--element_inset_box_shadow);
+
+    transform: translate(-50%, -50%);
+    border-top-right-radius: 0.25rem;
+}
+
+:host([position=center_top]) #dialog_content {
+    border-top-right-radius: 0.25rem;
+    box-shadow: var(--element_inset_box_shadow);
+    top: 0px;
+    margin: 0px auto;
+    left: 0;
+    right: 0;
+}
+
+#close_button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-height: calc(2.5rem + (var(--touch) * 1rem));
+    height: calc(2.5rem + (var(--touch) * 1rem));
+    margin-top: -0.03rem;
+    margin-right: -0.063rem;
+}
+
+#dialog.hide_close #close_button {
+    display: none;
+}
+
+#dialog #close_button .icon {
+    line-height: 2.4rem;
+    width: 1.2rem;
+    height: 1.2rem;
+    display: inline-block;
+}
+
+#dialog #close_button:disabled {
+    opacity: 0.5;
+    box-shadow: none;
+}
+
+#dialog #dialog_title {
+    margin: 0.5rem 0.5rem 1rem 0.5rem;
+    font-size: 1.5rem;
+}
+
+#dialog:not(.hide_close) #dialog_title {
+    margin-right: 2.5rem;
+}
+
+/* dialog warnings */
+#dialog #dialog_content.warning {
+    top: 0;
+    width: 100%;
+    min-height: 3rem;
+    background-color: var(--yellow);
+    color: var(--black);
+    z-index: 30;
+}
+
+#dialog #dialog_content.warning svg {
+    fill: var(--black_transparent_64)
+}
+
+#dialog #dialog_content.warning.error {
+    background-color: var(--red);
+    color: var(--white);
+}
+
+#dialog #dialog_content.warning.error svg {
+    fill: var(--white_transparent_22)
+}
+
+#dialog #dialog_content.warning .close_button {
+    background-color: inherit;
+    background-image: inherit;
+    min-height: 100%;
+    height: 100%;
+    border: none;
+}
+
+.dialog button.green_button:not(:disabled),
+.dialog .button.green_button:not(.disabled) {
+    background-color: var(--green);
+    color: var(--white);
+}
+
+.dialog button.red_button:not(:disabled),
+.dialog .button.red_button:not(.disabled) {
+    background-color: var(--red);
+    color: var(--white);
+}

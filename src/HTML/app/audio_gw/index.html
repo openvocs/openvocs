@@ -1,0 +1,127 @@
+<!doctype html>
+
+<html class="no-js" lang="en">
+
+<title>ov_audio_gw</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- CSS should be changed to www.openvocs.org/css/* for final version
+	TBD customize w3.css to openvocs.css? -->
+
+<link rel="stylesheet" href="w3.css">
+<link rel="stylesheet" href="openvocs-colors.css">
+
+<!-- generic JS should be changed to www.openvocs.org/js/* for final version-->
+
+<script src="ov_soundcard.js"></script>
+<script src="ov_websocket.js"></script>
+<script src="ov_alsa.js"></script>
+
+
+<style>
+
+		#voiceInput {
+			justify-self: strech;
+		}
+
+		canvas {
+			width: 100%;
+			height: 200px;
+			background-color: white;
+		}
+
+		#voiceOutput {
+			justify-self: strech;
+			grid-column: 2;
+		}
+
+		div.scroll {
+                margin:4px, 4px;
+                padding:4px;
+                width: 100%;
+                height: 100%;
+                overflow-x: auto;
+                overflow-y: auto;
+                text-align:justify;
+            }
+
+</style>
+
+<body>
+
+<!-- Sidebar/menu -->
+
+<nav class="w3-sidebar w3-collapse w3-top w3-large w3-padding openvocs-grey" style="z-index:3;width:400px;font-weight:bold;" id="mySidebar" >
+
+	<a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
+
+	<div class="w3-container w3-center">
+		<img src="logo.png" alt="openvocs logo" class="w3-padding-64" width="200">
+	</div>
+
+	<!-- Websocket -->
+
+	<div class="w3-bar-block">
+		<input class="w3-input" type="text" id="url" value="wss://localhost:8080/alsa">
+		<button class="w3-button" id="connect" onclick="ov_websocket.connect(document.getElementById('url').value)">Connect</button>
+			<button class="w3-button" id="disconnect" onclick="ov_websocket.disconnect()">Disconnect</button>
+	</div>
+
+	<div class="w3-bar-block">
+		<button class="w3-button" id="soundcards" onclick="ov_alsa.get_soundcards()">Soundcards</button>
+	</div>
+
+
+</nav>
+
+	<!-- Top menu on small screens -->
+	<header class="w3-container w3-top w3-hide-large w3-xlarge w3-padding openvocs-grey">
+  		<a href="javascript:void(0)" class="w3-button w3-margin-right" onclick="w3_open()">☰</a>
+  		<span> ov_audio_gw control interface</span>
+	</header>
+
+	<!-- Overlay effect when opening sidebar on small screens -->
+	<div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+	<!-- !PAGE CONTENT! -->
+
+	<div class="w3-main" style="margin-left:440px;margin-right:40px">
+
+	<!-- Header -->
+	<header class="w3-container w3-border-bottom openvocs-border-red">
+		<h1 class="w3-xxxlarge openvocs-text-red"><b>Audio_Gateway interface</b></h1>
+	</header>
+
+	<!-- Content -->
+
+	<textarea  id="state" rows="50" cols="100"></textarea >
+
+  <!-- END content -->
+
+<!-- additinal script which are using tags of the HTML code -->
+
+<script>
+
+// Script to open and close sidebar
+function w3_open() {
+  document.getElementById("mySidebar").style.display = "block";
+  document.getElementById("myOverlay").style.display = "block";
+}
+
+function w3_close() {
+  document.getElementById("mySidebar").style.display = "none";
+  document.getElementById("myOverlay").style.display = "none";
+}
+
+// Modal Image Gallery
+function onClick(element) {
+  document.getElementById("img01").src = element.src;
+  document.getElementById("modal01").style.display = "block";
+  var captionText = document.getElementById("caption");
+  captionText.innerHTML = element.alt;
+}
+</script>
+
+</body>

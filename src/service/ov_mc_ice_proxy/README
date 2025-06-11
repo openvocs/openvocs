@@ -1,0 +1,74 @@
+# Implementation of the ov_ice_proxy service. 
+
+The ICE Proxy is responsible for connection termination of Webclients and forwarding of audio to internal Multicast adresses. 
+
+The ICE proxy has 2 operational modes:
+
+## multiplexing mode
+ In multiplexing mode all incoming connections will be multiplexed over a dedicated port
+
+## dynamic mode
+In dynamic mode each connection will be terminated at a dedicated port, which is opened dynamically. Dynamic mode may be used behind NAT environments to allow the server to be running with a NATed IP.
+
+Both modes share the main part of the configuration. To enable multiplexing mode change the multiplexing attribute to true. In this case all configuration withinin the dynamic attribute are rendered invalid. For dynamic mode change the multiplexing flag to false. This enabled the dynamic configuration.
+In dynamic mode an external STUN or TURN server may be used to allow the server tp gather it’s external IP ( Scenario NAT environment!) The port range used may be configured also to allow firewall configurations to match.
+
+# How to start ov_ice_proxy
+
+ov_ice_proxy is build like all executables under the build folder. To start ov_ice_proxy you may use 
+
+`markus@RB-BA0007:~/openvocs/code$ ./build/bin/ov_mc_ice_proxy`
+
+# How to configure ov_ice_proxy
+
+The default configuration is located at ov_mc_ice_proxy/config/default_config.json
+
+Within the config several items may be configured:
+
+## Configure ssl
+
+The SSL config contains the certificates and key files for ov_ice_proxy. 
+You may change the path to your own certificates.
+
+NOTE a CA file should be provided for completeness. In addition to a CA file a CA path may be used.
+
+## Configure manager
+
+Manager is the ov_mc_vocs application to be used with the ov_ice_proxy instance. 
+
+## Configure external
+
+External is the external host socket configuration. Im multiplexing configurations the port of this socket configuration will be used to provide all ICE services. In dynamic configuration the host will be used with the port range configured in the dynamic section. 
+
+## Configure internal
+
+Internal is the internal core network, where your mixers life. You need to configure the host, ports will be used dynamically. 
+
+## Configure multiplexing 
+
+To use a multiplexing ICE proxy you need to set the multiplexing attribute to true. 
+
+## Configure dynamic
+
+To use a dynamic ICE proxy you need to set the multiplexing attribute to false, or leave out any multiplexing flags. 
+
+In dynamic mode a port range may be configured and defined, as well as a stun and turn server to use while gathering ICE candidates. 
+
+## Copyright
+
+    Copyright (c) 2019 German Aerospace Center DLR e.V. (GSOC)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    This file is part of the openvocs project. https://openvocs.org
+

@@ -1,0 +1,34 @@
+#loop_layout {
+    --touch: 1;
+    height:auto;
+    padding: 0;
+}
+
+#open_menu {
+    position: fixed;
+    top: 0.1rem;
+    left: 0.1rem;
+    z-index: 100;
+}
+
+#open_menu .icon {
+    height: 1.5rem;
+    width: 2rem;
+    margin: 0 auto;
+}
+
+#choose_role {
+    position: fixed;
+    top: 0.6rem;
+    left: 5rem;
+    z-index: 100;
+    width: 10rem;
+}
+
+#choose_page {
+    position: fixed;
+    top: 0.6rem;
+    left: 16rem;
+    z-index: 100;
+    width: 10rem;
+}

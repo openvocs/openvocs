@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>ov_components</title>
+    <style>
+        @import "/css/ov_basic.css";
+
+        :root {
+            --touch: 0;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+    </style>
+    <script type="module" src="dialog.js"></script>
+</head>
+
+<body>
+    <button id="open_left">Left</button>
+    <button id="open_center">Center</button>
+    <button id="open_right">Right</button>
+    <button id="open_custom">custom</button>
+    <ov-dialog id="left" position="left"></ov-dialog>
+    <ov-dialog id="center" position="center" close-button></ov-dialog>
+    <ov-dialog id="right" position="right"></ov-dialog>
+    <ov-dialog id="custom" value="My Custom Dialog">
+        <details slot="dialog-content">
+            <summary>Summary</summary>
+            <p>Here is text.</p>
+        </details>
+    </ov-dialog>
+</body>
+
+<script type="module">
+    let l_button = document.getElementById("open_left");
+    let l_dialog = document.getElementById("left");
+    l_button.addEventListener("click", () => {
+        l_dialog.show();
+    });
+
+    let c_button = document.getElementById("open_center");
+    let c_dialog = document.getElementById("center");
+    c_button.addEventListener("click", () => {
+        c_dialog.show();
+    });
+
+    let r_button = document.getElementById("open_right");
+    let r_dialog = document.getElementById("right");
+    r_button.addEventListener("click", () => {
+        r_dialog.show();
+    });
+
+    let p_button = document.getElementById("open_custom");
+    let p_dialog = document.getElementById("custom");
+    p_button.addEventListener("click", () => {
+        p_dialog.show();
+    });
+    
+</script>
+</html>

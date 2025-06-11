@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html">
+        <title>SIP number pad</title>
+        <style>
+            @import "/css/ov_basic.css";
+            root {
+                --touch: 1;
+            }
+            body {
+                background-color: var(--base_color);
+            }
+        </style>
+        <script type="module" src="whitelist.js"></script>
+    </head>
+    <body>
+        <ov-sip-whitelist></ov-sip-whitelist>
+    </body>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            let whitelist = document.querySelector("ov-sip-whitelist");
+            whitelist.caller = "012345";
+            whitelist.callee = "567890";
+            whitelist.addEventListener("delete_entry", () => console.log("clicked delete entry"));
+        });
+    </script>
+</html>

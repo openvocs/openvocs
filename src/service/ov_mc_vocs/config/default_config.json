@@ -1,0 +1,207 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+	"vocs" : {
+
+		"domain" : "localhost",
+
+		"sip" :
+		{
+			"timeout":
+			{
+				"response timeout (usec)" : 5000000
+			},
+			"socket" :
+			{
+				"manager" :
+				{
+					"host" : "127.0.0.1",
+					"type" : "TCP",
+					"port" : 10001
+				}
+			}
+		},
+
+		"sip static" :
+		{
+			"socket" :
+			{
+				"manager" :
+				{
+					"host" : "127.0.0.1",
+					"type" : "TCP",
+					"port" : 10002
+				}
+			}
+		},
+
+		"frontend" :
+		{
+			"socket" :
+			{
+				"manager" :
+				{
+					"host" : "127.0.0.1",
+					"type" : "TCP",
+					"port" : 12345
+				}
+			}
+		},
+
+		"events" :
+		{
+			"socket" :
+			{
+				"manager" :
+				{
+					"host" : "127.0.0.1",
+					"type" : "TCP",
+					"port" : 44444
+				}
+			}
+		},
+
+		"backend" :
+		{
+			"socket" :
+			{
+				"manager" :
+				{
+					"host" : "127.0.0.1",
+					"type" : "TCP",
+					"port" : 12346
+				}
+			},
+			"mixer" :
+			{
+				"vad":
+				{
+					"zero_crossings_rate_hertz" : 50000,
+					"powerlevel_density_dbfs" : -500,
+					"enabled" : true
+				},
+				"sample_rate_hz" : 48000,
+				"noise" : -70,
+				"max_num_frames" : 100,
+				"frame_buffer": 1024,
+				"normalize_input" : false,
+				"rtp_keepalive" : true,
+				"normalize_mixed_by_root" : false
+			}
+		},
+
+		"recorder" : {
+
+			"socket" : {
+				"manager" :
+				{
+					"host" : "127.0.0.1",
+					"type" : "TCP",
+					"port" : 10010
+				}
+			},
+			"db" : 
+			{
+				"socket":
+				{
+					"db":
+					{
+						"host" : "127.0.0.1",
+						"type" : "TCP",
+						"port" : 12345
+					}
+				}
+			}
+		},
+
+		"vad" :
+		{
+			"socket" :
+			{
+				"host" : "127.0.0.1",
+				"type" : "TCP",
+				"port" : 40001
+			}
+		}
+	},
+
+	"db" : {
+
+		"git" :true,
+
+		"path" : "./src/service/ov_mc_vocs/config",
+
+		"timeout" :
+		{
+			"ldap" : 5000000,
+			"threadlock timeout (usec)": 1000000,
+			"state snapshot (sec)" : 60,
+			"auth snapshot (sec)" : 300
+		},
+		"password" :
+		{
+			"length" : 32
+		}
+	},
+
+	"ldap" : {
+
+		"enabled" : false,
+		"threads" : 4,
+		"host": "localhost",
+		"user_dn_tree" : "ou=people,dc=openvocs,dc=org",
+		"timeout":
+		{
+			"network" : 3000000
+		}
+	},
+
+    "webserver":
+	{
+		"name":"ov_vocs_service",
+
+		"debug":false,
+		"ip4_only":true,
+
+		"domains":"./src/service/ov_mc_vocs/config/domains",
+
+		"mime" : {
+			"path" : "./src/service/ov_mc_vocs/config/mime",
+			"extension" : "mime"
+		},
+
+		"sockets":
+		{
+			"http":
+			{
+				"host":"127.0.0.1",
+				"port":80,
+				"type":"TCP"
+			},
+			"https":
+			{
+				"host":"0.0.0.0",
+				"port":443,
+				"type":"TCP"
+			},
+			"stun":
+			[
+				{
+					"host":"127.0.0.1",
+					"port":13478,
+					"type":"UDP"
+				}
+			]
+		},
+
+		"timer":
+		{
+			"accept":1000000,
+			"io":0
+		}
+	}
+}

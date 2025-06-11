@@ -1,0 +1,12 @@
+label {
+    margin-top: 0.5rem;
+}
+
+#delete_project {
+    margin-top: 2rem;
+    display: none;
+}
+
+#edit_id:disabled ~ #delete_project {
+    display: initial;
+}

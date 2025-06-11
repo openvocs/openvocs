@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>SIP call list</title>
+    <style>
+        @import "/css/ov_basic.css";
+
+        root {
+            --touch: 1;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+    </style>
+    <script type="module" src="call_list.js"></script>
+</head>
+
+<body>
+    <ov-sip-calls></ov-sip-calls>
+</body>
+
+<script type="module">
+    let sip_calls = document.querySelector("ov-sip-calls");
+    sip_calls.addEventListener("loaded", async () => {
+        sip_calls.allow_new_calls = true;
+
+        await sip_calls.add_call("CALL-ID0", "035239958");
+        console.log("added new call 035239958 (CALL-ID0)");
+        await sip_calls.add_call("CALL-ID1", "038569958");
+        console.log("added new call 038569958 (CALL-ID1)");
+        await sip_calls.add_call("CALL-ID2", "038589664");
+        console.log("added new call 038589664 (CALL-ID2)");
+
+        sip_calls.change_call_status("CALL-ID1", "connected");
+        console.log("changed status of call 038569958 (CALL-ID1) to connected");
+
+        sip_calls.deactivate_call("CALL-ID2");
+        sip_calls.change_call_status("CALL-ID2", "disabled");
+        console.log("changed status of call 038589664 (CALL-ID2) to disabled");
+
+        sip_calls.addEventListener("trigger_hangup", (event) => {
+            sip_calls.change_call_status(event.detail.call, "disconnecting...");
+            console.log("changed status of call with ID " + event.detail.call + " to disconnecting");
+            setTimeout(() => {
+                sip_calls.remove_call(event.detail.call);
+                console.log("removed call with ID " + event.detail.call);
+            }, 1000);
+        });
+
+        sip_calls.addEventListener("new_call", () => console.log("triggered new call button"));
+    });
+</script>
+
+</html>

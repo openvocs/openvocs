@@ -1,0 +1,16 @@
+{
+    "ogg audio" : {
+        "mime" : "audio/ogg",
+        "extension" : [ "ogg", "oga"]
+    },
+
+    "ogg video" : {
+        "mime" : "video/ogg",
+        "extension" : [ "ogv"]
+    },
+
+    "ogg app" : {
+        "mime" : "application/ogg",
+        "extension" : [ "ogx"]
+    }
+}

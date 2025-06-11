@@ -1,0 +1,13 @@
+{
+	"ldap" : 
+	{
+		"host" : "ocs.ocs.office",
+		"user" : "uid=toepfer,ou=people,dc=ldap,dc=rb",
+		"password" : "",
+		"base" : "dc=ldap,dc=rb",
+		"timeout (usec)" : 50000000
+	},
+
+	"path" : "/tmp/ov_auth_config",
+	"domain" : "ldap.rb"
+}

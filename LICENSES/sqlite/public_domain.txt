@@ -1,0 +1,5 @@
+SQLite is in the public domain - see
+
+https://www.sqlite.org/copyright.html
+
+A copy of this webpage is stored alongside this file under 'copyright.html'

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>ov_components</title>
+    <style>
+        @import "/css/ov_basic.css";
+
+        :root {
+            --touch: 0;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+    </style>
+    <script type="module" src="loading_screen.js"></script>
+</head>
+
+<body>
+    <ov-loading>
+</body>
+
+<script type="module">
+
+    let loading = document.querySelector("ov-loading");
+    loading.addEventListener("loaded", () => {
+        loading.show("Message", "Click me");
+        loading.addEventListener("loading_button_clicked", () => {
+            loading.hide();
+        });
+    });
+
+
+</script>
+
+</html>

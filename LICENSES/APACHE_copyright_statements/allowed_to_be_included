@@ -1,0 +1,39 @@
+For the purposes of being included in an Apache product, which licenses are considered to be similar in terms to the Apache License 2.0?
+
+Works under the following licenses may be included within Apache products:
+
+    Apache License 2.0
+    Apache Software License 1.1. Including variants:
+        PHP License 3.01
+        MX4J License
+    BSD (without advertising clause). Including variants:
+        BSD 2-clause
+        BSD 3-clause
+        DOM4J License
+        PostgreSQL License
+        Eclipse Distribution License 1.0
+    MIT/X11
+    ISC
+    ICU
+    University of Illinois/NCSA
+    W3C Software License
+    W3C Community Contributor License Agreement - if at least 45 days after publication
+    X.Net
+    zlib/libpng
+    FSF autoconf license
+    DejaVu Fonts (Bitstream Vera/Arev licenses)
+    Academic Free License 3.0
+    Service+Component+Architecture+Specifications
+    OOXML XSD ECMA License
+    Microsoft Public License (MsPL)
+    Creative Commons Copyright-Only Dedication
+    Python Software Foundation License
+    Adobe Postcript(R) AFM files
+    Boost Software License Version 1.0
+    License for CERN packages in COLT but note that this applies only to CERN packages in COLT and not others
+    UK Open Government License. This license allows the licensor to provide a custom attribution notice. If one is provided, include in the NOTICE. If one is not provided, include 'Contains public sector information licensed under the Open Government Licence v3.0.' in the NOTICE.
+    WTF Public License
+    UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
+    Zope Public License 2.0
+    ACE license
+    Oracle Universal Permissive License (UPL) Version 1.0

@@ -1,0 +1,412 @@
+.icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-block;
+}
+
+/* loops */
+#pagination {
+    justify-content: flex-end;
+    padding-left: 0.5rem;
+    border-left: solid 0.1rem var(--element_art_color);
+}
+
+#pagination label,
+.menu_button {
+    width: 6rem;
+}
+
+#menu_warnings {
+    padding-left: 0.5rem;
+    border-left: solid 0.1rem var(--element_art_color);
+}
+
+#menu_warnings {
+    display: none;
+}
+
+#login_dialog {
+    height: 26.5rem;
+    width: 22rem;
+}
+
+#login_dialog ov-login-form {
+    margin-top: 1rem;
+    display: block;
+}
+
+#login_dialog>div:last-child {
+    color: var(--red);
+}
+
+.sip_dialog::backdrop {
+    background-color: var(--black_transparent_36);
+}
+
+.sip_dialog {
+    background-color: var(--secondary_background_color);
+    padding: 0;
+    border-style: solid;
+    border-width: 0.06rem;
+    border-color: var(--element_border_color);
+}
+
+:root {
+    --default_slider_width: 15.6rem;
+}
+
+
+/* menu slider ------------------------------------------------------------- */
+#menu_slider {
+    width: var(--default_slider_width);
+    bottom: var(--menu_bar_height);
+}
+
+#menu_slider div[slot="dialog-content"] {
+    display: grid;
+    grid-template-rows: minmax(0, auto) 10.5rem 14rem;
+    height: calc(100% - 3rem);
+}
+
+#menu_slider .icon {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+#menu_slider .button:not(label),
+#menu_slider button {
+    width: 6rem;
+    height: 6rem;
+}
+
+#menu_slider #switch_role_select {
+    margin-top: var(--default_space);
+}
+
+#menu_slider #switch_role_select input[type="radio"]:checked+label {
+    background-color: var(--blue) !important;
+    box-shadow: var(--element_inset_box_shadow) !important;
+    color: var(--white) !important;
+}
+
+#user_data>label {
+    position: sticky;
+    top: 0rem;
+    width: calc(100% + 0.2rem);
+    background-color: var(--secondary_background_color);
+    padding: 0.7rem 0 0 0;
+}
+
+#menu_slider #logout_button {
+    width: 13.2rem;
+}
+
+#user_data {
+    padding: 0.7rem;
+    padding-top: 0;
+    overflow-y: auto;
+}
+
+#user_name {
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+#server_list {
+    padding: 0;
+    margin: 0.5em 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 2rem;
+    overflow: hidden;
+}
+
+#server_label {
+    grid-column: 1 / span 2;
+    margin: 0.7rem;
+}
+
+#server_list .server_button {
+    width: 6rem;
+    height: 6rem;
+    display: grid;
+    grid-template-rows: 1.5rem 1fr 1.5rem;
+}
+
+#server_list .server_button.lead_server {
+    background-color: var(--blue);
+    background-image: inherit;
+    cursor: pointer;
+}
+
+#server_list .server_button .server_name {
+    align-self: center;
+    grid-row: 2;
+    word-break: break-all;
+    overflow: clip;
+}
+
+#server_list .server_button .server_sync_level {
+    width: 1.2rem;
+    height: 1.2rem;
+    grid-row: 3;
+    justify-self: end;
+    margin-right: 0.3rem;
+    line-height: 1.2rem;
+    border-radius: 50%;
+
+    background-color: var(--green);
+    box-shadow: var(--black_transparent_92) 0 0 0.3rem 0, inset var(--black_transparent_75) 0 0 0.3rem, var(--green) 0 0 0.1rem;
+}
+
+#server_list .server_button.working .server_sync_level {
+    color: var(--black_transparent_22);
+    background-color: var(--yellow);
+    box-shadow: var(--black_transparent_92) 0 0 0.3rem 0, inset var(--black_transparent_75) 0 0 0.3rem, var(--yellow) 0 0 0.1rem;
+}
+
+#server_list .server_button.disconnected .server_sync_level {
+    background-color: var(--red);
+    box-shadow: var(--black_transparent_92) 0 0 0.3rem 0, inset var(--black_transparent_75) 0 0 0.3rem, var(--red) 0 0 0.1rem;
+}
+
+/* settings slider --------------------------------------------------------- */
+#settings_slider {
+    width: calc(100vw - var(--default_slider_width));
+    min-width: 30rem;
+    bottom: var(--menu_bar_height);
+}
+
+/* #settings_slider div[slot=dialog-content] {
+    display: grid;
+    padding: 1rem 0.5rem;
+    gap: 0.5rem;
+    align-items: baseline;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: min-content min-content min-content;
+} */
+
+#settings_slider input[type="text"],
+#settings_slider input[type="number"],
+#settings_slider select {
+    max-width: 25rem;
+    display: block;
+    margin: 0;
+}
+
+#settings_slider .fieldset.main_fieldset {
+    margin: 0;
+}
+
+#settings_slider label {
+    margin-top: 0.5rem;
+}
+
+#settings_slider details[open] {
+    align-self: stretch;
+}
+
+#settings_slider details[open] summary {
+    border-bottom: 1px solid;
+    padding-bottom: 0.5rem;
+
+    border-color: var(--element_art_color);
+}
+
+#speaker_test {
+    font-size: 3rem;
+    line-height: 2rem;
+    display: block;
+    margin: 0;
+}
+
+#microphone_test {
+    width: 100%;
+    height: 4.5rem;
+    background-color: var(--input_background_color);
+}
+
+#microphone_test canvas {
+    width: 100%;
+    height: 100%;
+}
+
+#talk_options {
+    margin: 0;
+    padding-top: 0.25rem;
+}
+
+#ptt_mute_options,
+#talk_trigger_options {
+    display: flex;
+    flex-direction: column;
+}
+
+#ptt_mute_options label.checkbox_label {
+    line-height: 2.9rem;
+}
+
+#add_HID {
+    width: 5rem;
+}
+
+#advanced_options {
+    /* grid-column: 1 / span 2; */
+    display: none;
+}
+
+#ui_options {
+    display: none;
+}
+
+#imprint {
+    /* grid-column: 1 / span 2; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 1rem;
+}
+
+#settings_slider .logo_openvocs {
+    width: 5rem;
+}
+
+#settings_slider .logo_dlr {
+    width: 4rem;
+    margin-top: 1rem;
+    content: var(--dlr_logo);
+}
+
+@media(max-width: 28.75rem) {
+    #settings_slider .dialog_content {
+        grid-template-columns: 1fr;
+        min-width: 100%;
+    }
+
+    #advanced_options,
+    #imprint {
+        grid-column: 1;
+    }
+}
+
+/*#grid_options_panel div,
+#loop_text_sizes div {
+    width: 49.5%;
+    display: inline-block;
+}*/
+
+/* menu bar ---------------------------------------------------------------- */
+#open_menu_button {
+    z-index: 20;
+    position: relative;
+}
+
+#open_menu_button .logo_openvocs {
+    display: inline-block;
+    width: 3rem;
+    height: 3rem;
+}
+
+#audio_input_indicator {
+    width: 9.375rem;
+    height: calc(var(--menu_bar_height) - 0.75rem);
+}
+
+#audio_input_visualization {
+    width: 100%;
+    height: 100%;
+}
+
+@media(max-width: 28.75rem) {
+    #audio_input_indicator {
+        display: none;
+    }
+}
+
+#open_login {
+    font-size: 2.5rem;
+    animation-duration: 2s;
+    animation-name: blinking;
+    animation-iteration-count: infinite;
+}
+
+@keyframes blinking {
+
+    0%,
+    100% {
+        background-color: var(--element_background_color);
+    }
+
+    50% {
+        background-color: var(--element_hover_border_color);
+    }
+}
+
+/* ptt buttons ------------------------------------------------------------- */
+#push_to_talk_menu {
+    flex-grow: 2;
+    display: flex;
+}
+
+#fullscreen_push_to_talk_button {
+    flex-grow: 1;
+    padding: 0.625rem;
+}
+
+#menu_fullscreen_option {
+    padding: 0.5rem 0.5rem 0 0;
+    align-self: center;
+}
+
+#menu_fullscreen_option label {
+    line-height: 1.5rem;
+}
+
+#fptt_area {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    min-height: 100%;
+    min-width: 100%;
+    opacity: 0.6;
+    text-align: center;
+
+    background-color: var(--black_true);
+}
+
+#fptt_area.active {
+    background-color: var(--green);
+}
+
+#fptt_text_wrapper {
+    margin-top: 15.625rem;
+    text-align: center;
+    font-size: 4rem;
+}
+
+#fptt_text_wrapper p {
+    opacity: 1.0;
+    color: var(--yellow);
+}
+
+#toggle_to_talk_button {
+    flex-grow: 1;
+    padding: 0.625rem;
+}
+
+#push_to_talk_button {
+    flex-grow: 2;
+    padding: 0.625rem;
+}
+
+#toggle_to_talk_button.active,
+#push_to_talk_button.active {
+    background-color: var(--green) !important;
+    box-shadow: var(--element_inset_box_shadow);
+}
+
+div:has(> #keyset_name) {
+    margin-bottom: 1rem;
+}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Content-Type" content="text/html">
+        <title>SIP number pad</title>
+        <style>
+            @import "/css/ov_basic.css";
+            root {
+                --touch: 1;
+            }
+            body {
+                background-color: var(--base_color);
+            }
+        </style>
+        <script type="module" src="sip_loop.js"></script>
+    </head>
+    <body>
+        <ov-sip-config-loop></ov-sip-config-loop>
+        <script>
+            document.addEventListener("DOMContentLoaded", async function () {
+                let loop = document.querySelector("ov-sip-config-loop");
+                loop.name = "Loop Name";
+            });
+        </script>
+    </body>
+</html>

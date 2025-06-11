@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>openvocs admin project settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/css/ov_basic.css" />
+</head>
+
+<body>
+    <div class="container" id="view_container"></div>
+    <script>
+        SIGNALING_SERVERS = [{ NAME: "stub" }];
+        SIGNALING_REQUEST_TIMEOUT = 10000;
+        TEMP_ERROR_TIMEOUT = 4000;
+
+        DEBUG_LOG_INCOMING_EVENTS = true;
+        DEBUG_LOG_OUTGOING_EVENTS = true;
+
+        SIP = true;
+
+        DEFAULT_LOOP_VOLUME = 50;
+        LOOP_ELEMENT_SIZE_MIN = 0.5;
+        LOOP_ELEMENT_SIZE_MAX = 2.0;
+        SITE_SCALING_FACTOR = 1.0;
+        LOOP_GRID_MIN_COLUMNS = 1.0;
+        LOOP_GRID_MIN_ROWS = 1.0;
+        LOOP_GRID_COLUMNS = 2;
+        LOOP_GRID_ROWS = 2;
+
+    </script>
+    <script type="module">
+        import ov_Websocket from "/lib/test/ov_websocket_dummy.js";
+        import * as ov_Websockets from "/lib/ov_websocket_list.js";
+        import * as ov_Auth from "/lib/ov_auth.js"
+        import * as ov_Admin from "/lib/ov_admin.js";
+        import * as ov_Vocs from "/lib/ov_vocs.js";
+
+        import * as Layout from "./js/layout.js";
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            let view_container = document.getElementById("view_container");
+
+            await ov_Websockets.setup_connections(ov_Websocket);
+            await ov_Auth.login("test", "test", ov_Websockets.prime_websocket);
+            await ov_Admin.domains();
+            await ov_Admin.projects();
+            ov_Websockets.user().project = "p0_1";
+            ov_Websockets.user().domain = "domain_1";
+
+            
+
+            let data = ov_Websockets.user().projects.get(ov_Websockets.user().project);
+            console.log(ov_Websockets.user().projects);
+
+            await Layout.init(view_container);
+            await Layout.render(data);
+        });
+    </script>
+</body>

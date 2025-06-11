@@ -1,0 +1,78 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+
+	"interconnect" :
+	{
+		"name": "OP server",
+		"password" : "secret preshared key",
+		"socket" :
+		{
+			"client" : false,
+			"signaling" :
+			{
+					"host" : "127.0.0.1",
+					"type" : "TLS",
+					"port" : 42000
+			},
+			"media" :
+			{
+					"host" : "127.0.0.1",
+					"type" : "UDP",
+					"port" : 42000
+			},
+			"internal" :
+			{
+					"host" : "127.0.0.1",
+					"type" : "UDP",
+					"port" : 42001
+			}
+		},
+
+		"tls" :
+		{
+			"domains":"./src/service/ov_mc_interconnect/config/domains",
+
+			"client" :
+			{
+				"domain" : "localhost",
+				"CA file" : "resources/certificate/openvocs.test.crt"
+			},
+
+			"dtls" :
+			{
+				"certificate" : "resources/certificate/openvocs.test.crt",
+				"key" :  "resources/certificate/openvocs.test.key",
+				"CA file" : "resources/certificate/openvocs.test.crt"
+			}
+
+		},
+
+		"limits" :
+		{
+			"threads" : 4,
+			"reconnect_interval_secs": 4,
+			"keepalive (sec)": 300
+		},
+
+		"loops" :
+		{
+			"loop1" : {
+				"host" : "224.0.0.1",
+				"port" : 12345
+			},
+			"loop2" : {
+				"host" : "224.0.0.2",
+				"port" : 12345
+			},
+			"loop3" : {
+				"host" : "224.0.0.3",
+				"port" : 12345
+			}
+		}
+	}
+}

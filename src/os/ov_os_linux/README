@@ -1,0 +1,2 @@
+This module contains all openvocs components linking against linux specific resources
+e.g. systemd, pulseaudio 

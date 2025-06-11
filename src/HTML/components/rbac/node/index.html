@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>ov_components</title>
+    <style>
+        @import "/css/ov_basic.css";
+        :root {
+            --touch: 0;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+    </style>
+    <script type="module" src="rbac_node.js"></script>
+</head>
+
+<body>
+    <ov-rbac-node value="Role" type="role"></ov-rbac-node>
+    <ov-rbac-node value="Loop" type="loop"></ov-rbac-node>
+    <ov-rbac-node value="User" type="user"></ov-rbac-node>
+    <ov-rbac-node value="Role Hi" type="role" class="highlight"></ov-rbac-node>
+    <ov-rbac-node value="Loop Hi" type="loop" class="highlight"></ov-rbac-node>
+    <ov-rbac-node value="User Hi" type="user" class="highlight"></ov-rbac-node>
+    <ov-rbac-node value="Role" type="role" frozen></ov-rbac-node>
+    <ov-rbac-node value="Loop" type="loop" frozen></ov-rbac-node>
+    <ov-rbac-node id="frozen_user" value="User" type="user" frozen></ov-rbac-node>
+</body>
+<script>
+    
+</script>
+
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html">
+    <title>ov_components</title>
+    <style>
+        @import "/css/ov_basic.css";
+
+        :root {
+            --touch: 1;
+        }
+
+        body {
+            background-color: var(--base_color);
+        }
+
+        .test {
+            width: 20rem;
+            height: 20rem;
+        }
+    </style>
+
+    <script type="module" src="loop.js"></script>
+</head>
+
+<body>
+    <div class="test">
+        <ov-sip-loop name="Loop 1" id="loop_1" layout="grid_element" state="send" permission="send"
+            sip_permission="call"></ov-sip-loop>
+        <ov-sip-loop name="SIP Off" id="loop_2" layout="grid_element" state="send" permission="send"
+            sip_permission="call"></ov-sip-loop>
+        <ov-sip-loop name="No Permission" id="loop_3" layout="grid_element" state="send"
+            permission="send"></ov-sip-loop>
+    </div>
+</body>
+<script>
+    SIGNALING_SERVERS = [{ NAME: "stub" }];
+    SIGNALING_REQUEST_TIMEOUT = 10000;
+    TEMP_ERROR_TIMEOUT = 4000;
+
+    DEBUG_LOG_INCOMING_EVENTS = true;
+    DEBUG_LOG_OUTGOING_EVENTS = true;
+
+    LOOP_ELEMENT_SIZE_MIN = 0.5;
+    LOOP_ELEMENT_SIZE_MAX = 2.0;
+</script>
+<script src="/plugin/simple-keyboard-3.8.0/index.modern.js"></script>
+<script type="module">
+    import ov_Websocket from "/lib/test/ov_websocket_dummy.js";
+    import * as ov_Websockets from "/lib/ov_websocket_list.js";
+
+    document.addEventListener("DOMContentLoaded", async function () {
+        await ov_Websockets.setup_connections(ov_Websocket);
+
+        for (let index = 1; index < 4; index++) {
+            let loop = document.querySelector("#loop_" + index);
+            loop.loop_id = "loop_" + index;
+            loop.volume = "50";
+            if (index === 2) {
+                setTimeout(() => {
+                    loop.sip_offline = true;
+                }, 100);
+            }
+        }
+    });
+</script>
+
+</html>

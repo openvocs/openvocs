@@ -1,0 +1,49 @@
+{
+    "projects": "/etc/openvocs/projects",
+    "mixer": {
+        "signalling_server": {
+            "host": "127.0.0.1",
+            "port": 10001,
+            "type": "TCP",
+            "reconnect_interval_secs": 10
+        },
+        "num_threads": 4,
+        "lock_timeout_usecs": 10000,
+        "message_queue_capacity": 100,
+        "cache_sizes": {
+            "mix_messages": 60,
+            "rtp_frames": 61,
+            "rtp_messages": 62,
+            "lists": 63,
+            "buffers": 64
+        }
+    },
+    "echo_cancellator": {
+        "signalling_server": {
+            "host": "127.0.0.1",
+            "port": 10001,
+            "type": "TCP",
+            "reconnect_interval_secs": 10
+        },
+        "ssid_to_filter": 12345
+    },
+    "resource_manager": {
+        "minions": {
+            "host": "127.0.0.1",
+            "port": 10001
+        },
+        "liege": {
+            "host": "127.0.0.1",
+            "port": 10002,
+            "type": "TCP"
+        },
+        "monitor": {
+            "host": "127.0.0.1",
+            "port": 10003,
+            "type": "TCP"
+        },
+        "defaults" : {
+            "ec_method" : "drop"
+        }
+    }
+}

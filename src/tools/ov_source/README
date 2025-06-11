@@ -1,0 +1,74 @@
+ov_source_files
+
+This is a little commandline tool to generate source header, source as well as source test files.
+
+-----------------------------------------------------------------------
+
+It may be used within a project folder e.g. ov_base to generate some new functional unit e.g. ov_rtp using:
+
+	ov_source_file ov_rtp
+
+to generate
+
+	ov_base/include/ov_rtp.h
+	ov_base/src/ov_rtp.c
+	ov_base/src/ov_rtp_test.c
+
+A second use case is to generate some new project folder e.g. ov_rtp under lib using:
+
+	ov_source_file -p ov_rtp -d ./lib
+
+to generate
+
+	lib/ov_rtp/
+	lib/ov_rtp/include/ov_rtp.h
+	lib/ov_rtp/src/ov_rtp.c
+	lib/ov_rtp/src/ov_rtp_test.c
+	lib/ov_rtp/makefile
+	lib/ov_rtp/copyright/copyright
+	lib/ov_rtp/copyright/licence.txt
+
+-----------------------------------------------------------------------
+
+ov_source has some general build in flags, which MAY not be overriden:
+
+url: "https://openvocs.org";
+owner: "German Aerospace Center DLR e.V. (GSOC)";
+note: "This file is part of the openvocs project. https://openvocs.org";
+
+Some default parameter may be overriden using the commandline
+
+default licence: apache v2
+default author: the git author of the current git project
+
+-----------------------------------------------------------------------
+
+Available other flags and triggers may be shown using:
+
+markus@rbmto:~/ov/2$ ov_source -h
+
+USAGE          ov_source_file [OPTIONS]... [TARGET_NAME]
+
+EXAMPLES       ov_source_file --project --dir /home/project [TARGET_NAME]
+               ov_source_file -pr [TARGET_NAME]
+               ov_source_file [TARGET_NAME]
+
+OPTIONS        (GENERAL)
+
+               -p,     --project       create a new project instead of a module
+               -n,     --name          define the target name explizit as argument
+               -o,     --owner         define the target owner explizit as argument
+               -u,     --author        define an author explizit as argument
+               -x,     --note          define an copyright end note as argument
+               -w,     --web           define a webpage explizit as argument
+               -d,     --dir           set the project's top dir (e.g. ~/home/projects)
+               -v      --version       print the file version
+               -h      --help          print this text
+
+               (COPRIGHT)
+
+               -r       --res           set copyright to "All rights reserved."
+               -g       --gpl           set copyright to GPL v3
+               -a       --apache        set copyright to APACHE v2
+               -b       --bsd           set copyright to BSD 3Clause
+               -m       --mit           set copyright to MIT

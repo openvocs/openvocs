@@ -1,0 +1,4 @@
+ov_wav_to_pcm
+
+Command line tool that extracts PCM16s_BE (as required by the openvocs) from
+unencoded PCM16s_LE Wave files

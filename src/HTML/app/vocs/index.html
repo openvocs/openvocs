@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+	<title>openvocs voice</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+	<!-- Place favicon.ico in the root directory -->
+	<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+	<link rel="stylesheet" href="/plugin/simple-keyboard-3.8.0/css/index.css">
+	<link rel="stylesheet" type="text/css" href="/css/ov_basic.css" />
+	<link rel="manifest" href="./manifest.json">
+</head>
+
+<body>
+	<div class="container" id="view_container"></div>
+
+	<script type="text/javascript" src="./views/auth/js/default_config.js"></script> <!-- default login config -->
+	<script type="text/javascript" src="./views/loops/js/default_config.js"></script> <!-- default vocs config -->
+	<script type="text/javascript" src="/config_vocs.js"></script> <!-- user config -->
+
+	<script src="/plugin/simple-keyboard-3.8.0/index.modern.js"></script>
+  
+
+	<script>
+		if ('serviceWorker' in navigator) {
+			// Register the Service Worker
+			navigator.serviceWorker.register('./service-worker.js')
+				.then(function (registration) {
+					console.log('Service Worker registered with scope:', registration.scope);
+				})
+				.catch(function (error) {
+					console.log('Service Worker registration failed:', error);
+				});
+		}
+	</script>
+
+	<script type="module">
+		import ov_Websocket from "/lib/ov_websocket.js";
+		import * as ov_Websockets from "/lib/ov_websocket_list.js";
+		import * as Auth_View from "./views/auth/js/auth.js";
+		import * as Voice_Client from "./views/loops/js/vocs.js";
+		import * as ov_Auth from "/lib/ov_auth.js";
+
+		document.addEventListener("DOMContentLoaded", async function () {
+			let view_container = document.getElementById("view_container");
+			view_container.addEventListener("switch_view", () => {
+				Auth_View.remove();
+				console.log("switch view: from auth to vocs");
+				Voice_Client.render(view_container);
+			});
+
+			await ov_Websockets.setup_connections(ov_Websocket);
+			if (ov_Websockets.auto_login) {
+
+				let promises = [];
+				for (let websocket of ov_Websockets.list) {
+					promises.push(login(websocket));
+				}
+
+				if (await Promise.any(promises) || (await Promise.all(promises)).includes(true)) {
+					for (let ws of ov_Websockets.list)
+						if (ws.authorized) {
+							if (ws !== ov_Websockets.current_lead_websocket)
+								ov_Websockets.switch_lead_websocket(ws);
+							break;
+						}
+					await Voice_Client.render(view_container);
+					return;
+				}
+			}
+			await Auth_View.render(view_container); // + set user name
+		});
+
+		async function login(websocket) {
+			let result = await ov_Auth.relogin(websocket);
+			if (result)
+				result = await ov_Auth.collect_roles(websocket);
+			return result;
+		}
+	</script>
+</body>

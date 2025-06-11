@@ -1,0 +1,156 @@
+button,
+.button {
+    min-height: 1rem;
+}
+
+#open_graph_menu {
+    margin: 0;
+    position: fixed;
+}
+
+#open_graph_menu .icon {
+    height: 1.25rem;
+    width: 3.5rem;
+}
+
+#graph_menu {
+    z-index: 10;
+    width: 15rem;
+    height: 15rem;
+    margin: 0;
+    left: 0.5rem;
+    top: 4rem;
+}
+
+/* project configuration --------------------------------------------------- */
+
+#graph {
+    display: grid;
+    grid-template-columns: 10rem 9.6rem 10rem 9.6rem 10rem;
+    grid-template-rows: 2.5rem repeat(var(--rowNum), 2rem);
+    grid-template-areas: "user_header . role_header . loop_header";
+    justify-items: center;
+    grid-row-gap: 0.1rem;
+    grid-auto-flow: column;
+    user-select: text;
+}
+
+/* user, roles and loops header -------------------------------------------- */
+
+#user_header {
+    grid-area: user_header;
+}
+
+#role_header {
+    grid-area: role_header;
+}
+
+#loop_header {
+    grid-area: loop_header;
+}
+
+.column_header {
+    width: 100%;
+    text-align: center;
+}
+
+.column_header h3 {
+    display: inline-block;
+    font-size: 1.5rem;
+}
+
+.add_entry {
+    height: 1.8rem;
+    width: 1.2rem;
+    display: inline-block;
+    padding: 0.3rem 0;
+    margin: 0.3rem 0.2rem 0.2rem -3rem;
+}
+
+ov-rbac-node {
+    padding: 0.1rem;
+}
+
+ov-rbac-node[type=user] {
+    grid-column-start: 1;
+    justify-self: right;
+}
+
+ov-rbac-node[type=role] {
+    grid-column-start: 3;
+}
+
+ov-rbac-node[type=loop] {
+    grid-column-start: 5;
+    justify-self: left;
+}
+
+#user_nodes,
+#loop_nodes,
+#role_nodes,
+.node_group {
+    display: contents;
+}
+
+.node_group ov-rbac-node {
+    background-color: var(--white_transparent_64);
+    position: relative;
+}
+
+.node_group ov-rbac-node:first-of-type {
+    border-top-right-radius: 0.3rem;
+    border-top-left-radius: 0.3rem;
+}
+
+.node_group ov-rbac-node:last-of-type {
+    border-bottom-right-radius: 0.3rem;
+    border-bottom-left-radius: 0.3rem;
+}
+
+.node_group ov-rbac-node+ov-rbac-node::before {
+    display: block;
+    position: absolute;
+    top: -0.1rem;
+    left: 0;
+    height: 0.1rem;
+    width: 10rem;
+    content: '';
+    background-color: var(--white_transparent_64);
+}
+
+/* links ------------------------------------------------------------------- */
+
+#user_role_connections {
+    grid-column-start: 2;
+    grid-row-start: 2;
+    grid-row-end: -1;
+    margin: 0 -0.1rem;
+}
+
+#role_loop_connections {
+    grid-column-start: 4;
+    grid-row-start: 2;
+    grid-row-end: -1;
+    margin: 0 -0.1rem;
+}
+
+.link {
+    stroke-width: 2;
+    fill: none;
+    stroke-opacity: 0.10;
+    cursor: pointer;
+    stroke: var(--white);
+}
+
+.link.highlight {
+    stroke-opacity: 1 !important;
+}
+
+.link.select {
+    stroke-opacity: 0.7;
+    stroke: var(--yellow);
+}
+
+.link.select.highlight {
+    stroke: var(--yellow);
+}

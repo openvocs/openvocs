@@ -1,0 +1,60 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+
+	"stun" : {
+
+		"debug" : true,
+
+		"socket" :
+		{
+			"host" : "127.0.0.1",
+			"port" : 3478,
+			"type" : "UDP"
+		},
+
+		"sockets" :
+		[
+			{
+				"host" : "127.0.0.1",
+				"port" : 13478,
+				"type" : "UDP"
+			},
+			{
+				"host" : "127.0.0.1",
+				"port" : 23478,
+				"type" : "UDP"
+			},
+			{
+				"host" : "127.0.0.1",
+				"port" : 33478,
+				"type" : "UDP"
+			},
+			{
+				"host" : "127.0.0.1",
+				"port" : 43478,
+				"type" : "UDP"
+			},
+			{
+				"host" : "127.0.0.1",
+				"port" : 53478,
+				"type" : "UDP"
+			},
+			{
+				"host" : "127.0.0.1",
+				"port" : 63478,
+				"type" : "UDP"
+			}
+
+		],
+
+		"range" : {
+			"start" : 3478,
+			"end" : 3478
+		}
+	}
+}

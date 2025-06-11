@@ -1,0 +1,58 @@
+<main id="config_view" class="view">
+    <menu id="menu_bar" class="menu_bar bottom">
+        <button id="menu_button">
+            <div class="logo logo_openvocs"></div>
+        </button>
+        <h1 id="config_name">[New]</h1>
+        <button id="save_button" class="green_button">Save</button>
+        <ov-nav id="select_subview" name="config_subview">
+            <input type="radio" id="settings_page_button" name="config_subview" value="settings">
+            <label for="settings_page_button" class="button">Settings</label>
+
+            <input type="radio" id="rbac_page_button" name="config_subview" value="rbac">
+            <label for="rbac_page_button" class="button">Access Management</label>
+
+            <input type="radio" id="layout_page_button" name="config_subview" value="layout">
+            <label for="layout_page_button" class="button">Layout</label>
+
+            <input type="radio" id="sip_page_button" name="config_subview" value="sip">
+            <label for="sip_page_button" class="button">SIP</label>
+
+            <input type="radio" id="recorder_page_button" name="config_subview" value="recorder">
+            <label for="recorder_page_button" class="button">Recorder</label>
+        </ov-nav>
+    </menu>
+
+    <section id="config_administration">
+        <section id="settings_page" class="container">SETTINGS</section>
+        <section id="rbac_page" class="container">RBAC</section>
+        <section id="layout_page" class="container">LAYOUT</section>
+        <section id="sip_page" class="container">SIP</section>
+        <section id="recorder_page" class="container">RECORDER</section>
+    </section>
+
+    <ov-dialog id="menu_slider" position="left">
+        <div slot="dialog-content">
+            <div>
+                <input type="file" id="open_file_dialog" style="display:none" />
+                <button id="import_button">Import</button>
+
+                <button id="export_button">Export</button>
+                <button id="back_button">Back</button>
+                <button id="logout_button" class="red_button">Logout</button>
+            </div>
+        </div>
+    </ov-dialog>
+    <dialog id="error_dialog">
+        <button class="close_button">
+            <div class="icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_close"></use>
+                </svg>
+            </div>
+        </button>
+        <h3></h3>
+        <p id="error_report"></p>
+        <p>Please see browser console for further information.</p>
+    </dialog>
+</main>

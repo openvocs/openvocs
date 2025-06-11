@@ -1,0 +1,5 @@
+ov_bin_to_csv
+
+Converts binary 16bit signed PCM files into ASCII CSV format of the form
+
+[Sample number]    [Sample value]

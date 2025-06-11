@@ -1,0 +1,102 @@
+#loop {
+    font-size: 2rem;
+    color: var(--base_text_color);
+    margin: 0.5rem;
+    text-align: center;
+}
+
+#sip-dial-pad {
+    min-width: 20rem;
+    width: 20rem;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    color: var(--base_text_color);
+    margin: 0 auto;
+}
+
+.icon.sip-phone-icon {
+    height: 2rem;
+}
+
+.icon.sip-phone-icon svg {
+    fill: var(--icon_color);
+}
+
+#number-field-wrapper span {
+    position: absolute;
+    color: var(--input_text_color);
+    font-size: 3rem;
+    font-weight: bold;
+    line-height: 3.75rem;
+    margin-left: 1rem;
+    cursor: pointer;
+}
+
+#sip-phone-number-field {
+    border-radius: 0;
+    font-size: 1.5rem;
+    padding: 2rem 0.5rem 2rem 3.5rem;
+}
+
+:host([error])::before {
+    content: attr(error);
+    color: var(--red);
+    position: absolute;
+    font-size: 1rem;
+    right: 1.5rem;
+    top: 6rem;
+}
+
+.sip-clickable {
+    aspect-ratio: 1/1;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+
+    transition: all 0.1s ease-in-out;
+
+    color: var(--base_text_color);
+    background-color: var(--element_background_color);
+    border-color: var(--element_border_color);
+    box-shadow: var(--element_inset_box_shadow);
+}
+
+.sip-clickable-active {
+    background-color: var(--element_hover_background_color);
+    border-color: var(--element_hover_border_color);
+}
+
+.numeric-theme {
+    margin: 0 auto;
+}
+
+.simple-keyboard.hg-theme-default.numeric-theme .hg-button.hg-standardBtn.hg-button-at {
+    max-width: none;
+}
+
+.simple-keyboard.ov_sip_keyboard {
+    background-color: var(--secondary_background_color);
+    border-radius: 0;
+    border-bottom-right-radius: 5px;
+    border-bottom-left-radius: 5px;
+    padding: 0.5rem 0;
+}
+
+.simple-keyboard.ov_sip_keyboard .hg-button {
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--element_background_color);
+    color: var(--base_text_color);
+    width: 33%;
+}
+
+.simple-keyboard.ov_sip_keyboard .hg-button:active {
+    background: var(--white);
+    color: var(--black);
+}
+
+#root .simple-keyboard.ov_sip_keyboard+.simple-keyboard-preview {
+    background: var(--white);
+}

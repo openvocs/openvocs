@@ -1,0 +1,56 @@
+openvocs library
+
+The openvocs library is split in some dependent library parts.
+
+Anything platform specific, SHALL be encapsulated in specified library components e.g. @see ov_encryption
+
+Default structure:
+
+~~~~
+<pre>
+.
+├── README.MD
+│
+├── ov_base             // only allowed dependency POSIX and ov_log
+│   └── ...
+│
+├── ov_core             // core lib using ov_* lib interfaces
+│   └── ...
+│
+├── ov_codec            // codec lib using external dependencies
+│   └── ...
+│
+├── ov_ice              // core network lib using ov_* lib interfaces
+│   └── ...
+│
+├── ov_encryption       // encryption functions (incl external dependencies)
+│   └── ...
+│
+├── ov_linux            // linux specific implementations (e.g. systemd)
+│   └── ...
+│
+├── ov_test             // test specific implementations (generic test helper functions)
+│   └── ...
+│
+├── ov_log              // logging interface abstraction
+│   └── ...
+│
+.
+</pre>
+~~~~
+
+Copyright 2018 German Aerospace Center DLR e.V. (GSOC)
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+This file is part of the openvocs project. http://openvocs.org

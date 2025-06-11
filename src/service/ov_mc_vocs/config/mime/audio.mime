@@ -1,0 +1,16 @@
+{
+    "aac" : {
+        "mime" : "audio/aac",
+        "extension" : [ "aac" ]
+    },
+
+    "wav" : {
+        "mime" : "audio/wav",
+        "extension" : [ "wav"]
+    },
+
+    "mp3" : {
+        "mime" : "audio/mpeg",
+        "extension" : [ "mp3"]
+    }
+}

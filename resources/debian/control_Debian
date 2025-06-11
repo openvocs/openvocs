@@ -1,0 +1,6 @@
+Package: openvocs
+Version: @OV_VERSION@
+Architecture: @OV_DEB_ARCH@
+Maintainer: Internal Pointers <info@openvocs.org>
+Description: The Openvocs Audio Conferencing Core.
+Depends: libopus0, libsrtp2-1, libasound2

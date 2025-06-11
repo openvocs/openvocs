@@ -1,0 +1,24 @@
+label {
+    margin-top: 0.5rem;
+}
+
+#domain_settings button {
+    width: 6rem;
+}
+
+#ldap_import {
+    margin-top: 2rem;
+}
+
+#ldap_notice {
+    display: inline;
+}
+
+#delete_domain {
+    margin-top: 2rem;
+    display: none;
+}
+
+#edit_id:disabled ~ #delete_domain {
+    display: initial;
+}

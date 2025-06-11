@@ -1,0 +1,14 @@
+{
+    "truetype" : {
+        "mime" : "font/ttf",
+        "extension" : [ "ttf" ]
+    },
+    "woff" : {
+        "mime" : "font/woff",
+        "extension" : [ "woff" ]
+    },
+    "woff2" : {
+        "mime" : "font/woff2",
+        "extension" : [ "woff2" ]
+    }
+}

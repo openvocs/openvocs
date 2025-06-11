@@ -1,0 +1,6 @@
+{
+    "calendar" : {
+        "mime" : "text/calendar",
+        "extension" : [ "ics"]
+    }
+}

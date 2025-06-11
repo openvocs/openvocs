@@ -1,0 +1,27 @@
+<template id="call_list_template">
+    <div id="loop"></div>
+    <div id="sip_call_list">
+        <button id="new_call">
+            <div class="icon sip_phone_icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_phone"></use>
+                </svg>
+            </div>
+        </button>
+        <div id="current_calls"></div>
+    </div>
+</template>
+
+<template id="call_template">
+    <div class="sip_call">
+        <button class="sip_hangup">
+            <div class="icon sip_phone_icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_phone"></use>
+                </svg>
+            </div>
+        </button>
+        <span class="call_number"></span>
+        <span class="call_status"></span>
+    </div>
+</template>

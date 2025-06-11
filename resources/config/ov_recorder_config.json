@@ -1,0 +1,17 @@
+{
+    "projects": "/etc/openvocs/projects",
+    "recorder": {
+        "signalling_server": {
+            "host": "127.0.0.1",
+            "port": 10001,
+            "type": "TCP",
+            "reconnect_interval_secs": 2
+        },
+        "repository_root_path": "/tmp/ov_recorder_repo",
+        "log": {
+            "level": "debug",
+            "systemd": true
+        },
+        "lock_timeout_msecs": 1000
+    }
+}

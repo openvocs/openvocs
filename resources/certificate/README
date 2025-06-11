@@ -1,0 +1,12 @@
+This folder contains the default openvocs.test certificates, as well as some script to regenerate the certificates.
+
+usage: sudo ./ov_generate_test_certicicate.sh
+
+Development C files using certificates for testing SHOULD use
+
+OV_TEST_CERT
+OV_TEST_CERT_KEY
+
+This way the tests will run, as soon as the certificate is regenerated.
+
+NOTE certificate lifetime is limited to 365 days due to some browser restrictions.

@@ -1,0 +1,694 @@
+<!doctype html>
+
+<html class="no-js" lang="en">
+
+<title>ov_vocs_db</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- CSS should be changed to www.openvocs.org/css/* for final version
+	TBD customize w3.css to openvocs.css? -->
+
+<link rel="stylesheet" href="w3.css">
+<link rel="stylesheet" href="openvocs-colors.css">
+
+<!-- generic JS should be changed to www.openvocs.org/js/* for final version-->
+<script src="ov_websocket.js"></script>
+<script src="ov_vocs_db.js"></script>
+
+<style>
+
+		#voiceInput {
+			justify-self: strech;
+		}
+
+		canvas {
+			width: 100%;
+			height: 200px;
+			background-color: white;
+		}
+
+		#voiceOutput {
+			justify-self: strech;
+			grid-column: 2;
+		}
+
+		div.scroll {
+                margin:4px, 4px;
+                padding:4px;
+                width: 100%;
+                height: 100%;
+                overflow-x: auto;
+                overflow-y: auto;
+                text-align:justify;
+            }
+
+</style>
+
+<body>
+
+<!-- Sidebar/menu -->
+
+<nav class="w3-sidebar w3-collapse w3-top w3-large w3-padding openvocs-grey" style="z-index:3;width:400px;font-weight:bold;" id="mySidebar" >
+
+	<a href="javascript:void(0)" onclick="w3_close()" class="w3-button w3-hide-large w3-display-topleft" style="width:100%;font-size:22px">Close Menu</a>
+
+	<div class="w3-container w3-center">
+		<img src="logo.png" alt="openvocs logo" class="w3-padding-64" width="200">
+	</div>
+
+	<!-- Websocket -->
+
+	<div class="w3-bar-block">
+		<input class="w3-input" type="text" id="url" value="wss://localhost:8001/db">
+		<button class="w3-button" id="connect" onclick="ov_websocket.connect(document.getElementById('url').value)">Connect</button>
+			<button class="w3-button" id="disconnect" onclick="ov_websocket.disconnect()">Disconnect</button>
+	</div>
+
+	<div class="w3-bar-block">
+		<input class="w3-input" type="text" id="user" value="admin">
+		<input class="w3-input" type="password" id="password" value="admin">
+		<button class="w3-button" id="login" onclick="ov_vocs_db.login(document.getElementById('user').value, document.getElementById('password').value)">Login</button>
+		<button class="w3-button" id="logout" onclick="ov_vocs_db.logout()">Logout</button>
+	</div>
+
+	<hr>
+
+	
+	<h4><a href="#CREATE">CREATE</a></h4>
+	<h4><a href="#GET">GET</a></h4>
+	<h4><a href="#UPDATE">UPDATE</a></h4>
+	<h4><a href="#DELETE">DELETE</a></h4>
+	
+	<hr>
+
+	<h4><a href="#GET_KEY">GET_KEY</a></h4>
+	<h4><a href="#UPDATE_KEY">UPDATE_KEY</a></h4>
+	<h4><a href="#DELETE_KEY">DELETE_KEY</a></h4>
+
+	<hr>
+
+	<h4><a href="#SAVE">SAVE</a></h4>
+	<h4><a href="#LOAD">LOAD</a></h4>
+
+	<hr>
+
+	<h4><a href="#ADMIN_DOMAINS">ADMIN_DOMAINS</a></h4>
+	<h4><a href="#ADMIN_PROJECTS">ADMIN_PROJECTS</a></h4>
+
+	<hr>
+
+	<h4><a href="#LDAP_IMPORT">LDAP_IMPORT</a></h4>
+
+</nav>
+
+	<!-- Top menu on small screens -->
+	<header class="w3-container w3-top w3-hide-large w3-xlarge w3-padding openvocs-grey">
+  		<a href="javascript:void(0)" class="w3-button w3-margin-right" onclick="w3_open()">☰</a>
+  		<span>ov_default_template control interface</span>
+	</header>
+
+	<!-- Overlay effect when opening sidebar on small screens -->
+	<div class="w3-overlay w3-hide-large" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+	<!-- !PAGE CONTENT! -->
+
+	<div class="w3-main" style="margin-left:440px;margin-right:40px">
+
+	<!-- Header -->
+	<header class="w3-container w3-border-bottom openvocs-border-red">
+		<h1 class="w3-xxxlarge openvocs-text-red"><b>vocsdb interface</b></h1>
+	</header>
+
+	<!-- Content -->
+
+
+<article id="main">
+
+            <h4>Intro</h4>
+
+            <pre><code>
+            ov_auth expects global unique ids for all entries of any IDs so some
+            good strategy for configurations will be some email scheme compliant
+            ID definition e.g.
+
+                    domains     |   openvocs.org
+                    projects    |   project_id@projects.openvocs.org
+                    roles       |   role_id@roles.openvocs.org
+                    loops       |   loop_id@loops.openvocs.org
+                    users       |   user_id@users.openvocs.org
+
+                    or for project level user / roles / loops
+
+                    roles       |   role_id@roles.project_id.openvocs.org
+                    loops       |   loop_id@loops.project_id.openvocs.org
+                    users       |   user_id@users.project_id.openvocs.org
+
+            It is recommended to avoid the terms:
+
+                    **users**
+                    **roles**
+                    **loops**
+                    **projects**
+
+            for any specific ID, but to use these terms as some generic
+            identifier class to allow some role_id with the same name as
+            some loop_id or some user_id (see usage recommendation above)
+            </code></pre>
+	</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "CREATE">
+<h4><a href="#CREATE">create</a></h4>
+<p>
+Create some new object. Each object MUST be created in some scope, which is either a domain or some project. For example a user object may be set as domain user or project user. Scope of a project MUST be domain. Projects are managed under domains only.
+</p>
+<p>
+**NOTE** Create a new domain is currently not supported and MUST be done externaly within the filesystem before loading the data.
+</p>
+
+Message structure
+<pre><code>
+{
+	"event" : "create",
+	"parameter" :
+	{
+	    "type"  : "domain | project | user | role | loop",
+	    "id"    : "id to create",
+	    "scope" :
+	    {
+	        "type": "domain | project",
+	        "id" : "parent scope id"
+	    }
+	}
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "13", id = "create_input">
+{
+	"event" : "create",
+	"parameter" :
+	{
+	    "type"  : "loop",
+	    "id"    : "loopX",
+	    "scope" :
+	    {
+	        "type": "project",
+	        "id" : "project@localhost"
+	    }
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="create_btn" onclick="ov_vocs_db.create()">create</button>
+<p> Response </p>
+<pre><code id = "create_response">
+</code></pre>
+
+<!-------------------------------------------------------------------------------------------->
+
+</article>
+
+<article id = "GET">
+<h4><a href="#GET">get</a></h4>
+
+<p>
+Get some entire entity object from the database. The result will contain the whole entity object including all subobjects.
+</p>
+
+Message structure
+<pre><code>
+{
+	"event" : "get",
+	"parameter" :
+	{
+		"type" : "domain | project | user | role | loop",
+		"id" : "id to get",
+	},
+	"uuid":"1-2-3-4"
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "8", id = "get_input">
+{
+	"event" : "get",
+	"parameter" :
+	{
+		"type"  : "loop",
+		"id"    : "loop1"
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="get_btn" onclick="ov_vocs_db.get()">get</button>
+<p> Response </p>
+<pre><code id = "get_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "UPDATE">
+<h4><a href="#UPDATE">update</a></h4>
+
+<p>
+Update some entity with the content provided. Will add new keys to the stored dataset, but not delete previously set keys.
+</p>
+
+Message structure
+<pre><code>
+{
+	"event" : "update",
+	"parameter" :
+	{
+	    "type"  : "domain | project | user | role | loop",
+	    "id"    : "id to update",
+	    "data"  : { "data to update" }
+	}
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "12", id = "update_input">
+{
+	"event" : "update",
+	"parameter" :
+	{
+		"type"  : "loop",
+		"id"    : "loop1",
+		"data" : 
+		{
+			"name" : "loop1"
+		}
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="update_btn" onclick="ov_vocs_db.update()">update</button>
+<p> Response </p>
+<pre><code id = "update_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "DELETE">
+<h4><a href="#DELETE">delete</a></h4>
+
+<p>
+Delete some entity from the DB.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "delete",
+    "parameter" :
+    {
+        "type"  : "domain | project | user | role | loop",
+        "id"    : "id to delete"
+    }
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "8", id = "delete_input">
+{
+	"event" : "delete",
+	"parameter" :
+	{
+		"type"  : "loop",
+		"id"    : "loop1"
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="delete_btn" onclick="ov_vocs_db.delete()">delete</button>
+<p> Response </p>
+<pre><code id = "delete_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "GET_KEY">
+<h4><a href="#GET_KEY">get key</a></h4>
+
+<p>
+Get some key of some entity e.g. the users of some project.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "get_key",
+    "parameter" :
+    {
+        "type"  : "domain | project | user | role | loop",
+        "id"    : "id to get"
+				"key"   : "key to get"
+    }
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "9", id = "get_key_input">
+{
+	"event" : "get_key",
+	"parameter" :
+	{
+		"type"  : "loop",
+		"id"    : "loop1",
+		"key"   : "users"
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="get_key_btn" onclick="ov_vocs_db.get_key()">get key</button>
+<p> Response </p>
+<pre><code id = "get_key_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "UPDATE_KEY">
+<h4><a href="#UPDATE_KEY">update key</a></h4>
+
+<p>
+Update some key of some entity with some data. E.g. update the users object of some role.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "update_key",
+    "parameter" :
+    {
+			"type"  : "domain | project | user | role | loop",
+			"id"    : "id to update",
+			"key"   : "key to update",
+			"data"  : { "data for key "}
+    }
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "14", id = "update_key_input">
+{
+	"event" : "update_key",
+	"parameter" :
+	{
+		"type"  : "role",
+		"id"    : "role1",
+		"key"   : "users",
+		"data"  : 
+		{
+			"user1" : null,
+			"user2" : null	
+		}
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="update_key_btn" onclick="ov_vocs_db.update_key()">update key</button>
+<p> Response </p>
+<pre><code id = "update_key_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "DELETE_KEY">
+<h4><a href="#DELETE_KEY">delete key</a></h4>
+
+<p>
+Delete some key of some entity.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "delete_key",
+    "parameter" :
+    {
+        "type"  : "domain | project | user | role | loop",
+        "id"    : "id to get"
+				"key"   : "key to delete"
+    }
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "9", id = "delete_key_input">
+{
+	"event" : "delete_key",
+	"parameter" :
+	{
+		"type"  : "role",
+		"id"    : "role1",
+		"key"   : "users"
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="delete_key_btn" onclick="ov_vocs_db.delete_key()">delete key</button>
+<p> Response </p>
+<pre><code id = "delete_key_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "SAVE">
+<h4><a href="#SAVE">save</a></h4>
+
+<p>
+Trigger persistance save functionaltiy.
+**NOTE** Logged in user MUST be some domain admin.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "save"
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "3", id = "save_input">
+{
+	"event" : "save"
+}
+ </textarea>
+</code></pre>
+
+<button id="save_key_btn" onclick="ov_vocs_db.save()">save</button>
+<p> Response </p>
+<pre><code id = "save_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "LOAD">
+<h4><a href="#LOAD">load</a></h4>
+
+<p>
+Trigger persistance load functionaltiy.
+**NOTE** Logged in user MUST be some domain admin.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "load"
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "3", id = "load_input">
+{
+	"event" : "load"
+}
+ </textarea>
+</code></pre>
+
+<button id="load_key_btn" onclick="ov_vocs_db.load()">load</button>
+<p> Response </p>
+<pre><code id = "load_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "ADMIN_DOMAINS">
+<h4><a href="#ADMIN_DOMAINS">admin_domains</a></h4>
+
+<p>
+Get a list of the domains the currently logged in user is admin of.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "admin_domains"
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "3", id = "admin_domains_input">
+{
+	"event" : "admin_domains"
+}
+ </textarea>
+</code></pre>
+
+<button id="admin_domains_key_btn" onclick="ov_vocs_db.admin_domains()">admin_domains</button>
+<p> Response </p>
+<pre><code id = "admin_domains_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "ADMIN_PROJECTS">
+<h4><a href="#ADMIN_PROJECTS">admin_projects</a></h4>
+
+<p>
+Get a list of the projects the currently logged in user is admin of.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "admin_projects"
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "3", id = "admin_projects_input">
+{
+	"event" : "admin_projects"
+}
+ </textarea>
+</code></pre>
+
+<button id="admin_projects_btn" onclick="ov_vocs_db.admin_projects()">admin_projects</button>
+<p> Response </p>
+<pre><code id = "admin_projects_response">
+</code></pre>
+
+</article>
+
+<!-------------------------------------------------------------------------------------------->
+
+<article id = "LDAP_IMPORT">
+<h4><a href="#LDAP_IMPORT">ldap import</a></h4>
+
+<p>
+Import user from an ldap repository.
+</p>
+
+Message structure
+<pre><code>
+{
+    "event" : "ldap_import",
+	"parameter" :
+	{
+		"host"  : "localhost",
+		"base"	: "role1",
+		"user"  : "ldap_username",
+		"password"  : "ldap_password",
+		"domain"  : "domain"
+	}
+}
+</code></pre>
+
+Code
+<pre><code>
+<textarea cols = "50" rows = "11", id = "ldap_import_input">
+{
+	"event" : "ldap_import",
+	"parameter" :
+	{
+		"host"  : "localhost",
+		"base"	: "dc=openvocs,dc=org",
+		"user"  : "cn=admin,dc=openvocs,dc=org",
+		"password"  : "2simple1",
+		"domain"  : "openvocs.local"
+	}
+}
+ </textarea>
+</code></pre>
+
+<button id="ldap_import_btn" onclick="ov_vocs_db.ldap_import()">ldap_import</button>
+<p> Response </p>
+<pre><code id = "ldap_import_response">
+</code></pre>
+
+</article>
+
+
+
+<!-------------------------------------------------------------------------------------------->
+
+
+  <!-- END content -->
+
+<!-- additinal script which are using tags of the HTML code -->
+
+<script>
+
+// Script to open and close sidebar
+function w3_open() {
+  document.getElementById("mySidebar").style.display = "block";
+  document.getElementById("myOverlay").style.display = "block";
+}
+
+function w3_close() {
+  document.getElementById("mySidebar").style.display = "none";
+  document.getElementById("myOverlay").style.display = "none";
+}
+
+// Modal Image Gallery
+function onClick(element) {
+  document.getElementById("img01").src = element.src;
+  document.getElementById("modal01").style.display = "block";
+  var captionText = document.getElementById("caption");
+  captionText.innerHTML = element.alt;
+}
+</script>
+
+</body>

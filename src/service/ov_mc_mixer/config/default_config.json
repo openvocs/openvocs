@@ -1,0 +1,17 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+	"app" :
+	{
+		"resource_manager":
+		{
+			"host" : "127.0.0.1",
+			"port" : 12346,
+			"type" : "TCP"
+		}
+	}
+}

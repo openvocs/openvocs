@@ -1,0 +1,14 @@
+ov_basic_packages:
+
+ov_dev_packages:
+  - libopus-dev
+  - libsystemd-dev
+  - libssl-dev
+  - libsrtp2-dev
+  - libldap2-dev
+  - libsasl2-dev
+  - libasound2-dev
+  - libpulse-dev
+  - dpkg-dev
+
+ov_dev_helper_packages:

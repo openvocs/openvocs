@@ -1,0 +1,72 @@
+#loop {
+    font-size: 2rem;
+    color: var(--base_text_color);
+    margin: 0.5rem;
+    text-align: center;
+}
+
+#sip_call_list {
+    min-width: 20rem;
+    width: 20rem;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    color: var(--base_text_color);
+    border-radius: 0;
+    height: 25.75rem;
+    position: relative;
+}
+
+.icon.sip_phone_icon {
+    height: 2rem;
+}
+
+.icon.sip_phone_icon svg {
+    fill: var(--icon_color);
+}
+
+.sip_call {
+    width: 100%;
+    display: inline-block;
+    margin: 0;
+    border-radius: 0.25rem;
+    border-style: solid;
+    border-width: 0.01rem;
+    color: var(--base_text_color);
+    border-color: var(--element_art_color);
+}
+
+.sip_hangup {
+    width: 4rem;
+    margin: 0;
+}
+
+.sip_hangup .icon.sip_phone_icon svg {
+    fill: var(--red);
+    transform: rotate(135deg);
+}
+
+.call_number {
+    position: absolute;
+    margin: 1.3rem 0 0 0.5rem;
+}
+
+.call_status {
+    font-size: 1rem;
+    position: absolute;
+    right: 1.2rem;
+    margin-top: 2.7rem;
+}
+
+#new_call {
+    margin: 0;
+    margin-bottom: 0.5rem;
+}
+
+#new_call .icon.sip_phone_icon::before {
+    margin-left: 10rem;
+    content: "+";
+    position: absolute;
+    font-size: 1.5rem;
+    margin-top: -0.5rem;
+    color: var(--base_text_color);
+}

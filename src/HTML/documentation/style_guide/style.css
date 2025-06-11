@@ -1,0 +1,201 @@
+@import "/css/third-party/normalize.css";
+@import "/css/ov_basic.css";
+
+:root {
+    --touch: 0;
+}
+
+section {
+    margin-bottom : 2rem;
+    padding-bottom: 2rem;
+    border-bottom : solid 0.063rem var(--black_transparent_64);
+}
+
+h4 {
+    margin-bottom: 0;
+}
+
+.panel {
+    width  : 50rem;
+    margin : 0.25rem auto;
+    padding: 0.5rem;
+    border : solid 0.063rem var(--black_transparent_64);
+}
+
+.panel h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+#branding .light,
+#branding .dark {
+    width   : 23rem;
+    height  : 23rem;
+    display : inline-block;
+    margin  : 0 0.5rem;
+    position: relative;
+}
+
+#branding .logo_openvocs {
+    position: absolute;
+    margin  : auto;
+    top     : 0;
+    left    : 0;
+    right   : 0;
+    bottom  : 0;
+    width   : 20rem;
+}
+
+#branding code {
+    display: inline-block;
+    width  : 23rem;
+    margin : 0 0.5rem;
+}
+
+#color .color {
+    display: inline-block;
+    border : solid 0.063rem var(--black_transparent_64);
+    padding: 0.125rem;
+    width  : 10.95rem;
+    margin : 0.5rem;
+}
+
+#color .color.primary {
+    width: 23.1rem;
+}
+
+#color .color div {
+    height : 6rem;
+    padding: 0.063rem;
+}
+
+.black_transparent_92 {
+    background-image: linear-gradient(var(--black_transparent_92), var(--black_transparent_92));
+}
+
+.black_transparent_78 {
+    background-image: linear-gradient(var(--black_transparent_78), var(--black_transparent_78));
+}
+
+.black_transparent_64 {
+    background-image: linear-gradient(var(--black_transparent_64), var(--black_transparent_64));
+}
+
+.black_transparent_50 {
+    background-image: linear-gradient(var(--black_transparent_50), var(--black_transparent_50));
+}
+
+.black_transparent_36 {
+    background-image: linear-gradient(var(--black_transparent_36), var(--black_transparent_36));
+}
+
+.black_transparent_22 {
+    background-image: linear-gradient(var(--black_transparent_22), var(--black_transparent_22));
+}
+
+.black_transparent_8 {
+    background-image: linear-gradient(var(--black_transparent_8), var(--black_transparent_8));
+}
+
+.white_transparent_92 {
+    background-image: linear-gradient(var(--white_transparent_92), var(--white_transparent_92));
+}
+
+.white_transparent_78 {
+    background-image: linear-gradient(var(--white_transparent_78), var(--white_transparent_78));
+}
+
+.white_transparent_64 {
+    background-image: linear-gradient(var(--white_transparent_64), var(--white_transparent_64));
+}
+
+.white_transparent_50 {
+    background-image: linear-gradient(var(--white_transparent_50), var(--white_transparent_50));
+}
+
+.white_transparent_36 {
+    background-image: linear-gradient(var(--white_transparent_36), var(--white_transparent_36));
+}
+
+.white_transparent_22 {
+    background-image: linear-gradient(var(--white_transparent_22), var(--white_transparent_22));
+}
+
+.white_transparent_8 {
+    background-image: linear-gradient(var(--white_transparent_8), var(--white_transparent_8));
+}
+
+.white {
+    background-color: var(--white);
+}
+
+.black {
+    background-color: var(--black);
+}
+
+.color_matrix {
+    display              : grid;
+    grid-template-rows   : repeat(8, 3.7rem);
+    grid-template-columns: 13.4rem 2fr repeat(4, 1fr);
+    grid-column-gap      : 1rem;
+    padding              : 0.7rem;
+}
+
+.color_matrix div:first-child {
+    grid-column-start: span 2;
+}
+
+#typography h1 {
+    margin: 1rem 0;
+}
+
+#typography p {
+    margin-bottom: 0;
+}
+
+#icons div {
+    width     : 12rem;
+    display   : inline-block;
+    text-align: center;
+    margin    : 0.5rem 0;
+}
+
+#icons div.icon {
+    width  : 2rem;
+    height : 2rem;
+    display: block;
+    margin : 0 auto;
+}
+
+#buttons div {
+    display: inline-block;
+    padding: 1.5rem 5rem;
+    width  : 24.3rem;
+}
+
+#buttons code {
+    display: inline-block;
+    width  : 23rem;
+    margin : 0 0.5rem;
+}
+
+#forms div {
+    width  : 24.3rem;
+    display: inline-block;
+    padding: 0.5rem;
+}
+
+#forms code {
+    display: inline-block;
+    width  : 23rem;
+    margin : 0 0.5rem;
+}
+
+.touch {
+    --touch: 1;
+}
+
+.dark {
+    background-color: var(--base_color);
+    color: var(--base_text_color);
+}

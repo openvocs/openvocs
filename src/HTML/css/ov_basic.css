@@ -1,0 +1,519 @@
+@font-face {
+    /* Abel
+       Author: MADType
+       Licence: SIL Open Font License, 1.1
+       http://scripts.sil.org/OFL
+    */
+    font-family: 'Abel';
+    font-style: normal;
+    font-weight: 400;
+    src: url('/fonts/abel/Abel-Regular.ttf');
+}
+
+:root,
+::backdrop {
+    --base_font_size: 12px;
+    --orig_base_font_size: 12px;
+    --touch: 1;
+    --menu_bar_height: calc(3.5rem + (var(--touch) * 1.5rem));
+    --default_space: 0.5rem;
+
+    /* black --------------------------------------------------------------- */
+    /* raisin black */
+    --black: #242124;
+    --black_true: #000000;
+
+    --black_transparent_100: #00000000;
+    --black_transparent_75: #00000040;
+    --black_transparent_50: #00000080;
+    --black_transparent_25: #000000bf;
+
+    --black_transparent_92: #00000014;
+    --black_transparent_88: #0000001F;
+    --black_transparent_78: #00000038;
+    --black_transparent_64: #0000005c;
+    --black_transparent_50: #00000080;
+    --black_transparent_36: #000000a3;
+    --black_transparent_22: #000000c7;
+    --black_transparent_8: #000000eb;
+
+    /* white --------------------------------------------------------------- */
+    /* porcelaine white */
+    --white: #fffefc;
+    --white_true: #FFFFFF;
+
+    --white_transparent_100: #ffffff14;
+    --white_transparent_92: #ffffff14;
+    --white_transparent_78: #ffffff38;
+    --white_transparent_64: #ffffff5c;
+    --white_transparent_50: #ffffff80;
+    --white_transparent_36: #ffffffa3;
+    --white_transparent_22: #ffffffc7;
+    --white_transparent_8: #ffffffeb;
+
+    /* colors -------------------------------------------------------------- */
+    --blue: #2A52BE;
+    --green: #178e35;
+    --yellow: #F5CC00;
+    --red: #CF3A58;
+    --orange: #F48515;
+}
+
+@media only screen and (min-width:900px) {
+    :root {
+        --base_font_size: 16px;
+        --orig_base_font_size: 16px;
+    }
+}
+
+:root,
+:root.dark,
+.dark {
+    --base_color: var(--black);
+    --base_text_color: var(--white_transparent_8);
+
+    --secondary_background_color: #5b585b;
+    /*color-mix(in srgb, var(--base_color) 78%, var(--white_true));*/
+
+    --element_background_color: var(--white_transparent_78);
+    --element_border_color: var(--black_transparent_92);
+    --element_inset_box_shadow: inset 0.125rem 0.125rem 0.125rem var(--white_transparent_92), 0.063rem 0.063rem 0.125rem var(--black_transparent_64);
+    --element_hover_background_color: var(--white_transparent_92);
+    --element_hover_border_color: var(--white_transparent_50);
+    --element_disabled_text_color: var(--white_transparent_64);
+    --element_disabled_background_color: var(--white_transparent_100);
+    --element_disabled_inset_box_shadow: inset 0.125rem 0.125rem 0.125rem var(--black_transparent_92), 0.063rem 0.063rem 0.125rem var(--black_transparent_78);
+    --element_art_color: var(--white_transparent_64);
+
+    --input_background_color: var(--white_transparent_8);
+    /* alt: --black_transparent_78 */
+    --input_border_color: var(--white_transparent_64);
+    --input_text_color: var(--black_transparent_8);
+    --input_disabled_background_color: var(--white_transparent_50);
+    --input_disabled_border_color: var(--white_transparent_78);
+    --input_active_border_color: var(--white_transparent_8);
+
+    --checkbox_knop_color: var(--white);
+    --checkbox_knop_box_shadow: 0 0 0.125em var(--black_transparent_8);
+    --checkbox_background_color: var(--white_transparent_22);
+    --checkbox_border_color: var(--white_transparent_8);
+    --checkbox_disabled_knop_color: var(--black_transparent_100);
+    --checkbox_disabled_knop_box_shadow: 0 0 0.125em var(--black_transparent_22);
+    --checkbox_disabled_background_color: var(--white_transparent_50);
+
+    --ov_logo: url("/images/openvocs_logo_white.svg");
+    --dlr_logo: url("/images/dlr-logo_white.svg");
+    --icon_color: var(--white_transparent_36);
+}
+
+:root.light,
+.light {
+    --base_color: var(--white);
+    --base_text_color: var(--black_transparent_8);
+
+    --secondary_background_color: #e6e5e3;
+    /*color-mix(in srgb, var(--base_color) 92%, var(--black_true));*/
+
+    --element_background_color: var(--black_transparent_88);
+    --element_border_color: var(--black_transparent_88);
+    --element_inset_box_shadow: inset 0.063rem 0.063rem 0.125rem var(--white_transparent_64), 0.125rem 0.125rem 0.125rem var(--black_transparent_78);
+    --element_hover_background_color: var(--white_transparent_88);
+    --element_hover_border_color: var(--white_transparent_50);
+    --element_disabled_text_color: var(--black_transparent_78);
+    --element_disabled_background_color: var(--black_transparent_92);
+    --element_disabled_border_color: var(--black_transparent_64);
+    --element_disabled_inset_box_shadow: inset 0.125rem 0.125rem 0.125rem var(--black_transparent_92), 0.063rem 0.063rem 0.125rem var(--black_transparent_78);
+    --element_art_color: var(--black_transparent_78);
+
+    --input_background_color: var(--white_transparent_22);
+    --input_border_color: var(--black_transparent_64);
+    --input_text_color: var(--black_transparent_8);
+    --input_disabled_background_color: var(--black_transparent_92);
+    --input_disabled_border_color: var(--black_transparent_78);
+    --input_active_border_color: var(--black_transparent_36);
+
+    --checkbox_knop_color: var(--white);
+    --checkbox_knop_box_shadow: 0 0 0.125em var(--black_transparent_8);
+    --checkbox_background_color: var(--black_transparent_78);
+    --checkbox_border_color: var(--black_transparent_64);
+    --checkbox_disabled_knop_color: var(--black_transparent_100);
+    --checkbox_disabled_knop_box_shadow: 0 0 0.125em var(--black_transparent_36);
+    --checkbox_disabled_background_color: var(--black_transparent_92);
+
+    --ov_logo: url("/images/openvocs_logo.svg");
+    --dlr_logo: url("/images/dlr-logo.svg");
+    --icon_color: var(--black_transparent_36);
+}
+
+html {
+    font-family: Abel, sans-serif;
+    height: 100vh;
+    margin: 0;
+    box-sizing: border-box;
+
+    color: var(--base_text_color);
+    background-color: var(--base_color);
+    font-size: var(--base_font_size);
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+details * {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: Abel, san-serif;
+    line-height: 1.5rem;
+    text-size-adjust: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+#view_container {
+    height: 100%;
+}
+
+.view {
+    padding: 0.5rem;
+    height: 100%;
+}
+
+.menu_bar {
+    height: var(--menu_bar_height);
+    margin: 0;
+    padding: var(--default_space);
+    background-color: var(--base_color);
+    width: 100%;
+    display: flex;
+    gap: var(--default_space);
+    line-height: 2.5rem;
+}
+
+/* .menu_bar button,
+.menu_bar .button {
+    height: 2.5rem;
+} */
+
+.menu_bar h1 {
+    line-height: 4rem;
+}
+
+.menu_bar .logo_openvocs {
+    width: 3.5rem;
+}
+
+.menu_bar.bottom {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+
+}
+
+.menu_bar.top {
+    margin-top: calc(-1 * var(--default_space));
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.menu_bar * {
+    margin: 0;
+}
+
+h1,
+h2,
+h3 {
+    font-weight: normal;
+    margin: 0;
+}
+
+code {
+    font-size: 0.9rem;
+}
+
+svg {
+    height: 100%;
+    width: 100%;
+}
+
+button,
+.button {
+    text-align: center;
+    cursor: pointer;
+
+    min-height: calc(2rem + (var(--touch) * 2rem));
+    min-width: calc(2.5rem + (var(--touch) * 1.5rem));
+    height: calc(2.5rem + (var(--touch) * 1.5rem));
+    margin: 0.5rem;
+
+    border-radius: 0.25rem;
+    border-style: solid;
+    border-width: 0.01rem;
+
+    color: var(--base_text_color);
+    background-color: var(--element_background_color);
+    border-color: var(--element_border_color);
+    box-shadow: var(--element_inset_box_shadow);
+}
+
+button:disabled,
+.button.disabled {
+    cursor: default;
+    color: var(--element_disabled_text_color) !important;
+    background-image: linear-gradient(var(--element_disabled_background_color), var(--element_disabled_background_color));
+    box-shadow: var(--element_disabled_inset_box_shadow) !important;
+}
+
+button:disabled .icon svg,
+.button.disabled .icon svg {
+    fill: var(--element_disabled_text_color) !important;
+}
+
+button.green_button:not(:disabled),
+.button.green_button:not(.disabled) {
+    background-color: var(--green);
+    color: var(--white);
+}
+
+button.red_button:not(:disabled),
+.button.red_button:not(.disabled) {
+    background-color: var(--red);
+    color: var(--white);
+}
+
+.hidden {
+    visibility: hidden !important;
+}
+
+.removed {
+    display: none !important;
+}
+
+/* form  */
+form {
+    width: 100%;
+    margin: 0;
+}
+
+label {
+    display: inline-block;
+}
+
+/* fields */
+fieldset,
+.fieldset {
+    border: solid 0.1rem;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    margin: 0.5rem 0;
+    border-color: var(--element_art_color);
+}
+
+select,
+input {
+    border-radius: 0.25rem;
+    border-width: 0.063rem;
+    height: calc(1.6rem + (var(--touch) * 0.9rem));
+
+    color: var(--input_text_color);
+    border-color: var(--input_border_color);
+    background-color: var(--input_background_color);
+}
+
+input:disabled,
+select:disabled {
+    background-color: var(--input_disabled_background_color);
+    border-color: var(--input_disabled_border_color);
+}
+
+input:focus,
+input:active,
+select:focus,
+select:active {
+    border-color: var(--input_active_border_color);
+    outline-style: none;
+}
+
+input[type=text],
+input[type=password],
+input[type=number],
+select {
+    width: 100%;
+    font-size: 1rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 0.25rem;
+}
+
+form input[type=text],
+form input[type=password],
+form input[type=number],
+form select {
+    margin-bottom: calc(.4rem + (var(--touch) * .3rem));
+}
+
+/* checkbox */
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]+label {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+    line-height: calc(1.45rem + (var(--touch) * 1.45));
+}
+
+input[type="checkbox"]+label:before {
+    width: calc(2.15rem + (var(--touch) * 2.15rem));
+    height: calc(1.35rem + (var(--touch) * 1.35rem));
+    border-radius: calc(1.35rem + (var(--touch) * 1.35rem));
+    content: "";
+    margin-right: 0.5rem;
+    transition: background-color 0.5s linear;
+
+    border: 0.063em solid var(--checkbox_border_color);
+    background-color: var(--checkbox_background_color);
+}
+
+input[type="checkbox"]+label:after {
+    width: calc(1.35rem + (var(--touch) * 1.35rem));
+    height: calc(1.35rem + (var(--touch) * 1.35rem));
+    border-radius: calc(1.35rem + (var(--touch) * 1.35rem));
+    content: "";
+    transition: margin 0.1s linear;
+    position: absolute;
+
+    background-color: var(--checkbox_knop_color);
+    box-shadow: var(--checkbox_knop_box_shadow);
+}
+
+input[type="checkbox"]:checked+label:before {
+    background-color: #68b67c;
+    /*color-mix(in srgb, var(--green) 66%, var(--white_true));*/
+    border-color: var(--checkbox_border_color);
+}
+
+input[type="checkbox"]:checked+label:after {
+    margin: 0 0 0 calc(0.8rem + (var(--touch) * 0.8rem));
+}
+
+input[type="checkbox"]:disabled+label {
+    cursor: default;
+}
+
+input[type="checkbox"]:disabled+label:before {
+    border: none;
+    background-color: var(--checkbox_disabled_background_color);
+}
+
+input[type="checkbox"]:disabled+label:after {
+    background-color: var(--checkbox_disabled_knop_color);
+    box-shadow: var(--checkbox_disabled_knop_box_shadow);
+}
+
+/* form button */
+form .button,
+form button {
+    margin: calc(1rem + (var(--touch) * 0.3rem)) 0 calc(0.4rem + (var(--touch) * 0.3rem));
+    height: calc(2rem + 1.5rem * (var(--touch)));
+    width: 100%;
+}
+
+.logo_openvocs {
+    content: var(--ov_logo);
+}
+
+.logo_dlr {
+    content: var(--dlr_logo);
+}
+
+.icon svg {
+    fill: var(--icon_color);
+}
+
+.ov_red_text {
+    color: var(--red);
+}
+
+.ov_red_background {
+    background-color: var(--red);
+}
+
+.ov_green_text {
+    color: var(--green);
+}
+
+.ov_green_background {
+    background-color: var(--green);
+}
+
+.ov_blue_text {
+    color: var(--blue);
+}
+
+.ov_blue_background {
+    background-color: var(--blue);
+}
+
+.ov_orange_text {
+    color: var(--orange);
+}
+
+.ov_orange_background {
+    background-color: var(--orange);
+}
+
+/* dialog */
+dialog[open]::backdrop {
+    background-color: var(--black_transparent_36);
+}
+
+dialog {
+    border-style: solid;
+    border-width: 0.06rem;
+    /*z-index: 20;*/
+    padding: 0.5rem;
+
+    color: var(--base_text_color);
+    background-color: var(--secondary_background_color);
+    border-color: var(--element_border_color);
+
+    overflow: hidden auto;
+}
+
+dialog .close_button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-height: calc(2.5rem + (var(--touch) * 1rem));
+    height: calc(2.5rem + (var(--touch) * 1rem));
+    margin-top: -0.03rem;
+    margin-right: -0.063rem;
+}
+
+dialog .close_button .icon svg {
+    height: 1.2rem;
+    width: 1.2rem;
+    vertical-align: sub;
+}
+
+dialog .close_button:disabled {
+    opacity: 0.5;
+    box-shadow: none;
+}
+
+dialog h3 {
+    margin: 0.5rem 4rem 1.5rem 0.5rem;
+    font-size: 1.5rem;
+    overflow-wrap: break-word;
+}

@@ -1,0 +1,19 @@
+<template id="sip-template">
+    <div id="loop"></div>
+    <div id="sip-dial-pad">
+        <span id="number-field-wrapper">
+            <span>&#8801;</span>
+            <input type="text" id="sip-phone-number-field" name="phone_number" class="sip-text-field" placeholder="Enter phone number...">
+        </span>
+
+        <div class="simple-keyboard number_pad"></div>
+
+        <button id="sip-call-button" class="sip-clickable">
+            <div class="icon sip-phone-icon">
+                <svg>
+                    <use xlink:href="/images/ov_icons.svg#ov_phone"></use>
+                </svg>
+            </div>
+        </button>
+    </div>
+</template>

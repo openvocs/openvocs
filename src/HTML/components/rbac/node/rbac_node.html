@@ -1,0 +1,72 @@
+<template>
+    <div id="node_area" class="button">
+        <button id="edit_icon" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_cog"></use>
+            </svg>
+        </button>
+        <button id="network_icon" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_network"></use>
+            </svg>
+        </button>
+        <button id="headphone_icon" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_headphone"></use>
+            </svg>
+        </button>
+        <button id="microphone_icon" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
+            </svg>
+        </button>
+        <button id="deconnect_icon" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_unlink"></use>
+            </svg>
+        </button>
+        <button id="connect_icon" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_link"></use>
+            </svg>
+        </button>
+        <button id="exit_network_icon" class="icon">
+            <svg>
+                <use xlink:href="/images/ov_icons.svg#ov_exit"></use>
+            </svg>
+        </button>
+        <span id="node_name"></span>
+        <dialog id="settings">
+            <button class="close_button">
+                <div class="icon">
+                    <svg>
+                        <use xlink:href="/images/ov_icons.svg#ov_close"></use>
+                    </svg>
+                </div>
+            </button>
+            <h3></h3>
+            <span id="dialog_error_message" class="ov_red_background"></span>
+
+            <label for="edit_id">ID</label>
+            <input id="edit_id" name="id" type="text">
+
+            <label for="edit_password">Password</label>
+            <input id="edit_password" name="password" type="password" autocomplete="new-password">
+
+            <label for="edit_name">Name</label>
+            <input id="edit_name" name="name" type="text" autofocus>
+
+            <label for="edit_abbreviation">Abbreviation</label>
+            <input id="edit_abbreviation" name="abbreviation" type="text">
+
+            <label for="edit_multicast_ip">Multicast IP</label>
+            <input id="edit_multicast_ip" name="multicast_ip" type="text"> 
+            <span id="edit_multicast_split"> : </span>
+            <input id="edit_multicast_port" name="multicast_port" type="text">
+
+            <button id="delete_element" class="red_button">Delete</button>
+            <button id="save_element">Ok</button>
+
+        </dialog>
+    </div>
+</template>

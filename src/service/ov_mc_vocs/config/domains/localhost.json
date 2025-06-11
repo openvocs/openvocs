@@ -1,0 +1,8 @@
+{
+	"name" : "localhost",
+	"path" : "./src/HTML/",
+	"certificate": {
+		"file" : "./resources/certificate/openvocs.test.crt",
+		"key": "./resources/certificate/openvocs.test.key"
+	}
+}

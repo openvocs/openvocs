@@ -1,0 +1,13 @@
+[Unit]
+Description=ov_mc_vocs
+PartOf=ov_mc.target
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+LimitNOFILE=10000
+ExecStart=/usr/bin/ov_mc_vocs -c /etc/openvocs/ov_mc_vocs/config.json
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

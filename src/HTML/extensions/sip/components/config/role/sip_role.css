@@ -1,0 +1,7 @@
+select {
+    width: 11rem;
+}
+
+label {
+    min-width: 11rem;
+}

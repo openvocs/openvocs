@@ -1,0 +1,36 @@
+#
+# Standart OpenSSL configuration file to generate the openvocs.test
+# certificates
+#
+
+[ req ]
+
+default_bits		= 2048
+distinguished_name	= req_distinguished_name
+req_extensions		= req_ext
+
+prompt				= no
+
+[ req_distinguished_name ]
+
+countryName			= DE
+stateOrProvinceName	= Berlin
+localityName		= Berlin
+organizationName	= DLR e.V.
+organizationalUnitName=openvocs
+commonName			= one.test
+emailAddress		= dlr@openvocs.de
+
+[ req_ext ]
+
+basicConstraints = CA:TRUE
+subjectAltName=@alt_names
+
+[ alt_names ]
+
+DNS.1 = one.test
+DNS.2 = *.one.test
+DNS.3 = localhost
+DNS.4 = one
+
+IP.1 = 127.0.0.1
