@@ -2,19 +2,6 @@
 
 Project openvocs contains all tools to build openvocs service backends.
 
-## Overview
-
-* [Quickstart](## Quickstart)
-* [Description](## Description)
-<!--* [Usage](#usage)-->
-* [Installation](## Installation)
-<!--* [Requirements](#requirements)
-* [openvocs signaling protocol](## Signaling protocol)
-* [Structure](#structure)
-* [Tests](#tests)
-* [Tips](#tips)-->
-* [Copyright](#copyright)
-
 ## Quickstart
 
 This README is Quick introduction How to start using the environment.
@@ -159,11 +146,6 @@ To run all tests of some module, you may used
 ./testrunnner.sh ov_base
 ```
 
-
-## Citation
-If you use this work in a publication, please cite using the citation: 
-... here Bibtex or Zenodo Link
-
 ## Contributors
 Here you find the main contributors to the material:
 
@@ -180,3 +162,7 @@ http://openvocs.org
 ## License
 Please see the file LICENSE.md for further information about how the content is licensed.
 
+### DLR logo
+The DLR logo (src/HTML/images/dlr-logo.svg and src/HTML/images/dlr-logo_white.svg) is the property of the German Aerospace Center (DLR) e. V., protected by copyright and registered trademark.
+It is not included under this project's open-source license and may not be used, reproduced, or modified without prior written permission from DLR.
+Any external usage, including forks or publicly accessible versions, requires separate authorization. In the absence of permission, the logo must be removed; responsibility lies with the respective users. 
