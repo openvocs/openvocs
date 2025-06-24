@@ -30,27 +30,19 @@ SPDX-License-Identifier: Apache 2.0
 * [Contact](#Contact)
 * [Licenses](#Licenses)
 
-* [LINKTEST](#linktest)
-
-
-
 ---
 ## [1. Introduction][toc]
 Voice communication is a crucial part to successfully conduct a space missions.
-To have an voice system, that is able to provide all necessary functionality is highly demanded. That is the reason the German Aerospace Center (Deutsches Zentrum für Luft und Raumfahrt - DLR)
-have started the project "OPENVOCS®" to develop a new dynamic voice conferencing
-system.
+To have an voice system, that is able to provide all necessary functionality is highly demanded. That is the reason the German Aerospace Center (Deutsches Zentrum für Luft und Raumfahrt - DLR e.V.)
+have started the project "OPENVOCS®" to develop a new dynamic voice conferencing system.
 
 This document presents basic guidelines for using and administration the OPENVOCS® software.
 
-The OPENVOCS® system is a pure software-based voice communication system developed by DLR e.V.  It was developed especially for space mission operations. Therefore, the voice communication is organized via voice loops (multiple audio conferences held in parallel). Further, the system provides a role-based access control, where depended on specific user roles, the access to voice loops is restricted. Moreover the allowance to only monitor or talk in a voice loop is differentiated.
-
 ---
 ## [2. OPENVOCS®][toc]
-OPENVOCS® is ...
+OPENVOCS® is a pure software-based voice commuication system developed within the department 'Space Operations and Astronaut Training'. It was developed especially for space mission operations. Therefore, the voice communication is organized via voice loops (multiple audio conferences held in parallel). Further, the system provides a role-based access control, where depended on specific user roles, the access to voice loops is restricted. Moreover, the allowance to only monitor or talk in a voice loop is differentiated. The development focuses on flexibility an scalebility. Therefore, the system uses common internet technology. The underlying system concept is a simple server-client structure. The voice interface can operate from within a standard internet browser (**Note** Firefox v.?? is tested and recommended, other browser also work, may lead to unexpected behavior). 
 
-
-In the following sections provide a detailed guide to build, install and use OPENVOCS.
+In the following sections provide a detailed guide to build, install and use OPENVOCS®.
 
 ## [Description and general overview][toc]
 
@@ -58,8 +50,8 @@ Within the development some types of implementations are done under src
 1. **lib**          core libraries
 2. **service**      services using the libraries
 3. **tools**        supporting development tools
-4. **HTML**         html clients used for openvocs
-5. **samples**      some samples to learn coding with openvocs
+4. **HTML**         html clients used for OPENVOCS®
+5. **samples**      some samples to learn coding with OPENVOCS®
 
 #### lib
 The libraries provides the core functions to build services for an openvocs system implementation. Modules required to build an openvocs system are for example the openvocs_event_protocol, a websocket_protocol for transmission of the openvocs_event_protocol, a json_protocol for packaging of the openvocs_event_protocol, a server to wait for protocol messages and so on.
@@ -86,9 +78,9 @@ These are the ***minimal** requirements - more users should be able to use openv
 
 ***BEWARE*** The maximum number of users is determined by the number of mixer processes started.
 
-## [Installation][toc]
+## [3. Installation][toc]
 
-Building openvocs is straight forward and requires 3 steps:
+Building OPENVOCS® is straight forward and requires 3 steps:
 
 1) install required dependencies \
 2) source env.h to setup the build environment \
@@ -97,7 +89,7 @@ Building openvocs is straight forward and requires 3 steps:
 ### [Installation - Linux][toc]
 #### Installing required libraries
 
-To build openvocs some libraries must be present.
+To build OPENVOCS® some libraries must be present.
 To show required libraries you may use:
 
 ```
@@ -112,15 +104,15 @@ for item in `./scripts/show_packages.sh ubuntu`; do sudo apt install -y $item; d
 
 Libraries are preconfigured for Debian 12. For other distros you may install the required libraries manually.
 
-#### Buildung OPENVOCS
+#### Buildung OPENVOCS®
 
-The first step on building openvocs is to source the environment variables. This should be done using:
+The first step on building OPENVOCS® is to source the environment variables. This should be done using:
 
 ```
 source env.sh
 ```
 
-Once the environment is ready openvocs may be build using:
+Once the environment is ready OPENVOCS® may be build using:
 
 ```
 make
@@ -140,11 +132,11 @@ make clean
 
 #### How to build openvocs library
 
-The openvocs library may be installed to the local system for development against openvocs.
+The OPENVOCS® library may be installed to the local system for development against OPENVOCS®.
 
 #### Installing required libraries
 
-To build openvocs some libraries must be present. To show required libraries you may use:
+To build OPENVOCS® some libraries must be present. To show required libraries you may use:
 
 ```
 scripts/show_packages.sh debian
@@ -153,25 +145,25 @@ scripts/show_packages.sh debian
 To install all required libraries use:
 
 ```
-for item in `./scripts/show_packages.sh ubuntu`; do sudo apt install -y $item; done
+for item in `./scripts/show_packages.sh debian`; do sudo apt install -y $item; done
 ```
 
-Libraries are preconfigured for Ubuntu, Debian and Suse variants. For other distros you may install the required libraries manually.
+Libraries are preconfigured for Debian 12. Other Linux distributions like Ubuntu or Suse may work as well. **Nevertheless** for these and other Linux distributions it may be necessary to install the required libraries manually.
 
-#### buildung openvocs
+#### Buildung OPENVOCS®
 
-The first step on building openvocs is to source the environment variables. This should be done using:
+The first step on building OPENVOCS® is to source the environment variables. This should be done using:
 
 ```
 source env.sh
 ```
 
-Once the environment is ready openvocs may be build using:
+Once the environment is ready OPENVOCS® may be build using:
 
 ```
 make && make target_install_lib
 ```
-Libraries are preconfigured for Ubuntu, Debian and Suse variants. For other distros you may install the required libraries manually.
+
 ```
 This will build the whole project and install the library packages at:
 
@@ -181,29 +173,22 @@ This will build the whole project and install the library packages at:
 ```
 ---
 ### [Installation - Base system][toc]
-To install the base system you should build a package for your distribution. Supported distributions are Debian, Suse and Ubuntu.
+To install the base system you should build a package for your distribution. Supported distributions is Debian 12.
 
-#### Build a package for Debian or Ubuntu:
+#### Build a package for Debian:
 
 ```
 make deb
 ```
-
-#### Build a package for Suse
-
-```
-make rpm
-```
-
 Once the build is completed the package will be avaialable under the ./build folder.
-e.g. for Debian based packages a file like openvocs_1.2.2-1505_amd64.deb will be build.
+THe Debian based packages a file like openvocs_1.2.2-1505_amd64.deb will be build.
 You may install the package using dpkg
 
 ```
 dpkg -i build/openvocs_<version>-<build_id>_amd64.deb
 ```
 
-Openvocs is now installed within your system. Important folder are configuration, which is installed to /etc/openvocs and HTML sources, which are installed under /srv/openvocs/HTML.
+OPENVOCS® is now installed within your system. Important folder are configuration, which is installed to /etc/openvocs and HTML sources, which are installed under /srv/openvocs/HTML.
 
 #### Finish the installation
 
@@ -220,8 +205,8 @@ This will preconfigure all of the configuration files:
 - /etc/openvocs/ov_mc_mixer/config.json
 - /etc/openvocs/ov_mc_vad/config.json
 
-In addition is will generate a certificate, which may be used for openvocs operations.
-NOTE feel encouraged to use your own certificates for openvocs.
+In addition it will generate a certificate, which may be used for OPENVOCS® operations.
+**NOTE**: feel encouraged to use your own certificates for OPENVOCS®, if necessary
 
 To finish the installation you should restart the systemctl daemon
 
@@ -230,20 +215,20 @@ sudo systemctl daemon-reload
 ```
 
 #### Start the system
-To start the openvocs system use:
+To start the OPENVOCS® system use:
 
 ```
 sudo systemctl start ov_mc.target
 ```
 
-This is the final target for openvocs within your systemd configuration. ov_mc.target will start all subtargets and subservices.
+This is the final target for OPENVOCS® within your systemd configuration. ov_mc.target will start all subtargets and subservices.
 
 
 ---
 
 
 ### [Installation - Windows][toc]
-To be able to run OPENVOCS in a Window machine, you need to install the Windows-Subsystem-for-Linux (WSL):
+To be able to run OPENVOCS® in a Window machine, you need to install the Windows-Subsystem-for-Linux (WSL):
 
 1. [Install WSL](https://www.roberts999.com/posts/2018/11/wsl-coding-windows-ubuntu#201811-GetWsl)
    1. Enable the windows subsystem for linux in windows features
@@ -256,7 +241,9 @@ To be able to run OPENVOCS in a Window machine, you need to install the Windows-
       * manual: see [microsoft docs](https://docs.microsoft.com/en-us/windows/wsl/install-manual)
    3. The first time running wsl, it will prompt you to setup a user account; just follow the prompts
 2. Make sure the project is checked out with unix file formatting. Git may have converted the files to dos formatting on checkout.
-Libraries are preconfigured for Ubuntu, Debian and Suse variants. For other distros you may install the required libraries manually.
+   
+Libraries are preconfigured for Debian 12. Other Linux distributions like Ubuntu or Suse may work as well. **Nevertheless** for these and other Linux distributions it may be necessary to install the required libraries manually.
+
 ```
 // configure git project to checkout unix file formatting on windows
 git config core.eol lf
@@ -268,9 +255,9 @@ git reset --hard FETCH_HEAD
 git clean -df
 ```
 
-3. In WSL navigate to openvocs project. If the project is located in the Windows part of your system, you can find it under `/mnt/c/...`.
+3. In WSL navigate to OPENVOCS® project. If the project is located in the Windows part of your system, you can find it under `/mnt/c/...`.
 4. You should use an editor that works directly in WSL (e.g. VSCode/VSCodium with the [WSL plugin](https://code.visualstudio.com/docs/remote/wsl)* to edit the project.
-5. Continue with installation guide for [linux](#Linux)
+5. Continue with installation guide for [Linux](#Linux)
 
 \* With VSCode with WSL you may run into problems with Git (see [VSCode issue](https://github.com/microsoft/vscode-remote-release/issues/903)).
 [This comment](https://github.com/microsoft/vscode-remote-release/issues/903#issuecomment-521304085) fixed it for me:
@@ -282,7 +269,7 @@ git clean -df
 ```
 
 ### [Installation - MacOS][toc]
-To build openvocs on macos a few tools should be installed
+To build OPENVOCS® on macos a few tools should be installed
 
 #### pkgconfig
 
@@ -324,8 +311,8 @@ To run all tests of some module, you may used
 
 ---
 
-## [HowTo openvocs services][toc]
-The openvocs service tree will look as follows:
+## [HowTo OPENVOCS® services][toc]
+The OPENVOCS® service tree will look as follows:
 ```
 ov_mc.target
 |__ ov_mc_vocs.service
@@ -334,19 +321,19 @@ ov_mc.target
 |__ ov_mc_mixer@.service
 |__ ov_mc_mixer.target
 ```
-it may contain other sub services e.g. recorder, sip gateway or alsa gateway, dependent on the installed system base.
+it may contain other sub services e.g. recorder, SIP gateway or ALSA gateway, dependent on the installed system base.
 
 #### ov_mc.target
-Main target for openvocs. Should be used to start, stop, restart the whole system.
+Main target for OPENVOCS®. Should be used to start, stop, restart the whole system.
 
 #### ov_mc_vocs.service
-Main service of openvocs. ov_mc_vocs contains the whole business logic of openvocs including permission and access management for connections, as well as the core webserver for client delivery and client interaction.
+Main service of OPENVOCS®. ov_mc_vocs contains the whole business logic of OPENVOCS® including permission and access management for connections, as well as the core webserver for client delivery and client interaction.
 
 #### ov_mc_vad.service
 This service is the voice activity indication service and used exclusively for this purpose. If voice activity indication is not working as expected you may reset this service.
 
 #### ov_mc_ice_proxy.service
-This is one instance of the ice proxy, the WebRTC Endpoint within openvocs. For simplicity only one ICE service is startet by default, but you may start several ICE services in parallel e.g. for load balancing.
+This is one instance of the ice proxy, the WebRTC Endpoint within OPENVOCS®. For simplicity only one ICE service is startet by default, but you may start several ICE services in parallel e.g. for load balancing.
 
 The ICE service is responsible for audio distribution within the system. It will route incomming audio from WebRTC connection to mutlicast media streams and outgoing streams of a users media mixer to the WebRTC connection of that user.
 
@@ -356,8 +343,8 @@ One instance of a ov_mixer microservice. The more mixers the system starts, the 
 #### ov_mc_mixer.target
 The mixer definition of the current machine. This target defines how many mixer instances shall be started.
 
-## [The OPENVOCS API][toc]
-The openvocs API is the client interface for openvocs communication. Using the API allows to build dedicated clients. Implementing the API allows to build dedicated servers. The API is the minimum information exchange definition required to run openvocs services.
+## [The OPENVOCS® API][toc]
+The OPENVOCS® API is the client interface for OPENVOCS® communication. Using the API allows to build dedicated clients. Implementing the API allows to build dedicated servers. The API is the minimum information exchange definition required to run OPENVOCS® services.
 
 ### [Client API][toc]
 #### Logout
@@ -372,7 +359,7 @@ Logout is used to close a user session.
 #### Login
 Login is used to start a user session.
 
-The Response to this event should contain a sessionid to be used for login updates.
+The response to this event should contain a sessionid to be used for login updates.
 
 ```
 {
@@ -566,8 +553,7 @@ Switch Push to Talk state.
 }
 ```
 ### Call from a loop
-Call from a loop to some SIP number.
-Works only with sip gateway connected.
+Call from a loop to some SIP number. Works only with SIP gateway connected.
 
 ```
 {
@@ -582,8 +568,7 @@ Works only with sip gateway connected.
 }
 ```
 #### Hangup a call from a loop
-Hangup a call.
-Works only with sip gateway connected.
+Hangup a call. Works only with SIP gateway connected.
 
 ```
 {
@@ -597,8 +582,7 @@ Works only with sip gateway connected.
 }
 ```
 #### Permit a call to a loop
-Permit some callin to some loop.
-Works only with sip gateway connected.
+Permit some callin to some loop. Works only with SIP gateway connected.
 
 ```
 {
@@ -615,8 +599,7 @@ Works only with sip gateway connected.
 }
 ```
 #### Revoke a call to a loop
-Revoke a previously set permission of some callin to some loop.
-Works only with sip gateway connected.
+Revoke a previously set permission of some callin to some loop. Works only with SIP gateway connected.
 
 ```
 {
@@ -633,8 +616,7 @@ Works only with sip gateway connected.
 }
 ```
 ### List active calls
-List active calls.
-Works only with sip gateway connected.
+List active calls. Works only with SIP gateway connected.
 
 ```
 {
@@ -644,8 +626,7 @@ Works only with sip gateway connected.
 }
 ```
 #### List active call permissions
-List active call permissions.
-Works only with sip gateway connected.
+List active call permissions. Works only with SIP gateway connected.
 
 ```
 {
@@ -655,8 +636,7 @@ Works only with sip gateway connected.
 }
 ```
 #### List current SIP status
-List SIP status.
-Works only with sip gateway connected.
+List SIP status. Works only with SIP gateway connected.
 
 ```
 {
@@ -728,12 +708,13 @@ Register a client to receive systembroadcasts.
 }
 ```
 ---
-### [Usage][toc]
-In the following the usage of OPENVOCS is shown. This section starts with explaining the voice client and is followed by explaining the administration interface.
+### [4. Usage][toc]
+In the following the usage of OPENVOCS® is shown. This section starts with explaining the voice client and is followed by explaining the administration interface.
 
 ### [Voice Client][toc]
 
 ### Login and role selection
+- The voice interface is reachable under "server-IP/openvocs/vocs".
 - Login website => enter username and password to authenticate, click LOGIN-button to continue.
 - By clicking the circle arrow symbol, one can reload the login-page.
 
@@ -859,7 +840,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 
 #### Setup: Role - Voice Loop - User
 - To configure, add, delete or change anything according to roles, voice loops and user one open via access management, on the panel at the bottom.
-- Note: Depending on the version of OPENVOCS, a SIP and RECORDER setup option are available.
+- **Note**: Depending on the version of OPENVOCS®, a SIP and RECORDER setup option are available.
 
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_role_vl_user.png" alt="placeholder" width="70%"/>
 
@@ -897,7 +878,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 ---
 - In the drop-down menue at the top, the layout for specific roles in the project can be selected.
 - After selecting on role the current layout for that role is loaded.
-- Note: When starting a new project, the grid will be empty.
+- **Note**: When starting a new project, the grid will be empty.
 
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/04_layout_01.png" alt="placeholder" width="70%"/>
 
@@ -907,12 +888,12 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - The tile will change to a green frame, to indicate the selection.
 - In addition a drop-down menue will appear.
 - From that menue, a voice loop can be selected.
-- Note: Only the voice loops that are linked before for that role will be available.
+- **Note**: Only the voice loops that are linked before for that role will be available.
 - The selection of the tile will end automatically when a new voice loop was selected or when clicking on the surrounding areas around the drop-down menue.
 
 
 #### Import and Export Configurations
-- When clicking on the OPENVOCS logo in the lower-left corner one ca find the options to import or export saved configurations.
+- When clicking on the OPENVOCS® logo in the lower-left corner one can find the options to import or export saved configurations.
 - Via import, are previously saved configuration file (json) can be loaded-
 - Via export, a json-file is directly download to the download folder on the system.
 - The back button brings one back to the project selection page.
@@ -928,12 +909,12 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 
 ---
 
-## [Citation][toc]
+## [5. Citation][toc]
 If you use this work in a publication, please cite using the citation:
 
 ***TODO*** ... here Bibtex or Zenodo Link
 
-## [Contributors][toc]
+## [6. Contributors][toc]
 Here you find the main contributors to the material:
 
 - Markus Töpfer
@@ -942,16 +923,16 @@ Here you find the main contributors to the material:
 - Tobias Kolb
 - Falk Schiffner
 
-## [Contact][toc]
+## [7. Contact][toc]
 http://openvocs.org
 
 
-## [License][toc]
+## [8. License][toc]
 Please see LICENSES for further information about how the content is licensed.
 
 ---
 
-## [Linktest][toc]
+
 [toc]: #table-of-content "go to Table of Content"
 
 
