@@ -103,7 +103,7 @@ To install all required libraries use:
 for item in `./scripts/show_packages.sh ubuntu`; do sudo apt install -y $item; done
 ```
 
-Libraries are preconfigured for Ubuntu, Debian and Suse variants. For other distros you may install the required libraries manually.
+Libraries are preconfigured for Debian 12. For other distros you may install the required libraries manually.
 
 #### Buildung OPENVOCS
 
