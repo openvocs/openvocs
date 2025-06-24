@@ -720,12 +720,12 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - Login website => enter username and password to authenticate, click LOGIN-button to continue.
 - By clicking the circle arrow symbol, one can reload the login-page.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/01_Login.png" alt="login" width="40%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/01_Login.png" alt="login" width="40%"/>
 
 - Role selection => select the role or project by clicking on it (only the roles and projects are shown that are allowed for the user).
 - The voice loops associated with the role/project and the corresponding layout is loaded automatically.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/02_Role_Selection.png" alt="RolesProjects" width="40%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/02_Role_Selection.png" alt="RolesProjects" width="40%"/>
 
 - After the role is selceted the voice client will start automatically.
 - Note: The role can be switched later in directly in the side menue, shown later in this guide.
@@ -737,11 +737,11 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - The page selection is placed on the lower-right corner and numbered.
 
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/03_Loop_off.png" alt="GUI_VL_OFF" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_Loop_off.png" alt="GUI_VL_OFF" width="70%"/>
 
 ---
 #### ***Voice client - tile elements***
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/03_GUI_OFF_Kachel_new.png" alt="login" width="40%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_GUI_OFF_Kachel_new.png" alt="login" width="40%"/>
 
 - The name or abbreviation of the voice loop is placed in the middle of the tile.
 - Headphones and microphone symbols indicates allowance in a loop.
@@ -765,7 +765,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 
 ---
 #### ***Voice client (monitoring: blue / talking: green -- switched ON)***
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/04_Loop_Talk.png" alt="login" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/04_Loop_Talk.png" alt="login" width="70%"/>
 
 #### ***Voice client (talking: green -- PTT-bar switched ON)***
 - To speak in a voice loop, the voice loop tile needs to be in talking mode (green color).
@@ -776,7 +776,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
   - 3. The name/role of the user, that has an open microphone will appear under the tile name.
   - 4. The white frame indicates voice traffic on a voice loop.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/05_active-waveform.png" alt="login" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/05_active-waveform.png" alt="login" width="70%"/>
 
 - Note: Depending on the configuration of OPENVOCS®, a screen PTT is also available, or only the PTT on the headset can be used.
 
@@ -789,7 +789,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 
 -To close the volume slider, one have to touch the speaker symbol again.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/06_GUI_Vol_Slider_new.png" alt="login" width="40%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/06_GUI_Vol_Slider_new.png" alt="login" width="40%"/>
 
 #### ***Voice client (menue opened via clicking on the OPENVOCS® logo)***
 - On top the user name is depicted.
@@ -798,7 +798,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - Further, a page reload button (circle arrows symbol) and additional options can be found (gear symbol).
 - At the bottom is a red logout-button located, clicking on it, will disconnect and close the voice client GUI, leading back to the login page.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/07_menu-open.png" alt="login" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/07_menu-open.png" alt="login" width="70%"/>
 
 <!--
 #### ***Voice client (settings opened via gearbox icon => 1. selftest and design)***
@@ -827,27 +827,27 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - For creating a new project, the "+" icon is selected.
 - The gear wheel in the top-right corner is for additional options.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/01_project_select.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/01_project_select.png" alt="placeholder" width="70%"/>
 
 - After selecting a project, the administration interface with all available options opens.
 - On this page one can also delete the project, by opening the "delete" menue.
 - Changes can be saved via the "Save" button place at the bottom.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/02_project_open.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/02_project_open.png" alt="placeholder" width="70%"/>
 
 
 #### Setup: Role - Voice Loop - User
 - To configure, add, delete or change anything according to roles, voice loops and user one open via access management, on the panel at the bottom.
 - Note: Depending on the version of OPENVOCS, a SIP and RECORDER setup option are available.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/03_role_vl_user.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_role_vl_user.png" alt="placeholder" width="70%"/>
 
 - Here all users, roles and voice loops for that project are shown.
 - Moreover the connection between users, their roles and available voice loops are graphically indicated.
 - For a better overview, one can hide unused users, roles, and voice loop, for that project, via the options hidden under the hamburger menue on the top-left corner.
 - One can add new users, roles and voice loops by clicking on each "+" symbol
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/03_role_options.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_role_options.png" alt="placeholder" width="70%"/>
 
 - For changes on a user, role, or voice loop, click on the gear symbol, that appears when hoovering over it.
 - In addition a linking / delinking symbol will appear.
@@ -855,11 +855,11 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - The color will change to yellow, when selected.
 - To exit the selection mode, one clicks on the door-exit symbol on the selected panel.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/03_role_vl_user_link_01.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_role_vl_user_link_01.png" alt="placeholder" width="70%"/>
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/03_role_vl_user_link_02.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_role_vl_user_link_02.png" alt="placeholder" width="70%"/>
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/03_role_vl_user_link_03.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_role_vl_user_link_03.png" alt="placeholder" width="70%"/>
 
 
 #### Setup voice loop layout
@@ -871,16 +871,16 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
         - Columns and rows
         - Name and font scaling
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/06_layout_grid_option.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/06_layout_grid_option.png" alt="placeholder" width="70%"/>
 
 ---
 - In the drop-down menue at the top, the layout for specific roles in the project can be selected.
 - After selecting on role the current layout for that role is loaded.
 - Note: When starting a new project, the grid will be empty.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/04_layout_01.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/04_layout_01.png" alt="placeholder" width="70%"/>
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/05_layout_grid.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/05_layout_grid.png" alt="placeholder" width="70%"/>
 
 - To add a new voice loop to the grid or change an existing voice loop position, one select on tile.
 - The tile will change to a green frame, to indicate the selection.
@@ -897,11 +897,11 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - The back button brings one back to the project selection page.
 - Further, the logout button in located there.
 
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/07_admin_imexport.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/07_admin_imexport.png" alt="placeholder" width="70%"/>
 
 #### LDAP import
 - With this option one can import data from LDAP.
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/08_LDAP_import.png" alt="placeholder" width="70%"/>
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/08_LDAP_import.png" alt="placeholder" width="70%"/>
 
 
 
@@ -929,7 +929,5 @@ http://openvocs.org
 Please see LICENSES for further information about how the content is licensed.
 
 ---
-#### LDAP import
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/08_LDAP_import.png" alt="placeholder" width="70%"/>
 
 
