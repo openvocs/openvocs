@@ -120,7 +120,7 @@ target_test_resources:
 
 #-----------------------------------------------------------------------------
 
-target_clean: docker_clean python_clean
+target_clean:
 	@echo "[CLEAN  ] clean up ..."
 	$(OV_QUIET)$(OV_RMDIR) $(OV_BUILDDIR)
 	$(OV_QUIET)$(shell find $(OPENVOCS_ROOT) -name "*.pyc" -exec rm {} \;)
@@ -152,9 +152,6 @@ target_prepare:
 # check if OPENVOCS_ROOT environment variable is set
 ifndef OPENVOCS_ROOT
 	$(error OPENVOCS_ROOT is not defined. Aborting.)
-endif
-ifndef OPENVOCS_PYTHON_VENV_REL
-	$(error OPENVOCS_PYTHON_VENV_REL is not defined. Aborting.)
 endif
 #
 # check if build directory already exists
@@ -228,10 +225,6 @@ $(OV_RELEASE_ARCHIVE): build $(OV_TEMP_RELEASE_RESOURCES)
 
 #-----------------------------------------------------------------------------
 
--include ./makefiles/makefile_docker.mk
-
-#-----------------------------------------------------------------------------
-
 -include ./makefiles/makefile_build_tools.mk
 
 #-----------------------------------------------------------------------------
@@ -239,5 +232,3 @@ $(OV_RELEASE_ARCHIVE): build $(OV_TEMP_RELEASE_RESOURCES)
 -include ./makefiles/makefile_lib.mk
 
 #-----------------------------------------------------------------------------
-
--include ./makefiles/makefile_python.mk
