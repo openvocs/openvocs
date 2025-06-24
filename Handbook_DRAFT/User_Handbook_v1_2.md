@@ -74,10 +74,17 @@ Each service have an independent documentation describing the service.
 Tools are executable helper programs which may enhance the working experience of the specific intendent use case of the tool.
 
 #### System requirements
-... tested basic requirements need to be put in this subsection...
-- e.g. CPU power, RAM, HD space etc. 
 
+Generally, the more resources provided, the more users will be able to speak in parallel without service degradation.
+The following resources should suffice for at least 4 users that speak in parallel:
 
+* Intel Core i7/6600U CPU @ 2.60GHz with 4 Cores (or comparable)
+* 8 GB RAM
+* 30 GB of Harddisk
+
+These are the ***minimal** requirements - more users should be able to use openvocs with these resources, but at some point the service will degrade, e.g. the audio will be corrupted and&or users might not be able to login.
+
+***BEWARE*** The maximum number of users is determined by the number of mixer processes started.
 
 ## [Installation][toc]
 
@@ -164,7 +171,7 @@ Once the environment is ready openvocs may be build using:
 ```
 make && make target_install_lib
 ```
-
+Libraries are preconfigured for Ubuntu, Debian and Suse variants. For other distros you may install the required libraries manually.
 ```
 This will build the whole project and install the library packages at:
 
@@ -249,7 +256,7 @@ To be able to run OPENVOCS in a Window machine, you need to install the Windows-
       * manual: see [microsoft docs](https://docs.microsoft.com/en-us/windows/wsl/install-manual)
    3. The first time running wsl, it will prompt you to setup a user account; just follow the prompts
 2. Make sure the project is checked out with unix file formatting. Git may have converted the files to dos formatting on checkout.
-
+Libraries are preconfigured for Ubuntu, Debian and Suse variants. For other distros you may install the required libraries manually.
 ```
 // configure git project to checkout unix file formatting on windows
 git config core.eol lf
