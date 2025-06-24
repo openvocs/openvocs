@@ -54,9 +54,9 @@ endif
 .PHONY: all depend clean debug
 .PHONY: target_prepare target_build_id_file target_build_all target_debug
 
-all                 : .ccls target_prepare target_build_all target_test
+all                 : target_prepare target_build_all target_test
 
-no_tests            : .ccls target_build_all
+no_tests            : target_build_all
 
 # Disable parallel builds
 # NOTPARALLEL:

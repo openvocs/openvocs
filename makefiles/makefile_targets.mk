@@ -188,34 +188,3 @@ target_prepare:
 	$(OV_QUIET)$(OV_MKDIR) $(OV_BINDIR)               $(OV_NUL_STDERR)
 	$(OV_QUIET)$(OV_MKDIR) $(OV_PLUGINDIR)            $(OV_NUL_STDERR)
 
-#-----------------------------------------------------------------------------
-#
-# ccls configuration file for the
-# https://github.com/neoclide/coc.nvim plugin
-#
-# There is a 'generic' .ccls target in the main makefile.
-# However, since modules might use their own OV_FLAGS etc., this generic
-# .ccls might not suffice.
-# In this case, navigate to the dir of your module, issue
-#
-# make .ccls
-#
-# to replace the generic .ccls file with the module specific,
-# and then fire up your editor.
-#
-# The module specific .ccls files should contain all config from the generic one,
-# thus code working with the generic one should remain working with a module
-# specific one.
-#
-# To go back to the generic one, issue
-#
-# cd $OPENVOCS_ROOT
-# make .ccls
-#
-.PHONY: .ccls
-.ccls:
-	$(OV_QUIET)echo "# Auto-generated" > $$OPENVOCS_ROOT/$@
-	$(OV_QUIET)echo "# DONT MODIFY - use 'make .ccls' to recreate" >> $$OPENVOCS_ROOT/$@
-	$(OV_QUIET)echo "#" >> $$OPENVOCS_ROOT/$@
-	$(OV_QUIET)echo "$(BUILD_DEFINITIONS) $(CFLAGS) $(OV_FLAGS)" | sed -e 's/ /\n/g' >> $$OPENVOCS_ROOT/$@
-

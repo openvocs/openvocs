@@ -35,17 +35,6 @@
 #
 #       ------------------------------------------------------------------------
 
-# ccls configuration file for the
-# https://github.com/neoclide/coc.nvim plugin
-#
-# Although .ccls IS a file, it should be rewritten unconditionally
-.PHONY: .ccls
-.ccls:
-	$(OV_QUIET)echo "# Auto-generated" > $@
-	$(OV_QUIET)echo "# DONT MODIFY - use 'make .ccls' to recreate" >> $@
-	$(OV_QUIET)echo "#" >> $@
-	$(OV_QUIET)echo "$(BUILD_DEFINITIONS) $(CFLAGS)" | sed -e 's/ /\n/g' >> $@
-
 # For 'intelligent' features in code editors/ides
 .phony: compile_commands.json
 compile_commands.json: clean
