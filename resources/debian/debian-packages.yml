@@ -1,12 +1,10 @@
 ov_basic_packages:
-  - libssl1.1
+  - libssl-dev
   - libopus0
   - openssh-server
-  - python3
 
 ov_dev_packages:
   - libopus-dev
-  - libssl-dev
   - libsystemd-dev
   - libpulse-dev
   - libsrtp2-dev
@@ -27,4 +25,3 @@ ov_dev_helper_packages:
   - gperf
   - tcpdump
   - htop
-  - netcat

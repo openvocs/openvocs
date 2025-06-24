@@ -400,7 +400,7 @@ generate_config_ov_vocs() {
            {
              \"zero_crossings_rate_hertz\" : 50000,
              \"powerlevel_density_dbfs\" : -500,
-             \"enabled\" : true
+             \"enabled\" : false
            },
            \"sample_rate_hz\" : 48000,
            \"noise\" : -70,
