@@ -93,13 +93,14 @@ To build OPENVOCS® some libraries must be present.
 To show required libraries you may use:
 
 ```
+source env.sh
 scripts/show_packages.sh debian
 ```
 
 To install all required libraries use:
 
 ```
-for item in `./scripts/show_packages.sh ubuntu`; do sudo apt install -y $item; done
+for item in `./scripts/show_packages.sh debian`; do sudo apt install -y $item; done
 ```
 
 Libraries are preconfigured for Debian 12. For other distros you may install the required libraries manually.
@@ -130,9 +131,63 @@ make clean
 
 ---
 
+### [Installation - Base system][toc]
+To install the base system you should build a package for your distribution. Supported distributions is Debian 12.
+
+#### Build a package for Debian:
+
+```
+make deb
+```
+Once the build is completed the package will be avaialable under the ./build folder.
+THe Debian based packages a file like openvocs_1.2.2-1505_amd64.deb will be build.
+You may install the package using dpkg
+
+```
+dpkg -i build/openvocs_<version>-<build_id>_amd64.deb
+```
+
+OPENVOCS® is now installed within your system. Important folder are configuration, which is installed to /etc/openvocs and HTML sources, which are installed under /srv/openvocs/HTML.
+
+#### Finish the installation
+
+Now move to /etc/openvocs/ You must now use the configuration script to configure openvocs for your IP environment.
+
+```
+sudo ./ov_config.sh <your ip address>
+```
+
+This will preconfigure all of the configuration files:
+
+- /etc/openvocs/ov_mc_ice_proxy/config.json
+- /etc/openvocs/ov_mc_vocs/config.json
+- /etc/openvocs/ov_mc_mixer/config.json
+- /etc/openvocs/ov_mc_vad/config.json
+
+In addition it will generate a certificate, which may be used for OPENVOCS® operations.
+**NOTE**: feel encouraged to use your own certificates for OPENVOCS®, if necessary
+
+To finish the installation you should restart the systemctl daemon
+
+```
+sudo systemctl daemon-reload
+```
+
+#### Start the system
+To start the OPENVOCS® system use:
+
+```
+sudo systemctl start ov_mc.target
+```
+
+This is the final target for OPENVOCS® within your systemd configuration. ov_mc.target will start all subtargets and subservices.
+
+
+---
+
 #### How to build openvocs library
 
-The OPENVOCS® library may be installed to the local system for development against OPENVOCS®.
+The OPENVOCS® library may be installed to the local system for development against OPENVOCS®. This is optional to the system installation above! 
 
 #### Installing required libraries
 
@@ -171,144 +226,6 @@ This will build the whole project and install the library packages at:
 - /usr/lib/openvocs/
 - /usr/lib/pkgconfig/
 ```
----
-### [Installation - Base system][toc]
-To install the base system you should build a package for your distribution. Supported distributions is Debian 12.
-
-#### Build a package for Debian:
-
-```
-make deb
-```
-Once the build is completed the package will be avaialable under the ./build folder.
-THe Debian based packages a file like openvocs_1.2.2-1505_amd64.deb will be build.
-You may install the package using dpkg
-
-```
-dpkg -i build/openvocs_<version>-<build_id>_amd64.deb
-```
-
-OPENVOCS® is now installed within your system. Important folder are configuration, which is installed to /etc/openvocs and HTML sources, which are installed under /srv/openvocs/HTML.
-
-#### Finish the installation
-
-Now move to /etc/openvocs/ov_mc_vocs. You must now use the configuration script to configure openvocs for your IP environment.
-
-```
-sudo ./ov_config.sh <your ip address>
-```
-
-This will preconfigure all of the configuration files:
-
-- /etc/openvocs/ov_mc_ice_proxy/config.json
-- /etc/openvocs/ov_mc_vocs/config.json
-- /etc/openvocs/ov_mc_mixer/config.json
-- /etc/openvocs/ov_mc_vad/config.json
-
-In addition it will generate a certificate, which may be used for OPENVOCS® operations.
-**NOTE**: feel encouraged to use your own certificates for OPENVOCS®, if necessary
-
-To finish the installation you should restart the systemctl daemon
-
-```
-sudo systemctl daemon-reload
-```
-
-#### Start the system
-To start the OPENVOCS® system use:
-
-```
-sudo systemctl start ov_mc.target
-```
-
-This is the final target for OPENVOCS® within your systemd configuration. ov_mc.target will start all subtargets and subservices.
-
-
----
-
-
-### [Installation - Windows][toc]
-To be able to run OPENVOCS® in a Window machine, you need to install the Windows-Subsystem-for-Linux (WSL):
-
-1. [Install WSL](https://www.roberts999.com/posts/2018/11/wsl-coding-windows-ubuntu#201811-GetWsl)
-   1. Enable the windows subsystem for linux in windows features
-      1. Open “turn Windows features on or off” by searching under the start menu
-      2. Check the “windows subsystem for linux” option
-      3. You will need to restart your pc for this to take affect
-   2. Install ubuntu (or another linux distro)
-      * ATTENTION: Ubuntu-20.04 does currently not work with WSL 1
-      * from windows store: Search “windows store” in the start menu, then search for “ubuntu”
-      * manual: see [microsoft docs](https://docs.microsoft.com/en-us/windows/wsl/install-manual)
-   3. The first time running wsl, it will prompt you to setup a user account; just follow the prompts
-2. Make sure the project is checked out with unix file formatting. Git may have converted the files to dos formatting on checkout.
-   
-Libraries are preconfigured for Debian 12. Other Linux distributions like Ubuntu or Suse may work as well. **Nevertheless** for these and other Linux distributions it may be necessary to install the required libraries manually.
-
-```
-// configure git project to checkout unix file formatting on windows
-git config core.eol lf
-git config core.autocrlf input
-
-// fetch project content again (with the correct file formatting) and reset local version
-git fetch origin master
-git reset --hard FETCH_HEAD
-git clean -df
-```
-
-3. In WSL navigate to OPENVOCS® project. If the project is located in the Windows part of your system, you can find it under `/mnt/c/...`.
-4. You should use an editor that works directly in WSL (e.g. VSCode/VSCodium with the [WSL plugin](https://code.visualstudio.com/docs/remote/wsl)* to edit the project.
-5. Continue with installation guide for [Linux](#Linux)
-
-\* With VSCode with WSL you may run into problems with Git (see [VSCode issue](https://github.com/microsoft/vscode-remote-release/issues/903)).
-[This comment](https://github.com/microsoft/vscode-remote-release/issues/903#issuecomment-521304085) fixed it for me:
-```
-"remote.WSL.fileWatcher.polling": true,
-"files.watcherExclude": {
-   "**/.git/**": true
-}
-```
-
-### [Installation - MacOS][toc]
-To build OPENVOCS® on macos a few tools should be installed
-
-#### pkgconfig
-
-pkg-config is used during linking within the openvocs makefile,
-so it should be installed
-
-```
-sudo port -d selfupdate
-sudo port install pkgconfig
-```
-
-You may want to make a link under /usr/local/bin to avoid PATH related find
-problems within xcode.
-
-```
-ln -s /opt/local/bin/pkg-config /usr/local/bin/pkg-config
-```
-
-#### required libraries
-
-```
-sudo port install openssl libopus libsrtp
-```
-
-
-#### Testing
-
-To run some tests under MacOS the dynamic library path MUST be hand over to
-the testrun e.g.
-
-```
-DYLD_LIBRARY_PATH=$OPENVOCS_LIBS ./build/test/ov_base/ov_config_test
-```
-
-To run all tests of some module, you may used
-```
-./testrunnner.sh ov_base
-```
-
 ---
 
 ## [HowTo OPENVOCS® services][toc]
