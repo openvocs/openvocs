@@ -1,1 +1,0 @@
-/home/markus/openvocs/openvocs_opensource/src/lib/ov_database/sqlite3/sqlite3.h

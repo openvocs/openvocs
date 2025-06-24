@@ -1,1 +1,0 @@
-/home/markus/openvocs/openvocs_opensource/src/lib/ov_format/include/ov_format_ethernet.h

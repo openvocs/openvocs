@@ -1,1 +1,0 @@
-/home/markus/openvocs/openvocs_opensource/src/lib/ov_log/include/ov_log_rotate.h
