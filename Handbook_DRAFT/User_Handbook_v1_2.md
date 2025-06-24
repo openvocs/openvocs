@@ -3,7 +3,7 @@ SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
 SPDX-License-Identifier: Apache 2.0
 -->
 <div style="text-align: center;">
-<img src="https://gitlab.dlr.de/openvocs/openvocs_opensource/-/raw/development/Handbook_DRAFT/images/ov_black.png" alt="OV_LOGI" title="Total Time Human in Space" />
+<img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/ov_black.png" alt="OV_LOGI" title="Total Time Human in Space" />
 
 # **O P E N V O C S ®**
 ## Manual v.01.1 - Last Update 2025-05-21 - Status: ***DRAFT***
