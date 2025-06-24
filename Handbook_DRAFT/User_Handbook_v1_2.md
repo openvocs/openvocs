@@ -23,8 +23,8 @@ SPDX-License-Identifier: Apache 2.0
 * [HowTo OPENVOCS services](#OV_service)
 * [The OPENVOCS API](#OV_api)
 * [Usage](#usage)
-    * [Voice Client](#usageVoice)
-    * [Admin Client](#usageAdmin)
+    * [Voice Client](#usagevoice)
+    * [Admin Client](#usageadmin)
 * [Citation](#Citation)
 * [Contributors](#Contributors)
 * [Contact](#Contact)
@@ -726,7 +726,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 
 ### [Voice Client][toc]
 
-### [Login and role selection][toc]
+### Login and role selection
 - Login website => enter username and password to authenticate, click LOGIN-button to continue.
 - By clicking the circle arrow symbol, one can reload the login-page.
 
@@ -740,7 +740,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - After the role is selceted the voice client will start automatically.
 - Note: The role can be switched later in directly in the side menue, shown later in this guide.
 
-### [User interface - voice client][toc]
+### User interface - voice client
 - Start of voice client GUI (switched off - all tiles are in grey color).
 - If all tiles are grey, even if there is voice traffic, no audio is audible.
 - It can be possible that there are more then one page with voice loop tiles.
@@ -750,7 +750,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_Loop_off.png" alt="GUI_VL_OFF" width="70%"/>
 
 ---
-#### [***Voice client - tile elements***][toc]
+#### ***Voice client - tile elements***
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_GUI_OFF_Kachel_new.png" alt="login" width="40%"/>
 
 - The name or abbreviation of the voice loop is placed in the middle of the tile.
@@ -764,7 +764,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - Note: Telephony Panel – is deactivated in the opensource version of OPENVOCS.
 
 
-##### [Change the mode from "monitoring" to "talk"][toc]
+##### Change the mode from "monitoring" to "talk"
 - 1st click on the tile (in grey OFF-state) will activate the monitoring mode first, indicated via blue color.
 - 2nd click on the tile will activate the talking mode, indicated via green color.
 - 3rd click on the tile will activate the monitoring mode again (blue color).
@@ -774,10 +774,10 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - Note: If a tile only have a headphones symbol, the talking mode is not accessible.
 
 ---
-#### [***Voice client (monitoring: blue / talking: green -- switched ON)***][toc]
+#### ***Voice client (monitoring: blue / talking: green -- switched ON)***
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/04_Loop_Talk.png" alt="login" width="70%"/>
 
-#### [***Voice client (talking: green -- PTT-bar switched ON)***][toc]
+#### ***Voice client (talking: green -- PTT-bar switched ON)***
 - To speak in a voice loop, the voice loop tile needs to be in talking mode (green color).
 - In addition the PTT bar needs to be pressed.
 - Three types of conformation about an open microphone are given:
@@ -791,7 +791,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - Note: Depending on the configuration of OPENVOCS®, a screen PTT is also available, or only the PTT on the headset can be used.
 
 
-#### [***Voice client (volume slider -- 0-100 => 50 default)***][toc]
+#### ***Voice client (volume slider -- 0-100 => 50 default)***
 - Volume control panel, after touching the speaker symbol, the volume slider shows up and the bar can be moved up (louder) and down (quieter), the number on the side indicated the volume silder value:
 
     - 0 – no sound at all
@@ -801,7 +801,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/06_GUI_Vol_Slider_new.png" alt="login" width="40%"/>
 
-#### [***Voice client (menue opened via clicking on the OPENVOCS® logo)***][toc]
+#### ***Voice client (menue opened via clicking on the OPENVOCS® logo)***
 - On top the user name is depicted.
 - Below that the role/project that is currently chosen is shown.
 - In the server panel, all available OPENVOCS® server are shown. The server marked blue, is the server currently connected. The green dot, indicates the availability of the server. Is this indicator red, the server is not available.
@@ -828,7 +828,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 
 
 ### [Admin Client][toc]
-#### [Setup and configure a project/missions][toc]
+#### Setup and configure a project/missions
 - The admin interface is reachable under "server-IP/openvocs/admin".
 - After login the administration interface starts with a selection of a project (e.g. missions).
   - The default admin login is:
@@ -850,7 +850,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/02_project_open.png" alt="placeholder" width="70%"/>
 
 
-#### [Setup: Role - Voice Loop - User][toc]
+#### Setup: Role - Voice Loop - User
 - To configure, add, delete or change anything according to roles, voice loops and user one open via access management, on the panel at the bottom.
 - Note: Depending on the version of OPENVOCS, a SIP and RECORDER setup option are available.
 
@@ -876,7 +876,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 <img src="https://github.com/openvocs/openvocs/blob/dev/Handbook_DRAFT/images/03_role_vl_user_link_03.png" alt="placeholder" width="70%"/>
 
 
-#### [Setup voice loop layout][toc]
+#### Setup voice loop layout
 - After selecting layout from the bottom panel, the layout setup  starts.
 - Under burger menue on upper-left, general layout options are placed.
         - Number of packages
@@ -904,7 +904,7 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 - The selection of the tile will end automatically when a new voice loop was selected or when clicking on the surrounding areas around the drop-down menue.
 
 
-#### [Import and Export Configurations][toc]
+#### Import and Export Configurations
 - When clicking on the OPENVOCS logo in the lower-left corner one ca find the options to import or export saved configurations.
 - Via import, are previously saved configuration file (json) can be loaded-
 - Via export, a json-file is directly download to the download folder on the system.
