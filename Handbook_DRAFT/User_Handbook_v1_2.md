@@ -47,7 +47,7 @@ The OPENVOCS® system is a pure software-based voice communication system develo
 
 ---
 ## [2. OPENVOCS®][toc]
-OPENVOCS is ...
+OPENVOCS® is ...
 
 
 In the following sections provide a detailed guide to build, install and use OPENVOCS.
@@ -72,6 +72,12 @@ Each service have an independent documentation describing the service.
 
 #### Tools
 Tools are executable helper programs which may enhance the working experience of the specific intendent use case of the tool.
+
+#### System requirements
+... tested basic requirements need to be put in this subsection...
+- e.g. CPU power, RAM, HD space etc. 
+
+
 
 ## [Installation][toc]
 
@@ -821,11 +827,15 @@ In the following the usage of OPENVOCS is shown. This section starts with explai
 -->
 
 
-
-
 ### [Admin Client][toc]
 #### [Setup and configure a project/missions][toc]
+- The admin interface is reachable under "server-IP/openvocs/admin".
 - After login the administration interface starts with a selection of a project (e.g. missions).
+  - The default admin login is:
+	```
+	lg: admin
+	ps: admin
+	```
 - The list of existing project will be shown.
 - To administrate a project simply choose the project be clicking on it.
 - For creating a new project, the "+" icon is selected.
