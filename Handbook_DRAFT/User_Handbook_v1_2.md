@@ -30,6 +30,10 @@ SPDX-License-Identifier: Apache 2.0
 * [Contact](#Contact)
 * [Licenses](#Licenses)
 
+* [LINKTEST](#linktest)
+
+
+
 ---
 ## 1. Introduction
 Voice communication is a crucial part to successfully conduct a space missions.
@@ -925,9 +929,14 @@ Here you find the main contributors to the material:
 http://openvocs.org
 
 
-## License]
+## License
 Please see LICENSES for further information about how the content is licensed.
 
 ---
+
+## [Linktest][toc]
+[toc]: #table-of-content "go to Table of Content"
+
+
 
 
