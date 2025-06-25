@@ -540,8 +540,6 @@ static bool impl_socket_io(void *self,
                            int fd,
                            const ov_memory_pointer recv_data) {
 
-    ov_log_info("Got data for %i", fd);
-
     ov_serde_app *app = as_serde_app(self);
 
     if (0 == app) {

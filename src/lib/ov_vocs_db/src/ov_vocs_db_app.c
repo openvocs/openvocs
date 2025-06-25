@@ -485,8 +485,9 @@ static bool cb_update_client_login(void *userdata,
     }
 
     out = ov_event_api_create_success_response(input);
-    if (!ov_vocs_json_set_id(out, user_id)) goto error;
-    if (!ov_vocs_json_set_session_id(out, session_id)) goto error;
+    ov_json_value *res = ov_event_api_get_response(out);
+    if (!ov_vocs_json_set_id(res, user_id)) goto error;
+    if (!ov_vocs_json_set_session_id(res, session_id)) goto error;
 
 response:
     ov_event_io_send(params, socket, out);

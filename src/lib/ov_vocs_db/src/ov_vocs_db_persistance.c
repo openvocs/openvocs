@@ -51,6 +51,10 @@
 #include <ov_base/ov_thread_message.h>
 #include <ov_base/ov_utils.h>
 
+#include <ov_core/ov_event_app.h>
+#include <ov_core/ov_event_api.h>
+#include <ov_core/ov_broadcast_registry.h>
+
 #define OV_VOCS_DB_PERSISTANCE_MAGIC_BYTE 0x01db
 #define IMPL_DEFAULT_LOCK_USEC 100 * 1000          // 100ms
 #define IMPL_DEFAULT_LDAP_TIMEOUT_USEC 5000 * 1000 // 5sec
@@ -73,6 +77,11 @@ struct ov_vocs_db_persistance {
         uint32_t state_snapshot;
 
     } timer;
+
+    ov_event_app *app;
+    int socket;
+
+    ov_broadcast_registry *broadcasts;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -378,6 +387,120 @@ static bool handle_in_loop(ov_thread_loop *loop, ov_thread_message *msg);
 
 /*----------------------------------------------------------------------------*/
 
+static void cb_socket_connected(void *userdata, int socket){
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self) goto error;
+
+    self->socket = socket;
+
+    ov_json_value *msg = ov_event_api_message_create(OV_KEY_REGISTER, NULL, 0);
+    ov_event_app_send(self->app, socket, msg);
+    msg = ov_json_value_free(msg);
+
+error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_socket_close(void *userdata, int socket){
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self) goto error;
+
+    ov_broadcast_registry_unset(self->broadcasts, socket);
+
+    ov_log_debug("unegisterd connection %i", socket);
+
+error:
+    return;
+
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void app_cb_register(void *userdata, const char *name, int socket, 
+    ov_json_value *input){
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !name) goto error;
+
+    if (!ov_broadcast_registry_set(self->broadcasts, 
+        OV_KEY_UPDATE, socket, OV_SYSTEM_BROADCAST)) goto error;
+
+    ov_log_debug("Registerd new connection %i", socket);
+
+error:
+    ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void app_cb_update(void *userdata, const char *name, int socket, 
+    ov_json_value *input){
+
+    ov_json_value *db = NULL;
+    bool result = false;
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !name) goto error;
+
+    const ov_json_value *src = ov_json_get(input, "/"OV_KEY_PARAMETER"/"OV_KEY_DB);
+    if (!src) goto error;
+
+    if (!ov_json_value_copy((void**)&db, src)) goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
+    result = ov_vocs_db_inject(self->config.db, OV_VOCS_DB_TYPE_AUTH, db);
+    
+    if (result) {
+        db = NULL;
+        ov_log_debug("DB update from %i", socket);
+    } else {
+        ov_log_error("DB update from %i - failed", socket);
+    }
+
+    if (!ov_thread_lock_unlock(&self->lock)) {
+        OV_ASSERT(1 == 0);
+        goto error;
+    }
+
+    ov_vocs_db_persistance_save(self);
+
+error:
+    ov_json_value_free(db);
+    ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool register_app_callbacks(ov_vocs_db_persistance *self){
+
+    if (!self) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        OV_KEY_REGISTER,
+        self,
+        app_cb_register)) goto error;
+
+     if (!ov_event_app_register(
+        self->app,
+        OV_KEY_UPDATE,
+        self,
+        app_cb_update)) goto error;
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_vocs_db_persistance *ov_vocs_db_persistance_create(
     ov_vocs_db_persistance_config config) {
 
@@ -440,6 +563,57 @@ ov_vocs_db_persistance *ov_vocs_db_persistance_create(
 
     if (!ov_thread_loop_start_threads(self->thread_loop)) goto error;
 
+    self->app = ov_event_app_create((ov_event_app_config){
+        .io = config.io,
+        .callbacks.userdata = self,
+        .callbacks.connected = cb_socket_connected,
+        .callbacks.close = cb_socket_close
+    });
+
+    if (!self->app) goto error;
+
+    if (self->config.cluster.manager){
+
+        ov_log_debug("Starting DB cluster manager.");
+
+        self->socket = ov_event_app_open_listener(
+            self->app,
+            (ov_io_socket_config){
+                .socket = self->config.cluster.socket,
+            });
+
+        if (-1 == self->socket){
+            
+            ov_log_error("Failed to open cluster socket %s:%i",
+                self->config.cluster.socket.host,
+                self->config.cluster.socket.port);
+            goto error;
+        
+        } else {
+
+             ov_log_debug("opened cluster socket %s:%i",
+                self->config.cluster.socket.host,
+                self->config.cluster.socket.port);
+
+        }
+
+    } else {
+
+        self->socket = ov_event_app_open_connection(
+            self->app,
+            (ov_io_socket_config){
+                .auto_reconnect = true,
+                .socket = self->config.cluster.socket,
+            });
+    }
+
+    self->broadcasts = ov_broadcast_registry_create(
+        (ov_event_broadcast_config){0});
+
+    if (!self->broadcasts) goto error;
+
+    if (!register_app_callbacks(self)) goto error;
+
     return self;
 error:
     ov_vocs_db_persistance_free(self);
@@ -465,6 +639,9 @@ ov_vocs_db_persistance *ov_vocs_db_persistance_free(
         OV_ASSERT(1 == 0);
         return self;
     }
+
+    self->app = ov_event_app_free(self->app);
+    self->broadcasts = ov_broadcast_registry_free(self->broadcasts);
 
     ov_event_loop *loop = self->config.loop;
 
@@ -799,6 +976,14 @@ ov_vocs_db_persistance_config ov_vocs_db_persistance_config_from_json(
     const char *path = ov_json_string_get(ov_json_get(conf, "/" OV_KEY_PATH));
     if (path) strncpy(config.path, path, PATH_MAX);
 
+    const ov_json_value *cluster = ov_json_get(conf, "/"OV_KEY_CLUSTER);
+
+    if (ov_json_is_true(ov_json_object_get(cluster, OV_KEY_MANAGER)))
+        config.cluster.manager = true;
+
+    config.cluster.socket = ov_socket_configuration_from_json(
+        ov_json_object_get(cluster, OV_KEY_SOCKET), (ov_socket_configuration){0});
+
     return config;
 }
 
@@ -1084,6 +1269,7 @@ struct users_search {
 
     ov_json_value const *active_users;
     ov_list *outdated;
+    ov_json_value *out;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -1102,6 +1288,10 @@ static bool add_new_user(const void *key, void *val, void *data) {
     if (ov_json_object_get(active_users, user_id)) {
         return true;
     } else {
+
+        ov_json_value *item = ov_json_object_get(u->out, OV_KEY_DELETE);
+        ov_json_object_set(item, user_id, ov_json_null());
+        
         return ov_list_push(u->outdated, user_id);
     }
 
@@ -1115,6 +1305,9 @@ static bool add_new_user(const void *key, void *val, void *data) {
         out = ov_json_value_free(out);
         goto error;
     }
+
+    ov_json_value *item = ov_json_object_get(u->out, OV_KEY_ADD);
+    ov_json_object_set(item, user_id, ov_json_null());
 
     return true;
 error:
@@ -1132,7 +1325,7 @@ static bool drop_outdated(void *item, void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_users_object(const ov_json_value *users,
+static ov_json_value *write_users_object(const ov_json_value *users,
                                const char *domain,
                                const char *root_path) {
 
@@ -1143,8 +1336,14 @@ static bool write_users_object(const ov_json_value *users,
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
+    ov_json_value *changes = NULL;
 
     if (!users || !domain || !root_path) goto error;
+
+    changes = ov_json_object();
+    ov_json_object_set(changes, OV_KEY_EVENT, ov_json_string(OV_VOCS_DB_KEY_LDAP_UPDATE));
+    ov_json_object_set(changes, OV_KEY_DELETE, ov_json_object());
+    ov_json_object_set(changes, OV_KEY_ADD, ov_json_object());
 
     snprintf(dir_path, PATH_MAX, "%s/auth/%s", root_path, domain);
     snprintf(file_path,
@@ -1156,8 +1355,17 @@ static bool write_users_object(const ov_json_value *users,
     ov_dir_tree_create(dir_path);
 
     ov_json_value *current = ov_json_read_file(file_path);
-    if (!current) return write_new_config(users, domain, file_path);
+    if (!current) {
 
+        ov_json_value const *active_users = ov_json_get(current, OV_KEY_USERS);
+        ov_json_value *item = ov_json_object_get(changes, OV_KEY_ADD);
+        ov_json_value_copy((void**)&val, active_users);
+        ov_json_object_set(item, OV_KEY_USERS, val);
+        if (!write_new_config(users, domain, file_path))
+            goto error;
+
+        return changes;
+    }
     const char *domain_id =
         ov_json_string_get(ov_json_get(current, "/" OV_KEY_ID));
     if (!domain_id) {
@@ -1195,8 +1403,10 @@ static bool write_users_object(const ov_json_value *users,
 
         list = ov_list_create((ov_list_config){0});
 
+        
+
         struct users_search container = (struct users_search){
-            .active_users = active_users, .outdated = list};
+            .active_users = active_users, .outdated = list, .out = changes};
 
         if (!ov_json_object_for_each(
                 (ov_json_value *)users, &container, add_new_user))
@@ -1213,13 +1423,14 @@ static bool write_users_object(const ov_json_value *users,
     ov_log_debug(
         "Update of users for domain %s at path %s - done", domain, file_path);
 
-    return true;
+    return changes;
 
 error:
     ov_json_value_free(val);
     ov_json_value_free(out);
+    ov_json_value_free(changes);
     ov_list_free(list);
-    return false;
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1257,7 +1468,11 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
         ov_log_error("Failed to import LDAP users from %s as %s", host, user);
     }
 
-    if (!write_users_object(users, domain, self->config.path)) goto error;
+    ov_json_value *changes = write_users_object(users, domain, self->config.path);
+    if (!changes) goto error;
+
+    ov_vocs_db_send_vocs_trigger(self->config.db, changes);
+    changes = ov_json_value_free(changes);
 
     ov_thread_message_free(msg);
     return true;
@@ -1323,5 +1538,72 @@ error:
     ov_json_value_free(out);
     ov_json_value_free(val);
     ov_thread_message_free(msg);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool send_socket(void *userdata, int socket, const ov_json_value *input) {
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) return false;
+
+    return ov_event_app_send(self->app, socket, input);
+}
+
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_db_persistance_persist(ov_vocs_db_persistance *self){
+
+    bool result = false;
+
+    ov_json_value *out = NULL;
+    ov_json_value *db = NULL;
+
+    if (!self) goto error;
+
+    if (!ov_vocs_db_persistance_save(self)) goto error;
+
+    if (!self->config.cluster.manager) return true;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
+    db = ov_vocs_db_eject(self->config.db, OV_VOCS_DB_TYPE_AUTH);
+
+    if (!db) goto done;
+
+    out = ov_event_api_message_create(OV_KEY_UPDATE, NULL, 0);
+    if (!out) goto done;
+
+    ov_json_value *par = ov_event_api_set_parameter(out);
+    
+    if (!ov_json_object_set(par, OV_KEY_DB, db)){
+        db = ov_json_value_free(db);
+        out = ov_json_value_free(out);
+    }
+
+    db = NULL;
+    
+    ov_event_parameter parameter =
+        (ov_event_parameter){.send.instance = self, .send.send = send_socket};
+
+    ov_log_debug("Sending update broadcast.");
+
+    result = ov_broadcast_registry_send(self->broadcasts, OV_KEY_UPDATE, 
+        &parameter, out, OV_SYSTEM_BROADCAST);
+
+done:
+    
+    db = ov_json_value_free(db);
+    out = ov_json_value_free(out);
+
+    if (!ov_thread_lock_unlock(&self->lock)) {
+        OV_ASSERT(1 == 0);
+        goto error;
+    }
+
+    return result;
+error:
     return false;
 }

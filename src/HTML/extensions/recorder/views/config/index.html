@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>openvocs admin SIP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/css/ov_basic.css" />
+</head>
+
+<body>
+    <div class="container" id="view_container"></div>
+    <script>
+        SIGNALING_SERVERS = [{ NAME: "stub" }];
+        SIGNALING_REQUEST_TIMEOUT = 10000;
+        TEMP_ERROR_TIMEOUT = 4000;
+
+        DEBUG_LOG_INCOMING_EVENTS = true;
+        DEBUG_LOG_OUTGOING_EVENTS = true;
+        SIP = true;
+    </script>
+    <script type="module">
+        import * as Recorder_Config from "./js/recorder_config.js";
+
+        document.addEventListener("DOMContentLoaded", async function () {
+            let view_container = document.getElementById("view_container");
+
+            await SIP_config.init(view_container);
+
+            let loops = {
+                loop1: {
+                    name: "Loop 1",
+                    roles: {
+                        role1: true,
+                        role2: false,
+                        role3: true
+                    }
+                },
+                loop2: {
+                    name: "Loop 2",
+                    roles: {
+                        role1: true,
+                        role2: true
+                    }
+                }
+            };
+
+            let roles = {
+                role1 : {
+                    id: "role1",
+                    name: "Role 1"
+                },
+                role2 : {
+                    id: "role2",
+                    name: "Role 2"
+                },
+                role3 : {
+                    id: "role3",
+                    name: "Role 3"
+                }
+            }
+
+            Recorder_Config.render(loops, roles);
+            console.log(Recorder_Config.collect());
+        });
+    </script>
+</body>

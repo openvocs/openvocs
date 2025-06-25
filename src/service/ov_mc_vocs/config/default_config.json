@@ -135,6 +135,18 @@
 
 		"path" : "./src/service/ov_mc_vocs/config",
 
+		"cluster" :
+		{
+
+			"manager" :true,
+			"socket" : 
+			{
+				"host" : "192.168.178.20",
+				"port" : 45000,
+				"type" : "TCP"
+			}
+		},
+
 		"timeout" :
 		{
 			"ldap" : 5000000,

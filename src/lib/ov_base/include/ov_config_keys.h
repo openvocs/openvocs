@@ -52,6 +52,7 @@
 #define OV_KEY_RECORDER "recorder"
 #define OV_KEY_RECORDINGS "recordings"
 #define OV_KEY_META "meta"
+#define OV_KEY_CLUSTER "cluster"
 
 /*
  *      ------------------------------------------------------------------------
@@ -810,6 +811,10 @@
 #define OV_KEY_COMMENT "comment"
 
 #define OV_KEY_SHUTDOWN "shutdown"
+
+#define OV_KEY_ADD "add"
+#define OV_KEY_SET "set"
+
 
 /*
  *      ------------------------------------------------------------------------

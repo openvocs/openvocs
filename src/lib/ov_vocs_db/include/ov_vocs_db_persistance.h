@@ -32,13 +32,16 @@
 
 #define OV_VOCS_DB_PERSISTANCE_CONFIG_FILE "config.json"
 
-#include "ov_vocs_db.h"
+
 
 #include <ov_base/ov_event_loop.h>
+#include <ov_core/ov_io.h>
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct ov_vocs_db_persistance ov_vocs_db_persistance;
+
+#include "ov_vocs_db.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -46,8 +49,16 @@ typedef struct ov_vocs_db_persistance_config {
 
     ov_event_loop *loop;
     ov_vocs_db *db;
+    ov_io *io;
 
     char path[PATH_MAX];
+
+    struct {
+
+        bool manager;
+        ov_socket_configuration socket;
+   
+    } cluster; 
 
     struct {
 
@@ -87,5 +98,7 @@ bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
                                         const char *user,
                                         const char *pass,
                                         const char *domain);
+
+bool ov_vocs_db_persistance_persist(ov_vocs_db_persistance *self);
 
 #endif /* ov_vocs_db_persistance_h */

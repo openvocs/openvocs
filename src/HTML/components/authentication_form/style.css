@@ -40,6 +40,11 @@
     display: none;
 }
 
+.active_button {
+    background: #efefef !important;
+    color: var(--black) !important;
+}
+
 /* #password[type="text"]+#show_password::before {
     content: "/";
     position: fixed;

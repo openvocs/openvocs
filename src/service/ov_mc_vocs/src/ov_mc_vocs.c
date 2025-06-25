@@ -134,6 +134,10 @@ int main(int argc, char **argv) {
         goto error;
     }
 
+    io = ov_io_create((ov_io_config){.loop = loop});
+
+    if (!io) goto error;
+
     /*  Create DB relevant items
      *
      *  (1) DB itself
@@ -164,6 +168,7 @@ int main(int argc, char **argv) {
 
     db_persistance_config.db = db;
     db_persistance_config.loop = loop;
+    db_persistance_config.io = io;
     db_persistance = ov_vocs_db_persistance_create(db_persistance_config);
     if (!db_persistance) {
         ov_log_error("Failed to create db_persistance");
@@ -173,6 +178,8 @@ int main(int argc, char **argv) {
     if (!ov_vocs_db_persistance_load(db_persistance)) {
         ov_log_error("Failed to load db_persistance.");
     }
+    
+    if (!ov_vocs_db_set_persistance(db, db_persistance)) goto error;
 
     db_app = ov_vocs_db_app_create(
         (ov_vocs_db_app_config){.loop = loop,
@@ -207,9 +214,7 @@ int main(int argc, char **argv) {
         goto error;
     }
 
-    io = ov_io_create((ov_io_config){.loop = loop});
-
-    if (!io) goto error;
+    
 
     /* Create the vocs core */
 

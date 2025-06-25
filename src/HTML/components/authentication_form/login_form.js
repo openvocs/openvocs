@@ -148,12 +148,20 @@ export default class ov_Login_Form extends HTMLElement {
     #on_key_press(button) {
         if (button === "{shift}") {
             let currentLayout = this.#login_keyboard.options.layoutName;
-            let shiftToggle = currentLayout === "default" ? "shift" : "default";
+            let shiftToggle;
+            if (currentLayout === "default") {
+                shiftToggle = "shift";
+                this.#login_keyboard.addButtonTheme("{shift}", "active_button");
+            } else {
+                shiftToggle = "default";
+                this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
+            }
 
             this.#login_keyboard.setOptions({
                 layoutName: shiftToggle
             });
         } else if (button === "{enter}") {
+            this.#login_keyboard.addButtonTheme("{enter}", "active_button");
             if (this.#dom.login_button.disabled) {
                 if (this.#current_input === this.#dom.password_field)
                     this.#dom.user_field.click();
@@ -170,7 +178,9 @@ export default class ov_Login_Form extends HTMLElement {
             this.#login_keyboard.setOptions({
                 layoutName: "default"
             });
+            this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
         }
+        this.#login_keyboard.removeButtonTheme("{enter}", "active_button");
     }
 
     #check_form() {

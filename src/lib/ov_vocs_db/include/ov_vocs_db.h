@@ -85,6 +85,9 @@
 #include "ov_vocs_json.h"
 #include "ov_vocs_permission.h"
 
+
+#define OV_VOCS_DB_KEY_LDAP_UPDATE "ldap_update"
+
 /*----------------------------------------------------------------------------*/
 
 typedef enum ov_vocs_db_scope {
@@ -150,6 +153,8 @@ typedef struct ov_vocs_db_config {
 
 } ov_vocs_db_config;
 
+#include "ov_vocs_db_persistance.h"
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -171,6 +176,8 @@ bool ov_vocs_db_dump(FILE *stream, ov_vocs_db *self);
 ov_vocs_db_config ov_vocs_db_config_from_json(const ov_json_value *value);
 
 ov_vocs_db_entity ov_vocs_db_entity_from_string(const char *string);
+
+bool ov_vocs_db_set_persistance(ov_vocs_db *self, ov_vocs_db_persistance *persistance);
 
 /*
  *      ------------------------------------------------------------------------
@@ -680,6 +687,14 @@ ov_json_value *ov_vocs_db_get_all_loops(ov_vocs_db *self);
 
 bool ov_vocs_db_remove_permission(ov_vocs_db *self, 
     ov_sip_permission permission);
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_vocs_db_get_all_loops_incl_domain(ov_vocs_db *self);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_db_send_vocs_trigger(ov_vocs_db *self, const ov_json_value *msg);
 
 
 #endif /* ov_vocs_db_h */

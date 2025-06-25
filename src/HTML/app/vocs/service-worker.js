@@ -50,7 +50,7 @@ async function cache_first_with_refresh(request) {
 }
 
 self.addEventListener("fetch", (event) => {
-    event.respondWith(cache_first_with_refresh(event.request));
+    event.respondWith(network_first(event.request));
 });
 
 self.addEventListener("activate", (event) => {

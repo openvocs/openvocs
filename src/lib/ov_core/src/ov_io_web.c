@@ -1221,6 +1221,7 @@ static bool cb_wss_send_json(void *userdata, int socket, const ov_json_value *ms
         goto error;
 
     counter++;
+    UNUSED(counter);
 
 done:
     frame = ov_websocket_frame_free(frame);

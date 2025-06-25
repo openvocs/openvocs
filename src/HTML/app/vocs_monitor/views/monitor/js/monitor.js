@@ -33,6 +33,7 @@ import * as View from "./view.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_Monitor from "/lib/ov_monitor.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 export const VIEW_ID = "vocs_monitor";
 var view_container;
@@ -42,11 +43,15 @@ export async function render(container) {
     view_container.appendChild(await loadCSS());
     view_container.appendChild(await loadHtml());
 
-    View.init(VIEW_ID);
+    
 
     console.log("(monitor) View rendered");
 
+    
     ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);
+    let loops  = await ov_Monitor.get_loops();
+
+    View.init(loops, VIEW_ID);
 }
 
 export function remove() {

@@ -4081,6 +4081,72 @@ error:
     input = ov_json_value_free(input);
     return false;
 }
+
+/*----------------------------------------------------------------------------*/
+
+static bool admin_get_recorded_loops(ov_vocs *vocs,
+                                 int socket,
+                                 ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    if (!vocs || !input) goto error;
+
+    val = ov_vocs_db_get_recorded_loops(vocs->config.db);
+    if (!val){
+        val = ov_json_object();
+    }
+
+    out = ov_event_api_create_success_response(input);
+    ov_json_value *res = ov_event_api_get_response(out);
+    if (!ov_json_object_set(res, OV_KEY_RESULT, val)) goto error;
+
+    val = NULL;
+
+    env_send(vocs, socket, out);
+    out = ov_json_value_free(out);
+    input = ov_json_value_free(input);
+    return true;
+error:
+    val = ov_json_value_free(val);
+    out = ov_json_value_free(out);
+    input = ov_json_value_free(input);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool admin_get_all_loops(ov_vocs *vocs,
+                                 int socket,
+                                 ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    if (!vocs || !input) goto error;
+
+    val = ov_vocs_db_get_all_loops_incl_domain(vocs->config.db);
+    if (!val){
+        val = ov_json_object();
+    }
+
+    out = ov_event_api_create_success_response(input);
+    ov_json_value *res = ov_event_api_get_response(out);
+    if (!ov_json_object_set(res, OV_KEY_RESULT, val)) goto error;
+
+    val = NULL;
+
+    env_send(vocs, socket, out);
+    out = ov_json_value_free(out);
+    input = ov_json_value_free(input);
+    return true;
+error:
+    val = ov_json_value_free(val);
+    out = ov_json_value_free(out);
+    input = ov_json_value_free(input);
+    return false;
+}
    
 /*----------------------------------------------------------------------------*/
 
@@ -4133,6 +4199,12 @@ static bool cb_admin_process(void *userdata,
 
     if (ov_event_api_event_is(input, OV_KEY_BROADCAST))
         return admin_broadcast(vocs, socket, input);
+
+    if (ov_event_api_event_is(input, "get_recorded_loops"))
+        return admin_get_recorded_loops(vocs, socket, input);
+
+    if (ov_event_api_event_is(input, "get_all_loops"))
+        return admin_get_all_loops(vocs, socket, input);
 
     send_error_response(vocs,
                         input,
@@ -5624,6 +5696,11 @@ static void process_trigger(void *userdata, ov_json_value *input) {
         ov_json_value *proc = (ov_json_value *)ov_json_get(
             input, "/" OV_KEY_PARAMETER "/" OV_KEY_PROCESSING);
         ov_json_object_for_each(proc, vocs, update_sip_backend);
+    }
+
+    if (0 == ov_string_compare(event, OV_VOCS_DB_KEY_LDAP_UPDATE)) {
+
+        ov_vocs_db_app_send_broadcast(vocs->config.db_app, input);
     }
 
     input = ov_json_value_free(input);

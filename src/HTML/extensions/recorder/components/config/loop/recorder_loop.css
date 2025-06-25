@@ -1,0 +1,23 @@
+#loop {
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    width: 13rem;
+    padding: 0.4rem;
+}
+
+#loop.recording_active .recorder-icon{
+    opacity: 1;
+}
+
+.recorder-icon {
+    height: 1.5rem;
+    text-align: left;
+    opacity: 0;
+}
+
+#loop_name {
+    text-align: left;
+    line-height: 1.7rem;
+    margin-left: 0.5rem;
+    font-size: 1rem;
+}

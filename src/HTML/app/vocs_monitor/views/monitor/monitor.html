@@ -1,17 +1,37 @@
 <main id="mainframe" class="view">
-    <details open>
-        <summary>Broadcasts</summary>
+    <menu id="menu_bar" class="menu_bar bottom">
+        <button id="menu_button">
+            <div class="logo logo_openvocs"></div>
+        </button>
+        <h1 id="config_name">Monitoring</h1>
+        <ov-nav id="select_subview" name="config_subview">
+            <input type="radio" id="broadcast_page_button" name="config_subview" value="broadcast">
+            <label for="broadcast_page_button" class="button">Broadcast</label>
 
-        <button id="reload_broadcast">Reload</button>
-        <div id="switch_server">
+            <input type="radio" id="recorder_page_button" name="config_subview" value="recorder">
+            <label for="recorder_page_button" class="button">Recorder</label>
+        </ov-nav>
+    </menu>
 
-            <select id="switch_server_id">
-                <option hidden disabled selected value> -- select an option -- </option>
-            </select>
-            <button id="switch_server_broadcast">Switch server</button>
+    <section id="administration">
+        <section id="broadcast_page" class="container">
+            <button id="reload_broadcast">Reload</button>
+            <div id="switch_server">
+
+                <select id="switch_server_id">
+                    <option hidden disabled selected value> -- select an option -- </option>
+                </select>
+                <button id="switch_server_broadcast">Switch server</button>
+            </div>
+        </section>
+        <section id="recorder_page" class="container">RECORDER</section>
+    </section>
+
+    <ov-dialog id="menu_slider" position="left">
+        <div slot="dialog-content">
+            <div>
+                <button id="logout_button" class="red_button">Logout</button>
+            </div>
         </div>
-    </details>
-
-    <button id="logout_button" class="red_button">Logout</button>
-
+    </ov-dialog>
 </main>

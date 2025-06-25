@@ -165,7 +165,7 @@ export async function render(container) {
         }
 
         console.warn(log_prefix(websocket) + "Pers error. Disconnect and try again.");
-        // websocket.disconnect();
+        websocket.disconnect();
         if (websocket === ov_Websockets.current_lead_websocket)
             View.indicate_loading(true, "Automatic login reconnect failed. Triggered disconnect from server to try again after timeout. ");
 
@@ -175,11 +175,17 @@ export async function render(container) {
     for (let ws of ov_Websockets.list) {
         if (ws !== ov_Websockets.current_lead_websocket) {
             if (ws.is_ready)
-                establish_connection(ws);
+                establish_connection(ws).then((value) => {
+                    if (!value)
+                        ws.disconnect();
+                });
             else if (!ws.is_connecting)
                 ov_Auth.connect(ws).then((value) => {
                     if (value)
-                        establish_connection(ws);
+                        establish_connection(ws).then((value2) => {
+                            if (!value2)
+                                ws.disconnect();
+                        });
                 });
             else
                 ws.disconnect();
@@ -209,7 +215,7 @@ async function establish_connection(websocket) {
             result = false;
         }
 
-        if (!result && websocket.is_ready && !ov_Auth.has_valid_session(websocket)) {
+        if (!result && websocket.is_ready && !ov_Auth.has_valid_session(websocket) && websocket !== ov_Websockets.current_lead_websocket) {
             result = await View.ask_for_relogin();
         }
     }

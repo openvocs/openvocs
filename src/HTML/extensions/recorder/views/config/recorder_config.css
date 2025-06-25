@@ -1,0 +1,14 @@
+:root {
+    --touch: 1;
+}
+
+#recorder_config {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    height: inherit;
+}
+
+#loops, #recorder_settings {
+    height: 100%;
+    overflow-y: auto;
+}

@@ -32,18 +32,33 @@ import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_Monitor from "/lib/ov_monitor.js";
 
+
+import ov_Nav from "/components/nav/nav.js";
+import ov_Dialog from "/components/dialog/dialog.js";
+
 var VIEW_ID;
+
+var Config_Recorder;
 
 export var logout_triggered;
 
 var DOM = {};
 var selected_server;
 
-export async function init(view_id) {
+export async function init(loops, view_id) {
     document.documentElement.className = "dark";
 
-    // if (!document.adoptedStyleSheets.includes(await ov_Nav.style_sheet))
-    //     document.adoptedStyleSheets = [...document.adoptedStyleSheets, await ov_Nav.style_sheet];
+    if (RECORDER)
+        Config_Recorder = await import("/extensions/recorder/views/config/js/recorder_config.js");
+
+    if (!document.adoptedStyleSheets.includes(await ov_Nav.style_sheet))
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, await ov_Nav.style_sheet];
+
+    DOM.sub_view_nav = document.getElementById("select_subview");
+    DOM.sub_view = document.getElementById("administration");
+    DOM.config_name = document.getElementById("config_name");
+    DOM.menu_slider = document.getElementById("menu_slider");
+    DOM.menu_button = document.getElementById("menu_button");
 
     DOM.view_container = document.getElementById("view_container");
     DOM.reload_broadcast = document.getElementById("reload_broadcast");
@@ -73,6 +88,9 @@ export async function init(view_id) {
         ov_Auth.logout();
     });
 
+    DOM.menu_button.addEventListener("click", () => {
+        DOM.menu_slider.toggle();
+    });
 
 
     for (let server of ov_Websockets.list) {
@@ -96,6 +114,23 @@ export async function init(view_id) {
             }, 500);
         }
     });
+
+    if (!RECORDER) {
+        document.getElementById("recorder_page_button").style.display = "none";
+        document.querySelector("#recorder_page_button+label").style.display = "none";
+    }
+
+    if (RECORDER)
+        await Config_Recorder.init(document.getElementById("recorder_page"));
+
+    DOM.sub_view_nav.addEventListener("change", () => {
+        DOM.sub_view.className = DOM.sub_view_nav.value;
+        if (DOM.sub_view_nav.value === "broadcast") {
+        } else if (DOM.sub_view_nav.value === "recorder" && RECORDER) {
+            Config_Recorder.render(loops);
+        }
+    });
+    DOM.sub_view_nav.value = "broadcast";
 }
 
 export function display_loading_screen(value, message) {

@@ -35,7 +35,8 @@ var RETRIES_ON_TEMP_ERROR = 5;
 
 const EVENT = {
     AUTHORIZE: "authorize",
-    BROADCAST: "broadcast"
+    BROADCAST: "broadcast",
+    LOOPS: "get_all_loops"
 }
 
 export async function broadcast_switch_server(server_id, ws) {
@@ -84,6 +85,30 @@ export async function broadcast_update(ws) {
         }
     }
     return true;
+}
+
+export async function get_loops(ws) {
+    let result;
+    ws = ws ? ws : ov_Websockets.prime_websocket;
+    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
+        try {
+            console.log(log_prefix(ws) + "get all loops...");
+            result = await ws.send_event(EVENT.LOOPS);
+            console.log(log_prefix(ws) + "get all loops successful");
+            break;
+        } catch (error) {
+            if (ws.is_connecting && error.temp_error) {
+                console.log(log_prefix(ws) +
+                    "temp error - try to get all loops again after timeout");
+                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
+            } else {
+                console.warn(log_prefix(ws) +
+                    "get all loops failed.", error);
+                return false;
+            }
+        }
+    }
+    return result.result;
 }
 
 //-----------------------------------------------------------------------------

@@ -38,4 +38,6 @@ SIGNALING_SERVERS = [
         WEBSOCKET_URL: "wss://192.168.178.24/admin",
         NAME: "linux"
     }
-]
+];
+
+RECORDER = true;

@@ -1,11 +1,52 @@
 {
 	"id":"localhost",
-	"layout":{},
+	"layout":
+	{
+		"1011x1300":
+		{
+			"font_scaling":1,
+			"grid_columns":2,
+			"grid_rows":2,
+			"layout":"auto_grid",
+			"name_scaling":1.5,
+			"site_scaling":1
+		},
+		"1011x1743":
+		{
+			"font_scaling":1,
+			"grid_columns":2,
+			"grid_rows":2,
+			"layout":"auto_grid",
+			"name_scaling":1.5,
+			"site_scaling":1
+		}
+	},
+	"loops":
+	{
+		"f8378c58-990a-7991-b88e-b9a2d948a555":
+		{
+			"abbreviation":"testloop",
+			"id":"f8378c58-990a-7991-b88e-b9a2d948a555",
+			"multicast":
+			{
+				"host":"224.0.0.1",
+				"port":12345
+			},
+			"name":"test",
+			"roles":
+			{
+				"admin@localhost":false
+			}
+		}
+	},
+	"name":null,
 	"roles":
 	{
 		"admin":
 		{
 			"id":"admin",
+			"layout":{},
+			"name":null,
 			"users":
 			{
 				"admin":null

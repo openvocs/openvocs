@@ -29,6 +29,7 @@
 */
 #include "../include/ov_vocs_db.h"
 #include "../include/ov_vocs_db_app.h"
+#include "../include/ov_vocs_db_persistance.h"
 
 #include <limits.h>
 
@@ -52,6 +53,8 @@ struct ov_vocs_db {
     ov_vocs_db_config config;
 
     ov_thread_lock lock;
+
+    ov_vocs_db_persistance *persistance;
 
     struct {
 
@@ -2183,11 +2186,25 @@ done:
     if (!ov_event_trigger_send(self->config.trigger, "VOCS", msg))
         msg = ov_json_value_free(msg);
 
+    ov_vocs_db_persistance_persist(self->persistance);
+
     return result;
 error:
     return false;
 }
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_db_send_vocs_trigger(ov_vocs_db *self, const ov_json_value *msg){
+
+    if (!self || !msg) return false;
+
+    ov_json_value *copy = NULL;
+    ov_json_value_copy((void**)&copy, msg);
+
+    return ov_event_trigger_send(self->config.trigger, "VOCS", copy);
+
+}
 /*----------------------------------------------------------------------------*/
 
 static bool delete_domain_key(ov_vocs_db *self,
@@ -2879,6 +2896,7 @@ done:
     }
 
     ov_event_trigger_send(self->config.trigger, "VOCS", msg);
+    ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 
@@ -4773,6 +4791,105 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool add_loop_and_domain_to_result(const void *key, void *val, void *data) {
+
+    if (!key) return true;
+
+    ov_json_value *copy = NULL;
+    const ov_json_value *project = NULL;
+    const ov_json_value *domain = NULL;
+
+    ov_json_value_copy((void **)&copy, val);
+
+    ov_json_object_del(copy, OV_KEY_ROLES);
+    ov_json_object_del(copy, OV_KEY_USERS);
+    ov_json_object_del(copy, OV_KEY_SIP);
+
+    ov_json_value *out = ov_json_value_cast(data);
+    ov_json_object_set(out, key, copy);
+
+    ov_json_value *loop = ov_json_value_cast(val);
+
+    ov_json_value *loops = loop->parent;
+    if (!loops) goto done;
+
+    ov_json_value *project_or_domain = loops->parent;
+    if (!project_or_domain) goto done;
+
+    ov_json_value *project_or_domain_parent = project_or_domain->parent;
+
+    if (project_or_domain_parent) {
+
+        project = project_or_domain;
+
+        ov_json_value *domain_projects = project->parent;
+        if (!domain_projects) goto error;
+
+        domain = domain_projects->parent;
+
+    } else {
+
+        project = NULL;
+        domain = project_or_domain;
+    }
+
+    if (domain) {
+
+        ov_json_value *dom = NULL;
+        ov_json_value_copy((void**)&dom, domain);
+
+        ov_json_object_del(dom, OV_KEY_PROJECTS);
+        ov_json_object_del(dom, OV_KEY_LOOPS);
+        ov_json_object_del(dom, OV_KEY_ROLES);
+        ov_json_object_del(dom, OV_KEY_USERS);
+
+        ov_json_object_set(copy, OV_KEY_DOMAIN, dom);
+    
+    }
+
+    if (project) {
+
+        ov_json_value *pro = NULL;
+        ov_json_value_copy((void**)&pro, project);
+
+        ov_json_object_del(pro, OV_KEY_PROJECTS);
+        ov_json_object_del(pro, OV_KEY_LOOPS);
+        ov_json_object_del(pro, OV_KEY_ROLES);
+        ov_json_object_del(pro, OV_KEY_USERS);
+
+        ov_json_object_set(copy, OV_KEY_PROJECT, pro);
+    
+    }
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_vocs_db_get_all_loops_incl_domain(ov_vocs_db *self) {
+
+    ov_json_value *result = NULL;
+    if (!self) goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
+    result = ov_json_object();
+
+    ov_dict_for_each(self->index.loops, result, add_loop_and_domain_to_result);
+
+    if (!ov_thread_lock_unlock(&self->lock)) {
+        OV_ASSERT(1 == 0);
+        goto error;
+    }
+error:
+    return result;
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_vocs_db_remove_permission(ov_vocs_db *self, 
     ov_sip_permission permission){
 
@@ -4818,4 +4935,15 @@ done:
     }
 error:
     return result;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_db_set_persistance(ov_vocs_db *self, ov_vocs_db_persistance *persistance){
+
+    if (!self || !persistance)
+        return false;
+
+    self->persistance = persistance;
+    return true;
 }
