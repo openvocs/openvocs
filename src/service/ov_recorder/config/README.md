@@ -1,1 +1,0 @@
-In case of service configuration the following files will be copied to the system:(1) Everything under ./etc will be copied as is to /etc/ during installation.(2) *.service and *.socket will be copied to /etc/systemd/system during installation.

@@ -30,7 +30,6 @@ OV_SERVICE_DIRS   += ov_mc_mixer
 OV_SERVICE_DIRS   += ov_mc_ice_proxy
 OV_SERVICE_DIRS   += ov_mc_vocs
 OV_SERVICE_DIRS   += ov_mc_interconnect
-OV_SERVICE_DIRS   += ov_recorder
 OV_SERVICE_DIRS   += ov_mc_vad
 
 ifeq ($(OV_UNAME), Linux)
