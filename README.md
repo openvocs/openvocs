@@ -44,6 +44,7 @@ Building openvocs is straight forward and requires 3 steps:
 To list required packages run
 
 ```
+source env.sh
 scripts/show_packages.sh
 ```
 
@@ -69,66 +70,18 @@ You will have to ensure you got access to the systemd journal if you want to ins
 1. Set environment variables for the build: `source env.sh`
 2. Compile: `make`
 
-### Windows
-1. [Install WSL](https://www.roberts999.com/posts/2018/11/wsl-coding-windows-ubuntu#201811-GetWsl)
-   1. Enable the windows subsystem for linux in windows features
-      1. Open “turn Windows features on or off” by searching under the start menu
-      2. Check the “windows subsystem for linux” option
-      3. You will need to restart your pc for this to take affect
-   2. Install ubuntu (or another linux distro)
-      * ATTENTION: Ubuntu-20.04 does currently not work with WSL 1
-      * from windows store: Search “windows store” in the start menu, then search for “ubuntu”
-      * manual: see [microsoft docs](https://docs.microsoft.com/en-us/windows/wsl/install-manual)
-   3. The first time running wsl, it will prompt you to setup a user account; just follow the prompts
-2. Make sure the project is checked out with unix file formatting. Git may have converted the files to dos formatting on checkout.
-```
-// configure git project to checkout unix file formatting on windows
-git config core.eol lf
-git config core.autocrlf input
 
-// fetch project content again (with the correct file formatting) and reset local version
-git fetch origin master
-git reset --hard FETCH_HEAD
-git clean -df
-```
-3. In WSL navigate to openvocs project. If the project is located in the Windows part of your system, you can find it under `/mnt/c/...`.
-4. You should use an editor that works directly in WSL (e.g. VSCode/VSCodium with the [WSL plugin](https://code.visualstudio.com/docs/remote/wsl)* to edit the project.
-5. Continue with installation guide for [linux](#Linux)
-
-\* With VSCode with WSL you may run into problems with Git (see [VSCode issue](https://github.com/microsoft/vscode-remote-release/issues/903)).
-[This comment](https://github.com/microsoft/vscode-remote-release/issues/903#issuecomment-521304085) fixed it for me:
-```
-"remote.WSL.fileWatcher.polling": true,
-"files.watcherExclude": {
-   "**/.git/**": true
-}
-```
-
-### MacOS
-
-To build openvocs on macos a few tools should be installed
-
-#### pkgconfig
-
-pkg-config is used during linking within the openvocs makefile,
-so it should be installed
+#### Build a package for Debian:
 
 ```
-sudo port -d selfupdate
-sudo port install pkgconfig
+make deb
 ```
-
-You may want to make a link under /usr/local/bin to avoid PATH related find
-problems within xcode.
-
-```
-ln -s /opt/local/bin/pkg-config /usr/local/bin/pkg-config
-```
-
-#### required libraries
+Once the build is completed the package will be avaialable under the ./build folder.
+THe Debian based packages a file like openvocs_1.2.2-1505_amd64.deb will be build.
+You may install the package using dpkg
 
 ```
-sudo port install openssl libopus libsrtp
+dpkg -i build/openvocs_<version>-<build_id>_amd64.deb
 ```
 
 
