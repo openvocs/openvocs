@@ -163,7 +163,7 @@ OV_LIBS_TO_PACKAGE=arch backend base codec core database encryption format ice l
             ice ice_proxy vad
 
 OV_BINARIES_TO_PACKAGE=stun_server \
-    alsa_gateway mc_ice_proxy mc_mixer mc_vocs recorder \
+    alsa_gateway mc_ice_proxy mc_mixer mc_vocs \
     mc_socket_debug alsa_cli rtp_cli test_mc mc_vad mc_cli\
     domain_config_verify \
     ldap_test ldap_test_auth ldap_user_import password \
