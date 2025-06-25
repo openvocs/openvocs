@@ -566,7 +566,10 @@ generate_config_mixers
 generate_config_ov_vocs
 generate_config_vad
 generate_certificates
-generate_config_recorder
+
+if [ "X" != "X$SETUP_RECORDER" ]; then
+    generate_config_recorder
+fi
 
 cd $CWD
 
