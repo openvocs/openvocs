@@ -54,7 +54,6 @@ rm -rf $RPM_BUILD_ROOT
 %config /etc/openvocs/ov_mc_mixer
 %config /etc/openvocs/ov_mc_vocs
 %config /etc/openvocs/ov_mc_vad
-%config /etc/openvocs/ov_mc_recorder
 %config /srv/openvocs/HTML/config_vocs.js
 %config /srv/openvocs/HTML/config_vocs_admin.js
 
@@ -76,7 +75,6 @@ rm -rf $RPM_BUILD_ROOT
 /usr/bin/ov_mc_cli
 /usr/bin/ov_stun_client
 /usr/bin/ov_stun_server
-/usr/bin/ov_recorder
 /usr/bin/ov_mc_vad
 /usr/bin/ov_mc_socket_debug
 
@@ -86,8 +84,6 @@ rm -rf $RPM_BUILD_ROOT
 /etc/systemd/system/ov_mc_ice_proxy.service
 /etc/systemd/system/ov_mc_mixer@.service
 /etc/systemd/system/ov_mc_mixer.target
-/etc/systemd/system/ov_mc_recorder@.service
-/etc/systemd/system/ov_mc_recorder.target
 /etc/systemd/system/ov_mc.target
 /etc/systemd/system/ov_mc_vocs.service
 /etc/systemd/system/ov_mc_vad.service
