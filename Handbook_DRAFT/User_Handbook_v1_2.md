@@ -18,7 +18,6 @@ SPDX-License-Identifier: Apache 2.0
 * [Installation](#Installation)
     * [Installation - Linux](#Installation_linux)
     * [Installation - Base system](#Installation_baselinux)
-    * [Installation - Windows](#Installation_win)
     * [Installation - MacOS](#Installation_macos)
 * [HowTo OPENVOCS services](#OV_service)
 * [The OPENVOCS API](#OV_api)
