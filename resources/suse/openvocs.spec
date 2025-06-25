@@ -84,8 +84,6 @@ rm -rf $RPM_BUILD_ROOT
 /etc/systemd/system/ov_mc_ice_proxy.service
 /etc/systemd/system/ov_mc_mixer@.service
 /etc/systemd/system/ov_mc_mixer.target
-/etc/systemd/system/ov_mc_recorder@.service
-/etc/systemd/system/ov_mc_recorder.target
 /etc/systemd/system/ov_mc.target
 /etc/systemd/system/ov_mc_vocs.service
 /etc/systemd/system/ov_mc_vad.service

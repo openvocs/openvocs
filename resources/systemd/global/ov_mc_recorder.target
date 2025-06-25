@@ -1,9 +1,0 @@
-[Unit]
-Description=OV MC Recorders
-# PartOf=ov_mc.target
-Wants=network-online.target
-After=network-online.target
-
-Requires=ov_mc_recorder@1.service ov_mc_recorder@2.service ov_mc_recorder@3.service
-[Install]
-WantedBy=multi-user.target
