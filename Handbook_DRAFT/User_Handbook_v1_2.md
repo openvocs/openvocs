@@ -224,46 +224,6 @@ This is the final target for openvocs within your systemd configuration. ov_mc.t
 
 ---
 
-
-### Installation - Windows
-To be able to run OPENVOCS in a Window machine, you need to install the Windows-Subsystem-for-Linux (WSL):
-
-1. [Install WSL](https://www.roberts999.com/posts/2018/11/wsl-coding-windows-ubuntu#201811-GetWsl)
-   1. Enable the windows subsystem for linux in windows features
-      1. Open “turn Windows features on or off” by searching under the start menu
-      2. Check the “windows subsystem for linux” option
-      3. You will need to restart your pc for this to take affect
-   2. Install ubuntu (or another linux distro)
-      * ATTENTION: Ubuntu-20.04 does currently not work with WSL 1
-      * from windows store: Search “windows store” in the start menu, then search for “ubuntu”
-      * manual: see [microsoft docs](https://docs.microsoft.com/en-us/windows/wsl/install-manual)
-   3. The first time running wsl, it will prompt you to setup a user account; just follow the prompts
-2. Make sure the project is checked out with unix file formatting. Git may have converted the files to dos formatting on checkout.
-
-```
-// configure git project to checkout unix file formatting on windows
-git config core.eol lf
-git config core.autocrlf input
-
-// fetch project content again (with the correct file formatting) and reset local version
-git fetch origin master
-git reset --hard FETCH_HEAD
-git clean -df
-```
-
-3. In WSL navigate to openvocs project. If the project is located in the Windows part of your system, you can find it under `/mnt/c/...`.
-4. You should use an editor that works directly in WSL (e.g. VSCode/VSCodium with the [WSL plugin](https://code.visualstudio.com/docs/remote/wsl)* to edit the project.
-5. Continue with installation guide for [linux](#Linux)
-
-\* With VSCode with WSL you may run into problems with Git (see [VSCode issue](https://github.com/microsoft/vscode-remote-release/issues/903)).
-[This comment](https://github.com/microsoft/vscode-remote-release/issues/903#issuecomment-521304085) fixed it for me:
-```
-"remote.WSL.fileWatcher.polling": true,
-"files.watcherExclude": {
-   "**/.git/**": true
-}
-```
-
 ### Installation - MacOS
 To build openvocs on macos a few tools should be installed
 
