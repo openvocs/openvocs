@@ -18,7 +18,6 @@ SPDX-License-Identifier: Apache 2.0
 * [Installation](#Installation)
     * [Installation - Linux](#Installation_linux)
     * [Installation - Base system](#Installation_baselinux)
-    * [Installation - Windows](#Installation_win)
     * [Installation - MacOS](#Installation_macos)
 * [HowTo OPENVOCS services](#OV_service)
 * [The OPENVOCS API](#OV_api)
@@ -182,30 +181,7 @@ sudo systemctl start ov_mc.target
 
 This is the final target for OPENVOCS® within your systemd configuration. ov_mc.target will start all subtargets and subservices.
 
-
----
-
-#### How to build openvocs library
-
-The OPENVOCS® library may be installed to the local system for development against OPENVOCS®. This is optional to the system installation above! 
-
-#### Installing required libraries
-
-To build OPENVOCS® some libraries must be present. To show required libraries you may use:
-
-```
-scripts/show_packages.sh debian
-```
-
-To install all required libraries use:
-
-```
-for item in `./scripts/show_packages.sh debian`; do sudo apt install -y $item; done
-```
-
-Libraries are preconfigured for Debian 12. Other Linux distributions like Ubuntu or Suse may work as well. **Nevertheless** for these and other Linux distributions it may be necessary to install the required libraries manually.
-
-#### Buildung OPENVOCS®
+#### Buildung OPENVOCS® library
 
 The first step on building OPENVOCS® is to source the environment variables. This should be done using:
 

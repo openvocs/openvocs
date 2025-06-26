@@ -53,13 +53,14 @@ This will list supported distributions.
 Run it again with the name of one of those distributions
 
 ```
+source env.sh
 scripts/show_packages.sh debian
 ```
 If your distribution is not included you may check for similar packages on your own.
 
 To install all required and proposed packages you may run
 ```
-for item in `./scripts/show_packages.sh debian ubuntu`; do sudo apt install -y $item; done
+for item in `./scripts/show_packages.sh debian debian`; do sudo apt install -y $item; done
 ```
 
 You will have to take into consideration that openvocs creates abundantly lot of logging, which might caues problems if you don't restrict the size of the logs retained.
@@ -70,6 +71,9 @@ You will have to ensure you got access to the systemd journal if you want to ins
 1. Set environment variables for the build: `source env.sh`
 2. Compile: `make`
 
+### MacOS
+
+To build openvocs on macos a few tools should be installed
 
 #### Build a package for Debian:
 
