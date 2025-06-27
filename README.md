@@ -71,10 +71,6 @@ You will have to ensure you got access to the systemd journal if you want to ins
 1. Set environment variables for the build: `source env.sh`
 2. Compile: `make`
 
-### MacOS
-
-To build openvocs on macos a few tools should be installed
-
 #### Build a package for Debian:
 
 ```
