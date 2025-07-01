@@ -2,10 +2,10 @@
 SPDX-FileCopyrightText: 2025 German Aerospace Center (DLR)
 SPDX-License-Identifier: Apache 2.0
 -->
-<div style="text-align: center;">
-# **O P E N V O C S ®**
-## README v.01.3 - Last Update 2025-07-01 - Status: ***DRAFT***
-</div>
+
+# **O P E N V O C S ®** 
+##### README v.01.3 - Last Update 2025-07-01 - Status: ***DRAFT***
+
 
 ---
 ## Table of Content
