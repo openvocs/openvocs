@@ -190,4 +190,4 @@ target_prepare:
 
 #-----------------------------------------------------------------------------
 $(OV_JAVASCRIPT_VERSION_FILE): $(OPENVOCS_ROOT)/makefiles/makefile_version.mk
-	$(OV_QUIET)echo "# Auto-Generated - DO NOT MODIFY" > $@ && echo "VERSION_NUMBER = \"$(OV_VERSION)\";" >> $@
+	$(OV_QUIET)echo "// Auto-Generated - DO NOT MODIFY" > $@ && echo "VERSION_NUMBER = \"$(OV_VERSION)\";" >> $@
