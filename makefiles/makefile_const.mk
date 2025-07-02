@@ -217,6 +217,8 @@ OV_PLUGINS_PRESENT  = $(shell if [ -d $(OV_PLUGINS_DIR) ]; then echo 1; else ech
 
 #.............................................................................
 
+OV_JAVASCRIPT_VERSION_FILE=$(OPENVOCS_ROOT)/src/HTML/VERSION.js
+
 # PYTHON configuration
 
 OV_PYTHON_LINTER_LOG_FILE=$(OV_BUILDDIR)/python_format_errors.txt

@@ -49,7 +49,7 @@ L_SRCDIRS          := $(shell find . -name '*.c' -exec dirname {} \; | uniq)
 VPATH              := $(L_SRCDIRS)
 
 all                 : target_prepare target_build_all target_install
-target_build_all    : target_sources
+target_build_all    : target_sources $(OV_JAVASCRIPT_VERSION_FILE)
 target_sources      : $(OV_TARGET)
 depend              : target_depend
 target_install      : target_install_header
@@ -188,3 +188,6 @@ target_prepare:
 	$(OV_QUIET)$(OV_MKDIR) $(OV_BINDIR)               $(OV_NUL_STDERR)
 	$(OV_QUIET)$(OV_MKDIR) $(OV_PLUGINDIR)            $(OV_NUL_STDERR)
 
+#-----------------------------------------------------------------------------
+$(OV_JAVASCRIPT_VERSION_FILE): $(OPENVOCS_ROOT)/makefiles/makefile_version.mk
+	$(OV_QUIET)echo "# Auto-Generated - DO NOT MODIFY" > $@ && echo "VERSION_NUMBER = \"$(OV_VERSION)\";" >> $@

@@ -122,6 +122,7 @@ target_test_resources:
 
 target_clean:
 	@echo "[CLEAN  ] clean up ..."
+	$(OV_QUIET)rm -rf $(OV_JAVASCRIPT_VERSION_FILE)
 	$(OV_QUIET)$(OV_RMDIR) $(OV_BUILDDIR)
 	$(OV_QUIET)$(shell find $(OPENVOCS_ROOT) -name "*.pyc" -exec rm {} \;)
 	$(OV_QUIET)$(shell find $(OPENVOCS_ROOT) -name "__pycache__" -exec rm -r {} \;)

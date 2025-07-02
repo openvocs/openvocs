@@ -42,14 +42,14 @@
 *.idb
 *.pdb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
 .tmp_versions/
 modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Auto-generated
+src/HTML/VERSION.js
 
 build
 .ov_build_id.txt
