@@ -46,6 +46,8 @@ typedef struct {
 
     ov_vad_config vad;
 
+    uint64_t silence_cutoff_interval_msecs;
+
 } ov_recorder_event_start;
 
 /*----------------------------------------------------------------------------*/

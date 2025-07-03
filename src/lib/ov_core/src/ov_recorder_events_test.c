@@ -175,6 +175,13 @@ int test_ov_recorder_event_start_to_json() {
 
     val = ov_json_value_free(val);
 
+    val = ov_json_object();
+
+    start.silence_cutoff_interval_msecs = 143;
+    testrun(ov_recorder_event_start_to_json(val, &start));
+
+    val = ov_json_value_free(val);
+
     return testrun_log_success();
 }
 
@@ -234,6 +241,15 @@ int test_ov_recorder_event_start_from_json() {
     start_reference.vad.powerlevel_density_threshold_db = 18;
     start_reference.vad.zero_crossings_rate_threshold_hertz = 8211;
 
+    jval = ov_json_object();
+    testrun(ov_recorder_event_start_to_json(jval, &start_reference));
+    testrun(ov_recorder_event_start_from_json(jval, &start_read));
+    testrun(ov_recorder_event_start_equal(&start_reference, &start_read));
+
+    jval = ov_json_value_free(jval);
+    ov_recorder_event_start_clear(&start_read);
+
+    start_reference.silence_cutoff_interval_msecs = 143;
     jval = ov_json_object();
     testrun(ov_recorder_event_start_to_json(jval, &start_reference));
     testrun(ov_recorder_event_start_from_json(jval, &start_read));

@@ -32,6 +32,10 @@
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_utils.h>
 
+/*----------------------------------------------------------------------------*/
+
+#define SILENCE_CUTOFF_INTERVAL "silence_cutoff_msecs"
+
 /*****************************************************************************
                                  recorder start
  ****************************************************************************/
@@ -65,7 +69,9 @@ bool ov_recorder_event_start_equal(ov_recorder_event_start const *event1,
                (event1->vad.powerlevel_density_threshold_db ==
                 event2->vad.powerlevel_density_threshold_db) &&
                (event1->vad.zero_crossings_rate_threshold_hertz ==
-                event2->vad.zero_crossings_rate_threshold_hertz);
+                event2->vad.zero_crossings_rate_threshold_hertz) &&
+               (event1->silence_cutoff_interval_msecs ==
+                event2->silence_cutoff_interval_msecs);
     }
 }
 
@@ -87,6 +93,20 @@ static bool json_add_string(ov_json_value *json, char const *key,
 
 static bool json_add_uint16(ov_json_value *json, char const *key,
                             uint16_t value) {
+    ov_json_value *jvalue = ov_json_number(value);
+
+    if (ov_json_object_set(json, key, jvalue)) {
+        return true;
+    } else {
+        jvalue = ov_json_value_free(jvalue);
+        return false;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool json_add_uint64(ov_json_value *json, char const *key,
+                            uint64_t value) {
     ov_json_value *jvalue = ov_json_number(value);
 
     if (ov_json_object_set(json, key, jvalue)) {
@@ -127,7 +147,10 @@ bool ov_recorder_event_start_to_json(ov_json_value *target,
                            event->roll_after_secs) &&
            json_add_string(target, OV_KEY_LOOP, event->loop) &&
            json_add_string(target, OV_KEY_MULTICAST, event->mc_ip) &&
-           add_vad_if_required(target, event->vad);
+           add_vad_if_required(target, event->vad) &&
+           ((0 == event->silence_cutoff_interval_msecs) ||
+            json_add_uint64(target, SILENCE_CUTOFF_INTERVAL,
+                            event->silence_cutoff_interval_msecs));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -142,6 +165,23 @@ static int32_t json_get_uint16(ov_json_value const *json, char const *key) {
     } else if (ov_json_is_number(jnumber) && (-1 < number) &&
                (UINT16_MAX >= number)) {
         return (int32_t)number;
+
+    } else {
+        return -1;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+static int64_t json_get_uint64(ov_json_value const *json, char const *key) {
+    ov_json_value const *jnumber = ov_json_get(json, key);
+    double number = ov_json_number_get(jnumber);
+
+    if (0 == jnumber) {
+        return 0;
+
+    } else if (ov_json_is_number(jnumber) && (-1 < number)) {
+        return (int64_t)number;
 
     } else {
         return -1;
@@ -172,6 +212,7 @@ bool ov_recorder_event_start_from_json(ov_json_value const *json,
 
     int32_t port = json_get_uint16(json, "/" OV_KEY_PORT);
     int32_t roll_after_secs = json_get_uint16(json, "/" OV_KEY_ROLL_AFTER_SECS);
+    int64_t silence_cutoff_interval_msecs = json_get_uint64(json, "/" SILENCE_CUTOFF_INTERVAL);
 
     if (ov_ptr_valid(json,
                      "Cannot read recorder start event form JSON - no JSON") &&
@@ -201,6 +242,10 @@ bool ov_recorder_event_start_from_json(ov_json_value const *json,
 
         if (0 < roll_after_secs) {
             event->roll_after_secs = roll_after_secs;
+        }
+
+        if (0 < silence_cutoff_interval_msecs) {
+            event->silence_cutoff_interval_msecs = silence_cutoff_interval_msecs;
         }
 
         return true;
