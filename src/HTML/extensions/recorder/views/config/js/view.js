@@ -84,7 +84,8 @@ export function add_loop(id, data, active) {
     loop.id = id;
     loop.name = data.name ? data.name : data.id;
     loop.project = data.project.name ? data.project.name : data.project.id;
-    loop.domain = data.domain.name ? data.domain.name : data.domain.id;
+    if (data.domain)
+        loop.domain = data.domain.name ? data.domain.name : data.domain.id;
     loop.active = active;
 
     loop.addEventListener("click", () => {
