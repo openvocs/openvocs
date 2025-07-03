@@ -668,6 +668,7 @@ ov_vocs_recorder *ov_vocs_recorder_create(ov_vocs_recorder_config config) {
     self->recorder = ov_dict_create(d_config);
     if (!self->recorder) goto error;
 
+    d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_vocs_record_free_void;
     self->recordings = ov_dict_create(d_config);
     if (!self->recordings) goto error;
