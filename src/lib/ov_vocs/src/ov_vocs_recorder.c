@@ -994,6 +994,8 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
 
     if (!rec) goto error;
 
+    rec->active.recorder = ov_event_connection_get_socket(conn);
+
     if (!ov_dict_set(self->recordings, ov_string_dup(loop), rec, NULL))
         goto error;
 
@@ -1034,6 +1036,8 @@ bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop) {
 
     ov_event_connection_send(conn, msg);
     msg = ov_json_value_free(msg);
+
+    ov_log_debug("Deactivated recording for Loop %s", loop);
 
     ov_vocs_db_set_recorded(self->config.vocs_db, loop, false);
 
