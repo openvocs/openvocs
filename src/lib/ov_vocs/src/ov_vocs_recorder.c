@@ -1034,6 +1034,9 @@ bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop) {
         ov_event_api_message_create(OV_EVENT_STOP_RECORD, 0, 0);
     ov_json_value *params = ov_event_api_set_parameter(msg);
     ov_recorder_event_stop_to_json(params, &stop_event);
+    
+    if (!ov_json_object_set(params, OV_KEY_LOOP, ov_json_string(loop)))
+        goto error;
 
     ov_event_connection_send(conn, msg);
     msg = ov_json_value_free(msg);
