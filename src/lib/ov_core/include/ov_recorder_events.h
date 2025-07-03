@@ -31,6 +31,7 @@
 
 #include <ov_base/ov_id.h>
 #include <ov_base/ov_json_value.h>
+#include <ov_base/ov_vad_config.h>
 
 /*****************************************************************************
                                   record_start
@@ -42,6 +43,8 @@ typedef struct {
     char *mc_ip;
     uint16_t mc_port;
     uint16_t roll_after_secs;
+
+    ov_vad_config vad;
 
 } ov_recorder_event_start;
 
