@@ -53,3 +53,6 @@ src/HTML/VERSION.js
 
 build
 .ov_build_id.txt
+
+.cache
+compile_commands.json

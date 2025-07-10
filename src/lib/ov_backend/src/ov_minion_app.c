@@ -31,6 +31,7 @@
 #include <ov_base/ov_utils.h>
 
 #include "../include/ov_minion_app.h"
+#include "../include/ov_app.h"
 
 #include <ov_base/ov_config.h>
 #include <ov_base/ov_config_log.h>
@@ -39,10 +40,9 @@
 #include <ov_base/ov_registered_cache.h>
 #include <ov_base/ov_socket.h>
 #include <ov_base/ov_version.h>
+#include <ov_base/ov_config_keys.h>
 
 #include <ov_core/ov_event_api.h>
-
-#include "../include/ov_signaling_message.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -182,15 +182,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ProcessResult ov_minion_app_process_cmdline(int argc,
-                                            char **argv,
-                                            char const *app_name,
-                                            ov_json_value **loaded_json) {
-
+ProcessResult ov_minion_app_process_cmdline_optargs(int argc, char **argv,
+                                                    char const *app_name,
+                                                    ov_json_value **loaded_json,
+                                                    char const *optargs) {
     ov_json_value *jval = 0;
 
     if ((0 == argv) || (0 == app_name) || (0 == loaded_json)) {
-
         ov_log_error("Got 0 pointer");
         goto error;
     }
@@ -199,16 +197,15 @@ ProcessResult ov_minion_app_process_cmdline(int argc,
 
     ov_app_parameters app_params = {0};
 
-    char const *err_msg = ov_app_parse_command_line(argc, argv, &app_params);
+    char const *err_msg =
+        ov_app_parse_command_line_optargs(argc, argv, &app_params, optargs);
 
     if (0 != err_msg) {
-
         ov_log_error("Could not parse command line: %s", err_msg);
         return EXIT_FAIL;
     }
 
     if (app_params.version_request) {
-
         OV_VERSION_PRINT(stderr);
         return EXIT_OK;
     }
@@ -218,7 +215,6 @@ ProcessResult ov_minion_app_process_cmdline(int argc,
     jval = ov_json_read_file(app_params.config_file);
 
     if (0 == jval) {
-
         ov_log_error("Could not load %s", app_params.config_file);
         goto error;
     }
@@ -241,14 +237,21 @@ error:
     return EXIT_FAIL;
 }
 
+/*----------------------------------------------------------------------------*/
+
+ProcessResult ov_minion_app_process_cmdline(int argc, char **argv,
+                                            char const *app_name,
+                                            ov_json_value **loaded_json) {
+    return ov_minion_app_process_cmdline_optargs(argc, argv, app_name,
+                                                 loaded_json, 0);
+}
+
 /*****************************************************************************
                      ov_minion_app_process_result_to_retval
  ****************************************************************************/
 
 int ov_minion_app_process_result_to_retval(ProcessResult result) {
-
     switch (result) {
-
         case CONTINUE:
         case EXIT_OK:
 
