@@ -3911,20 +3911,25 @@ static bool admin_start_recording(ov_vocs *vocs,
         goto done;
     }
 
-    if (!ov_vocs_recorder_start_recording(vocs->recorder, loop)) {
+    if (!ov_event_async_set(
+        vocs->async,
+        uuid,
+        (ov_event_async_data){.socket = socket,
+                              .value = input,
+                              .timedout.userdata = vocs,
+                              .timedout.callback = async_timedout},
+            vocs->config.timeout.response_usec)) {
+            goto error;
+    }
 
-        send_error_response(vocs,
-                            input,
-                            socket,
-                            OV_ERROR_CODE_PROCESSING_ERROR,
-                            OV_ERROR_DESC_PROCESSING_ERROR);
+    input = NULL;
 
+    if (!ov_vocs_recorder_start_recording(vocs->recorder, loop, uuid)) {
         input = ov_json_value_free(input);
         goto done;
     }
 
-    send_success_response(vocs, input, socket, NULL);
-    ov_json_value_free(input);
+    
 
 done:
     return true;
@@ -3959,7 +3964,20 @@ static bool admin_stop_recording(ov_vocs *vocs,
         goto done;
     }
 
-    if (!ov_vocs_recorder_stop_recording(vocs->recorder, loop)) {
+    if (!ov_event_async_set(
+        vocs->async,
+        uuid,
+        (ov_event_async_data){.socket = socket,
+                              .value = input,
+                              .timedout.userdata = vocs,
+                              .timedout.callback = async_timedout},
+            vocs->config.timeout.response_usec)) {
+            goto error;
+    }
+
+    input = NULL;
+
+    if (!ov_vocs_recorder_stop_recording(vocs->recorder, loop, uuid)) {
 
         send_error_response(vocs,
                             input,
@@ -3970,9 +3988,6 @@ static bool admin_stop_recording(ov_vocs *vocs,
         input = ov_json_value_free(input);
         goto done;
     }
-
-    send_success_response(vocs, input, socket, NULL);
-    ov_json_value_free(input);
 
 done:
     return true;
@@ -4093,7 +4108,7 @@ static bool admin_get_recorded_loops(ov_vocs *vocs,
 
     if (!vocs || !input) goto error;
 
-    val = ov_vocs_db_get_recorded_loops(vocs->config.db);
+    val = ov_vocs_recorder_get_recorded_loops(vocs->recorder);
     if (!val){
         val = ov_json_object();
     }
@@ -5500,6 +5515,67 @@ static bool module_load_sip_static(ov_vocs *self) {
  *      ------------------------------------------------------------------------
  */
 
+static void cb_start_record(void *userdata, const char *uuid, ov_result error){
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self || !uuid) goto error;
+
+    ov_event_async_data adata = ov_event_async_unset(self->async, uuid);
+
+    if (!adata.value) goto error;
+
+    switch (error.error_code) {
+
+        case OV_ERROR_NOERROR:
+
+            send_success_response(self, adata.value, adata.socket, NULL);
+            break;
+
+        default:
+            send_error_response(self,
+                            adata.value, adata.socket,
+                            error.error_code,
+                            error.message);
+    }
+
+    adata.value = ov_json_value_free(adata.value);
+
+error:
+
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_stop_record(void *userdata, const char *uuid, ov_result error){
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self || !uuid) goto error;
+
+    ov_event_async_data adata = ov_event_async_unset(self->async, uuid);
+
+    if (!adata.value) goto error;
+
+    switch (error.error_code) {
+
+        case OV_ERROR_NOERROR:
+
+            send_success_response(self, adata.value, adata.socket, NULL);
+            break;
+            
+        default:
+            send_error_response(self,
+                            adata.value, adata.socket,
+                            error.error_code,
+                            error.message);
+    }
+
+    adata.value = ov_json_value_free(adata.value);
+
+error:
+    return;
+}
+
 /*----------------------------------------------------------------------------*/
 
 static bool module_load_recorder(ov_vocs *self) {
@@ -5508,6 +5584,10 @@ static bool module_load_recorder(ov_vocs *self) {
 
     self->config.module.recorder.loop = self->config.loop;
     self->config.module.recorder.vocs_db = self->config.db;
+
+    self->config.module.recorder.callbacks.userdata =self;
+    self->config.module.recorder.callbacks.start_record = cb_start_record;
+    self->config.module.recorder.callbacks.stop_record = cb_stop_record;
 
     self->recorder = ov_vocs_recorder_create(self->config.module.recorder);
     if (!self->recorder) return false;

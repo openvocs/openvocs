@@ -29,15 +29,15 @@ SIGNALING_SERVERS = [
     // if HOST_WEBSOCKET is set, WEBSOCKET_URL is ignored.
     // HOST_WEBSOCKET extends the host address
 
-    // {
-    //     HOST_WEBSOCKET: "/db",
-    //     NAME: "localhost"
-    // },
-    {
+ {
+         HOST_WEBSOCKET: "/admin",
+         NAME: "localhost"
+     },
+    //{
         //PRIME: true,
-        WEBSOCKET_URL: "wss://192.168.178.24/admin",
-        NAME: "linux"
-    }
+   //     WEBSOCKET_URL: "wss://192.168.178.24/admin",
+   //     NAME: "linux"
+   // }
 ];
 
 RECORDER = true;
