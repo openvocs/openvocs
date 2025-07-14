@@ -1278,6 +1278,8 @@ done:
         goto error;
     }
 
+    ov_vocs_db_persistance_persist(self->persistance);
+
     return result;
 error:
     return false;
@@ -2332,6 +2334,8 @@ done:
         OV_ASSERT(1 == 0);
         goto error;
     }
+
+    ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 

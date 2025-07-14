@@ -33,7 +33,7 @@
 #include <ov_format/ov_file_format.h>
 
 #define OV_WEBSERVER_MINIMAL_MAGIC_BYTE 0x8f00
-#define IMPL_MAX_FRAMES_FOR_JSON 255
+#define IMPL_MAX_FRAMES_FOR_JSON 2048
 
 struct ov_webserver_minimal {
 
