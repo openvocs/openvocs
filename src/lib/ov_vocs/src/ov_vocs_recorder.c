@@ -324,12 +324,19 @@ static bool stop_record(void *userdata,
         case OV_ERROR_NOERROR:
         case OV_ERROR_NOT_RECORDING:
 
-            ov_db_recordings_add(get_database_mut(self),
-                         record->active.id,
-                         record->active.uri,
-                         loop,
-                         record->active.started_at_epoch_secs,
-                         time(0));
+            // NO - The recorder will send a notification event when it
+            // wrote the new recording - here we don't know the file name yet.
+            // Moreover, if we register the recording here and when receiving 
+            // the notification, we end up with 2 entries in the database.
+            // And we need to use the notification in case of automatically
+            // starting/stopping recordings (like in case of rolling recordings
+            // or using a VAD
+            //ov_db_recordings_add(get_database_mut(self),
+            //             record->active.id,
+            //             loop,
+            //             record->active.uri,
+            //             record->active.started_at_epoch_secs,
+            //             time(0));
 
             ov_vocs_record_reset_active(record);
 
@@ -384,8 +391,8 @@ static void handle_new_recording(ov_vocs_recorder *self, ov_recording record) {
 
     ov_db_recordings_add(get_database_mut(self),
                          record.id,
-                         record.uri,
                          record.loop,
+                         record.uri,
                          record.start_epoch_secs,
                          record.end_epoch_secs);
 
