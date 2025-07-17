@@ -2355,7 +2355,6 @@ const char *ov_app_parse_command_line_optargs(
 
         optstring = calloc(1, strlen(our_optstring) + 1 + strlen(optargs) + 1);
         strcpy(optstring, our_optstring);
-        strcat(optstring, ":");
         strcat(optstring, optargs);
 
     } else {
