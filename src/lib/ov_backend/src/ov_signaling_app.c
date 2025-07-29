@@ -99,11 +99,12 @@ static void default_monitor(void *userdata,
                             const ov_json_value *value) {
 
     UNUSED(userdata);
+    UNUSED(direction);
     UNUSED(local_socket);
     UNUSED(remote);
     UNUSED(value);
 
-    ov_log_info("IO %s", (direction == OV_IN) ? "IN" : "OUT");
+    //ov_log_info("IO %s", (direction == OV_IN) ? "IN" : "OUT");
 }
 
 /*----------------------------------------------------------------------------*/

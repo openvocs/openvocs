@@ -82,6 +82,14 @@ bool ov_serde_app_register_handler(ov_serde_app *self,
 
 /*----------------------------------------------------------------------------*/
 
+bool ov_serde_app_enable_logging(ov_serde_app *self, char const *path);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_serde_app_disable_logging(ov_serde_app *self);
+
+/*----------------------------------------------------------------------------*/
+
 /**
  * Beware: All file handles managed by a serde_app should be closed
  * exclusively by `ov_serde_app_close()`!

@@ -367,28 +367,48 @@ ov_sip_app *ov_sip_app_free(ov_sip_app *app) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sip_app_register_handler(ov_sip_app *self,
-                                 char const *method,
-                                 void (*handler)(ov_sip_message const *message,
-                                                 int fh,
-                                                 void *additional)) {
+bool ov_sip_app_enable_logging(ov_sip_app *self, char const *path) {
+    self = as_sip_app(self);
 
+    if (!ov_ptr_valid(self,
+                      "Cannot enable logging for SIP app - invalid app")) {
+        return false;
+    } else {
+        return ov_serde_app_enable_logging(self->serde_app, path);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_sip_app_disable_logging(ov_sip_app *self) {
+    self = as_sip_app(self);
+
+    if (!ov_ptr_valid(self,
+                      "Cannot enable logging for SIP app - invalid app")) {
+        return false;
+    } else {
+        return ov_serde_app_disable_logging(self->serde_app);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_sip_app_register_handler(ov_sip_app *self, char const *method,
+                                 void (*handler)(ov_sip_message const *message,
+                                                 int fh, void *additional)) {
     self = as_sip_app(self);
 
     if ((!ov_ptr_valid(self, "No SIP app given")) ||
         (!ov_ptr_valid(method, "No method")) ||
         (!ov_ptr_valid(handler, "No handler"))) {
-
         return false;
 
     } else if (0 != ov_hashtable_set(self->method_handlers, method, handler)) {
-
-        ov_log_warning(
-            "Overwriting old handler for %s", ov_string_sanitize(method));
+        ov_log_warning("Overwriting old handler for %s",
+                       ov_string_sanitize(method));
         return true;
 
     } else {
-
         return true;
     }
 }
@@ -396,22 +416,17 @@ bool ov_sip_app_register_handler(ov_sip_app *self,
 /*----------------------------------------------------------------------------*/
 
 bool ov_sip_app_register_response_handler(
-    ov_sip_app *self,
-    void (*handler)(ov_sip_message const *message,
-                    int socket,
-                    void *additional)) {
-
+    ov_sip_app *self, void (*handler)(ov_sip_message const *message, int socket,
+                                      void *additional)) {
     self = as_sip_app(self);
 
     if ((!ov_ptr_valid(self, "No SIP app given")) ||
         (!ov_ptr_valid(handler, "No handler"))) {
-
         return false;
 
     } else {
-
-        warn_if_not_null(
-            self->response_handler, "Overwriting response handler");
+        warn_if_not_null(self->response_handler,
+                         "Overwriting response handler");
         ov_log_warning("Overwriting old response handler");
         self->response_handler = handler;
         return true;
@@ -421,7 +436,6 @@ bool ov_sip_app_register_response_handler(
 /*----------------------------------------------------------------------------*/
 
 bool ov_sip_app_connect(ov_sip_app *self, ov_socket_configuration config) {
-
     return ov_serde_app_connect(get_serde_app(self), config);
 }
 
@@ -429,21 +443,18 @@ bool ov_sip_app_connect(ov_sip_app *self, ov_socket_configuration config) {
 
 bool ov_sip_app_open_server_socket(ov_sip_app *self,
                                    ov_socket_configuration config) {
-
     return ov_serde_app_open_server_socket(get_serde_app(self), config);
 }
 
 /*----------------------------------------------------------------------------*/
 
 int ov_sip_app_close(ov_sip_app *self, int fd) {
-
     return ov_serde_app_close(get_serde_app(self), fd);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_sip_app_send(ov_sip_app *self, int fd, ov_sip_message *msg) {
-
     self = as_sip_app(self);
     if (fd < 1) return false;
     if (!msg || !self) return false;

@@ -64,7 +64,15 @@ ov_sip_app *ov_sip_app_create(char const *name,
 
 ov_sip_app *ov_sip_app_free(ov_sip_app *app);
 
+/*****************************************************************************
+                                    Logging
+ ****************************************************************************/
+
+bool ov_sip_app_enable_logging(ov_sip_app *self, char const *path);
+
 /*----------------------------------------------------------------------------*/
+
+bool ov_sip_app_disable_logging(ov_sip_app *self);
 
 /**
  * Registers a handler to be called whenever there is parsed data ready,
