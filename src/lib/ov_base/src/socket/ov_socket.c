@@ -33,39 +33,34 @@
         ------------------------------------------------------------------------
 */
 
-#include "../../include/ov_utils.h"
+#include "../../include/ov_socket.h"
+
+#include <arpa/inet.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <getopt.h>
+#include <ifaddrs.h>
+#include <inttypes.h>
+#include <netdb.h>
+#include <ov_log/ov_log.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-
-#include <inttypes.h>
 #include <string.h>
-
-#include <errno.h>
-
-#include <ifaddrs.h>
-
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netdb.h>
-#include <unistd.h>
-
 #include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/un.h>
-
-#include <ov_log/ov_log.h>
+#include <unistd.h>
 
 #include "../../include/ov_config_keys.h"
-#include "../../include/ov_socket.h"
 #include "../../include/ov_string.h"
+#include "../../include/ov_utils.h"
+#include "netinet/tcp.h"
 
 #define OV_KEY_SOCKET_TYPE "type"
 #define OV_KEY_SOCKET_HOST "host"
@@ -83,10 +78,8 @@
  *                                  HELPERS
  ******************************************************************************/
 
-int open_local_client_socket(const char *path,
-                             size_t length,
+int open_local_client_socket(const char *path, size_t length,
                              ov_socket_error *err_return) {
-
     int socket_fd = -1;
 
     if (!path || length < 1 || length > 107) goto error;
@@ -124,10 +117,8 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-int open_local_server_socket(const char *path,
-                             size_t length,
+int open_local_server_socket(const char *path, size_t length,
                              ov_socket_error *err_return) {
-
     int socket_fd = -1;
 
     if (!path || length < 1 || length > 107) goto error;
@@ -172,14 +163,11 @@ error:
 /*---------------------------------------------------------------------------*/
 
 int ov_socket_close(int fd) {
-
     if (-1 < fd) {
-
         close(fd);
         return -1;
 
     } else {
-
         return fd;
     }
 }
@@ -187,7 +175,6 @@ int ov_socket_close(int fd) {
 /*----------------------------------------------------------------------------*/
 
 int ov_socket_close_local(int socket) {
-
     if (socket < 0) goto error;
 
     struct sockaddr_un addr;
@@ -222,18 +209,16 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-int socket_create_local(ov_socket_configuration config,
-                        bool as_client,
+int socket_create_local(ov_socket_configuration config, bool as_client,
                         ov_socket_error *err_return) {
-
     if (config.host[0] == 0) return -1;
 
     if (as_client)
-        return open_local_client_socket(
-            config.host, strlen(config.host), err_return);
+        return open_local_client_socket(config.host, strlen(config.host),
+                                        err_return);
 
-    return open_local_server_socket(
-        config.host, strlen(config.host), err_return);
+    return open_local_server_socket(config.host, strlen(config.host),
+                                    err_return);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -245,20 +230,16 @@ static int setup_server_socket_nocheck(int fd,
     int backlog = 2048;
 
     if (0 != bind(fd, addrinfo->ai_addr, addrinfo->ai_addrlen)) {
-
         goto error;
 
     } else {
-
         // bind successful
 
         switch (addrinfo->ai_socktype) {
-
             case SOCK_STREAM:
             case SOCK_SEQPACKET:
 
                 if (0 != listen(fd, backlog)) {
-
                     goto error;
                 }
 
@@ -275,10 +256,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-int ov_socket_create(ov_socket_configuration config,
-                     bool as_client,
+int ov_socket_create(ov_socket_configuration config, bool as_client,
                      ov_socket_error *err_return) {
-
     if (config.type == LOCAL)
         return socket_create_local(config, as_client, err_return);
 
@@ -294,7 +273,6 @@ int ov_socket_create(ov_socket_configuration config,
     int fd = -1;
 
     if (as_client) {
-
         if (strlen(config.host) < 1 || config.port < 1) {
             e.err = EINVAL;
             goto error;
@@ -305,7 +283,6 @@ int ov_socket_create(ov_socket_configuration config,
     hints.ai_family = AF_UNSPEC;
 
     switch (config.type) {
-
         case TCP:
         case TLS:
 
@@ -324,16 +301,13 @@ int ov_socket_create(ov_socket_configuration config,
     }
 
     if (config.port > 0) {
-
         if (!snprintf(portstring, 6, "%" PRIu16, config.port)) goto error;
     }
     if (config.host[0] == 0) {
-
         strcat(config.host, "::");
     }
 
     if (strlen(config.host) > 0) {
-
         /* Problem: Synchronous.
          * Blocks until the call succeeds. Since this does network I/O,
          *  might take a long time where the thread/process is blocked.
@@ -341,7 +315,6 @@ int ov_socket_create(ov_socket_configuration config,
         e.gai = getaddrinfo(config.host, portstring, &hints, &res);
 
     } else {
-
         hints.ai_flags = AI_PASSIVE;
         e.gai = getaddrinfo(NULL, portstring, &hints, &res);
     }
@@ -353,9 +326,8 @@ int ov_socket_create(ov_socket_configuration config,
 
     for (struct addrinfo *current = res; 0 != current;
          current = current->ai_next) {
-
-        fd = socket(
-            current->ai_family, current->ai_socktype, current->ai_protocol);
+        fd = socket(current->ai_family, current->ai_socktype,
+                    current->ai_protocol);
 
         // check if the socket returned is a valid fd and ok
         if (0 != getsockopt(fd, SOL_SOCKET, SO_TYPE, &opt, &optlen)) continue;
@@ -366,21 +338,17 @@ int ov_socket_create(ov_socket_configuration config,
         // ov_socket_dump_addrinfo(stdout, current);
 
         if (as_client) {
-
             // connect a client socket
 
             if (0 != connect(fd, current->ai_addr, current->ai_addrlen)) {
-
                 e.err = errno;
                 continue;
 
             } else {
-
                 e.err = 0;
             }
 
         } else {
-
             e.err = setup_server_socket_nocheck(fd, current);
 
             if (0 != e.err) {
@@ -415,13 +383,11 @@ error:
 int ov_socket_create_at_interface(struct ifaddrs *interface,
                                   ov_socket_configuration config,
                                   ov_socket_error *err_return) {
-
     if (!interface) goto error;
 
     ov_socket_error e = {0};
 
     switch (config.type) {
-
         case UDP:
         case TCP:
         case TLS:
@@ -441,11 +407,7 @@ int ov_socket_create_at_interface(struct ifaddrs *interface,
                         (AF_INET == interface->ifa_addr->sa_family)
                             ? sizeof(struct sockaddr_in)
                             : sizeof(struct sockaddr_in6),
-                        config.host,
-                        OV_HOST_NAME_MAX,
-                        NULL,
-                        0,
-                        NI_NUMERICHOST);
+                        config.host, OV_HOST_NAME_MAX, NULL, 0, NI_NUMERICHOST);
 
     if (e.gai != 0) goto error;
 
@@ -463,7 +425,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 int ov_socket_get_send_buffer_size(int socket) {
-
     int size = 0;
     socklen_t len = sizeof(size);
 
@@ -477,7 +438,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 int ov_socket_get_recv_buffer_size(int socket) {
-
     int size = 0;
     socklen_t len = sizeof(size);
 
@@ -491,7 +451,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_set_dont_fragment(int socket) {
-
     if (socket < 0) goto error;
 
     int r = 0;
@@ -499,12 +458,12 @@ bool ov_socket_set_dont_fragment(int socket) {
 
 #if defined(IP_DONTFRAG)
     on = 1;
-    r = setsockopt(
-        socket, IPPROTO_IP, IP_DONTFRAG, (const void *)&on, sizeof(on));
+    r = setsockopt(socket, IPPROTO_IP, IP_DONTFRAG, (const void *)&on,
+                   sizeof(on));
 #elif defined(IP_MTU_DISCOVER)
     on = IP_PMTUDISC_DO;
-    r = setsockopt(
-        socket, IPPROTO_IP, IP_MTU_DISCOVER, (const void *)&on, sizeof(on));
+    r = setsockopt(socket, IPPROTO_IP, IP_MTU_DISCOVER, (const void *)&on,
+                   sizeof(on));
 #else
     /* just some code using on */
     on = 1;
@@ -521,15 +480,12 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_ensure_nonblocking(int socket) {
-
     int opt = 0;
     socklen_t opt_len = sizeof(opt);
 
     if (0 != getsockopt(socket, SOL_SOCKET, SO_TYPE, &opt, &opt_len)) {
-        ov_log_error("Could not get type of socket %i errno %i | %s",
-                     socket,
-                     errno,
-                     strerror(errno));
+        ov_log_error("Could not get type of socket %i errno %i | %s", socket,
+                     errno, strerror(errno));
         goto error;
     }
 
@@ -555,7 +511,6 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_socket_set_reuseaddress(int socket) {
-
     int opt = 1;
 
     int r = setsockopt(socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
@@ -568,12 +523,37 @@ error:
     return false;
 }
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_disable_nagl(int fh) {
+    if (0 > fh) {
+        return false;
+
+    } else {
+        int opt = 1;
+        return (setsockopt(fh, IPPROTO_TCP, TCP_NODELAY, &opt, sizeof(opt)) ==
+                0);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_disable_delayed_ack(int fh) {
+    if (0 > fh) {
+        return false;
+
+    } else {
+        int opt = 1;
+        return (setsockopt(fh, IPPROTO_TCP, TCP_QUICKACK, &opt, sizeof(opt)) ==
+                0);
+    }
+}
+
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_config_from_sockaddr_storage(const struct sockaddr_storage *sa,
                                             ov_socket_configuration *config,
                                             ov_socket_error *err_return) {
-
     ov_socket_error e = {0};
 
     if (!sa || !config) goto error;
@@ -587,15 +567,12 @@ bool ov_socket_config_from_sockaddr_storage(const struct sockaddr_storage *sa,
     struct sockaddr_un *so_un = NULL;
 
     switch (sa->ss_family) {
-
         case AF_INET:
 
             sock4 = (struct sockaddr_in *)sa;
             port = ntohs(sock4->sin_port);
 
-            if (0 == inet_ntop(AF_INET,
-                               &sock4->sin_addr,
-                               config->host,
+            if (0 == inet_ntop(AF_INET, &sock4->sin_addr, config->host,
                                OV_HOST_NAME_MAX)) {
                 e.err = errno;
                 goto error;
@@ -608,9 +585,7 @@ bool ov_socket_config_from_sockaddr_storage(const struct sockaddr_storage *sa,
             sock6 = (struct sockaddr_in6 *)sa;
             port = ntohs(sock6->sin6_port);
 
-            if (0 == inet_ntop(AF_INET6,
-                               &sock6->sin6_addr,
-                               config->host,
+            if (0 == inet_ntop(AF_INET6, &sock6->sin6_addr, config->host,
                                OV_HOST_NAME_MAX)) {
                 e.err = errno;
                 goto error;
@@ -643,11 +618,9 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-bool ov_socket_get_config(int fd,
-                          ov_socket_configuration *local,
+bool ov_socket_get_config(int fd, ov_socket_configuration *local,
                           ov_socket_configuration *remote,
                           ov_socket_error *err_return) {
-
     errno = 0;
 
     ov_socket_error e = {0};
@@ -673,7 +646,6 @@ bool ov_socket_get_config(int fd,
     }
 
     switch (sa.ss_family) {
-
         case AF_UNIX:
 
             transport = LOCAL;
@@ -691,7 +663,6 @@ bool ov_socket_get_config(int fd,
     }
 
     if (0 != local) {
-
         local->type = transport;
 
         if (!ov_socket_config_from_sockaddr_storage(&sa, local, &e)) goto error;
@@ -700,7 +671,6 @@ bool ov_socket_get_config(int fd,
     sa = (struct sockaddr_storage){0};
 
     if (0 != remote) {
-
         if (0 != getpeername(fd, (struct sockaddr *)&sa, &len_sa)) {
             e.err = errno;
             if (errno == ENOTCONN) goto done;
@@ -725,11 +695,9 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-bool ov_socket_get_sockaddr_storage(int fd,
-                                    struct sockaddr_storage *local,
+bool ov_socket_get_sockaddr_storage(int fd, struct sockaddr_storage *local,
                                     struct sockaddr_storage *remote,
                                     ov_socket_error *err_return) {
-
     errno = 0;
 
     ov_socket_error e = {0};
@@ -739,7 +707,6 @@ bool ov_socket_get_sockaddr_storage(int fd,
     socklen_t len_sa = 0;
 
     if (0 != local) {
-
         len_sa = sizeof(struct sockaddr_storage);
         memset(local, 0, len_sa);
 
@@ -750,7 +717,6 @@ bool ov_socket_get_sockaddr_storage(int fd,
     }
 
     if (0 != remote) {
-
         len_sa = sizeof(struct sockaddr_storage);
         memset(remote, 0, len_sa);
 
@@ -779,10 +745,7 @@ error:
  */
 
 bool ov_socket_parse_sockaddr_storage(const struct sockaddr_storage *sa_master,
-                                      char *ip,
-                                      size_t ip_len,
-                                      uint16_t *port) {
-
+                                      char *ip, size_t ip_len, uint16_t *port) {
     if (!sa_master || !ip || ip_len < INET_ADDRSTRLEN || !port) return false;
 
     struct sockaddr_in *sock4 = NULL;
@@ -790,14 +753,13 @@ bool ov_socket_parse_sockaddr_storage(const struct sockaddr_storage *sa_master,
 
     // IPv4 and IPv6:
     if (sa_master->ss_family == AF_INET) {
-
         sock4 = (struct sockaddr_in *)sa_master;
         *port = ntohs(sock4->sin_port);
 
         if (!inet_ntop(AF_INET, &sock4->sin_addr, ip, INET6_ADDRSTRLEN))
             return false;
 
-    } else { // AF_INET6
+    } else {  // AF_INET6
 
         if (ip_len < INET6_ADDRSTRLEN) return false;
 
@@ -815,7 +777,6 @@ bool ov_socket_parse_sockaddr_storage(const struct sockaddr_storage *sa_master,
 
 ov_socket_data ov_socket_data_from_sockaddr_storage(
     const struct sockaddr_storage *sa) {
-
     ov_socket_data data;
     memset(&data, 0, sizeof(ov_socket_data));
 
@@ -823,8 +784,8 @@ ov_socket_data ov_socket_data_from_sockaddr_storage(
 
     if (!memcpy(&data.sa, sa, sizeof(struct sockaddr_storage))) goto error;
 
-    if (!ov_socket_parse_sockaddr_storage(
-            sa, data.host, OV_HOST_NAME_MAX, &data.port))
+    if (!ov_socket_parse_sockaddr_storage(sa, data.host, OV_HOST_NAME_MAX,
+                                          &data.port))
         goto error;
 
     return data;
@@ -835,10 +796,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_socket_get_data(int socket,
-                        ov_socket_data *local,
+bool ov_socket_get_data(int socket, ov_socket_data *local,
                         ov_socket_data *remote) {
-
     if (socket < 0) goto error;
 
     struct sockaddr_storage sa_local = {0};
@@ -859,10 +818,8 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_socket_fill_sockaddr_storage(struct sockaddr_storage *sa,
-                                     sa_family_t family,
-                                     const char *ip,
+                                     sa_family_t family, const char *ip,
                                      uint16_t port) {
-
     if (!sa || !ip) return false;
 
     if ((family != AF_INET) && (family != AF_INET6)) return false;
@@ -877,14 +834,12 @@ bool ov_socket_fill_sockaddr_storage(struct sockaddr_storage *sa,
     sa->ss_family = family;
 
     if (sa->ss_family == AF_INET) {
-
         sock4 = (struct sockaddr_in *)sa;
         sock4->sin_family = AF_INET;
         sock4->sin_port = htons(port);
         r = inet_pton(AF_INET, ip, &sock4->sin_addr);
 
     } else if (sa->ss_family == AF_INET6) {
-
         sock6 = (struct sockaddr_in6 *)sa;
         sock6->sin6_family = AF_INET6;
         sock6->sin6_port = htons(port);
@@ -915,9 +870,7 @@ error:
 /*---------------------------------------------------------------------------*/
 
 const char *ov_socket_transport_to_string(ov_socket_transport type) {
-
     switch (type) {
-
         case TCP:
             return OV_SOCKET_TYPE_STRING_TCP;
 
@@ -943,9 +896,7 @@ const char *ov_socket_transport_to_string(ov_socket_transport type) {
 /*---------------------------------------------------------------------------*/
 
 const char *ov_socket_transport_to_string_lower(ov_socket_transport type) {
-
     switch (type) {
-
         case TCP:
             return OV_SOCKET_TYPE_STRING_LOWER_TCP;
 
@@ -971,15 +922,12 @@ const char *ov_socket_transport_to_string_lower(ov_socket_transport type) {
 /*---------------------------------------------------------------------------*/
 
 ov_socket_transport ov_socket_transport_from_string(const char *string) {
-
     if (!string) goto error;
 
     size_t len = strlen(string);
 
     for (ov_socket_transport i = NETWORK_TRANSPORT_TYPE_ERROR + 1;
-         i < NETWORK_TRANSPORT_TYPE_OOB;
-         i++) {
-
+         i < NETWORK_TRANSPORT_TYPE_OOB; i++) {
         if (0 == strncasecmp(ov_socket_transport_to_string(i), string, len))
             return i;
     }
@@ -992,7 +940,6 @@ error:
 
 ov_socket_transport ov_socket_transport_parse_string(const char *string,
                                                      size_t length) {
-
     if (!string) goto error;
 
     if (0 == strncasecmp(OV_SOCKET_TYPE_STRING_TCP, string, length))
@@ -1018,7 +965,6 @@ error:
 
 ov_socket_configuration ov_socket_configuration_from_json(
     const ov_json_value *object, const ov_socket_configuration default_values) {
-
     if (!ov_json_is_object(object)) goto error;
 
     ov_socket_configuration config = default_values;
@@ -1027,7 +973,6 @@ ov_socket_configuration ov_socket_configuration_from_json(
         ov_json_object_get((ov_json_value *)object, OV_KEY_SOCKET_TYPE);
 
     if (value) {
-
         ov_socket_transport transport =
             ov_socket_transport_from_string(ov_json_string_get(value));
 
@@ -1039,7 +984,6 @@ ov_socket_configuration ov_socket_configuration_from_json(
     value = ov_json_object_get((ov_json_value *)object, OV_KEY_SOCKET_HOST);
 
     if (value) {
-
         const char *content = ov_json_string_get(value);
         if (!content) goto error;
 
@@ -1049,7 +993,6 @@ ov_socket_configuration ov_socket_configuration_from_json(
     value = ov_json_object_get((ov_json_value *)object, OV_KEY_SOCKET_PORT);
 
     if (value) {
-
         double port = ov_json_number_get(value);
         if (port < 0 || port > UINT16_MAX) goto error;
 
@@ -1067,12 +1010,10 @@ error:
 
 bool ov_socket_configuration_to_json(const ov_socket_configuration config,
                                      ov_json_value **destination) {
-
     bool created = false;
     if (!destination) goto error;
 
     if (!*destination) {
-
         *destination = ov_json_object();
         if (!*destination) goto error;
 
@@ -1084,12 +1025,10 @@ bool ov_socket_configuration_to_json(const ov_socket_configuration config,
     if (!ov_json_value_clear(object)) goto error;
 
     if (config.host[0]) {
-
         value = ov_json_string(config.host);
         if (0 == value) goto error;
 
     } else {
-
         value = ov_json_null();
     }
 
@@ -1121,7 +1060,6 @@ error:
 
 bool ov_socket_configuration_equals(ov_socket_configuration cfg1,
                                     ov_socket_configuration cfg2) {
-
     if (cfg1.port != cfg2.port) return false;
 
     if (cfg1.type != cfg2.type) return false;
@@ -1134,7 +1072,6 @@ bool ov_socket_configuration_equals(ov_socket_configuration cfg1,
 /*------------------------------------------------------------------*/
 
 ov_json_value *ov_socket_data_to_json(const ov_socket_data *data) {
-
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
@@ -1163,7 +1100,6 @@ error:
 /*------------------------------------------------------------------*/
 
 ov_socket_data ov_socket_data_from_json(const ov_json_value *value) {
-
     ov_socket_data data;
     memset(&data, 0, sizeof(ov_socket_data));
     if (!value) goto error;
@@ -1184,10 +1120,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_socket_data_to_string(char *target,
-                              size_t target_max_len_bytes,
+bool ov_socket_data_to_string(char *target, size_t target_max_len_bytes,
                               ov_socket_data const *sd) {
-
     if ((0 == target) || (0 == target_max_len_bytes)) {
         goto error;
     }
@@ -1196,11 +1130,9 @@ bool ov_socket_data_to_string(char *target,
     uint16_t port = 0;
 
     if (0 == sd) {
-
         strncpy(target, "INVALID_SOCKET", target_max_len_bytes);
 
     } else {
-
         host = sd->host;
         port = sd->port;
 
@@ -1224,25 +1156,18 @@ error:
 
 bool ov_socket_log_error_with_config(ov_socket_configuration config,
                                      ov_socket_error err) {
-
     return ov_log_error(
         "Failed to open socket\n"
         "HOST:PORT|TYPE %s:%i|%s\n"
         "errno          %i|%s\n"
         "gaierror       %i|%s\n",
-        config.host,
-        config.port,
-        ov_socket_transport_to_string(config.type),
-        err.err,
-        strerror(err.err),
-        err.gai,
-        gai_strerror(err.gai));
+        config.host, config.port, ov_socket_transport_to_string(config.type),
+        err.err, strerror(err.err), err.gai, gai_strerror(err.gai));
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_log(int socket, const char *message, ...) {
-
     if (socket < 0) return false;
 
     struct sockaddr_storage remote_sa = {0};
@@ -1257,7 +1182,6 @@ bool ov_socket_log(int socket, const char *message, ...) {
     char msg[OV_SOCKET_MSG_MAX] = {0};
 
     if (message) {
-
         va_list args;
         va_start(args, message);
         vsnprintf(msg, OV_SOCKET_MSG_MAX, message, args);
@@ -1266,10 +1190,8 @@ bool ov_socket_log(int socket, const char *message, ...) {
 
     // get local SA
     if (ov_socket_get_sockaddr_storage(socket, &local_sa, &remote_sa, NULL)) {
-
         // parse debug logging data
         switch (local_sa.ss_family) {
-
             case AF_INET:
             case AF_INET6:
 
@@ -1282,8 +1204,7 @@ bool ov_socket_log(int socket, const char *message, ...) {
                     return false;
                 }
 
-                if (!ov_socket_parse_sockaddr_storage(&remote_sa,
-                                                      remote_ip,
+                if (!ov_socket_parse_sockaddr_storage(&remote_sa, remote_ip,
                                                       OV_HOST_NAME_MAX,
                                                       &remote_port)) {
                     ov_log_error(
@@ -1305,29 +1226,19 @@ bool ov_socket_log(int socket, const char *message, ...) {
         }
 
         if (local_ip[0] != 0) {
-
             ov_log_debug(
                 "socket fd %i | "
                 "LOCAL %s:%i REMOTE %s:%i | %s",
-                socket,
-                local_ip,
-                local_port,
-                remote_ip,
-                remote_port,
-                msg);
+                socket, local_ip, local_port, remote_ip, remote_port, msg);
 
         } else {
-
             ov_log_debug(
                 "socket fd %i | "
                 "PATH %s | %s",
-                socket,
-                ((struct sockaddr_un *)&local_sa)->sun_path,
-                msg);
+                socket, ((struct sockaddr_un *)&local_sa)->sun_path, msg);
         }
 
     } else {
-
         ov_log_debug("socket fd %i | %s", socket, msg);
     }
 
@@ -1337,7 +1248,6 @@ bool ov_socket_log(int socket, const char *message, ...) {
 /*---------------------------------------------------------------------------*/
 
 static void *socket_configuration_free(void *data) {
-
     if (data) free(data);
     return NULL;
 }
@@ -1345,7 +1255,6 @@ static void *socket_configuration_free(void *data) {
 /*---------------------------------------------------------------------------*/
 
 static bool socket_configuration_clear(void *data) {
-
     if (!data) return false;
 
     memset(data, 0, sizeof(ov_socket_configuration));
@@ -1355,13 +1264,11 @@ static bool socket_configuration_clear(void *data) {
 /*---------------------------------------------------------------------------*/
 
 static void *socket_configuration_copy(void **dest, const void *src) {
-
     bool created = false;
 
     if (!dest || !src) goto error;
 
     if (!*dest) {
-
         *dest = calloc(1, sizeof(ov_socket_configuration));
         if (!*dest) goto error;
 
@@ -1382,16 +1289,12 @@ error:
 /*---------------------------------------------------------------------------*/
 
 static bool socket_configuration_dump(FILE *stream, const void *data) {
-
     if (!stream || !data) return false;
 
     ov_socket_configuration *config = (ov_socket_configuration *)data;
 
-    if (!fprintf(stream,
-                 "HOST:PORT | type %s:%i | %i",
-                 config->host,
-                 config->port,
-                 config->type))
+    if (!fprintf(stream, "HOST:PORT | type %s:%i | %i", config->host,
+                 config->port, config->type))
         return false;
 
     return true;
@@ -1400,7 +1303,6 @@ static bool socket_configuration_dump(FILE *stream, const void *data) {
 /*---------------------------------------------------------------------------*/
 
 ov_list *ov_socket_configuration_list() {
-
     ov_list *list = ov_list_create((ov_list_config){
 
         .item.free = socket_configuration_free,
@@ -1413,11 +1315,8 @@ ov_list *ov_socket_configuration_list() {
 
 /*---------------------------------------------------------------------------*/
 
-bool ov_socket_generate_5tuple(char **dest,
-                               size_t *dest_len,
-                               int socket,
+bool ov_socket_generate_5tuple(char **dest, size_t *dest_len, int socket,
                                const ov_socket_data *remote) {
-
     bool created = false;
 
     if (!dest || !remote || !dest_len) goto error;
@@ -1434,11 +1333,9 @@ bool ov_socket_generate_5tuple(char **dest,
                       strlen(remote->host) + 2 + 10 + 1;
 
     if (*dest) {
-
         if (*dest_len < required) goto error;
 
     } else {
-
         *dest = calloc(required + 1, sizeof(char));
         if (!*dest) goto error;
 
@@ -1446,14 +1343,8 @@ bool ov_socket_generate_5tuple(char **dest,
         created = true;
     }
 
-    if (!snprintf(*dest,
-                  required,
-                  "%s:%i%s%s:%i",
-                  local.host,
-                  local.port,
-                  transport,
-                  remote->host,
-                  remote->port))
+    if (!snprintf(*dest, required, "%s:%i%s%s:%i", local.host, local.port,
+                  transport, remote->host, remote->port))
         goto error;
 
     return true;
@@ -1469,7 +1360,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_is_dgram(int socket) {
-
     if (socket < 0) goto error;
 
     int opt = 0;
@@ -1485,7 +1375,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 int ov_socket_get_type(int socket) {
-
     if (socket < 0) goto error;
 
     int opt = 0;
@@ -1501,7 +1390,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_sockets_are_similar(int socket1, int socket2) {
-
     if (socket1 < 0 || socket2 < 0) goto error;
 
     struct sockaddr_storage sa1 = {0};
@@ -1526,7 +1414,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_connect(int fd, const struct sockaddr_storage *remote) {
-
     if (fd < 1 || !remote) goto error;
 
     ov_socket_data local = {0};
@@ -1548,7 +1435,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_unconnect(int fd) {
-
     if (fd < 0) goto error;
 
     struct sockaddr_in *in = NULL;
@@ -1562,7 +1448,6 @@ bool ov_socket_unconnect(int fd) {
     if (0 != getsockname(fd, (struct sockaddr *)&sa_local, &len_sa)) goto error;
 
     switch (sa_local.ss_family) {
-
         case AF_INET:
             in = (struct sockaddr_in *)&sa_local;
             break;
@@ -1601,17 +1486,14 @@ bool ov_socket_unconnect(int fd) {
      */
 
     if (0 != bind(fd, (struct sockaddr *)&sa_local, len_sa)) {
-
         if (0 != getsockname(fd, (struct sockaddr *)&sa_unset, &len_sa))
             goto error;
 
         if (in) {
-
             if (in->sin_port == ((struct sockaddr_in *)&sa_unset)->sin_port)
                 goto done;
 
         } else if (in6) {
-
             if (in6->sin6_port == ((struct sockaddr_in6 *)&sa_unset)->sin6_port)
                 goto done;
         }
@@ -1633,7 +1515,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_socket_destination_address_type(const char *host, int *type) {
-
     struct addrinfo hint, *result = NULL;
     memset(&hint, 0, sizeof(struct addrinfo));
 
@@ -1659,12 +1540,11 @@ error:
 /*---------------------------------------------------------------------------*/
 
 int ov_socket_open_server(ov_socket_configuration *scfg) {
-
     int sfd = -1;
     ov_socket_data us = {0};
 
-    if (!ov_ptr_valid(
-            scfg, "Cannot open server socket: No socket configuration") ||
+    if (!ov_ptr_valid(scfg,
+                      "Cannot open server socket: No socket configuration") ||
         (!ov_cond_valid(-1 < (sfd = ov_socket_create(*scfg, false, 0)),
                         "Opening server socket failed: IO error")) ||
         (!ov_cond_valid(ov_socket_get_data(sfd, &us, 0),
@@ -1672,12 +1552,10 @@ int ov_socket_open_server(ov_socket_configuration *scfg) {
         (!ov_cond_valid(sizeof(scfg->host) > strlen(us.host),
                         "Host name too long to be kept in socket "
                         "configuration"))) {
-
         ov_socket_close(sfd);
         return -1;
 
     } else {
-
         strncpy(scfg->host, us.host, sizeof(scfg->host));
         scfg->host[sizeof(scfg->host) - 1] = 0;
         scfg->port = us.port;
@@ -1690,7 +1568,6 @@ int ov_socket_open_server(ov_socket_configuration *scfg) {
 
 ov_socket_configuration ov_socket_load_dynamic_port(
     ov_socket_configuration config) {
-
     ov_socket_configuration actual = config;
     int sfd = ov_socket_open_server(&actual);
     ov_socket_close(sfd);
@@ -1705,7 +1582,6 @@ ov_socket_configuration ov_socket_load_dynamic_port(
 /*---------------------------------------------------------------------------*/
 
 uint32_t ov_socket_get_max_supported_runtime_sockets(uint32_t sockets) {
-
     /* Max support for 4294967295 socket FDs here.
      * 4,2 billion ... enough connections for everything we do and support. */
 
@@ -1717,12 +1593,10 @@ uint32_t ov_socket_get_max_supported_runtime_sockets(uint32_t sockets) {
         ov_log_error(
             "Failed to get system limit"
             " of open files errno %i|%s",
-            errno,
-            strerror(errno));
+            errno, strerror(errno));
     }
 
     if (limit.rlim_cur != RLIM_INFINITY) {
-
         if (sockets > limit.rlim_cur) {
             sockets = limit.rlim_cur;
             ov_log_notice(
@@ -1733,7 +1607,6 @@ uint32_t ov_socket_get_max_supported_runtime_sockets(uint32_t sockets) {
     }
 
     if (limit.rlim_cur > UINT32_MAX) {
-
         if (sockets < UINT32_MAX) return sockets;
 
         return UINT32_MAX;
@@ -1750,13 +1623,10 @@ uint32_t ov_socket_get_max_supported_runtime_sockets(uint32_t sockets) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool get_sockaddr(int domain,
-                         ov_socket_transport transport,
-                         const char *host,
-                         int port,
+static bool get_sockaddr(int domain, ov_socket_transport transport,
+                         const char *host, int port,
                          struct sockaddr_storage *sockaddr,
                          socklen_t *sockaddr_len) {
-
     struct addrinfo hints = {0};
     struct addrinfo *result;
 
@@ -1769,7 +1639,6 @@ static bool get_sockaddr(int domain,
     int transport_int = SOCK_DGRAM;
 
     switch (transport) {
-
         case UDP:
             transport_int = SOCK_DGRAM;
             break;
@@ -1813,21 +1682,18 @@ error:
 bool ov_socket_configuration_to_sockaddr(const ov_socket_configuration in,
                                          struct sockaddr_storage *sockaddr,
                                          socklen_t *sockaddr_len) {
-
     if (0 == sockaddr) {
-
         ov_log_error("Expected sockaddr_storage, got 0 pointer");
         goto error;
     }
 
     if (0 == sockaddr_len) {
-
         ov_log_error("Expected pointer to sockaddr_storage_len, got 0 pointer");
         goto error;
     }
 
-    return get_sockaddr(
-        AF_UNSPEC, in.type, in.host, in.port, sockaddr, sockaddr_len);
+    return get_sockaddr(AF_UNSPEC, in.type, in.host, in.port, sockaddr,
+                        sockaddr_len);
 
 error:
 
@@ -1838,15 +1704,14 @@ error:
 
 ov_socket_data ov_socket_configuration_to_socket_data(
     const ov_socket_configuration in) {
-
     ov_socket_data out = {0};
 
     socklen_t len = sizeof(out.sa);
 
     if (!ov_socket_configuration_to_sockaddr(in, &out.sa, &len)) goto error;
 
-    if (!ov_socket_parse_sockaddr_storage(
-            &out.sa, out.host, OV_HOST_NAME_MAX, &out.port))
+    if (!ov_socket_parse_sockaddr_storage(&out.sa, out.host, OV_HOST_NAME_MAX,
+                                          &out.port))
         goto error;
 
     return out;
@@ -1857,22 +1722,18 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_socket_state_from_handle(int socket_handle, ov_socket_state *state) {
-
     ov_socket_data local = {0};
     ov_socket_data remote = {0};
 
-    if (!ov_ptr_valid(
-            state, "Could get socket state: No target state object")) {
-
+    if (!ov_ptr_valid(state,
+                      "Could get socket state: No target state object")) {
         return false;
 
     } else if (!ov_socket_get_data(socket_handle, &local, &remote)) {
-
         ov_log_error("Could not get state for socket handle %i", socket_handle);
         return false;
 
     } else {
-
         *state = (ov_socket_state){
             .connected = (-1 < socket_handle),
             .peer.port = remote.port,
@@ -1892,7 +1753,6 @@ bool ov_socket_state_from_handle(int socket_handle, ov_socket_state *state) {
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_socket_state_to_json(ov_socket_state ss) {
-
     ov_json_value *peer = 0;
     ov_json_value *local = 0;
     ov_socket_configuration_to_json(ss.peer, &peer);
@@ -1904,14 +1764,12 @@ ov_json_value *ov_socket_state_to_json(ov_socket_state ss) {
         (!ov_ptr_valid(local, "Cannot turn socket state to JSON")) ||
         (!ov_json_object_set(state, OV_KEY_LOCAL, local)) ||
         (!ov_json_object_set(state, OV_KEY_PEER, peer)) ||
-        (!ov_json_object_set(
-            state, OV_KEY_CONNECTION, ov_json_bool(ss.connected)))) {
-
+        (!ov_json_object_set(state, OV_KEY_CONNECTION,
+                             ov_json_bool(ss.connected)))) {
         ov_json_object_set(state, OV_KEY_CONNECTION, ov_json_false());
         return state;
 
     } else {
-
         return state;
     }
 }

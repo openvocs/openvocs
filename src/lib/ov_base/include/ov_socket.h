@@ -340,6 +340,9 @@ bool ov_socket_set_dont_fragment(int socket);
 bool ov_socket_ensure_nonblocking(int socket);
 bool ov_socket_set_reuseaddress(int socket);
 
+bool ov_socket_disable_nagl(int socket);
+bool ov_socket_disable_delayed_ack(int socket);
+
 const char *ov_socket_transport_to_string(ov_socket_transport type);
 const char *ov_socket_transport_to_string_lower(ov_socket_transport type);
 ov_socket_transport ov_socket_transport_from_string(const char *string);
