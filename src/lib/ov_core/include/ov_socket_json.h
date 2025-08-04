@@ -90,4 +90,11 @@ bool ov_socket_json_drop(ov_socket_json *self, int socket);
 
 bool ov_socket_json_for_each_set_data(ov_socket_json *self, ov_json_value *out);
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_json_for_each(ov_socket_json *self, 
+        void *data,
+        bool (*function)(const void *key, void *val, void *data));
+
+
 #endif /* ov_socket_json_h */

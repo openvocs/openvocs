@@ -210,3 +210,22 @@ bool ov_socket_json_for_each_set_data(ov_socket_json *self,
 error:
     return false;
 }
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_json_for_each(ov_socket_json *self, 
+        void *data,
+        bool (*function)(const void *key, void *val, void *data)){
+
+    if (!self || !function) goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
+    bool result = ov_dict_for_each(self->data, data, function);
+
+    ov_thread_lock_unlock(&self->lock);
+
+    return result;
+error:
+    return false;
+}

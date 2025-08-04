@@ -33,6 +33,7 @@
 #define OV_MC_MIXER_CORE_MAGIC_BYTES 0xabcd
 
 #include <netdb.h>
+#include <unistd.h>
 #include <sys/socket.h>
 
 #include <ov_base/ov_dict.h>
@@ -1533,7 +1534,13 @@ ov_json_value *ov_mc_mixer_state(ov_mc_mixer_core *self) {
 
     if (!self) goto error;
 
+    pid_t pid = getpid();
+
     out = ov_json_object();
+
+    val = ov_json_number(pid);
+    if (!ov_json_object_set(out, "pid", val)) goto error;
+
     val = ov_json_object();
     if (!ov_json_object_set(out, OV_KEY_FORWARD, val)) goto error;
 

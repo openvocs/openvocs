@@ -1,0 +1,30 @@
+{
+	"user1":
+	{
+		"data":
+		{
+			"roles":
+			{
+				"role1":
+				{
+					"loops":
+					{
+						"0":{}
+					},
+					"page":"0"
+				}
+			}
+		},
+		"role1":
+		{
+			"loop5":
+			{
+				"state":"recv"
+			},
+			"loop7":
+			{
+				"state":"recv"
+			}
+		}
+	}
+}
