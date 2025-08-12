@@ -115,5 +115,5 @@ export async function get_loops(ws) {
 // logging
 //-----------------------------------------------------------------------------
 function log_prefix(ws) {
-    return "(" + ws.server_name + " monitor) ";
+    return "(" + ws.server_name + "/" + ws.port + " monitor) ";
 }

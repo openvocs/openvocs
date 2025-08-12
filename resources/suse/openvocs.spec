@@ -55,7 +55,6 @@ rm -rf $RPM_BUILD_ROOT
 %config /etc/openvocs/ov_mc_vocs
 %config /etc/openvocs/ov_mc_vad
 %config /srv/openvocs/HTML/config_vocs.js
-%config /srv/openvocs/HTML/config_vocs_admin.js
 
 %dir /srv/openvocs
 /srv/openvocs/HTML/*

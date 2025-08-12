@@ -30,15 +30,14 @@
     ---------------------------------------------------------------------------
 */
 
-// signaling connection -------------------------------------------------------
+WEBSOCKET = "/admin";
+
 SIGNALING_SERVERS = [
-    // User interface supports up to 3 back up server, more are not displayed.
+    // User interface supports up to 1 back up server, more are not displayed.
     // If no server id is flagged as prime, than the first server is treated as prime.
-    // For one server connection use either HOST_WEBSOCKET OR WEBSOCKET_URL,
-    // if HOST_WEBSOCKET is set, WEBSOCKET_URL is ignored.
-    // HOST_WEBSOCKET extends the host address
+    // If you want to use the host address only define a name
+    // otherwise define a WEBSOCKET_URL
     {
-        HOST_WEBSOCKET: ":8001/vocs",
         NAME: "local"
     }
 ]

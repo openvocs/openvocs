@@ -42,7 +42,7 @@ export async function render(container) {
 
     View.init(VIEW_ID);
 
-    if (!await ov_DB.domains() || !await ov_DB.projects()){
+    if (!await ov_DB.domains() || !await ov_DB.projects()) {
         ov_Websockets.prime_websocket.disconnect();
     }
 
@@ -50,12 +50,11 @@ export async function render(container) {
 
     console.log("(overview) View rendered");
 
-    ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);
+    ov_Websockets.on_disconnect(on_disconnect);
 }
-
 export function remove() {
+
     console.log("(overview) unload");
-    ov_Websockets.prime_websocket.removeEventListener("disconnected", on_disconnect);
     if (view_container)
         view_container.replaceChildren();
 }
@@ -63,7 +62,7 @@ export function remove() {
 async function loadHtml() {
     const response = await fetch('/app/vocs_admin/views/overview/overview.html');
     const dom = new DOMParser().parseFromString(await response.text(), 'text/html');
-    return dom.querySelector('.view'); 
+    return dom.querySelector('.view');
 }
 
 async function loadCSS() {
@@ -73,13 +72,13 @@ async function loadCSS() {
     return style;
 }
 
-async function on_disconnect() {
+async function on_disconnect(ws) {
     if (View.logout_triggered) {
         ov_Websockets.reload_page();
         return;
     }
-    console.warn("Disconnected from prime server. Trying to reconnect...");
-    View.display_loading_screen(true, "Disconnected from prime server. Trying to reconnect...");
-    if (await ov_Auth.relogin(ov_Websockets.prime_websocket))
+    console.warn("Disconnected from one or several servers. Trying to reconnect...");
+    View.display_loading_screen(true, "Disconnected from one or several servers. Trying to reconnect...");
+    if (await ov_Auth.relogin(ws) && ov_Websockets.disconnected_websockets.size === 0)
         View.display_loading_screen(false);
 }

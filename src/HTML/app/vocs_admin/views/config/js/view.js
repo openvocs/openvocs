@@ -534,3 +534,10 @@ export function offline_mode(value) {
     DOM.save_button.disabled = value;
     Config_Settings.offline_mode(value);
 }
+
+export function display_loading_screen(value, message) {
+    if (value)
+        DOM.loading_screen.show(message);
+    else
+        DOM.loading_screen.hide();
+}

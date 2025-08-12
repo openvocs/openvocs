@@ -44,18 +44,20 @@ export function setup_connections(ov_Websocket) {
     // parse server url(s) and check for autologin
     let servers = [];
     let temp_auto_login = false;
-    for (let server of SIGNALING_SERVERS) {
-        let websocket_address = server.HOST_WEBSOCKET ?
-            "wss://" + window.location.hostname + server.HOST_WEBSOCKET : server.WEBSOCKET_URL;
+    for (let websocket of WEBSOCKET) {
+        for (let server of SIGNALING_SERVERS) {
+            let websocket_address = server.WEBSOCKET_URL ? server.WEBSOCKET_URL + websocket :
+                "wss://" + window.location.hostname + websocket;
 
-        let active_session = ov_Web_Storage.get_session(websocket_address);
-        let client_id = active_session ? active_session.client : undefined;
-        if (client_id !== undefined)
-            temp_auto_login = true;
-        if (server.PRIME)
-            servers.unshift({ "name": server.NAME, "address": websocket_address, "client_id": client_id });
-        else
-            servers.push({ "name": server.NAME, "address": websocket_address, "client_id": client_id });
+            let active_session = ov_Web_Storage.get_session(websocket_address);
+            let client_id = active_session ? active_session.client : undefined;
+            if (client_id !== undefined)
+                temp_auto_login = true;
+            if (server.PRIME && WEBSOCKET.indexOf(websocket) === 0)
+                servers.unshift({ "name": server.NAME, "address": websocket_address, "client_id": client_id });
+            else
+                servers.push({ "name": server.NAME, "address": websocket_address, "client_id": client_id });
+        }
     }
     auto_login = temp_auto_login;
 
