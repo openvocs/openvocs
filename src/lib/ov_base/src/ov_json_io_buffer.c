@@ -34,7 +34,7 @@
 
 #include "../include/ov_utils.h"
 
-#define IMPL_DEFAULT_SIZE 1024
+#define IMPL_DEFAULT_SIZE 10240
 #define OV_JSON_IO_BUFFER_MAGIC_BYTE 0x7532
 
 /*----------------------------------------------------------------------------*/
