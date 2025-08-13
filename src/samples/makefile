@@ -29,6 +29,7 @@ include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 OV_SERVICE_DIRS   = ov_json_sample
 OV_SERVICE_DIRS  += ov_value_sample
 OV_SERVICE_DIRS  += ov_value_benchmark
+OV_SERVICE_DIRS  += ov_sip
 
 
 all    : target_build_all
