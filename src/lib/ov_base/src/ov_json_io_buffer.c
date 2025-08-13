@@ -34,7 +34,7 @@
 
 #include "../include/ov_utils.h"
 
-#define IMPL_DEFAULT_SIZE 10240
+#define IMPL_DEFAULT_SIZE 1024
 #define OV_JSON_IO_BUFFER_MAGIC_BYTE 0x7532
 
 /*----------------------------------------------------------------------------*/
@@ -143,6 +143,7 @@ bool ov_json_io_buffer_push(ov_json_io_buffer *self,
         len = open;
 
         if (!ov_json_clear_whitespace(&ptr, &len)) goto mismatch;
+    
 
         if (self->config.objects_only && (ptr[0] != '{')) goto mismatch;
 

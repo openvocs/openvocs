@@ -108,7 +108,8 @@ ov_event_app *ov_event_app_create(ov_event_app_config config) {
     self->config = config;
 
     ov_json_io_buffer_config json_buffer_config =
-        (ov_json_io_buffer_config){.callback.userdata = self,
+        (ov_json_io_buffer_config){ .debug = true,
+                                    .callback.userdata = self,
                                    .callback.success = json_io_success,
                                    .callback.failure = json_io_failure};
 

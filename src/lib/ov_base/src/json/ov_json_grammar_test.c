@@ -841,6 +841,9 @@ int test_ov_json_match() {
     testrun(ov_json_match((uint8_t *)buffer, 1, true, NULL));
     testrun(!ov_json_match((uint8_t *)buffer, 1, false, NULL));
 
+    buffer = "\"";
+    testrun(ov_json_match((uint8_t *)buffer, 1, true, NULL));
+
     // check literals
 
     buffer = "[null]";
