@@ -17,9 +17,13 @@
 		},
 		"role1":
 		{
-			"loop5":
+			"loop1":
 			{
 				"state":"recv"
+			},
+			"loop5":
+			{
+				"state":"send"
 			},
 			"loop7":
 			{

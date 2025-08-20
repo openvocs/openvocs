@@ -438,41 +438,470 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void app_cb_update(void *userdata, const char *name, int socket, 
-    ov_json_value *input){
+static void cb_event_update_password(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
 
-    ov_json_value *db = NULL;
-    bool result = false;
+    UNUSED(name);
+    UNUSED(socket);
 
     ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
-    if (!self || !name) goto error;
+    if (!self || !input) goto error;
 
-    const ov_json_value *src = ov_json_get(input, "/"OV_KEY_PARAMETER"/"OV_KEY_DB);
-    if (!src) goto error;
+    const char *user = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_USER));
+    const char *pass = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
 
-    if (!ov_json_value_copy((void**)&db, src)) goto error;
-
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
-
-    result = ov_vocs_db_inject(self->config.db, OV_VOCS_DB_TYPE_AUTH, db);
-    
-    if (result) {
-        db = NULL;
-        ov_log_debug("DB update from %i", socket);
-    } else {
-        ov_log_error("DB update from %i - failed", socket);
+    if (!user || !pass) {
+        goto done;
     }
 
-    if (!ov_thread_lock_unlock(&self->lock)) {
-        OV_ASSERT(1 == 0);
-        goto error;
+    if (!ov_vocs_db_set_password(self->config.db, user, pass)) {
+        goto done;
     }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_delete(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *id = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_ID));
+
+    const char *type = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE));
+
+    if (!id || !type) {
+
+        goto done;
+    }
+
+    ov_vocs_db_entity entity = ov_vocs_db_entity_from_string(type);
+    if (OV_VOCS_DB_ENTITY_ERROR == entity) {
+        goto done;
+    }
+
+    if (!ov_vocs_db_delete_entity(self->config.db, entity, id)) {
+       goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_create(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *id = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_ID));
+
+    const char *type = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE));
+
+    const char *scope_id = ov_json_string_get(ov_json_get(
+        input, "/" OV_KEY_PARAMETER "/" OV_KEY_SCOPE "/" OV_KEY_ID));
+
+    const char *scope_type = ov_json_string_get(ov_json_get(
+        input, "/" OV_KEY_PARAMETER "/" OV_KEY_SCOPE "/" OV_KEY_TYPE));
+
+    if (!id || !type || !scope_id || !scope_type) {
+
+        goto done;
+    }
+
+    ov_vocs_db_entity entity = ov_vocs_db_entity_from_string(type);
+    if (OV_VOCS_DB_ENTITY_ERROR == entity) {
+
+        goto done;
+    }
+
+    ov_vocs_db_scope db_scope = OV_VOCS_DB_SCOPE_PROJECT;
+
+    if (0 == strcmp(scope_type, OV_KEY_DOMAIN)) {
+
+        db_scope = OV_VOCS_DB_SCOPE_DOMAIN;
+
+    }
+
+    if (!ov_vocs_db_create_entity(
+            self->config.db, entity, id, db_scope, scope_id)) {
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_update_key(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *id = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_ID));
+
+    const char *key = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_KEY));
+
+    const char *type = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE));
+
+    const ov_json_value *data =
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_DATA);
+
+    if (!id || !type || !key || !data) {
+
+        goto done;
+    }
+
+    ov_vocs_db_entity entity = ov_vocs_db_entity_from_string(type);
+    if (OV_VOCS_DB_ENTITY_ERROR == entity) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_update_entity_key(self->config.db, entity, id, key, data)) {
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_delete_key(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *id = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_ID));
+
+    const char *key = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_KEY));
+
+    const char *type = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE));
+
+    if (!id || !type || !key) {
+
+        goto done;
+    }
+
+    ov_vocs_db_entity entity = ov_vocs_db_entity_from_string(type);
+    if (OV_VOCS_DB_ENTITY_ERROR == entity) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_delete_entity_key(self->config.db, entity, id, key)) {
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return ;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_update(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+    ov_json_value *errors = NULL;
+
+    const char *id = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_ID));
+
+    const ov_json_value *data =
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_DATA);
+
+    const char *type = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE));
+
+    if (!id || !type || !data) {
+
+        goto done;
+    }
+
+    ov_vocs_db_entity entity = ov_vocs_db_entity_from_string(type);
+    if (OV_VOCS_DB_ENTITY_ERROR == entity) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_update_entity_item(
+            self->config.db, entity, id, data, &errors)) {
+
+        if (errors) {
+
+            ov_json_value_free(errors);
+        }
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_save(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
 
     ov_vocs_db_persistance_save(self);
 
 error:
-    ov_json_value_free(db);
-    ov_json_value_free(input);
+    input = ov_json_value_free(input);
+    return ;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_set_layout(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *id = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_ROLE));
+
+    const ov_json_value *data =
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_LAYOUT);
+
+    if (!id || !data) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_set_layout(self->config.db, id, data)) {
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_add_domain_admin(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *domain = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_DOMAIN));
+
+    const char *admin = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_USER));
+
+    if (!domain || !admin) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_add_domain_admin(self->config.db, domain, admin)) {
+
+        goto done;
+    }
+
+done:
+error:
+    
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_add_project_admin(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *project = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_PROJECT));
+
+    const char *admin = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_USER));
+
+    if (!project || !admin) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_add_project_admin(self->config.db, project, admin)) {
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_ldap_import(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *host = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_HOST));
+
+    const char *base = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_BASE));
+
+    const char *domain = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_DOMAIN));
+
+    const char *ldap_user = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_USER));
+
+    const char *ldap_pass = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
+
+    if (!host || !base || !domain || !ldap_user || !ldap_pass) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_persistance_ldap_import(self,
+                                            host,
+                                            base,
+                                            ldap_user,
+                                            ldap_pass,
+                                            domain)) {
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_set_keyset_layout(void *userdata, const char *name, int socket, 
+    ov_json_value *input) {
+
+    UNUSED(name);
+    UNUSED(socket);
+
+    ov_vocs_db_persistance *self = ov_vocs_db_persistance_cast(userdata);
+    if (!self || !input) goto error;
+
+
+    const char *domain = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_DOMAIN));
+
+    const char *n = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_NAME));
+
+    const ov_json_value *layout =
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_LAYOUT);
+
+    if (!domain || !n || !layout) {
+
+        goto done;
+    }
+
+    if (!ov_vocs_db_set_keyset_layout(self->config.db, domain, n, layout)) {
+
+        goto done;
+    }
+
+done:
+error:
+    input = ov_json_value_free(input);
     return;
 }
 
@@ -490,9 +919,75 @@ static bool register_app_callbacks(ov_vocs_db_persistance *self){
 
      if (!ov_event_app_register(
         self->app,
-        OV_KEY_UPDATE,
+        "update_password",
         self,
-        app_cb_update)) goto error;
+        cb_event_update_password)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "delete",
+        self,
+        cb_event_delete)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "create",
+        self,
+        cb_event_create)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "update_key",
+        self,
+        cb_event_update_key)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "delete_key",
+        self,
+        cb_event_delete_key)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "update",
+        self,
+        cb_event_update)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "save",
+        self,
+        cb_event_save)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "set_layout",
+        self,
+        cb_event_set_layout)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "set_keyset_layout",
+        self,
+        cb_event_set_keyset_layout)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "add_domain_admin",
+        self,
+        cb_event_add_domain_admin)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "add_project_admin",
+        self,
+        cb_event_add_project_admin)) goto error;
+
+    if (!ov_event_app_register(
+        self->app,
+        "ldap_import",
+        self,
+        cb_event_ldap_import)) goto error;
 
     return true;
 error:
@@ -1551,39 +2046,17 @@ static bool send_socket(void *userdata, int socket, const ov_json_value *input) 
     return ov_event_app_send(self->app, socket, input);
 }
 
-
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_persistance_persist(ov_vocs_db_persistance *self){
+bool ov_vocs_db_persistance_broadcast(ov_vocs_db_persistance *self, const ov_json_value *input){
 
     bool result = false;
-
-    ov_json_value *out = NULL;
-    ov_json_value *db = NULL;
 
     if (!self) goto error;
 
     if (!ov_vocs_db_persistance_save(self)) goto error;
 
     if (!self->config.cluster.manager) return true;
-
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
-
-    db = ov_vocs_db_eject(self->config.db, OV_VOCS_DB_TYPE_AUTH);
-
-    if (!db) goto done;
-
-    out = ov_event_api_message_create(OV_KEY_UPDATE, NULL, 0);
-    if (!out) goto done;
-
-    ov_json_value *par = ov_event_api_set_parameter(out);
-    
-    if (!ov_json_object_set(par, OV_KEY_DB, db)){
-        db = ov_json_value_free(db);
-        out = ov_json_value_free(out);
-    }
-
-    db = NULL;
     
     ov_event_parameter parameter =
         (ov_event_parameter){.send.instance = self, .send.send = send_socket};
@@ -1591,17 +2064,7 @@ bool ov_vocs_db_persistance_persist(ov_vocs_db_persistance *self){
     ov_log_debug("Sending update broadcast.");
 
     result = ov_broadcast_registry_send(self->broadcasts, OV_KEY_UPDATE, 
-        &parameter, out, OV_SYSTEM_BROADCAST);
-
-done:
-    
-    db = ov_json_value_free(db);
-    out = ov_json_value_free(out);
-
-    if (!ov_thread_lock_unlock(&self->lock)) {
-        OV_ASSERT(1 == 0);
-        goto error;
-    }
+        &parameter, input, OV_SYSTEM_BROADCAST);
 
     return result;
 error:
