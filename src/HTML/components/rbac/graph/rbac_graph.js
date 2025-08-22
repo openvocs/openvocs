@@ -67,7 +67,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
         window.addEventListener("keydown", (event) => {
             if (event.code === "Escape" && source_node) {
-              
+
                 Graph.highlight_node(source_node, "select", false);
 
                 for (let user of Graph.nodes.users.values()) {
@@ -328,6 +328,8 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
         if (node && (node.ldap || node.frozen))
             element.frozen = true;
+        if (node && node.global)
+            element.global = true;
         this.#adjust_grid_size();
         element.scrollIntoView({ behavior: "smooth", block: "start" });
     }

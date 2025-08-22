@@ -12,7 +12,7 @@ button,
 #graph {
     --touch: 0;
     display: grid;
-    grid-template-columns: 10rem 9.6rem 10rem 9.6rem 10rem;
+    grid-template-columns: 15rem 9.6rem 15rem 9.6rem 15rem;
     grid-template-rows: 2.5rem repeat(var(--rowNum), 2rem);
     grid-template-areas: "user_header . role_header . loop_header";
     justify-items: center;
@@ -112,7 +112,7 @@ ov-rbac-node[type=loop] {
     top: -0.15rem;
     left: 0;
     height: 0.15rem;
-    width: 10rem;
+    width: 15rem;
     content: '';
     background-color: var(--white_transparent_50);
 }
