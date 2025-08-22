@@ -65,6 +65,26 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
         let source_node;
 
+        window.addEventListener("keydown", (event) => {
+            if (event.code === "Escape" && source_node) {
+              
+                Graph.highlight_node(source_node, "select", false);
+
+                for (let user of Graph.nodes.users.values()) {
+                    user.classList.toggle("edit_" + source_node.type + "_edges", false);
+                }
+                for (let role of Graph.nodes.roles.values()) {
+                    role.classList.toggle("edit_" + source_node.type + "_edges", false);
+                }
+                for (let loop of Graph.nodes.loops.values()) {
+                    loop.classList.toggle("edit_" + source_node.type + "_edges", false);
+                }
+                source_node.classList.toggle("edit", false);
+                source_node = undefined;
+            }
+
+        });
+
         this.#dom.graph.addEventListener("delete_node", (event) => {
             let node = event.detail.node;
 
