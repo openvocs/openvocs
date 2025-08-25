@@ -113,7 +113,7 @@ export default class ov_Websocket {
         this.addEventListener = this.#event_target.addEventListener.bind(this.#event_target);
         this.removeEventListener = this.#event_target.removeEventListener.bind(this.#event_target);
 
-        if(this.port !== "vocs")
+        if (this.port !== "vocs")
             this.#show_port = true;
     }
 
@@ -150,7 +150,7 @@ export default class ov_Websocket {
         return "https://" + this.#url.slice(6, this.#url.lastIndexOf("/") + 1); // remove wss:// and /vocs from websocket url
     }
 
-    get port(){
+    get port() {
         return this.#url.slice(this.#url.lastIndexOf("/") + 1);
     }
 
@@ -269,6 +269,8 @@ export default class ov_Websocket {
         if (this.#log_incoming_events) {
             if (event.event === ov_Websocket.EVENT.LOGIN)
                 console.log(this.#log_prefix() + "incoming event: LOGIN (content hidden)");
+            else if (event.event === "ldap_import")
+                console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
             else
                 console.log(this.#log_prefix() + "incoming event", JSON.stringify(event));
         }
@@ -328,6 +330,8 @@ export default class ov_Websocket {
             if (this.#log_outgoing_events) {
                 if (event.event === ov_Websocket.EVENT.LOGIN)
                     console.log(this.#log_prefix() + "outgoing event: LOGIN (content hidden)");
+                else if (event.event === "ldap_import")
+                    console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
                 else
                     console.log(this.#log_prefix() + "outgoing event", message);
             }
@@ -498,7 +502,7 @@ export default class ov_Websocket {
     // logging
     //-----------------------------------------------------------------------------
     #log_prefix() {
-        if(this.#show_port)
+        if (this.#show_port)
             return "(" + this.server_name + "/" + this.port + " websocket) ";
         return "(" + this.server_name + " websocket) ";
     }
