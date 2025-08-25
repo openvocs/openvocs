@@ -250,9 +250,10 @@ static State skip_header(FILE *input) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *get_next_message(FILE *input, char *first_line) {
-    State state = INVALID;
 
+static ov_buffer *get_next_message(FILE *input, char *first_line) {
+
+    State state = INVALID;
     while (state != state_to_replay) {
         state = skip_header(input);
 
@@ -365,7 +366,7 @@ int main(int argc, char *argv[]) {
     while (0 != message) {
         usleep(delay_secs * 1000 * 1000);
 
-        print("Sending %s\n", first_line);
+        print("Sending '%s'\n", first_line);
         memset(first_line, 0, first_line_capacity);
 
         ssize_t written = 0;
@@ -380,6 +381,11 @@ int main(int argc, char *argv[]) {
                 to_write_len -= (size_t)written;
                 printerr("Wrote %zd bytes - %zu to go...\n", written,
                          to_write_len);
+
+                fprintf(stdout, "---\n");
+                write(fileno(stdout), to_write, to_write_len);
+                fprintf(stdout, "---\n");
+
             } else {
                 printerr("Could not write: %s\n", strerror(errno));
                 break;
