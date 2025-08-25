@@ -368,15 +368,21 @@ export default class ov_Loop extends HTMLElement {
     }
 
     update_state() {
-        let element = this.shadowRoot.querySelector("#leave_loop");
-        if (element) {
+        let leave_button = this.shadowRoot.querySelector("#leave_loop");
+        let volume_button = this.shadowRoot.querySelector("#loop_volume");
+        let volume_slider = this.shadowRoot.querySelector("#loop_volume_input");
+        if (leave_button && volume_button) {
             console.log("state of loop " + this.#loop_id + " changed to " + this.#state);
             if (this.#state === ov_Loop.STATE.MONITOR || this.#state === ov_Loop.STATE.TALK) {
                 this.shadowRoot.host.classList.add("dark");
-                element.disabled = false;
+                leave_button.disabled = false;
+                volume_slider.disabled = false;
+                volume_button.classList.remove("disabled");
             } else {
                 this.shadowRoot.host.classList.remove("dark");
-                element.disabled = true;
+                leave_button.disabled = true;
+                volume_slider.disabled = true;
+                volume_button.classList.add("disabled");
             }
         }
     }

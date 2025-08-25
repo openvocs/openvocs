@@ -180,8 +180,9 @@ export default class ov_SIP_Loop extends ov_Loop {
                 this.#sip_calls.change_call_status(event.detail.call, "Hangup failed.");
         });
 
-        this.shadowRoot.querySelector("#loop_volume").onclick = () => {
-            if (this.layout === ov_Loop.LAYOUT.GRID) {
+        let volume = this.shadowRoot.querySelector("#loop_volume");
+        volume.onclick = () => {
+            if (this.layout === ov_Loop.LAYOUT.GRID && !volume.classList.contains("disabled")) {
                 let input = this.shadowRoot.querySelector("#loop_volume_input_container");
                 if (getComputedStyle(input).display === "none")
                     input.style.display = "inherit";
