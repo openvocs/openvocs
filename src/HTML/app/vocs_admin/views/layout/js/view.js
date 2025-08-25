@@ -262,10 +262,11 @@ function change_layout() {
 }
 
 export function resize(settings) {
-    if (settings)
-        DOM.loops.resize(settings);
-    else
-        DOM.loops.resize(collect_page_layout());
+    if (DOM.loops)
+        if (settings)
+            DOM.loops.resize(settings);
+        else
+            DOM.loops.resize(collect_page_layout());
 }
 
 export function collect_role_layout() {

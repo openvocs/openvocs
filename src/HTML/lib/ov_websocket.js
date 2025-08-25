@@ -99,7 +99,9 @@ export default class ov_Websocket {
 
     #show_port = false;
 
-    constructor(name, url, client_id) {
+    #record;
+
+    constructor(name, url, client_id, record) {
         this.#name = name;
         this.#url = url;
         this.#client_id = client_id ? client_id : create_uuid();
@@ -108,6 +110,7 @@ export default class ov_Websocket {
         this.log_outgoing_events = false;
         this.#ws_state = ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
         this.#pending_requests = new Set();
+        this.#record = record;
 
         this.#event_target = new EventTarget();
         this.addEventListener = this.#event_target.addEventListener.bind(this.#event_target);
@@ -178,6 +181,10 @@ export default class ov_Websocket {
         if (!this.is_connecting)
             return -1;
         return this.#pending_requests.size;
+    }
+
+    get record() {
+        return this.#record;
     }
 
     //-----------------------------------------------------------------------------

@@ -43,11 +43,17 @@ export async function init(container) {
 }
 
 export async function render(loops) {
-    let recorded_loops = (await ov_Recorder.get_recorded_loops());
-    if(recorded_loops)
-        recorded_loops = recorded_loops.map((x) => x.loop);
+    let websocket;
+    for (let ws of ov_Websockets.list) {
+        if (ws.port === "admin" && ws.record === true) {
+            websocket = ws;
+            break;
+        }
+    }
 
-    console.log(recorded_loops)
+    let recorded_loops = (await ov_Recorder.get_recorded_loops(websocket));
+    if (recorded_loops)
+        recorded_loops = recorded_loops.map((x) => x.loop);
 
     let first_loop;
 

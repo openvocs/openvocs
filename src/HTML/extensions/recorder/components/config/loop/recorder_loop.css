@@ -13,11 +13,16 @@
     height: 1.5rem;
     text-align: left;
     opacity: 0;
+    line-height: 2.7rem;
+}
+.recorder-icon::before {
+    content: "\0025CF";
+    font-size: 2rem;
 }
 
 #loop_name {
     text-align: left;
-    line-height: 1.7rem;
+    line-height: 2.7rem;
     margin-left: 0.5rem;
     font-size: 1rem;
 }
