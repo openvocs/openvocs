@@ -73,6 +73,7 @@ static void print_to(FILE *out, char const *msg, ...) {
     va_start(args, msg);
 
     print_timestamp_nocheck(out);
+    fprintf(out, "   -   ");
     vfprintf(out, msg, args);
 
     va_end(args);
@@ -159,7 +160,7 @@ static size_t read_line(FILE *input) {
     line[i] = 0;
     line_len = i;
 
-    printerr("Got line '%s'\n", line);
+    //printerr("Got line '%s'\n", line);
 
     return i;
 }
@@ -271,6 +272,7 @@ static ov_buffer *get_next_message(FILE *input, char *first_line) {
         memcpy(first_line, line, line_len);
     }
 
+    // TODO: Should read until next 'header' : 1234567890 <xxx>
     while ((line_len > 1) && (CR == line[line_len - 2]) &&
            (LF == line[line_len - 1])) {
         memcpy(write_ptr, line, line_len);
@@ -307,7 +309,25 @@ int main(int argc, char *argv[]) {
         .type = TCP,
     };
 
-    if ((argc > 1) && (0 != strcmp(argv[1], "-"))) {
+    if(argc < 3) {
+        fprintf(
+            stderr,
+            "\n\n\n"
+            "Replay a a SIP serde log.\n Reads in such a log, recreates the "
+            "SIP requests logged and sends them to a TCP destination. "
+            "Waits %" PRIu32 " seconds between two SIP requests\n\n\n",
+            delay_secs);
+
+        fprintf(stderr, " USAGE:\n\n");
+        fprintf(stderr, "    %s [INPUT-FILE] IP PORT\n\n", argv[0]);
+        fprintf(stderr,
+                "    INPUT-FILE the file to read log from. If not given, STDIN "
+                "is used\n");
+        fprintf(stderr, "    IP / PORT TCP server socket to connect to\n");
+
+        exit(EXIT_FAILURE);
+
+    } else if ((argc > 3) && (0 != strcmp(argv[1], "-"))) {
         input_file = argv[1];
         input = fopen(input_file, "r");
     }
@@ -317,18 +337,21 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    if (argc == 3) {
+        strncpy(server.host, argv[1], sizeof(server.host));
+        server.port = atoi(argv[2]);
+    } else {
+        strncpy(server.host, argv[2], sizeof(server.host));
+        server.port = atoi(argv[3]);
+    }
+
     ov_socket_error serr = {0};
     int send_fd = ov_socket_create(server, true, &serr);
 
     if (0 > send_fd) {
         printerr("Could not connect to %s:%" PRIu16 "  - %s\n", server.host,
-              server.port, strerror(serr.err));
+                 server.port, strerror(serr.err));
         exit(EXIT_FAILURE);
-    }
-
-    if (argc > 3) {
-        strncpy(server.host, argv[2], sizeof(server.host));
-        server.port = atoi(argv[3]);
     }
 
     print("Reading from %s\n", input_file);
@@ -356,7 +379,7 @@ int main(int argc, char *argv[]) {
                 to_write = to_write + (size_t)written;
                 to_write_len -= (size_t)written;
                 printerr("Wrote %zd bytes - %zu to go...\n", written,
-                      to_write_len);
+                         to_write_len);
             } else {
                 printerr("Could not write: %s\n", strerror(errno));
                 break;
