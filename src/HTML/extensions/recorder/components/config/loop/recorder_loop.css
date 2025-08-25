@@ -18,6 +18,7 @@
 .recorder-icon::before {
     content: "\0025CF";
     font-size: 2rem;
+    color: var(--red);
 }
 
 #loop_name {
@@ -25,4 +26,10 @@
     line-height: 2.7rem;
     margin-left: 0.5rem;
     font-size: 1rem;
+}
+
+#loop:disabled {
+  cursor: default;
+  color: var(--white) !important;
+  border: var(--element_art_color) solid 0.1rem;
 }
