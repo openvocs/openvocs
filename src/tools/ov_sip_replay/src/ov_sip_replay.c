@@ -273,7 +273,6 @@ static ov_buffer *get_next_message(FILE *input, char *first_line) {
         memcpy(first_line, line, line_len);
     }
 
-    // TODO: Should read until next 'header' : 1234567890 <xxx>
     while ((line_len > 1) && (CR == line[line_len - 2]) &&
            (LF == line[line_len - 1])) {
         memcpy(write_ptr, line, line_len);
@@ -303,6 +302,7 @@ int main(int argc, char *argv[]) {
     FILE *input = stdin;
 
     uint32_t delay_secs = 5;
+    bool wait_for_key_pressed = false;
 
     ov_socket_configuration server = {
         .host = "127.0.0.1",
@@ -321,16 +321,26 @@ int main(int argc, char *argv[]) {
 
         fprintf(stderr, " USAGE:\n\n");
         fprintf(stderr, "    %s [INPUT-FILE] IP PORT\n\n", argv[0]);
+        fprintf(stderr, "    %s INPUT-FILE IP PORT -k\n\n", argv[0]);
         fprintf(stderr,
                 "    INPUT-FILE the file to read log from. If not given, STDIN "
                 "is used\n");
+        fprintf(
+            stderr,
+            "    -k wait for key being pressed before sending next message\n");
         fprintf(stderr, "    IP / PORT TCP server socket to connect to\n");
 
         exit(EXIT_FAILURE);
 
-    } else if ((argc > 3) && (0 != strcmp(argv[1], "-"))) {
-        input_file = argv[1];
-        input = fopen(input_file, "r");
+    } else {
+        if ((argc > 4) && ('-' == argv[4][0]) && ('k' == argv[4][1])) {
+            wait_for_key_pressed = true;
+        }
+
+        if ((argc > 3) && (0 != strcmp(argv[1], "-"))) {
+            input_file = argv[1];
+            input = fopen(input_file, "r");
+        }
     }
 
     if (0 == input) {
@@ -358,13 +368,23 @@ int main(int argc, char *argv[]) {
     print("Reading from %s\n", input_file);
     print("Sending to %s:%" PRIu16 "\n", server.host, server.port);
 
+    if (wait_for_key_pressed) {
+        print("Next message on key press\n");
+    } else {
+        print("Next message after %" PRIu32 " secs\n", delay_secs);
+    }
+
     char first_line[10000] = {0};
     size_t first_line_capacity = sizeof(first_line) / sizeof(first_line[0]);
 
     ov_buffer *message = get_next_message(input, first_line);
 
     while (0 != message) {
-        usleep(delay_secs * 1000 * 1000);
+        if (wait_for_key_pressed) {
+            getc(stdin);
+        } else {
+            usleep(delay_secs * 1000 * 1000);
+        }
 
         print("Sending '%s'\n", first_line);
         memset(first_line, 0, first_line_capacity);
