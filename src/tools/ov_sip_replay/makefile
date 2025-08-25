@@ -26,40 +26,23 @@
 
 include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
-OV_SERVICE_DIRS   = ov_json_sample
-OV_SERVICE_DIRS  += ov_value_sample
-OV_SERVICE_DIRS  += ov_value_benchmark
-OV_SERVICE_DIRS  += ov_sip
-
-
-all    : target_build_all
-depend : target_depend
+OV_EXECUTABLE        = $(OV_BINDIR)/$(OV_DIRNAME)
+OV_TARGET            = $(OV_EXECUTABLE)
 
 #-----------------------------------------------------------------------------
-target_depend:
-	@echo "[DEPEND ] src/lib: scanning dependencies"
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[DEPEND ] entering $$dir ..."; \
-		$(MAKE) depend -C $$dir || exit 1; \
-		echo "[DEPEND ] leaving $$dir ."; \
-	done
-	@echo "[DEPEND ] src/lib: dependencies done"
+
+OV_FLAGS       += `pkg-config --cflags openssl`
+
 #-----------------------------------------------------------------------------
-target_build_all:
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) -C $$dir || exit 1; \
-		echo "[BUILD  ] leaving $$dir ."; \
-	done
-	@echo "[BUILD  ] build done"
+
+OV_LIBS        = -L$(OV_LIBDIR)
+OV_LIBS       += -l ov_base2
+OV_LIBS       += -l ov_core2
+OV_LIBS       += -l ov_sip2
+OV_LIBS       += -l ov_os2
+
+OV_LIBS       += `pkg-config --libs openssl`
+
 #-----------------------------------------------------------------------------
-target_test:
-	@echo "[BUILD  ] building tests"
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) $(OV_QUIET_MAKE) target_test -C $$dir || exit 1; \
-		echo "[BUILD  ] leaving $$dir ."; \
-	done
-	@echo "[BUILD  ] build tests done"
-#-----------------------------------------------------------------------------
+include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk
 
