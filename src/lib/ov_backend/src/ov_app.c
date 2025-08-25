@@ -2338,27 +2338,36 @@ const char *UNKNOWN_ARGUMENT_PRESENT =
     "Unknown argument "
     "present";
 
-const char *ov_app_parse_command_line(int argc,
-                                      char *const argv[],
-                                      ov_app_parameters *restrict params) {
+/*----------------------------------------------------------------------------*/
 
-    NOT_IN_RELEASE("Function needs to be stripped");
+const char *ov_app_parse_command_line_optargs(
+    int argc, char *const argv[], ov_app_parameters *restrict params,
+    char const *optargs) {
 
     if ((0 == argc) || (0 == argv)) {
-
         return "Invalid argument - no args or nullpointer";
     }
 
-    char *optstring = "c:v";
+    char const *our_optstring = "c:v";
+    char *optstring = 0;
+
+    if (0 != optargs) {
+
+        optstring = calloc(1, strlen(our_optstring) + 1 + strlen(optargs) + 1);
+        strcpy(optstring, our_optstring);
+        strcat(optstring, optargs);
+
+    } else {
+        optstring = strdup(our_optstring);
+        optargs = "";
+    }
 
     int c = 0;
 
     const char *retval = 0;
 
     while (-1 != (c = getopt(argc, argv, optstring))) {
-
         switch (c) {
-
             case 'c':
 
                 params->config_file = optarg;
@@ -2370,16 +2379,14 @@ const char *ov_app_parse_command_line(int argc,
                 break;
 
             default:
-                /* Unknown arguments are ignored since
-                 * they could be custom args for the
-                 * particular app
-                 */
-                retval = UNKNOWN_ARGUMENT_PRESENT;
+
+                if (0 == strchr(optargs, c)) {
+                    retval = UNKNOWN_ARGUMENT_PRESENT;
+                }
         };
     };
 
     if (0 == params->config_file) {
-
         char *app_name = basename(argv[0]);
 
         params->config_file = ov_config_default_config_file_for(app_name);
@@ -2387,10 +2394,19 @@ const char *ov_app_parse_command_line(int argc,
         app_name = 0;
     }
 
+    optstring = ov_free(optstring);
+
     OV_ASSERT(0 != params->config_file);
 
     return retval;
 };
+
+/*----------------------------------------------------------------------------*/
+
+const char *ov_app_parse_command_line(int argc, char *const argv[],
+                                      ov_app_parameters *restrict params) {
+    return ov_app_parse_command_line_optargs(argc, argv, params, 0);
+}
 
 /******************************************************************************
  *                                 Reconnect
@@ -2398,7 +2414,6 @@ const char *ov_app_parse_command_line(int argc,
 
 static bool connect_socket_without_reconnect_unsafe(DefaultApp *app,
                                                     ov_app_socket_config cfg) {
-
     OV_ASSERT(0 != app);
 
     ov_socket_error err = {0};
@@ -2406,14 +2421,12 @@ static bool connect_socket_without_reconnect_unsafe(DefaultApp *app,
     int fd = ov_socket_create(cfg.socket_config, true, &err);
 
     if (0 > fd) {
-
         ov_log_error(
             "Could not create client socket. "
             "errno: %s "
             "gai_error: "
             "%s",
-            strerror(err.err),
-            strerror(err.gai));
+            strerror(err.err), strerror(err.gai));
 
         goto error;
     }
@@ -2431,9 +2444,7 @@ const uint32_t reconnect_data_magic_bytes;
 
 static ReconnectData *get_unused_reconnect_data(
     size_t no, ReconnectDataEntry *rd_entries) {
-
     for (size_t i = 0; i < no; ++i) {
-
         if (!rd_entries[i].in_use) {
             rd_entries[i].in_use = true;
 
@@ -2447,7 +2458,6 @@ static ReconnectData *get_unused_reconnect_data(
 /*----------------------------------------------------------------------------*/
 
 static bool cb_io_stream_wrapper(int fd, uint8_t events, void *userdata) {
-
     if (0 == userdata) {
         ov_log_error(
             "Called with invalid argument (0 "
@@ -2458,7 +2468,6 @@ static bool cb_io_stream_wrapper(int fd, uint8_t events, void *userdata) {
     ReconnectData *rd = userdata;
 
     if (reconnect_data_magic_bytes != rd->magic_bytes) {
-
         ov_log_error(
             "Called with invalid argument (magic "
             "bytes don't "
@@ -2469,7 +2478,6 @@ static bool cb_io_stream_wrapper(int fd, uint8_t events, void *userdata) {
     OV_ASSERT(0 != rd->app);
 
     if (0 == rd->app) {
-
         ov_log_error(
             "Serious internal error - "
             "ReconnectData without "
@@ -2487,9 +2495,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool cb_reconnected(int fd, void *userdata) {
-
     if (0 == userdata) {
-
         ov_log_error(
             "Called with invalid argument (0 "
             "pointer)");
@@ -2499,7 +2505,6 @@ static bool cb_reconnected(int fd, void *userdata) {
     ReconnectData *rd = userdata;
 
     if (reconnect_data_magic_bytes != rd->magic_bytes) {
-
         ov_log_error(
             "Called with invalid argument (magic "
             "bytes don't "
@@ -2508,7 +2513,6 @@ static bool cb_reconnected(int fd, void *userdata) {
     }
 
     if (0 == rd->app) {
-
         ov_log_error(
             "Called with invalid argument: app "
             "missing");
@@ -2518,7 +2522,6 @@ static bool cb_reconnected(int fd, void *userdata) {
     DefaultApp *app = AS_IMPL_APP(rd->app);
 
     if (0 == app) {
-
         ov_log_error("Called with wrong app");
         goto error;
     }
@@ -2526,16 +2529,14 @@ static bool cb_reconnected(int fd, void *userdata) {
     bool success = app_connection_create(app, rd->scfg, fd);
 
     if (!success) {
-
         ov_log_error("Could not create connection");
         goto error;
     }
 
-    success = rd->scfg.callback.reconnected(
-        &rd->app->public, fd, rd->scfg.callback.userdata);
+    success = rd->scfg.callback.reconnected(&rd->app->public, fd,
+                                            rd->scfg.callback.userdata);
 
     if (!success) {
-
         ov_log_error("reconnect callback failed");
         goto error;
     }
@@ -2554,7 +2555,6 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_app_connect(ov_app *self, ov_app_socket_config config) {
-
     /* Currently, reconnects are only supported with
      * TCP sockets, client of course, thus
      * forward any other valid connect request to
@@ -2568,35 +2568,28 @@ bool ov_app_connect(ov_app *self, ov_app_socket_config config) {
         return false;
 
     } else if (!config.as_client) {
-
         return self->socket.open(self, config, 0, 0);
 
     } else if (0 == config.callback.reconnected) {
-
         return connect_socket_without_reconnect_unsafe(app, config);
 
     } else if (TCP != config.socket_config.type) {
-
         ov_log_error("reconnects only supported with TCP");
         return false;
 
     } else if (0 == app->reconnect) {
-
         ov_log_error("App does not support reconnects");
         return false;
 
     } else {
-
         ReconnectData *rd = get_unused_reconnect_data(
             self->config.reconnect.max_connections, app->reconnect_data);
 
         if (0 == rd) {
-
             ov_log_error("Number of supported reconnect connections exhausted");
             return false;
 
         } else {
-
             rd->magic_bytes = reconnect_data_magic_bytes;
             rd->app = app;
             rd->scfg = config;

@@ -306,7 +306,27 @@ typedef struct {
 
 } ov_app_parameters;
 
+/**
+ * This optstring is ALWAYS expected.
+ * If you try to parse command line options using getopt(3),
+ * ensure
+ * 1. That you reset `optind` to 1
+ * 2. That your optstring should contain OV_APP_DEFAULT_OPTSTRING
+ *
+ * That is, your code should look like
+ *
+ * optind = 1;
+ * char const *my_options = OV_APP_DEFAULT_OPTSTRING "ad:";
+ *
+ * while(getopt(argc, argv, my_options ...)) {...
+ */
+#define OV_APP_DEFAULT_OPTSTRING "c:v"
+
 extern const char *UNKNOWN_ARGUMENT_PRESENT;
+
+const char *ov_app_parse_command_line_optargs(
+    int argc, char *const argv[], ov_app_parameters *restrict params,
+    char const *optargs);
 
 const char *ov_app_parse_command_line(int argc,
                                       char *const argv[],

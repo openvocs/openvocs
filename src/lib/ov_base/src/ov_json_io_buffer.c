@@ -125,8 +125,10 @@ bool ov_json_io_buffer_push(ov_json_io_buffer *self,
         }
     }
 
-    if (!ov_buffer_push(buffer, (uint8_t *)input.start, input.length))
+    if (!ov_buffer_push(buffer, (uint8_t *)input.start, input.length)){
+        ov_log_error("Failed to push to buffer.");
         goto error;
+    }
 
     uint8_t *start = buffer->start;
     size_t open = buffer->length;
@@ -143,6 +145,7 @@ bool ov_json_io_buffer_push(ov_json_io_buffer *self,
         len = open;
 
         if (!ov_json_clear_whitespace(&ptr, &len)) goto mismatch;
+    
 
         if (self->config.objects_only && (ptr[0] != '{')) goto mismatch;
 

@@ -34,6 +34,7 @@
 
 #include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_socket.h>
+#include <ov_base/ov_result.h>
 
 #include <ov_core/ov_event_io.h>
 
@@ -57,6 +58,15 @@ typedef struct ov_vocs_recorder_config {
         ov_socket_configuration manager;
 
     } socket;
+
+    struct {
+
+        void *userdata;
+
+        void (*start_record)(void *userdata, const char *uuid, ov_result error);
+        void (*stop_record) (void *userdata, const char *uuid, ov_result error);
+
+    } callbacks;
 
     ov_database_info db;
 
@@ -85,8 +95,8 @@ ov_event_io_config ov_vocs_recorder_io_uri_config(ov_vocs_recorder *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self, const char *loop);
-bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop);
+bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self, const char *loop, const char *uuid);
+bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop, const char *uuid);
 
 /*----------------------------------------------------------------------------*/
 
@@ -128,5 +138,9 @@ void ov_vocs_recorder_ptt(ov_vocs_recorder *self,
                           const char *role,
                           const char *loop,
                           bool off);
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_vocs_recorder_get_recorded_loops(ov_vocs_recorder *self);
 
 #endif /* ov_vocs_recorder_h */

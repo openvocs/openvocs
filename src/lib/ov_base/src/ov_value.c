@@ -419,7 +419,7 @@ bool ov_value_is_false(ov_value const *value) { return &g_false == value; }
                                      Number
  ****************************************************************************/
 
-ov_registered_cache *g_number_cache = 0;
+static ov_registered_cache *g_number_cache = 0;
 
 const uint16_t NUMBER_TYPE = 16;
 
@@ -580,7 +580,7 @@ error:
                                      string
  ****************************************************************************/
 
-ov_registered_cache *g_string_cache = 0;
+static ov_registered_cache *g_string_cache = 0;
 
 const uint16_t STRING_TYPE = 16 + 4;
 
@@ -1163,7 +1163,7 @@ error:
                                      Object
  ****************************************************************************/
 
-ov_registered_cache *g_object_cache = 0;
+static ov_registered_cache *g_object_cache = 0;
 
 const uint16_t OBJECT_TYPE = 64;
 

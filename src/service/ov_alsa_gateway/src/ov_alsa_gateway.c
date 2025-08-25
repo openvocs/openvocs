@@ -26,6 +26,7 @@
 
 #include "ov_alsa_audio_app.h"
 #include "ov_base/ov_socket.h"
+#include "ov_base/ov_config_keys.h"
 #include <ov_backend/ov_minion_app.h>
 #include <ov_base/ov_mc_socket.h>
 #include <ov_base/ov_string.h>

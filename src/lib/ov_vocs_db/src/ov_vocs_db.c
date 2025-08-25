@@ -1278,6 +1278,8 @@ done:
         goto error;
     }
 
+    // ov_vocs_db_persistance_persist(self->persistance);
+
     return result;
 error:
     return false;
@@ -2186,7 +2188,7 @@ done:
     if (!ov_event_trigger_send(self->config.trigger, "VOCS", msg))
         msg = ov_json_value_free(msg);
 
-    ov_vocs_db_persistance_persist(self->persistance);
+    // ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 error:
@@ -2332,6 +2334,8 @@ done:
         OV_ASSERT(1 == 0);
         goto error;
     }
+
+    // ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 
@@ -2896,7 +2900,7 @@ done:
     }
 
     ov_event_trigger_send(self->config.trigger, "VOCS", msg);
-    ov_vocs_db_persistance_persist(self->persistance);
+    // ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 

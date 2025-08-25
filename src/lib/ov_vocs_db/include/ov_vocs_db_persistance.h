@@ -99,6 +99,6 @@ bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
                                         const char *pass,
                                         const char *domain);
 
-bool ov_vocs_db_persistance_persist(ov_vocs_db_persistance *self);
+bool ov_vocs_db_persistance_broadcast(ov_vocs_db_persistance *self, const ov_json_value *update);
 
 #endif /* ov_vocs_db_persistance_h */

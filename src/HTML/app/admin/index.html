@@ -89,13 +89,8 @@
 
 
 	<div class="w3-bar-block">
-		<input class="w3-input" type="text" id="session" value="session_id">
-		<button class="w3-button" onclick="ov_admin.session_state(document.getElementById('session').value)">state session</button>
-	</div>
-
-	<div class="w3-bar-block">
-		<input class="w3-input" type="text" id="input" value="event">
-		<button class="w3-button" onclick="ov_admin.input(document.getElementById('input').value)">input</button>
+		<input class="w3-input" type="text" id="mixer" value="user_id">
+		<button class="w3-button" onclick="ov_admin.get_mixer_state(document.getElementById('mixer').value)">state mixer</button>
 	</div>
 
 

@@ -303,16 +303,8 @@ ov_thread_loop *ov_thread_loop_free(ov_thread_loop *self) {
         self->pool = self->pool->free(self->pool);
     }
 
-    if (0 != self->to_threads.queue) {
-
-        self->to_threads.queue =
-            self->to_threads.queue->free(self->to_threads.queue);
-    }
-
-    if (0 != self->to_loop.queue) {
-
-        self->to_loop.queue = self->to_loop.queue->free(self->to_loop.queue);
-    }
+    self->to_threads.queue = ov_ringbuffer_free(self->to_threads.queue);
+    self->to_loop.queue = ov_ringbuffer_free(self->to_loop.queue);
 
     ov_thread_lock_clear(&self->to_threads.lock);
     ov_thread_lock_clear(&self->to_loop.lock);

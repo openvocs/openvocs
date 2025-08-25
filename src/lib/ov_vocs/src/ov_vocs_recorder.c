@@ -219,8 +219,15 @@ static bool start_record(void *userdata,
 
     ov_recorder_response_start resp = {0};
 
+    uint64_t code = 0;
+    const char *desc = 0;
+
     ov_vocs_recorder *self = ov_vocs_recorder_cast(userdata);
     if (!self || fh < 0 || !parameter || !input) goto error;
+
+    const char *uuid = ov_event_api_get_uuid(input);
+
+    ov_event_api_get_error_parameter(input, &code, &desc);
 
     ov_json_value *res = ov_event_api_get_response(input);
     if (!res) goto error;
@@ -238,10 +245,37 @@ static bool start_record(void *userdata,
         goto done;
     }
 
-    ov_vocs_record_set_active(record, resp.id, loop, resp.filename, fh);
+    switch (code){
 
-    ov_log_debug("activated recording of loop %s", loop);
+        case OV_ERROR_NOERROR:
 
+            ov_vocs_record_set_active(record, resp.id, loop, resp.filename, fh);
+            
+            ov_log_debug("activated recording of loop %s", loop);
+
+            self->config.callbacks.start_record(
+                self->config.callbacks.userdata,
+                uuid,
+                (ov_result){
+                    .error_code = OV_ERROR_NOERROR,
+                    .message = NULL
+                });
+            break;
+
+        default:
+
+            ov_log_error("Start recording error %i|%s", code, desc);
+
+            self->config.callbacks.start_record(
+                self->config.callbacks.userdata,
+                uuid,
+                (ov_result){
+                    .error_code = code,
+                    .message = (char*) desc
+                });
+
+    }
+    
 done:
     ov_recorder_response_start_clear(&resp);
     ov_json_value_free(input);
@@ -261,8 +295,15 @@ static bool stop_record(void *userdata,
 
     ov_json_value *t = NULL;
 
+    uint64_t code = 0;
+    const char *desc = 0;
+
     ov_vocs_recorder *self = ov_vocs_recorder_cast(userdata);
     if (!self || socket < 0 || !parameter || !input) goto error;
+
+    const char *uuid = ov_event_api_get_uuid(input);
+
+    ov_event_api_get_error_parameter(input, &code, &desc);
 
     ov_event_connection *conn =
         ov_dict_get(self->recorder, (void *)(intptr_t)socket);
@@ -276,29 +317,64 @@ static bool stop_record(void *userdata,
     if (!loop) goto error;
 
     ov_vocs_record *record = ov_dict_get(self->recordings, loop);
-    if (!record) {
-        // loop recoding not enabled
-        goto done;
+    if (!record) goto unblock;
+
+    switch (code){
+
+        case OV_ERROR_NOERROR:
+        case OV_ERROR_NOT_RECORDING:
+
+            // NO - The recorder will send a notification event when it
+            // wrote the new recording - here we don't know the file name yet.
+            // Moreover, if we register the recording here and when receiving 
+            // the notification, we end up with 2 entries in the database.
+            // And we need to use the notification in case of automatically
+            // starting/stopping recordings (like in case of rolling recordings
+            // or using a VAD
+            //ov_db_recordings_add(get_database_mut(self),
+            //             record->active.id,
+            //             loop,
+            //             record->active.uri,
+            //             record->active.started_at_epoch_secs,
+            //             time(0));
+
+            ov_vocs_record_reset_active(record);
+
+            self->config.callbacks.stop_record(
+                self->config.callbacks.userdata,
+                uuid,
+                (ov_result){
+                    .error_code = OV_ERROR_NOERROR,
+                    .message = NULL
+                });
+            
+            break;
+
+        default:
+
+            ov_log_error("Stop recording error %i|%s", code, desc);
+
+            self->config.callbacks.stop_record(
+                self->config.callbacks.userdata,
+                uuid,
+                (ov_result){
+                    .error_code = code,
+                    .message = (char*) desc
+                });
+
+            goto done;
     }
 
-    ov_db_recordings_add(get_database_mut(self),
-                         record->active.id,
-                         record->active.uri,
-                         loop,
-                         record->active.started_at_epoch_secs,
-                         time(0));
-
-    ov_vocs_record_reset_active(record);
-
-done:
-
     // we unblock the recorder
+unblock:
 
     t = ov_json_true();
     ov_event_connection_set_json(conn, OV_KEY_EMPTY, t);
     t = ov_json_value_free(t);
 
     ov_log_debug("deactivated recording of loop %s", loop);
+
+done:
     input = ov_json_value_free(input);
     return true;
 
@@ -315,8 +391,8 @@ static void handle_new_recording(ov_vocs_recorder *self, ov_recording record) {
 
     ov_db_recordings_add(get_database_mut(self),
                          record.id,
-                         record.uri,
                          record.loop,
+                         record.uri,
                          record.start_epoch_secs,
                          record.end_epoch_secs);
 
@@ -569,6 +645,8 @@ static bool request_new_recording(ov_vocs_recorder *self, const char *loop) {
         goto error;
     }
 
+    rec->active.recorder = ov_event_connection_get_socket(conn); 
+
     ov_log_debug("Activated recording for Loop %s", loop);
 
     ov_event_connection_send(conn, out);
@@ -668,6 +746,7 @@ ov_vocs_recorder *ov_vocs_recorder_create(ov_vocs_recorder_config config) {
     self->recorder = ov_dict_create(d_config);
     if (!self->recorder) goto error;
 
+    d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_vocs_record_free_void;
     self->recordings = ov_dict_create(d_config);
     if (!self->recordings) goto error;
@@ -784,6 +863,12 @@ static void cb_socket_close(void *userdata, int socket) {
 
     intptr_t key = socket;
     ov_dict_del(self->connections, (void *)key);
+
+    ov_vocs_record *record = find_recording_of_recorder(self, socket);
+    
+    if (record){
+        ov_vocs_record_reset_active(record);
+    }
 
 error:
     return;
@@ -950,18 +1035,55 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
-                                      const char *loop) {
+                                      const char *loop,
+                                      const char *uuid) {
 
     ov_json_value *out = NULL;
     ov_json_value *par = NULL;
 
+    ov_vocs_record *record = NULL;
+
     if (!self || !loop) goto error;
+
+    record = ov_dict_get(self->recordings, loop);
+    if (!record){
+
+        ov_vocs_record_config conf = {0};
+        strncpy(conf.loopname, loop, OV_MC_LOOP_NAME_MAX);
+        record = ov_vocs_record_create(conf);
+
+        if (!ov_dict_set(self->recordings, ov_string_dup(loop), record, NULL))
+            goto error;
+
+    }
+
+    if (record->active.running){
+
+        self->config.callbacks.start_record(
+            self->config.callbacks.userdata,
+            uuid,
+            (ov_result){
+                .error_code = OV_ERROR_CODE_ALREADY_SET,
+                .message = "Loop already recorded."
+            });
+
+        goto error;
+
+    }
 
     ov_socket_configuration socket =
         ov_vocs_db_get_multicast_group(self->config.vocs_db, loop);
 
     if (0 == socket.host[0]) {
-        ov_log_error("No socket config for loop %s", loop);
+
+        self->config.callbacks.start_record(
+            self->config.callbacks.userdata,
+            uuid,
+            (ov_result){
+                .error_code = OV_ERROR_CODE_DESTINATION_UNKNOWN,
+                .message = "No multicast socket avaliable for loop"
+            });
+
         goto error;
     }
 
@@ -971,7 +1093,14 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
     ov_event_connection *conn = find_empty_recorder(self);
     if (!conn) {
 
-        ov_log_error("No recorder avaliable for loop %s", loop);
+        self->config.callbacks.start_record(
+            self->config.callbacks.userdata,
+            uuid,
+            (ov_result){
+                .error_code = OV_ERROR_NO_RESOURCE,
+                .message = "No recorder avaliable for loop"
+            });
+
         goto error;
     }
 
@@ -980,24 +1109,24 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
     ov_event_connection_set_json(conn, OV_KEY_EMPTY, f);
     f = ov_json_value_free(f);
 
-    out = ov_event_api_message_create(OV_EVENT_START_RECORD, 0, 0);
+    out = ov_event_api_message_create(OV_EVENT_START_RECORD, uuid, 0);
     par = ov_event_api_set_parameter(out);
+
     if (!ov_recorder_event_start_to_json(par, &event)) {
         out = ov_json_value_free(out);
+
+        self->config.callbacks.start_record(
+            self->config.callbacks.userdata,
+            uuid,
+            (ov_result){
+                .error_code = OV_ERROR_CODE_PROCESSING_ERROR,
+                .message = OV_ERROR_DESC_PROCESSING_ERROR
+            });
+
         goto error;
     }
 
-    ov_vocs_record_config conf = {0};
-    strncpy(conf.loopname, loop, OV_MC_LOOP_NAME_MAX);
-
-    ov_vocs_record *rec = ov_vocs_record_create(conf);
-
-    if (!rec) goto error;
-
-    rec->active.recorder = ov_event_connection_get_socket(conn);
-
-    if (!ov_dict_set(self->recordings, ov_string_dup(loop), rec, NULL))
-        goto error;
+    record->active.recorder = ov_event_connection_get_socket(conn);
 
     ov_log_debug("Activated recording for Loop %s", loop);
 
@@ -1014,25 +1143,54 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop) {
+bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop, const char *uuid) {
 
     if (!self || !loop) goto error;
 
     ov_vocs_record *rec = ov_dict_get(self->recordings, loop);
-    if (!rec) goto error;
+    if (!rec) {
+
+        self->config.callbacks.stop_record(
+            self->config.callbacks.userdata,
+            uuid,
+            (ov_result){
+                .error_code = OV_ERROR_NOT_RECORDING,
+                .message = OV_ERROR_DESC_NOT_RECORDING
+            });
+
+        goto error;
+    }
 
     ov_recorder_event_stop stop_event = {0};
 
     ov_event_connection *conn =
         ov_dict_get(self->recorder, (void *)(intptr_t)rec->active.recorder);
-    if (!conn) goto error;
+
+    if (!conn) {
+
+        if (rec->active.running)
+            rec->active.running = false;
+        
+        self->config.callbacks.stop_record(
+            self->config.callbacks.userdata,
+            uuid,
+            (ov_result){
+                .error_code = OV_ERROR_NOT_RECORDING,
+                .message = "No recorder connected."
+            });
+
+        goto error;
+    }
 
     memcpy(stop_event.id, rec->active.id, 36);
 
     ov_json_value *msg =
-        ov_event_api_message_create(OV_EVENT_STOP_RECORD, 0, 0);
+        ov_event_api_message_create(OV_EVENT_STOP_RECORD, uuid, 0);
     ov_json_value *params = ov_event_api_set_parameter(msg);
     ov_recorder_event_stop_to_json(params, &stop_event);
+    
+    if (!ov_json_object_set(params, OV_KEY_LOOP, ov_json_string(loop)))
+        goto error;
 
     ov_event_connection_send(conn, msg);
     msg = ov_json_value_free(msg);
@@ -1055,6 +1213,45 @@ ov_json_value *ov_vocs_recorder_get_recording(
     if (!self) goto error;
 
     return ov_db_recordings_get_struct(self->db, MAX_RESULTS_PER_QUERY, params);
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool add_recorded_loop(const void *key, void *val, void *data){
+
+    if (!key) return true;
+
+    ov_vocs_record *record = (ov_vocs_record*) val;
+    ov_json_value *array = ov_json_value_cast(data);
+
+    if (record->active.running){
+
+        ov_json_value *out = ov_json_object();
+        ov_json_value *v = ov_json_string((char*)key);
+        ov_json_object_set(out, OV_KEY_LOOP, v);
+        ov_json_array_push(array, out);
+
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_vocs_recorder_get_recorded_loops(ov_vocs_recorder *self){
+
+    ov_json_value *out = NULL;
+
+    if (!self) goto error;
+
+    out = ov_json_array();
+
+    ov_dict_for_each(self->recordings, out, add_recorded_loop);
+
+    return out;
+
 error:
     return NULL;
 }
