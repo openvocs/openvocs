@@ -44,18 +44,21 @@ export function setup_connections(ov_Websocket) {
     // parse server url(s) and check for autologin
     let servers = [];
     let temp_auto_login = false;
-    for (let server of SIGNALING_SERVERS) {
-        let websocket_address = server.HOST_WEBSOCKET ?
-            "wss://" + window.location.hostname + server.HOST_WEBSOCKET : server.WEBSOCKET_URL;
+    for (let websocket of WEBSOCKET) {
+        for (let server of SIGNALING_SERVERS) {
+            let websocket_address = server.WEBSOCKET_URL ? server.WEBSOCKET_URL + websocket :
+                "wss://" + window.location.hostname + websocket;
 
-        let active_session = ov_Web_Storage.get_session(websocket_address);
-        let client_id = active_session ? active_session.client : undefined;
-        if (client_id !== undefined)
-            temp_auto_login = true;
-        if (server.PRIME)
-            servers.unshift({ "name": server.NAME, "address": websocket_address, "client_id": client_id });
-        else
-            servers.push({ "name": server.NAME, "address": websocket_address, "client_id": client_id });
+            let active_session = ov_Web_Storage.get_session(websocket_address);
+            let client_id = active_session ? active_session.client : undefined;
+            if (client_id !== undefined)
+                temp_auto_login = true;
+            let record = websocket === "/admin" ? server.RECORD : false;
+            if (server.PRIME && WEBSOCKET.indexOf(websocket) === 0)
+                servers.unshift({ "name": server.NAME, "address": websocket_address, "client_id": client_id, "record": record });
+            else
+                servers.push({ "name": server.NAME, "address": websocket_address, "client_id": client_id, "record": record });
+        }
     }
     auto_login = temp_auto_login;
 
@@ -65,7 +68,7 @@ export function setup_connections(ov_Websocket) {
         console.log("add server '" + server.name + "' -> " + server.address);
         let client_id = auto_login ? server.client_id : undefined;
 
-        let websocket = new ov_Websocket(server.name, server.address, client_id);
+        let websocket = new ov_Websocket(server.name, server.address, client_id, server.record);
         websocket.log_incoming_events = DEBUG_LOG_INCOMING_EVENTS;
         websocket.log_outgoing_events = DEBUG_LOG_OUTGOING_EVENTS;
         websocket.resend_events_after_timeout = false;

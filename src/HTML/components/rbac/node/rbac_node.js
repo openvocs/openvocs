@@ -36,6 +36,7 @@ export default class ov_RBAC_Node extends HTMLElement {
     #type;
     #value;
     #frozen;
+    #global;
     #subset;
 
     #node_name;
@@ -66,7 +67,7 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["type", "value", "frozen"];
+        return ["type", "value", "frozen", "global"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -78,6 +79,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#update_value(newValue);
         } else if (name === "frozen") {
             this.#update_frozen(this.hasAttribute("frozen"));
+        } else if (name === "global") {
+            this.#update_global(this.hasAttribute("global"));
         }
     }
 
@@ -106,6 +109,18 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     get frozen() {
         return this.hasAttribute("frozen");
+    }
+
+    set global(boolean) {
+        console.log("global", boolean)
+        if (boolean)
+            this.setAttribute("global", "");
+        else
+            this.removeAttribute("global")
+    }
+
+    get global() {
+        return this.hasAttribute("global");
     }
 
     set subset(id) {
@@ -209,8 +224,6 @@ export default class ov_RBAC_Node extends HTMLElement {
                 ...this.passive_linked_entries,
                 ...Object.fromEntries([...this.linked_nodes.entries()].filter(([node, permission]) => permission === null))
             };
-            if (this.node_id.startsWith("admin@"))
-                data.id = "admin";
         }
         return data;
     }
@@ -246,6 +259,10 @@ export default class ov_RBAC_Node extends HTMLElement {
         if (delete_button)
             delete_button.disabled = boolean;
 
+    }
+
+    #update_global(boolean) {
+        this.#global = boolean;
     }
 
     // -----------------------------------------------------------------
@@ -330,6 +347,9 @@ export default class ov_RBAC_Node extends HTMLElement {
 
         if (this.frozen)
             this.#update_frozen(this.frozen);
+
+        if (this.global)
+            this.#update_global(this.global);
 
         if (this.value)
             this.#update_value(this.value);

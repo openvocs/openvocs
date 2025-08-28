@@ -55,10 +55,7 @@ export function create_node(type, data, subset_id) {
     if (subset_id)
         element.subset = subset_id;
     if (data) {
-        if (type === "role" && data.id === "admin")
-            element.node_id = data.id + "@" + subset_id;
-        else
-            element.node_id = data.id;
+        element.node_id = data.id;
         element.node_name = data.name;
         element.node_abbreviation = data.abbreviation;
         if (type === "loop" && data.roles) {

@@ -30,19 +30,6 @@
     ---------------------------------------------------------------------------
 */
 
-// signaling connection -------------------------------------------------------
-SIGNALING_SERVERS = [
-    // User interface supports up to 3 back up server, more are not displayed.
-    // If no server id is flagged as prime, than the first server is treated as prime.
-    // For one server connection use either HOST_WEBSOCKET OR WEBSOCKET_URL,
-    // if HOST_WEBSOCKET is set, WEBSOCKET_URL is ignored.
-    // HOST_WEBSOCKET extends the host address
-    {
-        HOST_WEBSOCKET: ":8001/vocs",
-        NAME: "local"
-    }
-]
-
 // audio connection -----------------------------------------------------------
 ICE_SERVERS = [
     {
@@ -50,10 +37,6 @@ ICE_SERVERS = [
       username: "openvocs",
       credential: "2simple!"
     }
-    /*
-    {
-        'urls': 'stun:openvocs.net:33479'
-    }*/
 ];
 
 SHARED_MULTICAST_ADDRESSES = true;
@@ -61,7 +44,6 @@ SHARED_MULTICAST_ADDRESSES = true;
 PERS_ERROR_TIMEOUT = 5000;
 
 // extensions
-
 SIP = false;
 
 // ui options -----------------------------------------------------------------

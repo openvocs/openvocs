@@ -67,10 +67,18 @@ loops for grid layout ---------------------------------------------------------
 }
 
 :host([layout=grid_element]) #loop_volume #loop_volume_input {
-    width: initial;
+    width: 3rem;
     height: 100%;
     padding: 0 auto;
     background-clip: content-box;
+}
+
+:host([layout=grid_element]) #loop_volume #loop_volume_input::-webkit-slider-thumb {
+    width: 100%;
+}
+
+:host([layout=grid_element]) #loop_volume #loop_volume_input::-moz-range-thumb {
+    width: 100%;
 }
 
 #loop_volume #loop_volume_indicator_value {

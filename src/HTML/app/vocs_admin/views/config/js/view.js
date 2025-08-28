@@ -45,6 +45,7 @@ import ov_Dialog from "/components/dialog/dialog.js";
 import * as CSS from "/css/css.js";
 
 var Config_SIP;
+var Config_Recorder;
 
 const DOM = {
 };
@@ -58,6 +59,8 @@ export var logout_triggered;
 export async function init(view_id, container, type) {
     if (SIP)
         Config_SIP = await import("/extensions/sip/views/config/js/sip_config.js");
+    if (RECORDER)
+        Config_Recorder = await import("/extensions/recorder/views/config/js/recorder_config.js");
 
     VIEW_ID = view_id;
     view_container = container;
@@ -88,11 +91,25 @@ export async function init(view_id, container, type) {
     DOM.error_dialog = document.getElementById("error_dialog");
     DOM.error_dialog_title = DOM.error_dialog.querySelector("h3");
 
-    DOM.error_dialog_title.innerText = "Error Report"
+    DOM.error_dialog_title.innerText = "Error Report";
+
+    DOM.open_file_dialog = document.getElementById("open_file_dialog");
+    DOM.import_button = document.getElementById("import_button");
+    DOM.export_button = document.getElementById("export_button");
 
     if (!SIP) {
         document.getElementById("sip_page_button").style.display = "none";
         document.querySelector("#sip_page_button+label").style.display = "none";
+    }
+
+    if (!RECORDER) {
+        document.getElementById("recorder_page_button").style.display = "none";
+        document.querySelector("#recorder_page_button+label").style.display = "none";
+    }
+
+    if (!ALLOW_IMPORT_EXPORT) {
+        DOM.import_button.style.display = "none";
+        DOM.export_button.style.display = "none";
     }
 
     DOM.menu_button.addEventListener("click", () => {
@@ -109,10 +126,6 @@ export async function init(view_id, container, type) {
             detail: { origin: VIEW_ID }
         }));
     });
-
-    DOM.open_file_dialog = document.getElementById("open_file_dialog");
-    DOM.import_button = document.getElementById("import_button");
-    DOM.export_button = document.getElementById("export_button");
 
     DOM.import_button.onclick = function () {
         DOM.open_file_dialog.click();
@@ -142,6 +155,8 @@ export async function init(view_id, container, type) {
     await Config_Layout.init(document.getElementById("layout_page"));
     if (SIP)
         await Config_SIP.init(document.getElementById("sip_page"));
+    if (RECORDER)
+        await Config_Recorder.init(document.getElementById("recorder_page"));
 
     DOM.save_button.addEventListener("click", async () => {
         let config;
@@ -155,31 +170,12 @@ export async function init(view_id, container, type) {
         await save(config, type, true);
     });
 
-    view_container.addEventListener("delete_node", async (event) => {
-        let node = event.detail.node;
-        DOM.loading_screen.show("Deleting " + node.type + " with id " + node.node_id + " on server(s)...");
-        let errors = [];
-        for (let websocket of ov_Websockets.list) {
-            if (!await ov_DB.erase(node.type, node.node_id, websocket)) {
-                errors.push(websocket);
-            }
-        }
-
-        DOM.loading_screen.hide();
-
-        DOM.error_dialog_title.innerText = "Deleting " + node.type + " with id " + node.node_id + " failed on following server(s):";
-        DOM.error_report.innerText = "";
-        for (let error of errors) {
-            console.log(error)
-            DOM.error_report.innerText += error.server_name + "\n\n"
-        }
-        DOM.error_dialog.showModal();
-    });
-
     view_container.addEventListener("delete_project", async () => {
         DOM.loading_screen.show("Deleting project on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
+            if (websocket.port !== "db")
+                continue;
             let project = Project_Settings.collect();
             if (!await ov_DB.delete_project(project.domain, project.id, websocket)) {
                 errors.push(websocket);
@@ -208,6 +204,8 @@ export async function init(view_id, container, type) {
         DOM.loading_screen.show("Deleting domain on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
+            if (websocket.port !== "db")
+                continue;
             let domain = Domain_Settings.collect();
             if (!await ov_DB.delete_domain(domain.id, websocket)) {
                 errors.push(websocket);
@@ -240,6 +238,8 @@ export async function init(view_id, container, type) {
         let settings = Config_Settings.collect();
         let errors = [];
         for (let websocket of ov_Websockets.list) {
+            if (websocket.port !== "db")
+                continue;
             if (!await ov_DB.user_ldap_import(event.detail.host, event.detail.base,
                 settings.id, event.detail.user, event.detail.password, websocket)) {
                 errors.push(websocket);
@@ -314,6 +314,9 @@ async function save(new_config, type, persist) {
         let errors = [];
         for (let websocket of ov_Websockets.list) {
 
+            if (websocket.port !== "db")
+                continue;
+
             //save layout
             if (type === "domain") {
                 let layout_name = window.innerHeight + "x" + window.innerWidth;
@@ -325,88 +328,14 @@ async function save(new_config, type, persist) {
             if (type === "project" && !await ov_DB.check_id(new_config.id, type, websocket))
                 result = await ov_DB.create(type, new_config.id, "domain", new_config.domain, websocket);
 
-            let server_conf;
-            if (result)
-                server_conf = await ov_DB.get_config(type, new_config.id, websocket);
-            if (!server_conf)
-                result = false;
-
             if (result) {
-                let create_requests = [];
-                for (let user_id of Object.keys(new_config.users)) {
-                    if (!server_conf.users || !server_conf.users[user_id]) {
-                        if ("admin" || !await ov_DB.check_id(user_id, "user", websocket))
-                            create_requests.push(ov_DB.create("user", user_id, type, new_config.id, websocket));
-                        else {
-                            errors.push({
-                                server_name: websocket.server_name,
-                                description: "user ID " + user_id + " already exists."
-                            });
-                            result = false;
-                        }
-                    }
-                }
-                for (let role_id of Object.keys(new_config.roles)) {
-                    if (!server_conf.roles || !server_conf.roles[role_id]) {
-                        if ("admin" || !await ov_DB.check_id(role_id, "role", websocket))
-                            create_requests.push(ov_DB.create("role", role_id, type, new_config.id, websocket));
-                        else {
-                            errors.push({
-                                server_name: websocket.server_name,
-                                description: "role ID " + role_id + " already exists."
-                            });
-                            result = false;
-                        }
-                    }
-                }
-                for (let loop_id of Object.keys(new_config.loops)) {
-                    if (!server_conf.loops || !server_conf.loops[loop_id]) {
-                        if (!await ov_DB.check_id(loop_id, "loop", websocket))
-                            create_requests.push(ov_DB.create("loop", loop_id, type, new_config.id, websocket));
-                        else {
-                            errors.push({
-                                server_name: websocket.server_name,
-                                description: "loop ID " + loop_id + " already exists."
-                            });
-                            result = false;
-                        }
-                    }
-                }
-                if (result) {
-                    result = await Promise.all(create_requests);
-                    result = !result.includes(false);
-                }
+                result = await ov_DB.update(type, new_config, websocket);
             }
 
             for (let user_id of Object.keys(new_config.users)) {
                 let user = Config_RBAC.users().get(user_id);
                 if (result && user.node_password)
                     result = await ov_DB.update_password(user.node_id, user.node_password);
-            }
-
-            if (result) {
-                result = await ov_DB.update(type, new_config, websocket);
-            }
-
-            if (result) {
-                let delete_requests = [];
-                if (server_conf.users)
-                    for (let user_id of Object.keys(server_conf.users)) {
-                        if (!new_config.users[user_id])
-                            delete_requests.push(ov_DB.delete_user(user_id, websocket));
-                    }
-                if (server_conf.roles)
-                    for (let role_id of Object.keys(server_conf.roles)) {
-                        if (!new_config.roles[role_id])
-                            delete_requests.push(ov_DB.delete_role(role_id, websocket));
-                    }
-                if (server_conf.loops)
-                    for (let loop_id of Object.keys(server_conf.loops)) {
-                        if (!new_config.loops[loop_id])
-                            delete_requests.push(ov_DB.delete_loop(loop_id, websocket));
-                    }
-                result = await Promise.all(delete_requests);
-                result = !result.includes(false);
             }
 
             if (!result && websocket.server_error) {
@@ -416,7 +345,7 @@ async function save(new_config, type, persist) {
                 });
             }
             if (persist)
-                ov_DB.persist(websocket);
+                await ov_DB.persist(websocket);
         }
 
         DOM.loading_screen.delayed_hide();
@@ -465,6 +394,9 @@ export async function render_project(project, domain, id, domain_id) {
             let dom_config = collect_config({ id: proj_config.domain });
             let roles = { ...proj_config.roles, ...dom_config.roles };
             Config_SIP.render(proj_config.loops, roles);
+        } else if (DOM.sub_view_nav.value === "recorder" && RECORDER) {
+            let proj_config = collect_config();
+            Config_Recorder.render(proj_config.loops);
         }
     });
     DOM.sub_view_nav.value = "settings";
@@ -477,6 +409,9 @@ export async function render_project(project, domain, id, domain_id) {
     let roles = { ...project.roles, ...domain.roles };
     if (SIP)
         Config_SIP.render(project.loops, roles);
+    if (RECORDER)
+        Config_Recorder.render(project.loops);
+
 }
 
 export async function render_domain(domain, id) {
@@ -506,6 +441,9 @@ export async function render_domain(domain, id) {
                     roles = { ...roles, ...domain.projects[project_id].roles };
             }
             Config_SIP.render(config.loops, roles);
+        } else if (DOM.sub_view_nav.value === "recorder" && RECORDER) {
+            let config = collect_config();
+            Config_Recorder.render(config.loops);
         }
     });
     DOM.sub_view_nav.value = "settings";
@@ -527,10 +465,19 @@ export async function render_domain(domain, id) {
         }
         Config_SIP.render(domain.loops, roles);
     }
+    if (RECORDER) 
+        Config_Recorder.render(domain.loops);
 }
 
 export function offline_mode(value) {
     view_container.classList.toggle("offline", value);
     DOM.save_button.disabled = value;
     Config_Settings.offline_mode(value);
+}
+
+export function display_loading_screen(value, message) {
+    if (value)
+        DOM.loading_screen.show(message);
+    else
+        DOM.loading_screen.hide();
 }

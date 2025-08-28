@@ -26,41 +26,33 @@
 SIGNALING_SERVERS = [
     // User interface supports up to 1 back up server, more are not displayed.
     // If no server id is flagged as prime, than the first server is treated as prime.
-    // Use either HOST_WEBSOCKET OR WEBSOCKET_URL for one entry,
-    // if HOST_WEBSOCKET is set, WEBSOCKET_URL is ignored.
-    // HOST_WEBSOCKET extends the host address
-    
+    // If you want to use the host address only define a name
+    // otherwise define a WEBSOCKET_URL
     {
-	    HOST_WEBSOCKET: "/vocs",
-        NAME: "localhost"
-    },
-    // {
-    //     PRIME: true,
-    //     WEBSOCKET_URL: "wss://openvocs.eu/vocs",
-    //     NAME: "openvocs.eu"
-    // }
-];
-
-// audio connection -----------------------------------------------------------
-ICE_SERVERS = [
-    {
-        urls: "stun:openvocs.eu:33534"
+       NAME: "local",
+       RECORD: true
     }
-];
+    // {
+    //     WEBSOCKET_URL: "wss://openvocs.net",
+    //     NAME: "openvocs.net",
+    //     //RECORD: true
+    //     //PRIME: true
+    // }
+]
 
 SHARED_MULTICAST_ADDRESSES = true;
 
-// extensions
-SIP = false;
+// extensions -----------------------------------------------------------------
+SIP = true;
+RECORDER = true;
 
-// ui options -----------------------------------------------------------------
+// general options ------------------------------------------------------------
 COLOR_MODE = "dark"; // "dark" || "light"
 ACTIVITY_CONTENT = "id"; // "id" || "role"
 
-// scale ----------------------------------------------------------------------
 SITE_SCALING_FACTOR = 1.0;
 
-// mute/ptt trigger -----------------------------------------------------------
+// voice interface ------------------------------------------------------------
 SECURE_VOICE_PTT = false; //e.g. when using hardware ptt button with secure voice
 
 PTT = true; // if ptt is false an mute/unmute button is displayed instead
@@ -72,3 +64,9 @@ MUTE_KEY_NAME = "space bar";
 MUTE_FULLSCREEN_BUTTON = false;
 
 MULTI_TALK = false; //allow to talk in several loops at the same time
+
+SCREEN_KEYBOARD = true;
+
+// admin interface ------------------------------------------------------------
+DEFAULT_MULTICAST_ADDRESS = "";
+// ALLOW_IMPORT_EXPORT = false;

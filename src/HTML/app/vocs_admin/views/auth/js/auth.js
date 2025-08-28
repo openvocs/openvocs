@@ -72,7 +72,5 @@ async function loadCSS() {
 function disconnect_handler() {
     console.log("(login) logged out");
     console.warn("(login) Lead server disconnected.");
-    let error = ov_Websockets.prime_websocket.server_error;
-    let error_code = error ? error.code : undefined;
-    View.display_disconnect_notice(error_code === 5000);
+    View.display_disconnect_notice(ov_Websockets.prime_websocket.server_error);
 }

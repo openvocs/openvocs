@@ -52,6 +52,7 @@ OV_LIBS       += -l ov_core2
 OV_LIBS       += -l ov_encryption2
 OV_LIBS       += -l ov_codec2
 OV_LIBS       += -l ov_pcm16s2
+OV_LIBS       += -l ov_pcm_gen2
 
 OV_LIBS       += -l m
 OV_LIBS       += -pthread

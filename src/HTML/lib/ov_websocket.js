@@ -97,7 +97,11 @@ export default class ov_Websocket {
 
     #event_target;
 
-    constructor(name, url, client_id) {
+    #show_port = false;
+
+    #record;
+
+    constructor(name, url, client_id, record) {
         this.#name = name;
         this.#url = url;
         this.#client_id = client_id ? client_id : create_uuid();
@@ -106,10 +110,14 @@ export default class ov_Websocket {
         this.log_outgoing_events = false;
         this.#ws_state = ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
         this.#pending_requests = new Set();
+        this.#record = record;
 
         this.#event_target = new EventTarget();
         this.addEventListener = this.#event_target.addEventListener.bind(this.#event_target);
         this.removeEventListener = this.#event_target.removeEventListener.bind(this.#event_target);
+
+        if (this.port !== "vocs")
+            this.#show_port = true;
     }
 
     /**
@@ -142,7 +150,11 @@ export default class ov_Websocket {
     }
 
     get server_url() {
-        return "https://" + this.#url.slice(6, this.#url.lastIndexOf("/")+1); // remove wss:// and /vocs from websocket url
+        return "https://" + this.#url.slice(6, this.#url.lastIndexOf("/") + 1); // remove wss:// and /vocs from websocket url
+    }
+
+    get port() {
+        return this.#url.slice(this.#url.lastIndexOf("/") + 1);
     }
 
     get websocket_url() {
@@ -171,20 +183,24 @@ export default class ov_Websocket {
         return this.#pending_requests.size;
     }
 
+    get record() {
+        return this.#record;
+    }
+
     //-----------------------------------------------------------------------------
     // websocket
     //-----------------------------------------------------------------------------
     connect() {
         return new Promise((resolve, reject) => {
             if (!this.is_connecting) {
-                console.log("(" + this.#name + " gateway) client id: " + this.#client_id);
-                console.log("(" + this.#name + " gateway) connect to websocket " + this.#url);
+                console.log(this.#log_prefix() + "client id: " + this.#client_id);
+                console.log(this.#log_prefix() + "connect to websocket " + this.#url);
                 this.#pending_requests = new Set();
 
                 this.#websocket = new WebSocket(this.#url);
 
                 this.#websocket.onclose = (event) => {
-                    console.log("close")
+                    console.log(this.#log_prefix() + "close")
                     this.#handel_close_websocket(event);
                     reject(false);
                 };
@@ -194,7 +210,7 @@ export default class ov_Websocket {
                 };
 
                 this.#websocket.onopen = () => {
-                    console.log("(" + this.#name + " gateway) connected");
+                    console.log(this.#log_prefix() + "connected");
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.CONNECTED;
                     this.#event_target.dispatchEvent(new CustomEvent("connected"));
                     this.#error = undefined;
@@ -202,7 +218,7 @@ export default class ov_Websocket {
                 };
 
                 this.#websocket.onerror = (error) => {
-                    console.error("(" + this.#name + " gateway) websocket error", error);
+                    console.error(this.#log_prefix() + "websocket error", error);
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
                     this.#error = { description: "Websocket Error. Websocket closed with", code: 1006 };
                     reject(false);
@@ -215,7 +231,7 @@ export default class ov_Websocket {
 
 
     disconnect() {
-        console.log("(" + this.#name + " gateway) disconnect websocket");
+        console.log(this.#log_prefix() + "disconnect websocket");
         this.#websocket.close();
     }
 
@@ -230,10 +246,10 @@ export default class ov_Websocket {
 
     #handel_close_websocket(event) {
         if (event)
-            console.warn("(" + this.#name + " gateway) Websocket closed. Code: " + event.code +
+            console.warn(this.#log_prefix() + "Websocket closed. Code: " + event.code +
                 ", reason: " + event.reason, + ", clean: " + event.wasClean);
         else
-            console.warn("(" + this.#name + " gateway) Websocket closing. Triggered by client.");
+            console.warn(this.#log_prefix() + "Websocket closing. Triggered by client.");
         this.#ws_state = ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
 
         if (this.#user) {
@@ -259,13 +275,15 @@ export default class ov_Websocket {
     #handle_websocket_event(event) {
         if (this.#log_incoming_events) {
             if (event.event === ov_Websocket.EVENT.LOGIN)
-                console.log("(" + this.#name + " gateway) incoming event: LOGIN (content hidden)");
+                console.log(this.#log_prefix() + "incoming event: LOGIN (content hidden)");
+            else if (event.event === "ldap_import")
+                console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
             else
-                console.log("(" + this.#name + " gateway) incoming event", JSON.stringify(event));
+                console.log(this.#log_prefix() + "incoming event", JSON.stringify(event));
         }
 
         if (!event.hasOwnProperty("event")) {
-            console.error("(" + this.#name + " gateway) No event ID in incoming event.");
+            console.error(this.#log_prefix() + "No event ID in incoming event.");
             return;
         }
 
@@ -287,14 +305,14 @@ export default class ov_Websocket {
             this.#error = event.error;
             error = event.error;
             error.temp_error = error.code >= 50000;
-            console.error("(" + this.#name + " gateway) Error " + this.#error.code + ": " + this.#error.description);
+            console.error(this.#log_prefix() + "Error " + this.#error.code + ": " + this.#error.description);
 
             if (error.code === 5000) { // Auth error
-                console.log("(" + this.server_name + ") clear session");
+                console.log("(" + this.#url + ") clear session");
                 ov_Web_Storage.clear(this.#url);
             }
         } else if (!event.hasOwnProperty("response") && !event.hasOwnProperty("parameter")) {
-            console.error("(" + this.#name + " gateway) received no response or parameter in " + event.event);
+            console.error(this.#log_prefix() + "received no response or parameter in " + event.event);
             if (this.#client_id === event.client) {// answer to request
                 if (!error)
                     error = new Format_Error();
@@ -318,14 +336,16 @@ export default class ov_Websocket {
             let message = JSON.stringify(event);
             if (this.#log_outgoing_events) {
                 if (event.event === ov_Websocket.EVENT.LOGIN)
-                    console.log("(" + this.#name + " gateway) outgoing event: LOGIN (content hidden)");
+                    console.log(this.#log_prefix() + "outgoing event: LOGIN (content hidden)");
+                else if (event.event === "ldap_import")
+                    console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
                 else
-                    console.log("(" + this.#name + " gateway) outgoing event", message);
+                    console.log(this.#log_prefix() + "outgoing event", message);
             }
             this.#pending_requests.add(event.uuid);
             this.#websocket.send(message);
         } else
-            console.error("(" + this.#name + " gateway) WebSocket is not open - WebSocket readyState is " +
+            console.error(this.#log_prefix() + "WebSocket is not open - WebSocket readyState is " +
                 this.#websocket.readyState);
     }
 
@@ -347,13 +367,13 @@ export default class ov_Websocket {
             let timeout;
             let timeout_handler = () => {
                 if (this.#resend_events) {
-                    console.warn("(" + this.#name + " gateway) Still waiting for response. Resending event...",
+                    console.warn(this.#log_prefix() + "Still waiting for response. Resending event...",
                         event.event, event.uuid);
                     this.#send_event(event);
                     if (!!SIGNALING_REQUEST_TIMEOUT)
                         timeout = setTimeout(timeout_handler, SIGNALING_REQUEST_TIMEOUT);
                 } else if (event.event !== ov_Websocket.EVENT.LOGOUT) {
-                    console.warn("(" + this.#name + " gateway) Still waiting for response...", event.event, event.uuid);
+                    console.warn(this.#log_prefix() + "Still waiting for response...", event.event, event.uuid);
                 }
             }
 
@@ -483,6 +503,15 @@ export default class ov_Websocket {
         if (this.is_ready || this.authenticated)
             return this.#request(this.#create_event(ov_Websocket.EVENT.LOGOUT));
         return true;
+    }
+
+    //-----------------------------------------------------------------------------
+    // logging
+    //-----------------------------------------------------------------------------
+    #log_prefix() {
+        if (this.#show_port)
+            return "(" + this.server_name + "/" + this.port + " websocket) ";
+        return "(" + this.server_name + " websocket) ";
     }
 }
 

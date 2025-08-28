@@ -32,3 +32,16 @@
     z-index: 100;
     width: 10rem;
 }
+
+/* .grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  max-width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .grid-container {
+    grid-template-columns: repeat(5, 1fr); /* No more than 5 columns */
+ /* }
+}*/

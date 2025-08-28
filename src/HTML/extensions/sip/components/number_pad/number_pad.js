@@ -103,20 +103,23 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
             this.#keyboard.setCaretPosition(e.target.selectionStart);
         });
 
-        let Keyboard = window.SimpleKeyboard.default;
+        if(window.SimpleKeyboard.default){
+            let Keyboard = window.SimpleKeyboard.default;
+    
+            this.#keyboard = new Keyboard(dialButtons, {
+                onChange: input => this.#on_change(input),
+                onKeyPress: button => this.#on_key_press(button),
+                layout: {
+                    default: ["1 2 3", "4 5 6", "7 8 9", "+ 0 {bksp}"]
+                },
+                theme: "hg-theme-default ov_sip_keyboard numeric-theme",
+                display: {
+                    "{bksp}": '<img src="/images/fluent-ui-system-icons/backspace.svg">'
+                },
+                preventMouseDownDefault: false
+            });
+        }
 
-        this.#keyboard = new Keyboard(dialButtons, {
-            onChange: input => this.#on_change(input),
-            onKeyPress: button => this.#on_key_press(button),
-            layout: {
-                default: ["1 2 3", "4 5 6", "7 8 9", "+ 0 {bksp}"]
-            },
-            theme: "hg-theme-default ov_sip_keyboard numeric-theme",
-            display: {
-                "{bksp}": '<img src="/images/fluent-ui-system-icons/backspace.svg">'
-            },
-            preventMouseDownDefault: false
-        });
     }
 
     #on_change(input) {
