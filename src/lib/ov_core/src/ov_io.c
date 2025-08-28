@@ -79,6 +79,19 @@ typedef struct Connection {
 
     } tls;
 
+    struct {
+
+        bool (*callback)(int, uint8_t, void *);
+
+        struct {
+
+            ov_buffer *buffer;
+            ov_list *queue;
+
+        } out;
+
+    } io_data;
+
     uint32_t timer_id;
 
 } Connection;
@@ -159,6 +172,8 @@ static void *connection_free(void *self) {
             ov_log_error("failed to enable auto reconnect");
         }
     }
+
+    conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
 
     conn = ov_data_pointer_free(conn);
     return NULL;
@@ -637,6 +652,59 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
 /*----------------------------------------------------------------------------*/
 
+static bool stream_send(ov_io *self, Connection *conn){
+
+    if (!self || !conn) goto error;
+
+    ssize_t bytes = 0;
+
+    if (conn->io_data.out.buffer) {
+
+        bytes = send(conn->socket, conn->io_data.out.buffer->start, conn->io_data.out.buffer->length,0);
+        if (bytes < 1){
+            goto done;
+        } else {
+            conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+            goto done;
+        }
+
+    } else {
+
+        ov_buffer *buffer = ov_list_queue_pop(conn->io_data.out.queue);
+        
+        if (!buffer) {
+
+            ov_event_loop *loop = self->config.loop;
+
+            if (!loop->callback.set(loop,
+                            conn->socket,
+                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                OV_EVENT_IO_CLOSE,
+                            self,
+                            conn->io_data.callback))
+            goto error;
+
+        } else {
+
+            bytes = send(conn->socket, buffer->start, buffer->length,0);
+            if (bytes > 1){
+                buffer = ov_buffer_free(buffer);
+                goto done;
+            } else {
+                conn->io_data.out.buffer = buffer;
+                goto done;
+            }
+        }
+    }
+    
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool io_stream(int socket, uint8_t events, void *data) {
 
     ov_io *self = ov_io_cast(data);
@@ -649,6 +717,8 @@ static bool io_stream(int socket, uint8_t events, void *data) {
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto done;
     }
+
+    if (events & OV_EVENT_IO_OUT) return stream_send(self, conn);
 
     if (!(events & OV_EVENT_IO_IN)) goto error;
 
@@ -782,6 +852,60 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool io_stream_ssl_send(ov_io *self, Connection *conn){
+
+    if (!self || !conn) goto error;
+    if (!conn->tls.ssl) goto error;
+
+    ssize_t bytes = 0;
+
+    if (conn->io_data.out.buffer) {
+
+        bytes = SSL_write(conn->tls.ssl, conn->io_data.out.buffer->start, conn->io_data.out.buffer->length);
+        if (bytes < 1){
+            goto done;
+        } else {
+            conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+            goto done;
+        }
+
+    } else {
+
+        ov_buffer *buffer = ov_list_queue_pop(conn->io_data.out.queue);
+        
+        if (!buffer) {
+
+            ov_event_loop *loop = self->config.loop;
+
+            if (!loop->callback.set(loop,
+                            conn->socket,
+                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                OV_EVENT_IO_CLOSE,
+                            self,
+                            conn->io_data.callback))
+                goto error;
+
+        } else {
+
+            bytes = SSL_write(conn->tls.ssl, buffer->start, buffer->length);
+            if (bytes > 0){
+                buffer = ov_buffer_free(buffer);
+                goto done;
+            } else {
+                conn->io_data.out.buffer = buffer;
+                goto done;
+            }
+        }
+    }
+    
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
     char errorstring[OV_SSL_ERROR_STRING_BUFFER_SIZE] = {0};
@@ -804,9 +928,11 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
         goto done;
     }
 
-    if (!(events & OV_EVENT_IO_IN)) goto error;
-
     if (!conn->tls.handshaked) return tls_perform_handshake(self, conn);
+
+    if (events & OV_EVENT_IO_OUT) return io_stream_ssl_send(self, conn);
+
+    if (!(events & OV_EVENT_IO_IN)) goto error;
 
     ssize_t bytes = SSL_read(conn->tls.ssl, buffer, OV_SSL_MAX_BUFFER);
 
@@ -931,6 +1057,10 @@ static Connection *accept_stream_base(ov_io *self,
     conn->io = self;
     conn->created_usec = ov_time_get_current_time_usecs();
     conn->last_update_usec = 0;
+    conn->io_data.callback = callback;
+    conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
+    conn->io_data.out.queue = ov_linked_list_create(
+                    (ov_list_config){.item.free = ov_buffer_free});
 
     if (!ov_event_loop_set(self->config.loop,
                            nfd,
@@ -1563,6 +1693,71 @@ error:
     return false;
 }
 
+
+/*----------------------------------------------------------------------------*/
+
+static bool io_ssl_client(int socket, uint8_t events, void *data) {
+
+    size_t size = OV_SSL_MAX_BUFFER;
+    uint8_t buffer[size];
+    memset(buffer, 0, size);
+
+    ov_io *self = ov_io_cast(data);
+    if (!self) goto error;
+
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    if (!conn) goto error;
+
+    conn->last_update_usec = ov_time_get_current_time_usecs();
+
+    OV_ASSERT(self);
+
+    if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+        ov_dict_del(self->connections, (void *)(intptr_t)socket);
+        return true;
+    }
+
+    if (!conn->tls.handshaked) return tls_perform_client_handshake(conn);
+
+    if (!(events & OV_EVENT_IO_OUT)) return io_stream_ssl_send(self, conn);
+
+    if (!(events & OV_EVENT_IO_IN)) goto error;
+
+    ssize_t bytes = SSL_read(conn->tls.ssl, buffer, size);
+
+    if (0 == bytes) {
+
+        ov_dict_del(self->connections, (void *)(intptr_t)socket);
+        return false;
+
+    } else if (-1 == bytes) {
+
+        if (errno != EAGAIN) {
+            ov_dict_del(self->connections, (void *)(intptr_t)socket);
+            return false;
+
+        } else {
+
+            return true;
+        }
+
+    } else {
+
+        if (conn->config.callbacks.io) {
+
+            return conn->config.callbacks.io(
+                conn->config.callbacks.userdata,
+                conn->socket,
+                NULL,
+                (ov_memory_pointer){.start = buffer, .length = bytes});
+        }
+    }
+
+    return true;
+error:
+    return false;
+}
+
 /*----------------------------------------------------------------------------*/
 
 static bool init_ssl_client(ov_io *self, Connection *conn) {
@@ -1637,6 +1832,7 @@ static bool init_ssl_client(ov_io *self, Connection *conn) {
 
     conn->tls.ssl = SSL_new(conn->tls.ctx);
     if (!conn->tls.ssl) goto error;
+    conn->io_data.callback = io_ssl_client;
 
     /* create read bio */
 
@@ -1667,67 +1863,6 @@ error:
     return false;
 }
 
-/*----------------------------------------------------------------------------*/
-
-static bool io_ssl_client(int socket, uint8_t events, void *data) {
-
-    size_t size = OV_SSL_MAX_BUFFER;
-    uint8_t buffer[size];
-    memset(buffer, 0, size);
-
-    ov_io *self = ov_io_cast(data);
-    if (!self) goto error;
-
-    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
-    if (!conn) goto error;
-
-    conn->last_update_usec = ov_time_get_current_time_usecs();
-
-    OV_ASSERT(self);
-
-    if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
-        ov_dict_del(self->connections, (void *)(intptr_t)socket);
-        return true;
-    }
-
-    if (!conn->tls.handshaked) return tls_perform_client_handshake(conn);
-
-    if (!(events & OV_EVENT_IO_IN)) goto error;
-
-    ssize_t bytes = SSL_read(conn->tls.ssl, buffer, size);
-
-    if (0 == bytes) {
-
-        ov_dict_del(self->connections, (void *)(intptr_t)socket);
-        return false;
-
-    } else if (-1 == bytes) {
-
-        if (errno != EAGAIN) {
-            ov_dict_del(self->connections, (void *)(intptr_t)socket);
-            return false;
-
-        } else {
-
-            return true;
-        }
-
-    } else {
-
-        if (conn->config.callbacks.io) {
-
-            return conn->config.callbacks.io(
-                conn->config.callbacks.userdata,
-                conn->socket,
-                NULL,
-                (ov_memory_pointer){.start = buffer, .length = bytes});
-        }
-    }
-
-    return true;
-error:
-    return false;
-}
 
 /*----------------------------------------------------------------------------*/
 
@@ -1870,7 +2005,59 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
     Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
     if (!conn) goto error;
 
+    ov_event_loop *loop = self->config.loop;
+
     SSL *ssl = conn->tls.ssl;
+
+    /* Ensure outgoing readiness listening */
+
+    if (!loop->callback.set(loop,
+                            socket,
+                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                OV_EVENT_IO_CLOSE | OV_EVENT_IO_OUT,
+                            self,
+                            conn->io_data.callback))
+        goto error;
+
+    size_t max = ov_socket_get_send_buffer_size(socket);
+    if (max < buffer.length) {
+
+        ov_buffer *temp = NULL;
+        ssize_t open = buffer.length;
+        uint8_t *ptr = (uint8_t*) buffer.start;
+        size_t len = 0;
+
+        while (open > 0) {
+
+            temp = ov_buffer_create(max);
+            if (!temp) goto error;
+
+            if (open > (ssize_t)max) {
+                len = max;
+            } else {
+                len = (size_t)open;
+            }
+
+            if (!ov_buffer_set(temp, ptr, len)) {
+                temp = ov_buffer_free(temp);
+                goto error;
+            }
+
+            if (!ov_list_queue_push(conn->io_data.out.queue, temp)) {
+                temp = ov_buffer_free(temp);
+                goto error;
+            }
+
+            temp = NULL;
+            open = open - max;
+
+            if (open > 0) ptr = ptr + max;
+        }
+
+        /* Return here to not increase io counters, and let processing be done
+         * in next eventloop run */
+        return true;
+    }
 
     ssize_t bytes = 0;
 
@@ -1880,7 +2067,16 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
         bytes = send(socket, buffer.start, buffer.length, 0);
     }
 
-    if (bytes < 1) goto error;
+    if (bytes < 1) {
+
+        ov_buffer *temp = ov_buffer_create(buffer.length);
+        ov_buffer_set(temp, buffer.start, buffer.length);
+
+        if (!ov_list_queue_push(conn->io_data.out.queue, temp)) {
+            temp = ov_buffer_free(temp);
+            goto error;
+        }
+    }
 
     return true;
 
