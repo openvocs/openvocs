@@ -30,6 +30,12 @@ Copyright   2017        German Aerospace Center DLR e.V.,
      If a new codec instance is required for a particular codec type,
      it can be requested.
 
+     This implementation uses a default global factory if none is given.
+     This global factory must be freed at the end of the program.
+     You can rely on ov_teardown for that:
+
+     Just call ov_teardown() at the end of your program.
+
  **/
 
 #ifndef ov_codec_factory_h

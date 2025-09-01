@@ -43,6 +43,7 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_utils.h>
 #include <ov_base/ov_plugin_system.h>
+#include <ov_base/ov_teardown.h>
 
 /*****************************************************************************
                                  Global Factory
@@ -50,16 +51,19 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 
 static ov_codec_factory *g_factory = 0;
 
+static void free_global_codec_factory(void) {
+    g_factory = ov_codec_factory_free(g_factory);
+}
+
 /*----------------------------------------------------------------------------*/
 
 static ov_codec_factory *get_global_factory() {
-
     if (0 != g_factory) {
-
         return g_factory;
     }
 
     g_factory = ov_codec_factory_create_standard();
+    ov_teardown_register(free_global_codec_factory, "CODEC Factory");
 
     return g_factory;
 }
@@ -99,7 +103,6 @@ static codec_entry *find_entry(const codec_entry *list, const char *codec_name);
  ******************************************************************************/
 
 ov_codec_factory *ov_codec_factory_create() {
-
     ov_codec_factory *factory =
         calloc(1, sizeof(struct ov_codec_factory_struct));
 
@@ -109,26 +112,21 @@ ov_codec_factory *ov_codec_factory_create() {
 /*---------------------------------------------------------------------------*/
 
 ov_codec_factory *ov_codec_factory_create_standard() {
-
     ov_codec_factory *factory = ov_codec_factory_create();
 
     if (0 != ov_codec_raw_install(factory)) {
-
         goto error;
     }
 
     if (0 != ov_codec_pcm16_signed_install(factory)) {
-
         goto error;
     }
 
     if (0 != ov_codec_opus_install(factory)) {
-
         goto error;
     }
 
     if (0 != ov_codec_g711_install(factory)) {
-
         goto error;
     }
 
@@ -146,11 +144,9 @@ error:
 static size_t open_dls = 0;
 
 static void *open_dl_handle(char const *path) {
-
     void *handle = 0;
 
     if (ov_ptr_valid(path, "Cannot open SO: No path")) {
-
         handle = dlopen(path, RTLD_NOW);
 
         char *so_error = dlerror();
@@ -170,7 +166,6 @@ static void *open_dl_handle(char const *path) {
 /*----------------------------------------------------------------------------*/
 
 static void *close_dl_handle(void *handle) {
-
     if ((0 != handle) && (0 == dlclose(handle))) {
         --open_dls;
 
@@ -187,7 +182,6 @@ static void *close_dl_handle(void *handle) {
 /*----------------------------------------------------------------------------*/
 
 ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory) {
-
     if (0 == factory) {
         factory = get_global_factory();
         g_factory = 0;
@@ -198,7 +192,6 @@ ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory) {
     codec_entry *head = factory;
 
     while (0 != head->next) {
-
         head = head->next;
         free(factory);
         factory = head;
@@ -217,7 +210,6 @@ ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory) {
 
 static codec_entry *new_entry(ov_codec_factory *factory,
                               char const *codec_name) {
-
     codec_entry *entry = calloc(1, sizeof(codec_entry));
     entry->codec_name = ov_string_dup(codec_name);
     entry->next = factory->next;
@@ -234,15 +226,12 @@ static bool codec_factory_install_codec(ov_codec_factory *factory,
                                         ov_codec_generator generate_codec,
                                         void *dlhandle,
                                         ov_codec_generator *old_generator) {
-
     factory = OV_OR_DEFAULT(factory, get_global_factory());
 
     if ((0 == codec_name) || (0 == generate_codec)) {
-
         return false;
 
     } else {
-
         codec_entry *entry = find_entry(factory, codec_name);
 
         entry = OV_OR_DEFAULT(entry, new_entry(factory, codec_name));
@@ -266,23 +255,19 @@ static bool codec_factory_install_codec(ov_codec_factory *factory,
 /*----------------------------------------------------------------------------*/
 
 ov_codec_generator ov_codec_factory_install_codec(
-    ov_codec_factory *factory,
-    const char *codec_name,
+    ov_codec_factory *factory, const char *codec_name,
     ov_codec_generator generate_codec) {
-
     ov_codec_generator old_gen = 0;
-    codec_factory_install_codec(
-        factory, codec_name, generate_codec, 0, &old_gen);
+    codec_factory_install_codec(factory, codec_name, generate_codec, 0,
+                                &old_gen);
     return old_gen;
 }
 
 /*---------------------------------------------------------------------------*/
 
 ov_codec *ov_codec_factory_get_codec(ov_codec_factory *factory,
-                                     const char *codec_name,
-                                     uint32_t ssid,
+                                     const char *codec_name, uint32_t ssid,
                                      const ov_json_value *parameters) {
-
     if (0 == factory) {
         factory = get_global_factory();
     }
@@ -296,7 +281,6 @@ ov_codec *ov_codec_factory_get_codec(ov_codec_factory *factory,
     ov_codec *codec = 0;
 
     if ((0 != entry) && (0 != entry->next)) {
-
         OV_ASSERT(0 != entry->next->get_codec_for);
 
         codec = entry->next->get_codec_for(ssid, parameters);
@@ -319,7 +303,6 @@ error:
 
 static codec_entry *find_entry(const codec_entry *list,
                                const char *codec_name) {
-
     if (0 == list) goto error;
 
     codec_entry *c = (codec_entry *)list;
@@ -327,11 +310,9 @@ static codec_entry *find_entry(const codec_entry *list,
     OV_ASSERT(0 != c);
 
     while (0 != c->next) {
-
         OV_ASSERT(0 != c->next);
 
         if (0 == strcmp(codec_name, c->next->codec_name)) {
-
             OV_ASSERT(0 != c->next);
 
             return c;
@@ -352,9 +333,7 @@ error:
 ov_codec *ov_codec_factory_get_codec_from_json(ov_codec_factory *factory,
                                                const ov_json_value *json,
                                                uint32_t ssid) {
-
     if (0 == factory) {
-
         factory = get_global_factory();
     }
 
@@ -364,7 +343,6 @@ ov_codec *ov_codec_factory_get_codec_from_json(ov_codec_factory *factory,
     codec_type = ov_json_string_get(ov_json_get(json, "/" OV_KEY_CODEC));
 
     if (0 == codec_type) {
-
         ov_log_error("Invalid codec configuration: %s missing", OV_KEY_CODEC);
         goto error;
     }
