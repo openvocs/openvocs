@@ -30,6 +30,12 @@ Copyright   2017        German Aerospace Center DLR e.V.,
      If a new codec instance is required for a particular codec type,
      it can be requested.
 
+     This implementation uses a default global factory if none is given.
+     This global factory must be freed at the end of the program.
+     You can rely on ov_teardown for that:
+
+     Just call ov_teardown() at the end of your program.
+
  **/
 
 #ifndef ov_codec_factory_h
@@ -87,7 +93,10 @@ ov_codec_generator ov_codec_factory_install_codec(
     ov_codec_generator generate_codec);
 
 /**
- * Register a new codec to decode a particular stream.
+ * Get a new codec to decode a particular stream.
+ * If the json contains a different sample rate than the OV_DEFAULT_SAMPLERATE
+ * (i.e. the internally used one), the data is resampled automatically before
+ * encoded.
  * @param factory factory to get codec from or 0 if global factory should be
  * used
  * @return pointer to new codec or 0 in case of error.
@@ -97,13 +106,28 @@ ov_codec *ov_codec_factory_get_codec(ov_codec_factory *factory,
                                      uint32_t ssid,
                                      const ov_json_value *parameters);
 
-/**/
+/**
+ * Same as get_codec, but gets all information out of json
+ */
 ov_codec *ov_codec_factory_get_codec_from_json(ov_codec_factory *factory,
                                                const ov_json_value *json,
                                                uint32_t ssid);
 
 /*****************************************************************************
+                     Support for codecs with plugin system
+ ****************************************************************************/
+
+/**
+ * Exports "ov_codec_factory_install_codec_1" to be used in plugins that
+ * want to register codecs.
+ * This symbol effectively gets them the
+ * ov_codec_factory_install_codec function.
+ */
+bool ov_codec_factory_export_symbols_for_plugins();
+
+/*****************************************************************************
                                  PLUGIN SUPPORT
+                        Prefer the ov plugin system way!
  ****************************************************************************/
 
 #define OV_CODEC_CREATE_FUNCNAME "openvocs_plugin_codec_create"

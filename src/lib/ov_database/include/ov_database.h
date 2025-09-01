@@ -48,6 +48,7 @@
 /*----------------------------------------------------------------------------*/
 
 #define OV_DB_POSTGRES "postgres"
+#define OV_DB_MARIADB "mariadb"
 #define OV_DB_SQLITE "sqlite"
 
 extern char const *OV_DB_SQLITE_MEMORY;

@@ -42,6 +42,8 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 #include <ftw.h>
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_utils.h>
+#include <ov_base/ov_plugin_system.h>
+#include <ov_base/ov_teardown.h>
 
 /*****************************************************************************
                                  Global Factory
@@ -49,16 +51,19 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 
 static ov_codec_factory *g_factory = 0;
 
+static void free_global_codec_factory(void) {
+    g_factory = ov_codec_factory_free(g_factory);
+}
+
 /*----------------------------------------------------------------------------*/
 
 static ov_codec_factory *get_global_factory() {
-
     if (0 != g_factory) {
-
         return g_factory;
     }
 
     g_factory = ov_codec_factory_create_standard();
+    ov_teardown_register(free_global_codec_factory, "CODEC Factory");
 
     return g_factory;
 }
@@ -98,7 +103,6 @@ static codec_entry *find_entry(const codec_entry *list, const char *codec_name);
  ******************************************************************************/
 
 ov_codec_factory *ov_codec_factory_create() {
-
     ov_codec_factory *factory =
         calloc(1, sizeof(struct ov_codec_factory_struct));
 
@@ -108,26 +112,21 @@ ov_codec_factory *ov_codec_factory_create() {
 /*---------------------------------------------------------------------------*/
 
 ov_codec_factory *ov_codec_factory_create_standard() {
-
     ov_codec_factory *factory = ov_codec_factory_create();
 
     if (0 != ov_codec_raw_install(factory)) {
-
         goto error;
     }
 
     if (0 != ov_codec_pcm16_signed_install(factory)) {
-
         goto error;
     }
 
     if (0 != ov_codec_opus_install(factory)) {
-
         goto error;
     }
 
     if (0 != ov_codec_g711_install(factory)) {
-
         goto error;
     }
 
@@ -145,11 +144,9 @@ error:
 static size_t open_dls = 0;
 
 static void *open_dl_handle(char const *path) {
-
     void *handle = 0;
 
     if (ov_ptr_valid(path, "Cannot open SO: No path")) {
-
         handle = dlopen(path, RTLD_NOW);
 
         char *so_error = dlerror();
@@ -169,7 +166,6 @@ static void *open_dl_handle(char const *path) {
 /*----------------------------------------------------------------------------*/
 
 static void *close_dl_handle(void *handle) {
-
     if ((0 != handle) && (0 == dlclose(handle))) {
         --open_dls;
 
@@ -186,7 +182,6 @@ static void *close_dl_handle(void *handle) {
 /*----------------------------------------------------------------------------*/
 
 ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory) {
-
     if (0 == factory) {
         factory = get_global_factory();
         g_factory = 0;
@@ -197,7 +192,6 @@ ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory) {
     codec_entry *head = factory;
 
     while (0 != head->next) {
-
         head = head->next;
         free(factory);
         factory = head;
@@ -216,7 +210,6 @@ ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory) {
 
 static codec_entry *new_entry(ov_codec_factory *factory,
                               char const *codec_name) {
-
     codec_entry *entry = calloc(1, sizeof(codec_entry));
     entry->codec_name = ov_string_dup(codec_name);
     entry->next = factory->next;
@@ -233,15 +226,12 @@ static bool codec_factory_install_codec(ov_codec_factory *factory,
                                         ov_codec_generator generate_codec,
                                         void *dlhandle,
                                         ov_codec_generator *old_generator) {
-
     factory = OV_OR_DEFAULT(factory, get_global_factory());
 
     if ((0 == codec_name) || (0 == generate_codec)) {
-
         return false;
 
     } else {
-
         codec_entry *entry = find_entry(factory, codec_name);
 
         entry = OV_OR_DEFAULT(entry, new_entry(factory, codec_name));
@@ -265,23 +255,19 @@ static bool codec_factory_install_codec(ov_codec_factory *factory,
 /*----------------------------------------------------------------------------*/
 
 ov_codec_generator ov_codec_factory_install_codec(
-    ov_codec_factory *factory,
-    const char *codec_name,
+    ov_codec_factory *factory, const char *codec_name,
     ov_codec_generator generate_codec) {
-
     ov_codec_generator old_gen = 0;
-    codec_factory_install_codec(
-        factory, codec_name, generate_codec, 0, &old_gen);
+    codec_factory_install_codec(factory, codec_name, generate_codec, 0,
+                                &old_gen);
     return old_gen;
 }
 
 /*---------------------------------------------------------------------------*/
 
 ov_codec *ov_codec_factory_get_codec(ov_codec_factory *factory,
-                                     const char *codec_name,
-                                     uint32_t ssid,
+                                     const char *codec_name, uint32_t ssid,
                                      const ov_json_value *parameters) {
-
     if (0 == factory) {
         factory = get_global_factory();
     }
@@ -295,7 +281,6 @@ ov_codec *ov_codec_factory_get_codec(ov_codec_factory *factory,
     ov_codec *codec = 0;
 
     if ((0 != entry) && (0 != entry->next)) {
-
         OV_ASSERT(0 != entry->next->get_codec_for);
 
         codec = entry->next->get_codec_for(ssid, parameters);
@@ -318,7 +303,6 @@ error:
 
 static codec_entry *find_entry(const codec_entry *list,
                                const char *codec_name) {
-
     if (0 == list) goto error;
 
     codec_entry *c = (codec_entry *)list;
@@ -326,11 +310,9 @@ static codec_entry *find_entry(const codec_entry *list,
     OV_ASSERT(0 != c);
 
     while (0 != c->next) {
-
         OV_ASSERT(0 != c->next);
 
         if (0 == strcmp(codec_name, c->next->codec_name)) {
-
             OV_ASSERT(0 != c->next);
 
             return c;
@@ -351,9 +333,7 @@ error:
 ov_codec *ov_codec_factory_get_codec_from_json(ov_codec_factory *factory,
                                                const ov_json_value *json,
                                                uint32_t ssid) {
-
     if (0 == factory) {
-
         factory = get_global_factory();
     }
 
@@ -363,7 +343,6 @@ ov_codec *ov_codec_factory_get_codec_from_json(ov_codec_factory *factory,
     codec_type = ov_json_string_get(ov_json_get(json, "/" OV_KEY_CODEC));
 
     if (0 == codec_type) {
-
         ov_log_error("Invalid codec configuration: %s missing", OV_KEY_CODEC);
         goto error;
     }
@@ -376,6 +355,15 @@ error:
 }
 
 /*****************************************************************************
+                     Support for codecs with plugin system
+ ****************************************************************************/
+
+bool ov_codec_factory_export_symbols_for_plugins() {
+    return ov_plugin_system_export_symbol_for_plugin(
+        "ov_codec_factory_install_codec_1", ov_codec_factory_install_codec);
+}
+
+/*****************************************************************************
                              SHARED OBJECT SUPPORT
  ****************************************************************************/
 
@@ -383,55 +371,42 @@ error:
 #define OV_CODEC_ID_FUNCNAME "openvocs_plugin_codec_id"
 
 static bool install_codec(
-    ov_codec_factory *self,
-    void *dlhandle,
-    char const *(*id_func)(void),
+    ov_codec_factory *self, void *dlhandle, char const *(*id_func)(void),
     ov_codec *(*create_func)(uint32_t ssid, const ov_json_value *parameters),
     ov_result *res) {
-
     if (0 == id_func) {
-
-        ov_result_set(res,
-                      OV_ERROR_CODE_NOT_IMPLEMENTED,
+        ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
                       "Shared object does not provide a " OV_CODEC_ID_FUNCNAME);
         return false;
 
     } else if (0 == create_func) {
-
-        ov_result_set(res,
-                      OV_ERROR_CODE_NOT_IMPLEMENTED,
+        ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
                       "Shared object does not provide "
                       "a " OV_CODEC_CREATE_FUNCNAME);
         return false;
 
-    } else if (codec_factory_install_codec(
-                   self, id_func(), create_func, dlhandle, 0)) {
+    } else if (codec_factory_install_codec(self, id_func(), create_func,
+                                           dlhandle, 0)) {
         ov_result_set(res, OV_ERROR_NOERROR, 0);
         return true;
     } else {
-        ov_result_set(
-            res, OV_ERROR_INTERNAL_SERVER, "Could not install codec from SO");
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
+                      "Could not install codec from SO");
         return false;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool install_codec_from_handle(ov_codec_factory *self,
-                                      void *handle,
+static bool install_codec_from_handle(ov_codec_factory *self, void *handle,
                                       ov_result *res) {
-
     if (0 != handle) {
-
-        return install_codec(self,
-                             handle,
-                             dlsym(handle, OV_CODEC_ID_FUNCNAME),
-                             dlsym(handle, OV_CODEC_CREATE_FUNCNAME),
-                             res);
+        return install_codec(self, handle, dlsym(handle, OV_CODEC_ID_FUNCNAME),
+                             dlsym(handle, OV_CODEC_CREATE_FUNCNAME), res);
 
     } else {
-        ov_result_set(
-            res, OV_ERROR_BAD_ARG, "Shared object could not be opened");
+        ov_result_set(res, OV_ERROR_BAD_ARG,
+                      "Shared object could not be opened");
         return false;
     }
 }
@@ -441,15 +416,12 @@ static bool install_codec_from_handle(ov_codec_factory *self,
 bool ov_codec_factory_install_codec_from_so(ov_codec_factory *self,
                                             char const *so_path,
                                             ov_result *res) {
-
     void *handle = open_dl_handle(so_path);
 
     if (install_codec_from_handle(self, handle, res)) {
-
         return true;
 
     } else {
-
         handle = close_dl_handle(handle);
         return false;
     }
@@ -458,33 +430,27 @@ bool ov_codec_factory_install_codec_from_so(ov_codec_factory *self,
 /*----------------------------------------------------------------------------*/
 
 struct so_dir_loader_args_struct {
-
     size_t so_counter;
     ov_codec_factory *factory;
 
 } so_dir_loader_args;
 
-static int so_dir_loader(const char *fpath,
-                         const struct stat *sb,
-                         int typeflag,
+static int so_dir_loader(const char *fpath, const struct stat *sb, int typeflag,
                          struct FTW *ftwbuf) {
-
     UNUSED(sb);
     UNUSED(ftwbuf);
 
     ov_result res = {0};
 
     if (FTW_F == typeflag) {
-
-        if (ov_codec_factory_install_codec_from_so(
-                so_dir_loader_args.factory, fpath, &res)) {
+        if (ov_codec_factory_install_codec_from_so(so_dir_loader_args.factory,
+                                                   fpath, &res)) {
             ++so_dir_loader_args.so_counter;
             ov_log_info("Loaded codec from %s", fpath);
 
         } else {
             ov_log_info("Could not load codec from %s: %s",
-                        ov_string_sanitize(fpath),
-                        ov_result_get_message(res));
+                        ov_string_sanitize(fpath), ov_result_get_message(res));
         }
 
         ov_result_clear(&res);
@@ -498,7 +464,6 @@ static int so_dir_loader(const char *fpath,
 ssize_t ov_codec_factory_install_codec_from_so_dir(ov_codec_factory *self,
                                                    char const *so_path,
                                                    ov_result *res) {
-
     so_dir_loader_args = (struct so_dir_loader_args_struct){
         .so_counter = 0,
         .factory = self,
@@ -508,8 +473,8 @@ ssize_t ov_codec_factory_install_codec_from_so_dir(ov_codec_factory *self,
         (0 == nftw(so_path, so_dir_loader, 10, 0))) {
         return so_dir_loader_args.so_counter;
     } else {
-        ov_result_set(
-            res, OV_ERROR_BAD_ARG, "Cannot load from dir: Not a valid path");
+        ov_result_set(res, OV_ERROR_BAD_ARG,
+                      "Cannot load from dir: Not a valid path");
         return -1;
     }
 }

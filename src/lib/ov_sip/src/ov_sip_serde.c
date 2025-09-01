@@ -415,8 +415,7 @@ static ElementParseState message_from_line(SipSerde *self,
 
 /*----------------------------------------------------------------------------*/
 
-static ElementParseState parse_start_line(SipSerde *self,
-                                          ov_buffer *buf,
+static ElementParseState parse_start_line(SipSerde *self, ov_buffer *buf,
                                           ov_result *res) {
 
     OV_ASSERT(self);
@@ -425,20 +424,25 @@ static ElementParseState parse_start_line(SipSerde *self,
 
     ElementParseState state = lb_copy_line(lb, buf, res);
 
-    if (P_OK != state) {
-        return state;
-    } else {
-
+    while (P_OK == state) {
         char *line = lb_get_line(lb);
         OV_ASSERT(0 != line);
 
-        ElementParseState state =
-            message_from_line(self, line, lb->buffer + MAX_LINE_LENGTH, res);
+        // skip_empty_lines
+        if (0 != line[0]) {
+            ElementParseState state = message_from_line(
+                self, line, lb->buffer + MAX_LINE_LENGTH, res);
+
+            lb_reset(lb);
+
+            return state;
+        }
 
         lb_reset(lb);
-
-        return state;
+        state = lb_copy_line(lb, buf, res);
     }
+
+    return state;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -448,32 +452,26 @@ static ElementParseState add_header_to_message(ov_sip_message *msg,
                                                char const *value,
                                                ov_result *res) {
     if (0 == msg) {
-
         RESULT_ERROR(res,
                      "Malformed SIP message: Header before end of "
                      "start-line");
         return P_ERROR;
 
     } else if (!ov_sip_message_header_set(msg, header, value)) {
-
-        ov_log_error("Malformed SIP header: %s:%s",
-                     ov_string_sanitize(header),
+        ov_log_error("Malformed SIP header: %s:%s", ov_string_sanitize(header),
                      ov_string_sanitize(value));
         RESULT_ERROR(res, "Malformed SIP header");
         return P_ERROR;
 
     } else {
-
         return P_OK;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ElementParseState add_header_to_sip_serde(SipSerde *self,
-                                                 char *header,
-                                                 char *value,
-                                                 ov_result *res) {
+static ElementParseState add_header_to_sip_serde(SipSerde *self, char *header,
+                                                 char *value, ov_result *res) {
     char const WHITESPACE_CHARS[] = " ";
 
     char *trimmed_header = (char *)ov_string_ltrim(
@@ -490,16 +488,14 @@ static ElementParseState add_header_to_sip_serde(SipSerde *self,
 
 /*----------------------------------------------------------------------------*/
 
-static ElementParseState parse_header(SipSerde *self,
-                                      char *line,
-                                      size_t line_length,
-                                      ov_result *res) {
+static ElementParseState parse_header(SipSerde *self, char *line,
+                                      size_t line_length, ov_result *res) {
     char WHITESPACE_CHARS[] = " ";
 
     char *value = find_char(line, ':');
     set_pointer_to(value, 0);
-    value = (char *)ov_string_ltrim(
-        propagate_by_one(value, line + line_length), WHITESPACE_CHARS);
+    value = (char *)ov_string_ltrim(propagate_by_one(value, line + line_length),
+                                    WHITESPACE_CHARS);
 
     ov_string_rtrim(line, WHITESPACE_CHARS);
 
@@ -510,8 +506,7 @@ static ElementParseState parse_header(SipSerde *self,
 
 /*----------------------------------------------------------------------------*/
 
-static ElementParseState parse_headers(SipSerde *self,
-                                       ov_buffer *buf,
+static ElementParseState parse_headers(SipSerde *self, ov_buffer *buf,
                                        ov_result *res) {
     OV_ASSERT(self);
 
@@ -522,17 +517,14 @@ static ElementParseState parse_headers(SipSerde *self,
     if (P_OK != state) {
         return state;
     } else {
-
         char *line = lb_get_line(lb);
 
         size_t line_length = strnlen(line, MAX_LINE_LENGTH);
 
         if (0 == line_length) {
-
             return P_OK;
 
         } else {
-
             ElementParseState state =
                 parse_header(self, line, line_length, res);
 
@@ -549,12 +541,9 @@ static ElementParseState parse_headers(SipSerde *self,
 
 /*----------------------------------------------------------------------------*/
 
-static ElementParseState set_message_body(ov_sip_message *msg,
-                                          ov_buffer *buf,
-                                          size_t len,
-                                          char const *type,
+static ElementParseState set_message_body(ov_sip_message *msg, ov_buffer *buf,
+                                          size_t len, char const *type,
                                           ov_result *res) {
-
     if ((!is_ptr_valid(msg, res)) || (!is_buf_valid(buf, res)) ||
         (!is_ptr_valid(type, res))) {
         return P_ERROR;
@@ -578,8 +567,7 @@ static ElementParseState set_message_body(ov_sip_message *msg,
 
 /*----------------------------------------------------------------------------*/
 
-static ElementParseState parse_body(SipSerde *self,
-                                    ov_buffer *buf,
+static ElementParseState parse_body(SipSerde *self, ov_buffer *buf,
                                     ov_result *res) {
     OV_ASSERT(self);
 
@@ -604,17 +592,14 @@ static bool body_expected(SipSerde *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ElementParseState parse_raw_data(SipSerde *self,
-                                        ov_buffer *buf,
+static ElementParseState parse_raw_data(SipSerde *self, ov_buffer *buf,
                                         ov_result *res) {
     if (0 == self) {
         RESULT_ERROR(res, "No SIP Serde given");
         return P_ERROR;
     } else {
-
         ElementParseState state = P_OK;
         switch (self->pstate) {
-
             case M_START_LINE:
 
                 state = parse_start_line(self, buf, res);
@@ -645,7 +630,6 @@ static ElementParseState parse_raw_data(SipSerde *self,
 /*----------------------------------------------------------------------------*/
 
 static ov_serde_state parse(SipSerde *sip, ov_buffer buffer, ov_result *res) {
-
     if (0 == sip) {
         return OV_SERDE_ERROR;
 
@@ -653,7 +637,6 @@ static ov_serde_state parse(SipSerde *sip, ov_buffer buffer, ov_result *res) {
         return OV_SERDE_PROGRESS;
 
     } else {
-
         OV_ASSERT(0 == sip->residuum);
 
         ElementParseState state = P_OK_MORE_ELEMENTS;
@@ -665,7 +648,6 @@ static ov_serde_state parse(SipSerde *sip, ov_buffer buffer, ov_result *res) {
         sip->residuum = ov_buffer_copy((void **)&sip->residuum, &buffer);
 
         switch (state) {
-
             case P_OK_MORE_ELEMENTS:
                 PANIC("Unexpected state P_OK");
 
@@ -689,8 +671,7 @@ static ov_serde_state parse(SipSerde *sip, ov_buffer buffer, ov_result *res) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state impl_add_raw(ov_serde *self,
-                                   ov_buffer const *buf,
+static ov_serde_state impl_add_raw(ov_serde *self, ov_buffer const *buf,
                                    ov_result *res) {
     UNUSED(buf);
     UNUSED(res);
@@ -698,11 +679,9 @@ static ov_serde_state impl_add_raw(ov_serde *self,
     SipSerde *sip = as_sip_serde(self, res);
 
     if ((!reset_serde(self, res)) || (0 == sip) || (!is_buf_valid(buf, res))) {
-
         return OV_SERDE_ERROR;
 
     } else {
-
         ov_buffer *pbuf = ov_buffer_concat(sip->residuum, buf);
         sip->residuum = 0;
 
@@ -724,7 +703,6 @@ static ov_serde_state impl_add_raw(ov_serde *self,
  ****************************************************************************/
 
 static ov_sip_message *get_next_message(SipSerde *sip, ov_result *res) {
-
     if (0 == sip) {
         return 0;
     } else if (M_DONE == sip->pstate) {
@@ -733,7 +711,6 @@ static ov_sip_message *get_next_message(SipSerde *sip, ov_result *res) {
     } else if (0 == sip->residuum) {
         return 0;
     } else {
-
         ov_buffer *residuum = sip->residuum;
         sip->residuum = 0;
 
@@ -741,7 +718,6 @@ static ov_sip_message *get_next_message(SipSerde *sip, ov_result *res) {
         residuum = ov_buffer_free(residuum);
 
         switch (state) {
-
             case OV_SERDE_END:
                 return sip->message;
 
@@ -760,7 +736,6 @@ static ov_sip_message *get_next_message(SipSerde *sip, ov_result *res) {
 /*----------------------------------------------------------------------------*/
 
 static ov_serde_data impl_pop_datum(ov_serde *self, ov_result *res) {
-
     SipSerde *sip = as_sip_serde(self, 0);
 
     ov_serde_data data = {
@@ -782,17 +757,15 @@ static ov_serde_data impl_pop_datum(ov_serde *self, ov_result *res) {
                                    SERIALIZE
  ****************************************************************************/
 
-static ssize_t print_formatted(
-    char *write_ptr, size_t capacity, ov_result *res, char const *format, ...) {
+static ssize_t print_formatted(char *write_ptr, size_t capacity, ov_result *res,
+                               char const *format, ...) {
     va_list ap;
 
     if (0 == write_ptr) {
-        ov_result_set(res,
-                      OV_ERROR_INTERNAL_SERVER,
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                       "Could not serialize SIP message: Invalid write buffer");
         return -1;
     } else {
-
         va_start(ap, format);
         int retval = vsnprintf(write_ptr, capacity, format, ap);
         va_end(ap);
@@ -800,8 +773,7 @@ static ssize_t print_formatted(
         if ((retval > -1) && ((size_t)retval <= capacity)) {
             return retval;
         } else {
-            ov_result_set(res,
-                          OV_ERROR_INTERNAL_SERVER,
+            ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                           "Could not serialize SIP message: write buffer too "
                           "small");
             return -1;
@@ -812,89 +784,61 @@ static ssize_t print_formatted(
 /*----------------------------------------------------------------------------*/
 
 static ssize_t serialize_request_start_line(ov_sip_message *msg,
-                                            char *write_ptr,
-                                            size_t capacity,
+                                            char *write_ptr, size_t capacity,
                                             ov_result *res) {
-
     char const *method = ov_sip_message_method(msg);
     char const *uri = ov_sip_message_uri(msg);
 
     if ((0 == method) || (0 == uri)) {
-
         ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "Method or URI missing");
         return -1;
 
     } else {
-
-        return print_formatted(write_ptr,
-                               capacity,
-                               res,
-                               "%s %s %s%s",
-                               method,
-                               uri,
-                               SIP_VERSION,
-                               CRLF);
+        return print_formatted(write_ptr, capacity, res, "%s %s %s%s", method,
+                               uri, SIP_VERSION, CRLF);
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ssize_t serialize_response_start_line(ov_sip_message *msg,
-                                             char *write_ptr,
-                                             size_t capacity,
+                                             char *write_ptr, size_t capacity,
                                              ov_result *res) {
-
     int16_t code = ov_sip_message_response_code(msg);
     char const *reason = ov_sip_message_response_reason(msg);
 
     if (0 == write_ptr) {
-
-        ov_result_set(res,
-                      OV_ERROR_INTERNAL_SERVER,
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                       "Could not serialize SIP start line: Invalid write "
                       "buffer");
         return -1;
 
     } else if (0 > code) {
-
-        ov_result_set(res,
-                      OV_ERROR_INTERNAL_SERVER,
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                       "Could not serialize SIP start line: Could not get "
                       "code");
         return -1;
 
     } else if (0 == reason) {
-
         ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "Reason string missing");
         return -1;
 
     } else {
-
-        return print_formatted(write_ptr,
-                               capacity,
-                               res,
-                               "%s %3" PRIi16 " %s%s",
-                               SIP_VERSION,
-                               code,
-                               reason,
-                               CRLF);
+        return print_formatted(write_ptr, capacity, res, "%s %3" PRIi16 " %s%s",
+                               SIP_VERSION, code, reason, CRLF);
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t serialize_start_line(ov_serde *self,
-                                    ov_sip_message *msg,
-                                    char *write_ptr,
-                                    size_t capacity,
+static ssize_t serialize_start_line(ov_serde *self, ov_sip_message *msg,
+                                    char *write_ptr, size_t capacity,
                                     ov_result *res) {
     UNUSED(self);
 
     switch (ov_sip_message_type_get(msg)) {
-
         case OV_SIP_INVALID:
-            ov_result_set(res,
-                          OV_ERROR_INTERNAL_SERVER,
+            ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                           "Cannot serialize SIP message: Invalid type");
             return -1;
 
@@ -921,7 +865,6 @@ struct serialize_header_struct {
 /*----------------------------------------------------------------------------*/
 
 static struct serialize_header_struct *as_serialize_header_struct(void *arg) {
-
     struct serialize_header_struct *hs = arg;
 
     if ((0 == hs) || (0 == hs->write_ptr)) {
@@ -935,17 +878,14 @@ static struct serialize_header_struct *as_serialize_header_struct(void *arg) {
 /*----------------------------------------------------------------------------*/
 
 static bool serialize_header(char const *name, char const *value, void *arg) {
-
     struct serialize_header_struct *hs = as_serialize_header_struct(arg);
 
     if ((0 == name) || (0 == value) || (0 == hs)) {
         return false;
     } else if (0 > hs->written) {
-
         // Error occured before
         return false;
     } else {
-
         int retval =
             snprintf(hs->write_ptr, hs->capacity, "%s: %s" CRLF, name, value);
 
@@ -963,18 +903,13 @@ static bool serialize_header(char const *name, char const *value, void *arg) {
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t serialize_headers(ov_serde *self,
-                                 ov_sip_message *msg,
-                                 char *write_ptr,
-                                 size_t capacity,
+static ssize_t serialize_headers(ov_serde *self, ov_sip_message *msg,
+                                 char *write_ptr, size_t capacity,
                                  ov_result *res) {
-
     SipSerde *sip = as_sip_serde(self, res);
 
     if ((0 == sip) || (0 == write_ptr)) {
-
-        ov_result_set(res,
-                      1000,
+        ov_result_set(res, 1000,
                       "Cannot serialize SIP headers: Invalid SIP object or "
                       "write buffer too small");
         return -1;
@@ -990,9 +925,7 @@ static ssize_t serialize_headers(ov_serde *self,
     ov_sip_message_header_for_each(msg, serialize_header, &arg);
 
     if (0 > arg.written) {
-
-        ov_result_set(res,
-                      1000,
+        ov_result_set(res, 1000,
                       "Could not serialize SIP message: Could not "
                       "serialize headers");
     }
@@ -1002,18 +935,13 @@ static ssize_t serialize_headers(ov_serde *self,
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t serialize_body(ov_serde *self,
-                              ov_sip_message *msg,
-                              char *write_ptr,
-                              size_t capacity,
+static ssize_t serialize_body(ov_serde *self, ov_sip_message *msg,
+                              char *write_ptr, size_t capacity,
                               ov_result *res) {
-
     ov_buffer const *body = ov_sip_message_body(msg);
 
     if ((0 == as_sip_serde(self, res)) || (0 == write_ptr)) {
-
-        ov_result_set(res,
-                      1000,
+        ov_result_set(res, 1000,
                       "Cannot serialize SIP message body: Invalid SIP "
                       "object "
                       "or no write buffer");
@@ -1023,9 +951,7 @@ static ssize_t serialize_body(ov_serde *self,
         return 0;
 
     } else if (capacity < body->length) {
-
-        ov_result_set(res,
-                      1000,
+        ov_result_set(res, 1000,
                       "Cannot serialize SIP message body: Write buffer too "
                       "small");
         return -1;
@@ -1038,16 +964,12 @@ static ssize_t serialize_body(ov_serde *self,
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_serialize(ov_serde *self,
-                           int fh,
-                           ov_serde_data data,
+static bool impl_serialize(ov_serde *self, int fh, ov_serde_data data,
                            ov_result *res) {
     if ((0 == as_sip_serde(self, res)) || (!is_data_valid(data, res))) {
-
         return false;
 
     } else {
-
         ov_sip_message *msg = data.data;
 
         char buffer[10000] = {0};
@@ -1060,7 +982,6 @@ static bool impl_serialize(ov_serde *self,
             serialize_start_line(self, msg, write_ptr, capacity, res);
 
         if (-1 < written) {
-
             capacity -= written;
             written_total += written;
             write_ptr += written;
@@ -1086,12 +1007,10 @@ static bool impl_serialize(ov_serde *self,
                     write_ptr += written;
 
                     if (-1 < written) {
-
                         written = write(fh, buffer, written_total);
                     }
 
                 } else {
-
                     ov_log_error(
                         "Cannot serialize SIP message: write buffer too "
                         "small");
@@ -1108,7 +1027,6 @@ static bool impl_serialize(ov_serde *self,
  ****************************************************************************/
 
 static bool impl_clear_buffer(ov_serde *self) {
-
     SipSerde *sip = as_sip_serde(self, 0);
 
     if (0 != sip) {
@@ -1152,8 +1070,8 @@ ov_serde_state ov_sip_serde_add_raw(ov_serde *self, ov_buffer const *buffer) {
     ov_serde_state state = ov_serde_add_raw(self, buffer, &res);
 
     if (OV_SERDE_ERROR == state) {
-        ov_log_error(
-            "Error in parsing SIP input: %s", ov_string_sanitize(res.message));
+        ov_log_error("Error in parsing SIP input: %s",
+                     ov_string_sanitize(res.message));
     }
 
     ov_result_clear(&res);
@@ -1168,7 +1086,6 @@ ov_sip_message *ov_sip_serde_pop_datum(ov_serde *self, ov_result *res) {
         ov_log_error("Not a SIP Serde object");
         return 0;
     } else {
-
         ov_serde_data data = ov_serde_pop_datum(self, res);
 
         OV_ASSERT(OV_SIP_SERDE_TYPE == data.data_type);

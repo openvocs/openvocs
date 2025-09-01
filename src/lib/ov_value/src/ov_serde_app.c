@@ -158,6 +158,7 @@ ov_serde_app *ov_serde_app_free(ov_serde_app *self);
 static ov_serde_app *create_serde_app_from_config(
     ov_io_base_config io_base_cfg,
     ov_serde_app_configuration serde_app_config) {
+
     ov_serde_app *app = calloc(1, sizeof(ov_serde_app));
     app->magic_bytes = MAGIC_BYTES;
     app->io_base = ov_io_base_create(io_base_cfg);
