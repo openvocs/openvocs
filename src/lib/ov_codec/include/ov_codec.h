@@ -27,14 +27,21 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 
      Media Codec structure.
 
-     A codec provides
-     - Encoding from PCM (16 bit signed integers, endianness plattform specific)
- via `ov_codec.encode`
-     - Decoding to   PCM (16 bit signed integers, endianness plattform
- dependent) via `ov_codec.decode`
+     Internally, the openvocs uses PCM, 16bit signed integer at 48kHz
+     (more specific OV_DEFAULT_SAMPLERATE ) with platform specific endianness.
+     Codecs are meant to convert to/from this media format.
 
-     For creating media codecs, use the `ov_codec_factory`, see
- ov_codec_factory.h.
+     A bare codec only decodes/encodes to PCM 16bit signed integers without
+     changing the sample rate.
+
+     Automatic conversion of the sample rates can be enabled by
+     `ov_codec_enable_resampling` .
+
+     If the codec is created by the codec factory from JSON and the JSON
+     contains a `samplerate_hertz` parameter, resampling is activated auto-
+     matically.
+
+     Generally, use the codec factory to create your codecs!
 
      JSON support:
      - To JSON: `ov_codec_to_json`
@@ -167,6 +174,11 @@ bool ov_codec_parameters_set_sample_rate_hertz(ov_json_value *json,
                              For the Codec Factory
  ****************************************************************************/
 
+/**
+ * If the codec is configured for something different than the
+ * internally used OV_DEFAULT_SAMPLERATE,
+ * resample to proper samplerate before encoding
+ */
 bool ov_codec_enable_resampling(ov_codec *codec);
 
 /*****************************************************************************

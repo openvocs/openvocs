@@ -42,6 +42,7 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 #include <ftw.h>
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_utils.h>
+#include <ov_base/ov_plugin_system.h>
 
 /*****************************************************************************
                                  Global Factory
@@ -376,6 +377,15 @@ error:
 }
 
 /*****************************************************************************
+                     Support for codecs with plugin system
+ ****************************************************************************/
+
+bool ov_codec_factory_export_symbols_for_plugins() {
+    return ov_plugin_system_export_symbol_for_plugin(
+        "ov_codec_factory_install_codec_1", ov_codec_factory_install_codec);
+}
+
+/*****************************************************************************
                              SHARED OBJECT SUPPORT
  ****************************************************************************/
 
@@ -383,55 +393,42 @@ error:
 #define OV_CODEC_ID_FUNCNAME "openvocs_plugin_codec_id"
 
 static bool install_codec(
-    ov_codec_factory *self,
-    void *dlhandle,
-    char const *(*id_func)(void),
+    ov_codec_factory *self, void *dlhandle, char const *(*id_func)(void),
     ov_codec *(*create_func)(uint32_t ssid, const ov_json_value *parameters),
     ov_result *res) {
-
     if (0 == id_func) {
-
-        ov_result_set(res,
-                      OV_ERROR_CODE_NOT_IMPLEMENTED,
+        ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
                       "Shared object does not provide a " OV_CODEC_ID_FUNCNAME);
         return false;
 
     } else if (0 == create_func) {
-
-        ov_result_set(res,
-                      OV_ERROR_CODE_NOT_IMPLEMENTED,
+        ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
                       "Shared object does not provide "
                       "a " OV_CODEC_CREATE_FUNCNAME);
         return false;
 
-    } else if (codec_factory_install_codec(
-                   self, id_func(), create_func, dlhandle, 0)) {
+    } else if (codec_factory_install_codec(self, id_func(), create_func,
+                                           dlhandle, 0)) {
         ov_result_set(res, OV_ERROR_NOERROR, 0);
         return true;
     } else {
-        ov_result_set(
-            res, OV_ERROR_INTERNAL_SERVER, "Could not install codec from SO");
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
+                      "Could not install codec from SO");
         return false;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool install_codec_from_handle(ov_codec_factory *self,
-                                      void *handle,
+static bool install_codec_from_handle(ov_codec_factory *self, void *handle,
                                       ov_result *res) {
-
     if (0 != handle) {
-
-        return install_codec(self,
-                             handle,
-                             dlsym(handle, OV_CODEC_ID_FUNCNAME),
-                             dlsym(handle, OV_CODEC_CREATE_FUNCNAME),
-                             res);
+        return install_codec(self, handle, dlsym(handle, OV_CODEC_ID_FUNCNAME),
+                             dlsym(handle, OV_CODEC_CREATE_FUNCNAME), res);
 
     } else {
-        ov_result_set(
-            res, OV_ERROR_BAD_ARG, "Shared object could not be opened");
+        ov_result_set(res, OV_ERROR_BAD_ARG,
+                      "Shared object could not be opened");
         return false;
     }
 }
@@ -441,15 +438,12 @@ static bool install_codec_from_handle(ov_codec_factory *self,
 bool ov_codec_factory_install_codec_from_so(ov_codec_factory *self,
                                             char const *so_path,
                                             ov_result *res) {
-
     void *handle = open_dl_handle(so_path);
 
     if (install_codec_from_handle(self, handle, res)) {
-
         return true;
 
     } else {
-
         handle = close_dl_handle(handle);
         return false;
     }
@@ -458,33 +452,27 @@ bool ov_codec_factory_install_codec_from_so(ov_codec_factory *self,
 /*----------------------------------------------------------------------------*/
 
 struct so_dir_loader_args_struct {
-
     size_t so_counter;
     ov_codec_factory *factory;
 
 } so_dir_loader_args;
 
-static int so_dir_loader(const char *fpath,
-                         const struct stat *sb,
-                         int typeflag,
+static int so_dir_loader(const char *fpath, const struct stat *sb, int typeflag,
                          struct FTW *ftwbuf) {
-
     UNUSED(sb);
     UNUSED(ftwbuf);
 
     ov_result res = {0};
 
     if (FTW_F == typeflag) {
-
-        if (ov_codec_factory_install_codec_from_so(
-                so_dir_loader_args.factory, fpath, &res)) {
+        if (ov_codec_factory_install_codec_from_so(so_dir_loader_args.factory,
+                                                   fpath, &res)) {
             ++so_dir_loader_args.so_counter;
             ov_log_info("Loaded codec from %s", fpath);
 
         } else {
             ov_log_info("Could not load codec from %s: %s",
-                        ov_string_sanitize(fpath),
-                        ov_result_get_message(res));
+                        ov_string_sanitize(fpath), ov_result_get_message(res));
         }
 
         ov_result_clear(&res);
@@ -498,7 +486,6 @@ static int so_dir_loader(const char *fpath,
 ssize_t ov_codec_factory_install_codec_from_so_dir(ov_codec_factory *self,
                                                    char const *so_path,
                                                    ov_result *res) {
-
     so_dir_loader_args = (struct so_dir_loader_args_struct){
         .so_counter = 0,
         .factory = self,
@@ -508,8 +495,8 @@ ssize_t ov_codec_factory_install_codec_from_so_dir(ov_codec_factory *self,
         (0 == nftw(so_path, so_dir_loader, 10, 0))) {
         return so_dir_loader_args.so_counter;
     } else {
-        ov_result_set(
-            res, OV_ERROR_BAD_ARG, "Cannot load from dir: Not a valid path");
+        ov_result_set(res, OV_ERROR_BAD_ARG,
+                      "Cannot load from dir: Not a valid path");
         return -1;
     }
 }
