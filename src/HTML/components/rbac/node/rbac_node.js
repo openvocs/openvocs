@@ -112,7 +112,6 @@ export default class ov_RBAC_Node extends HTMLElement {
     }
 
     set global(boolean) {
-        console.log("global", boolean)
         if (boolean)
             this.setAttribute("global", "");
         else

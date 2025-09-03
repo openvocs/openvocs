@@ -25,8 +25,8 @@
 
         ------------------------------------------------------------------------
 */
-#ifndef OV_ALSA_MIXER_H
-#define OV_ALSA_MIXER_H
+#ifndef OV_RTP_MIXER_H
+#define OV_RTP_MIXER_H
 /*----------------------------------------------------------------------------*/
 
 #include <inttypes.h>
@@ -42,7 +42,6 @@ typedef struct ov_rtp_mixer_struct ov_rtp_mixer;
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
-
     ov_json_value const *codec_config;
     size_t max_num_frames_per_stream;
     uint32_t ssid_to_cancel;
@@ -61,8 +60,9 @@ ov_rtp_mixer *ov_rtp_mixer_free(ov_rtp_mixer *self);
 bool ov_rtp_mixer_add_frame(ov_rtp_mixer *self, ov_rtp_frame *frame);
 
 /**
- * @return true if there were frames to mix. False, if there weren't any or an error occured.
- * If comfort noise is generated, will return false as well as there were no frames to mix!
+ * @return true if there were frames to mix. False, if there weren't any or an
+ * error occured. If comfort noise is generated, will return false as well as
+ * there were no frames to mix!
  */
 bool ov_rtp_mixer_mix(ov_rtp_mixer *self, ov_chunker *chunker_to_write_to);
 

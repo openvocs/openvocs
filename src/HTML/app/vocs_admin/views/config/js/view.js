@@ -313,8 +313,7 @@ async function save(new_config, type, persist) {
         DOM.loading_screen.show("Saving " + type + " " + new_config.id + " on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-
-            if (websocket.port !== "db")
+            if (websocket.port !== "db" || websocket.server_name !== ov_Websockets.prime_websocket.server_name)
                 continue;
 
             //save layout
