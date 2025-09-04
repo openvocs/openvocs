@@ -85,10 +85,10 @@ export default class ov_Login_Form extends HTMLElement {
                         '{shift} z x c v b n m , . / {shift}'
                     ],
                     'shift': [
-                        '~ ! @ # $ % ^ &amp; * ( ) _ + {bksp}',
+                        '~ ! # $ % ^ & * ( ) _ + {bksp}',
                         '€ Q W E R T Y U I O P { } |',
                         '@ A S D F G H J K L : " {enter}',
-                        '{shift} Z X C V B N M &lt; &gt; ? {shift}'
+                        '{shift} Z X C V B N M < > ? {shift}'
                     ]
                 },
                 display: {
