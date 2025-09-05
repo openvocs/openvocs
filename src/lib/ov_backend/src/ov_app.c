@@ -2398,6 +2398,9 @@ const char *ov_app_parse_command_line_optargs(
 
     OV_ASSERT(0 != params->config_file);
 
+    optind =
+        1;  // resets getopt in case of the arguments will scanned later again
+
     return retval;
 };
 

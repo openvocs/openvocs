@@ -272,12 +272,8 @@ static ov_rtp_frame *frame_buffer_add(ov_thread_lock *lock,
         frame = ov_rtp_frame_buffer_add(buffer, frame);
 
         ov_thread_lock_unlock(lock);
-
-        return frame;
-
-    } else {
-        return 0;
     }
+    return frame;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -495,8 +491,7 @@ static bool collect_stale_stream_ssids(const void *key, void *value,
 
 static void clean_codec_entries(ov_dict *codec_entries, gc_args args) {
     for (size_t i = 0; i < args.ssids_found; ++i) {
-        ov_log_info("RTP mixer: Removing stale stream %" PRIu32,
-                    args.ssids[i]);
+        ov_log_info("RTP mixer: Removing stale stream %" PRIu32, args.ssids[i]);
         intptr_t ssidptr = args.ssids[i];
         ov_dict_del(codec_entries, (void *)ssidptr);
     }
