@@ -50,10 +50,11 @@ struct ov_rtp_mixer_struct {
 
     struct {
 
-        size_t frame_length_samples;
         size_t frame_length_ms;
-
         double sample_rate_hertz;
+        size_t frame_length_samples;
+
+        size_t decoded_frame_length_samples;
 
     } settings;
 
@@ -232,6 +233,9 @@ ov_rtp_mixer *ov_rtp_mixer_create(ov_rtp_mixer_config cfg) {
     mixer->settings.frame_length_samples = ov_convert_msecs_to_samples(
         mixer->settings.frame_length_ms, mixer->settings.sample_rate_hertz);
 
+    mixer->settings.decoded_frame_length_samples = ov_convert_msecs_to_samples(
+        mixer->settings.frame_length_ms, OV_DEFAULT_SAMPLERATE);
+
     mixer->comfort_noise.noisy_frame_16bit =
         create_comfort_noise_for_default_frame(mixer);
 
@@ -325,21 +329,21 @@ static bool decode_frame(ov_codec *codec, ov_rtp_frame *frame,
 /*----------------------------------------------------------------------------*/
 
 static ov_buffer *mix_frames(ov_rtp_mixer *self, ov_list *frames,
-                             size_t frame_length_samples) {
+                             size_t decoded_frame_length_samples) {
     size_t num_frames = ov_list_count(frames);
     size_t num_mixed_frames = 0;
 
-    size_t len_16bit = frame_length_samples * sizeof(int16_t);
-    size_t len_32bit = frame_length_samples * sizeof(int32_t);
+    size_t decoded_len_16bit = decoded_frame_length_samples * sizeof(int16_t);
+    size_t decoded_len_32bit = decoded_frame_length_samples * sizeof(int32_t);
 
-    ov_buffer *decoded_16bit = ov_buffer_create(len_16bit);
-    decoded_16bit->length = len_16bit;
+    ov_buffer *decoded_16bit = ov_buffer_create(decoded_len_16bit);
+    decoded_16bit->length = decoded_len_16bit;
 
-    ov_buffer *decoded_32bit = ov_buffer_create(len_32bit);
-    decoded_32bit->length = len_32bit;
+    ov_buffer *decoded_32bit = ov_buffer_create(decoded_len_32bit);
+    decoded_32bit->length = decoded_len_32bit;
 
-    ov_buffer *mixed_32bit = ov_buffer_create(len_32bit);
-    mixed_32bit->length = len_32bit;
+    ov_buffer *mixed_32bit = ov_buffer_create(decoded_len_32bit);
+    mixed_32bit->length = decoded_len_32bit;
     memset(mixed_32bit->start, 0, mixed_32bit->length);
 
     for (size_t i = 0; i < num_frames; ++i) {
@@ -348,14 +352,14 @@ static ov_buffer *mix_frames(ov_rtp_mixer *self, ov_list *frames,
         if (decode_frame(get_codec_for_frame(self, frame), frame,
                          decoded_16bit) &&
             (ov_ptr_valid(decoded_16bit, "Could not decode RTP frame") &&
-             ov_cond_valid(len_16bit == decoded_16bit->length,
+             ov_cond_valid(decoded_len_16bit == decoded_16bit->length,
                            "Decoded RTP frame has unexpected length") &&
              (ov_cond_valid(
                  ov_pcm_16_scale_to_32(
-                     frame_length_samples, (int16_t *)decoded_16bit->start,
+                     decoded_frame_length_samples, (int16_t *)decoded_16bit->start,
                      (int32_t *)decoded_32bit->start, 1.0, 0, 0),
                  "Could not scale decoded PCM to 32 bit")) &&
-             ov_cond_valid(ov_pcm_32_add(frame_length_samples,
+             ov_cond_valid(ov_pcm_32_add(decoded_frame_length_samples,
                                          (int32_t *)mixed_32bit->start,
                                          (int32_t *)decoded_32bit->start),
                            "Could not add decoded RTP payload"))) {
@@ -365,16 +369,16 @@ static ov_buffer *mix_frames(ov_rtp_mixer *self, ov_list *frames,
         frame = ov_rtp_frame_free(frame);
     }
 
-    ov_buffer *pcm16 = ov_buffer_create(len_16bit);
-    pcm16->length = len_16bit;
+    ov_buffer *pcm16 = ov_buffer_create(decoded_len_16bit);
+    pcm16->length = decoded_len_16bit;
 
     double scale_factor = OV_OR_DEFAULT(num_mixed_frames, 1);
 
     if ((!ov_cond_valid(
-            ov_pcm_32_scale(frame_length_samples, (int32_t *)mixed_32bit->start,
-                            1.0 / scale_factor),
+            ov_pcm_32_scale(decoded_frame_length_samples,
+                            (int32_t *)mixed_32bit->start, 1.0 / scale_factor),
             "Could not scale mixed PCM")) ||
-        (!ov_cond_valid(ov_pcm_32_clip_to_16(frame_length_samples,
+        (!ov_cond_valid(ov_pcm_32_clip_to_16(decoded_frame_length_samples,
                                              (int32_t *)mixed_32bit->start,
                                              (int16_t *)pcm16->start),
                         "Could not clip mixed PCM"))) {
@@ -396,8 +400,8 @@ static bool process_frames(ov_rtp_mixer *self, ov_list *frames,
 
     if (ov_ptr_valid(self, "Cannot mix frames - invalid mixer pointer") &&
         ov_ptr_valid_warn(frames, "Cannot mix frames - no frame list")) {
-        ov_buffer *mixed_payload =
-            mix_frames(self, frames, self->settings.frame_length_samples);
+        ov_buffer *mixed_payload = mix_frames(
+            self, frames, self->settings.decoded_frame_length_samples);
 
         if (0 != mixed_payload) {
             ov_chunker_add(chunker_to_write_to, mixed_payload);
