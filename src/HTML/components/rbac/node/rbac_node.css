@@ -42,11 +42,11 @@
 }
 
 :host([frozen]) #node_name::before {
-    content: "\1F7BC";
+    content: "\2744";
 }
 
 :host([global]) #node_name::before {
-    content: "\1F7CA";
+    content: "\2605";
 }
 
 :host(.highlight) #node_name,
