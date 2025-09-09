@@ -24,14 +24,12 @@
 	<script type="text/javascript" src="/config_vocs.js"></script> <!-- user config -->
 
 	<script>
-		if (SCREEN_KEYBOARD) {
-			var script = document.createElement('script');
-			script.type = 'text/javascript';
-			script.async = true;
-			script.src = "/plugin/simple-keyboard-3.8.0/index.modern.js";
-			var first_script = document.getElementsByTagName('script')[0];
-			first_script.parentNode.insertBefore(script, first_script);
-		}
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.async = true;
+		script.src = "/plugin/simple-keyboard-3.8.0/index.modern.js";
+		var first_script = document.getElementsByTagName('script')[0];
+		first_script.parentNode.insertBefore(script, first_script);
 	</script>
 
 

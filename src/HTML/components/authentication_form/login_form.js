@@ -70,7 +70,7 @@ export default class ov_Login_Form extends HTMLElement {
         this.#dom.password_field.onchange = () => this.#check_form();
         this.#dom.password_field.addEventListener("value_changed", () => this.#check_form());
 
-        if (window.SimpleKeyboard) {
+        if (SCREEN_KEYBOARD && window.SimpleKeyboard && matchMedia("(width > 480px)").matches) {
             const Keyboard = window.SimpleKeyboard.default;
             this.#login_keyboard = new Keyboard({
                 onChange: input => this.#on_change(input),
