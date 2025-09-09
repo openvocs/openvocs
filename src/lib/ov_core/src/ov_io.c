@@ -1934,6 +1934,7 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
     conn->type = OV_IO_CLIENT_CONNECTION;
     conn->config = config;
     conn->io = self;
+    conn->io_data.callback = io; 
 
     if (TLS == config.socket.type) {
 
@@ -1947,7 +1948,7 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
                            socket,
                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
                            self,
-                           io)) {
+                           conn->io_data.callback)) {
 
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto error;

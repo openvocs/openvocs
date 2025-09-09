@@ -98,8 +98,13 @@ static bool setup_pcm_generator(ov_rtp_client *client,
             OV_ASSERT(!"MUST NEVER HAPPEN");
     };
 
+    ov_pcm_gen_config pcm_gen_config = {
+        .frame_length_usecs = ap->general_config.frame_length_usecs,
+        .sample_rate_hertz = OV_DEFAULT_SAMPLERATE, // We need to generate 48k, the codec will downsample if required
+    };
+
     client->send.pcm_generator =
-        pcm_gen_create(ap->send.type, ap->general_config, additional);
+        pcm_gen_create(ap->send.type, pcm_gen_config, additional);
 
     return true;
 }
@@ -109,7 +114,6 @@ static bool setup_pcm_generator(ov_rtp_client *client,
 static bool trigger_send_next_frame(uint32_t id, void *userdata);
 
 static void reschedule_send_timer(ov_rtp_client *restrict const client) {
-
     OV_ASSERT(0 != client);
     OV_ASSERT(SEND == client->mode);
 
@@ -117,24 +121,18 @@ static void reschedule_send_timer(ov_rtp_client *restrict const client) {
         client->audio.general_config.frame_length_usecs +
         get_jitter_usec(client);
 
-    client->event->timer.set(
-        client->event, next_timeout_usecs, client, trigger_send_next_frame);
+    client->event->timer.set(client->event, next_timeout_usecs, client,
+                             trigger_send_next_frame);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool send_to(int sd,
-                    const void *buf,
-                    size_t len,
-                    const struct sockaddr *dest_addr,
-                    socklen_t addrlen) {
-
+static bool send_to(int sd, const void *buf, size_t len,
+                    const struct sockaddr *dest_addr, socklen_t addrlen) {
     int retval = sendto(sd, buf, len, 0, dest_addr, addrlen);
 
     if ((int)len != retval) {
-
         if ((0 > retval) && (22 == errno)) {
-
             fprintf(stderr,
                     "Could not send UDP: %s - did you specify the "
                     "correct "
@@ -142,27 +140,22 @@ static bool send_to(int sd,
                     strerror(errno));
 
         } else if (0 > retval) {
-
             fprintf(stderr, "Could not send UDP: %s\n", strerror(errno));
 
         } else {
-            fprintf(stderr,
-                    "Could send only %i bytes out of %lu bytes\n",
-                    retval,
-                    len);
+            fprintf(stderr, "Could send only %i bytes out of %lu bytes\n",
+                    retval, len);
         }
 
         return false;
 
     } else {
-
         return true;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 static bool trigger_send_next_frame(uint32_t id, void *userdata) {
-
     UNUSED(id);
 
     ov_buffer *buffer = 0;
@@ -172,7 +165,6 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
     uint64_t usecs = ov_time_get_current_time_usecs();
 
     if (!userdata) {
-
         fprintf(stderr, "No userdata received");
         goto error;
     }
@@ -187,7 +179,6 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
     ov_codec *codec = client->codec;
 
     if (0 == codec) {
-
         fprintf(stderr, "No codec set - aborting\n");
         goto error;
     }
@@ -196,9 +187,7 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
 
     const size_t num_bytes_to_send =
         client->audio.general_config.frame_length_usecs / 1000.0 *
-        client->audio.general_config.sample_rate_hertz / 1000.0 *
-        sizeof(int16_t);
-
+        OV_DEFAULT_SAMPLERATE / 1000 * sizeof(int16_t);
     /* Get more PCM */
 
     ov_pcm_gen *pcm_gen = client->send.pcm_generator;
@@ -213,11 +202,9 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
     OV_ASSERT(0 != encoded);
     OV_ASSERT(num_bytes_to_send <= encoded->capacity);
 
-    int encoded_length = ov_codec_encode(codec,
-                                         buffer->start,
-                                         buffer->length,
-                                         (uint8_t *)encoded->start,
-                                         encoded->capacity);
+    int encoded_length =
+        ov_codec_encode(codec, buffer->start, buffer->length,
+                        (uint8_t *)encoded->start, encoded->capacity);
 
     buffer = ov_buffer_free(buffer);
 
@@ -245,7 +232,6 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
     size_t send_repeats = 1;
 
     if (client->send.first_frame) {
-
         // Repeat first frame - if this is lost, the stream might never start
         // due to lack of the marker bit
         send_repeats = 5;
@@ -254,12 +240,9 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
     bool sent_properly = false;
 
     for (size_t i = 0; i < send_repeats; ++i) {
-
-        sent_properly = send_to(client->udp_socket,
-                                frame->bytes.data,
-                                frame->bytes.length,
-                                client->send.dest_sockaddr,
-                                client->send.dest_sockaddr_len);
+        sent_properly =
+            send_to(client->udp_socket, frame->bytes.data, frame->bytes.length,
+                    client->send.dest_sockaddr, client->send.dest_sockaddr_len);
     }
 
     client->send.first_frame = false;
@@ -272,7 +255,6 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
     }
 
     if ((0 != client->send.sdes) && (500 < ++client->send.sdes_count)) {
-
         fprintf(stderr, "Sending RTCP...\n");
 
         client->send.sdes_count = 0;
@@ -283,11 +265,10 @@ static bool trigger_send_next_frame(uint32_t id, void *userdata) {
 
         msg = ov_rtcp_message_free(msg);
 
-        sent_properly = send_to(client->rtcp_socket,
-                                encoded->start,
-                                encoded->length,
-                                client->send.rtcp_dest_sockaddr,
-                                client->send.rtcp_dest_sockaddr_len);
+        sent_properly =
+            send_to(client->rtcp_socket, encoded->start, encoded->length,
+                    client->send.rtcp_dest_sockaddr,
+                    client->send.rtcp_dest_sockaddr_len);
 
         encoded = ov_buffer_free(encoded);
 
@@ -318,10 +299,8 @@ error:
  *                              PUBLIC FUNCTIONS
  ******************************************************************************/
 
-bool setup_sending_client(ov_rtp_client *client,
-                          ov_rtp_client_parameters *cp,
+bool setup_sending_client(ov_rtp_client *client, ov_rtp_client_parameters *cp,
                           ov_rtp_client_audio_parameters *ap) {
-
     if (0 == client) {
         ov_log_error("Not client (0 pointer) given");
         goto error;
@@ -359,8 +338,8 @@ bool setup_sending_client(ov_rtp_client *client,
         get_jitter_usec(client);
 
     client->send.first_frame = true;
-    client->event->timer.set(
-        client->event, next_timeout_usecs, client, trigger_send_next_frame);
+    client->event->timer.set(client->event, next_timeout_usecs, client,
+                             trigger_send_next_frame);
 
     return true;
 
@@ -372,11 +351,9 @@ error:
 /*----------------------------------------------------------------------------*/
 
 void shutdown_sending_client(ov_rtp_client *client) {
-
     OV_ASSERT(SEND == client->mode);
 
     if (0 != client->send.pcm_generator) {
-
         client->send.pcm_generator =
             client->send.pcm_generator->free(client->send.pcm_generator);
     }

@@ -23,6 +23,8 @@
         @author Michael J. Beer, DLR/GSOC
         @copyright (c) 2024 German Aerospace Center DLR e.V. (GSOC)
 
+        The mixer is thread safe.
+
         ------------------------------------------------------------------------
 */
 #ifndef OV_RTP_MIXER_H
