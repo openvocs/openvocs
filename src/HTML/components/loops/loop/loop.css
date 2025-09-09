@@ -1,31 +1,19 @@
 :host {
     cursor: pointer;
     border: solid var(--base_color) 0.2rem;
+
+    display: grid;
+    grid-template-columns: minmax(min-content, 7fr) minmax(min-content, 1fr);
+    grid-template-rows: minmax(min-content, 1.5fr) minmax(min-content, 1fr);
+    grid-template-areas: "join leave"
+        "volume leave";
 }
 
 .icon {
     margin: 0.25rem;
-    width: 1.1em;
-    height: 1.1em;
+    width: 1.1rem;
+    height: 1.1rem;
     display: inline-block;
-}
-
-#join_loop {
-    color: var(--element_art_color);
-    /*border-bottom-color: var(--black_transparent_64);*/
-}
-
-:host([state=recv].activity), :host([state=send].activity), :host(.vad) {
-    border: solid var(--white) 0.2rem;
-    animation: none;
-}
-
-#join_loop svg {
-    fill: var(--element_art_color);
-}
-
-#join_loop #loop_name {
-    color: var(--base_text_color);
 }
 
 #join_loop,
@@ -35,6 +23,121 @@
     border-radius: 0;
     margin: 0;
     line-height: 1rem;
+    font-size: 1rem;
+}
+
+#join_loop {
+    grid-area: join;
+    color: var(--element_art_color);
+    display: grid;
+    grid-template-columns: 4fr 2fr 1fr;
+    grid-template-areas:
+        "name     permission participants"
+        "activity activity   activity    ";
+    grid-template-rows: 1.5fr 1fr;
+    align-items: center;
+    min-height: 5rem;
+    border-bottom-width: 0.063rem;
+    border-bottom-style: solid;
+    /*border-bottom-color: var(--black_transparent_64);*/
+}
+
+#join_loop .icon {
+    margin-top: 0.5rem;
+}
+
+#join_loop svg {
+    fill: var(--element_art_color);
+}
+
+#join_loop #loop_name {
+    grid-area: name;
+    color: var(--base_text_color);
+    vertical-align: middle;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    text-align: left;
+    padding-left: 0.5rem;
+}
+
+#join_loop #loop_permission {
+    grid-area: permission;
+}
+
+#join_loop #loop_activity {
+    grid-area: activity;
+    height: 1.5rem;
+    font-size: 1.1rem;
+    text-align: left;
+    overflow: hidden;
+}
+
+#join_loop #loop_participants {
+    grid-area: participants;
+}
+
+#loop_volume {
+    grid-area: volume;
+    display: flex;
+    gap: 0.2rem;
+    align-items: center;
+}
+
+#loop_volume .icon {
+    margin-left: 0.5rem;
+    width: 1.5rem;
+}
+
+#loop_volume #loop_volume_indicator_value {
+    width: 1.5rem;
+    text-align: right;
+}
+
+#loop_volume #loop_volume_input {
+    -webkit-appearance: none;
+    height: 1.5rem;
+    outline: none;
+    margin: auto 0.1rem;
+    border-radius: 0;
+    background: var(--black_transparent_78);
+    width: 95%;
+}
+
+#loop_volume #loop_volume_input_container{
+    flex-grow: 1;
+}
+
+#loop_volume #loop_volume_input:focus {
+    outline: none;
+}
+
+#loop_volume #loop_volume_input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    background: var(--black_transparent_50);
+}
+
+#loop_volume #loop_volume_input::-moz-range-thumb {
+    -webkit-appearance: none;
+    width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    border: transparent;
+    border-radius: 0;
+    background: var(--black_transparent_50);
+}
+
+#loop_volume #loop_volume_input::-moz-range-track {
+    width: 100%;
+    height: 0.5rem;
+    cursor: pointer;
+    background: transparent;
+}
+
+#leave_loop {
+    grid-area: leave;
 }
 
 :host(:not([permission=send])) .talk_icon {
@@ -53,196 +156,104 @@
     background-color: var(--green);
 }
 
-#loop_volume .icon {
-    width: 2rem;
-}
-
-#loop_volume #loop_volume_indicator_value {
-    width: 4em;
-    text-align: left;
-}
-
-#loop_volume #loop_volume_input {
-    -webkit-appearance: none;
-    height: 1.25em;
-    outline: none;
-    margin: auto 0.3em;
-    border-radius: 0;
-    background: var(--black_transparent_78);
-}
-
-#loop_volume #loop_volume_input:focus {
-    outline: none;
-}
-
-#loop_volume #loop_volume_input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 1.25em;
-    height: 1.25em;
-    cursor: pointer;
-    background: var(--black_transparent_50);
-}
-
-#loop_volume #loop_volume_input::-moz-range-thumb {
-    -webkit-appearance: none;
-    width: 1.25em;
-    height: 1.25em;
-    cursor: pointer;
-    border: transparent;
-    border-radius: 0;
-    background: var(--black_transparent_50);
-}
-
-#loop_volume #loop_volume_input::-moz-range-track {
-    width: 100%;
-    height: 0.525em;
-    cursor: pointer;
-    background: transparent;
+:host([state=recv].activity),
+:host([state=send].activity),
+:host(.vad) {
+    border: solid var(--white) 0.2rem;
+    animation: none;
 }
 
 /**
 loops for grid layout ---------------------------------------------------------
 */
 
-:host([layout=grid_element]) {
-    display: grid;
-    position: relative;
-    grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr) minmax(min-content, 1fr);
-    grid-template-rows: minmax(min-content, 3fr) minmax(min-content, 1fr);
-    grid-template-areas: "join join join" "volume volume leave";
+@media (min-width:481px) {
+    :host {
+        display: grid;
+        grid-template-columns: minmax(min-content, 2fr) minmax(min-content, 1fr);
+        grid-template-rows: minmax(min-content, 2.2fr) minmax(min-content, 1fr);
+        grid-template-areas: "join join" "volume leave";
+
+        container-type: size;
+        container-name: loop;
+    }
 }
 
-:host([layout=grid_element]) #join_loop {
-    grid-area: join;
+@container loop (width < 50vw) {
 
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-areas: "permission participants" "name name" "activity activity";
-    grid-template-rows: 1fr auto 1fr; 
-    align-items: center;
+    .button,
+    button {
+        min-height: initial;
+    }
 
-    border-bottom-width: 0.063rem;
-    border-bottom-style: solid;
-}
+    .icon {
+        width: 9cqw;
+        height: 9cqh;
+    }
 
-:host([layout=grid_element]) #join_loop #loop_permission {
-    grid-area: permission;
-    text-align: center;
-}
+    #join_loop,
+    #leave_loop,
+    #loop_volume {
+        line-height: 10cqh;
+        font-size: 6cqw;
+        height: inherit;
+    }
 
-:host([layout=grid_element]) #join_loop #loop_activity {
-    grid-area: activity;
-    text-align: center;
-    overflow-wrap: break-word;
-    max-height: 4rem;
-    overflow: hidden;
-}
+    #join_loop {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-areas: "permission participants" "name name" "activity activity";
+        grid-template-rows: 1fr auto 1fr;
+    }
 
-:host([layout=grid_element]) #join_loop #loop_participants {
-    grid-area: participants;
-    text-align: center;
-}
+    #join_loop #loop_name {
+        text-align: center;
+        font-size: 10cqw;
+        line-height: 14cqh;
+        padding-left: 0;
+    }
 
-:host([layout=grid_element]) #join_loop #loop_name {
-    grid-area: name;
-    text-align: center;
-    vertical-align: middle;
-}
+    #join_loop .icon {
+        margin-top: 3cqh;
+        margin-bottom: 3cqh;
+    }
 
-:host([layout=grid_element]) #leave_loop {
-    grid-area: leave;
-    text-align: center;
-}
+    #loop_volume {
+        gap: 0;
+    }
 
-:host([layout=grid_element]) #loop_volume {
-    grid-area: volume;
+    #loop_volume .icon {
+        width: 18cqw;
+        margin: 0px;
+        padding-left: 4cqw;
+    }
 
-    display: flex;
-    align-items: center;
+    #loop_volume #loop_volume_indicator_value {
+        width: 18cqw;
+        padding-right: 2cqw;
+    }
 
-    position: relative;
-}
+    #loop_volume #loop_volume_input {
+        height: 10cqh;
+        margin: auto 1cqw;
+    }
 
-:host([layout=grid_element]) #loop_volume .icon {
-    margin-right: 0.5rem;
-    margin-left: 1rem;
-}
+    #loop_volume #loop_volume_input::-webkit-slider-thumb {
+        width: 10cqw;
+        height: 10cqh;
+    }
 
-:host([layout=grid_element]) #loop_volume #loop_volume_input {
-    height: 100%;
-    margin: 0 auto;
-    width: 100%
-}
+    #loop_volume #loop_volume_input::-moz-range-thumb {
+        width: 10cqw;
+        height: 10cqh;
+    }
 
-:host([layout=grid_element]) #loop_volume_input_container {
-    padding-right: 1rem;
-}
+    #loop_volume #loop_volume_input::-moz-range-track {
+        height: 4cqh;
+    }
 
-/**
-loops for list layout ---------------------------------------------------------
-*/
-
-:host([layout=list_element]) {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-areas:
-        "join join join join join join join leave"
-        "volume volume volume volume volume volume leave";
-    grid-template-rows: 1fr auto;
-}
-
-:host([layout=list_element]) #leave_loop {
-    grid-area: leave;
-
-    display: grid;
-    align-items: center;
-
-    font-size: 0.9em;
-    text-align: center;
-}
-
-:host([layout=list_element]) #join_loop {
-    grid-area: join;
-
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-areas: "name name name permission activity activity participants";
-    align-items: center;
-    min-height: 5rem;
-}
-
-:host([layout=list_element]) #join_loop #loop_permission {
-    grid-area: permission;
-    text-align: center;
-}
-
-:host([layout=list_element]) #join_loop #loop_activity {
-    grid-area: activity;
-    text-align: center;
-    overflow-wrap: anywhere;
-}
-
-:host([layout=list_element]) #join_loop #loop_participants {
-    grid-area: participants;
-    text-align: center;
-}
-
-:host([layout=list_element]) #join_loop #loop_name {
-    grid-area: name;
-    text-align: left;
-    vertical-align: middle;
-    padding-left: 0.5em;
-}
-
-:host([layout=list_element]) #loop_volume {
-    grid-area: volume;
-
-    min-height: 1.875rem;
-    display: flex;
-    align-items: center;
-    padding: 0.5em;
-}
-
-:host([layout=list_element]) #loop_volume #loop_volume_input {
-    width: 95%;
+    #join_loop #loop_activity {
+        height: 18cqh;
+        overflow-wrap: break-word;
+        text-align: center;
+    }
 }

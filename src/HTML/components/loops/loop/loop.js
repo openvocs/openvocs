@@ -35,7 +35,6 @@ import ov_Dialog from "/components/dialog/dialog.js";
 
 export default class ov_Loop extends HTMLElement {
     // attributes
-    #layout;
     #state;
 
     // properties
@@ -46,7 +45,6 @@ export default class ov_Loop extends HTMLElement {
     #project;
     #permission;
     #volume;
-    //#layout_pos;
     #layout_page;
     #layout_row;
     #layout_column;
@@ -63,11 +61,6 @@ export default class ov_Loop extends HTMLElement {
         LEAVE: "leave_loop",
         NAME: "loop_name",
         VOLUME: "loop_volume"
-    }
-
-    static LAYOUT = {
-        GRID: "grid_element",
-        LIST: "list_element"
     }
 
     static STATE = {
@@ -103,9 +96,6 @@ export default class ov_Loop extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue)
             return;
-        if (name === "layout") {
-            this.#layout = newValue;
-        }
         if (name === "state") {
             this.#state = newValue;
             if (this.shadowRoot.isConnected) {
@@ -120,14 +110,6 @@ export default class ov_Loop extends HTMLElement {
         if (name === "permission") {
             this.#permission = newValue;
         }
-    }
-
-    set layout(layout) {
-        this.setAttribute("layout", layout);
-    }
-
-    get layout() {
-        return this.#layout;
     }
 
     set state(state) {

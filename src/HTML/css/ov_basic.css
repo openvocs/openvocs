@@ -154,6 +154,7 @@ html {
     color: var(--base_text_color);
     background-color: var(--base_color);
     font-size: var(--base_font_size);
+    overflow: hidden;
 }
 
 *,
@@ -176,10 +177,12 @@ body {
     -webkit-touch-callout: none;
     user-select: none;
     -webkit-user-select: none;
+    overflow: hidden;
 }
 
 #view_container {
     height: 100%;
+    overflow: hidden;
 }
 
 .view {

@@ -1,4 +1,14 @@
+:host {
+    display: grid;
+    grid-template-columns: 6fr 1fr 1fr;
+    grid-template-areas:
+        "join join leave"
+        "volume sip leave";
+    grid-template-rows: 1fr auto;
+}
+
 #loop_sip {
+    grid-area: sip;
     height: inherit;
     border-radius: 0;
     margin: 0;
@@ -6,18 +16,13 @@
 }
 
 :host([state=recv]) #loop_sip,
-:host([state=recv][layout=grid_element]) #loop_volume #loop_volume_input_container {
+:host([state=recv]) #loop_volume #loop_volume_input_container {
     background-color: var(--blue);
 }
 
 :host([state=send]) #loop_sip,
-:host([state=send][layout=grid_element]) #loop_volume #loop_volume_input_container {
+:host([state=send]) #loop_volume #loop_volume_input_container {
     background-color: var(--green);
-}
-
-#loop_volume #loop_volume_input.vertical {
-    writing-mode: vertical-lr;
-    direction: rtl;
 }
 
 .icon.sip-phone-icon {
@@ -40,78 +45,6 @@
 
 :host:not([permission=send]) .icon.sip-phone-icon {
     display: none;
-}
-
-/**
-loops for grid layout ---------------------------------------------------------
-*/
-
-:host([layout=grid_element]) {
-    display: grid;
-    position: relative;
-    grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr) minmax(min-content, 1fr);
-    grid-template-rows: minmax(min-content, 3fr) minmax(min-content, 1fr);
-    grid-template-areas: "join join join" "volume sip leave";
-}
-
-
-:host([layout=grid_element]) #loop_sip {
-    grid-area: sip;
-    text-align: center;
-}
-
-:host([layout=grid_element]) #loop_volume .icon {
-    width: 50%;
-    margin-left: 0.5em;
-    margin-right: 0.25rem;
-}
-
-:host([layout=grid_element]) #loop_volume #loop_volume_input {
-    width: 3rem;
-    height: 100%;
-    padding: 0 auto;
-    background-clip: content-box;
-}
-
-:host([layout=grid_element]) #loop_volume #loop_volume_input::-webkit-slider-thumb {
-    width: 100%;
-}
-
-:host([layout=grid_element]) #loop_volume #loop_volume_input::-moz-range-thumb {
-    width: 100%;
-}
-
-#loop_volume #loop_volume_indicator_value {
-    width: 2em;
-    text-align: right;
-    margin-right: 0.5em;
-}
-
-:host([layout=grid_element]) #loop_volume #loop_volume_input_container {
-    position: absolute;
-    bottom: calc(100% + 0.1rem);
-    background-color: var(--secondary_background_color);
-    width: 100%;
-    padding-top: 0.5rem;
-    border: inherit;
-    box-shadow: inherit;
-    border-bottom: 0;
-    display: none;
-    padding-right: 0;
-    height: 8rem;
-}
-
-/**
-loops for list layout ---------------------------------------------------------
-*/
-
-:host([layout=list_element]) {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-areas:
-        "join join join join join join join leave"
-        "volume volume volume volume volume volume sip leave";
-    grid-template-rows: 1fr auto;
 }
 
 #sip_badge_icon {
@@ -147,4 +80,68 @@ loops for list layout ---------------------------------------------------------
 
 #sip_badge_icon.sip_badge_6 #sip_badge_6 {
     display: inherit;
+}
+
+/**
+loops for grid layout ---------------------------------------------------------
+*/
+@media (min-width:481px) {
+    :host {
+        grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr) minmax(min-content, 1fr);
+        grid-template-rows: minmax(min-content, 2.2fr) minmax(min-content, 1fr);
+        grid-template-areas: "join join join" "volume sip leave";
+    }
+}
+
+@container loop (width < 50vw) {
+    #loop_volume {
+        position: relative;
+        justify-content: center;
+    }
+
+    #loop_volume .icon {
+        width: 9cqw;
+        margin: 0;
+    }
+
+    #loop_volume #loop_volume_input {
+        width: 18cqw;
+        height: 100%;
+        margin: 0 auto;
+        background-clip: content-box;
+    }
+
+    #loop_volume #loop_volume_indicator {
+        width: 11cqw;
+        padding-right: 0;
+    }
+
+    #loop_volume #loop_volume_input::-webkit-slider-thumb {
+        width: 100%;
+    }
+
+    #loop_volume #loop_volume_input::-moz-range-thumb {
+        width: 100%;
+    }
+
+    #loop_volume #loop_volume_input_container {
+        position: absolute;
+        background-color: var(--secondary_background_color);
+        width: 100%;
+        padding-top: 3cqh;
+        border-top: inherit;
+        border-right: inherit;
+        border-left: inherit;
+        border-image: inherit;
+        box-shadow: inherit;
+        border-bottom: 0px;
+        display: none;
+        bottom: 100%;
+        height: 70cqh;
+    }
+
+    #loop_volume #loop_volume_input {
+        writing-mode: vertical-lr;
+        direction: rtl;
+    }
 }

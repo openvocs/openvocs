@@ -127,9 +127,7 @@ export function init() {
     //-------------------------------------------------------------------------
     DOM.page_zoom_factor.addEventListener("change", async function () {
         Loop_View.scale_page(DOM.page_zoom_factor.value);
-        let layout_name = window.innerHeight + "x" + window.innerWidth;
-        let settings = await ov_Vocs.collect_keyset_layout(layout_name, ov_Websockets.current_lead_websocket);
-        Loop_View.resize(settings);
+        //Loop_View.resize();
     });
 
     // ptt options ------------------------------------------------------------

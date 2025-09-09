@@ -49,12 +49,6 @@ export default class ov_Loop_Pages extends HTMLElement {
     #settings;
     #current_page_index;
 
-    static LAYOUT = {
-        GRID: "grid",
-        LIST: "list",
-        AUTO: "auto_grid"
-    }
-
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -109,17 +103,8 @@ export default class ov_Loop_Pages extends HTMLElement {
         return this.#pages;
     }
 
-    get page_index(){
+    get page_index() {
         return this.#current_page_index;
-    }
-
-    #change_layout(new_layout) {
-
-
-        /*let layout = new_layout === ov_Loop_Pages.LAYOUT.GRID ? ov_Loop.LAYOUT.GRID : ov_Loop.LAYOUT.LIST;
-        for (let loop of loops.values) {
-            loop.layout = layout;
-        }*/
     }
 
     async connectedCallback() {
@@ -164,7 +149,7 @@ export default class ov_Loop_Pages extends HTMLElement {
             this.reset_grid();
 
             await this.setup_pages(this.pages.length);
-            this.resize(settings);
+            this.set_layout(settings);
         }
     }
 
@@ -172,7 +157,7 @@ export default class ov_Loop_Pages extends HTMLElement {
         this.#pages[this.#current_page_index].remove(loop);
         this.#loop_elements.removeChild(loop);
 
-        this.resize(this.#settings);
+        this.set_layout(this.#settings);
     }
 
     async add_loop(loop_id, column, row) {
@@ -192,7 +177,7 @@ export default class ov_Loop_Pages extends HTMLElement {
 
         this.#pages[this.#current_page_index].add(loop);
 
-        this.resize(this.#settings);
+        this.set_layout(this.#settings);
     }
 
     reset_grid() {
@@ -206,41 +191,22 @@ export default class ov_Loop_Pages extends HTMLElement {
         }
     }
 
-    async resize(settings) {
+    set_layout(settings) {
         this.#settings = settings;
-        if (SITE_SCALING_FACTOR !== settings.site_scaling) {
-            this.scale_page(settings.site_scaling);
-        }
-
-        if (this.layout !== settings.layout)
-            this.layout = settings.layout;
-
-        if (settings.layout === ov_Loop_Pages.LAYOUT.LIST) {
-            this.#apply_list_layout();
-        } else if (this.pages) {
-            this.reset_grid();
-            if (settings.layout === ov_Loop_Pages.LAYOUT.GRID) {
-                this.rows = settings.grid_rows > this.rows ? settings.grid_rows : this.rows;
-                this.columns = settings.grid_columns > this.columns ? settings.grid_columns : this.columns;
-            }
-
-            this.#apply_grid_layout(this.columns, this.rows);
-
-            if (this.layout === ov_Loop_Pages.LAYOUT.AUTO) {
-                let scrollbar = this.#loop_elements.scrollHeight > this.#loop_elements.clientHeight;
-                if (scrollbar)
-                    this.#apply_list_layout();
-            }
-        }
+        this.reset_grid();
+        this.rows = settings.grid_rows > this.rows ? settings.grid_rows : this.rows;
+        this.columns = settings.grid_columns > this.columns ? settings.grid_columns : this.columns;
+        if (this.shadowRoot.host)
+            this.#format_grid(this.columns, this.rows);
 
         for (let page of this.pages) {
             for (let loop of page.values) {
-                loop.update_name_size(settings.name_scaling);
-                loop.update_font_size(settings.font_scaling);
+                loop.style.gridColumn = loop.layout_pos.column;
+                loop.style.gridRow = loop.layout_pos.row;
             }
         }
 
-        this.show_page(this.#current_page_index);
+        return { columns: this.columns, rows: this.rows };
     }
 
     scale_page(value) {
@@ -271,7 +237,8 @@ export default class ov_Loop_Pages extends HTMLElement {
                 this.shadowRoot.querySelectorAll(".loopelement_grid_empty").forEach((element) => {
                     element.parentElement.removeChild(element);
                 });
-                if (this.layout !== ov_Loop.LAYOUT.LIST) {
+                console.log("HERE")
+                if (window.matchMedia("(width > 480px)").matches) {
                     let number_of_empty_cells = (this.rows * this.columns) - page.length;
                     for (let i = 0; i < number_of_empty_cells; i++) {
                         let empty_loop_element = document.createElement("div");
@@ -292,35 +259,6 @@ export default class ov_Loop_Pages extends HTMLElement {
                 }
             } else
                 page.hide();
-        }
-    }
-
-    //-----------------------------------------------------------------------------
-    // layouts
-    //-----------------------------------------------------------------------------
-    async #apply_list_layout() {
-        this.#loop_elements.classList.remove("loops_grid");
-        this.#loop_elements.classList.add("loops_list");
-        for (let page of this.pages)
-            for (let loop of page.values)
-                loop.layout = ov_Loop.LAYOUT.LIST;
-        for (let empty_loop of document.querySelectorAll(".loopelement_grid_empty"))
-            empty_loop.parentElement.removeChild(empty_loop);
-    }
-
-    async #apply_grid_layout(columns, rows) {
-        this.#loop_elements.classList.remove("loops_list");
-        this.#loop_elements.classList.add("loops_grid");
-
-        if (this.shadowRoot.host)
-            this.#format_grid(columns, rows);
-
-        for (let page of this.pages) {
-            for (let loop of page.values) {
-                loop.layout = ov_Loop.LAYOUT.GRID;
-                loop.style.gridColumn = loop.layout_pos.column;
-                loop.style.gridRow = loop.layout_pos.row;
-            }
         }
     }
 
