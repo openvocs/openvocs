@@ -1,6 +1,6 @@
 :host {
     cursor: pointer;
-    border: solid var(--base_color) 0.2rem;
+    border: solid var(--base_color) 0.2em;
 
     display: grid;
     grid-template-columns: minmax(min-content, 7fr) minmax(min-content, 1fr);
@@ -9,21 +9,21 @@
         "volume leave";
 }
 
-.icon {
-    margin: 0.25rem;
-    width: 1.1rem;
-    height: 1.1rem;
-    display: inline-block;
-}
-
 #join_loop,
 #leave_loop,
 #loop_volume {
     height: inherit;
     border-radius: 0;
     margin: 0;
-    line-height: 1rem;
+    line-height: 1em;
     font-size: 1rem;
+}
+
+.icon {
+    margin: 0.25em;
+    width: 0.9em;
+    height: 0.9em;
+    display: inline-block;
 }
 
 #join_loop {
@@ -36,14 +36,13 @@
         "activity activity   activity    ";
     grid-template-rows: 1.5fr 1fr;
     align-items: center;
-    min-height: 5rem;
-    border-bottom-width: 0.063rem;
+    min-height: 5em;
+    border-bottom-width: 0.063em;
     border-bottom-style: solid;
-    /*border-bottom-color: var(--black_transparent_64);*/
 }
 
 #join_loop .icon {
-    margin-top: 0.5rem;
+    margin-top: 0.5em;
 }
 
 #join_loop svg {
@@ -54,10 +53,10 @@
     grid-area: name;
     color: var(--base_text_color);
     vertical-align: middle;
-    font-size: 1.5rem;
-    line-height: 2rem;
+    font-size: 1.5em;
+    line-height: 1.2em;
     text-align: left;
-    padding-left: 0.5rem;
+    padding-left: 0.25em;
 }
 
 #join_loop #loop_permission {
@@ -66,10 +65,11 @@
 
 #join_loop #loop_activity {
     grid-area: activity;
-    height: 1.5rem;
-    font-size: 1.1rem;
+    height: 1em;
+    font-size: 1.1em;
     text-align: left;
     overflow: hidden;
+    padding-left: 0.5em;
 }
 
 #join_loop #loop_participants {
@@ -79,31 +79,31 @@
 #loop_volume {
     grid-area: volume;
     display: flex;
-    gap: 0.2rem;
+    gap: 0.2em;
     align-items: center;
 }
 
 #loop_volume .icon {
-    margin-left: 0.5rem;
-    width: 1.5rem;
+    margin-left: 0.5em;
+    width: 1.5em;
 }
 
 #loop_volume #loop_volume_indicator_value {
-    width: 1.5rem;
+    width: 1.5em;
     text-align: right;
 }
 
 #loop_volume #loop_volume_input {
     -webkit-appearance: none;
-    height: 1.5rem;
+    height: 1.5em;
     outline: none;
-    margin: auto 0.1rem;
+    margin: auto 0.1em;
     border-radius: 0;
     background: var(--black_transparent_78);
     width: 95%;
 }
 
-#loop_volume #loop_volume_input_container{
+#loop_volume #loop_volume_input_container {
     flex-grow: 1;
 }
 
@@ -113,16 +113,16 @@
 
 #loop_volume #loop_volume_input::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.5em;
+    height: 1.5em;
     cursor: pointer;
     background: var(--black_transparent_50);
 }
 
 #loop_volume #loop_volume_input::-moz-range-thumb {
     -webkit-appearance: none;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.5em;
+    height: 1.5em;
     cursor: pointer;
     border: transparent;
     border-radius: 0;
@@ -131,7 +131,7 @@
 
 #loop_volume #loop_volume_input::-moz-range-track {
     width: 100%;
-    height: 0.5rem;
+    height: 0.5em;
     cursor: pointer;
     background: transparent;
 }
@@ -159,7 +159,7 @@
 :host([state=recv].activity),
 :host([state=send].activity),
 :host(.vad) {
-    border: solid var(--white) 0.2rem;
+    border: solid var(--white) 0.2em;
     animation: none;
 }
 
@@ -171,7 +171,7 @@ loops for grid layout ---------------------------------------------------------
     :host {
         display: grid;
         grid-template-columns: minmax(min-content, 2fr) minmax(min-content, 1fr);
-        grid-template-rows: minmax(min-content, 2.2fr) minmax(min-content, 1fr);
+        grid-template-rows: minmax(min-content, 2fr) minmax(min-content, 1fr);
         grid-template-areas: "join join" "volume leave";
 
         container-type: size;
@@ -186,17 +186,10 @@ loops for grid layout ---------------------------------------------------------
         min-height: initial;
     }
 
-    .icon {
-        width: 9cqw;
-        height: 9cqh;
-    }
-
     #join_loop,
     #leave_loop,
     #loop_volume {
-        line-height: 10cqh;
-        font-size: 6cqw;
-        height: inherit;
+        font-size: clamp(6px, calc(3cqh + 3cqw), 1rem);
     }
 
     #join_loop {
@@ -207,52 +200,17 @@ loops for grid layout ---------------------------------------------------------
 
     #join_loop #loop_name {
         text-align: center;
-        font-size: 10cqw;
-        line-height: 14cqh;
+        font-size: clamp(10px, calc(5cqh + 5cqw), 1.8rem);
         padding-left: 0;
     }
 
-    #join_loop .icon {
-        margin-top: 3cqh;
-        margin-bottom: 3cqh;
-    }
-
-    #loop_volume {
-        gap: 0;
-    }
-
     #loop_volume .icon {
-        width: 18cqw;
-        margin: 0px;
-        padding-left: 4cqw;
-    }
-
-    #loop_volume #loop_volume_indicator_value {
-        width: 18cqw;
-        padding-right: 2cqw;
-    }
-
-    #loop_volume #loop_volume_input {
-        height: 10cqh;
-        margin: auto 1cqw;
-    }
-
-    #loop_volume #loop_volume_input::-webkit-slider-thumb {
-        width: 10cqw;
-        height: 10cqh;
-    }
-
-    #loop_volume #loop_volume_input::-moz-range-thumb {
-        width: 10cqw;
-        height: 10cqh;
-    }
-
-    #loop_volume #loop_volume_input::-moz-range-track {
-        height: 4cqh;
+        width: 1.2em;
+        height:1.2em;
     }
 
     #join_loop #loop_activity {
-        height: 18cqh;
+        /* height: 18cqh; */
         overflow-wrap: break-word;
         text-align: center;
     }
