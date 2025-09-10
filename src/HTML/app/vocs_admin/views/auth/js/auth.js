@@ -69,8 +69,8 @@ async function loadCSS() {
     return style;
 }
 
-function disconnect_handler() {
+function disconnect_handler(ws) {
     console.log("(login) logged out");
     console.warn("(login) Lead server disconnected.");
-    View.display_disconnect_notice(ov_Websockets.prime_websocket.server_error);
+    View.display_disconnect_notice(ws.server_error);
 }
