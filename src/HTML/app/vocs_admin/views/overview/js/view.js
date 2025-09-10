@@ -67,6 +67,10 @@ export async function init(view_id) {
     DOM.logout_button = document.getElementById("logout_button");
     DOM.loading_screen = document.getElementById("loading_screen");
 
+    DOM.loading_screen.addEventListener("loading_button_clicked", () => {
+        DOM.menu_slider.toggle();
+    });
+
     DOM.reload_broadcast = document.getElementById("reload_broadcast");
     DOM.switch_server_id = document.getElementById("switch_server_id");
     DOM.switch_server_broadcast = document.getElementById("switch_server_broadcast");

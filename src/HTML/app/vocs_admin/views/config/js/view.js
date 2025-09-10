@@ -118,6 +118,10 @@ export async function init(view_id, container, type) {
         document.querySelector("#layout_page_button + label").style.display = "none";
     }
 
+    DOM.loading_screen.addEventListener("loading_button_clicked", () => {
+        DOM.menu_slider.toggle();
+    });
+
     DOM.menu_button.addEventListener("click", () => {
         DOM.menu_slider.toggle();
     });
