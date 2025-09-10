@@ -84,9 +84,9 @@
 		});
 
 		async function login(websocket) {
-			let result = await ov_Auth.relogin(websocket);
+			let result = await ov_Auth.collect_roles(websocket);
 			if (result)
-				result = await ov_Auth.collect_roles(websocket);
+				result = await ov_Auth.relogin(websocket);
 			return result;
 		}
 	</script>
