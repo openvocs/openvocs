@@ -386,8 +386,22 @@ export async function render_project(project, domain, id, domain_id, page) {
         DOM.config_name.innerText = name;
     else
         DOM.config_name.innerText = "[New Project]";
+
+
+    Project_Settings.render(project, id, domain_id);
+    Config_RBAC.render(domain, project);
+    let loops = { ...project.loops, ...domain.loops };
+    console.log(await request_settings(id))
+    Config_Layout.render(project.roles, loops, await request_settings(id));
+    Config_Layout.disable_settings(false);
+    let roles = { ...project.roles, ...domain.roles };
+    if (SIP)
+        Config_SIP.render(project.loops, roles);
+    if (RECORDER)
+        Config_Recorder.render(project.loops);
+
     DOM.sub_view_nav.addEventListener("change", () => {
-        for(let ws of ov_Websockets.list){
+        for (let ws of ov_Websockets.list) {
             ov_Web_Storage.add_anchor_to_session(ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
         }
         DOM.sub_view.className = DOM.sub_view_nav.value;
@@ -412,18 +426,6 @@ export async function render_project(project, domain, id, domain_id, page) {
         DOM.sub_view_nav.value = page;
     else
         DOM.sub_view_nav.value = "settings";
-
-    Project_Settings.render(project, id, domain_id);
-    Config_RBAC.render(domain, project);
-    let loops = { ...project.loops, ...domain.loops };
-    Config_Layout.render(project.roles, loops, await request_settings(id));
-    Config_Layout.disable_settings(false);
-    let roles = { ...project.roles, ...domain.roles };
-    if (SIP)
-        Config_SIP.render(project.loops, roles);
-    if (RECORDER)
-        Config_Recorder.render(project.loops);
-
 }
 
 export async function render_domain(domain, id, page) {
@@ -435,7 +437,7 @@ export async function render_domain(domain, id, page) {
         DOM.config_name.innerText = "[New Domain]";
     DOM.sub_view_nav.addEventListener("change", () => {
         DOM.sub_view.className = DOM.sub_view_nav.value;
-        for(let ws of ov_Websockets.list){
+        for (let ws of ov_Websockets.list) {
             ov_Web_Storage.add_anchor_to_session(ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
         }
         if (DOM.sub_view_nav.value === "rbac")

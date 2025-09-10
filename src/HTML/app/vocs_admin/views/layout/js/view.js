@@ -51,8 +51,10 @@ export function init(view_id) {
 
     let menu = document.querySelector("#menu");
     menu.onclick = (event) => {
-        if (event.target === menu)
+        if (event.target === menu){
+            show_page();
             menu.close();
+        }
     }
     document.querySelector("#open_menu").addEventListener("click", () => {
         menu.showModal();
@@ -96,6 +98,7 @@ export function init(view_id) {
                 event.detail.loop.style.removeProperty("border");
             }
         }
+        show_page();
     });
 }
 
