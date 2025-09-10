@@ -160,6 +160,16 @@ export default class ov_Loop_Pages extends HTMLElement {
         this.#loop_elements.removeChild(loop);
 
         this.set_layout(this.#settings);
+        this.show_page(this.#current_page_index);
+    }
+
+    remove_loop_with_id(loop_id) {
+        let loop = this.#pages[this.#current_page_index].find(loop_id);
+        this.remove_loop(loop);
+    }
+
+    has_loop(loop_id) {
+        return this.#pages[this.#current_page_index].has(loop_id);
     }
 
     async add_loop(loop_id, column, row) {
@@ -246,8 +256,8 @@ export default class ov_Loop_Pages extends HTMLElement {
                         empty_loop_element.classList.add("loopelement_grid_empty");
                         this.#loop_elements.appendChild(empty_loop_element);
 
-                        let loop_pos = empty_loop_element.getBoundingClientRect();
                         empty_loop_element.addEventListener("click", () => {
+                            let loop_pos = empty_loop_element.getBoundingClientRect();
                             this.dispatchEvent(new CustomEvent("loop_selected", {
                                 bubbles: true, detail: {
                                     loop: empty_loop_element,

@@ -77,8 +77,11 @@ export function init(view_id) {
 
         DOM.select_loop.onchange = () => {
             DOM.loops.remove_loop(event.detail.loop);
-            if (DOM.select_loop.value)
+            if (DOM.select_loop.value){
+                if(DOM.loops.has_loop(DOM.select_loop.value))
+                    DOM.loops.remove_loop_with_id(DOM.select_loop.value);
                 DOM.loops.add_loop(DOM.select_loop.value, event.detail.column, event.detail.row);
+            }
             DOM.select_loop_dialog.close();
             event.detail.loop.style.removeProperty("border");
         }
