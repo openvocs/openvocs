@@ -28,6 +28,7 @@
     ---------------------------------------------------------------------------
 */
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
 import * as Project_Settings from "../../project_settings/js/settings.js";
 import * as Domain_Settings from "../../domain_settings/js/settings.js";
 import * as Config_RBAC from "../../config_rbac/js/rbac.js";
@@ -373,7 +374,7 @@ export function render_user(user) {
     DOM.menu_slider.value = user.name;
 }
 
-export async function render_project(project, domain, id, domain_id) {
+export async function render_project(project, domain, id, domain_id, page) {
     id = id ? id : project.id;
     domain_id = domain_id ? domain_id : project.domain;
     let name = project.name ? project.name : id;
@@ -382,6 +383,9 @@ export async function render_project(project, domain, id, domain_id) {
     else
         DOM.config_name.innerText = "[New Project]";
     DOM.sub_view_nav.addEventListener("change", () => {
+        for(let ws of ov_Websockets.list){
+            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
+        }
         DOM.sub_view.className = DOM.sub_view_nav.value;
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();
@@ -400,7 +404,10 @@ export async function render_project(project, domain, id, domain_id) {
             Config_Recorder.render(proj_config.loops);
         }
     });
-    DOM.sub_view_nav.value = "settings";
+    if (page)
+        DOM.sub_view_nav.value = page;
+    else
+        DOM.sub_view_nav.value = "settings";
 
     Project_Settings.render(project, id, domain_id);
     Config_RBAC.render(domain, project);
@@ -415,7 +422,7 @@ export async function render_project(project, domain, id, domain_id) {
 
 }
 
-export async function render_domain(domain, id) {
+export async function render_domain(domain, id, page) {
     id = id ? id : domain.id;
     let name = domain.name ? domain.name : id;
     if (name)
@@ -424,6 +431,9 @@ export async function render_domain(domain, id) {
         DOM.config_name.innerText = "[New Domain]";
     DOM.sub_view_nav.addEventListener("change", () => {
         DOM.sub_view.className = DOM.sub_view_nav.value;
+        for(let ws of ov_Websockets.list){
+            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
+        }
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();
         else if (DOM.sub_view_nav.value === "layout") {
@@ -447,7 +457,10 @@ export async function render_domain(domain, id) {
             Config_Recorder.render(config.loops);
         }
     });
-    DOM.sub_view_nav.value = "settings";
+    if (page)
+        DOM.sub_view_nav.value = page;
+    else
+        DOM.sub_view_nav.value = "settings";
 
     Domain_Settings.render(domain, id);
     Config_RBAC.render(domain);

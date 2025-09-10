@@ -30,6 +30,7 @@
         import * as ov_Websockets from "/lib/ov_websocket_list.js";
         import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
         import * as ov_Auth from "/lib/ov_auth.js";
+        import * as ov_DB from "/lib/ov_db.js";
 
         import * as Auth_View from "./views/auth/js/auth.js";
         import * as Overview from "./views/overview/js/overview.js";
@@ -79,12 +80,29 @@
                 }
 
                 if (await prime_login) {
-                    await Overview.render(view_container);
+                    let session = ov_Web_Storage.get_session(ov_Websockets.prime_websocket.websocket_url);
+                    if (session.domain) {
+                        ov_Websockets.user().domain = session.domain;
+                        ov_Websockets.user().project = session.project;
+                        if (session.project) {
+                            loading_screen.show("Loading project...")
+                            await ov_DB.domains();
+                            await ov_DB.projects();
+                            console.log("switch to project view", session.project, session.domain);
+                            await Config_View.render_project(view_container, ov_Websockets.user(), session.page);
+                        } else {
+                            console.log("switch to domain view", session.section_domain);
+                            await Config_View.render_domain(view_container, ov_Websockets.user(), session.page);
+                        }
+
+                    } else
+                        await Overview.render(view_container);
                     return;
                 }
             }
 
             await Auth_View.render(view_container);
+
         });
 
 
