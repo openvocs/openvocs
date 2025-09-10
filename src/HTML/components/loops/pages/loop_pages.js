@@ -128,6 +128,13 @@ export default class ov_Loop_Pages extends HTMLElement {
             if (!this.pages)
                 return;
 
+            this.set_layout(settings);
+
+            this.setup_pages(this.pages.length);
+            if (!this.#current_page_index)
+                this.#current_page_index = 0;
+            this.show_page(this.#current_page_index);
+
             for (let page of this.pages) {
                 page.sort();
                 for (let loop of page.values) {
@@ -145,11 +152,6 @@ export default class ov_Loop_Pages extends HTMLElement {
                     });
                 }
             }
-
-            this.reset_grid();
-
-            await this.setup_pages(this.pages.length);
-            this.set_layout(settings);
         }
     }
 
@@ -221,7 +223,7 @@ export default class ov_Loop_Pages extends HTMLElement {
     // pages
     //-----------------------------------------------------------------------------
 
-    async setup_pages(number) {
+    setup_pages(number) {
         if (number > this.pages.length) {
             for (let index = this.pages.length - 1; index < number; index++)
                 this.pages.push(new Loop_List());
@@ -237,7 +239,6 @@ export default class ov_Loop_Pages extends HTMLElement {
                 this.shadowRoot.querySelectorAll(".loopelement_grid_empty").forEach((element) => {
                     element.parentElement.removeChild(element);
                 });
-                console.log("HERE")
                 if (window.matchMedia("(width > 480px)").matches) {
                     let number_of_empty_cells = (this.rows * this.columns) - page.length;
                     for (let i = 0; i < number_of_empty_cells; i++) {
