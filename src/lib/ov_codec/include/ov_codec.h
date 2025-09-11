@@ -127,6 +127,15 @@ int32_t ov_codec_decode(ov_codec *codec,
 /*----------------------------------------------------------------------------*/
 
 /**
+ * Get standard payload type for RTP for this codec.
+ * If there is no standard payload type (like for Opus, where the payload type
+ * has to be negotiated amongst RTP peers), a negative number will be returned.
+ */
+int8_t ov_codec_get_rtp_payload_type(ov_codec const *codec);
+
+/*----------------------------------------------------------------------------*/
+
+/**
  * Create and return a JSON object resembling specific parameters.
  * These might include some definition of output bandwidth etc.
  */
@@ -238,6 +247,14 @@ struct ov_codec_struct {
      * SSID of the stream this codec is associated with.
      */
     uint32_t ssid;
+
+    /**
+     * Payload type number for RTP streams of this codec if defined.
+     * A negative number indicates that there is no fixed payload type for this
+     * codec defined. You have to get your payload type somewhere else.
+     * In that case, you can leave this function pointer at 0.
+     */
+    int8_t (*rtp_payload_type)(ov_codec const *);
 
     /**
      * Don't touch!

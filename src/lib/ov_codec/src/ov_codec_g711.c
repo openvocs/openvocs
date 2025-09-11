@@ -122,6 +122,20 @@ error:
  *                             PRIVATE FUNCTIONS
  ******************************************************************************/
 
+static int8_t impl_rtp_payload_type_alaw(ov_codec const *codec) {
+    UNUSED(codec);
+    return 8;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static int8_t impl_rtp_payload_type_ulaw(ov_codec const *codec) {
+    UNUSED(codec);
+    return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static ov_codec *impl_codec_create(uint32_t ssid,
                                    const ov_json_value *parameters) {
 
@@ -153,11 +167,13 @@ static ov_codec *impl_codec_create(uint32_t ssid,
         case ULAW:
             g711->expand = ulaw_expand;
             g711->compress = ulaw_compress;
+            g711->codec.rtp_payload_type = impl_rtp_payload_type_ulaw;
             break;
 
         case ALAW:
             g711->expand = alaw_expand;
             g711->compress = alaw_compress;
+            g711->codec.rtp_payload_type = impl_rtp_payload_type_alaw;
             break;
 
         default:
