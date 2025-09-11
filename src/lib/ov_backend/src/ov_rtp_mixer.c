@@ -56,6 +56,9 @@ struct ov_rtp_mixer_struct {
 
         size_t decoded_frame_length_samples;
 
+
+        uint32_t ssid_to_cancel;
+
     } settings;
 
     struct {
@@ -236,6 +239,8 @@ ov_rtp_mixer *ov_rtp_mixer_create(ov_rtp_mixer_config cfg) {
     mixer->settings.decoded_frame_length_samples = ov_convert_msecs_to_samples(
         mixer->settings.frame_length_ms, OV_DEFAULT_SAMPLERATE);
 
+    mixer->settings.ssid_to_cancel = cfg.ssid_to_cancel;
+
     mixer->comfort_noise.noisy_frame_16bit =
         create_comfort_noise_for_default_frame(mixer);
 
@@ -284,9 +289,17 @@ static ov_rtp_frame *frame_buffer_add(ov_thread_lock *lock,
 
 bool ov_rtp_mixer_add_frame(ov_rtp_mixer *self, ov_rtp_frame *frame) {
     if (ov_ptr_valid(
-            self, "Cannot add RTP frame to mixing buffer - invalid pointer")) {
-        ov_rtp_frame_free(frame_buffer_add(&self->frame_buffer_lock,
-                                           self->frame_buffer, frame));
+            self, "Cannot add RTP frame to mixing buffer - invalid pointer") &&
+        ov_ptr_valid(
+            frame, "Cannot add RTP frame to mixing buffer - invalid pointer")) {
+
+        if (self->settings.ssid_to_cancel == frame->expanded.ssrc) {
+            ov_rtp_frame_free(frame);
+        } else {
+            ov_rtp_frame_free(frame_buffer_add(&self->frame_buffer_lock,
+                                               self->frame_buffer, frame));
+        }
+
         return true;
 
     } else {
@@ -354,11 +367,11 @@ static ov_buffer *mix_frames(ov_rtp_mixer *self, ov_list *frames,
             (ov_ptr_valid(decoded_16bit, "Could not decode RTP frame") &&
              ov_cond_valid(decoded_len_16bit == decoded_16bit->length,
                            "Decoded RTP frame has unexpected length") &&
-             (ov_cond_valid(
-                 ov_pcm_16_scale_to_32(
-                     decoded_frame_length_samples, (int16_t *)decoded_16bit->start,
-                     (int32_t *)decoded_32bit->start, 1.0, 0, 0),
-                 "Could not scale decoded PCM to 32 bit")) &&
+             (ov_cond_valid(ov_pcm_16_scale_to_32(
+                                decoded_frame_length_samples,
+                                (int16_t *)decoded_16bit->start,
+                                (int32_t *)decoded_32bit->start, 1.0, 0, 0),
+                            "Could not scale decoded PCM to 32 bit")) &&
              ov_cond_valid(ov_pcm_32_add(decoded_frame_length_samples,
                                          (int32_t *)mixed_32bit->start,
                                          (int32_t *)decoded_32bit->start),
