@@ -21,8 +21,8 @@
 
 .icon {
     margin: 0.25em;
-    width: 0.9em;
-    height: 0.9em;
+    width: 1em;
+    height: 1em;
     display: inline-block;
 }
 
@@ -170,7 +170,7 @@ loops for grid layout ---------------------------------------------------------
 @media (min-width:481px) {
     :host {
         display: grid;
-        grid-template-columns: minmax(min-content, 2fr) minmax(min-content, 1fr);
+        grid-template-columns: minmax(min-content, 1.8fr) minmax(min-content, 1fr);
         grid-template-rows: minmax(min-content, 2fr) minmax(min-content, 1fr);
         grid-template-areas: "join join" "volume leave";
 
@@ -189,7 +189,7 @@ loops for grid layout ---------------------------------------------------------
     #join_loop,
     #leave_loop,
     #loop_volume {
-        font-size: clamp(6px, calc(3cqh + 3cqw), 1rem);
+        font-size: clamp(6px, calc(3.5cqh + 3.5cqw), 1.5rem);
     }
 
     #join_loop {
@@ -202,11 +202,6 @@ loops for grid layout ---------------------------------------------------------
         text-align: center;
         font-size: clamp(10px, calc(5cqh + 5cqw), 1.8rem);
         padding-left: 0;
-    }
-
-    #loop_volume .icon {
-        width: 1.2em;
-        height:1.2em;
     }
 
     #join_loop #loop_activity {
