@@ -132,9 +132,6 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_id(text) {
         this.#node_id = text;
-        if (text && !this.node_abbreviation && (!this.node_name || this.node_name.length > 16)) {
-            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
-        }
     }
 
     get node_id() {
@@ -154,7 +151,7 @@ export default class ov_RBAC_Node extends HTMLElement {
     set node_abbreviation(text) {
         this.#node_abbreviation = text;
         if (text && (!this.node_name || this.node_name.length > 16))
-            this.value = text;
+            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
     }
 
     get node_abbreviation() {
