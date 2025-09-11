@@ -51,7 +51,7 @@ export function init(view_id) {
 
     let menu = document.querySelector("#menu");
     menu.onclick = (event) => {
-        if (event.target === menu){
+        if (event.target === menu) {
             show_page();
             menu.close();
         }
@@ -79,13 +79,14 @@ export function init(view_id) {
 
         DOM.select_loop.onchange = () => {
             DOM.loops.remove_loop(event.detail.loop);
-            if (DOM.select_loop.value){
-                if(DOM.loops.has_loop(DOM.select_loop.value))
+            if (DOM.select_loop.value) {
+                if (DOM.loops.has_loop(DOM.select_loop.value))
                     DOM.loops.remove_loop_with_id(DOM.select_loop.value);
                 DOM.loops.add_loop(DOM.select_loop.value, event.detail.column, event.detail.row);
             }
             DOM.select_loop_dialog.close();
             event.detail.loop.style.removeProperty("border");
+            show_page();
         }
 
         event.detail.loop.style.border = "solid var(--green)";
@@ -98,13 +99,13 @@ export function init(view_id) {
                 event.detail.loop.style.removeProperty("border");
             }
         }
-        show_page();
     });
 }
 
 export async function render(roles, loops, settings) {
     if (!settings)
         settings = collect_page_layout();
+
     loops_data = loops;
     roles_data = roles;
     DOM.role_selector.replaceChildren();
@@ -147,7 +148,7 @@ export function disable_settings(value) {
 async function render_role() {
     if (loops_data) {
         save_role();
-        current_role = DOM.role_selector.value
+        current_role = DOM.role_selector.value;
 
         let role_loops = {};
         for (let loop_id of Object.keys(loops_data)) {
@@ -176,8 +177,9 @@ function setup_pages(number) {
     }
 }
 
-function show_page() {
-    DOM.loops.show_page(DOM.page_selector.value);
+async function show_page() {
+    await DOM.loops.show_page(DOM.page_selector.value);
+    update_loop_select();
 }
 
 function save_role() {
@@ -196,15 +198,18 @@ function save_role() {
     }
 }
 
+var default_option = document.createElement("option");
+default_option.value = "";
+default_option.selected = true;
+
 async function render_loops(loops) {
+
     await DOM.loops.draw(loops, collect_page_layout());
 
     change_setting();
 
-    let default_option = document.createElement("option");
-    default_option.value = "";
-    default_option.selected = true;
     DOM.select_loop.replaceChildren(default_option);
+
     let options = [];
     for (let loop_id of Object.keys(loops)) {
         let element = document.createElement("option");
@@ -212,9 +217,26 @@ async function render_loops(loops) {
         element.innerText = loops[loop_id].name ? loops[loop_id].name : loop_id;
         options.push(element);
     }
-    options.sort((a, b) => a.innerText > b.innerText ? 1 : 0);
+
+    update_loop_select(options);
+}
+
+function update_loop_select(options) {
+    if (!options)
+        options = Array.from(DOM.select_loop.options);
+    DOM.select_loop.replaceChildren(default_option);
+
     for (let option of options)
+        option.classList.toggle("used", DOM.loops.has_loop(option.value));
+
+    options.sort((a, b) => (a.classList.contains("used") && b.classList.contains("used")) ||
+        (!a.classList.contains("used") && !b.classList.contains("used")) ?
+        (a.innerText > b.innerText ? 1 : 0) :
+        (a.classList.contains("used") ? 1 : 0));
+
+    for (let option of options) {
         DOM.select_loop.appendChild(option);
+    }
 }
 
 export function collect_page_layout() {
@@ -225,7 +247,7 @@ export function collect_page_layout() {
 }
 
 function change_setting() {
-    if (DOM.loops){
+    if (DOM.loops) {
         let layout = DOM.loops.set_layout(collect_page_layout());
         DOM.grid_columns.value = layout.columns;
         DOM.grid_rows.value = layout.rows;

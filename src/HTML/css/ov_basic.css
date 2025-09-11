@@ -105,6 +105,7 @@
     /* alt: --black_transparent_78 */
     --input_border_color: var(--white_transparent_64);
     --input_text_color: var(--black_transparent_8);
+    --input_highlight_text_color: var(--black_transparent_50);
     --input_disabled_background_color: var(--white_transparent_50);
     --input_disabled_border_color: var(--white_transparent_78);
     --input_active_border_color: var(--white_transparent_8);
@@ -144,6 +145,7 @@
     --input_background_color: var(--white_transparent_22);
     --input_border_color: var(--black_transparent_64);
     --input_text_color: var(--black_transparent_8);
+    --input_highlight_text_color: var(--black_transparent_50);
     --input_disabled_background_color: var(--black_transparent_92);
     --input_disabled_border_color: var(--black_transparent_78);
     --input_active_border_color: var(--black_transparent_36);
