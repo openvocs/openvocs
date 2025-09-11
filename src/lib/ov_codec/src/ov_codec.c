@@ -373,10 +373,22 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_codec_get_parameters(const ov_codec *codec) {
-
+int8_t ov_codec_get_rtp_payload_type(ov_codec const *codec) {
     if (0 == codec) {
+        ov_log_error(
+            "Cannot get RTP payload type for undefined codec (null pointer)");
+        return 0;
+    } else if (0 == codec->rtp_payload_type) {
+        return -1;
+    } else {
+        return codec->rtp_payload_type(codec);
+    }
+}
 
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_codec_get_parameters(const ov_codec *codec) {
+    if (0 == codec) {
         ov_log_error("No codec given");
         return 0;
     }
@@ -389,15 +401,12 @@ ov_json_value *ov_codec_get_parameters(const ov_codec *codec) {
 /*----------------------------------------------------------------------------*/
 
 uint32_t ov_codec_get_samplerate_hertz(ov_codec const *codec) {
-
     if (0 == codec) {
-
         ov_log_error("No codec given");
         return 0;
     }
 
     if (0 == codec->get_samplerate_hertz) {
-
         ov_log_info("Codec does not provide samplerate - assuming default one");
         return OV_DEFAULT_SAMPLERATE;
     }
@@ -410,7 +419,6 @@ uint32_t ov_codec_get_samplerate_hertz(ov_codec const *codec) {
  ******************************************************************************/
 
 ov_json_value *ov_codec_to_json(const ov_codec *codec) {
-
     ov_json_value *json = 0;
 
     if (0 == codec) goto error;
@@ -436,7 +444,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 uint32_t ov_codec_parameters_get_sample_rate_hertz(const ov_json_value *json) {
-
     if (0 == json) goto error;
 
     double sample_rate_hertz =
@@ -458,7 +465,6 @@ error:
 
 bool ov_codec_parameters_set_sample_rate_hertz(ov_json_value *json,
                                                uint32_t sample_rate_hertz) {
-
     ov_json_value *old = 0;
 
     if (0 == json) goto error;
@@ -472,8 +478,7 @@ bool ov_codec_parameters_set_sample_rate_hertz(ov_json_value *json,
         goto error;
     }
 
-    if (!ov_json_object_set(json,
-                            OV_KEY_SAMPLE_RATE_HERTZ,
+    if (!ov_json_object_set(json, OV_KEY_SAMPLE_RATE_HERTZ,
                             ov_json_number(sample_rate_hertz))) {
         goto error;
     }
@@ -504,7 +509,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_codec_enable_resampling(ov_codec *codec) {
-
     if (0 == codec) {
         goto error;
     }
