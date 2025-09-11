@@ -222,14 +222,6 @@ export default class ov_Loop_Pages extends HTMLElement {
         return { columns: this.columns, rows: this.rows };
     }
 
-    scale_page(value) {
-        SITE_SCALING_FACTOR = value;
-        let orig_font_size = parseFloat(getComputedStyle(document.documentElement)
-            .getPropertyValue('--orig_base_font_size'));
-        let new_font_size = orig_font_size * parseFloat(value);
-        document.documentElement.style.setProperty('--base_font_size', new_font_size + "px");
-    }
-
     //-----------------------------------------------------------------------------
     // pages
     //-----------------------------------------------------------------------------

@@ -12,8 +12,7 @@
 
 :root,
 ::backdrop {
-    --base_font_size: 12px;
-    --orig_base_font_size: 12px;
+    --base_font_size: 16px;
     --touch: 1;
     --menu_bar_height: calc(3.5rem + (var(--touch) * 1.5rem));
     --default_space: 0.5rem;
@@ -59,10 +58,27 @@
     --orange: #F48515;
 }
 
-@media only screen and (min-width:900px) {
+@media (min-width:481px) {
+    :root {
+        --base_font_size: 11.2px;
+    }
+}
+
+@media (min-width:1280px){
+    :root {
+        --base_font_size: 12.8px;
+    }
+}
+
+@media (min-width:1536px){
+    :root {
+        --base_font_size: 14.4px;
+    }
+}
+
+@media (min-width:1920px){
     :root {
         --base_font_size: 16px;
-        --orig_base_font_size: 16px;
     }
 }
 

@@ -139,10 +139,6 @@ export async function draw() {
 //         DOM.loops.resize(settings);
 // }
 
-export function scale_page(value) {
-    DOM.loops.scale_page(value);
-}
-
 // ----------------------------------------------------------------------------
 // handel incoming events from server (server or peer messages)
 // ----------------------------------------------------------------------------

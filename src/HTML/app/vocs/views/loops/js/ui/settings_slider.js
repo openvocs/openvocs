@@ -52,8 +52,6 @@ export function init() {
     DOM.test_audio = DOM.slider.querySelector("#speaker_test_audio");
     DOM.mic_oscillation = DOM.slider.querySelector("#microphone_test").querySelector("canvas");
 
-    DOM.page_zoom_factor = document.getElementById("page_zoom_input");
-
     DOM.multi_talk_checkbox = document.getElementById("multi_talk_checkbox");
     DOM.mute_hardware_checkbox = document.getElementById("hardware_checkbox");
     DOM.mute_browser_options = document.getElementById("ptt_mute_options");
@@ -72,7 +70,6 @@ export function init() {
     DOM.slider_button.addEventListener("click", function () {
         console.log(DOM.slider, DOM.slider.open)
         if (!DOM.slider.open) {
-            DOM.page_zoom_factor.value = SITE_SCALING_FACTOR;
             if (DOM.audio_details.open)
                 start_mic_oscillation();
             DOM.slider.show();
@@ -120,14 +117,6 @@ export function init() {
             for (let loop of page.values) {
                 loop.update_active_participants_list();
             }
-    });
-
-    //-------------------------------------------------------------------------
-    // advanced options
-    //-------------------------------------------------------------------------
-    DOM.page_zoom_factor.addEventListener("change", async function () {
-        Loop_View.scale_page(DOM.page_zoom_factor.value);
-        //Loop_View.resize();
     });
 
     // ptt options ------------------------------------------------------------
