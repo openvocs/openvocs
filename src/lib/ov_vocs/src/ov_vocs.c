@@ -4357,6 +4357,9 @@ static bool cb_admin_process(void *userdata,
     if (ov_event_api_event_is(input, OV_EVENT_API_STATE_MIXER))
         return admin_state_mixer(vocs, socket, input);
 
+    if (ov_event_api_event_is(input, OV_EVENT_API_UPDATE_LOGIN))
+        return update_client_login(vocs, socket, params, input);
+
     if (ov_event_api_event_is(input, OV_EVENT_API_STATE_CONNECTIONS))
         return admin_state_connections(vocs, socket, input);
 
