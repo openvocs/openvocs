@@ -88,7 +88,7 @@ loops for grid layout ---------------------------------------------------------
 @media (min-width:481px) {
     :host {
         grid-template-columns: minmax(min-content, 1fr) minmax(min-content, 1fr) minmax(min-content, 1fr);
-        grid-template-rows: minmax(min-content, 2.2fr) minmax(min-content, 1fr);
+        grid-template-rows: minmax(min-content, 1.8fr) minmax(min-content, 1fr);
         grid-template-areas: "join join join" "volume sip leave";
     }
 }
