@@ -132,6 +132,8 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_id(text) {
         this.#node_id = text;
+        if (text && (!this.node_name || !this.#node_abbreviation))
+            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
     }
 
     get node_id() {

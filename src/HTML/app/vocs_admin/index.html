@@ -90,6 +90,7 @@
                             await ov_DB.projects();
                             console.log("switch to project view", session.project, session.domain);
                             await Config_View.render_project(view_container, ov_Websockets.user(), session.page);
+                            loading_screen.hide();
                         } else {
                             console.log("switch to domain view", session.section_domain);
                             await Config_View.render_domain(view_container, ov_Websockets.user(), session.page);
@@ -97,7 +98,7 @@
 
                     } else
                         await Overview.render(view_container);
-                    loading_screen.hide();
+
                     return;
                 }
             }

@@ -189,7 +189,7 @@ loops for grid layout ---------------------------------------------------------
     #join_loop,
     #leave_loop,
     #loop_volume {
-        font-size: clamp(6px, calc(3.5cqh + 3.5cqw), 1.5rem);
+        font-size: clamp(6px, calc(4cqh + 4cqw), 1.5rem);
     }
 
     #join_loop {
@@ -200,7 +200,7 @@ loops for grid layout ---------------------------------------------------------
 
     #join_loop #loop_name {
         text-align: center;
-        font-size: clamp(10px, calc(5cqh + 5cqw), 1.8rem);
+        font-size: clamp(10px, calc(6cqh + 6cqw), 1.8rem);
         padding-left: 0;
     }
 

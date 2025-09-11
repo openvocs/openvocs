@@ -10,7 +10,7 @@
 }
 
 :host #node_area {
-    height: 1.7rem;
+    height: 2.7rem;
     border: solid 0.063rem var(--white_transparent_64);
     display: grid;
     grid-template-columns: 1.5rem 1fr 1.5rem;
@@ -39,6 +39,7 @@
     letter-spacing: 0;
     text-anchor: middle;
     opacity: 0.5;
+    line-height: 2.5rem;
 }
 
 :host([frozen]) #node_name::before {
@@ -46,7 +47,8 @@
 }
 
 :host([global]) #node_name::before {
-    content: "\2605";
+    content: "\29BF";
+    margin-right: 0.1rem;
 }
 
 :host(.highlight) #node_name,
@@ -56,7 +58,7 @@
 
 :host button.icon {
     width: 7.3rem;
-    height: 1.55rem;
+    height: 2.55rem;
     padding: 0.1rem 0.2rem;
     display: none;
     opacity: 0.5;
