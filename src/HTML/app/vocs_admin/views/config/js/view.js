@@ -387,18 +387,7 @@ export async function render_project(project, domain, id, domain_id, page) {
     else
         DOM.config_name.innerText = "[New Project]";
 
-
-    Project_Settings.render(project, id, domain_id);
-    Config_RBAC.render(domain, project);
-    let loops = { ...project.loops, ...domain.loops };
-    console.log(await request_settings(id))
-    Config_Layout.render(project.roles, loops, await request_settings(id));
-    Config_Layout.disable_settings(false);
-    let roles = { ...project.roles, ...domain.roles };
-    if (SIP)
-        Config_SIP.render(project.loops, roles);
-    if (RECORDER)
-        Config_Recorder.render(project.loops);
+    let first_load = true;
 
     DOM.sub_view_nav.addEventListener("change", () => {
         for (let ws of ov_Websockets.list) {
@@ -408,10 +397,12 @@ export async function render_project(project, domain, id, domain_id, page) {
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();
         else if (DOM.sub_view_nav.value === "layout") {
-            let proj_config = collect_config();
-            let dom_config = collect_config({ id: proj_config.domain });
-            let loops = { ...proj_config.loops, ...dom_config.loops };
-            Config_Layout.render(proj_config.roles, loops);
+            if(!first_load){
+                let proj_config = collect_config();
+                let dom_config = collect_config({ id: proj_config.domain });
+                let loops = { ...proj_config.loops, ...dom_config.loops };
+                Config_Layout.render(proj_config.roles, loops);
+            }
         } else if (DOM.sub_view_nav.value === "sip" && SIP) {
             let proj_config = collect_config();
             let dom_config = collect_config({ id: proj_config.domain });
@@ -422,10 +413,25 @@ export async function render_project(project, domain, id, domain_id, page) {
             Config_Recorder.render(proj_config.loops);
         }
     });
+
+    Project_Settings.render(project, id, domain_id);
+    Config_RBAC.render(domain, project);
+    let loops = { ...project.loops, ...domain.loops };
+    Config_Layout.render(project.roles, loops, await request_settings(id));
+    Config_Layout.disable_settings(false);
+    let roles = { ...project.roles, ...domain.roles };
+    if (SIP)
+        Config_SIP.render(project.loops, roles);
+    if (RECORDER)
+        Config_Recorder.render(project.loops);
+
     if (page)
         DOM.sub_view_nav.value = page;
     else
         DOM.sub_view_nav.value = "settings";
+
+    first_load = false;
+    
 }
 
 export async function render_domain(domain, id, page) {

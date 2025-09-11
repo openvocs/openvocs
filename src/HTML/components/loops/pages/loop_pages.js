@@ -112,7 +112,7 @@ export default class ov_Loop_Pages extends HTMLElement {
         this.#loop_elements = this.shadowRoot.getElementById("loops");
 
         if (this.#loops && this.#settings)
-            this.draw(this.#loops, this.#settings);
+            await this.draw(this.#loops, this.#settings);
     }
 
     async draw(loops_data, settings) {
@@ -157,7 +157,8 @@ export default class ov_Loop_Pages extends HTMLElement {
 
     remove_loop(loop) {
         this.#pages[this.#current_page_index].remove(loop);
-        this.#loop_elements.removeChild(loop);
+        if (!loop.classList.contains("loopelement_grid_empty"))
+            this.#loop_elements.removeChild(loop);
 
         this.set_layout(this.#settings);
         this.show_page(this.#current_page_index);
