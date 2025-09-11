@@ -28,6 +28,7 @@
     ---------------------------------------------------------------------------
 */
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
 import * as Project_Settings from "../../project_settings/js/settings.js";
 import * as Domain_Settings from "../../domain_settings/js/settings.js";
 import * as Config_RBAC from "../../config_rbac/js/rbac.js";
@@ -111,6 +112,15 @@ export async function init(view_id, container, type) {
         DOM.import_button.style.display = "none";
         DOM.export_button.style.display = "none";
     }
+
+    if (type === "domain") {
+        document.getElementById("layout_page_button").style.display = "none";
+        document.querySelector("#layout_page_button + label").style.display = "none";
+    }
+
+    DOM.loading_screen.addEventListener("loading_button_clicked", () => {
+        DOM.menu_slider.toggle();
+    });
 
     DOM.menu_button.addEventListener("click", () => {
         DOM.menu_slider.toggle();
@@ -271,8 +281,7 @@ export async function init(view_id, container, type) {
     };
 }
 
-async function request_settings() {
-    let layout_name = window.innerHeight + "x" + window.innerWidth;
+async function request_settings(layout_name) {
     return await ov_Vocs.collect_keyset_layout(layout_name, ov_Websockets.current_lead_websocket);
 }
 
@@ -317,10 +326,8 @@ async function save(new_config, type, persist) {
                 continue;
 
             //save layout
-            if (type === "domain") {
-                let layout_name = window.innerHeight + "x" + window.innerWidth;
-                await ov_DB.set_keyset_layout(layout_name, new_config.id, Config_Layout.collect_page_layout(), websocket);
-            }
+            if (type === "project")
+                await ov_DB.set_keyset_layout(new_config.id, new_config.domain, Config_Layout.collect_page_layout(), websocket);
 
             //save project or domain data
             let result = true;
@@ -371,7 +378,7 @@ export function render_user(user) {
     DOM.menu_slider.value = user.name;
 }
 
-export async function render_project(project, domain, id, domain_id) {
+export async function render_project(project, domain, id, domain_id, page) {
     id = id ? id : project.id;
     domain_id = domain_id ? domain_id : project.domain;
     let name = project.name ? project.name : id;
@@ -379,7 +386,24 @@ export async function render_project(project, domain, id, domain_id) {
         DOM.config_name.innerText = name;
     else
         DOM.config_name.innerText = "[New Project]";
+
+
+    Project_Settings.render(project, id, domain_id);
+    Config_RBAC.render(domain, project);
+    let loops = { ...project.loops, ...domain.loops };
+    console.log(await request_settings(id))
+    Config_Layout.render(project.roles, loops, await request_settings(id));
+    Config_Layout.disable_settings(false);
+    let roles = { ...project.roles, ...domain.roles };
+    if (SIP)
+        Config_SIP.render(project.loops, roles);
+    if (RECORDER)
+        Config_Recorder.render(project.loops);
+
     DOM.sub_view_nav.addEventListener("change", () => {
+        for (let ws of ov_Websockets.list) {
+            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
+        }
         DOM.sub_view.className = DOM.sub_view_nav.value;
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();
@@ -398,22 +422,13 @@ export async function render_project(project, domain, id, domain_id) {
             Config_Recorder.render(proj_config.loops);
         }
     });
-    DOM.sub_view_nav.value = "settings";
-
-    Project_Settings.render(project, id, domain_id);
-    Config_RBAC.render(domain, project);
-    let loops = { ...project.loops, ...domain.loops };
-    Config_Layout.render(project.roles, loops, await request_settings());
-    Config_Layout.disable_settings(true);
-    let roles = { ...project.roles, ...domain.roles };
-    if (SIP)
-        Config_SIP.render(project.loops, roles);
-    if (RECORDER)
-        Config_Recorder.render(project.loops);
-
+    if (page)
+        DOM.sub_view_nav.value = page;
+    else
+        DOM.sub_view_nav.value = "settings";
 }
 
-export async function render_domain(domain, id) {
+export async function render_domain(domain, id, page) {
     id = id ? id : domain.id;
     let name = domain.name ? domain.name : id;
     if (name)
@@ -422,6 +437,9 @@ export async function render_domain(domain, id) {
         DOM.config_name.innerText = "[New Domain]";
     DOM.sub_view_nav.addEventListener("change", () => {
         DOM.sub_view.className = DOM.sub_view_nav.value;
+        for (let ws of ov_Websockets.list) {
+            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
+        }
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();
         else if (DOM.sub_view_nav.value === "layout") {
@@ -431,7 +449,7 @@ export async function render_domain(domain, id) {
                 if (domain.projects[project_id].loops)
                     loops = { ...loops, ...domain.projects[project_id].loops };
             }
-            Config_Layout.render(config.roles, loops);
+            // Config_Layout.render(config.roles, loops);
         } else if (DOM.sub_view_nav.value === "sip" && SIP) {
             let config = collect_config();
             let roles = config.roles;
@@ -445,7 +463,10 @@ export async function render_domain(domain, id) {
             Config_Recorder.render(config.loops);
         }
     });
-    DOM.sub_view_nav.value = "settings";
+    if (page)
+        DOM.sub_view_nav.value = page;
+    else
+        DOM.sub_view_nav.value = "settings";
 
     Domain_Settings.render(domain, id);
     Config_RBAC.render(domain);
@@ -454,8 +475,6 @@ export async function render_domain(domain, id) {
         if (domain.projects[project_id].loops)
             loops = { ...loops, ...domain.projects[project_id].loops };
     }
-    Config_Layout.render(domain.roles, loops, await request_settings());
-    Config_Layout.disable_settings(false);
     if (SIP) {
         let roles = domain.roles;
         for (let project_id of Object.keys(domain.projects)) {
@@ -464,7 +483,7 @@ export async function render_domain(domain, id) {
         }
         Config_SIP.render(domain.loops, roles);
     }
-    if (RECORDER) 
+    if (RECORDER)
         Config_Recorder.render(domain.loops);
 }
 

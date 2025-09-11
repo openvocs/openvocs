@@ -55,7 +55,7 @@ export function get_session(url) {
         return null;
     }
     console.log("get session", url, item);
-    return { user: item.user, session: item.session, client: item.client, role: item.role };
+    return { user: item.user, session: item.session, client: item.client, role: item.role, domain: item.domain, project: item.project, page: item.page };
 }
 
 export function extend_session(url, client_id, user_id, session_id) {
@@ -79,6 +79,18 @@ export function add_role_to_session(url, role_id) {
         return null;
     let item = JSON.parse(item_string);
     item.role = role_id;
+    console.log("new session information", url, item);
+    localStorage.setItem(url, JSON.stringify(item));
+}
+
+export function add_anchor_to_session(url, domain, project, page) {
+    let item_string = localStorage.getItem(url);
+    if (!item_string)
+        return null;
+    let item = JSON.parse(item_string);
+    item.project = project;
+    item.domain = domain;
+    item.page = page;
     console.log("new session information", url, item);
     localStorage.setItem(url, JSON.stringify(item));
 }

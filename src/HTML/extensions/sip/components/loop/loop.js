@@ -59,11 +59,7 @@ export default class ov_SIP_Loop extends ov_Loop {
     attributeChangedCallback(name, old_value, new_value) {
         super.attributeChangedCallback(name, old_value, new_value);
 
-        if (name === "layout") {
-            if (this.shadowRoot.isConnected) {
-                this.update_layout();
-            }
-        } else if (name === "sip_status") {
+        if (name === "sip_status") {
             this.#sip_status = new_value;
         } else if (name === "sip_permission") {
             this.#sip_permission = new_value;
@@ -106,8 +102,6 @@ export default class ov_SIP_Loop extends ov_Loop {
         await this.#render();
 
         this.setup();
-
-        this.update_layout();
 
         this.sip_offline = false;
 
@@ -182,7 +176,7 @@ export default class ov_SIP_Loop extends ov_Loop {
 
         let volume = this.shadowRoot.querySelector("#loop_volume");
         volume.onclick = () => {
-            if (this.layout === ov_Loop.LAYOUT.GRID && !volume.classList.contains("disabled")) {
+            if (window.matchMedia("(width > 480px)").matches && !volume.classList.contains("disabled")) {
                 let input = this.shadowRoot.querySelector("#loop_volume_input_container");
                 if (getComputedStyle(input).display === "none")
                     input.style.display = "inherit";
@@ -194,17 +188,6 @@ export default class ov_SIP_Loop extends ov_Loop {
         ov_Websockets.addEventListener(ov_SIP.EVENT.SIP, this.#on_server_status.bind(this));
         ov_Websockets.addEventListener(ov_SIP.EVENT.SIP_CALL, this.#on_call.bind(this));
         ov_Websockets.addEventListener(ov_SIP.EVENT.SIP_HANGUP, this.#on_hangup.bind(this));
-    }
-
-    update_layout() {
-        let input = this.shadowRoot.querySelector("#loop_volume_input");
-        if (input && this.layout === ov_Loop.LAYOUT.GRID) {
-            input.setAttribute("orient", "vertical");
-            input.classList.add("vertical");
-        } else if (input) {
-            input.setAttribute("orient", "horizontal");
-            input.classList.remove("vertical");
-        }
     }
 
     update_state() {

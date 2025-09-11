@@ -105,8 +105,11 @@ export async function relogin(websocket) {
     let result = false;
     if (session.user && session.session)
         result = await ws_login(session.user, session.session, websocket);
-    if (result && session.role)
+    if (result && session.role) {
+        if (!ov_Websockets.user().roles)
+            result = await collect_roles(websocket);
         result = await ws_authorize_role(session.role, websocket);
+    }
     return result;
 }
 

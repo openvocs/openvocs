@@ -64,7 +64,7 @@ export async function init(view_id) {
                 detail: { origin: view_id }
             }));
         } else {
-            display_disconnect_notice();
+            display_disconnect_notice(ov_Websockets.current_lead_websocket.server_error);
         }
     });
 

@@ -23,6 +23,8 @@
         @author Michael J. Beer, DLR/GSOC
         @copyright (c) 2024 German Aerospace Center DLR e.V. (GSOC)
 
+        The mixer is thread safe.
+
         ------------------------------------------------------------------------
 */
 #ifndef OV_RTP_MIXER_H
@@ -46,8 +48,8 @@ typedef struct {
     size_t max_num_frames_per_stream;
     uint32_t ssid_to_cancel;
     uint16_t comfort_noise_max_amplitude;
-    size_t frame_length_ms;
-    double sample_rate_hertz;
+    size_t frame_length_ms; // Of INCOMING frame
+    double sample_rate_hertz; // Of INCOMING audio
 
 } ov_rtp_mixer_config;
 

@@ -42,11 +42,11 @@ var ov_SIP;
 //-----------------------------------------------------------------------------
 // Enum for loop layout options
 //-----------------------------------------------------------------------------
-export const LAYOUT = {
-    GRID: "grid",
-    AUTO: "auto",
-    LIST: "list"
-}
+// export const LAYOUT = {
+//     GRID: "grid",
+//     AUTO: "auto",
+//     LIST: "list"
+// }
 
 //-----------------------------------------------------------------------------
 // init
@@ -81,8 +81,7 @@ export async function draw() {
 
     let loops_data = await ov_Vocs.collect_loops(ov_Websockets.current_lead_websocket);
 
-    let layout_name = window.innerHeight + "x" + window.innerWidth;
-    let settings = await ov_Vocs.collect_keyset_layout(layout_name, ov_Websockets.current_lead_websocket);
+    let settings = await ov_Vocs.collect_keyset_layout(ov_Websockets.user().project, ov_Websockets.current_lead_websocket);
 
     DOM.loops.draw(loops_data, settings, ov_Websockets.current_lead_websocket.server_name);
 
@@ -135,10 +134,10 @@ export async function draw() {
 
 }
 
-export function resize(settings) {
-    if (DOM.loops)
-        DOM.loops.resize(settings);
-}
+// export function resize(settings) {
+//     if (DOM.loops)
+//         DOM.loops.resize(settings);
+// }
 
 export function scale_page(value) {
     DOM.loops.scale_page(value);
@@ -361,9 +360,9 @@ export async function show_page(new_page) {
         let settings = {};
         settings[role] = role_settings;
         await ov_Vocs.update_user_role_settings(settings);
-        DOM.loops.show_page(new_page);
     }
-
+    
+    DOM.loops.show_page(new_page);
     console.log("show page", new_page);
 
     DOM.loading_screen.hide();

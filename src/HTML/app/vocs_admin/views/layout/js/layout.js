@@ -50,10 +50,6 @@ export function remove() {
     view_container.replaceChildren();
 }
 
-window.onresize = async function () {
-    View.resize();
-}
-
 window.onbeforeunload = function () {
     remove();
 }

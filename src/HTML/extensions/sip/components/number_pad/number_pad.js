@@ -100,12 +100,13 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
 
         this.#dom.phoneNumberField.addEventListener("click", (e) => {
             this.#current_pointer_pos = e.target.selectionStart;
-            this.#keyboard.setCaretPosition(e.target.selectionStart);
+            if (this.#keyboard)
+                this.#keyboard.setCaretPosition(e.target.selectionStart);
         });
 
-        if(window.SimpleKeyboard.default){
+        if (SCREEN_KEYBOARD && window.SimpleKeyboard && matchMedia("(width > 480px)").matches) {
             let Keyboard = window.SimpleKeyboard.default;
-    
+
             this.#keyboard = new Keyboard(dialButtons, {
                 onChange: input => this.#on_change(input),
                 onKeyPress: button => this.#on_key_press(button),
@@ -138,7 +139,8 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
 
     clear_number() {
         this.#dom.phoneNumberField.value = "";
-        this.#keyboard.clearInput();
+        if (this.#keyboard)
+            this.#keyboard.clearInput();
     }
 
     async #render() {

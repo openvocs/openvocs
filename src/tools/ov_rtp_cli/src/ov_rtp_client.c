@@ -173,53 +173,55 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static int try_bind_to(char const *local_if, uint16_t local_port) {
+static int try_bind_to(char const *local_if, uint16_t local_port, bool mc) {
+
+    int sfd = -1;
 
     char port[5 + 1] = {0};
 
     snprintf(port, 6, "%i", local_port);
     port[5] = 0;
 
+    struct addrinfo *result = 0;
     struct addrinfo hints = {0};
 
-    hints.ai_family = AF_INET;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_flags = AI_PASSIVE;
 
-    struct addrinfo *result = 0;
-    struct addrinfo *rp = 0;
+    if (!mc) {
+        hints.ai_flags = AI_PASSIVE;
+    }
 
     int s = getaddrinfo(local_if, port, &hints, &result);
 
     if (s != 0) {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
-        return -1;
-    }
+        fprintf(stderr, "getaddrinfo failed for %s: %s\n", local_if,
+                gai_strerror(s));
+    } else {
 
-    int sfd = -1;
+        int opt = 0;
+        socklen_t optlen = sizeof(opt);
 
-    for (rp = result; rp != NULL; rp = rp->ai_next) {
+        int optone = 1;
 
-        sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+        for (struct addrinfo *rp = result; rp != NULL; rp = rp->ai_next) {
+            sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 
-        if (sfd != -1) {
-
-            s = bind(sfd, rp->ai_addr, rp->ai_addrlen);
-
-            if (s == 0) {
-
-                // successfully bind
+            if ((-1 < sfd) &&
+                (0 == getsockopt(sfd, SOL_SOCKET, SO_TYPE, &opt, &optlen)) &&
+                (0 == getsockopt(sfd, SOL_SOCKET, SO_ERROR, &opt, &optlen)) &&
+                (0 <= setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &optone,
+                                 sizeof(optone))) &&
+                (0 == bind(sfd, rp->ai_addr, rp->ai_addrlen))) {
                 break;
-
             } else {
-
                 close(sfd);
+                sfd = -1;
             }
         }
     }
 
     if (0 != result) {
-
         freeaddrinfo(result);
         result = 0;
     }
@@ -230,7 +232,6 @@ static int try_bind_to(char const *local_if, uint16_t local_port) {
 /*----------------------------------------------------------------------------*/
 
 static int open_rtcp_socket(ov_socket_data rtp_socket_data) {
-
     ov_socket_configuration cfg = {
         .port = rtp_socket_data.port,
         .type = UDP,
@@ -244,22 +245,16 @@ static int open_rtcp_socket(ov_socket_data rtp_socket_data) {
 /*----------------------------------------------------------------------------*/
 
 static bool enable_multicast_loopback(int fd) {
-
     int loop = 1;
 
     int retval =
         setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
 
     if (0 != retval) {
-
-        fprintf(stderr,
-                "Could not enable mutlicast loopback: %i (%s / %s)\n",
-                retval,
-                strerror(errno),
-                strerror(retval));
+        fprintf(stderr, "Could not enable mutlicast loopback: %i (%s / %s)\n",
+                retval, strerror(errno), strerror(retval));
 
     } else {
-
         fprintf(stdout, "Enabled multicast loopback\n");
     }
 
@@ -268,25 +263,17 @@ static bool enable_multicast_loopback(int fd) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool join_multicast_group(int fd,
-                                 struct ip_mreq command,
+static bool join_multicast_group(int fd, struct ip_mreq command,
                                  char const *group) {
-
-    int retval = setsockopt(
-        fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &command, sizeof(command));
+    int retval = setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &command,
+                            sizeof(command));
 
     if (0 == retval) {
-
         fprintf(stdout, "Joined multicast group %s\n", group);
 
     } else {
-
-        fprintf(stderr,
-                "Could not join multicast group %s: %i (%s / %s)\n",
-                group,
-                retval,
-                strerror(retval),
-                strerror(errno));
+        fprintf(stderr, "Could not join multicast group %s: %i (%s / %s)\n",
+                group, retval, strerror(retval), strerror(errno));
     }
 
     return 0 == retval;
@@ -295,13 +282,10 @@ static bool join_multicast_group(int fd,
 /*----------------------------------------------------------------------------*/
 
 static bool setup_multicast(int fd, char const *mc_group) {
-
     if (0 == mc_group) {
-
         return true;
 
     } else {
-
         static struct ip_mreq command = {0};
         command.imr_interface.s_addr = htonl(INADDR_ANY);
         command.imr_multiaddr.s_addr = inet_addr(mc_group);
@@ -314,29 +298,24 @@ static bool setup_multicast(int fd, char const *mc_group) {
 /*----------------------------------------------------------------------------*/
 
 static bool connect_udp(ov_rtp_client *client, ov_rtp_client_parameters *cp) {
-
-    int sfd = try_bind_to(cp->local_if, cp->local_port);
+    int sfd =
+        try_bind_to(cp->local_if, cp->local_port, (0 != cp->multicast_group));
 
     ov_socket_data local = {0};
     ov_socket_get_data(sfd, &local, 0);
 
     if (0 > sfd) {
-
-        fprintf(stderr,
-                "Could not bind to %s:%" PRIu16 "\n",
-                cp->local_if,
+        fprintf(stderr, "Could not bind to %s:%" PRIu16 "\n", cp->local_if,
                 cp->local_port);
 
         return false;
 
     } else if (!ov_socket_ensure_nonblocking(sfd)) {
-
         fprintf(stderr, "could not ensure a non-blocking socket.\n");
         close(sfd);
         return false;
 
     } else if (!setup_multicast(sfd, cp->multicast_group)) {
-
         fprintf(stderr, "Multicast group could not be joined");
         return false;
     }
@@ -346,21 +325,14 @@ static bool connect_udp(ov_rtp_client *client, ov_rtp_client_parameters *cp) {
     int rtcp_fd = open_rtcp_socket(rtcp_socket);
 
     if (0 > rtcp_fd) {
-        fprintf(stderr,
-                "Could not open RTCP port at %s:%" PRIu16 " :%s\n",
-                rtcp_socket.host,
-                rtcp_socket.port,
-                strerror(errno));
+        fprintf(stderr, "Could not open RTCP port at %s:%" PRIu16 " :%s\n",
+                rtcp_socket.host, rtcp_socket.port, strerror(errno));
         close(sfd);
         return false;
     }
 
-    fprintf(stderr,
-            "Bound to %s:%" PRIu16 " - RTCP at %s:%" PRIu16 "\n",
-            local.host,
-            local.port,
-            rtcp_socket.host,
-            rtcp_socket.port);
+    fprintf(stderr, "Bound to %s:%" PRIu16 " - RTCP at %s:%" PRIu16 "\n",
+            local.host, local.port, rtcp_socket.host, rtcp_socket.port);
     fflush(stderr);
 
     char port[6] = {0};
@@ -394,15 +366,13 @@ static bool connect_udp(ov_rtp_client *client, ov_rtp_client_parameters *cp) {
     if (SEND == client->mode) {
         client->send.dest_sockaddr_len = result->ai_addrlen;
         client->send.dest_sockaddr = calloc(1, client->send.dest_sockaddr_len);
-        memcpy(client->send.dest_sockaddr,
-               result->ai_addr,
+        memcpy(client->send.dest_sockaddr, result->ai_addr,
                client->send.dest_sockaddr_len);
 
         client->send.rtcp_dest_sockaddr_len = rtcp_remote->ai_addrlen;
         client->send.rtcp_dest_sockaddr =
             calloc(1, client->send.dest_sockaddr_len);
-        memcpy(client->send.rtcp_dest_sockaddr,
-               rtcp_remote->ai_addr,
+        memcpy(client->send.rtcp_dest_sockaddr, rtcp_remote->ai_addr,
                client->send.rtcp_dest_sockaddr_len);
     }
 
@@ -427,10 +397,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool set_codec(ov_rtp_client *client,
-                      ov_rtp_client_parameters *cp,
+static bool set_codec(ov_rtp_client *client, ov_rtp_client_parameters *cp,
                       ov_rtp_client_audio_parameters *ap) {
-
     if (0 == client) goto error;
     if (0 == cp) goto error;
     if (0 == ap) goto error;
@@ -440,7 +408,6 @@ static bool set_codec(ov_rtp_client *client,
         codec_parameters, ap->general_config.sample_rate_hertz);
 
     if (0 == ap->codec_name) {
-
         ap->codec_name = ov_codec_pcm16_signed_id();
     }
 
@@ -450,7 +417,6 @@ static bool set_codec(ov_rtp_client *client,
     codec_parameters = ov_json_value_free(codec_parameters);
 
     if (0 == client->codec) {
-
         fprintf(stderr, "Could not find codec for %s\n", ap->codec_name);
         goto error;
     }
@@ -467,7 +433,6 @@ error:
  ******************************************************************************/
 
 static void shutdown_io(ov_rtp_client *client) {
-
     if (-1 < client->udp_socket) {
         close(client->udp_socket);
         client->udp_socket = -1;
@@ -484,7 +449,6 @@ static void shutdown_io(ov_rtp_client *client) {
  ****************************************************************************/
 
 static void describe_rtcp(FILE *out, ov_rtcp_message const *msg) {
-
     if ((0 == out) || (0 == msg)) {
         return;
     }
@@ -494,11 +458,9 @@ static void describe_rtcp(FILE *out, ov_rtcp_message const *msg) {
     fprintf(out, "RTCP received: %s ", ov_rtcp_type_to_string(type));
 
     switch (type) {
-
         case OV_RTCP_SOURCE_DESC:
 
-            fprintf(out,
-                    "SSRC: %" PRIu32 " CNAME: %s",
+            fprintf(out, "SSRC: %" PRIu32 " CNAME: %s",
                     ov_rtcp_message_sdes_ssrc(msg, 0),
                     ov_rtcp_message_sdes_cname(msg, 0));
             break;
@@ -513,7 +475,6 @@ static void describe_rtcp(FILE *out, ov_rtcp_message const *msg) {
 /*----------------------------------------------------------------------------*/
 
 static bool receive_rtcp_handler(int fd, uint8_t events, void *userdata) {
-
     UNUSED(events);
 
     ov_buffer *buffer = 0;
@@ -535,9 +496,8 @@ static bool receive_rtcp_handler(int fd, uint8_t events, void *userdata) {
     ssize_t received = recv(fd, buffer->start, sz, 0);
 
     if (0 > received) {
-
-        fprintf(
-            stderr, "Failed during reading from socket: %s", strerror(errno));
+        fprintf(stderr, "Failed during reading from socket: %s",
+                strerror(errno));
         buffer = ov_buffer_free(buffer);
         return false;
     }
@@ -548,7 +508,6 @@ static bool receive_rtcp_handler(int fd, uint8_t events, void *userdata) {
     size_t len = buffer->length;
 
     while (0 != len) {
-
         ov_rtcp_message *msg = ov_rtcp_message_decode(&data, &len);
         describe_rtcp(stdout, msg);
         msg = ov_rtcp_message_free(msg);
@@ -562,13 +521,9 @@ static bool receive_rtcp_handler(int fd, uint8_t events, void *userdata) {
 /*----------------------------------------------------------------------------*/
 
 static void install_rtcp_handler(ov_rtp_client *client) {
-
     if (0 != client) {
-
-        client->event->callback.set(client->event,
-                                    client->rtcp_socket,
-                                    OV_EVENT_IO_IN,
-                                    client,
+        client->event->callback.set(client->event, client->rtcp_socket,
+                                    OV_EVENT_IO_IN, client,
                                     receive_rtcp_handler);
     }
 }
@@ -578,18 +533,14 @@ static void install_rtcp_handler(ov_rtp_client *client) {
 static bool setup_transmission(ov_rtp_client *client,
                                ov_rtp_client_parameters *client_params,
                                ov_rtp_client_audio_parameters *audio_params) {
-
     if (0 == client) {
-
         return false;
 
     } else if (SEND == client->mode) {
-
         install_rtcp_handler(client);
         return setup_sending_client(client, client_params, audio_params);
 
     } else {
-
         install_rtcp_handler(client);
         return setup_receiving_client(client, client_params, audio_params);
     }
@@ -599,10 +550,22 @@ static bool setup_transmission(ov_rtp_client *client,
  *                              PUBLIC FUNCTIONS
  ******************************************************************************/
 
+static bool adapt_config_on_multicast(ov_rtp_client_parameters *client_params) {
+    if (0 != client_params) {
+        if (0 != client_params->multicast_group) {
+            client_params->local_if = client_params->multicast_group;
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_rtp_client *ov_rtp_client_create(
     ov_rtp_client_parameters *client_params,
     ov_rtp_client_audio_parameters *audio_params) {
-
     ov_rtp_client *client = calloc(1, sizeof(ov_rtp_client));
     client->mode = client_params->mode;
     client->debug = client_params->debug;
@@ -611,13 +574,12 @@ ov_rtp_client *ov_rtp_client_create(
 
     if ((!setup_event_loop(client)) ||
         (!set_codec(client, client_params, audio_params)) ||
+        (!adapt_config_on_multicast(client_params)) ||
         (!connect_udp(client, client_params)) ||
         (!setup_transmission(client, client_params, audio_params))) {
-
         return ov_rtp_client_free(client);
 
     } else {
-
         return client;
     }
 }
@@ -625,7 +587,6 @@ ov_rtp_client *ov_rtp_client_create(
 /*----------------------------------------------------------------------------*/
 
 void ov_rtp_client_run(ov_rtp_client *client) {
-
     if (0 == client) goto error;
 
     client->event->run(client->event, UINT64_MAX);
@@ -636,16 +597,13 @@ error:
 /*----------------------------------------------------------------------------*/
 
 ov_rtp_client *ov_rtp_client_free(ov_rtp_client *client) {
-
     if (0 == client) goto error;
 
     if (0 != client->codec) {
-
         client->codec = ov_codec_free(client->codec);
     }
 
     if (0 != client->event) {
-
         client->event = client->event->free(client->event);
     }
 
@@ -680,7 +638,6 @@ error:
 /*----------------------------------------------------------------------------*/
 
 char const *ov_operation_mode_to_string(operation_mode mode) {
-
     switch (mode) {
         case SEND:
             return "SEND";
@@ -696,8 +653,7 @@ char const *ov_operation_mode_to_string(operation_mode mode) {
 /*----------------------------------------------------------------------------*/
 
 void ov_rtp_client_parameters_print(
-    FILE *out,
-    ov_rtp_client_parameters const *client_params,
+    FILE *out, ov_rtp_client_parameters const *client_params,
     size_t indentation_level) {
     OV_ASSERT(0 != out);
     OV_ASSERT(INT_MAX >= indentation_level);
@@ -709,49 +665,34 @@ void ov_rtp_client_parameters_print(
         return;
     }
 
-    fprintf(out,
-            "%*.sLocal socket: %s:%" PRIu16,
-            indent,
-            " ",
-            client_params->local_if,
-            client_params->local_port);
-    fprintf(out,
-            "    Remote socket: %s:%" PRIu16 "\n",
-            client_params->remote_if,
-            client_params->remote_port);
+    fprintf(out, "%*.sLocal socket: %s:%" PRIu16, indent, " ",
+            client_params->local_if, client_params->local_port);
+    fprintf(out, "    Remote socket: %s:%" PRIu16 "\n",
+            client_params->remote_if, client_params->remote_port);
 
-    fprintf(out,
-            "%*.sMode: %7s\n",
-            indent,
-            " ",
+    fprintf(out, "%*.sMode: %7s\n", indent, " ",
             ov_operation_mode_to_string(client_params->mode));
 
     fprintf(out,
             "%*.sSSID: %" PRIu32 " Payload type: %" PRIu8
             "    SEQ: "
             "%" PRIu16 "\n",
-            indent,
-            " ",
-            client_params->ssrc_id,
-            client_params->payload_type,
+            indent, " ", client_params->ssrc_id, client_params->payload_type,
             client_params->sequence_number);
 
     fprintf(out, "\n");
 
     if (0 != client_params->sdes) {
-
-        fprintf(
-            out, "Sending RTCP SDES messages, CNAME %s\n", client_params->sdes);
+        fprintf(out, "Sending RTCP SDES messages, CNAME %s\n",
+                client_params->sdes);
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
 void ov_rtp_client_audio_parameters_print(
-    FILE *out,
-    ov_rtp_client_audio_parameters const *params,
+    FILE *out, ov_rtp_client_audio_parameters const *params,
     size_t indentation_level) {
-
     OV_ASSERT(0 != out);
     OV_ASSERT(INT_MAX >= indentation_level);
 
@@ -768,43 +709,31 @@ void ov_rtp_client_audio_parameters_print(
         codec_name = "NOT SET";
     }
 
-    fprintf(out,
-            "%*.sCodec: %s     Codec parameters: %s\n",
-            indent,
-            " ",
-            codec_name,
-            "");
+    fprintf(out, "%*.sCodec: %s     Codec parameters: %s\n", indent, " ",
+            codec_name, "");
     ov_pcm_gen_config_print(stdout, &params->general_config, indentation_level);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void print_client_send(FILE *out,
-                              struct send_t const *send,
+static void print_client_send(FILE *out, struct send_t const *send,
                               size_t indentation_level) {
-
     OV_ASSERT(0 != out);
     OV_ASSERT(0 != send);
 
     OV_ASSERT(INT_MAX >= indentation_level);
     int indent = (int)indentation_level;
 
-    fprintf(out,
-            "%*.sSSID: %" PRIu32 " Payload type: %" PRIu8 "   SEQ: %" PRIu16
-            "\n",
-            indent,
-            " ",
-            send->ssrc_id,
-            send->payload_type,
-            send->sequence_number);
+    fprintf(
+        out,
+        "%*.sSSID: %" PRIu32 " Payload type: %" PRIu8 "   SEQ: %" PRIu16 "\n",
+        indent, " ", send->ssrc_id, send->payload_type, send->sequence_number);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void print_client_receive(FILE *out,
-                                 struct receive_t const *receive,
+static void print_client_receive(FILE *out, struct receive_t const *receive,
                                  size_t indentation_level) {
-
     UNUSED(out);
     UNUSED(receive);
     UNUSED(indentation_level);
@@ -814,10 +743,8 @@ static void print_client_receive(FILE *out,
 
 /*----------------------------------------------------------------------------*/
 
-void ov_rtp_client_print(FILE *out,
-                         ov_rtp_client const *client,
+void ov_rtp_client_print(FILE *out, ov_rtp_client const *client,
                          size_t indentation_level) {
-
     OV_ASSERT(0 != out);
 
     if (0 == client) {
@@ -828,14 +755,10 @@ void ov_rtp_client_print(FILE *out,
     OV_ASSERT(INT_MAX >= indentation_level);
     int indent = (int)indentation_level;
 
-    fprintf(out,
-            "%*.sMode: %7s\n",
-            indent,
-            " ",
+    fprintf(out, "%*.sMode: %7s\n", indent, " ",
             ov_operation_mode_to_string(client->mode));
 
     if (0 != client->codec) {
-
         ov_json_value *params = ov_codec_get_parameters(client->codec);
         char *params_string = "NONE";
 
@@ -843,12 +766,8 @@ void ov_rtp_client_print(FILE *out,
             params_string = ov_json_value_to_string(params);
         }
 
-        fprintf(out,
-                "%*.sCodec: %s    Codec parameters: %s\n",
-                indent,
-                "",
-                ov_codec_type_id(client->codec),
-                params_string);
+        fprintf(out, "%*.sCodec: %s    Codec parameters: %s\n", indent, "",
+                ov_codec_type_id(client->codec), params_string);
 
         if (0 != params) {
             params = params->free(params);

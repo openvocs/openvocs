@@ -45,14 +45,12 @@ export async function render(container) {
     console.log("(vc) voice client loaded");
 
     // event handling ---------------------------------------------------------
-    window.addEventListener("resize", function () {
-        console.log("(vc) resize voice client");
-        setTimeout(async function () {
-            let layout_name = window.innerHeight + "x" + window.innerWidth;
-            let settings = await ov_Vocs.collect_keyset_layout(layout_name, ov_Websockets.current_lead_websocket);
-            View.resize(settings);
-        }, 150);
-    });
+    // window.addEventListener("resize", function () {
+    //     console.log("(vc) resize voice client");
+    //     setTimeout(async function () {
+    //         View.resize();
+    //     }, 150);
+    // });
 
     window.addEventListener("beforeunload", function () {
         // at this point the event loop (async content) is no longer available

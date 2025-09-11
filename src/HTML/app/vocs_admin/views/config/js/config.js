@@ -35,7 +35,7 @@ import * as View from "./view.js";
 export const VIEW_ID = "vocs_admin_config";
 var view_container;
 
-export async function render_project(container, user) {
+export async function render_project(container, user, page) {
     const PROJECT = "project";
     const DOMAIN = "domain";
     await render(container);
@@ -85,12 +85,12 @@ export async function render_project(container, user) {
     }
 
     View.render_user(user);
-    await View.render_project(project_config, domain_config);
+    await View.render_project(project_config, domain_config, undefined, undefined, page);
 
     console.log("(project config) View rendered");
 }
 
-export async function render_domain(container, user) {
+export async function render_domain(container, user, page) {
     const DOMAIN = "domain";
     await render(container);
 
@@ -106,7 +106,7 @@ export async function render_domain(container, user) {
     }
 
     View.render_user(user);
-    await View.render_domain(domain_config);
+    await View.render_domain(domain_config, undefined, page);
 
     console.log("(domain config) View rendered");
 }

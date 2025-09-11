@@ -79,6 +79,7 @@ async function on_disconnect(ws) {
     }
     console.warn("Disconnected from one or several servers. Trying to reconnect...");
     View.display_loading_screen(true, "Disconnected from one or several servers. Trying to reconnect...");
+    await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, ws);
     if (await ov_Auth.relogin(ws) && ov_Websockets.disconnected_websockets.size === 0)
         View.display_loading_screen(false);
 }

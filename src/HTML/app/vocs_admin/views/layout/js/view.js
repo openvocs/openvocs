@@ -41,13 +41,9 @@ export function init(view_id) {
     DOM.loops = document.getElementById("loops");
     DOM.roles = document.getElementById("choose_role");
     DOM.pages = document.getElementById("number_pages");
-    DOM.page_scale = document.getElementById("page_zoom_input");
-    DOM.loop_layout = document.getElementById("loop_layout_select");
     DOM.grid_options = document.getElementById("grid_options_panel");
     DOM.grid_columns = document.getElementById("grid_columns_input");
     DOM.grid_rows = document.getElementById("grid_rows_input");
-    DOM.loop_name_size = document.getElementById("loop_name_size_input");
-    DOM.loop_font_size = document.getElementById("loop_font_size_input");
     DOM.select_loop_dialog = document.getElementById("choose_loop_dialog");
     DOM.select_loop = document.getElementById("loop_chooser");
     DOM.role_selector = document.querySelector("#choose_role");
@@ -55,8 +51,10 @@ export function init(view_id) {
 
     let menu = document.querySelector("#menu");
     menu.onclick = (event) => {
-        if (event.target === menu)
+        if (event.target === menu){
+            show_page();
             menu.close();
+        }
     }
     document.querySelector("#open_menu").addEventListener("click", () => {
         menu.showModal();
@@ -70,12 +68,8 @@ export function init(view_id) {
         setup_pages();
     });
 
-    DOM.page_scale.addEventListener("change", change_setting);
-    DOM.loop_layout.addEventListener("change", change_layout);
     DOM.grid_columns.addEventListener("change", change_setting);
     DOM.grid_rows.addEventListener("change", change_setting);
-    DOM.loop_name_size.addEventListener("change", change_setting);
-    DOM.loop_font_size.addEventListener("change", change_setting);
 
     DOM.loops.addEventListener("loop_selected", (event) => {
         if (event.detail.loop.id)
@@ -85,8 +79,11 @@ export function init(view_id) {
 
         DOM.select_loop.onchange = () => {
             DOM.loops.remove_loop(event.detail.loop);
-            if (DOM.select_loop.value)
+            if (DOM.select_loop.value){
+                if(DOM.loops.has_loop(DOM.select_loop.value))
+                    DOM.loops.remove_loop_with_id(DOM.select_loop.value);
                 DOM.loops.add_loop(DOM.select_loop.value, event.detail.column, event.detail.row);
+            }
             DOM.select_loop_dialog.close();
             event.detail.loop.style.removeProperty("border");
         }
@@ -101,6 +98,7 @@ export function init(view_id) {
                 event.detail.loop.style.removeProperty("border");
             }
         }
+        show_page();
     });
 }
 
@@ -119,18 +117,10 @@ export async function render(roles, loops, settings) {
         }
 
     if (settings) {
-        if (settings.layout)
-            DOM.loop_layout.value = settings.layout;
         if (settings.grid_columns)
             DOM.grid_columns.value = settings.grid_columns;
         if (settings.grid_rows)
             DOM.grid_rows.value = settings.grid_rows;
-        if (settings.site_scaling)
-            DOM.page_scale.value = settings.site_scaling;
-        if (settings.name_scaling)
-            DOM.loop_name_size.value = settings.name_scaling;
-        if (settings.font_scaling)
-            DOM.loop_font_size.value = settings.font_scaling;
     }
 
     if (!DOM.grid_columns.value || DOM.loops.columns > DOM.grid_columns.value)
@@ -139,18 +129,10 @@ export async function render(roles, loops, settings) {
     if (!DOM.grid_rows.value || DOM.loops.rows > DOM.grid_rows.value)
         DOM.grid_rows.value = DOM.loops.rows;
 
-    if (!DOM.loop_layout.value)
-        DOM.loop_layout.value = ov_Loop_Pages.LAYOUT.AUTO;
     if (!DOM.grid_columns.value)
-        DOM.grid_columns.value = 2;
+        DOM.grid_columns.value = 6;
     if (!DOM.grid_rows.value)
-        DOM.grid_rows.value = 2;
-    if (!DOM.page_scale.value)
-        DOM.page_scale.value = 1.0;
-    if (!DOM.loop_name_size.value)
-        DOM.loop_name_size.value = 1.5;
-    if (!DOM.loop_font_size.value)
-        DOM.loop_font_size.value = 1.0;
+        DOM.grid_rows.value = 5;
 
     DOM.role_selector.selectedIndex = 0;
     await render_role();
@@ -158,12 +140,8 @@ export async function render(roles, loops, settings) {
 }
 
 export function disable_settings(value) {
-    DOM.loop_layout.disabled = value;
     DOM.grid_columns.disabled = value;
     DOM.grid_rows.disabled = value;
-    DOM.page_scale.disabled = value;
-    DOM.loop_name_size.disabled = value;
-    DOM.loop_font_size.disabled = value;
 }
 
 async function render_role() {
@@ -212,14 +190,16 @@ function save_role() {
                 layout[loop.loop_id].push(loop.layout_pos)
             }
         }
-        roles_data[current_role].layout = layout;
+        let role = roles_data[current_role];
+        if (role)
+            role.layout = layout;
     }
 }
 
 async function render_loops(loops) {
     await DOM.loops.draw(loops, collect_page_layout());
 
-    resize();
+    change_setting();
 
     let default_option = document.createElement("option");
     default_option.value = "";
@@ -239,34 +219,17 @@ async function render_loops(loops) {
 
 export function collect_page_layout() {
     let settings = {};
-    settings.layout = DOM.loop_layout.value;
     settings.grid_columns = parseInt(DOM.grid_columns.value);
     settings.grid_rows = parseInt(DOM.grid_rows.value);
-    settings.site_scaling = parseFloat(DOM.page_scale.value);
-    settings.name_scaling = parseFloat(DOM.loop_name_size.value);
-    settings.font_scaling = parseFloat(DOM.loop_font_size.value);
     return settings;
 }
 
 function change_setting() {
-    resize();
-}
-
-function change_layout() {
-    if (DOM.loop_layout.value === ov_Loop_Pages.LAYOUT.LIST) {
-        DOM.grid_options.style.display = "none";
-    } else {
-        DOM.grid_options.style.display = "inherit";
+    if (DOM.loops){
+        let layout = DOM.loops.set_layout(collect_page_layout());
+        DOM.grid_columns.value = layout.columns;
+        DOM.grid_rows.value = layout.rows;
     }
-    resize();
-}
-
-export function resize(settings) {
-    if (DOM.loops)
-        if (settings)
-            DOM.loops.resize(settings);
-        else
-            DOM.loops.resize(collect_page_layout());
 }
 
 export function collect_role_layout() {
