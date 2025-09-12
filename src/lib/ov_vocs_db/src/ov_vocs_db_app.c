@@ -2463,6 +2463,37 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool cb_event_get_highest_port(void *userdata,
+                                   const int socket,
+                                   const ov_event_parameter *params,
+                                   ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    ov_vocs_db_app *app = ov_vocs_db_app_cast(userdata);
+    if (!app || !socket || !params || !input) goto error;
+
+    uint32_t port = ov_vocs_db_get_highest_port(app->config.db);
+
+    out = ov_event_api_create_success_response(input);
+    ov_json_value *res = ov_event_api_get_response(out);
+    ov_json_object_set(res, OV_KEY_PORT, ov_json_number(port));
+
+    ov_event_io_send(params, socket, out);
+    out = ov_json_value_free(out);
+    input = ov_json_value_free(input);
+    return true;
+error:
+    val = ov_json_value_free(val);
+    out = ov_json_value_free(out);
+    input = ov_json_value_free(input);
+    return false;
+}
+
+
+/*----------------------------------------------------------------------------*/
+
 bool register_event_callbacks(ov_vocs_db_app *self) {
 
     if (!self) goto error;
@@ -2575,6 +2606,10 @@ bool register_event_callbacks(ov_vocs_db_app *self) {
 
     if (!ov_event_engine_register(
             self->engine, OV_VOCS_DB_GET_USER_DATA, cb_event_get_user_data))
+        goto error;
+
+    if (!ov_event_engine_register(
+            self->engine, "get_highest_port", cb_event_get_highest_port))
         goto error;
 
     return true;

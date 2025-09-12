@@ -4951,3 +4951,47 @@ bool ov_vocs_db_set_persistance(ov_vocs_db *self, ov_vocs_db_persistance *persis
     self->persistance = persistance;
     return true;
 }
+
+/*----------------------------------------------------------------------------*/
+
+static bool get_highest_port(const void *key, void *val, void *data){
+
+    if (!key) return true;
+
+    ov_json_value *loop = ov_json_value_cast(val);
+    uint32_t *high = (uint32_t*) data;
+
+    const ov_json_value *mc = ov_json_get(loop, "/" OV_KEY_MULTICAST);
+    uint32_t port = ov_json_number_get(ov_json_get(mc, "/"OV_KEY_PORT));
+
+    if (port > *high)
+        *high = port;
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+uint32_t ov_vocs_db_get_highest_port(ov_vocs_db *self) {
+
+    if (!self) goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
+    uint32_t result = 0;
+
+    ov_dict_for_each(
+        self->index.loops,
+        &result,
+        get_highest_port);
+
+    if (!ov_thread_lock_unlock(&self->lock)) {
+        OV_ASSERT(1 == 0);
+        goto error;
+    }
+
+    return (uint32_t) result;
+
+error:
+    return 0;
+}
