@@ -1,3 +1,9 @@
+@media (min-width:481px) {
+    :root {
+        --base_font_size: 16px;
+    }
+}
+
 #login_area {
     width: 22rem;
     margin: 0 auto;
