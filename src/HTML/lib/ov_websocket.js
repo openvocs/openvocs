@@ -448,9 +448,11 @@ export default class ov_Websocket {
                 if (!error) {
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHORIZED;
                     this.#user.role = event.response.id;
-                    let role = this.#user.roles.find(this.#user.role);
-                    if(role)
-                        this.#user.project = role.project;
+                    if(this.#user.roles){
+                        let role = this.#user.roles.find(this.#user.role);
+                        if(role)
+                            this.#user.project = role.project;
+                    }
                     ov_Web_Storage.add_role_to_session(this.#url, this.#user.role);
                 }
                 message = event.response.id;
