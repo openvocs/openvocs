@@ -132,7 +132,7 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_id(text) {
         this.#node_id = text;
-        if (text && (!this.node_name || !this.#node_abbreviation))
+        if (text && (!this.#node_name && !this.#node_abbreviation))
             this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
     }
 
@@ -142,8 +142,8 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_name(text) {
         this.#node_name = text;
-        if (text && text.length <= 16)
-            this.value = text;
+        if (text && (text.length <= 16 || !this.#node_abbreviation))
+            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
     }
 
     get node_name() {
@@ -154,6 +154,12 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#node_abbreviation = text;
         if (text && (!this.node_name || this.node_name.length > 16))
             this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
+        if (!text) {
+            if (this.#node_name)
+                this.value = this.#node_name.length > 16 ? this.#node_name.slice(0, 13) + "..." : this.#node_name;
+            else
+                this.value = this.#node_id.length > 16 ? this.#node_id.slice(0, 13) + "..." : this.#node_id;
+        }
     }
 
     get node_abbreviation() {
@@ -364,7 +370,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         if (this.node_id) {
             this.#dom.edit_id.value = this.node_id;
             this.#dom.edit_id.disabled = true;
-        } else
+        } else if (this.type !== "user")
             this.#dom.edit_id.value = create_uuid();
 
         this.#dom.edit_name.value = this.node_name ? this.node_name : null;
@@ -381,7 +387,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         if (this.frozen)
             this.#dom.dialog.close();
         if (!this.#dom.edit_id.disabled && this.type === "user" && (!this.#dom.edit_id.value || !this.#dom.edit_pass.value)) {
-            this.#dom.error_msg.innerText = "Please set ID and password."
+            this.#dom.error_msg.innerText = "Please set username and password."
         } else if (!this.#dom.edit_id.disabled && !this.#dom.edit_id.value) {
             this.#dom.error_msg.innerText = "Please set an ID."
         } else {

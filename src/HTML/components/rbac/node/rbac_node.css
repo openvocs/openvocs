@@ -181,7 +181,9 @@ dialog input {
 
 #delete_element,
 #edit_id,
-label[for=edit_id],
+:host([type=user]) #user_name_label,
+:host([type=role]) #id_label,
+:host([type=loop]) #id_label,
 #edit_name,
 label[for=edit_name],
 :host([type=user]) #edit_password,
