@@ -105,6 +105,7 @@
     padding: 0.7rem;
     padding-top: 0;
     overflow-y: auto;
+    overflow-x: clip;
 }
 
 #user_name {
@@ -252,10 +253,6 @@
 
 #advanced_options {
     /* grid-column: 1 / span 2; */
-    display: none;
-}
-
-#ui_options {
     display: none;
 }
 
