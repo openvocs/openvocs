@@ -43,8 +43,8 @@ SIGNALING_SERVERS = [
 SHARED_MULTICAST_ADDRESSES = true;
 
 // extensions -----------------------------------------------------------------
-SIP = true;
-RECORDER = true;
+SIP = false;
+RECORDER = false;
 
 // general options ------------------------------------------------------------
 COLOR_MODE = "dark"; // "dark" || "light"
@@ -69,4 +69,5 @@ SCREEN_KEYBOARD = true;
 
 // admin interface ------------------------------------------------------------
 DEFAULT_MULTICAST_ADDRESS = "";
+
 // ALLOW_IMPORT_EXPORT = false;
