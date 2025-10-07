@@ -112,10 +112,12 @@ loops for grid layout ---------------------------------------------------------
 
     #loop_volume #loop_volume_input::-webkit-slider-thumb {
         width: 100%;
+        height: 1.5rem;
     }
 
     #loop_volume #loop_volume_input::-moz-range-thumb {
         width: 100%;
+        height: 1.5rem;
     }
 
     #loop_volume #loop_volume_input_container {
@@ -137,5 +139,9 @@ loops for grid layout ---------------------------------------------------------
     #loop_volume #loop_volume_input {
         writing-mode: vertical-lr;
         direction: rtl;
+    }
+
+    #loop_volume #loop_volume_indicator_value {
+        display: inherit;
     }
 }
