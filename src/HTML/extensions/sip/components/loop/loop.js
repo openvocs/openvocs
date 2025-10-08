@@ -196,8 +196,10 @@ export default class ov_SIP_Loop extends ov_Loop {
         if (sip) {
             if ((this.state === ov_Loop.STATE.MONITOR || this.state === ov_Loop.STATE.TALK) && this.sip_permission !== undefined)
                 this.shadowRoot.querySelector("#loop_sip").disabled = false;
-            else
+            else{
                 this.shadowRoot.querySelector("#loop_sip").disabled = true;
+                this.shadowRoot.querySelector("#loop_volume_input_container").style.display = "none";
+            }
         }
     }
 
