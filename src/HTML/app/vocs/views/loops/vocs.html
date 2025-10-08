@@ -49,13 +49,6 @@
 
     <ov-loading id="loading_screen"></ov-loading>
 
-    <ov-dialog id="login_dialog" position="center_top" close-button value="Re-login to backup server">
-        <div slot="dialog-content">
-            Please enter your password again to restore redundancy after a server restart. This is required to ensure that your connection remains stable.</div>
-        <ov-login-form slot="dialog-content"></ov-login-form>
-        <div slot="dialog-content"></div>
-    </ov-dialog>
-
     <ov-dialog id="menu_slider" position="left">
         <div slot="dialog-content">
             <div id="user_data" class="fieldset">
@@ -142,6 +135,13 @@
                 <div class="logo logo_dlr"></div>
             </div>
         </div>
+    </ov-dialog>
+
+    <ov-dialog id="login_dialog" position="center_top" close-button value="Re-login to backup server">
+        <div slot="dialog-content">
+            Please enter your password again to restore redundancy after a server restart. This is required to ensure that your connection remains stable.</div>
+        <ov-login-form slot="dialog-content"></ov-login-form>
+        <div slot="dialog-content"></div>
     </ov-dialog>
 
 </main>
