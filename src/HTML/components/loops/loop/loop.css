@@ -190,19 +190,31 @@ loops for grid layout ---------------------------------------------------------
     #join_loop,
     #leave_loop,
     #loop_volume {
-        font-size: clamp(6px, calc(4cqh + 3.5cqw), 1.5rem);
+        font-size: clamp(6px, min(9cqh, 9cqw), 1.3rem);
     }
 
     #join_loop {
         grid-template-columns: repeat(2, 1fr);
         grid-template-areas: "permission participants" "name name" "activity activity";
-        grid-template-rows: 1.8em 1fr 1.8em;
+        grid-template-rows: 1.8em minmax(calc(2 * clamp(10px, min(13cqh, 13cqw), 1.8rem)), 1fr) 1.8em;
     }
 
     #join_loop #loop_name {
         text-align: center;
-        font-size: clamp(10px, calc(6cqh + 6cqw), 1.8rem);
+        font-size: clamp(10px, min(13cqh, 13cqw), 1.8rem);
         padding-left: 0;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        hyphenate-character: "";
+    }
+
+    #loop_permission .icon {
+        width: 1.1em;
+        height: 1.1em;
+    }
+
+    #join_loop .icon {
+        margin-top: 1em;
     }
 
     #join_loop #loop_activity {

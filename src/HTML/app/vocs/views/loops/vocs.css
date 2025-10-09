@@ -143,8 +143,10 @@
 #server_list .server_button .server_name {
     align-self: center;
     grid-row: 2;
-    word-break: break-all;
     overflow: clip;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    hyphenate-character: "";
 }
 
 #server_list .server_button .server_sync_level {
