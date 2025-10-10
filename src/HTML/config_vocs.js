@@ -61,7 +61,7 @@ MUTE_FULLSCREEN_BUTTON = false;
 
 MULTI_TALK = false; //allow to talk in several loops at the same time
 
-SCREEN_KEYBOARD = true;
+SCREEN_KEYBOARD = false;
 
 // admin interface ------------------------------------------------------------
 DEFAULT_MULTICAST_ADDRESS = "";
