@@ -154,8 +154,6 @@ function populate_role_list() {
         user.roles.sort();
         for (let role of user.roles.values) {
             let name = role.name;
-            if (!name && role.abbreviation)
-                name = role.abbreviation;
             if (!name)
                 name = role.id;
             // DOM.role_list.add_item(role.dom_id, name + " (" + role.project + ")", role.id);

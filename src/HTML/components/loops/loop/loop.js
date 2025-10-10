@@ -41,7 +41,6 @@ export default class ov_Loop extends HTMLElement {
     #loop_id;
     #type;
     #name;
-    #abbreviation;
     #project;
     #permission;
     #volume;
@@ -139,14 +138,6 @@ export default class ov_Loop extends HTMLElement {
 
     get name() {
         return this.#name;
-    }
-
-    set abbreviation(abbreviation) {
-        this.#abbreviation = abbreviation;
-    }
-
-    get abbreviation() {
-        return this.#abbreviation;
     }
 
     set project(project) {
@@ -368,9 +359,6 @@ export default class ov_Loop extends HTMLElement {
         if (!json.hasOwnProperty("name"))
             json.name = id;
 
-        if (!json.hasOwnProperty("abbreviation"))
-            json.abbreviation = json.name;
-
         if (!json.hasOwnProperty("state"))
             json.state = ov_Loop.STATE.NONE;
 
@@ -388,7 +376,6 @@ export default class ov_Loop extends HTMLElement {
         this.loop_id = id;
         this.type = json.type;
         this.name = json.name;
-        this.abbreviation = json.abbreviation;
         this.project = json.project;
         this.participants = json.participants;
         this.state = json.state;

@@ -41,7 +41,6 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     #node_name;
     #node_id;
-    #node_abbreviation;
     #node_multicast_ip;
     #node_multicast_port;
     #node_password;
@@ -132,8 +131,8 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_id(text) {
         this.#node_id = text;
-        if (text && (!this.#node_name && !this.#node_abbreviation))
-            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
+        if (text && !this.#node_name)
+            this.value = text; 
     }
 
     get node_id() {
@@ -142,28 +141,12 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_name(text) {
         this.#node_name = text;
-        if (text && (text.length <= 16 || !this.#node_abbreviation))
-            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
+        if (text)
+            this.value = text;
     }
 
     get node_name() {
         return this.#node_name;
-    }
-
-    set node_abbreviation(text) {
-        this.#node_abbreviation = text;
-        if (text && (!this.node_name || this.node_name.length > 16))
-            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
-        if (!text) {
-            if (this.#node_name)
-                this.value = this.#node_name.length > 16 ? this.#node_name.slice(0, 13) + "..." : this.#node_name;
-            else
-                this.value = this.#node_id.length > 16 ? this.#node_id.slice(0, 13) + "..." : this.#node_id;
-        }
-    }
-
-    get node_abbreviation() {
-        return this.#node_abbreviation;
     }
 
     set node_password(text) {
@@ -212,9 +195,6 @@ export default class ov_RBAC_Node extends HTMLElement {
             name: this.node_name ? this.node_name : null
         }
 
-        if (this.node_abbreviation)
-            data.abbreviation = this.node_abbreviation;
-
         if (this.node_multicast_ip && this.node_multicast_port)
             data.multicast = { host: this.node_multicast_ip, port: parseInt(this.node_multicast_port) };
 
@@ -243,7 +223,6 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#frozen = boolean;
         this.edit_id = this.shadowRoot.querySelector("#edit_id");
         let edit_name = this.shadowRoot.querySelector("#edit_name");
-        let edit_abbr = this.shadowRoot.querySelector("#edit_abbreviation");
         let edit_pass = this.shadowRoot.querySelector("#edit_password");
         let edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         let edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
@@ -252,8 +231,6 @@ export default class ov_RBAC_Node extends HTMLElement {
             edit_id.disabled = boolean;
         if (edit_name)
             edit_name.disabled = boolean;
-        if (edit_abbr)
-            edit_abbr.disabled = boolean;
         if (edit_pass)
             edit_pass.disabled = boolean;
         if (edit_multicast_ip)
@@ -278,7 +255,6 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#dom.dialog.querySelector("h3").innerText = "Edit " + this.#type;
         this.#dom.edit_id = this.shadowRoot.querySelector("#edit_id");
         this.#dom.edit_name = this.shadowRoot.querySelector("#edit_name");
-        this.#dom.edit_abbr = this.shadowRoot.querySelector("#edit_abbreviation");
         this.#dom.edit_pass = this.shadowRoot.querySelector("#edit_password");
         this.#dom.edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         this.#dom.edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
@@ -295,6 +271,10 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.shadowRoot.querySelector("#delete_element").onclick = () => {
             this.#delete();
         };
+
+        this.#dom.edit_id.addEventListener("keyup", () => {
+            this.#dom.edit_id.value = this.#dom.edit_id.value.replace(/[^a-zA-Z0-9.@_-]/g, '');
+        });
 
         this.#dom.dialog.onclick = (e) => {
             if (e.target === this.#dom.dialog) {
@@ -374,7 +354,6 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#dom.edit_id.value = create_uuid();
 
         this.#dom.edit_name.value = this.node_name ? this.node_name : null;
-        this.#dom.edit_abbr.value = this.node_abbreviation ? this.node_abbreviation : null;
         this.#dom.edit_pass.value = this.node_password ? this.node_password : null;
         this.#dom.edit_multicast_ip.value = this.node_multicast_ip ? this.node_multicast_ip :
             ((DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") ? DEFAULT_MULTICAST_ADDRESS : null);
@@ -392,7 +371,6 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#dom.error_msg.innerText = "Please set an ID."
         } else {
             this.node_name = this.#dom.edit_name.value ? this.#dom.edit_name.value : undefined;
-            this.node_abbreviation = this.#dom.edit_abbr.value ? this.#dom.edit_abbr.value : undefined;
             this.node_password = this.#dom.edit_pass.value ? this.#dom.edit_pass.value : undefined;
             this.node_multicast_ip = this.#dom.edit_multicast_ip.value ? this.#dom.edit_multicast_ip.value : undefined;
             this.node_multicast_port = this.#dom.edit_multicast_port.value ? this.#dom.edit_multicast_port.value : undefined;
