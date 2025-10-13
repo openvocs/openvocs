@@ -1,4 +1,5 @@
 <div id="loop_layout" class="view">
+    <ov-loop-pages id="loops"></ov-loop-pages>
     <button id="open_menu">
         <div class="icon">
             <svg>
@@ -6,6 +7,9 @@
             </svg>
         </div>
     </button>
+    <select id="choose_role"></select>
+    <select id="choose_page"></select>
+
     <dialog id="menu">
         <div id="project_options_panel" class="fieldset">
             <label for="project_options_panel">Project Settings</label>
@@ -26,9 +30,7 @@
             </div>
         </div>
     </dialog>
-    <select id="choose_role"></select>
-    <select id="choose_page"></select>
-    <ov-loop-pages id="loops"></ov-loop-pages>
+    
     <dialog id="choose_loop_dialog">
         <select id="loop_chooser"></select>
     </dialog>

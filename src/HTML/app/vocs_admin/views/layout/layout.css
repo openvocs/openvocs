@@ -8,7 +8,6 @@
     position: fixed;
     top: 0.1rem;
     left: 0.1rem;
-    z-index: 100;
     background-color: var(--element_background_color);
 }
 
@@ -22,7 +21,6 @@
     position: fixed;
     top: 0.6rem;
     left: 5rem;
-    z-index: 100;
     width: 10rem;
 }
 
@@ -30,7 +28,6 @@
     position: fixed;
     top: 0.6rem;
     left: 16rem;
-    z-index: 100;
     width: 10rem;
 }
 
