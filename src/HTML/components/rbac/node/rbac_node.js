@@ -132,7 +132,7 @@ export default class ov_RBAC_Node extends HTMLElement {
     set node_id(text) {
         this.#node_id = text;
         if (text && !this.#node_name)
-            this.value = text; 
+            this.value = text;
     }
 
     get node_id() {
@@ -369,6 +369,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#dom.error_msg.innerText = "Please set username and password."
         } else if (!this.#dom.edit_id.disabled && !this.#dom.edit_id.value) {
             this.#dom.error_msg.innerText = "Please set an ID."
+        } else if (this.type === "loop" && (!this.#dom.edit_multicast_ip.value || !this.#dom.edit_multicast_port.value)) {
+            this.#dom.error_msg.innerText = "Please set multicast id and port."
         } else {
             this.node_name = this.#dom.edit_name.value ? this.#dom.edit_name.value : undefined;
             this.node_password = this.#dom.edit_pass.value ? this.#dom.edit_pass.value : undefined;
