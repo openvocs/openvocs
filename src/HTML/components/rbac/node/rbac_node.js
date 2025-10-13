@@ -276,12 +276,6 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#dom.edit_id.value = this.#dom.edit_id.value.replace(/[^a-zA-Z0-9.@_-]/g, '');
         });
 
-        this.#dom.dialog.onclick = (e) => {
-            if (e.target === this.#dom.dialog) {
-                this.#abort();
-            }
-        }
-
         this.#dom.dialog.querySelector(".close_button").onclick = () => {
             this.#abort();
         }
