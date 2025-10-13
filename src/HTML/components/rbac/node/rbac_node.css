@@ -151,6 +151,12 @@
     display: initial;
 }
 
+:host([type=loop].edit_user_edges),
+:host([type=user].edit_loop_edges)  {
+    pointer-events:none;
+    cursor: default;
+}
+
 dialog {
     text-align: left;
     width: 20rem;
