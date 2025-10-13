@@ -180,16 +180,18 @@ dialog input {
 }
 
 #delete_element,
-#edit_id,
 :host([type=user]) #user_name_label,
 :host([type=role]) #id_label,
 :host([type=loop]) #id_label,
+#edit_id,
+:host([type=user]) #display_name_label,
+:host([type=role]) #name_label,
+:host([type=loop]) #name_label,
 #edit_name,
-label[for=edit_name],
-:host([type=user]) #edit_password,
 :host([type=user]) label[for=edit_password],
-:host([type=loop]) #edit_multicast_ip,
+:host([type=user]) #edit_password,
 :host([type=loop]) label[for=edit_multicast_ip],
+:host([type=loop]) #edit_multicast_ip,
 :host([type=loop]) #edit_multicast_port,
 :host([type=loop]) #edit_multicast_split {
     display: initial;
