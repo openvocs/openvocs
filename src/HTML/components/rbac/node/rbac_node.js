@@ -259,6 +259,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#dom.edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         this.#dom.edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
         this.#dom.error_msg = this.shadowRoot.querySelector("#dialog_error_message");
+        this.#dom.name_char_count = this.shadowRoot.querySelector("#name_char_count");
 
         this.shadowRoot.querySelector("#edit_icon").onclick = () => {
             this.show_settings();
@@ -285,6 +286,10 @@ export default class ov_RBAC_Node extends HTMLElement {
                 this.#save();
             else if (event.keyCode === 27)
                 this.#abort();
+        });
+
+        this.#dom.edit_name.addEventListener("input", () => {
+            this.#dom.name_char_count.textContent = this.#dom.edit_name.value.length;
         });
 
         this.shadowRoot.querySelector("#network_icon").onclick = (event) => {
@@ -353,6 +358,7 @@ export default class ov_RBAC_Node extends HTMLElement {
             ((DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") ? DEFAULT_MULTICAST_ADDRESS : null);
         this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port : null;
 
+        this.#dom.name_char_count.textContent = this.#dom.edit_name.value.length;
         this.#dom.dialog.showModal();
     }
 
