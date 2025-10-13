@@ -1,6 +1,6 @@
 #loop_layout {
     --touch: 1;
-    height:auto;
+    height: auto;
     padding: 0;
 }
 
@@ -38,15 +38,12 @@
     color: var(--input_highlight_text_color);
 }
 
-/* .grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  max-width: 100%;
+label[for=project_options_panel],
+label[for=role_options_panel] {
+    margin-top: 0;
+    text-decoration: underline;
 }
 
-@media (min-width: 1200px) {
-  .grid-container {
-    grid-template-columns: repeat(5, 1fr); /* No more than 5 columns */
- /* }
-}*/
+#menu, #choose_loop_dialog {
+    min-width: 20rem;
+}
