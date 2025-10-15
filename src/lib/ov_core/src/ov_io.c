@@ -2008,8 +2008,6 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
 
     ov_event_loop *loop = self->config.loop;
 
-    SSL *ssl = conn->tls.ssl;
-
     /* Ensure outgoing readiness listening */
 
     if (!loop->callback.set(loop,
@@ -2060,24 +2058,18 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
         return true;
     }
 
-    ssize_t bytes = 0;
+    // Push to queue 
 
-    if (ssl) {
-        bytes = SSL_write(ssl, buffer.start, buffer.length);
-    } else {
-        bytes = send(socket, buffer.start, buffer.length, 0);
+    ov_buffer *buf = ov_buffer_create(buffer.length);
+    if (!buf) goto error;
+
+    if (!ov_list_queue_push(conn->io_data.out.queue, buf)) {
+        buf = ov_buffer_free(buf);
+        goto error;
     }
 
-    if (bytes < 1) {
-
-        ov_buffer *temp = ov_buffer_create(buffer.length);
-        ov_buffer_set(temp, buffer.start, buffer.length);
-
-        if (!ov_list_queue_push(conn->io_data.out.queue, temp)) {
-            temp = ov_buffer_free(temp);
-            goto error;
-        }
-    }
+    if (!ov_buffer_push(buf, (void*) buffer.start, buffer.length))
+        goto error;
 
     return true;
 
