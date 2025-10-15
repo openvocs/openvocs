@@ -136,6 +136,57 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val);
 /*----------------------------------------------------------------------------*/
 
 ov_event_io_config ov_vocs_event_io_uri_config(ov_vocs *self);
-ov_event_io_config ov_vocs_admin_io_uri_config(ov_vocs *self);
+ov_event_io_config ov_vocs_mgmt_io_uri_config(ov_vocs *self);
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      MANAGEMENT FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+ov_mc_backend_registry_count ov_vocs_count_mixers(ov_vocs *self);
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_vocs_get_connection_state(ov_vocs *self);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_get_mixer_state(ov_vocs *self,
+    const char *uuid, const char *user,
+    void *userdata, int socket, void (*callback)(void *,int,ov_json_value*));
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_start_recording(ov_vocs *self,
+    const char *uuid, const char *loop,
+    void *userdata, int socket, void (*callback)(
+                                        void *userdata,
+                                        int socket,
+                                        const char *uuid,
+                                        const char *loop,
+                                        ov_result result));
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_stop_recording(ov_vocs *self,
+    const char *uuid, const char *loop,
+    void *userdata, int socket, void (*callback)(
+                                        void *userdata,
+                                        int socket,
+                                        const char *uuid,
+                                        const char *loop,
+                                        ov_result result));
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_vocs_get_recorded_loops(ov_vocs *self);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_send_broadcast(ov_vocs *self, int socket, ov_json_value * const input);
+
 
 #endif /* ov_vocs_h */
