@@ -619,6 +619,21 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
     if (0 == bytes) {
 
+        if (conn->type == OV_IO_CLIENT_CONNECTION){
+
+            if (conn->config.auto_reconnect) {
+
+                ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+
+                *conf = conn->config;
+                if (!ov_list_queue_push(self->reconnects, conf)) {
+
+                    conf = ov_data_pointer_free(conf);
+                    ov_log_error("failed to enable auto reconnect");
+                }
+            }
+        }
+
         ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
         return false;
 
@@ -714,6 +729,23 @@ static bool io_stream(int socket, uint8_t events, void *data) {
         (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+
+        if (conn->type == OV_IO_CLIENT_CONNECTION){
+
+            if (conn->config.auto_reconnect) {
+
+                ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+
+                *conf = conn->config;
+                if (!ov_list_queue_push(self->reconnects, conf)) {
+
+                    conf = ov_data_pointer_free(conf);
+                    ov_log_error("failed to enable auto reconnect");
+                    goto error;
+                }
+            }
+        }
+
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto done;
     }
@@ -1713,13 +1745,30 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     OV_ASSERT(self);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+
+         if (conn->type == OV_IO_CLIENT_CONNECTION){
+
+            if (conn->config.auto_reconnect) {
+
+                ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+
+                *conf = conn->config;
+                if (!ov_list_queue_push(self->reconnects, conf)) {
+
+                    conf = ov_data_pointer_free(conf);
+                    ov_log_error("failed to enable auto reconnect");
+                    goto error;
+                }
+            }
+        }
+
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
     }
 
     if (!conn->tls.handshaked) return tls_perform_client_handshake(conn);
 
-    if (!(events & OV_EVENT_IO_OUT)) return io_stream_ssl_send(self, conn);
+    if ((events & OV_EVENT_IO_OUT)) return io_stream_ssl_send(self, conn);
 
     if (!(events & OV_EVENT_IO_IN)) goto error;
 
@@ -1935,6 +1984,10 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
     conn->config = config;
     conn->io = self;
     conn->io_data.callback = io; 
+    conn->io_data.out.buffer = NULL;
+    conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
+    conn->io_data.out.queue = ov_linked_list_create(
+                    (ov_list_config){.item.free = ov_buffer_free});
 
     if (TLS == config.socket.type) {
 
@@ -2063,13 +2116,13 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
     ov_buffer *buf = ov_buffer_create(buffer.length);
     if (!buf) goto error;
 
+    if (!ov_buffer_push(buf, (void*) buffer.start, buffer.length))
+        goto error;
+
     if (!ov_list_queue_push(conn->io_data.out.queue, buf)) {
         buf = ov_buffer_free(buf);
         goto error;
     }
-
-    if (!ov_buffer_push(buf, (void*) buffer.start, buffer.length))
-        goto error;
 
     return true;
 
