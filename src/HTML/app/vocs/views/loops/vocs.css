@@ -105,6 +105,7 @@
     padding: 0.7rem;
     padding-top: 0;
     overflow-y: auto;
+    overflow-x: clip;
 }
 
 #user_name {
@@ -142,8 +143,10 @@
 #server_list .server_button .server_name {
     align-self: center;
     grid-row: 2;
-    word-break: break-all;
     overflow: clip;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    hyphenate-character: "";
 }
 
 #server_list .server_button .server_sync_level {
@@ -252,10 +255,6 @@
 
 #advanced_options {
     /* grid-column: 1 / span 2; */
-    display: none;
-}
-
-#ui_options {
     display: none;
 }
 

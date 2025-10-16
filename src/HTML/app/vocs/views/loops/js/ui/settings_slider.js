@@ -61,14 +61,9 @@ export function init() {
     DOM.mute_mousewheel_checkbox = document.getElementById("mousewheel_checkbox");
     DOM.add_HID = document.getElementById("add_HID");
 
-    DOM.activity_content = document.getElementById("activity_content");
-
-    DOM.color_mode_select = document.getElementById("color_mode_select");
-
     hide_slider();
 
     DOM.slider_button.addEventListener("click", function () {
-        console.log(DOM.slider, DOM.slider.open)
         if (!DOM.slider.open) {
             if (DOM.audio_details.open)
                 start_mic_oscillation();
@@ -100,25 +95,6 @@ export function init() {
     //-------------------------------------------------------------------------
     // ui options
     //-------------------------------------------------------------------------
-    // page color -------------------------------------------------------------
-    DOM.color_mode_select.value =
-        document.querySelector("option[label=" + COLOR_MODE + "]").value;
-    DOM.color_mode_select.addEventListener("change", function () {
-        change_color_mode(DOM.color_mode_select.value,
-            DOM.color_mode_select.options[DOM.color_mode_select.selectedIndex].label);
-    });
-    change_color_mode(DOM.color_mode_select.value, COLOR_MODE);
-
-    // activity indicator -----------------------------------------------------
-    DOM.activity_content.value = ACTIVITY_CONTENT;
-    DOM.activity_content.addEventListener("change", function () {
-        ACTIVITY_CONTENT = DOM.activity_content.value;
-        for (let page of Loop_View.pages)
-            for (let loop of page.values) {
-                loop.update_active_participants_list();
-            }
-    });
-
     // ptt options ------------------------------------------------------------
     DOM.mute_hardware_checkbox.checked = SECURE_VOICE_PTT;
     DOM.mute_hardware_checkbox.addEventListener("change", function () {
@@ -199,14 +175,5 @@ function start_mic_oscillation() {
         });
     } catch (error) {
         console.warn("Can't display microphone visualization.");
-    }
-}
-
-function change_color_mode(value, label) {
-    for (let option of DOM.color_mode_select.options) {
-        if (option.value === value)
-            document.documentElement.classList.add(option.value);
-        else
-            document.documentElement.classList.remove(option.value);
     }
 }

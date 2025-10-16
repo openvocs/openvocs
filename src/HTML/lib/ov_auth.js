@@ -89,11 +89,10 @@ export async function login(username, password, websocket) {
 }
 
 export async function relogin(websocket) {
-    let session;
-    if (websocket)
-        session = ov_Web_Storage.get_session(websocket.websocket_url);
-    else
-        session = ov_Web_Storage.get_session(ov_Websockets.current_lead_websocket.websocket_url);
+    if (!websocket)
+        websocket = ov_Websockets.current_lead_websocket
+
+    let session = ov_Web_Storage.get_session(websocket.websocket_url);
     if (!session) {
         console.error("Session timed out or is undefined e.g. because of AUTH Error. You need to manually login again.");
         // for (let ws of ov_Websockets.list)
@@ -106,7 +105,7 @@ export async function relogin(websocket) {
     if (session.user && session.session)
         result = await ws_login(session.user, session.session, websocket);
     if (result && session.role) {
-        if (!ov_Websockets.user().roles)
+        if (!websocket.user.roles)
             result = await collect_roles(websocket);
         result = await ws_authorize_role(session.role, websocket);
     }

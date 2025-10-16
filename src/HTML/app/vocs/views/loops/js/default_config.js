@@ -48,19 +48,10 @@ SIP = false;
 
 // ui options -----------------------------------------------------------------
 COLOR_MODE = "dark"; // "dark" || "light"
-ACTIVITY_CONTENT = "name";
-
-// scale ----------------------------------------------------------------------
-SITE_SCALING_FACTOR = 1.0;
+ACTIVITY_CONTENT = "display_name";
 
 LOOP_GRID_MIN_ROWS = 1;
 LOOP_GRID_MIN_COLUMNS = 1;
-
-// sizing of loop components ----------------------------------------------------
-// maximal and minimal size of each component
-LOOP_ELEMENT_SIZE_MIN = 0.5;
-LOOP_ELEMENT_SIZE_MAX = 2.0;
-
 
 // mute/ptt trigger -----------------------------------------------------------
 SECURE_VOICE_PTT = false; //e.g. when using hardware ptt button with secure voice

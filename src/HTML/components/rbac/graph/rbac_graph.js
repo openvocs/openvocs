@@ -149,7 +149,10 @@ export default class ov_RBAC_Graph extends HTMLElement {
                     Graph.register_node(event.detail.node);
                 else {
                     event.detail.node.node_id = undefined;
-                    event.detail.node.show_settings("ID is already assigned to other node. Please change ID.");
+                    if (event.detail.node.type === "user")
+                        event.detail.node.show_settings("Username is already assigned. Please change username.");
+                    else
+                        event.detail.node.show_settings("ID is already assigned. Please change ID.");
                 }
             }
         });

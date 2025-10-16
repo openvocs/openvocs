@@ -137,8 +137,6 @@ export async function redraw_roles() {
         for (let role of ov_Websockets.user().roles.values) {
             let name = role.name;
             if (!name)
-                name = role.abbreviation;
-            if (!name)
                 name = role.id;
             // await DOM.role_select.add_item(role.id, name + "\n (" + role.project + ")", role.id);
             await DOM.role_select.add_item(role.id, name, role.id);
