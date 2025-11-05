@@ -1445,11 +1445,10 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
 
     if (!ov_mc_interconnect_loop_send(loop, buffer, l)) goto ignore;
 
-    ov_log_debug("%s to internal RTP send %zi bytes for %s to %s",
+    ov_log_debug("%s to internal RTP send %zi bytes for %s",
         self->id,
         l,
-        loop_name,
-        ov_mc_interconnect_loop_get_host(loop));
+        loop_name);
 
 ignore:
     frame = ov_rtp_frame_free(frame);
