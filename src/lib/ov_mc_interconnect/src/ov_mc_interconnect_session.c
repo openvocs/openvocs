@@ -194,6 +194,8 @@ static bool send_keepalive(uint32_t timer, void *data) {
 
     send_stun_binding_request(self);
 
+    ov_log_debug("sending STUN keepalive for %s", self->id);
+
     self->timer.keepalive =
         ov_event_loop_timer_set(self->config.loop,
                                 self->config.keepalive_trigger_usec,
@@ -1442,13 +1444,13 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     memcpy(buffer + 8, &u32, 4);
 
     if (!ov_mc_interconnect_loop_send(loop, buffer, l)) goto ignore;
-/*
-    ov_log_debug("%s RTP send %zi bytes for %s to %s",
+
+    ov_log_debug("%s to internal RTP send %zi bytes for %s to %s",
         self->id,
         l,
         loop_name,
         ov_mc_interconnect_loop_get_host(loop));
-*/
+
 ignore:
     frame = ov_rtp_frame_free(frame);
     return true;
@@ -1502,14 +1504,14 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
 
     ssize_t bytes = ov_mc_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
-/*
-    ov_log_debug("%s SRTP send %zi bytes for %s to %s:%i",
+
+    ov_log_debug("%s to external SRTP send %zi bytes for %s to %s:%i",
         self->id,
         bytes,
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-*/
+
 done:
     return true;
 error:
