@@ -1378,8 +1378,6 @@ static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self){
             break;
 
         default:
-            ov_log_error("SRTP remove error %i", r);
-            goto done;
             break;
     
     }
@@ -1393,8 +1391,6 @@ static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self){
             break;
 
         default:
-            ov_log_error("SRTP remove error %i", r);
-            goto done;
             break;
     
     }
@@ -1408,7 +1404,6 @@ static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self){
             break;
 
         default:
-            goto done;
             break;
     }
 
@@ -1420,7 +1415,6 @@ static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self){
             break;
 
         default:
-            goto done;
             break;
     }
 
