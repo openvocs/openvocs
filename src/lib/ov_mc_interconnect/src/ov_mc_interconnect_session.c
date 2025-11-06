@@ -1496,7 +1496,7 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
             break;
 
         default:
-            // ov_log_error("SRTP protect error %s", srtp_error_to_string(r));
+            ov_log_error("SRTP protect error %s", srtp_error_to_string(r));
             goto done;
             break;
     }
