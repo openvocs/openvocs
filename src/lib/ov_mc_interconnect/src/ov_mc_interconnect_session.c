@@ -1362,6 +1362,75 @@ error:
     return false;
 }
 
+
+/*----------------------------------------------------------------------------*/
+
+static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self){
+
+    if (!self) goto error;
+
+    srtp_err_status_t r = srtp_remove_stream(self->srtp.local.session,
+        self->srtp.local.policy.ssrc.value);
+
+    switch(r) {
+
+     case srtp_err_status_ok:
+            break;
+
+        default:
+            ov_log_error("SRTP remove error %i", r);
+            goto done;
+            break;
+    
+    }
+
+    r = srtp_remove_stream(self->srtp.local.session,
+        self->srtp.remote.policy.ssrc.value);
+
+    switch(r) {
+
+     case srtp_err_status_ok:
+            break;
+
+        default:
+            ov_log_error("SRTP remove error %i", r);
+            goto done;
+            break;
+    
+    }
+
+    r = srtp_add_stream(self->srtp.local.session,
+        &self->srtp.local.policy);
+
+    switch (r) {
+
+        case srtp_err_status_ok:
+            break;
+
+        default:
+            goto done;
+            break;
+    }
+
+    r = srtp_add_stream(self->srtp.local.session, &self->srtp.remote.policy);
+
+    switch (r) {
+
+        case srtp_err_status_ok:
+            break;
+
+        default:
+            goto done;
+            break;
+    }
+
+done:
+    return true;
+error:
+    return false;
+}
+
+
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
@@ -1410,6 +1479,8 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     srtp_t srtp_session = self->srtp.local.session;
 
     if (!srtp_session) goto error;
+
+    if (!remove_and_readd_srtp_stream(self)) goto error;
 
     srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
@@ -1488,6 +1559,8 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
 
     int out = size;
 
+    if (!remove_and_readd_srtp_stream(self)) goto error;
+
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
     switch (r) {
@@ -1496,7 +1569,7 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
             break;
 
         default:
-            ov_log_error("SRTP protect error %s", srtp_error_to_string(r));
+            ov_log_error("SRTP protect error %i", r);
             goto done;
             break;
     }
