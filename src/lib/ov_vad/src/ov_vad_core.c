@@ -309,6 +309,8 @@ static bool handle_in_thread(ov_thread_loop *tloop, ov_thread_message *msg) {
     if (!counter) {
 
         counter = calloc(1, sizeof(Counter));
+        if (!counter) goto unlock;
+
         ov_dict_set(
             loop->ssrcs, (void *)(intptr_t)frame->expanded.ssrc, counter, NULL);
     }
@@ -383,6 +385,7 @@ static bool handle_in_thread(ov_thread_loop *tloop, ov_thread_message *msg) {
         }
     }
 
+unlock:
     ov_thread_lock_unlock(&loop->lock);
 
 done:
