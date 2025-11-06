@@ -66,6 +66,7 @@
     display: grid;
     grid-template-rows: minmax(0, auto) 10.5rem 14rem;
     height: calc(100% - 3rem);
+    font-size: 1.1rem;
 }
 
 #menu_slider .icon {
@@ -178,6 +179,7 @@
     width: calc(100vw - var(--default_slider_width));
     min-width: 30rem;
     bottom: var(--menu_bar_height);
+    font-size: 1.1rem;
 }
 
 /* #settings_slider div[slot=dialog-content] {
@@ -221,6 +223,38 @@
     line-height: 2rem;
     display: block;
     margin: 0;
+}
+
+#speaker_list, #microphone_list {
+    display: flex;
+    margin: 0.5rem 0;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+#settings_slider input[type="radio"] {
+    display: none;
+}
+
+#settings_slider input[type="radio"]+label {
+    padding: calc(0rem + (var(--touch) * 0.7rem)) 0.5rem;
+    margin: 0px;
+    height: calc(2.5rem + (var(--touch) * 1.5rem));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-width: 15rem;
+    max-width: 20rem;
+
+}
+
+#settings_slider input[type="radio"]:checked+label {
+    cursor: default;
+    background-color: var(--blue) !important;
+    box-shadow: var(--element_inset_box_shadow) !important;
+    color: var(--white) !important;
+    border: var(--black_transparent_75) solid 0.1rem;
 }
 
 #microphone_test {
