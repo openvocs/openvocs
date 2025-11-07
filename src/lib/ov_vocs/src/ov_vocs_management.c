@@ -3160,6 +3160,7 @@ ov_vocs_management *ov_vocs_management_create(ov_vocs_management_config config){
     self->user_sessions = ov_event_session_create(event_config);
     if (!self->user_sessions) goto error;
 
+    if (!register_events(self)) goto error;
 
     return self;
 error:
