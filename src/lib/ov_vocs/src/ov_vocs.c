@@ -5332,6 +5332,7 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
         .loop = vocs->config.loop,
         .vocs = vocs,
         .db = vocs->config.db,
+        .persistance = vocs->config.persistance,
         .ldap = vocs->ldap,
         .env = vocs->config.env,
         .timeout.response_usec = vocs->config.timeout.response_usec

@@ -78,6 +78,7 @@ typedef struct {
 
     ov_event_loop *loop;
     ov_vocs_db *db;
+    ov_vocs_db_persistance *persistance;
     ov_vocs_db_app *db_app;
     ov_io *io;
     ov_event_trigger *trigger;

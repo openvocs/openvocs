@@ -221,6 +221,7 @@ int main(int argc, char **argv) {
     ov_vocs_config core_config = ov_vocs_config_from_json(json_config);
     core_config.loop = loop;
     core_config.db = db;
+    core_config.persistance = db_persistance;
     core_config.db_app = db_app;
     core_config.io = io;
     core_config.env.userdata = server;
@@ -231,7 +232,7 @@ int main(int argc, char **argv) {
     vocs = ov_vocs_create(core_config);
     if (!vocs) goto error;
 
-    /* Enable uri domain/vocs for VOCS operation */
+    /* Enable uri domain/management for VOCS operation */
 
     if (!ov_webserver_minimal_configure_uri_event_io(
             server,
@@ -239,7 +240,7 @@ int main(int argc, char **argv) {
                 .start = (uint8_t *)domain, .length = strlen(domain)
 
             },
-            ov_vocs_event_io_uri_config(vocs))) {
+            ov_vocs_mgmt_io_uri_config(vocs))) {
 
         ov_log_error(
             "Failed to enable vocs URI callback "
@@ -250,24 +251,7 @@ int main(int argc, char **argv) {
         goto error;
     }
 
-    /* Enable uri domain/admin for VOCS operation */
 
-    if (!ov_webserver_minimal_configure_uri_event_io(
-            server,
-            (ov_memory_pointer){
-                .start = (uint8_t *)domain, .length = strlen(domain)
-
-            },
-            ov_vocs_admin_io_uri_config(vocs))) {
-
-        ov_log_error(
-            "Failed to enable vocs URI callback "
-            "at domain %s - check config to include same domain in "
-            "webserver and vocs module.",
-            domain);
-
-        goto error;
-    }
 
     /*  Run event loop */
     loop->run(loop, OV_RUN_MAX);

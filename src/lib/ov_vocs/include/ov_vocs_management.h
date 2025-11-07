@@ -49,6 +49,7 @@ typedef struct ov_vocs_management_config {
     ov_event_loop *loop;
     ov_vocs *vocs;
     ov_vocs_db *db;
+    ov_vocs_db_persistance *persistance;
 
     ov_vocs_env env;
 
