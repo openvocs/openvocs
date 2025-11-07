@@ -1418,7 +1418,6 @@ static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self){
             break;
     }
 
-done:
     return true;
 error:
     return false;
