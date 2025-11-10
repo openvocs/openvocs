@@ -956,7 +956,7 @@ ov_mc_interconnect *ov_mc_interconnect_create(
 
     } else {
 
-        ov_log_error("opened media listener %s:%i",
+        ov_log_debug("opened media listener %s:%i",
                      self->config.socket.media.host,
                      self->config.socket.media.port);
     }
@@ -1093,6 +1093,9 @@ bool ov_mc_interconnect_unregister_session(ov_mc_interconnect *self,
 
     snprintf(
         buf, OV_HOST_NAME_MAX + 20, "%s:%i", signaling.host, signaling.port);
+    
+    ov_log_debug("unregister session %s", buf);
+
     ov_dict_del(self->session.by_signaling_remote, buf);
 
     /*
@@ -1171,6 +1174,8 @@ bool ov_mc_interconnect_srtp_ready(ov_mc_interconnect *self,
     ov_json_value *loops = ov_mc_interconnect_get_loop_definitions(self);
     if (!loops) goto error;
 
+    ov_log_debug("Connecting all loops from client to server.");
+
     out = ov_mc_interconnect_msg_connect_loops();
     par = ov_event_api_set_parameter(out);
     ov_json_object_set(par, OV_KEY_LOOPS, loops);
@@ -1201,8 +1206,6 @@ static bool load_loop(const void *key, void *val, void *data) {
         ov_socket_configuration_from_json(val, (ov_socket_configuration){0});
     socket_config.type = UDP;
 
-    const char *multicast = ov_json_string_get(val);
-
     if (!name || (0 == socket_config.host[0]) || (0 == socket_config.port))
         goto error;
 
@@ -1224,7 +1227,7 @@ static bool load_loop(const void *key, void *val, void *data) {
         goto error;
     }
 
-    ov_log_debug("loaded loop %s|%s", name, multicast);
+    ov_log_debug("loaded loop %s|%s:%i", name, socket_config.host, socket_config.port);
 
     return true;
 error:

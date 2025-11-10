@@ -66,6 +66,7 @@ $(OV_LOCAL_DIST_DIR)/etc/openvocs: $(OPENVOCS_ROOT)/resources/certificate $(OPEN
 	$(OV_QUIET)$(OV_MKDIR) $@/ov_mc_mixer
 	$(OV_QUIET)$(OV_MKDIR) $@/ov_mc_alsa
 	$(OV_QUIET)$(OV_MKDIR) $@/ov_mc_vad
+	$(OV_QUIET)$(OV_MKDIR) $@/ov_mc_interconnect
 	$(OV_QUIET)for item in $?; do $(OV_COPY) $$item $@; done
 
 $(OV_LOCAL_DIST_DIR)/etc/openvocs/ov_mc_vocs: $(OPENVOCS_ROOT)/resources/config/mime $(OPENVOCS_ROOT)/resources/config/auth

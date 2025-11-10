@@ -194,6 +194,8 @@ static bool send_keepalive(uint32_t timer, void *data) {
 
     send_stun_binding_request(self);
 
+    ov_log_debug("sending STUN keepalive for %s", self->id);
+
     self->timer.keepalive =
         ov_event_loop_timer_set(self->config.loop,
                                 self->config.keepalive_trigger_usec,
@@ -1360,6 +1362,68 @@ error:
     return false;
 }
 
+
+/*----------------------------------------------------------------------------*/
+
+static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self){
+
+    if (!self) goto error;
+
+    srtp_err_status_t r = srtp_remove_stream(self->srtp.local.session,
+        self->srtp.local.policy.ssrc.value);
+
+    switch(r) {
+
+     case srtp_err_status_ok:
+            break;
+
+        default:
+            break;
+    
+    }
+
+    r = srtp_remove_stream(self->srtp.local.session,
+        self->srtp.remote.policy.ssrc.value);
+
+    switch(r) {
+
+     case srtp_err_status_ok:
+            break;
+
+        default:
+            break;
+    
+    }
+
+    r = srtp_add_stream(self->srtp.local.session,
+        &self->srtp.local.policy);
+
+    switch (r) {
+
+        case srtp_err_status_ok:
+            break;
+
+        default:
+            break;
+    }
+
+    r = srtp_add_stream(self->srtp.local.session, &self->srtp.remote.policy);
+
+    switch (r) {
+
+        case srtp_err_status_ok:
+            break;
+
+        default:
+            break;
+    }
+
+    return true;
+error:
+    return false;
+}
+
+
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
@@ -1409,6 +1473,8 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
 
     if (!srtp_session) goto error;
 
+    if (!remove_and_readd_srtp_stream(self)) goto error;
+
     srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
     switch (r) {
@@ -1442,13 +1508,12 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     memcpy(buffer + 8, &u32, 4);
 
     if (!ov_mc_interconnect_loop_send(loop, buffer, l)) goto ignore;
-/*
-    ov_log_debug("%s RTP send %zi bytes for %s to %s",
+
+    ov_log_debug("%s to internal RTP send %zi bytes for %s",
         self->id,
         l,
-        loop_name,
-        ov_mc_interconnect_loop_get_host(loop));
-*/
+        loop_name);
+
 ignore:
     frame = ov_rtp_frame_free(frame);
     return true;
@@ -1487,6 +1552,8 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
 
     int out = size;
 
+    if (!remove_and_readd_srtp_stream(self)) goto error;
+
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
     switch (r) {
@@ -1495,21 +1562,21 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
             break;
 
         default:
-            // ov_log_error("SRTP protect error %s", srtp_error_to_string(r));
+            ov_log_error("SRTP protect error %i", r);
             goto done;
             break;
     }
 
     ssize_t bytes = ov_mc_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
-/*
-    ov_log_debug("%s SRTP send %zi bytes for %s to %s:%i",
+
+    ov_log_debug("%s to external SRTP send %zi bytes for %s to %s:%i",
         self->id,
         bytes,
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-*/
+
 done:
     return true;
 error:
