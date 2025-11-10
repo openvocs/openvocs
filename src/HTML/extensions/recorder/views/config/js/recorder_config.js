@@ -49,34 +49,35 @@ export async function render(loops) {
         }
     }
 
-    let recorded_loops = (await ov_Recorder.get_recorded_loops(websocket));
-    if (recorded_loops)
-        recorded_loops = recorded_loops.map((x) => x.loop);
+    if (websocket) {
+        let recorded_loops = await ov_Recorder.get_recorded_loops(websocket);
+        if (recorded_loops)
+            recorded_loops = recorded_loops.map((x) => x.loop);
 
-    let first_loop;
+        let first_loop;
 
-    View.clear_loops();
+        View.clear_loops();
+        if (loops)
+            for (let id of Object.keys(loops)) {
+                let active = recorded_loops.includes(id)
+                let loop = View.add_loop(id, loops[id], active);
+                if (!first_loop)
+                    first_loop = loop;
+            }
 
-    if (loops)
-        for (let id of Object.keys(loops)) {
-            let active = recorded_loops.includes(id)
-            let loop = View.add_loop(id, loops[id], active);
-            if (!first_loop)
-                first_loop = loop;
+        if (first_loop)
+            View.select_loop(first_loop);
+
+        /*if (!await ov_DB.domains() || !await ov_DB.projects()){
+            ov_Websockets.prime_websocket.disconnect();
         }
-
-    if (first_loop)
-        View.select_loop(first_loop);
-
-    /*if (!await ov_DB.domains() || !await ov_DB.projects()){
-        ov_Websockets.prime_websocket.disconnect();
+    
+        View.draw(ov_Websockets.user());
+    
+        console.log("(overview) View rendered");
+    
+        ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);*/
     }
-
-    View.draw(ov_Websockets.user());
-
-    console.log("(overview) View rendered");
-
-    ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);*/
 }
 
 export function remove() {

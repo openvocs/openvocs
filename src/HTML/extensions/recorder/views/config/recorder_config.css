@@ -12,3 +12,25 @@
     height: 100%;
     overflow-y: auto;
 }
+
+#recorder_loops:empty + #recorder_settings {
+    display: none;
+}
+
+#warning {
+    display: none;
+}
+
+#recorder_loops:empty ~ #warning {
+    display: inherit;
+}
+
+#start_stop_recorder.recording {
+    background-color: var(--red);
+}
+
+#start_stop_recorder::before {
+    content: "\0025CF";
+    font-size: 1.3rem;
+    line-height: 1rem;
+}

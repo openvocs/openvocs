@@ -31,6 +31,7 @@
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import ov_Recorder_Loop from "/extensions/recorder/components/config/loop/recorder_loop.js";
 import * as ov_Recorder from "/extensions/recorder/ov_recorder.js";
+import ov_Player_List from '/extensions/recorder/components/player_list/recorder.js';
 
 var DOM = {};
 
@@ -39,36 +40,70 @@ export var logout_triggered;
 export function init(view_id) {
 
     DOM.loops = document.getElementById("recorder_loops");
-    DOM.start_recording = document.getElementById("start_recorder");
-    DOM.stop_recording = document.getElementById("stop_recorder");
-    DOM.start_recording.disabled = true;
-    DOM.stop_recording.disabled = true;
+    DOM.start_recording = document.getElementById("start_stop_recorder");
+    // DOM.stop_recording = document.getElementById("stop_recorder");
+    DOM.playback_search_start = document.getElementById("start_time");
+    DOM.playback_search_stop = document.getElementById("stop_time");
+    DOM.playback_search = document.getElementById("search_records");
+    DOM.playback_list = document.querySelector('ov-player-list');
+    // DOM.start_recording.disabled = true;
+    // DOM.stop_recording.disabled = true;
 
-    DOM.start_recording.addEventListener("click", () => {
-        for (let ws of ov_Websockets.list) {
-            if (ws.port === "admin" && ws.record === true) {
-                let loop = get_current_loop();
-                ov_Recorder.start_record(loop.id, ws);
-                loop.active = true;
-                DOM.start_recording.disabled = true;
-                DOM.stop_recording.disabled = false;
-                break;
+    DOM.start_recording.addEventListener("click", async () => {
+        if (DOM.start_recording.classList.contains("recording")) {
+            for (let ws of ov_Websockets.list) {
+                if (ws.port === "admin" && ws.record === true) {
+                    let loop = get_current_loop();
+                    await ov_Recorder.stop_record(loop.id, ws);
+                    loop.active = false;
+                    // DOM.start_recording.disabled = false;
+                    // DOM.stop_recording.disabled = true;
+                    DOM.start_recording.classList.toggle("recording", false);
+                }
+            }
+        } else {
+            for (let ws of ov_Websockets.list) {
+                if (ws.port === "admin" && ws.record === true) {
+                    let loop = get_current_loop();
+                    await ov_Recorder.start_record(loop.id, ws);
+                    loop.active = true;
+                    // DOM.start_recording.disabled = true;
+                    // DOM.stop_recording.disabled = false;
+                    DOM.start_recording.classList.toggle("recording", true);
+                }
             }
         }
     });
 
-    DOM.stop_recording.addEventListener("click", () => {
+    // DOM.stop_recording.addEventListener("click", () => {
+    //     for (let ws of ov_Websockets.list) {
+    //         if (ws.port === "admin" && ws.record === true) {
+    //             let loop = get_current_loop();
+    //             ov_Recorder.stop_record(loop.id, ws);
+    //             loop.active = false;
+    //             DOM.start_recording.disabled = false;
+    //             DOM.stop_recording.disabled = true;
+    //         }
+    //     }
+    // });
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    DOM.playback_search_stop.value = now.toISOString().slice(0, 16);
+    now.setTime(now.getTime() - 24 * 60 * 60 * 1000);
+    DOM.playback_search_start.value = now.toISOString().slice(0, 16);
+
+    DOM.playback_search.addEventListener("click", async () => {
+        let start = Math.floor(new Date(DOM.playback_search_start.value).getTime() / 1000);
+        let finish = Math.floor(new Date(DOM.playback_search_stop.value).getTime() / 1000);
         for (let ws of ov_Websockets.list) {
-            if (ws.port === "admin" && ws.record === true) {
+            if (ws.port === "vocs" && ws.record === true) {
                 let loop = get_current_loop();
-                ov_Recorder.stop_record(loop.id, ws);
-                loop.active = false;
-                DOM.start_recording.disabled = false;
-                DOM.stop_recording.disabled = true;
-                break;
+                let recorded_loops = await ov_Recorder.get_recordings(loop.id, start, finish, ws);
+                DOM.playback_list.draw_recordings(recorded_loops, ws.server_url + "audio/");
             }
         }
-    });
+    })
 }
 
 export function add_loop(id, data, active) {
@@ -88,8 +123,8 @@ export function add_loop(id, data, active) {
 
 export function clear_loops() {
     DOM.loops.replaceChildren();
-    DOM.start_recording.disabled = true;
-    DOM.stop_recording.disabled = true;
+    // DOM.start_recording.disabled = true;
+    // DOM.stop_recording.disabled = true;
 }
 
 function get_current_loop() {
@@ -106,6 +141,8 @@ export function select_loop(loop) {
         prev_loop.disabled = false;
 
     loop.disabled = true;
-    DOM.start_recording.disabled = loop.active;
-    DOM.stop_recording.disabled = !loop.active;
+    DOM.start_recording.classList.toggle("recording", loop.active);
+    // DOM.start_recording.disabled = loop.active;
+    // DOM.stop_recording.disabled = !loop.active;
+    DOM.playback_list.draw_recordings();
 }
