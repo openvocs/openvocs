@@ -43,7 +43,7 @@
 #include <ov_vocs_db/ov_vocs_db_persistance.h>
 
 #include <ov_base/ov_plugin_system.h>
-#include <ov_vocs/ov_vocs.h>
+#include <ov_vocs/ov_vocs_core.h>
 
 #define CONFIG_PATH                                                            \
     OPENVOCS_ROOT                                                              \
@@ -78,8 +78,7 @@ int main(int argc, char **argv) {
     ov_json_value *json_config = NULL;
     ov_vocs_db *db = NULL;
     ov_vocs_db_persistance *db_persistance = NULL;
-    ov_vocs_db_app *db_app = NULL;
-    ov_vocs *vocs = NULL;
+    ov_vocs_core *vocs = NULL;
     ov_event_trigger *trigger = NULL;
     ov_io *io = NULL;
 
@@ -127,7 +126,7 @@ int main(int argc, char **argv) {
     }
 
     const char *domain = ov_json_string_get(ov_json_object_get(
-        (ov_json_object_get(json_config, OV_KEY_VOCS)), OV_KEY_DOMAIN));
+        (ov_json_object_get(json_config, "vocs")), OV_KEY_DOMAIN));
 
     if (!domain) {
         ov_log_error("No domain input to enable vocs module");
@@ -144,13 +143,7 @@ int main(int argc, char **argv) {
      *  (2) DB persistance layer
      *  (3) DB service layer
      */
-
-    ov_ldap_config ldap_config = ov_ldap_config_from_json(json_config);
-    bool ldap_enable = false;
-    if (ov_json_is_true(
-            (ov_json_get(json_config, "/" OV_KEY_LDAP "/" OV_KEY_ENABLED))))
-        ldap_enable = true;
-
+        
     trigger = ov_event_trigger_create((ov_event_trigger_config){0});
     if (!trigger) goto error;
 
@@ -181,55 +174,19 @@ int main(int argc, char **argv) {
     
     if (!ov_vocs_db_set_persistance(db, db_persistance)) goto error;
 
-    db_app = ov_vocs_db_app_create(
-        (ov_vocs_db_app_config){.loop = loop,
-                                .db = db,
-                                .env.userdata = server,
-                                .env.close = env_close_socket,
-                                .env.send = env_send_socket,
-                                .persistance = db_persistance,
-                                .ldap.enable = ldap_enable,
-                                .ldap.config = ldap_config});
-    if (!db_app) {
-        ov_log_error("Failed to create db app.");
-        goto error;
-    }
-
-    /* Enable uri domain/db for DB operation */
-
-    if (!ov_webserver_minimal_configure_uri_event_io(
-            server,
-            (ov_memory_pointer){
-                .start = (uint8_t *)domain, .length = strlen(domain)
-
-            },
-            ov_vocs_db_app_io_uri_config(db_app))) {
-
-        ov_log_error(
-            "Failed to enable vocs URI callback "
-            "at domain %s - check config to include same domain in "
-            "webserver and vocs module.",
-            domain);
-
-        goto error;
-    }
-
-    
-
     /* Create the vocs core */
 
-    ov_vocs_config core_config = ov_vocs_config_from_json(json_config);
+    ov_vocs_core_config core_config = ov_vocs_core_config_from_json(json_config);
     core_config.loop = loop;
     core_config.db = db;
     core_config.persistance = db_persistance;
-    core_config.db_app = db_app;
     core_config.io = io;
     core_config.env.userdata = server;
     core_config.env.close = env_close_socket;
     core_config.env.send = env_send_socket;
     core_config.trigger = trigger;
 
-    vocs = ov_vocs_create(core_config);
+    vocs = ov_vocs_core_create(core_config);
     if (!vocs) goto error;
 
     /* Enable uri domain/management for VOCS operation */
@@ -240,7 +197,7 @@ int main(int argc, char **argv) {
                 .start = (uint8_t *)domain, .length = strlen(domain)
 
             },
-            ov_vocs_mgmt_io_uri_config(vocs))) {
+            ov_vocs_core_event_io_uri_config(vocs))) {
 
         ov_log_error(
             "Failed to enable vocs URI callback "
@@ -261,10 +218,9 @@ int main(int argc, char **argv) {
 error:
 
     json_config = ov_json_value_free(json_config);
-    vocs = ov_vocs_free(vocs);
+    vocs = ov_vocs_core_free(vocs);
     db_persistance = ov_vocs_db_persistance_free(db_persistance);
     db = ov_vocs_db_free(db);
-    db_app = ov_vocs_db_app_free(db_app);
     server = ov_webserver_minimal_free(server);
     loop = ov_event_loop_free(loop);
     trigger = ov_event_trigger_free(trigger);
