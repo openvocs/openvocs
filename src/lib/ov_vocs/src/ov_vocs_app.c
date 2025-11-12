@@ -5480,246 +5480,307 @@ static bool register_events(ov_vocs_app *self){
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_LOGIN,
+                                  self,
                                   client_login)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_AUTHENTICATE,
+                                  self,
                                   client_login)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_LOGOUT,
+                                  self,
                                   client_logout)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_UPDATE_LOGIN,
+                                  self,
                                   update_client_login)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_MEDIA,
+                                  self,
                                   client_media)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_ICE_STRING_CANDIDATE,
+                                  self,
                                   client_candidate)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_ICE_STRING_END_OF_CANDIDATES,
+                                  self,
                                   client_end_of_candidates)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_AUTHORISE,
+                                  self,
                                   client_authorize)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_AUTHORIZE,
+                                  self,
                                   client_authorize)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_GET,
+                                  self,
                                   client_get)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_USER_ROLES,
+                                  self,
                                   client_user_roles)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_ROLE_LOOPS,
+                                  self,
                                   client_role_loops)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_SWITCH_LOOP_STATE,
+                                  self,
                                   client_switch_loop_state)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_SWITCH_LOOP_VOLUME,
+                                  self,
                                   client_switch_loop_volume)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_TALKING,
+                                  self,
                                   client_talking)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_CALL,
+                                  self,
                                   client_calling)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_HANGUP,
+                                  self,
                                   client_hangup)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_PERMIT_CALL,
+                                  self,
                                   client_permit_call)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_REVOKE_CALL,
+                                  self,
                                   client_revoke_call)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_LIST_CALLS,
+                                  self,
                                   client_list_calls)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_LIST_CALL_PERMISSIONS,
+                                  self,
                                   client_list_call_permissions)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_LIST_SIP_STATUS,
+                                  self,
                                   client_list_sip_status)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_SET_KEYSET_LAYOUT,
+                                  self,
                                   client_event_set_keyset_layout)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_GET_KEYSET_LAYOUT,
+                                  self,
                                   client_event_get_keyset_layout)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_SET_USER_DATA,
+                                  self,
                                   client_event_set_user_data)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_GET_USER_DATA,
+                                  self,
                                   client_event_get_user_data)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_GET_RECORDING,
+                                  self,
                                   client_event_get_recording)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_SIP,
+                                  self,
                                   client_event_sip_status)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_REGISTER,
+                                  self,
                                   client_event_register)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_STATE_MIXER,
+                                  self,
                                   get_mixer_count)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   "get_mixer_state",
+                                  self,
                                   get_mixer_state)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_API_STATE_CONNECTIONS,
+                                  self,
                                   get_connection_state)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_START_RECORD,
+                                  self,
                                   start_recording)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_EVENT_STOP_RECORD,
+                                  self,
                                   stop_recording)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   "get_recorded_loops",
+                                  self,
                                   get_recorded_loops)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   "get_all_loops",
+                                  self,
                                   get_all_loops)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_KEY_BROADCAST,
+                                  self,
                                   broadcast)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_UPDATE_PASSWORD,
+                                  self,
                                   cb_event_update_password)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ADMIN_DOMAINS,
+                                  self,
                                   cb_event_get_admin_domains)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ADMIN_PROJECTS,
+                                  self,
                                   cb_event_get_admin_projects)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ID_EXISTS,
+                                  self,
                                   cb_event_check_id_exists)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_DELETE,
+                                  self,
                                   cb_event_delete)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_CREATE,
+                                  self,
                                   cb_event_create)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_GET_KEY,
+                                  self,
                                   cb_event_get_key)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_UPDATE_KEY,
+                                  self,
                                   cb_event_update_key)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_DELETE_KEY,
+                                  self,
                                   cb_event_delete_key)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_VERIFY,
+                                  self,
                                   cb_event_verify)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_UPDATE,
+                                  self,
                                   cb_event_update)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_LOAD,
+                                  self,
                                   cb_event_load)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_SAVE,
+                                  self,
                                   cb_event_save)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_GET_LAYOUT,
+                                  self,
                                   cb_event_get_layout)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_SET_LAYOUT,
+                                  self,
                                   cb_event_set_layout)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_LOAD,
+                                  self,
                                   cb_event_load)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ADD_DOMAIN_ADMIN,
+                                  self,
                                   cb_event_add_domain_admin)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ADD_PROJECT_ADMIN,
+                                  self,
                                   cb_event_add_project_admin)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_LDAP_IMPORT,
+                                  self,
                                   cb_event_ldap_import)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_SET_KEYSET_LAYOUT,
+                                  self,
                                   cb_event_set_keyset_layout)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_GET_KEYSET_LAYOUT,
+                                  self,
                                   cb_event_get_keyset_layout)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_SET_USER_DATA,
+                                  self,
                                   cb_event_set_user_data)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_GET_USER_DATA,
+                                  self,
                                   cb_event_get_user_data)) goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   "get_highest_port",
+                                  self,
                                   cb_event_get_highest_port)) goto error;
 
 
@@ -5817,7 +5878,7 @@ bool ov_vocs_app_api_process(ov_vocs_app *self,
                              const ov_event_parameter *params, 
                              ov_json_value *input){
 
-    return ov_event_engine_push(self->engine, self, socket, *params, input);
+    return ov_event_engine_push(self->engine, socket, *params, input);
 
 }
 

@@ -491,23 +491,23 @@ static bool register_events(ov_vocs_recorder *self) {
     if (!self) goto error;
 
     if (!ov_event_engine_register(
-            self->event.engine, OV_KEY_REGISTER, event_recorder_register))
+            self->event.engine, OV_KEY_REGISTER, self, event_recorder_register))
         goto error;
 
     if (!ov_event_engine_register(
-            self->event.engine, OV_KEY_UNREGISTER, event_recorder_unregister))
+            self->event.engine, OV_KEY_UNREGISTER, self,event_recorder_unregister))
         goto error;
 
     if (!ov_event_engine_register(
-            self->event.engine, OV_EVENT_START_RECORD, start_record))
+            self->event.engine, OV_EVENT_START_RECORD, self,start_record))
         goto error;
 
     if (!ov_event_engine_register(
-            self->event.engine, OV_EVENT_STOP_RECORD, stop_record))
+            self->event.engine, OV_EVENT_STOP_RECORD, self,stop_record))
         goto error;
 
     if (!ov_event_engine_register(
-            self->event.engine, OV_EVENT_NOTIFY, cb_event_notify))
+            self->event.engine, OV_EVENT_NOTIFY, self,cb_event_notify))
         goto error;
 
     return true;
@@ -894,7 +894,7 @@ static bool cb_client_process(void *userdata,
         goto error;
     }
 
-    if (!ov_event_engine_push(self->event.engine, self, socket, *params, input))
+    if (!ov_event_engine_push(self->event.engine, socket, *params, input))
         goto error;
 
     return true;

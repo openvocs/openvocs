@@ -83,7 +83,6 @@ static void json_success(void *userdata, int socket, ov_json_value *value) {
 
     if (!ov_event_engine_push(
             app->config.engine,
-            app->config.callback.userdata,
             socket,
             (ov_event_parameter){
                 .send.instance = app, .send.send = event_socket_send

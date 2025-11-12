@@ -2499,117 +2499,118 @@ bool register_event_callbacks(ov_vocs_db_app *self) {
     if (!self) goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_EVENT_API_LOGIN, cb_event_login))
+            self->engine, OV_EVENT_API_LOGIN, self, cb_event_login))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_EVENT_API_UPDATE_LOGIN, cb_update_client_login))
+            self->engine, OV_EVENT_API_UPDATE_LOGIN, self,cb_update_client_login))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_EVENT_API_AUTHENTICATE, cb_event_login))
+            self->engine, OV_EVENT_API_AUTHENTICATE, self,cb_event_login))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_EVENT_API_LOGOUT, cb_event_logout))
+            self->engine, OV_EVENT_API_LOGOUT, self,cb_event_logout))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_UPDATE_PASSWORD, cb_event_update_password))
+            self->engine, OV_VOCS_DB_UPDATE_PASSWORD, self,cb_event_update_password))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_ADMIN_DOMAINS, cb_event_get_admin_domains))
+            self->engine, OV_VOCS_DB_ADMIN_DOMAINS, self,cb_event_get_admin_domains))
         goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ADMIN_PROJECTS,
+                                  self,
                                   cb_event_get_admin_projects))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_ID_EXISTS, cb_event_check_id_exists))
+            self->engine, OV_VOCS_DB_ID_EXISTS, self,cb_event_check_id_exists))
         goto error;
 
-    if (!ov_event_engine_register(self->engine, OV_VOCS_DB_GET, cb_event_get))
-        goto error;
-
-    if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_DELETE, cb_event_delete))
+    if (!ov_event_engine_register(self->engine, OV_VOCS_DB_GET, self,cb_event_get))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_CREATE, cb_event_create))
+            self->engine, OV_VOCS_DB_DELETE, self,cb_event_delete))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_GET_KEY, cb_event_get_key))
+            self->engine, OV_VOCS_DB_CREATE, self,cb_event_create))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_UPDATE_KEY, cb_event_update_key))
+            self->engine, OV_VOCS_DB_GET_KEY, self,cb_event_get_key))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_DELETE_KEY, cb_event_delete_key))
+            self->engine, OV_VOCS_DB_UPDATE_KEY, self,cb_event_update_key))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_VERIFY, cb_event_verify))
+            self->engine, OV_VOCS_DB_DELETE_KEY, self,cb_event_delete_key))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_UPDATE, cb_event_update))
-        goto error;
-
-    if (!ov_event_engine_register(self->engine, OV_VOCS_DB_LOAD, cb_event_load))
-        goto error;
-
-    if (!ov_event_engine_register(self->engine, OV_VOCS_DB_SAVE, cb_event_save))
+            self->engine, OV_VOCS_DB_VERIFY, self,cb_event_verify))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_SET_LAYOUT, cb_event_set_layout))
+            self->engine, OV_VOCS_DB_UPDATE, self,cb_event_update))
+        goto error;
+
+    if (!ov_event_engine_register(self->engine, OV_VOCS_DB_LOAD, self,cb_event_load))
+        goto error;
+
+    if (!ov_event_engine_register(self->engine, OV_VOCS_DB_SAVE, self,cb_event_save))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_GET_LAYOUT, cb_event_get_layout))
+            self->engine, OV_VOCS_DB_SET_LAYOUT, self,cb_event_set_layout))
+        goto error;
+
+    if (!ov_event_engine_register(
+            self->engine, OV_VOCS_DB_GET_LAYOUT, self,cb_event_get_layout))
         goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ADD_DOMAIN_ADMIN,
-                                  cb_event_add_domain_admin))
+                                  self,cb_event_add_domain_admin))
         goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_ADD_PROJECT_ADMIN,
-                                  cb_event_add_project_admin))
+                                  self,cb_event_add_project_admin))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_LDAP_IMPORT, cb_event_ldap_import))
+            self->engine, OV_VOCS_DB_LDAP_IMPORT, self,cb_event_ldap_import))
         goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_SET_KEYSET_LAYOUT,
-                                  cb_event_set_keyset_layout))
+                                  self,cb_event_set_keyset_layout))
         goto error;
 
     if (!ov_event_engine_register(self->engine,
                                   OV_VOCS_DB_GET_KEYSET_LAYOUT,
-                                  cb_event_get_keyset_layout))
+                                  self,cb_event_get_keyset_layout))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_SET_USER_DATA, cb_event_set_user_data))
+            self->engine, OV_VOCS_DB_SET_USER_DATA, self,cb_event_set_user_data))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, OV_VOCS_DB_GET_USER_DATA, cb_event_get_user_data))
+            self->engine, OV_VOCS_DB_GET_USER_DATA, self,cb_event_get_user_data))
         goto error;
 
     if (!ov_event_engine_register(
-            self->engine, "get_highest_port", cb_event_get_highest_port))
+            self->engine, "get_highest_port", self,cb_event_get_highest_port))
         goto error;
 
     return true;
@@ -2768,7 +2769,7 @@ static bool cb_client_process(void *userdata,
     ov_vocs_db_app *self = ov_vocs_db_app_cast(userdata);
     if (!self || socket < 0 || !params || !input) goto error;
 
-    ov_event_engine_push(self->engine, self, socket, *params, input);
+    ov_event_engine_push(self->engine, socket, *params, input);
     return true;
 
 error:

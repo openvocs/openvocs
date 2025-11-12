@@ -35,7 +35,6 @@
 #include "ov_mc_backend_sip_static.h"
 #include "ov_mc_backend_vad.h"
 #include "ov_mc_frontend.h"
-#include "ov_vocs_events.h"
 #include "ov_vocs_recorder.h"
 #include "ov_vocs_app.h"
 
@@ -87,7 +86,6 @@ struct ov_vocs_core_config {
         ov_mc_frontend_config frontend;
         ov_mc_backend_sip_config sip;
         ov_mc_backend_sip_static_config sip_static;
-        ov_vocs_events_config events;
         ov_vocs_recorder_config recorder;
         ov_mc_backend_vad_config vad;
         ov_vocs_app_config app;
