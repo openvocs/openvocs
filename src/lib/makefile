@@ -54,6 +54,7 @@ OV_LIB_DIRS      += ov_mc_interconnect
 OV_LIB_DIRS      += ov_snmp
 OV_LIB_DIRS      += ov_vad
 OV_LIB_DIRS      += ov_multithreaded
+OV_LIB_DIRS      += ov_web_server
 
 all    : target_build_all
 depend : target_depend

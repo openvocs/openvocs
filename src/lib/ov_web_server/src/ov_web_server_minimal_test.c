@@ -19,48 +19,55 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_web_server_connection.h
+        @file           ov_web_server_minimal_test.c
         @author         Töpfer, Markus
 
-        @date           2025-11-06
+        @date           2025-11-12
 
 
         ------------------------------------------------------------------------
 */
-#ifndef ov_web_server_connection_h
-#define ov_web_server_connection_h
-
-#include <openssl/ssl.h>
-
-/*----------------------------------------------------------------------------*/
-
-typedef struct ov_web_server_connection ov_web_server_connection;
-
-/*----------------------------------------------------------------------------*/
-
-#include "ov_web_server.h"
+#include <ov_test/testrun.h>
+#include "ov_web_server_minimal.c"
 
 /*
  *      ------------------------------------------------------------------------
  *
- *      GENERIC FUNCTIONS
+ *      TEST CASES                                                      #CASES
  *
  *      ------------------------------------------------------------------------
  */
 
-ov_web_server_connection *ov_web_server_connection_create(ov_web_server *srv, int socket);
-ov_web_server_connection *ov_web_server_connection_cast(const void *self);
-void *ov_web_server_connection_free(void *self);
+int test_case(){
+        testrun(1 == 1);
 
-bool ov_web_server_connection_set_ssl(ov_web_server_connection *self, SSL *ssl);
+        return testrun_log_success();
+}
 
-bool ov_web_server_connection_send(ov_web_server_connection *self, const ov_buffer *data);
+/*----------------------------------------------------------------------------*/
 
-bool ov_web_server_connection_uri_file_path(ov_web_server_connection *self,
-                                     const ov_http_message *request,
-                                     size_t length,
-                                     char *path);
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      TEST CLUSTER                                                    #CLUSTER
+ *
+ *      ------------------------------------------------------------------------
+ */
 
-ov_domain *ov_web_server_connection_get_domain(ov_web_server_connection *self);
+int all_tests() {
 
-#endif /* ov_web_server_connection_h */
+        testrun_init();
+        testrun_test(test_case);
+
+        return testrun_counter;
+}
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      TEST EXECUTION                                                  #EXEC
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+testrun_run(all_tests);

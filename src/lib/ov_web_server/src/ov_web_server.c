@@ -30,6 +30,8 @@
 #include "../include/ov_web_server.h"
 #include "../include/ov_web_server_connection.h"
 
+#define IMPL_MAX_FRAMES_FOR_JSON 10000
+
 #include <ov_base/ov_dict.h>
 #include <ov_core/ov_domain.h>
 
@@ -499,7 +501,7 @@ ov_web_server_config ov_web_server_get_config(ov_web_server *self){
  *      ------------------------------------------------------------------------
  */
 
-static ov_domain *find_domain(const ov_web_server *srv,
+ov_domain *ov_web_server_find_domain(ov_web_server *srv,
                               const uint8_t *name,
                               size_t len) {
 
@@ -519,4 +521,525 @@ static ov_domain *find_domain(const ov_web_server *srv,
     }
 
     return domain;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_domain *ov_web_server_get_default_domain(ov_web_server *self){
+
+    if (!self) goto error;
+
+    if (-1 == self->domain.default_domain) {
+        return &self->domain.array[0];
+    } else {
+        return &self->domain.array[self->domain.default_domain];
+    }
+
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_web_server_close_connection(ov_web_server *self, int socket){
+
+    return ov_dict_del(self->connections, (void*) (intptr_t) socket);
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_web_server_send(ov_web_server *self, int socket, const ov_buffer *data){
+
+    if (!self || !data) goto error;
+
+    ov_web_server_connection *conn = ov_dict_get(self->connections, (void*)(intptr_t) socket);
+    if (!conn) goto error;
+
+    return ov_web_server_connection_send(conn, data);
+error:
+    return false;
+}
+
+
+/*----------------------------------------------------------------------------*/
+
+static bool cb_wss_send_json(void *userdata, int socket, const ov_json_value *msg) {
+
+    char *str = NULL;
+    ov_websocket_frame *frame = NULL;
+
+    ov_web_server *self = ov_web_server_cast(userdata);
+    if (!self || !msg || socket < 0) goto error;
+
+    ov_web_server_connection *conn = ov_dict_get(self->connections, (void*)(intptr_t)socket);
+    if (!conn) goto error;
+
+    str = ov_json_value_to_string(msg);
+    if (!str) goto error;
+
+    ssize_t length = strlen(str);
+
+    /* Send the string over websocket frames */
+
+    frame = ov_websocket_frame_create(self->config.websocket_frame);
+
+    if (!frame) goto error;
+
+    ov_websocket_frame_clear(frame);
+
+    ssize_t chunk = self->config.limits.max_content_bytes_per_websocket_frame;
+
+    if (length < chunk) {
+
+        /* Send one WS frame */
+
+        frame->buffer->start[0] = 0x80 | OV_WEBSOCKET_OPCODE_TEXT;
+
+        if (!ov_websocket_set_data(frame, (uint8_t *)str, length, false)) {
+            goto error;
+        }
+
+        if (!ov_web_server_connection_send(conn,frame->buffer)) {
+            goto error;
+        }
+
+        goto done;
+    }
+
+    /* send fragmented */
+    size_t counter = 0;
+
+    uint8_t *ptr = (uint8_t *)str;
+    ssize_t open = length;
+
+    /* send fragmented start */
+
+    frame->buffer->start[0] = 0x00 | OV_WEBSOCKET_OPCODE_TEXT;
+
+    if (!ov_websocket_set_data(frame, ptr, chunk, false)) {
+        goto error;
+    }
+
+    if (!ov_web_server_connection_send(conn,frame->buffer)) {
+        goto error;
+    }
+
+    counter++;
+
+    /* send continuation */
+
+    open -= chunk;
+    ptr += chunk;
+
+    while (open > chunk) {
+
+        frame->buffer->start[0] = 0x00;
+
+        if (!ov_websocket_set_data(frame, ptr, chunk, false)) {
+            goto error;
+        }
+
+        if (!ov_web_server_connection_send(conn,frame->buffer)) {
+            goto error;
+        }
+
+        open -= chunk;
+        ptr += chunk;
+
+        counter++;
+    }
+
+    /* send last */
+
+    frame->buffer->start[0] = 0x80;
+
+    if (!ov_websocket_set_data(frame, ptr, open, false)) {
+        goto error;
+    }
+
+    if (!ov_web_server_connection_send(conn,frame->buffer)) {
+        goto error;
+    }
+
+    counter++;
+
+done:
+    frame = ov_websocket_frame_free(frame);
+    str = ov_data_pointer_free(str);
+    return true;
+
+error:
+    frame = ov_websocket_frame_free(frame);
+    ov_data_pointer_free(str);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_web_server_send_json(ov_web_server *self,
+                                 int socket,
+                                 ov_json_value const *const data){
+
+    return cb_wss_send_json(self, socket, data);
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_web_server_uri_file_path(ov_web_server *srv,
+                                     int socket,
+                                     const ov_http_message *msg,
+                                     size_t length,
+                                     char *path) {
+
+    if (!srv || !msg || !path) goto error;
+
+    /* (1) find open connection */
+
+    ov_web_server_connection *conn = ov_dict_get(srv->connections, (void*)(intptr_t)socket);
+
+    return ov_web_server_connection_uri_file_path(conn, msg, length, path);
+
+error:
+    return false;
+}
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      CONFIG FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+bool ov_web_server_configure_websocket_callback(
+    ov_web_server *self,
+    const ov_memory_pointer hostname,
+    ov_websocket_message_config config){
+
+    char *key = NULL;
+    ov_websocket_message_config *val = NULL;
+
+    if (!self || !hostname.start || (hostname.length == 0)) goto error;
+
+    ov_domain *domain = ov_web_server_find_domain(self, hostname.start, hostname.length);
+
+    if (!domain) {
+        goto error;
+    }
+
+    /* Check reset */
+
+    if (NULL == config.userdata) {
+
+        domain->websocket.config = (ov_websocket_message_config){0};
+        domain->websocket.uri = ov_dict_free(domain->websocket.uri);
+        goto done;
+    }
+
+    if ((NULL == config.callback) && (NULL == config.fragmented)) {
+
+        if (0 != config.uri[0]) {
+
+            ov_dict_del(domain->websocket.uri, config.uri);
+
+        } else {
+
+            domain->websocket.config = (ov_websocket_message_config){0};
+        }
+
+        goto done;
+    }
+
+    if (domain->websocket.config.userdata) {
+
+        if (domain->websocket.config.userdata != config.userdata) {
+            goto error;
+        }
+    }
+
+    if (0 == config.uri[0]) {
+
+        domain->websocket.config = config;
+
+        goto done;
+    }
+
+    /* add uri based callback */
+
+    if (!domain->websocket.uri) {
+
+        ov_dict_config conf = ov_dict_string_key_config(255);
+        conf.value.data_function.free = ov_data_pointer_free;
+
+        domain->websocket.uri = ov_dict_create(conf);
+        if (!domain->websocket.uri) goto error;
+    }
+
+    /* Ensure we add a key of form /uri including the root slash
+     * within the dict (to support e.g. GET /uri 1.1.) */
+
+    size_t len = strlen(config.uri) + 2;
+    key = calloc(1, len);
+    if (!key) goto error;
+
+    if ('/' == config.uri[0]) {
+        snprintf(key, len, "%s", config.uri);
+    } else {
+        snprintf(key, len, "/%s", config.uri);
+    }
+
+    val = calloc(1, sizeof(ov_websocket_message_config));
+    if (!val) goto error;
+
+    *val = config;
+
+    if (!ov_dict_set(domain->websocket.uri, key, val, NULL)) {
+
+        goto error;
+    }
+
+done:
+    ov_log_debug(
+        "configured websocket callback for domain "
+        "%.*s URI %s",
+        (int)hostname.length,
+        hostname.start,
+        config.uri);
+
+    return true;
+error:
+    ov_data_pointer_free(key);
+    ov_data_pointer_free(val);
+    return false;
+}
+
+
+/*----------------------------------------------------------------------------*/
+
+static bool cb_wss_io_to_json(void *userdata,
+                              int socket,
+                              const ov_memory_pointer domain,
+                              const char *uri,
+                              ov_memory_pointer content,
+                              bool text) {
+
+    ov_json_value *value = NULL;
+    ov_web_server *srv = ov_web_server_cast(userdata);
+
+    if (!srv) goto error;
+
+    if (!text) goto error;
+
+    if (socket < 0) goto error;
+
+    ov_web_server_connection *conn = ov_dict_get(srv->connections, (void*)(intptr_t)socket);
+    if (!conn) goto error;
+
+    ov_domain *conn_domain = ov_web_server_connection_get_domain(conn);
+    if (!conn_domain) goto error;
+
+    ov_event_io_config *event_config =
+        ov_dict_get(conn_domain->event_handler.uri, uri);
+
+    if (!event_config || !event_config->callback.process) goto error;
+
+    value = ov_json_value_from_string((char *)content.start, content.length);
+
+    if (!value)
+        goto error;
+
+    ov_event_parameter parameter = (ov_event_parameter){
+
+        .send.instance = srv, .send.send = cb_wss_send_json};
+
+    memcpy(parameter.uri.name, uri, strlen(uri));
+    memcpy(parameter.domain.name, domain.start, domain.length);
+
+    return event_config->callback.process(
+        event_config->userdata, socket, &parameter, value);
+
+error:
+    ov_json_value_free(value);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_web_server_configure_uri_event_io(
+    ov_web_server *self,
+    const ov_memory_pointer hostname,
+    const ov_event_io_config config,
+    const ov_websocket_message_config *wss_io){
+
+    char *key = NULL;
+    ov_event_io_config *val = NULL;
+
+    if (!self || !hostname.start || (hostname.length == 0)) goto error;
+
+    if (NULL != config.userdata && (0 == config.name[0])) {
+
+        goto error;
+    }
+
+    ov_domain *domain = ov_web_server_find_domain(self, hostname.start, hostname.length);
+
+    if (!domain) {
+        goto error;
+    }
+
+    /*
+     *  NOTE We do NOT support overriding or deletion of some existing
+     *  URI callback yet, as this will require to lock the handler config,
+     *  which may be already used within some thread.
+     */
+
+    if (domain->event_handler.uri) {
+
+        if (ov_dict_get(domain->event_handler.uri, config.name)) {
+            goto error;
+        }
+    }
+
+    ov_websocket_message_config msg_config =
+        (ov_websocket_message_config){.userdata = self,
+                                      .max_frames = IMPL_MAX_FRAMES_FOR_JSON,
+                                      .callback = cb_wss_io_to_json,
+                                      .close = config.callback.close};
+
+    if (wss_io) msg_config = *wss_io;
+
+    if (0 != config.name[0]) strncat(msg_config.uri, config.name, PATH_MAX - 1);
+
+    // perform WS config reset on no userdata
+    if (!config.userdata) msg_config = (ov_websocket_message_config){0};
+
+    // perform WS URI config reset on no processing
+    if (0 == config.callback.process) msg_config.callback = NULL;
+
+    if (!ov_web_server_configure_websocket_callback(
+            self, hostname, msg_config)) {
+        goto error;
+    }
+
+    /* Check for reset */
+
+    if (NULL == config.userdata) {
+
+        domain->event_handler.uri = ov_dict_free(domain->event_handler.uri);
+        goto done;
+    }
+
+    if (NULL == config.callback.process) {
+
+        ov_dict_del(domain->event_handler.uri, config.name);
+
+        goto done;
+    }
+
+    /* add uri based callback */
+
+    if (!domain->event_handler.uri) {
+
+        ov_dict_config conf = ov_dict_string_key_config(255);
+        conf.value.data_function.free = ov_data_pointer_free;
+
+        domain->event_handler.uri = ov_dict_create(conf);
+        if (!domain->event_handler.uri) goto error;
+
+    } else {
+
+        ov_event_io_config *check =
+            ov_dict_get(domain->event_handler.uri, config.name);
+
+        if (check) {
+
+            if (check->userdata != config.userdata) goto error;
+        }
+    }
+
+    key = strdup(config.name);
+    if (!key) goto error;
+
+    val = calloc(1, sizeof(ov_event_io_config));
+    if (!val) goto error;
+
+    *val = config;
+
+    if (!ov_dict_set(domain->event_handler.uri, key, val, NULL)) {
+        goto error;
+    }
+
+done:
+    ov_log_debug(
+        "configured event_handler callback for domain "
+        "%.*s URI %s",
+        (int)hostname.length,
+        hostname.start,
+        config.name);
+    return true;
+error:
+    ov_data_pointer_free(key);
+    ov_data_pointer_free(val);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_web_server_config ov_web_server_config_from_json(
+    const ov_json_value *value){
+
+    ov_web_server_config out = (ov_web_server_config){0};
+
+    if (!value) goto error;
+
+    const ov_json_value *config = NULL;
+
+    config = ov_json_object_get(value, OV_KEY_WEBSERVER);
+    if (!config) config = value;
+
+    if (ov_json_is_true(ov_json_object_get(config, OV_KEY_DEBUG)))
+        out.debug = true;
+
+    ov_json_value *sockets = ov_json_object_get(config, OV_KEY_SOCKETS);
+    ov_json_value *https = ov_json_object_get(sockets, OV_KEY_HTTPS);
+
+    if (https) {
+
+        out.socket = ov_socket_configuration_from_json(
+            https, (ov_socket_configuration){0});
+    }
+
+    out.http_message = ov_http_message_config_from_json(config);
+    out.websocket_frame = ov_websocket_frame_config_from_json(config);
+
+    const char *domain_config_path =
+        ov_json_string_get(ov_json_object_get(config, OV_KEY_DOMAINS));
+
+    if (domain_config_path)
+        if (!strncpy(out.domain_config_path, domain_config_path, PATH_MAX))
+            goto error;
+
+    out.limits.max_content_bytes_per_websocket_frame = ov_json_number_get(
+        ov_json_get(config, "/" OV_KEY_LIMITS "/" OV_WEBSOCKET_KEY));
+
+    ov_json_value *mime = ov_json_object_get(config, OV_KEY_MIME);
+
+    const char *str = ov_json_string_get(ov_json_object_get(mime, OV_KEY_PATH));
+    if (!str) goto error;
+
+    if (strlen(str) > PATH_MAX) goto error;
+
+    if (!strncpy(out.mime.path, str, PATH_MAX)) goto error;
+
+    str = ov_json_string_get(ov_json_object_get(mime, OV_KEY_EXTENSION));
+    if (str) {
+
+        if (strlen(str) > PATH_MAX) goto error;
+
+        if (!strncpy(out.mime.ext, str, PATH_MAX)) goto error;
+    }
+
+    return out;
+error:
+    return (ov_web_server_config){0};
 }

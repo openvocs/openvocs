@@ -47,6 +47,7 @@ OV_LIBS       += -l ov_test$(OV_EDITION)
 OV_LIBS       += -l ov_log$(OV_EDITION)
 OV_LIBS       += -l ov_base$(OV_EDITION)
 OV_LIBS       += -l ov_core$(OV_EDITION)
+OV_LIBS       += -l ov_format$(OV_EDITION)
 
 OV_LIBS       += -l m
 OV_LIBS       += -pthread
