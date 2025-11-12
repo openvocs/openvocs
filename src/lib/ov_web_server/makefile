@@ -24,58 +24,35 @@
 #
 #       ------------------------------------------------------------------------
 
+
+include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
+
+L_TEST_SOURCES = $(wildcard **/**/*_test.c **/*_test.c *_test.c)
+L_HEADERS      = $(wildcard **/**/*.h **/*.h *.h)
+L_SOURCES_C    = $(wildcard **/**/*.c **/*.c *.c)
+L_SOURCES      = $(filter-out $(L_TEST_SOURCES), $(L_SOURCES_C))
+
 include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
 #-----------------------------------------------------------------------------
 
-L_TEST_SOURCES       = $(wildcard src/*_test.c)
-L_HEADERS            = $(wildcard **/**/*.h **/*.h *.h)
-L_SOURCES_C          = $(wildcard **/**/*.c **/*.c *.c)
-L_SOURCES            = $(filter-out $(L_TEST_SOURCES), $(L_SOURCES_C))
-
-OV_HDR               = $(L_HEADERS)
-OV_SRC               = $(L_SOURCES)
-OV_EXECUTABLE        = $(OV_BINDIR)/$(OV_DIRNAME)
-OV_TARGET            = $(OV_EXECUTABLE)
+OV_FLAGS       += `pkg-config --cflags openssl`
 
 #-----------------------------------------------------------------------------
 
-OV_FLAGS       += `pkg-config --cflags openssl`
-OV_FLAGS       += `pkg-config --cflags libsrtp2`
+OV_LIBS        = -L$(OV_LIBDIR)
 
-##-----------------------------------------------------------------------------
-
-OV_STATIC_LIBS   =
-
-
-OV_LIBS        = $(OV_STATIC_LIBS)
-
-OV_LIBS       += -pthread
-
-OV_LIBS       += -L$(OV_LIBDIR)
-
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_base2
-OV_LIBS       += -l ov_database2
-OV_LIBS       += -l ov_core2
-OV_LIBS       += -l ov_encryption2
-OV_LIBS       += -l ov_arch2
-OV_LIBS       += -l ov_codec2
-OV_LIBS       += -l ov_test2
-OV_LIBS       += -l ov_os2
-OV_LIBS       += -l ov_pcm16s2
-OV_LIBS       += -l ov_pcm_gen2
-OV_LIBS 	  += -l ov_ice2
-OV_LIBS       += -l ov_vocs_db2
-OV_LIBS       += -l ov_vocs2
-OV_LIBS       += -l ov_ldap2
-OV_LIBS 	  += -l ov_ice_proxy2
-OV_LIBS 	  += -l ov_web_server2
+OV_LIBS       += -l ov_arch$(OV_EDITION)
+OV_LIBS       += -l ov_test$(OV_EDITION)
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_core$(OV_EDITION)
+OV_LIBS       += -l ov_format$(OV_EDITION)
 
 OV_LIBS       += -l m
+OV_LIBS       += -pthread
 
 OV_LIBS       += `pkg-config --libs openssl`
-OV_LIBS       += `pkg-config --libs libsrtp2`
 
 #-----------------------------------------------------------------------------
 
