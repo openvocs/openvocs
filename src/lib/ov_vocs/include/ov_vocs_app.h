@@ -92,6 +92,51 @@ bool ov_vocs_app_api_process(ov_vocs_app *self,
 /*
  *      ------------------------------------------------------------------------
  *
+ *      SEND FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+bool ov_vocs_app_send_error_response(ov_vocs_app *self,
+                                     const ov_json_value *input,
+                                     int socket, 
+                                     uint64_t error_code,
+                                     const char *error_desc);
+
+bool ov_vocs_app_send_success_response(ov_vocs_app *self,
+                                     const ov_json_value *input,
+                                     int socket, 
+                                     ov_json_value **out);
+
+bool ov_vocs_app_send(void *userdata, int socket, const ov_json_value *input);
+
+bool ov_vocs_app_drop_connection(ov_vocs_app *self, int socket);
+
+bool ov_vocs_app_send_switch_loop_user_broadcast(ov_vocs_app *self,
+                                            int socket,
+                                            const char *loop,
+                                            ov_vocs_permission current) ;
+
+bool ov_vocs_app_send_switch_loop_broadcast(ov_vocs_app *self,
+                                       int socket,
+                                       const char *loop,
+                                       ov_vocs_permission current);
+
+bool ov_vocs_app_send_switch_volume_user_broadcast(ov_vocs_app *self,
+                                              int socket,
+                                              const char *loop,
+                                              uint8_t volume);
+
+bool ov_vocs_app_send_talking_loop_broadcast(ov_vocs_app *self,
+                                        int socket,
+                                        const ov_event_parameter *params,
+                                        const char *loop,
+                                        const ov_json_value *state,
+                                        const char *client);
+
+/*
+ *      ------------------------------------------------------------------------
+ *
  *      ICE FUNCTIONS
  *
  *      ------------------------------------------------------------------------
