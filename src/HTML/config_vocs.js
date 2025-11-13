@@ -29,28 +29,24 @@ SIGNALING_SERVERS = [
     // If you want to use the host address only define a name
     // otherwise define a WEBSOCKET_URL
     {
-       NAME: "local",
-       RECORD: true
-    }
+        NAME: "local"
+    // },
     // {
     //     WEBSOCKET_URL: "wss://openvocs.net",
     //     NAME: "openvocs.net",
     //     //RECORD: true
     //     //PRIME: true
-    // }
+    }
 ]
 
 SHARED_MULTICAST_ADDRESSES = true;
 
 // extensions -----------------------------------------------------------------
-SIP = true;
-RECORDER = true;
+SIP = false;
+RECORDER = false;
 
 // general options ------------------------------------------------------------
-COLOR_MODE = "dark"; // "dark" || "light"
-ACTIVITY_CONTENT = "id"; // "id" || "role"
-
-SITE_SCALING_FACTOR = 1.0;
+ACTIVITY_CONTENT = "display_name"; // "username" || "display_name"
 
 // voice interface ------------------------------------------------------------
 SECURE_VOICE_PTT = false; //e.g. when using hardware ptt button with secure voice
@@ -65,8 +61,9 @@ MUTE_FULLSCREEN_BUTTON = false;
 
 MULTI_TALK = false; //allow to talk in several loops at the same time
 
-SCREEN_KEYBOARD = true;
+SCREEN_KEYBOARD = false;
 
 // admin interface ------------------------------------------------------------
 DEFAULT_MULTICAST_ADDRESS = "";
+
 // ALLOW_IMPORT_EXPORT = false;

@@ -53,7 +53,7 @@ export function setup_connections(ov_Websocket) {
             let client_id = active_session ? active_session.client : undefined;
             if (client_id !== undefined)
                 temp_auto_login = true;
-            let record = websocket === "/admin" ? server.RECORD : false;
+            let record = server.RECORD;
             if (server.PRIME && WEBSOCKET.indexOf(websocket) === 0)
                 servers.unshift({ "name": server.NAME, "address": websocket_address, "client_id": client_id, "record": record });
             else

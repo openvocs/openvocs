@@ -147,6 +147,7 @@ export function disable_settings(value) {
 
 async function render_role() {
     if (loops_data) {
+        DOM.loops.reset_page_index();
         save_role();
         current_role = DOM.role_selector.value;
 

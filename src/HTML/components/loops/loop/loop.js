@@ -41,7 +41,6 @@ export default class ov_Loop extends HTMLElement {
     #loop_id;
     #type;
     #name;
-    #abbreviation;
     #project;
     #permission;
     #volume;
@@ -51,8 +50,6 @@ export default class ov_Loop extends HTMLElement {
     #participants;
     #active_participants;
     #links;
-    #font_size;
-    #name_size;
 
     static CONTENT = {
         ACTIVITY: "loop_activity",
@@ -69,19 +66,10 @@ export default class ov_Loop extends HTMLElement {
         NONE: "none"
     }
 
-    #loop_size = {};
-
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.#active_participants = new Map();
-        //this.state = ov_Loop.STATE.NONE;
-        this.#loop_size[ov_Loop.CONTENT.ACTIVITY] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.PERMISSION] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.LEAVE] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.NAME] = "1.5em";
-        this.#loop_size[ov_Loop.CONTENT.PARTICIPANTS] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.VOLUME] = "1.0em";
     }
 
     toString() {
@@ -150,14 +138,6 @@ export default class ov_Loop extends HTMLElement {
 
     get name() {
         return this.#name;
-    }
-
-    set abbreviation(abbreviation) {
-        this.#abbreviation = abbreviation;
-    }
-
-    get abbreviation() {
-        return this.#abbreviation;
     }
 
     set project(project) {
@@ -237,8 +217,11 @@ export default class ov_Loop extends HTMLElement {
     }
 
     update_active_participants_list() {
-        let value = this.active_participants.map(participant =>
-            participant[ACTIVITY_CONTENT]).toString();
+        let value;
+        if (ACTIVITY_CONTENT === "display_name")
+            value = this.active_participants.map(participant => participant["name"]).toString();
+        else
+            value = this.active_participants.map(participant => participant["id"]).toString();
         if (this.shadowRoot.isConnected)
             this.shadowRoot.querySelector("#loop_activity").textContent = value;
         this.shadowRoot.host.classList.toggle("activity", this.has_active_participants());
@@ -280,25 +263,6 @@ export default class ov_Loop extends HTMLElement {
         this.participants = this.participants;
         this.update_state();
         this.volume = this.#volume;
-
-        if (this.#name_size)
-            this.#update_loop_content_size(ov_Loop.CONTENT.NAME, this.#name_size);
-        else
-            this.#update_loop_content_size(ov_Loop.CONTENT.NAME, this.#loop_size[ov_Loop.CONTENT.NAME]);
-
-        if (this.#font_size) {
-            this.#update_loop_content_size(ov_Loop.CONTENT.PERMISSION, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.LEAVE, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.ACTIVITY, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.PARTICIPANTS, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.VOLUME, this.#font_size);
-        } else {
-            this.#update_loop_content_size(ov_Loop.CONTENT.PERMISSION, this.#loop_size[ov_Loop.CONTENT.PERMISSION]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.LEAVE, this.#loop_size[ov_Loop.CONTENT.LEAVE]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.ACTIVITY, this.#loop_size[ov_Loop.CONTENT.ACTIVITY]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.PARTICIPANTS, this.#loop_size[ov_Loop.CONTENT.PARTICIPANTS]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.VOLUME, this.#loop_size[ov_Loop.CONTENT.VOLUME]);
-        }
 
         this.shadowRoot.querySelector("#join_loop").onclick = () => {
             let next_state = this.#determine_next_loop_state();
@@ -369,33 +333,6 @@ export default class ov_Loop extends HTMLElement {
         }
     }
 
-    #update_loop_content_size(content, size) {
-        let element = this.shadowRoot.querySelector("#" + content);
-        if (element) {
-            if (typeof LOOP_ELEMENT_SIZE_MIN !== undefined && size < LOOP_ELEMENT_SIZE_MIN)
-                size = LOOP_ELEMENT_SIZE_MIN;
-            if (typeof LOOP_ELEMENT_SIZE_MAX !== undefined && size > LOOP_ELEMENT_SIZE_MAX)
-                size = LOOP_ELEMENT_SIZE_MAX;
-            element.style.fontSize = size + "rem";
-            element.style.lineHeight = size + "rem";
-            this.#loop_size[content] = size;
-        }
-    }
-
-    update_font_size(size) {
-        this.#font_size = size;
-        this.#update_loop_content_size(ov_Loop.CONTENT.PERMISSION, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.LEAVE, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.ACTIVITY, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.PARTICIPANTS, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.VOLUME, size);
-    }
-
-    update_name_size(size) {
-        this.#name_size = size;
-        this.#update_loop_content_size(ov_Loop.CONTENT.NAME, size);
-    }
-
     /* if loop not joined, press loop to
      * join (monitor)
      * if in monitor mode, press loop to
@@ -422,9 +359,6 @@ export default class ov_Loop extends HTMLElement {
         if (!json.hasOwnProperty("name"))
             json.name = id;
 
-        if (!json.hasOwnProperty("abbreviation"))
-            json.abbreviation = json.name;
-
         if (!json.hasOwnProperty("state"))
             json.state = ov_Loop.STATE.NONE;
 
@@ -442,7 +376,6 @@ export default class ov_Loop extends HTMLElement {
         this.loop_id = id;
         this.type = json.type;
         this.name = json.name;
-        this.abbreviation = json.abbreviation;
         this.project = json.project;
         this.participants = json.participants;
         this.state = json.state;

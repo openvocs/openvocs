@@ -34,7 +34,6 @@ export default class ov_Role {
     constructor(id, name, abbreviation, color, project, domain) {
         this.id = id;
         this.name = name;
-        this.abbreviation = abbreviation;
         this.color = color;
         this.project = project;
         this.domain = domain;
@@ -57,14 +56,6 @@ export default class ov_Role {
 
     get name() {
         return this._name;
-    }
-
-    set abbreviation(abbreviation) {
-        this._abbreviation = abbreviation;
-    }
-
-    get abbreviation() {
-        return this._abbreviation;
     }
 
     set color(color) {
@@ -110,9 +101,6 @@ export default class ov_Role {
             throw new ov_Parse_Exception("no role id");
 
         let name = json.hasOwnProperty("name") ? json.name : id;
-
-        if (!json.hasOwnProperty("abbreviation")) // optional
-            json.abbreviation = name;
 
         /*if (!json.hasOwnProperty("color")) // optional
             json.color = "#909090"; // grey*/

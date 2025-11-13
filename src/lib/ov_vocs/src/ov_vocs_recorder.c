@@ -613,7 +613,13 @@ static bool request_new_recording(ov_vocs_recorder *self, const char *loop) {
         ov_vocs_db_get_multicast_group(self->config.vocs_db, loop);
 
     ov_recorder_event_start event = (ov_recorder_event_start){
-        .loop = (char *)loop, .mc_ip = socket.host, .mc_port = socket.port};
+        .loop = (char *)loop, 
+        .mc_ip = socket.host, 
+        .mc_port = socket.port,
+        .silence_cutoff_interval_msecs = 2000,
+        .vad.zero_crossings_rate_threshold_hertz = 5000,
+        .vad.powerlevel_density_threshold_db = -50
+    };
 
     ov_event_connection *conn = find_empty_recorder(self);
     if (!conn) {

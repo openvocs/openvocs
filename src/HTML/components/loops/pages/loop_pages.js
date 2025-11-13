@@ -107,6 +107,10 @@ export default class ov_Loop_Pages extends HTMLElement {
         return this.#current_page_index;
     }
 
+    reset_page_index(){
+        this.#current_page_index = 0;
+    }
+
     async connectedCallback() {
         await this.#render();
         this.#loop_elements = this.shadowRoot.getElementById("loops");
@@ -132,7 +136,7 @@ export default class ov_Loop_Pages extends HTMLElement {
 
             this.setup_pages(this.pages.length);
             if (!this.#current_page_index)
-                this.#current_page_index = 0;
+                this.reset_page_index();
             this.show_page(this.#current_page_index);
 
             for (let page of this.pages) {

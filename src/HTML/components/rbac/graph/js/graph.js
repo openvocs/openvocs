@@ -57,7 +57,6 @@ export function create_node(type, data, subset_id) {
     if (data) {
         element.node_id = data.id;
         element.node_name = data.name;
-        element.node_abbreviation = data.abbreviation;
         if (type === "loop" && data.roles) {
             for (let role_id of Object.keys(data.roles))
                 element.linked_nodes.set(role_id, data.roles[role_id]);

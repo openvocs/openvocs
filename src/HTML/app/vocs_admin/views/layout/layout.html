@@ -1,4 +1,5 @@
 <div id="loop_layout" class="view">
+    <ov-loop-pages id="loops"></ov-loop-pages>
     <button id="open_menu">
         <div class="icon">
             <svg>
@@ -6,25 +7,30 @@
             </svg>
         </div>
     </button>
+    <select id="choose_role"></select>
+    <select id="choose_page"></select>
+
     <dialog id="menu">
-        <div id="loop_options_panel" class="fieldset">
-            <label for="number_pages">Number of Pages</label>
-            <input type="number" min="1" step="1" id="number_pages">
-            <div id="grid_options_panel">
-                <div>
-                    <label for="grid_columns_input">Columns</label>
-                    <input type="number" min="1" max="9" step="1" id="grid_columns_input">
-                </div>
-                <div>
-                    <label for="grid_rows_input">Rows</label>
-                    <input type="number" min="1" max="9" step="1" id="grid_rows_input">
-                </div>
+        <div id="project_options_panel" class="fieldset">
+            <label for="project_options_panel">Project Settings</label>
+            <div>
+                <label for="grid_columns_input">Columns</label>
+                <input type="number" min="1" max="9" step="1" id="grid_columns_input">
+            </div>
+            <div>
+                <label for="grid_rows_input">Rows</label>
+                <input type="number" min="1" max="9" step="1" id="grid_rows_input">
+            </div>
+        </div>
+        <div id="role_options_panel" class="fieldset">
+            <label for="role_options_panel">Role Settings</label>
+            <div>
+                <label for="number_pages">Number of Pages</label>
+                <input type="number" min="1" step="1" max="9" id="number_pages">
             </div>
         </div>
     </dialog>
-    <select id="choose_role"></select>
-    <select id="choose_page"></select>
-    <ov-loop-pages id="loops"></ov-loop-pages>
+    
     <dialog id="choose_loop_dialog">
         <select id="loop_chooser"></select>
     </dialog>

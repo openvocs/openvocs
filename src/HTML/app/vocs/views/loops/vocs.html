@@ -49,13 +49,6 @@
 
     <ov-loading id="loading_screen"></ov-loading>
 
-    <ov-dialog id="login_dialog" position="center_top" close-button value="Re-login to backup server">
-        <div slot="dialog-content">
-            Please enter your password again to restore redundancy after a server restart. This is required to ensure that your connection remains stable.</div>
-        <ov-login-form slot="dialog-content"></ov-login-form>
-        <div slot="dialog-content"></div>
-    </ov-dialog>
-
     <ov-dialog id="menu_slider" position="left">
         <div slot="dialog-content">
             <div id="user_data" class="fieldset">
@@ -98,24 +91,17 @@
                 <summary>audio</summary>
                 <label for="speaker_test">Speaker</label>
                 <button id="speaker_test">&#8227;</button>
+                <div id="speaker_list"></div>
                 <audio loop src="/app/vocs/resources/sounds/bass.ogg" id="speaker_test_audio"></audio>
                 <label for="microphone_test">Microphone</label>
                 <div id="microphone_test"><canvas loop="true"></canvas></div>
+                <div id="microphone_list"></div>
             </details>
 
-            <details open id="ui_options" class="fieldset main_fieldset">
-                <summary>user interface</summary>
-                <label for="color_mode_select">color mode</label>
-                <select id="color_mode_select">
-                    <option label="dark" value="dark"></option>
-                    <option label="light" value="light"></option>
-                </select>
-                <label for="activity_content">activity indicator</label>
-                <select id="activity_content">
-                    <option value="id">ID</option>
-                    <!--option value="name">name</option-->
-                    <option value="role">role ID</option>
-                </select>
+            <details open id="ptt_options" class="fieldset main_fieldset">
+                <summary>PTT</summary>
+                <p>registered HID: <span id="hid_devices"></span></p>
+                <button id="add_HID">Add HID</button>
             </details>
 
             <details id="advanced_options" class="fieldset main_fieldset">
@@ -144,7 +130,7 @@
                             <input checked type="checkbox" id="mousewheel_checkbox">
                             <label for="mousewheel_checkbox" class="checkbox_label">mouse wheel click</label>
 
-                            <button id="add_HID">add HID</button>
+
                         </div>
                     </div>
                 </div>
@@ -157,6 +143,14 @@
                 <div class="logo logo_dlr"></div>
             </div>
         </div>
+    </ov-dialog>
+
+    <ov-dialog id="login_dialog" position="center_top" close-button value="Re-login to backup server">
+        <div slot="dialog-content">
+            Please enter your password again to restore redundancy after a server restart. This is required to ensure
+            that your connection remains stable.</div>
+        <ov-login-form slot="dialog-content"></ov-login-form>
+        <div slot="dialog-content"></div>
     </ov-dialog>
 
 </main>

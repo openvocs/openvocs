@@ -70,6 +70,7 @@ OV_LIBS       += -l ov_vocs_db2
 OV_LIBS       += -l ov_vocs2
 OV_LIBS       += -l ov_ldap2
 OV_LIBS 	  += -l ov_ice_proxy2
+OV_LIBS 	  += -l ov_web_server2
 
 OV_LIBS       += -l m
 

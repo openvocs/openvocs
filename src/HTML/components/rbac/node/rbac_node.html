@@ -47,20 +47,22 @@
             <h3></h3>
             <span id="dialog_error_message" class="ov_red_background"></span>
 
-            <label for="edit_id">ID</label>
-            <input id="edit_id" name="id" type="text">
+            <label for="edit_id" id="id_label">ID</label>
+            <label for="edit_id" id="user_name_label">Username</label>
+            <input id="edit_id" name="id" type="text" title="A-Z a-z 0-9 . - _ @">
 
             <label for="edit_password">Password</label>
             <input id="edit_password" name="password" type="password" autocomplete="new-password">
 
-            <label for="edit_name">Name</label>
-            <input id="edit_name" name="name" type="text" autofocus>
-
-            <label for="edit_abbreviation">Abbreviation</label>
-            <input id="edit_abbreviation" name="abbreviation" type="text">
+            <label for="edit_name" id="display_name_label">Display Name</label>
+            <label for="edit_name" id="name_label">Name</label>
+            <span id="name_char_max">/20</span>
+            <span id="name_char_count">0</span>
+            <input id="edit_name" name="name" type="text" autofocus maxlength="20">
+            
 
             <label for="edit_multicast_ip">Multicast IP</label>
-            <input id="edit_multicast_ip" name="multicast_ip" type="text"> 
+            <input id="edit_multicast_ip" name="multicast_ip" type="text">
             <span id="edit_multicast_split"> : </span>
             <input id="edit_multicast_port" name="multicast_port" type="text">
 

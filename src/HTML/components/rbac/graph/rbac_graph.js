@@ -149,7 +149,10 @@ export default class ov_RBAC_Graph extends HTMLElement {
                     Graph.register_node(event.detail.node);
                 else {
                     event.detail.node.node_id = undefined;
-                    event.detail.node.show_settings("ID is already assigned to other node. Please change ID.");
+                    if (event.detail.node.type === "user")
+                        event.detail.node.show_settings("Username is already assigned. Please change username.");
+                    else
+                        event.detail.node.show_settings("ID is already assigned. Please change ID.");
                 }
             }
         });
@@ -247,25 +250,42 @@ export default class ov_RBAC_Graph extends HTMLElement {
     add_node_subset(data, id) {
         if (data.users || data.roles || data.loops) {
             // order is important! first users than roles than loops
-            if (data.users)
-                for (let node of Object.values(data.users))
-                    this.#render_node(node, "user", id);
+            if (data.users) {
+                let sorted_nodes = Object.values(data.users).sort((a, b) => {
+                    let first = a.name ? a.name : a.id;
+                    let second = b.name ? b.name : b.id;
+                    return first.localeCompare(second);
+                });
+                for (let node of sorted_nodes)
+                    this.#render_node(node, "user", id, node.id === "admin");
+            }
 
             if (data.roles) {
                 let admin = false;
-                for (let node of Object.values(data.roles)) {
-                    this.#render_node(node, "role", id);
+                let sorted_nodes = Object.values(data.roles).sort((a, b) => {
+                    let first = a.name ? a.name : a.id;
+                    let second = b.name ? b.name : b.id;
+                    return first.localeCompare(second);
+                });
+                for (let node of sorted_nodes) {
                     if (node.id === "admin")
                         admin = true;
+                    this.#render_node(node, "role", id, node.id === "admin");
                 }
                 if (!admin)
-                    this.#render_node({ id: "admin" }, "role", id);
+                    this.#render_node({ id: "admin" }, "role", id, true);
 
             }
 
-            if (data.loops)
-                for (let node of Object.values(data.loops))
+            if (data.loops) {
+                let sorted_nodes = Object.values(data.loops).sort((a, b) => {
+                    let first = a.name ? a.name : a.id;
+                    let second = b.name ? b.name : b.id;
+                    return first.localeCompare(second);
+                });
+                for (let node of sorted_nodes)
                     this.#render_node(node, "loop", id);
+            }
 
 
             this.#dom.add_user.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -315,7 +335,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
         this.#dom.node_layer_3.replaceChildren();
     }
 
-    #render_node(node, type, subset_id) {
+    #render_node(node, type, subset_id, prepend) {
         let element = Graph.create_node(type, node, subset_id);
         let container;
         if (type === "user")
@@ -324,7 +344,10 @@ export default class ov_RBAC_Graph extends HTMLElement {
             container = this.#dom.node_layer_2;
         else if (type === "loop")
             container = this.#dom.node_layer_3;
-        container.appendChild(element);
+        if (!prepend)
+            container.appendChild(element);
+        else
+            container.insertBefore(element, container.firstChild);
 
         if (node && (node.ldap || node.frozen))
             element.frozen = true;

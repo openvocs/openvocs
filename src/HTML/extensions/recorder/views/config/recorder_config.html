@@ -1,8 +1,16 @@
 <main id="recorder_config" class="view">
-    <section id="recorder_loops"> </section>
-
+    <section id="recorder_loops"></section>
     <section id="recorder_settings">
-        <button id="start_recorder">start</button>
-        <button id="stop_recorder">stop</button>
+        <button id="start_stop_recorder"> REC</button>
+        <div id="playback" class="fieldset">
+            <h2>Playback Recordings</h2>
+            <label for="start_time">from </label>
+            <input type="datetime-local" id="start_time" name="start_time"/>
+            <label for="stop_time"> to </label>
+            <input type="datetime-local" id="stop_time" name="stop_time"/>
+            <button id="search_records">Search</button>
+            <ov-player-list></ov-player-list>
+        </div>
     </section>
+    <div id="warning">Please ensure that you have activated recording for at least one server and loops defined!</div>
 </main>

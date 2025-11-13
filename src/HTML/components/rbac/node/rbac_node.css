@@ -151,6 +151,12 @@
     display: initial;
 }
 
+:host([type=loop].edit_user_edges),
+:host([type=user].edit_loop_edges)  {
+    pointer-events:none;
+    cursor: default;
+}
+
 dialog {
     text-align: left;
     width: 20rem;
@@ -180,18 +186,18 @@ dialog input {
 }
 
 #delete_element,
+:host([type=user]) #user_name_label,
+:host([type=role]) #id_label,
+:host([type=loop]) #id_label,
 #edit_id,
-label[for=edit_id],
+:host([type=user]) #display_name_label,
+:host([type=role]) #name_label,
+:host([type=loop]) #name_label,
 #edit_name,
-label[for=edit_name],
-:host([type=user]) #edit_password,
 :host([type=user]) label[for=edit_password],
-:host([type=role]) #edit_abbreviation,
-:host([type=role]) label[for=edit_abbreviation],
-:host([type=loop]) #edit_abbreviation,
-:host([type=loop]) label[for=edit_abbreviation],
-:host([type=loop]) #edit_multicast_ip,
+:host([type=user]) #edit_password,
 :host([type=loop]) label[for=edit_multicast_ip],
+:host([type=loop]) #edit_multicast_ip,
 :host([type=loop]) #edit_multicast_port,
 :host([type=loop]) #edit_multicast_split {
     display: initial;
@@ -205,4 +211,10 @@ label[for=edit_name],
     text-align: center;
     margin-bottom: 0.5rem;
     display: block;
+}
+
+#name_char_count, #name_char_max {
+    display: inline-block;
+    float: right;
+
 }
