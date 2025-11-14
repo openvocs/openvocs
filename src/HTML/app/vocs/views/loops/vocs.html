@@ -20,6 +20,7 @@
                         <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
                     </svg>
                 </div>
+                 LATCH
             </button>
             <button id="push_to_talk_button" class="menu_button">
                 <div class="icon">
@@ -27,7 +28,7 @@
                         <use xlink:href="/images/ov_icons.svg#ov_microphone"></use>
                     </svg>
                 </div>
-                PTT
+                 PTT
             </button>
             <div id="menu_fullscreen_option">
                 <input checked type="checkbox" id="menu_fullscreen_checkbox">
@@ -89,20 +90,26 @@
         <div slot="dialog-content">
             <details open id="audio_options" class="fieldset main_fieldset">
                 <summary>audio</summary>
+
                 <label for="speaker_test">Speaker</label>
                 <button id="speaker_test">&#8227;</button>
-                <div id="speaker_list"></div>
                 <audio loop src="/app/vocs/resources/sounds/bass.ogg" id="speaker_test_audio"></audio>
+
                 <label for="microphone_test">Microphone</label>
                 <div id="microphone_test"><canvas loop="true"></canvas></div>
-                <div id="microphone_list"></div>
+
+    <!-- New: Music Mode toggle -->
+                <div id="music_mode_container" class="fieldset">
+                    <input type="checkbox" id="music_mode_checkbox">
+                    <label for="music_mode_checkbox" class="checkbox_label">
+                        Music mode (disable echo / noise reduction / auto-gain)
+                    </label>
+                    <p style="font-size:0.75rem;opacity:0.8;margin-top:0.25rem;">
+                        Best with headphones. May increase echo and background noise.
+                    </p>
+                </div>
             </details>
 
-            <details open id="ptt_options" class="fieldset main_fieldset">
-                <summary>PTT</summary>
-                <p>registered HID: <span id="hid_devices"></span></p>
-                <button id="add_HID">Add HID</button>
-            </details>
 
             <details id="advanced_options" class="fieldset main_fieldset">
                 <summary>advanced</summary>
@@ -117,7 +124,7 @@
                     <div id="ptt_mute_options">
 
                         <input checked type="checkbox" id="ptt_checkbox">
-                        <label for="ptt_checkbox" class="checkbox_label">PTT</label>
+                        <label for="ptt_checkbox" class="checkbox_label"> PTT</label>
 
                         <label for="talk_trigger_options">trigger for PTT / (un)mute</label>
                         <div id="talk_trigger_options" class="fieldset">
@@ -130,7 +137,7 @@
                             <input checked type="checkbox" id="mousewheel_checkbox">
                             <label for="mousewheel_checkbox" class="checkbox_label">mouse wheel click</label>
 
-
+                            <button id="add_HID">add HID</button>
                         </div>
                     </div>
                 </div>
@@ -147,8 +154,7 @@
 
     <ov-dialog id="login_dialog" position="center_top" close-button value="Re-login to backup server">
         <div slot="dialog-content">
-            Please enter your password again to restore redundancy after a server restart. This is required to ensure
-            that your connection remains stable.</div>
+            Please enter your password again to restore redundancy after a server restart. This is required to ensure that your connection remains stable.</div>
         <ov-login-form slot="dialog-content"></ov-login-form>
         <div slot="dialog-content"></div>
     </ov-dialog>
