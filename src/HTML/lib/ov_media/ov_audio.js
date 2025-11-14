@@ -30,6 +30,15 @@
 import * as ov_Audio_Activity_Detection from "./ov_audio_activity_detection.js";
 import * as ov_Voice_Activity_Detection from "./ov_voice_activity_detection.js";
 import ov_Audio_Visualization from "./ov_audio_visualization.js";
+// Global Music Mode flag (client-side only)
+if (typeof window !== "undefined") {
+    try {
+        const saved = window.localStorage.getItem("ov_music_mode");
+        window.ov_music_mode = saved === "1";
+    } catch (e) {
+        window.ov_music_mode = false;
+    }
+}
 
 export default class ov_Audio {
     static #audio_context;
@@ -172,12 +181,93 @@ export default class ov_Audio {
         return new ov_Audio(dest.stream, audio_context);
     }
 
-    static async media_stream_from_microphone() {
-        console.log("(ov) audio: Ask for local audio stream");
-        let stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        console.log("(ov) audio: Got local audio stream");
-        return new ov_Audio(stream, ov_Audio.audio_context());
+   static async media_stream_from_microphone() {
+    console.log("(ov) audio: Ask for local audio stream");
+
+    const music = (typeof window !== "undefined") && window.ov_music_mode === true;
+
+    const base = {
+        channelCount: 2,
+        sampleRate: 48000
+    };
+
+    const processingOff = {
+        echoCancellation: false,
+        noiseSuppression: false,
+        autoGainControl: false,
+        typingNoiseDetection: false,  // some browsers
+        voiceIsolation: false,        // Safari / some Chromium
+        googEchoCancellation: false,  // legacy flags
+        googNoiseSuppression: false,
+        googAutoGainControl: false
+    };
+
+    const processingOn = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+    };
+
+    const constraints = {
+        audio: {
+            ...base,
+            ...(music ? processingOff : processingOn)
+        },
+        video: false
+    };
+
+    console.log("(ov) audio: Constraints:", constraints);
+
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+    console.log("(ov) audio: Got local audio stream (music mode:", music, ")");
+
+    return new ov_Audio(stream, ov_Audio.audio_context());
+}
+
+static async reload_microphone_for_peer(pc, options = {}) {
+    if (!pc) {
+        console.warn("(ov) audio: reload_microphone_for_peer called without pc");
+        return null;
     }
+
+    const monitorElementId = options.monitorElementId || "ov_local_mic_monitor";
+
+    // Get a fresh ov_Audio with current Music Mode
+    const audioObj = await ov_Audio.media_stream_from_microphone();
+
+    // If your constructor stores the stream differently, adjust this:
+    const stream = audioObj.stream || audioObj.media_stream || audioObj;
+    const track = stream.getAudioTracks()[0];
+
+    if (!track) {
+        console.error("(ov) audio: no audio track in new microphone stream");
+        return null;
+    }
+
+    const sender = pc.getSenders().find(s => s.track && s.track.kind === "audio");
+
+    if (sender) {
+        await sender.replaceTrack(track);
+        console.log("(ov) audio: Replaced audio track on existing sender");
+    } else {
+        pc.addTrack(track, stream);
+        console.log("(ov) audio: Added audio track to peer connection");
+    }
+
+    // Optional: local muted monitor
+    if (typeof document !== "undefined") {
+        const el = document.getElementById(monitorElementId);
+        if (el) {
+            el.srcObject = stream;
+            el.muted = true;
+            el.play().catch(() => {});
+        }
+    }
+
+    return audioObj;
+}
+
 
     static clone(ov_audio){
         return new ov_Audio(ov_audio.stream.clone(), ov_Audio.audio_context());
