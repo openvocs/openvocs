@@ -1508,12 +1508,12 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     memcpy(buffer + 8, &u32, 4);
 
     if (!ov_mc_interconnect_loop_send(loop, buffer, l)) goto ignore;
-
+/*
     ov_log_debug("%s to internal RTP send %zi bytes for %s",
         self->id,
         l,
         loop_name);
-
+*/
 ignore:
     frame = ov_rtp_frame_free(frame);
     return true;
@@ -1569,14 +1569,14 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
 
     ssize_t bytes = ov_mc_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
-
+/*
     ov_log_debug("%s to external SRTP send %zi bytes for %s to %s:%i",
         self->id,
         bytes,
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-
+*/
 done:
     return true;
 error:
