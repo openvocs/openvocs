@@ -68,12 +68,12 @@ export default class ov_Player_List extends HTMLElement {
                 // Create a new ov-player element
                 let player = document.createElement('ov-player');
 
+                // Set the src and start_epoch_timestamp for the player
+                player.start_epoch_timestamp = recording.starttime;
+                player.src = recording_src;
+
                 // Append the player to the container
                 players.appendChild(player);
-
-                // Set the src and start_epoch_timestamp for the player
-                player.src = recording_src;
-                player.start_epoch_timestamp = recording.start_epoch_secs;
             }
         }
     }

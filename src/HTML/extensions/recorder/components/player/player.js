@@ -1,11 +1,12 @@
 import * as CSS from "/css/css.js";
 
 export default class ov_Player extends HTMLElement {
+    #startEpochTimestamp = null; // Property for the start timestamp
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.fakeDuration = null; // Property to store the fake duration
-        this.startEpochTimestamp = null; // Property for the start timestamp
     }
 
     static get observedAttributes() {
@@ -35,8 +36,8 @@ export default class ov_Player extends HTMLElement {
         this.#update_src(src);
 
         // Render start time if available
-        if (this.startEpochTimestamp && this.startTimeDisplay) {
-            const startDate = new Date(this.startEpochTimestamp * 1000); // Convert epoch to date
+        if (this.#startEpochTimestamp && this.startTimeDisplay) {
+            const startDate = new Date(this.#startEpochTimestamp); // Convert epoch to date
             this.startTimeDisplay.textContent = startDate.toLocaleString(); // Format as readable date
         }
 
@@ -108,12 +109,12 @@ export default class ov_Player extends HTMLElement {
 
     // Set the start epoch timestamp
     set start_epoch_timestamp(timestamp) {
-        this.startEpochTimestamp = timestamp;
+        this.#startEpochTimestamp = timestamp;
     }
 
     // Get the start epoch timestamp
     get start_epoch_timestamp() {
-        return this.startEpochTimestamp;
+        return this.#startEpochTimestamp;
     }
 
     static style_sheet = CSS.fetch_style_sheet("/extensions/recorder/components/player/player.css");
@@ -156,13 +157,6 @@ export default class ov_Player extends HTMLElement {
         if (this.totalTimeDisplay) {
             this.totalTimeDisplay.textContent = this.formatTime(duration); // Update total duration
         }
-
-        console.log('Updating progress:', {
-            currentTime,
-            duration,
-            progressPercentage,
-            barWidth: this.progressBar.style.width,
-        });
     }
 
     seekAudio(event) {
@@ -177,13 +171,6 @@ export default class ov_Player extends HTMLElement {
 
         const newTime = (clickX / containerWidth) * duration;
         this.audioElement.currentTime = newTime;
-
-        console.log('Seeking to:', {
-            clickX,
-            containerWidth,
-            duration,
-            newTime,
-        });
     }
 
     formatTime(seconds) {
