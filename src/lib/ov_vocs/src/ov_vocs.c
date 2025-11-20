@@ -2325,7 +2325,7 @@ static bool client_event_get_recording(ov_vocs *vocs,
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
-    const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
+    //const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
     if (!user) {
 

@@ -1070,6 +1070,7 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
 
         ov_vocs_record_config conf = {0};
         strncpy(conf.loopname, loop, OV_MC_LOOP_NAME_MAX);
+
         record = ov_vocs_record_create(conf);
 
         if (!ov_dict_set(self->recordings, ov_string_dup(loop), record, NULL))
@@ -1108,7 +1109,12 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
     }
 
     ov_recorder_event_start event = (ov_recorder_event_start){
-        .loop = (char *)loop, .mc_ip = socket.host, .mc_port = socket.port};
+        .loop = (char *)loop, 
+        .mc_ip = socket.host, 
+        .mc_port = socket.port,
+        .silence_cutoff_interval_msecs = self->config.limits.silence_cutoff_interval_msec,
+        .vad = self->config.vad
+    };
 
     ov_event_connection *conn = find_empty_recorder(self);
     if (!conn) {
@@ -1148,7 +1154,9 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
 
     record->active.recorder = ov_event_connection_get_socket(conn);
 
-    ov_log_debug("Activated recording for Loop %s", loop);
+    char *str = ov_json_value_to_string(out);
+    ov_log_debug("Activated recording %s", str);
+    str = ov_data_pointer_free(str);
 
     ov_event_connection_send(conn, out);
     out = ov_json_value_free(out);
