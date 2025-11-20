@@ -164,6 +164,18 @@
     animation: none;
 }
 
+:host([color=yellow]) #loop_name {
+    color: var(--yellow) !important;
+}
+
+:host([color=red]) #loop_name {
+    color: var(--red) !important;
+}
+
+:host([color=orange]) #loop_name {
+    color: var(--orange) !important;
+}
+
 /**
 loops for grid layout ---------------------------------------------------------
 */

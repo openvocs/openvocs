@@ -152,8 +152,8 @@
 }
 
 :host([type=loop].edit_user_edges),
-:host([type=user].edit_loop_edges)  {
-    pointer-events:none;
+:host([type=user].edit_loop_edges) {
+    pointer-events: none;
     cursor: default;
 }
 
@@ -169,11 +169,12 @@ dialog button {
 
 dialog input,
 dialog label,
-dialog span {
+dialog span,
+dialog select {
     display: none;
 }
 
-dialog input {
+dialog input, dialog select {
     margin-bottom: 0.5rem;
 }
 
@@ -199,7 +200,9 @@ dialog input {
 :host([type=loop]) label[for=edit_multicast_ip],
 :host([type=loop]) #edit_multicast_ip,
 :host([type=loop]) #edit_multicast_port,
-:host([type=loop]) #edit_multicast_split {
+:host([type=loop]) #edit_multicast_split,
+:host([type=loop]) label[for=edit_font_color],
+:host([type=loop]) #edit_font_color {
     display: initial;
 }
 
@@ -213,7 +216,8 @@ dialog input {
     display: block;
 }
 
-#name_char_count, #name_char_max {
+#name_char_count,
+#name_char_max {
     display: inline-block;
     float: right;
 
