@@ -2327,7 +2327,7 @@ static bool client_event_get_recording(ov_vocs *vocs,
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
-    if (!user || !role) {
+    if (!user) {
 
         send_error_response(
             vocs, input, socket, OV_ERROR_CODE_AUTH, OV_ERROR_DESC_AUTH);
