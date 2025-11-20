@@ -171,6 +171,13 @@ async function ws_stop_record(loop_id, websocket) {
     return result;
 }
 
+function disconnect(websocket) {
+    if (websocket.is_connecting) {
+        console.warn(log_prefix(websocket) + "Pers error. Disconnect and try again.");
+        websocket.disconnect();
+    }
+}
+
 //-----------------------------------------------------------------------------
 // logging
 //-----------------------------------------------------------------------------
