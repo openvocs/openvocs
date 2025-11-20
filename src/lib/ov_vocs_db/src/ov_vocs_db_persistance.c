@@ -1966,6 +1966,12 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
     ov_json_value *changes = write_users_object(users, domain, self->config.path);
     if (!changes) goto error;
 
+    if (!ov_vocs_db_persistance_load(self)){
+
+        ov_log_error("Failed to reload changes.");
+
+    }
+    
     ov_vocs_db_send_vocs_trigger(self->config.db, changes);
     changes = ov_json_value_free(changes);
 
