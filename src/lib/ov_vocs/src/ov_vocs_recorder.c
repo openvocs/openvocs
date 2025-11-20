@@ -479,6 +479,14 @@ static bool check_config(ov_vocs_recorder_config *config) {
     if (!config->loop) goto error;
     if (!config->socket.manager.host[0]) goto error;
 
+    if (0 == config->vad.zero_crossings_rate_threshold_hertz)
+        config->vad.zero_crossings_rate_threshold_hertz = 5000;
+
+    if (0 == config->limits.silence_cutoff_interval_msec)
+        config->limits.silence_cutoff_interval_msec = 2000;
+
+
+
     return true;
 error:
     return false;
@@ -616,9 +624,8 @@ static bool request_new_recording(ov_vocs_recorder *self, const char *loop) {
         .loop = (char *)loop, 
         .mc_ip = socket.host, 
         .mc_port = socket.port,
-        .silence_cutoff_interval_msecs = 2000,
-        .vad.zero_crossings_rate_threshold_hertz = 5000,
-        .vad.powerlevel_density_threshold_db = -50
+        .silence_cutoff_interval_msecs = self->config.limits.silence_cutoff_interval_msec,
+        .vad = self->config.vad
     };
 
     ov_event_connection *conn = find_empty_recorder(self);
@@ -644,7 +651,7 @@ static bool request_new_recording(ov_vocs_recorder *self, const char *loop) {
         goto error;
 
     ov_json_value *out =
-        ov_event_api_message_create(OV_EVENT_START_RECORD, 0, 0);
+        ov_event_api_message_create(OV_EVENT_START_RECORD, 0, 0);     
     ov_json_value *par = ov_event_api_set_parameter(out);
     if (!ov_recorder_event_start_to_json(par, &event)) {
         out = ov_json_value_free(out);
@@ -653,7 +660,9 @@ static bool request_new_recording(ov_vocs_recorder *self, const char *loop) {
 
     rec->active.recorder = ov_event_connection_get_socket(conn); 
 
-    ov_log_debug("Activated recording for Loop %s", loop);
+    char *str = ov_json_value_to_string(out);
+    ov_log_debug("Activated recording %s", str);
+    str = ov_data_pointer_free(str);
 
     ov_event_connection_send(conn, out);
     out = ov_json_value_free(out);
@@ -929,6 +938,11 @@ ov_vocs_recorder_config ov_vocs_recorder_config_from_json(
 
     config.db = ov_database_info_from_json(ov_json_get(conf, "/" OV_KEY_DB));
 
+    config.vad = ov_vad_config_from_json(conf);
+
+    config.limits.silence_cutoff_interval_msec=ov_json_number_get(
+        ov_json_get(conf, "/vad/silence_interval_msec"));
+
     return config;
 
 error:
@@ -1056,6 +1070,7 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
 
         ov_vocs_record_config conf = {0};
         strncpy(conf.loopname, loop, OV_MC_LOOP_NAME_MAX);
+
         record = ov_vocs_record_create(conf);
 
         if (!ov_dict_set(self->recordings, ov_string_dup(loop), record, NULL))
@@ -1094,7 +1109,12 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
     }
 
     ov_recorder_event_start event = (ov_recorder_event_start){
-        .loop = (char *)loop, .mc_ip = socket.host, .mc_port = socket.port};
+        .loop = (char *)loop, 
+        .mc_ip = socket.host, 
+        .mc_port = socket.port,
+        .silence_cutoff_interval_msecs = self->config.limits.silence_cutoff_interval_msec,
+        .vad = self->config.vad
+    };
 
     ov_event_connection *conn = find_empty_recorder(self);
     if (!conn) {
@@ -1134,7 +1154,9 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self,
 
     record->active.recorder = ov_event_connection_get_socket(conn);
 
-    ov_log_debug("Activated recording for Loop %s", loop);
+    char *str = ov_json_value_to_string(out);
+    ov_log_debug("Activated recording %s", str);
+    str = ov_data_pointer_free(str);
 
     ov_event_connection_send(conn, out);
     out = ov_json_value_free(out);
