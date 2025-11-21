@@ -44,6 +44,7 @@ export default class ov_RBAC_Node extends HTMLElement {
     #node_multicast_ip;
     #node_multicast_port;
     #node_password;
+    #node_font_color;
     #linked_nodes;
     #passive_linked_entries;
 
@@ -173,6 +174,14 @@ export default class ov_RBAC_Node extends HTMLElement {
         return this.#node_multicast_port;
     }
 
+    set node_font_color(color) {
+        this.#node_font_color = color;
+    }
+
+    get node_font_color() {
+        return this.#node_font_color;
+    }
+
     set linked_nodes(obj) {
         this.#linked_nodes = obj;
     }
@@ -197,6 +206,9 @@ export default class ov_RBAC_Node extends HTMLElement {
 
         if (this.node_multicast_ip && this.node_multicast_port)
             data.multicast = { host: this.node_multicast_ip, port: parseInt(this.node_multicast_port) };
+
+        if (this.#node_font_color)
+            data.font_color = this.node_font_color;
 
         if (!this.passive_linked_entries)
             this.passive_linked_entries = {};
@@ -226,6 +238,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         let edit_pass = this.shadowRoot.querySelector("#edit_password");
         let edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         let edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
+        let edit_font_color = this.shadowRoot.querySelector("#edit_font_color");
         let delete_button = this.shadowRoot.querySelector("#delete_element");
         if (edit_id)
             edit_id.disabled = boolean;
@@ -237,6 +250,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             edit_multicast_ip.disabled = boolean;
         if (edit_multicast_port)
             edit_multicast_port.disabled = boolean;
+        if(edit_font_color)
+            edit_font_color.disabled = boolean;
         if (delete_button)
             delete_button.disabled = boolean;
 
@@ -260,6 +275,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#dom.edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
         this.#dom.error_msg = this.shadowRoot.querySelector("#dialog_error_message");
         this.#dom.name_char_count = this.shadowRoot.querySelector("#name_char_count");
+        this.#dom.edit_font_color = this.shadowRoot.querySelector("#edit_font_color");
 
         this.shadowRoot.querySelector("#edit_icon").onclick = () => {
             this.show_settings();
@@ -357,6 +373,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#dom.edit_multicast_ip.value = this.node_multicast_ip ? this.node_multicast_ip :
             ((DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") ? DEFAULT_MULTICAST_ADDRESS : null);
         this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port : null;
+        this.#dom.edit_font_color.value = this.node_font_color ? this.node_font_color : "";
 
         this.#dom.name_char_count.textContent = this.#dom.edit_name.value.length;
         this.#dom.dialog.showModal();
@@ -376,6 +393,7 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.node_password = this.#dom.edit_pass.value ? this.#dom.edit_pass.value : undefined;
             this.node_multicast_ip = this.#dom.edit_multicast_ip.value ? this.#dom.edit_multicast_ip.value : undefined;
             this.node_multicast_port = this.#dom.edit_multicast_port.value ? this.#dom.edit_multicast_port.value : undefined;
+            this.node_font_color = this.#dom.edit_font_color.value && this.#dom.edit_font_color.value !== "" ? this.#dom.edit_font_color.value : undefined;
             let update = true;
             if (!this.node_id) {
                 this.node_id = this.#dom.edit_id.value;

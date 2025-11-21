@@ -64,6 +64,9 @@ export function create_node(type, data, subset_id) {
                 element.node_multicast_ip = data.multicast.host;
                 element.node_multicast_port = data.multicast.port;
             }
+            if (data.font_color) {
+                element.node_font_color = data.font_color;
+            }
         } else if (type === "role" && data.users) {
             for (let user_id of Object.keys(data.users))
                 element.linked_nodes.set(user_id, data.users[user_id]);

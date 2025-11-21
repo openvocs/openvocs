@@ -59,12 +59,20 @@
             <span id="name_char_max">/20</span>
             <span id="name_char_count">0</span>
             <input id="edit_name" name="name" type="text" autofocus maxlength="20">
-            
+
 
             <label for="edit_multicast_ip">Multicast IP</label>
             <input id="edit_multicast_ip" name="multicast_ip" type="text">
             <span id="edit_multicast_split"> : </span>
             <input id="edit_multicast_port" name="multicast_port" type="text">
+
+            <label for="edit_font_color">Font color</label>
+            <select name="font_color" id="edit_font_color">
+                <option selected value="">default</option>
+                <option value="red">Red</option>
+                <option value="orange">Orange</option>
+                <option value="yellow">Yellow</option>
+            </select>
 
             <button id="delete_element" class="red_button">Delete</button>
             <button id="save_element">Ok</button>
