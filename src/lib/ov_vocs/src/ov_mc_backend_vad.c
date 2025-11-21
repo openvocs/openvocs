@@ -86,6 +86,13 @@ static void cb_register(void *userdata,
     ov_dict_set(self->connections, (void *)(intptr_t)socket, conn, NULL);
 
     ov_json_value *out = ov_event_api_create_success_response(input);
+    ov_json_value *par = ov_event_api_get_response(out);
+    ov_vad_config_to_json(self->config.vad, par);
+
+    char *str = ov_json_value_to_string(out);
+    ov_log_debug("SET VAD %s", str);
+    str = ov_data_pointer_free(str);
+
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
@@ -258,11 +265,23 @@ ov_mc_backend_vad_config ov_mc_backend_vad_config_from_json(
     const ov_json_value *in) {
 
     ov_mc_backend_vad_config config = {0};
+
     const ov_json_value *conf = ov_json_object_get(in, OV_KEY_VAD);
     if (!conf) conf = in;
 
+    const ov_json_value *vad = ov_json_get(conf,"/"OV_KEY_VAD);
+
     config.socket = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET), (ov_socket_configuration){0});
+
+    if (vad){
+
+        config.vad.zero_crossings_rate_threshold_hertz = 
+            ov_json_number_get(ov_json_get(vad, "/zero_crossings_rate_hertz"));
+
+        config.vad.powerlevel_density_threshold_db = 
+            ov_json_number_get(ov_json_get(vad, "/powerlevel_density_dbfs"));
+    }
 
     return config;
 }

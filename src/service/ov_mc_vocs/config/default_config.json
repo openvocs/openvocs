@@ -131,6 +131,11 @@
 				"host" : "127.0.0.1",
 				"type" : "TCP",
 				"port" : 40001
+			},
+			"vad":
+			{
+					"zero_crossings_rate_hertz" : 50000,
+					"powerlevel_density_dbfs" : -500
 			}
 		}
 	},

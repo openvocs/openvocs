@@ -54,15 +54,12 @@ struct ov_vad_core {
     uint16_t magic_bytes;
     ov_vad_core_config config;
 
-    ov_thread_loop *tloop;
-
     ov_dict *loops;
     uint32_t idle_check;
 
     struct {
 
         ov_codec_factory *factory;
-        ov_thread_lock lock;
         ov_dict *codecs;
 
         uint32_t gc_timer;
@@ -98,7 +95,6 @@ typedef struct Loops {
 
     } count;
 
-    ov_thread_lock lock;
     ov_dict *ssrcs;
 
 } Loops;
@@ -117,7 +113,6 @@ static void *loop_data_free(void *self) {
         close(loop->socket);
     }
 
-    ov_thread_lock_clear(&loop->lock);
     loop->ssrcs = ov_dict_free(loop->ssrcs);
 
     loop = ov_data_pointer_free(loop);
@@ -203,25 +198,6 @@ static bool init_config(ov_vad_core_config *config) {
 
     if (!config) goto error;
 
-    if (0 == config->vad.zero_crossings_rate_threshold_hertz)
-        config->vad.zero_crossings_rate_threshold_hertz = 10000;
-
-    if (0 == config->vad.powerlevel_density_threshold_db)
-        config->vad.powerlevel_density_threshold_db = -10;
-
-    long number_of_processors = sysconf(_SC_NPROCESSORS_ONLN);
-    config->limits.threads = number_of_processors;
-
-    if (0 == config->limits.threadlock_timeout_usec) {
-
-        config->limits.threadlock_timeout_usec = 100000;
-    }
-
-    if (0 == config->limits.message_queue_capacity) {
-
-        config->limits.message_queue_capacity = 1000;
-    }
-
     if (0 == config->limits.frames_activate) {
 
         config->limits.frames_activate = 3;
@@ -263,24 +239,12 @@ static bool check_all_inactive(const void *key, void *val, void *data) {
 
 /*---------------------------------------------------------------------------*/
 
-static bool handle_in_thread(ov_thread_loop *tloop, ov_thread_message *msg) {
+static bool handle_loop_io(ov_vad_core *self, Loops *loop, uint8_t *buf, size_t size){
 
     int16_t pcm16[2048] = {0};
 
-    ov_vad_core *self = ov_thread_loop_get_data(tloop);
-    if (!self || !msg) goto error;
-
-    OV_ASSERT(msg->type == OV_VAD_THREAD_MSG_TYPE);
-
-    ov_vad_thread_msg *in = (ov_vad_thread_msg *)msg;
-
-    Loops *loop = ov_dict_get(self->loops, (void *)(intptr_t)in->socket);
-
-    ov_rtp_frame *frame =
-        ov_rtp_frame_decode(in->buffer->start, in->buffer->length);
+    ov_rtp_frame *frame = ov_rtp_frame_decode(buf, size);
     if (!frame) goto error;
-
-    if (!ov_thread_lock_try_lock(&self->codec.lock)) goto done;
 
     ov_codec *stream_codec = get_codec_ssrc(self, frame->expanded.ssrc);
 
@@ -294,14 +258,10 @@ static bool handle_in_thread(ov_thread_loop *tloop, ov_thread_message *msg) {
                                        (uint8_t *)pcm16,
                                        2048);
 
-    ov_thread_lock_unlock(&self->codec.lock);
-
     if (0 > length_bytes) goto done;
 
     ov_vad_parameters vad_params = {0};
     ov_pcm_16_get_vad_parameters(length_bytes / 2, pcm16, &vad_params);
-
-    if (!ov_thread_lock_try_lock(&loop->lock)) goto done;
 
     Counter *counter =
         ov_dict_get(loop->ssrcs, (void *)(intptr_t)frame->expanded.ssrc);
@@ -309,7 +269,7 @@ static bool handle_in_thread(ov_thread_loop *tloop, ov_thread_message *msg) {
     if (!counter) {
 
         counter = calloc(1, sizeof(Counter));
-        if (!counter) goto unlock;
+        if (!counter) goto error;
 
         ov_dict_set(
             loop->ssrcs, (void *)(intptr_t)frame->expanded.ssrc, counter, NULL);
@@ -385,27 +345,11 @@ static bool handle_in_thread(ov_thread_loop *tloop, ov_thread_message *msg) {
         }
     }
 
-unlock:
-    ov_thread_lock_unlock(&loop->lock);
-
 done:
     frame = ov_rtp_frame_free(frame);
-    ov_thread_message_free(msg);
     return true;
 error:
-    ov_thread_message_free(msg);
     return false;
-}
-
-/*---------------------------------------------------------------------------*/
-
-static bool handle_in_loop(ov_thread_loop *tloop, ov_thread_message *msg) {
-
-    UNUSED(tloop);
-
-    ov_log_debug("Unexpected in loop message");
-    ov_thread_message_free(msg);
-    return true;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -448,10 +392,7 @@ static bool drop_ssrcs(const void *key, void *val, void *data) {
     UNUSED(data);
 
     Loops *loop = (Loops *)val;
-    if (ov_thread_lock_try_lock(&loop->lock)) {
-        ov_dict_clear(loop->ssrcs);
-        ov_thread_lock_unlock(&loop->lock);
-    }
+    ov_dict_clear(loop->ssrcs);
     return true;
 }
 
@@ -462,8 +403,6 @@ static bool run_codec_gc(uint32_t timer, void *userdata) {
     UNUSED(timer);
     ov_vad_core *self = ov_vad_core_cast(userdata);
 
-    if (!ov_thread_lock_try_lock(&self->codec.lock)) goto reschedule;
-
     ov_list *outdated = ov_linked_list_create((ov_list_config){0});
 
     struct container1 container =
@@ -473,13 +412,9 @@ static bool run_codec_gc(uint32_t timer, void *userdata) {
 
     ov_list_for_each(outdated, self, drop_outdated);
 
-    ov_thread_lock_unlock(&self->codec.lock);
-
     outdated = ov_list_free(outdated);
 
     ov_dict_for_each(self->loops, NULL, drop_ssrcs);
-
-reschedule:
 
     self->codec.gc_timer = ov_event_loop_timer_set(
         self->config.loop, OV_VAD_CODEC_GC_USECS, self, run_codec_gc);
@@ -499,8 +434,6 @@ static bool check_idle(const void *key, void *val, void *data) {
     struct container2 container = (struct container2){
         .all_off = true, .now = ov_time_get_current_time_usecs()};
 
-    if (!ov_thread_lock_try_lock(&loop->lock)) return true;
-
     ov_dict_for_each(loop->ssrcs, &container, check_all_inactive);
 
     if (container.all_off) {
@@ -513,7 +446,6 @@ static bool check_idle(const void *key, void *val, void *data) {
         }
     }
 
-    ov_thread_lock_unlock(&loop->lock);
     return true;
 }
 
@@ -546,24 +478,6 @@ ov_vad_core *ov_vad_core_create(ov_vad_core_config config) {
     vad->magic_bytes = OV_VAD_CORE_MAGIC_BYTES;
     vad->config = config;
 
-    ov_thread_loop_config tloop_config = (ov_thread_loop_config){
-        .disable_to_loop_queue = false,
-        .message_queue_capacity = vad->config.limits.message_queue_capacity,
-        .lock_timeout_usecs = vad->config.limits.threadlock_timeout_usec,
-        .num_threads = vad->config.limits.threads};
-
-    vad->tloop = ov_thread_loop_create(
-        vad->config.loop,
-        (ov_thread_loop_callbacks){.handle_message_in_thread = handle_in_thread,
-                                   .handle_message_in_loop = handle_in_loop},
-        vad);
-
-    if (!vad->tloop) goto error;
-
-    if (!ov_thread_loop_reconfigure(vad->tloop, tloop_config)) goto error;
-
-    if (!ov_thread_loop_start_threads(vad->tloop)) goto error;
-
     ov_dict_config d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = loop_data_free;
 
@@ -575,8 +489,6 @@ ov_vad_core *ov_vad_core_create(ov_vad_core_config config) {
     d_config.value.data_function.free = codec_entry_free_void;
     vad->codec.codecs = ov_dict_create(d_config);
     if (!vad->codec.codecs) goto error;
-
-    ov_thread_lock_init(&vad->codec.lock, 100000);
 
     vad->codec.gc_timer = ov_event_loop_timer_set(
         vad->config.loop, OV_VAD_CODEC_GC_USECS, vad, run_codec_gc);
@@ -596,11 +508,6 @@ ov_vad_core *ov_vad_core_free(ov_vad_core *self) {
 
     if (!ov_vad_core_cast(self)) return self;
 
-    ov_thread_loop_stop_threads(self->tloop);
-
-    ov_thread_lock_clear(&self->codec.lock);
-
-    self->tloop = ov_thread_loop_free(self->tloop);
     self->loops = ov_dict_free(self->loops);
 
     self->codec.factory = ov_codec_factory_free(self->codec.factory);
@@ -626,8 +533,6 @@ ov_vad_core_config ov_vad_core_config_from_json(const ov_json_value *in) {
 
     ov_vad_core_config config = {0};
 
-    config.vad = ov_vad_config_from_json(in);
-
     ov_json_value *limits = ov_json_object_get(in, OV_KEY_LIMITS);
 
     config.limits.frames_activate =
@@ -636,14 +541,6 @@ ov_vad_core_config ov_vad_core_config_from_json(const ov_json_value *in) {
     config.limits.frames_deactivate =
         ov_json_number_get(ov_json_get(limits, "/" OV_KEY_DEACTIVATE));
 
-    config.limits.threadlock_timeout_usec =
-        ov_json_number_get(ov_json_get(limits, "/" OV_KEY_THREAD_LOCK_TIMEOUT));
-
-    config.limits.threads =
-        ov_json_number_get(ov_json_get(limits, "/" OV_KEY_THREADS));
-
-    config.limits.message_queue_capacity = ov_json_number_get(
-        ov_json_get(limits, "/" OV_KEY_MESSAGE_QUEUE_CAPACITY));
 
     return config;
 }
@@ -651,6 +548,8 @@ ov_vad_core_config ov_vad_core_config_from_json(const ov_json_value *in) {
 /*---------------------------------------------------------------------------*/
 
 static bool callback_io_loop(int socket, uint8_t events, void *userdata) {
+
+    uint8_t buf[OV_UDP_PAYLOAD_OCTETS] = {0};
 
     ov_vad_core *self = ov_vad_core_cast(userdata);
 
@@ -665,21 +564,12 @@ static bool callback_io_loop(int socket, uint8_t events, void *userdata) {
         goto error;
     }
 
-    ov_vad_thread_msg *msg = ov_vad_thread_msg_create();
-    if (!msg || !msg->buffer) goto error;
-
-    msg->socket = loop->socket;
-
-    ssize_t bytes = recv(socket, msg->buffer->start, msg->buffer->capacity, 0);
+    ssize_t bytes = recv(socket, buf, OV_UDP_PAYLOAD_OCTETS, 0);
     if (-1 == bytes) {
-        ov_thread_message_free(ov_thread_message_cast(msg));
         goto done;
     }
 
-    msg->buffer->length = bytes;
-
-    ov_thread_loop_send_message(
-        self->tloop, ov_thread_message_cast(msg), OV_RECEIVER_THREAD);
+    handle_loop_io(self, loop, buf, bytes);
 
 done:
     return true;
@@ -719,8 +609,6 @@ bool ov_vad_core_add_loop(ov_vad_core *self,
     loop->count.on = 0;
     loop->count.off = 0;
 
-    ov_thread_lock_init(&loop->lock, 100000);
-
     ov_dict_config d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = ov_data_pointer_free;
     loop->ssrcs = ov_dict_create(d_config);
@@ -735,4 +623,18 @@ bool ov_vad_core_add_loop(ov_vad_core *self,
     return true;
 error:
     return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool ov_vad_core_set_vad(ov_vad_core *self, ov_vad_config config){
+
+    if (!self) return false;
+
+    ov_log_debug("Set vad config %f %f ", 
+        config.zero_crossings_rate_threshold_hertz, 
+        config.powerlevel_density_threshold_db);
+
+    self->config.vad = config;
+    return true;
 }
