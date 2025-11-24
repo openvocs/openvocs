@@ -26,46 +26,36 @@
 
 include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
-OV_SERVICE_DIRS   += ov_mc_mixer
-OV_SERVICE_DIRS   += ov_mc_ice_proxy
-OV_SERVICE_DIRS   += ov_mc_vocs
-OV_SERVICE_DIRS   += ov_mc_interconnect
-OV_SERVICE_DIRS   += ov_mc_vad
-OV_SERVICE_DIRS   += ov_api_echo_success
-
-ifeq ($(OV_UNAME), Linux)
-	OV_SERVICE_DIRS   += ov_alsa_gateway
-endif
-
-
-all    : target_build_all
-depend : target_depend
-
-#-----------------------------------------------------------------------------
-target_depend:
-	@echo "[DEPEND ] src/lib: scanning dependencies"
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[DEPEND ] entering $$dir ..."; \
-		$(MAKE) depend -C $$dir || exit 1; \
-		echo "[DEPEND ] leaving $$dir ."; \
-	done
-	@echo "[DEPEND ] src/lib: dependencies done"
-#-----------------------------------------------------------------------------
-target_build_all:
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) -C $$dir || exit 1; \
-		echo "[BUILD  ] leaving $$dir ."; \
-	done
-	@echo "[BUILD  ] build done"
-#-----------------------------------------------------------------------------
-target_test:
-	@echo "[BUILD  ] building tests"
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) $(OV_QUIET_MAKE) target_test -C $$dir || exit 1; \
-		echo "[BUILD  ] leaving $$dir ."; \
-	done
-	@echo "[BUILD  ] build tests done"
 #-----------------------------------------------------------------------------
 
+L_TEST_SOURCES       = $(wildcard src/*_test.c)
+L_HEADERS            = $(wildcard **/**/*.h **/*.h *.h)
+L_SOURCES_C          = $(wildcard **/**/*.c **/*.c *.c)
+L_SOURCES            = $(filter-out $(L_TEST_SOURCES), $(L_SOURCES_C))
+
+OV_HDR               = $(L_HEADERS)
+OV_SRC               = $(L_SOURCES)
+OV_EXECUTABLE        = $(OV_BINDIR)/$(OV_DIRNAME)
+OV_TARGET            = $(OV_EXECUTABLE)
+
+#-----------------------------------------------------------------------------
+
+##-----------------------------------------------------------------------------
+
+OV_STATIC_LIBS   =
+
+
+OV_LIBS        = $(OV_STATIC_LIBS)
+
+OV_LIBS       += -pthread
+
+OV_LIBS       += -L$(OV_LIBDIR)
+
+OV_LIBS       += -l ov_log2
+OV_LIBS       += -l ov_base2
+OV_LIBS       += -l ov_core2
+OV_LIBS       += -l ov_os2
+
+#-----------------------------------------------------------------------------
+
+include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk
