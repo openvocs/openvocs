@@ -112,7 +112,7 @@ export function init(view_id) {
                 DOM.playback_list.draw_recordings(recorded_loops, ws.server_url + "audio/");
             }
         }
-    })
+    });
 }
 
 export function add_loop(id, data, active) {
@@ -153,5 +153,5 @@ export function select_loop(loop) {
     DOM.start_recording.classList.toggle("recording", loop.active);
     // DOM.start_recording.disabled = loop.active;
     // DOM.stop_recording.disabled = !loop.active;
-    DOM.playback_list.draw_recordings();
+    DOM.playback_search.click();
 }

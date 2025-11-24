@@ -53,27 +53,29 @@ export default class ov_Player_List extends HTMLElement {
     // }
 
     async draw_recordings(recordings, uri) {
-        this.#recordings = recordings;
-        this.#uri = uri;
-        // uri = "test_audio/"; // Adjusted base URI for recordings
-        let players = this.shadowRoot.querySelector("#players");
-        players.replaceChildren();
+        if (recordings && recordings.length !== 0) {
+            this.#recordings = recordings;
+            this.#uri = uri;
+            
+            let players = this.shadowRoot.querySelector("#players");
+            players.replaceChildren();
 
-        if (players && recordings) {
-            for (let recording of recordings) {
-                let recording_src = uri + recording.uri;
-                console.log(recording_src);
-                console.log(recording);
+            if (players && recordings) {
+                for (let recording of recordings) {
+                    let recording_src = uri + recording.uri;
+                    console.log(recording_src);
+                    console.log(recording);
 
-                // Create a new ov-player element
-                let player = document.createElement('ov-player');
+                    // Create a new ov-player element
+                    let player = document.createElement('ov-player');
 
-                // Set the src and start_epoch_timestamp for the player
-                player.start_epoch_timestamp = recording.starttime;
-                player.src = recording_src;
+                    // Set the src and start_epoch_timestamp for the player
+                    player.start_epoch_timestamp = recording.starttime;
+                    player.src = recording_src;
 
-                // Append the player to the container
-                players.appendChild(player);
+                    // Append the player to the container
+                    players.appendChild(player);
+                }
             }
         }
     }
