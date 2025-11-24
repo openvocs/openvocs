@@ -99,7 +99,7 @@ static mode_t get_path_mode(char const *path) {
 
 static bool our_mkdir(char const *path) {
 
-    return 0 == mkdir(path, S_IRWXU | S_IRWXG);
+    return 0 == mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -5360,7 +5360,12 @@ static void cb_sip_permit(void *userdata,
 
 
         val = NULL;
+
+    } else {
+
+        ov_vocs_db_add_permission(self->config.db, permission);
     }
+
 
     ov_event_parameter parameter =
         (ov_event_parameter){.send.instance = self, .send.send = send_socket};
@@ -5413,6 +5418,9 @@ static void cb_sip_revoke(void *userdata,
         ov_vocs_db_app_send_broadcast(self->config.db_app, out);
 
         val = NULL;
+    } else {
+
+        ov_vocs_db_remove_permission(self->config.db, permission);
     }
 
     ov_event_parameter parameter =

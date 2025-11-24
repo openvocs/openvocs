@@ -83,4 +83,6 @@ bool ov_vad_core_add_loop(ov_vad_core *self,
                           const char *loop,
                           ov_socket_configuration socket);
 
+bool ov_vad_core_set_vad(ov_vad_core *self, ov_vad_config config);
+
 #endif /* ov_vad_core_h */

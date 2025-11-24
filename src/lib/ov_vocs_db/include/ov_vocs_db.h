@@ -690,6 +690,11 @@ bool ov_vocs_db_remove_permission(ov_vocs_db *self,
 
 /*----------------------------------------------------------------------------*/
 
+bool ov_vocs_db_add_permission(ov_vocs_db *self, 
+    ov_sip_permission permission);
+
+/*----------------------------------------------------------------------------*/
+
 ov_json_value *ov_vocs_db_get_all_loops_incl_domain(ov_vocs_db *self);
 
 /*----------------------------------------------------------------------------*/
