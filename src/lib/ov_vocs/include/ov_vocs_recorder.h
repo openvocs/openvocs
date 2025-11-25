@@ -35,6 +35,7 @@
 #include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_socket.h>
 #include <ov_base/ov_result.h>
+#include <ov_base/ov_vad_config.h>
 
 #include <ov_core/ov_event_io.h>
 
@@ -52,6 +53,14 @@ typedef struct ov_vocs_recorder_config {
 
     ov_event_loop *loop;
     ov_vocs_db *vocs_db;
+
+    ov_vad_config vad;
+
+    struct {
+
+        uint64_t silence_cutoff_interval_msec;
+
+    } limits;
 
     struct {
 

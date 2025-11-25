@@ -1564,179 +1564,44 @@ static bool add_sip_permission_for_loop(const void *key,
 
 /*----------------------------------------------------------------------------*/
 
-struct container_wl {
+static bool revoke_calls(void *item, void *data){
 
-    const ov_json_value *list;
-    ov_json_value *out;
-};
+    ov_json_value *loopdata = data;
+    ov_json_value *new_whitelist = ov_json_object_get(loopdata,OV_KEY_PERMIT);
 
-/*----------------------------------------------------------------------------*/
+    size_t count = ov_json_array_count(new_whitelist);
+    bool found = false;
 
-static bool permit_call_in_whitelist(void *item, void *data) {
+    for (size_t i = 1; i <=count; i++ ){
 
-    const ov_json_value *call = ov_json_value_cast(item);
-    struct container_wl *container = (struct container_wl *)data;
+        bool ok = true;
 
-    size_t items = ov_json_array_count(container->list);
+        ov_json_value *new = ov_json_array_get(new_whitelist, i);
 
-    const char *callee_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLEE));
+        ov_sip_permission old_permission = ov_sip_permission_from_json(item, &ok);
+        if (!ok) goto error;
 
-    const char *caller_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLEE));
+        ov_sip_permission new_permission = ov_sip_permission_from_json(new, &ok);
+        if (!ok) goto error;
 
-    bool matched = false;
+        if (ov_sip_permission_equals(old_permission, new_permission))
+            found = true;
 
-    for (size_t i = 1; i <= items; i++) {
-
-        const ov_json_value *curr =
-            ov_json_array_get((ov_json_value *)container->list, i);
-        if (!curr) break;
-
-        const char *callee_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLEE));
-
-        const char *caller_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLEE));
-
-        if ((0 == ov_string_compare(callee_of_call, callee_of_curr)) &&
-            (0 == ov_string_compare(caller_of_call, caller_of_curr))) {
-
-            // match found
-            matched = true;
-            break;
-        }
     }
 
-    if (!matched) {
+    if (found) return true;
 
-        // new CALL to permit list
-
-        ov_json_value *permit_list =
-            ov_json_object_get(container->out, OV_KEY_PERMIT);
-        if (!permit_list) {
-
-            permit_list = ov_json_array();
-            ov_json_object_set(container->out, OV_KEY_PERMIT, permit_list);
-        }
-
-        ov_json_value *new = NULL;
-        if (!ov_json_value_copy((void **)&new, call)) goto error;
-        if (!ov_json_array_push(permit_list, new)) {
-            new = ov_json_value_free(new);
-            goto error;
-        }
+    ov_json_value *revoke = ov_json_object_get(data, OV_KEY_REVOKE);
+    if (!revoke){
+        revoke = ov_json_array();
+        ov_json_object_set(data, OV_KEY_REVOKE, revoke);
     }
 
+    ov_json_value *out = NULL;
+    ov_json_value_copy((void**)&out, item);
+
+    ov_json_array_push(revoke, out);
     return true;
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool revoke_call_in_whitelist(void *item, void *data) {
-
-    const ov_json_value *call = ov_json_value_cast(item);
-    struct container_wl *container = (struct container_wl *)data;
-
-    size_t items = ov_json_array_count(container->list);
-
-    const char *callee_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLEE));
-
-    const char *caller_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLER));
-
-    bool matched = false;
-
-    for (size_t i = 1; i <= items; i++) {
-
-        const ov_json_value *curr =
-            ov_json_array_get((ov_json_value *)container->list, i);
-        if (!curr) break;
-
-        const char *callee_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLEE));
-
-        const char *caller_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLER));
-
-        if ((0 == ov_string_compare(callee_of_call, callee_of_curr)) &&
-            (0 == ov_string_compare(caller_of_call, caller_of_curr))) {
-
-            // match found
-            matched = true;
-            break;
-        }
-    }
-
-    if (!matched) {
-
-        // new CALL to revoke list
-
-        ov_json_value *list = ov_json_object_get(container->out, OV_KEY_REVOKE);
-        if (!list) {
-
-            list = ov_json_array();
-            ov_json_object_set(container->out, OV_KEY_REVOKE, list);
-        }
-
-        ov_json_value *new = NULL;
-        if (!ov_json_value_copy((void **)&new, call)) goto error;
-        if (!ov_json_array_push(list, new)) {
-            new = ov_json_value_free(new);
-            goto error;
-        }
-    }
-
-    return true;
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool permit_calls(ov_json_value *loopdata,
-                         const ov_json_value *old_whitelist,
-                         const ov_json_value *new_whitelist) {
-
-    // if call of new whitelist is not contained in old whitelist,
-    // add call to permit processing.
-
-    struct container_wl container = (struct container_wl){
-        .list = (ov_json_value *)old_whitelist, .out = loopdata};
-
-    if (!ov_json_array_for_each((ov_json_value *)new_whitelist,
-                                &container,
-                                permit_call_in_whitelist))
-        goto error;
-
-    return true;
-
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool revoke_calls(ov_json_value *loopdata,
-                         const ov_json_value *old_whitelist,
-                         const ov_json_value *new_whitelist) {
-
-    // if call in old whitelist is not found in new whitelist,
-    // add call to revoke processing.
-
-    struct container_wl container = (struct container_wl){
-        .list = (ov_json_value *)new_whitelist, .out = loopdata};
-
-    if (!ov_json_array_for_each((ov_json_value *)old_whitelist,
-                                &container,
-                                revoke_call_in_whitelist))
-        goto error;
-
-    return true;
-
 error:
     return false;
 }
@@ -1756,21 +1621,17 @@ static bool update_sip_parameter_processing(const char *loop_id,
     ov_json_value *loopdata = ov_json_object();
     if (!ov_json_object_set(*out, loop_id, loopdata)) goto error;
 
-    if (!old_whitelist) {
+    ov_json_value *cpy = NULL;
+    if (!ov_json_value_copy((void **)&cpy, new_whitelist)) goto error;
 
-        // copy whitelist to processing new whitelisting
-        ov_json_value *cpy = NULL;
-        if (!ov_json_value_copy((void **)&cpy, new_whitelist)) goto error;
+    if (!ov_json_object_set(loopdata, OV_KEY_PERMIT, cpy)) goto error;
 
-        if (!ov_json_object_set(loopdata, OV_KEY_PERMIT, cpy)) goto error;
+    if (old_whitelist) {
 
-        goto done;
+        ov_json_array_for_each(old_whitelist, loopdata, revoke_calls);
+
     }
 
-    permit_calls(loopdata, old_whitelist, new_whitelist);
-    revoke_calls(loopdata, old_whitelist, new_whitelist);
-
-done:
     return true;
 error:
     return false;
@@ -4939,6 +4800,61 @@ done:
     }
 error:
     return result;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_db_add_permission(ov_vocs_db *self, 
+    ov_sip_permission permission){
+
+    if (!self) goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
+    ov_json_value *loop = ov_dict_get(self->index.loops, permission.loop);
+    if (!loop) goto done;
+
+    ov_json_value *sip = ov_json_object_get(loop, "/" OV_KEY_SIP);
+    if (!sip) {
+
+        sip =ov_json_object();
+        ov_json_object_set(loop, OV_KEY_SIP, sip);
+    }
+
+    ov_json_value *whitelist = ov_json_object_get(sip, OV_KEY_WHITELIST);
+    if (!whitelist) {
+
+        whitelist = ov_json_array();
+        ov_json_object_set(sip, OV_KEY_WHITELIST, whitelist);
+    }
+
+    size_t count = ov_json_array_count(whitelist);
+    size_t active = 0;
+
+    bool ok = true;
+
+    for (size_t i = 1; i <= count; i++){
+
+        ov_json_value *obj = ov_json_array_get(whitelist, i);
+
+        ov_sip_permission perm = ov_sip_permission_from_json(obj, &ok);
+
+        if (ov_sip_permission_equals(permission, perm)){
+            active = i;
+            break;
+        }
+    }
+
+    if (0 == active){
+        
+        ov_json_value *perm = ov_sip_permission_to_json(permission);
+        ov_json_array_push(whitelist, perm);
+    }
+
+done:
+    return true;
+error:
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/

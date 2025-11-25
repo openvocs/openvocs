@@ -295,11 +295,6 @@ generate_config_vad() {
          \"host\" : \"$VAD_HOST\",
          \"port\" : $VAD_PORT,
          \"type\" : \"TCP\"
-       },
-       \"vad\":
-       {
-         \"zero_crossings_rate_hertz\" : 40000,
-         \"powerlevel_density_dbfs\": -340
        }
      }
    }" > $DIR_OV_MC_VAD"/config.json"
@@ -380,6 +375,11 @@ generate_config_ov_vocs() {
             \"host\" : \"$VAD_HOST\",
              \"port\" : $VAD_PORT,
              \"type\" : \"TCP\"
+            },
+            \"vad\":
+            {
+              \"zero_crossings_rate_hertz\" : 50000,
+              \"powerlevel_density_dbfs\" : -500
             }
          },
        \"backend\" :

@@ -164,6 +164,18 @@
     animation: none;
 }
 
+:host([color=yellow]) #join_loop {
+    border-bottom: var(--yellow) 3cqh solid;
+}
+
+:host([color=red]) #join_loop {
+    border-bottom: var(--red) 3cqh solid;
+}
+
+:host([color=orange]) #join_loop {
+    border-bottom: var(--orange) 3cqh solid;
+}
+
 /**
 loops for grid layout ---------------------------------------------------------
 */

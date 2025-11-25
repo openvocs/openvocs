@@ -33,6 +33,7 @@
 #define OV_VAD_APP_MAGIC_BYTES 0xf345
 
 #include <ov_base/ov_config_keys.h>
+#include <ov_base/ov_vad_config.h>
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_event_app.h>
 
@@ -85,6 +86,11 @@ static void cb_register_response(ov_vad_app *self,
     ov_json_value *out = ov_vad_app_msg_loops();
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
+
+    ov_json_value *par = ov_event_api_get_response(input);
+    ov_vad_config conf = ov_vad_config_from_json(par);
+
+    ov_vad_core_set_vad(self->vad, conf);
 
 error:
     ov_json_value_free(input);

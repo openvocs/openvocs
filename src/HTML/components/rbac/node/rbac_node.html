@@ -49,7 +49,7 @@
 
             <label for="edit_id" id="id_label">ID</label>
             <label for="edit_id" id="user_name_label">Username</label>
-            <input id="edit_id" name="id" type="text" title="A-Z a-z 0-9 . - _ @">
+            <input id="edit_id" name="id" type="text" title="A-Z a-z 0-9 . - _ @"><br>
 
             <label for="edit_password">Password</label>
             <input id="edit_password" name="password" type="password" autocomplete="new-password">
@@ -59,12 +59,20 @@
             <span id="name_char_max">/20</span>
             <span id="name_char_count">0</span>
             <input id="edit_name" name="name" type="text" autofocus maxlength="20">
-            
 
-            <label for="edit_multicast_ip">Multicast IP</label>
+
+            <label for="edit_multicast_ip">Multicast IP<br></label>
             <input id="edit_multicast_ip" name="multicast_ip" type="text">
             <span id="edit_multicast_split"> : </span>
             <input id="edit_multicast_port" name="multicast_port" type="text">
+
+            <label for="edit_highlight_color">Highlight color</label>
+            <select name="highlight_color" id="edit_highlight_color">
+                <option selected value="">default</option>
+                <option value="red">Red</option>
+                <option value="orange">Orange</option>
+                <option value="yellow">Yellow</option>
+            </select>
 
             <button id="delete_element" class="red_button">Delete</button>
             <button id="save_element">Ok</button>

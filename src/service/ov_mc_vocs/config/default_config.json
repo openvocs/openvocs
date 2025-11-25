@@ -115,6 +115,12 @@
 						"port" : 12345
 					}
 				}
+			},
+			"vad" : 
+			{
+				"silence_interval_msec" : 2000,
+				"zero_crossings_rate_hertz" : 5000,
+				"powerlevel_density_dbfs" : -50
 			}
 		},
 
@@ -125,6 +131,11 @@
 				"host" : "127.0.0.1",
 				"type" : "TCP",
 				"port" : 40001
+			},
+			"vad":
+			{
+					"zero_crossings_rate_hertz" : 50000,
+					"powerlevel_density_dbfs" : -500
 			}
 		}
 	},

@@ -37,6 +37,7 @@
 #include <lber.h>
 #include <ldap.h>
 
+#include <fcntl.h> 
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -148,6 +149,15 @@ static bool auth_prepare_dir(const char *path) {
 
     closedir(dir);
 
+    int r = chmod (path, S_IRWXU | S_IRWXG | S_IROTH);
+    if (r != 0){
+
+        ov_log_error("Failed to change file access of %s", path);
+    } else {
+
+        ov_log_debug("Changed rigths of %s", path);
+    }
+
     return true;
 
 error:
@@ -189,13 +199,28 @@ static bool save_main_config(const ov_json_value *value,
             ov_log_error("%s - failed to create directory", root_path);
             goto error;
         }
+
+        
+
     }
+
+    int r = chmod (root_path,  S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (r != 0){
+
+        ov_log_error("Failed to change file access of %s", root_path);
+    } 
 
     if (!ov_json_value_copy((void **)&out, value)) goto error;
 
     ov_json_object_del(out, OV_KEY_PROJECTS);
 
     if (!ov_json_write_file(path, out)) goto error;
+
+    r = chmod (path, S_IRUSR | S_IWUSR | S_IWGRP | S_IRGRP | S_IROTH);
+    if (r != 0){
+
+        ov_log_error("Failed to change file access of %s", path);
+    }
 
     ov_json_value_free(out);
     return true;
@@ -286,12 +311,18 @@ static bool persist_auth(ov_vocs_db_persistance *self) {
 
     if (!auth_prepare_dir(path)) goto done;
 
+
+    int r = chmod (path, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    if (r != 0){
+
+        ov_log_error("Failed to change file access of %s", path);
+    } 
+
     struct container_write container = {
 
         .path = path};
 
     result = ov_json_object_for_each(out, &container, save_config);
-
 done:
     out = ov_json_value_free(out);
     return result;
@@ -1966,6 +1997,12 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
     ov_json_value *changes = write_users_object(users, domain, self->config.path);
     if (!changes) goto error;
 
+    if (!ov_vocs_db_persistance_load(self)){
+
+        ov_log_error("Failed to reload changes.");
+
+    }
+    
     ov_vocs_db_send_vocs_trigger(self->config.db, changes);
     changes = ov_json_value_free(changes);
 

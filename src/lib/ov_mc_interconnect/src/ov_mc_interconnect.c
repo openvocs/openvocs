@@ -921,6 +921,8 @@ ov_mc_interconnect *ov_mc_interconnect_create(
             ov_log_debug("opened connection to %s:%i",
                          self->config.socket.signaling.host,
                          self->config.socket.signaling.port);
+
+            cb_connected(self, self->socket.signaling, true);
         }
 
     } else {

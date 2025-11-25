@@ -46,6 +46,7 @@ export function init(view_id) {
     DOM.playback_search_stop = document.getElementById("stop_time");
     DOM.playback_search = document.getElementById("search_records");
     DOM.playback_list = document.querySelector('ov-player-list');
+    DOM.error_message = document.getElementById("error_message");
     // DOM.start_recording.disabled = true;
     // DOM.stop_recording.disabled = true;
 
@@ -54,22 +55,30 @@ export function init(view_id) {
             for (let ws of ov_Websockets.list) {
                 if (ws.port === "admin" && ws.record === true) {
                     let loop = get_current_loop();
-                    await ov_Recorder.stop_record(loop.id, ws);
-                    loop.active = false;
-                    // DOM.start_recording.disabled = false;
-                    // DOM.stop_recording.disabled = true;
-                    DOM.start_recording.classList.toggle("recording", false);
+                    if (await ov_Recorder.stop_record(loop.id, ws)) {
+                        loop.active = false;
+                        // DOM.start_recording.disabled = false;
+                        // DOM.stop_recording.disabled = true;
+                        DOM.start_recording.classList.toggle("recording", false);
+                        DOM.error_message.innerText = "";
+                    } else {
+                        DOM.error_message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
+                    }
                 }
             }
         } else {
             for (let ws of ov_Websockets.list) {
                 if (ws.port === "admin" && ws.record === true) {
                     let loop = get_current_loop();
-                    await ov_Recorder.start_record(loop.id, ws);
-                    loop.active = true;
-                    // DOM.start_recording.disabled = true;
-                    // DOM.stop_recording.disabled = false;
-                    DOM.start_recording.classList.toggle("recording", true);
+                    if (await ov_Recorder.start_record(loop.id, ws)) {
+                        loop.active = true;
+                        // DOM.start_recording.disabled = true;
+                        // DOM.stop_recording.disabled = false;
+                        DOM.start_recording.classList.toggle("recording", true);
+                        DOM.error_message.innerText = "";
+                    } else {
+                        DOM.error_message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
+                    }
                 }
             }
         }
@@ -103,7 +112,7 @@ export function init(view_id) {
                 DOM.playback_list.draw_recordings(recorded_loops, ws.server_url + "audio/");
             }
         }
-    })
+    });
 }
 
 export function add_loop(id, data, active) {
@@ -144,5 +153,5 @@ export function select_loop(loop) {
     DOM.start_recording.classList.toggle("recording", loop.active);
     // DOM.start_recording.disabled = loop.active;
     // DOM.stop_recording.disabled = !loop.active;
-    DOM.playback_list.draw_recordings();
+    DOM.playback_search.click();
 }

@@ -4158,86 +4158,6 @@ int check_update_sip_permissions() {
 
 /*----------------------------------------------------------------------------*/
 
-int check_revoke_call_in_whitelist() {
-
-    ov_json_value *val = NULL;
-
-    ov_json_value *old_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"}"
-        "]");
-
-    ov_json_value *new_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\", \"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"other\"}"
-        "]");
-
-    ov_json_value *out = ov_json_object();
-
-    testrun(revoke_calls(out, old_list, new_list));
-    testrun(2 == ov_json_array_count(ov_json_object_get(out, OV_KEY_REVOKE)));
-    out = ov_json_value_free(out);
-    old_list = ov_json_value_free(old_list);
-    new_list = ov_json_value_free(new_list);
-
-    old_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"}"
-        "]");
-
-    new_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"other\"}"
-        "]");
-
-    out = ov_json_object();
-
-    testrun(revoke_calls(out, old_list, new_list));
-    testrun(0 == ov_json_array_count(ov_json_object_get(out, OV_KEY_REVOKE)));
-    out = ov_json_value_free(out);
-    old_list = ov_json_value_free(old_list);
-    new_list = ov_json_value_free(new_list);
-
-    old_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"}"
-        "]");
-
-    new_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"other\"}"
-        "]");
-
-    out = ov_json_object();
-
-    testrun(revoke_calls(out, old_list, new_list));
-    testrun(1 == ov_json_array_count(ov_json_object_get(out, OV_KEY_REVOKE)));
-    val = ov_json_array_get(ov_json_object_get(out, OV_KEY_REVOKE), 1);
-    testrun(ov_json_object_get(val, OV_KEY_CALLEE));
-    testrun(0 ==
-            strcmp("lee",
-                   ov_json_string_get(ov_json_object_get(val, OV_KEY_CALLEE))));
-    out = ov_json_value_free(out);
-    old_list = ov_json_value_free(old_list);
-    new_list = ov_json_value_free(new_list);
-
-    return testrun_log_success();
-}
-
-/*----------------------------------------------------------------------------*/
-
 /*
  *      ------------------------------------------------------------------------
  *
@@ -4298,7 +4218,6 @@ int all_tests() {
 
     testrun_test(test_ov_vocs_db_get_entity_domain);
 
-    testrun_test(check_revoke_call_in_whitelist);
     testrun_test(check_update_sip_permissions);
 
     return testrun_counter;

@@ -44,6 +44,7 @@ export default class ov_Loop extends HTMLElement {
     #project;
     #permission;
     #volume;
+    #highlight_color;
     #layout_page;
     #layout_row;
     #layout_column;
@@ -78,7 +79,7 @@ export default class ov_Loop extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["layout", "state", "name", "permission"];
+        return ["layout", "state", "name", "permission", "color"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -97,6 +98,10 @@ export default class ov_Loop extends HTMLElement {
         }
         if (name === "permission") {
             this.#permission = newValue;
+        }
+
+        if (name === "color") {
+            this.#highlight_color = newValue;
         }
     }
 
@@ -167,6 +172,14 @@ export default class ov_Loop extends HTMLElement {
 
     get volume() {
         return this.#volume;
+    }
+
+    set highlight_color(color) {
+        this.setAttribute("color", color);
+    }
+
+    get highlight_color() {
+        return this.#highlight_color;
     }
 
     set layout_pos(layout_pos) {
@@ -263,6 +276,8 @@ export default class ov_Loop extends HTMLElement {
         this.participants = this.participants;
         this.update_state();
         this.volume = this.#volume;
+        if (this.#highlight_color)
+            this.highlight_color = this.#highlight_color;
 
         this.shadowRoot.querySelector("#join_loop").onclick = () => {
             let next_state = this.#determine_next_loop_state();
@@ -381,6 +396,9 @@ export default class ov_Loop extends HTMLElement {
         this.state = json.state;
         this.permission = json.permission;
         this.volume = json.volume;
+
+        if (json.highlight_color)
+            this.highlight_color = json.highlight_color;
 
         if (typeof position !== "object") {
             this.layout_pos = {};

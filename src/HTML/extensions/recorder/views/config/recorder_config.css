@@ -34,3 +34,7 @@
     font-size: 1.3rem;
     line-height: 1rem;
 }
+
+#error_message {
+    color: var(--red);
+}
