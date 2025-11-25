@@ -164,16 +164,16 @@
     animation: none;
 }
 
-:host([color=yellow]) #loop_name {
-    color: var(--yellow) !important;
+:host([color=yellow]) #join_loop {
+    border-bottom: var(--yellow) 3cqh solid;
 }
 
-:host([color=red]) #loop_name {
-    color: var(--red) !important;
+:host([color=red]) #join_loop {
+    border-bottom: var(--red) 3cqh solid;
 }
 
-:host([color=orange]) #loop_name {
-    color: var(--orange) !important;
+:host([color=orange]) #join_loop {
+    border-bottom: var(--orange) 3cqh solid;
 }
 
 /**

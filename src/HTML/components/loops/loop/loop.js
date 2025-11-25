@@ -44,7 +44,7 @@ export default class ov_Loop extends HTMLElement {
     #project;
     #permission;
     #volume;
-    #font_color;
+    #highlight_color;
     #layout_page;
     #layout_row;
     #layout_column;
@@ -101,7 +101,7 @@ export default class ov_Loop extends HTMLElement {
         }
 
         if (name === "color") {
-            this.#font_color = newValue;
+            this.#highlight_color = newValue;
         }
     }
 
@@ -174,12 +174,12 @@ export default class ov_Loop extends HTMLElement {
         return this.#volume;
     }
 
-    set font_color(color) {
+    set highlight_color(color) {
         this.setAttribute("color", color);
     }
 
-    get font_color() {
-        return this.#font_color;
+    get highlight_color() {
+        return this.#highlight_color;
     }
 
     set layout_pos(layout_pos) {
@@ -276,8 +276,8 @@ export default class ov_Loop extends HTMLElement {
         this.participants = this.participants;
         this.update_state();
         this.volume = this.#volume;
-        if (this.#font_color)
-            this.font_color = this.#font_color;
+        if (this.#highlight_color)
+            this.highlight_color = this.#highlight_color;
 
         this.shadowRoot.querySelector("#join_loop").onclick = () => {
             let next_state = this.#determine_next_loop_state();
@@ -397,8 +397,8 @@ export default class ov_Loop extends HTMLElement {
         this.permission = json.permission;
         this.volume = json.volume;
 
-        if (json.font_color)
-            this.font_color = json.font_color;
+        if (json.highlight_color)
+            this.highlight_color = json.highlight_color;
 
         if (typeof position !== "object") {
             this.layout_pos = {};
