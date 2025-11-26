@@ -164,16 +164,27 @@
     animation: none;
 }
 
-:host([color=yellow]) #join_loop {
-    border-bottom: var(--yellow) 3cqh solid;
+#color_highlight {
+    width: 100%;
+    height: 20cqh;
+    grid-area: name;
+    margin-bottom: -0.25em;
+    margin-left: 0.015em;
 }
 
-:host([color=red]) #join_loop {
-    border-bottom: var(--red) 3cqh solid;
+:host([color=yellow]) #color_highlight {
+    background-color: var(--yellow);
+    display: inherit;
 }
 
-:host([color=orange]) #join_loop {
-    border-bottom: var(--orange) 3cqh solid;
+:host([color=red]) #color_highlight {
+    background-color: var(--red);
+    display: inherit;
+}
+
+:host([color=orange]) #color_highlight {
+    background-color: var(--orange);
+    display: inherit;
 }
 
 /**
