@@ -78,7 +78,7 @@ typedef struct {
 
     ov_event_loop *loop;
     ov_vocs_db *db;
-    ov_vocs_db_persistance *persistance;
+    ov_vocs_db_app *db_app;
     ov_io *io;
     ov_event_trigger *trigger;
     ov_vocs_env env;
@@ -136,5 +136,6 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val);
 /*----------------------------------------------------------------------------*/
 
 ov_event_io_config ov_vocs_event_io_uri_config(ov_vocs *self);
+ov_event_io_config ov_vocs_admin_io_uri_config(ov_vocs *self);
 
 #endif /* ov_vocs_h */
