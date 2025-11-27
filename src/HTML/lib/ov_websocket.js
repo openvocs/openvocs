@@ -97,8 +97,6 @@ export default class ov_Websocket {
 
     #event_target;
 
-    #show_port = false;
-
     #record;
 
     constructor(name, url, client_id, record) {
@@ -115,9 +113,6 @@ export default class ov_Websocket {
         this.#event_target = new EventTarget();
         this.addEventListener = this.#event_target.addEventListener.bind(this.#event_target);
         this.removeEventListener = this.#event_target.removeEventListener.bind(this.#event_target);
-
-        if (this.port !== "vocs")
-            this.#show_port = true;
     }
 
     /**
@@ -151,10 +146,6 @@ export default class ov_Websocket {
 
     get server_url() {
         return "https://" + this.#url.slice(6, this.#url.lastIndexOf("/") + 1); // remove wss:// and /vocs from websocket url
-    }
-
-    get port() {
-        return this.#url.slice(this.#url.lastIndexOf("/") + 1);
     }
 
     get websocket_url() {
@@ -515,8 +506,6 @@ export default class ov_Websocket {
     // logging
     //-----------------------------------------------------------------------------
     #log_prefix() {
-        if (this.#show_port)
-            return "(" + this.server_name + "/" + this.port + " websocket) ";
         return "(" + this.server_name + " websocket) ";
     }
 }

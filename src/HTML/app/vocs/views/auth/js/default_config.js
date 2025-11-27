@@ -28,7 +28,6 @@
 
     ---------------------------------------------------------------------------
 */
-WEBSOCKET = ["/vocs"];
 
 SIGNALING_SERVERS = [
     // User interface supports up to 1 back up server, more are not displayed.

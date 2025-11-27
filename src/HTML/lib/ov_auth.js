@@ -306,5 +306,5 @@ async function ws_logout(websocket) {
 // logging
 //-----------------------------------------------------------------------------
 function log_prefix(ws) {
-    return "(" + ws.server_name + "/" + ws.port + " auth) ";
+    return "(" + ws.server_name + " auth) ";
 }

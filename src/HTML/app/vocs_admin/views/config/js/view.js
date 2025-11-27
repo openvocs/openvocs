@@ -184,8 +184,6 @@ export async function init(view_id, container, type) {
         DOM.loading_screen.show("Deleting project on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db")
-                continue;
             let project = Project_Settings.collect();
             if (!await ov_DB.delete_project(project.domain, project.id, websocket)) {
                 errors.push(websocket);
@@ -214,8 +212,6 @@ export async function init(view_id, container, type) {
         DOM.loading_screen.show("Deleting domain on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db")
-                continue;
             let domain = Domain_Settings.collect();
             if (!await ov_DB.delete_domain(domain.id, websocket)) {
                 errors.push(websocket);
@@ -248,8 +244,6 @@ export async function init(view_id, container, type) {
         let settings = Config_Settings.collect();
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db")
-                continue;
             if (!await ov_DB.user_ldap_import(event.detail.host, event.detail.base,
                 settings.id, event.detail.user, event.detail.password, websocket)) {
                 errors.push(websocket);
@@ -322,7 +316,7 @@ async function save(new_config, type, persist) {
         DOM.loading_screen.show("Saving " + type + " " + new_config.id + " on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db" || websocket.server_name !== ov_Websockets.prime_websocket.server_name)
+            if (websocket.server_name !== ov_Websockets.prime_websocket.server_name)
                 continue;
 
             //save layout
@@ -397,7 +391,7 @@ export async function render_project(project, domain, id, domain_id, page) {
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();
         else if (DOM.sub_view_nav.value === "layout") {
-            if(!first_load){
+            if (!first_load) {
                 let proj_config = collect_config();
                 let dom_config = collect_config({ id: proj_config.domain });
                 let loops = { ...proj_config.loops, ...dom_config.loops };
@@ -431,7 +425,7 @@ export async function render_project(project, domain, id, domain_id, page) {
         DOM.sub_view_nav.value = "settings";
 
     first_load = false;
-    
+
 }
 
 export async function render_domain(domain, id, page) {

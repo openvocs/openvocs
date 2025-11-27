@@ -532,5 +532,5 @@ export async function persist(ws){
 // logging
 //-----------------------------------------------------------------------------
 function log_prefix(ws) {
-    return "(" + ws.server_name + "/" + ws.port + " admin) ";
+    return "(" + ws.server_name + " admin) ";
 }

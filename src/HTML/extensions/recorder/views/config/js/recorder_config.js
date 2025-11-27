@@ -43,7 +43,7 @@ export async function init(container) {
 export async function render(loops) {
     let websocket;
     for (let ws of ov_Websockets.list) {
-        if (ws.port === "admin" && ws.record === true) {
+        if (ws.record === true) {
             websocket = ws;
             break;
         }

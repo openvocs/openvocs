@@ -99,30 +99,26 @@ export async function init(view_id) {
     DOM.reload_broadcast.addEventListener("click", () => {
         DOM.loading_screen.show("Sending update broadcast...");
         for (let ws of ov_Websockets.list)
-            if (ws.port === "admin")
-                ov_Monitor.broadcast_update(ws);
+            ov_Monitor.broadcast_update(ws);
         DOM.loading_screen.delayed_hide();
     });
     DOM.switch_server_broadcast.disabled = true;
     DOM.switch_server_broadcast.addEventListener("click", () => {
         DOM.loading_screen.show("Sending switch server broadcast...");
         for (let ws of ov_Websockets.list)
-            if (ws.port === "admin")
-                ov_Monitor.broadcast_switch_server(selected_server.server_url, ws);
+            ov_Monitor.broadcast_switch_server(selected_server.server_url, ws);
         DOM.loading_screen.delayed_hide();
     });
 
     for (let server of ov_Websockets.list) {
-        if (server.port === "admin") {
-            let option = document.createElement("option");
-            option.value = server.server_url;
-            option.innerText = server.server_name;
+        let option = document.createElement("option");
+        option.value = server.server_url;
+        option.innerText = server.server_name;
 
-            DOM.switch_server_id.appendChild(option);
-            setInterval(() => {
-                option.classList.toggle("off", !server.is_ready);
-            }, 500);
-        }
+        DOM.switch_server_id.appendChild(option);
+        setInterval(() => {
+            option.classList.toggle("off", !server.is_ready);
+        }, 500);
     }
 
     DOM.switch_server_id.addEventListener("change", () => {
