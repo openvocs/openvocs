@@ -145,12 +145,6 @@ int main(int argc, char **argv) {
      *  (3) DB service layer
      */
 
-    ov_ldap_config ldap_config = ov_ldap_config_from_json(json_config);
-    bool ldap_enable = false;
-    if (ov_json_is_true(
-            (ov_json_get(json_config, "/" OV_KEY_LDAP "/" OV_KEY_ENABLED))))
-        ldap_enable = true;
-
     trigger = ov_event_trigger_create((ov_event_trigger_config){0});
     if (!trigger) goto error;
 
@@ -180,48 +174,13 @@ int main(int argc, char **argv) {
     }
     
     if (!ov_vocs_db_set_persistance(db, db_persistance)) goto error;
-
-    db_app = ov_vocs_db_app_create(
-        (ov_vocs_db_app_config){.loop = loop,
-                                .db = db,
-                                .env.userdata = server,
-                                .env.close = env_close_socket,
-                                .env.send = env_send_socket,
-                                .persistance = db_persistance,
-                                .ldap.enable = ldap_enable,
-                                .ldap.config = ldap_config});
-    if (!db_app) {
-        ov_log_error("Failed to create db app.");
-        goto error;
-    }
-
-    /* Enable uri domain/db for DB operation */
-
-    if (!ov_webserver_minimal_configure_uri_event_io(
-            server,
-            (ov_memory_pointer){
-                .start = (uint8_t *)domain, .length = strlen(domain)
-
-            },
-            ov_vocs_db_app_io_uri_config(db_app))) {
-
-        ov_log_error(
-            "Failed to enable vocs URI callback "
-            "at domain %s - check config to include same domain in "
-            "webserver and vocs module.",
-            domain);
-
-        goto error;
-    }
-
     
-
     /* Create the vocs core */
 
     ov_vocs_config core_config = ov_vocs_config_from_json(json_config);
     core_config.loop = loop;
     core_config.db = db;
-    core_config.db_app = db_app;
+    core_config.persistance = db_persistance;
     core_config.io = io;
     core_config.env.userdata = server;
     core_config.env.close = env_close_socket;
@@ -231,7 +190,7 @@ int main(int argc, char **argv) {
     vocs = ov_vocs_create(core_config);
     if (!vocs) goto error;
 
-    /* Enable uri domain/vocs for VOCS operation */
+    /* Enable uri domain/api for VOCS operation */
 
     if (!ov_webserver_minimal_configure_uri_event_io(
             server,
@@ -240,25 +199,6 @@ int main(int argc, char **argv) {
 
             },
             ov_vocs_event_io_uri_config(vocs))) {
-
-        ov_log_error(
-            "Failed to enable vocs URI callback "
-            "at domain %s - check config to include same domain in "
-            "webserver and vocs module.",
-            domain);
-
-        goto error;
-    }
-
-    /* Enable uri domain/admin for VOCS operation */
-
-    if (!ov_webserver_minimal_configure_uri_event_io(
-            server,
-            (ov_memory_pointer){
-                .start = (uint8_t *)domain, .length = strlen(domain)
-
-            },
-            ov_vocs_admin_io_uri_config(vocs))) {
 
         ov_log_error(
             "Failed to enable vocs URI callback "
