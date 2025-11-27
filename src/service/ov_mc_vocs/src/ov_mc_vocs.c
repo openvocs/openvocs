@@ -143,7 +143,6 @@ int main(int argc, char **argv) {
      *  (2) DB persistance layer
      *  (3) DB service layer
      */
-        
     trigger = ov_event_trigger_create((ov_event_trigger_config){0});
     if (!trigger) goto error;
 
@@ -174,6 +173,7 @@ int main(int argc, char **argv) {
     
     if (!ov_vocs_db_set_persistance(db, db_persistance)) goto error;
 
+    
     /* Create the vocs core */
 
     ov_vocs_core_config core_config = ov_vocs_core_config_from_json(json_config);
@@ -189,7 +189,7 @@ int main(int argc, char **argv) {
     vocs = ov_vocs_core_create(core_config);
     if (!vocs) goto error;
 
-    /* Enable uri domain/management for VOCS operation */
+    /* Enable uri domain/api for VOCS operation */
 
     if (!ov_webserver_minimal_configure_uri_event_io(
             server,
@@ -207,8 +207,6 @@ int main(int argc, char **argv) {
 
         goto error;
     }
-
-
 
     /*  Run event loop */
     loop->run(loop, OV_RUN_MAX);
