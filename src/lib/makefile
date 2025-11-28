@@ -43,6 +43,7 @@ OV_LIB_DIRS      += ov_format
 OV_LIB_DIRS      += ov_stun
 OV_LIB_DIRS      += ov_core
 OV_LIB_DIRS      += ov_value
+OV_LIB_DIRS      += ov_item
 OV_LIB_DIRS      += ov_backend
 OV_LIB_DIRS      += ov_sip
 OV_LIB_DIRS      += ov_ice
