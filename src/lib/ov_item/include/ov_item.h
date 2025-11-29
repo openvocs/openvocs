@@ -47,7 +47,7 @@ typedef struct ov_item ov_item;
  */
 
 ov_item *ov_item_cast(const void *self);
-
+ov_item *ov_item_get_parent(const ov_item *self);
 /*
  *      ------------------------------------------------------------------------
  *
@@ -63,6 +63,30 @@ bool ov_item_dump(FILE *stream, const void *self);
 
 size_t ov_item_count(ov_item *self);
 
+/*----------------------------------------------------------------------------*/
+
+/**
+        Get a value using pointer based access, e.g.
+
+        for
+
+        {
+         "a" : {
+           "b" : {
+              "cdef" : 14
+           }
+         }
+        }
+
+        ov_item_get(value, "/a/b/cdef") -> "14"
+        ov_item_get(value, "/b/cdef") -> NULL
+
+
+        using a \0 terminated pointer string
+
+*/
+ov_item const *ov_item_get(const ov_item *self, const char *pointer);
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -76,37 +100,22 @@ bool ov_item_is_object(ov_item *self);
 
 /*---------------------------------------------------------------------------*/
 
-/**
- *  Threadsafe set val as new item in self.
- */
 bool ov_item_object_set(ov_item *self, const char *string, ov_item *val);
 
 /*---------------------------------------------------------------------------*/
 
-/**
- *  Threadsafe del val item in self.
- */
 bool ov_item_object_delete(ov_item *self, const char *string);
 
 /*---------------------------------------------------------------------------*/
 
-/**
- *  Threadsafe remove val item in self.
- */
 ov_item *ov_item_object_remove(ov_item *self, const char *string);
 
 /*---------------------------------------------------------------------------*/
 
-/**
- *  NOT threadsafe get item of self.
- */
 ov_item *ov_item_object_get(ov_item *self, const char *string);
 
 /*---------------------------------------------------------------------------*/
 
-/**
- *  Threadsafe for each for all elements of self.
- */
 bool ov_item_object_for_each(ov_item *self, 
                              bool (*function)(
                                 char const *key,
@@ -124,30 +133,22 @@ bool ov_item_object_for_each(ov_item *self,
 ov_item *ov_item_array();
 bool ov_item_is_array(ov_item *self);
 
-/**
- *  NOT threadsafe get item of self.
- */
+/*---------------------------------------------------------------------------*/
+
 ov_item *ov_item_array_get(ov_item *self, uint64_t pos);
 
 /*---------------------------------------------------------------------------*/
 
-/**
- *  Threadsafe set val as new item in self.
- */
 bool ov_item_array_set(ov_item *self, uint64_t pos, ov_item *val);
 
 /*---------------------------------------------------------------------------*/
 
-/**
- *  Threadsafe push val as new item to self. (push to end)
- */
 bool ov_item_array_push(ov_item *self, ov_item *val);
 
 /*---------------------------------------------------------------------------*/
 
 /**
- *  Threadsafe pop val from end of array from self.
- *  LIFO
+ *  pop val from end of array from self. LIFO
  */
 ov_item *ov_item_array_stack_pop(ov_item *self);
 ov_item *ov_item_array_lifo(ov_item *self);
@@ -155,8 +156,7 @@ ov_item *ov_item_array_lifo(ov_item *self);
 /*---------------------------------------------------------------------------*/
 
 /**
- *  Threadsafe pop val from front of array from self.
- *  FIFO
+ *  pop val from front of array from self. FIFO
  */
 ov_item *ov_item_array_queue_pop(ov_item *self);
 ov_item *ov_item_array_fifo(ov_item *self);
