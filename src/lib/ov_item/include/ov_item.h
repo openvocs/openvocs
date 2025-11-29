@@ -62,6 +62,7 @@ void *ov_item_copy(void **destination, const void *self);
 bool ov_item_dump(FILE *stream, const void *self);
 
 size_t ov_item_count(ov_item *self);
+bool ov_item_is_empty(ov_item *self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -85,7 +86,7 @@ size_t ov_item_count(ov_item *self);
         using a \0 terminated pointer string
 
 */
-ov_item const *ov_item_get(const ov_item *self, const char *pointer);
+ov_item *ov_item_get(const ov_item *self, const char *pointer);
 
 /*
  *      ------------------------------------------------------------------------
@@ -183,6 +184,7 @@ const char *ov_item_get_string(ov_item *self);
 
 ov_item *ov_item_number(double number);
 bool ov_item_is_number(ov_item *self);
+bool ov_item_set_number(ov_item *self, double number);
 double ov_item_get_number(ov_item *self);
 int64_t ov_item_get_int(ov_item *self);
 

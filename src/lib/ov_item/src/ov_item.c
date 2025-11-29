@@ -393,6 +393,15 @@ error:
     return 0;
 }
 
+/*---------------------------------------------------------------------------*/
+
+bool ov_item_is_empty(ov_item *self){
+
+    size_t count = ov_item_count(self);
+    if (0 == count) return true;
+    return false;
+}
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -751,6 +760,18 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
+bool ov_item_set_number(ov_item *self, double number){
+
+    if (ov_item_is_number(self)){
+        self->config.number = number;
+        return true;
+    }
+
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
 bool ov_item_is_number(ov_item *self){
 
    if (!self) goto error;
@@ -1096,15 +1117,15 @@ static ov_item *pointer_get_token_in_parent(ov_item *parent,
 
 /*---------------------------------------------------------------------------*/
 
-ov_item const *ov_item_get(const ov_item *self, const char *pointer){
+ov_item *ov_item_get(const ov_item *self, const char *pointer){
 
     if (!self) return NULL;
-    if (!pointer) return self;
+    if (!pointer) return (ov_item*)self;
 
     ov_item *result = NULL;
     size_t size = strlen(pointer);
 
-    if (0 == size) return self;
+    if (0 == size) return (ov_item*)self;
 
     bool parsed = false;
 
