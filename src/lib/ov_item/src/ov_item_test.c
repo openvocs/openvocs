@@ -38,18 +38,6 @@
  *      ------------------------------------------------------------------------
  */
 
-int test_ov_item_configure_lock_timeout_usecs(){
-    
-    for (uint64_t i = 0; i < 10000; i++){
-
-       ov_item_configure_lock_timeout_usecs(i);
-       testrun(i == root_item.config.limits.thread_lock_timeout_usecs);
-
-    }
-
-    return testrun_log_success();
-}
-
 /*----------------------------------------------------------------------------*/
 
 int test_ov_item_cast(){
@@ -879,7 +867,6 @@ int test_ov_item_get_int(){
 int all_tests() {
 
     testrun_init();
-    testrun_test(test_ov_item_configure_lock_timeout_usecs);
     testrun_test(test_ov_item_cast);
 
     testrun_test(test_ov_item_object);

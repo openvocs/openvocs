@@ -34,8 +34,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#define OV_ITEM_DEFAULT_THREADLOCK_USECS 100000 // 100 milliseconds
-
 /*----------------------------------------------------------------------------*/
 
 typedef struct ov_item ov_item;
@@ -47,8 +45,6 @@ typedef struct ov_item ov_item;
  *
  *      ------------------------------------------------------------------------
  */
-
-bool ov_item_configure_lock_timeout_usecs(uint64_t usecs);
 
 ov_item *ov_item_cast(const void *self);
 

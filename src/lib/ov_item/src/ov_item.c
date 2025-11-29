@@ -82,7 +82,7 @@ struct ov_item {
 
     const uint16_t magic_bytes;
     ov_item_config config;
-    ov_thread_lock lock;
+    ov_item *parent;
 
 };
 
@@ -95,14 +95,6 @@ static ov_item root_item = (ov_item) {
 
 /*---------------------------------------------------------------------------*/
 
-bool ov_item_configure_lock_timeout_usecs(uint64_t usecs){
-
-    root_item.config.limits.thread_lock_timeout_usecs = usecs;
-    return true;
-}
-
-/*---------------------------------------------------------------------------*/
-
 static ov_item *item_create(ov_item_config config){
 
     ov_item *item = calloc(1, sizeof(ov_item));
@@ -110,16 +102,7 @@ static ov_item *item_create(ov_item_config config){
 
     memcpy(item, &root_item, sizeof(ov_item));
 
-    if (0 == config.limits.thread_lock_timeout_usecs)
-        config.limits.thread_lock_timeout_usecs = OV_ITEM_DEFAULT_THREADLOCK_USECS;
-
     item->config = config;
-
-    if (!ov_thread_lock_init(&item->lock, 
-        item->config.limits.thread_lock_timeout_usecs)){
-
-        goto error;
-    }
 
     return item;
 error:
@@ -145,12 +128,6 @@ void *ov_item_free(void *self){
 
     ov_item *item = ov_item_cast(self);
     if (!item) return self;
-
-    if (!ov_thread_lock_try_lock(&item->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
 
     switch (item->config.literal){
 
@@ -185,19 +162,8 @@ void *ov_item_free(void *self){
             break;
     }
 
-    if (!ov_thread_lock_unlock(&item->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    if (!ov_thread_lock_clear(&item->lock)){
-        ov_log_error("Failed to clear lock -  data leak will occur.");
-    }
-
     item = ov_data_pointer_free(item);
     return NULL;
-error:
-    return item;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -206,12 +172,6 @@ bool ov_item_clear(void *self){
 
     ov_item *item = ov_item_cast(self);
     if (!item) return false;
-
-    if (!ov_thread_lock_try_lock(&item->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
 
     switch (item->config.literal){
 
@@ -249,14 +209,7 @@ bool ov_item_clear(void *self){
     item->config.literal = OV_ITEM_NULL;
     item->config.number = 0;
 
-    if (!ov_thread_lock_unlock(&item->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-    
     return true;
-error:
-    return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -266,12 +219,6 @@ bool ov_item_dump(FILE *stream, const void *self){
     if (!stream || !self) return false;
     ov_item *item = ov_item_cast(self);
     if (!item) goto error;
-
-    if (!ov_thread_lock_try_lock(&item->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
 
     switch (item->config.literal){
 
@@ -321,11 +268,6 @@ bool ov_item_dump(FILE *stream, const void *self){
             break;
     }
 
-    if (!ov_thread_lock_unlock(&item->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
     return true;
 error:
     return false;
@@ -343,12 +285,6 @@ void *ov_item_copy(void **destination, const void *self){
     if (!source) goto error;
 
     copy = NULL;
-
-    if (!ov_thread_lock_try_lock(&source->lock)){
-
-        ov_log_error("Could not lock source item.");
-        goto error;
-    }
 
     bool result = true;
 
@@ -403,11 +339,6 @@ void *ov_item_copy(void **destination, const void *self){
             break;
     }
 
-    if (!ov_thread_lock_unlock(&source->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
     if (!result) goto error;
     *destination = copy;
     return copy;
@@ -423,12 +354,6 @@ size_t ov_item_count(ov_item *self){
     if (!self) goto error;
 
     uint64_t count = 0;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
 
     switch (self->config.literal){
 
@@ -453,11 +378,6 @@ size_t ov_item_count(ov_item *self){
 
         default:
             break;
-    }
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
     }
 
     return count;
@@ -502,25 +422,11 @@ error:
 
 bool ov_item_is_object(ov_item *self){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    bool result = false;
+    if (!self) goto error;
 
     if (self->config.literal == OV_ITEM_OBJECT)
-        result = true;
+        return true;
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return result;
 error:
     return false;
 }
@@ -535,19 +441,9 @@ bool ov_item_object_set(ov_item *self, const char *string, ov_item *val){
 
     key = ov_string_dup(string);
 
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
     if (!ov_dict_set(self->config.data, key, val, NULL)) goto error;
-    
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
 
+    val->parent = self;
     return true;
 
 error:
@@ -563,18 +459,7 @@ ov_item *ov_item_object_get(ov_item *self, const char *string){
 
     if (!ov_item_is_object(self) || !string) goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
     out = ov_item_cast(ov_dict_get(self->config.data, (void*) string));
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
 
     return out;
 error:
@@ -592,21 +477,10 @@ bool ov_item_object_for_each(ov_item *self,
 
     if (!ov_item_is_object(self) || !function) goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
     bool result = ov_dict_for_each(
         self->config.data,
         userdata,
         (void*) function);
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
 
     return result;
 error:
@@ -619,18 +493,7 @@ bool ov_item_object_delete(ov_item *self, const char *string){
 
     if (!ov_item_is_object(self) || !string) goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
     bool result = ov_dict_del(self->config.data, string);
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
 
     return result;
 error:
@@ -645,18 +508,10 @@ ov_item *ov_item_object_remove(ov_item *self, const char *string){
 
     ov_item *out = NULL;
 
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
     out = ov_dict_remove(self->config.data, string);
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
+    
+    if (out)
+        out->parent = NULL;
 
     return out;
 error:
@@ -701,25 +556,11 @@ error:
 
 bool ov_item_is_array(ov_item *self){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    bool result = false;
+    if (!self) goto error;
 
     if (self->config.literal == OV_ITEM_ARRAY)
-        result = true;
+        return true;
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return result;
 error:
     return false;
 }
@@ -730,45 +571,24 @@ ov_item *ov_item_array_get(ov_item *self, uint64_t pos){
 
     ov_item *out = NULL;
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
+    if (!self) goto error;
 
     out = ov_list_get(self->config.data, pos);
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
     return out;
 error:
-    return false;
+    return NULL;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_item_array_set(ov_item *self, uint64_t pos, ov_item *val){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
+    if (!self) goto error;
 
     bool result = ov_list_set(self->config.data, pos, val, NULL);
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
+    val->parent = self;
     return result;
 error:
     return false;
@@ -778,21 +598,11 @@ error:
 
 bool ov_item_array_push(ov_item *self, ov_item *val){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
+    if (!self) goto error;
 
     bool result = ov_list_push(self->config.data, val);
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
+    val->parent = self;
     return result;
 error:
     return false;
@@ -804,20 +614,12 @@ ov_item *ov_item_array_stack_pop(ov_item *self){
 
     ov_item *out = NULL;
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
+    if (!self) goto error;
 
     out = ov_list_pop(self->config.data);
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
+    if (out)
+        out->parent = NULL;
 
     return out;
 error:
@@ -837,20 +639,11 @@ ov_item *ov_item_array_queue_pop(ov_item *self){
 
     ov_item *out = NULL;
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
+    if (!self) goto error;
 
     out = ov_list_remove(self->config.data, 1);
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
+    if (out)
+        out->parent = NULL;
 
     return out;
 error:
@@ -897,25 +690,11 @@ error:
 
 bool ov_item_is_string(ov_item *self){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    bool result = false;
+    if (!self) goto error;
 
     if (self->config.literal == OV_ITEM_STRING)
-        result = true;
+        return true;
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return result;
 error:
     return false;
 }
@@ -963,25 +742,11 @@ error:
 
 bool ov_item_is_number(ov_item *self){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    bool result = false;
+   if (!self) goto error;
 
     if (self->config.literal == OV_ITEM_NUMBER)
-        result = true;
+        return true;
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return result;
 error:
     return false;
 }
@@ -993,22 +758,7 @@ double ov_item_get_number(ov_item *self){
     if (!self) goto error;
     if (!ov_item_is_number(self)) goto error;
     
-    double nbr = 0;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    nbr = self->config.number;
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-    
-    return nbr;
+    return self->config.number;
 
 error:
     return 0;
@@ -1020,23 +770,8 @@ int64_t ov_item_get_int(ov_item *self){
 
     if (!self) goto error;
     if (!ov_item_is_number(self)) goto error;
-    
-    int64_t nbr = 0;
 
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    nbr = (int64_t) self->config.number;
-
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return nbr;
+    return (int64_t) self->config.number;
 
 error:
     return 0;
@@ -1070,25 +805,11 @@ error:
 
 bool ov_item_is_null(ov_item *self){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    bool result = false;
+    if (!self) goto error;
 
     if (self->config.literal == OV_ITEM_NULL)
-        result = true;
+        return true;
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return result;
 error:
     return false;
 }
@@ -1115,25 +836,11 @@ error:
 
 bool ov_item_is_true(ov_item *self){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    bool result = false;
+    if (!self) goto error;
 
     if (self->config.literal == OV_ITEM_TRUE)
-        result = true;
+        return true;
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return result;
 error:
     return false;
 }
@@ -1160,25 +867,11 @@ error:
 
 bool ov_item_is_false(ov_item *self){
 
-    if (!self) return false;
-
-    if (!ov_thread_lock_try_lock(&self->lock)){
-
-        ov_log_error("Could not lock item.");
-        goto error;
-    }
-
-    bool result = false;
+    if (!self) goto error;
 
     if (self->config.literal == OV_ITEM_FALSE)
-        result = true;
+        return true;
 
-    if (!ov_thread_lock_unlock(&self->lock)){
-        ov_log_error("Failed to unlock.");
-        goto error;
-    }
-
-    return result;
 error:
     return false;
 }
