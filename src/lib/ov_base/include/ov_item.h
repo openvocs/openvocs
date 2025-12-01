@@ -24,6 +24,9 @@
 
         @date           2025-11-28
 
+        Generic implementation for JSON or other datastructure defining
+        languages.
+
 
         ------------------------------------------------------------------------
 */

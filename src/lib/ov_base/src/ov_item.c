@@ -33,11 +33,10 @@
 #include <string.h>
 
 #include <ov_log/ov_log.h>
-#include <ov_base/ov_thread_lock.h>
-#include <ov_base/ov_data_function.h>
-#include <ov_base/ov_string.h>
-#include <ov_base/ov_linked_list.h>
-#include <ov_base/ov_dict.h>
+#include "../include/ov_data_function.h"
+#include "../include/ov_string.h"
+#include "../include/ov_linked_list.h"
+#include "../include/ov_dict.h"
 
 /*---------------------------------------------------------------------------*/
 

@@ -30,7 +30,7 @@
 #ifndef ov_item_json_h
 #define ov_item_json_h
 
-#include <ov_base/ov_json_grammar.h>
+#include "ov_json_grammar.h"
 #include "ov_item.h"
 
 /*---------------------------------------------------------------------------*/

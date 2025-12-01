@@ -30,7 +30,7 @@
 #include <ov_test/testrun.h>
 #include "ov_item_json.c"
 
-#include <ov_base/ov_string.h>
+#include "../include/ov_string.h"
 
 /*
  *      ------------------------------------------------------------------------
