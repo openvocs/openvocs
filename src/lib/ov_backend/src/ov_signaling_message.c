@@ -33,47 +33,47 @@
 
 ov_json_value *ov_signaling_message_register(ov_app *app) {
 
-    ov_json_value *msg = 0;
+  ov_json_value *msg = 0;
 
-    if (0 == app) {
-        ov_log_error("No app (0 pointer) given");
-        goto error;
-    }
+  if (0 == app) {
+    ov_log_error("No app (0 pointer) given");
+    goto error;
+  }
 
-    msg = ov_event_api_message_create(OV_EVENT_REGISTER, 0, 0);
+  msg = ov_event_api_message_create(OV_EVENT_REGISTER, 0, 0);
 
-    if (0 == msg) {
+  if (0 == msg) {
 
-        goto error;
-    }
+    goto error;
+  }
 
-    ov_json_value *params = ov_event_api_set_parameter(msg);
+  ov_json_value *params = ov_event_api_set_parameter(msg);
 
-    if (0 == params) {
+  if (0 == params) {
 
-        ov_log_error("Could not add parameters to register message");
-        goto error;
-    }
+    ov_log_error("Could not add parameters to register message");
+    goto error;
+  }
 
-    if (!ov_json_object_set(
-            params, OV_KEY_TYPE, ov_json_string(app->config.name))) {
+  if (!ov_json_object_set(params, OV_KEY_TYPE,
+                          ov_json_string(app->config.name))) {
 
-        ov_log_error("Could not set service type");
-        goto error;
-    }
+    ov_log_error("Could not set service type");
+    goto error;
+  }
 
-    return msg;
+  return msg;
 
 error:
 
-    if (0 != msg) {
+  if (0 != msg) {
 
-        msg = msg->free(msg);
-    }
+    msg = msg->free(msg);
+  }
 
-    OV_ASSERT(0 == msg);
+  OV_ASSERT(0 == msg);
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/

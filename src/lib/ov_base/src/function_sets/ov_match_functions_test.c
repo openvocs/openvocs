@@ -45,165 +45,165 @@
 
 int test_ov_match_strict() {
 
-    char buffer1[10] = {0};
-    char buffer2[10] = {0};
+  char buffer1[10] = {0};
+  char buffer2[10] = {0};
 
-    strcat(buffer1, "test");
-    strcat(buffer2, "test");
-    testrun(!ov_match_strict(NULL, NULL));
-    testrun(!ov_match_strict(buffer1, NULL));
-    testrun(!ov_match_strict(NULL, buffer2));
+  strcat(buffer1, "test");
+  strcat(buffer2, "test");
+  testrun(!ov_match_strict(NULL, NULL));
+  testrun(!ov_match_strict(buffer1, NULL));
+  testrun(!ov_match_strict(NULL, buffer2));
 
-    testrun(ov_match_strict(buffer1, buffer2));
+  testrun(ov_match_strict(buffer1, buffer2));
 
-    buffer1[0] = 'T';
-    testrun(!ov_match_strict(buffer1, buffer2));
-    buffer2[0] = 'T';
-    testrun(ov_match_strict(buffer1, buffer2));
+  buffer1[0] = 'T';
+  testrun(!ov_match_strict(buffer1, buffer2));
+  buffer2[0] = 'T';
+  testrun(ov_match_strict(buffer1, buffer2));
 
-    buffer2[4] = 's';
-    testrun(!ov_match_strict(buffer1, buffer2));
-    buffer1[4] = 's';
-    testrun(ov_match_strict(buffer1, buffer2));
+  buffer2[4] = 's';
+  testrun(!ov_match_strict(buffer1, buffer2));
+  buffer1[4] = 's';
+  testrun(ov_match_strict(buffer1, buffer2));
 
-    buffer1[5] = '1';
-    testrun(!ov_match_strict(buffer1, buffer2));
+  buffer1[5] = '1';
+  testrun(!ov_match_strict(buffer1, buffer2));
 
-    buffer2[5] = '1';
-    testrun(ov_match_strict(buffer1, buffer2));
+  buffer2[5] = '1';
+  testrun(ov_match_strict(buffer1, buffer2));
 
-    buffer2[5] = 0xFF;
-    testrun(!ov_match_strict(buffer1, buffer2));
-    buffer1[5] = 0xFF;
-    testrun(ov_match_strict(buffer1, buffer2));
+  buffer2[5] = 0xFF;
+  testrun(!ov_match_strict(buffer1, buffer2));
+  buffer1[5] = 0xFF;
+  testrun(ov_match_strict(buffer1, buffer2));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_match_c_string_strict() {
 
-    char buffer1[10] = {0};
-    char buffer2[10] = {0};
+  char buffer1[10] = {0};
+  char buffer2[10] = {0};
 
-    strcat(buffer1, "test");
-    strcat(buffer2, "test");
-    testrun(ov_match_c_string_strict(NULL, NULL));
-    testrun(!ov_match_c_string_strict(buffer1, NULL));
-    testrun(!ov_match_c_string_strict(NULL, buffer2));
+  strcat(buffer1, "test");
+  strcat(buffer2, "test");
+  testrun(ov_match_c_string_strict(NULL, NULL));
+  testrun(!ov_match_c_string_strict(buffer1, NULL));
+  testrun(!ov_match_c_string_strict(NULL, buffer2));
 
-    testrun(ov_match_c_string_strict(buffer1, buffer2));
+  testrun(ov_match_c_string_strict(buffer1, buffer2));
 
-    buffer1[0] = 'T';
-    testrun(!ov_match_c_string_strict(buffer1, buffer2));
-    buffer2[0] = 'T';
-    testrun(ov_match_c_string_strict(buffer1, buffer2));
+  buffer1[0] = 'T';
+  testrun(!ov_match_c_string_strict(buffer1, buffer2));
+  buffer2[0] = 'T';
+  testrun(ov_match_c_string_strict(buffer1, buffer2));
 
-    buffer2[4] = 's';
-    testrun(!ov_match_c_string_strict(buffer1, buffer2));
-    buffer1[4] = 's';
-    testrun(ov_match_c_string_strict(buffer1, buffer2));
+  buffer2[4] = 's';
+  testrun(!ov_match_c_string_strict(buffer1, buffer2));
+  buffer1[4] = 's';
+  testrun(ov_match_c_string_strict(buffer1, buffer2));
 
-    buffer1[5] = '1';
-    testrun(!ov_match_c_string_strict(buffer1, buffer2));
+  buffer1[5] = '1';
+  testrun(!ov_match_c_string_strict(buffer1, buffer2));
 
-    buffer2[5] = '1';
-    testrun(ov_match_c_string_strict(buffer1, buffer2));
+  buffer2[5] = '1';
+  testrun(ov_match_c_string_strict(buffer1, buffer2));
 
-    buffer2[5] = 0xFF;
-    testrun(!ov_match_c_string_strict(buffer1, buffer2));
-    buffer1[5] = 0xFF;
-    testrun(ov_match_c_string_strict(buffer1, buffer2));
+  buffer2[5] = 0xFF;
+  testrun(!ov_match_c_string_strict(buffer1, buffer2));
+  buffer1[5] = 0xFF;
+  testrun(ov_match_c_string_strict(buffer1, buffer2));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_match_c_string_case_ignore_strict() {
 
-    char buffer1[10] = {0};
-    char buffer2[10] = {0};
+  char buffer1[10] = {0};
+  char buffer2[10] = {0};
 
-    strcat(buffer1, "test");
-    strcat(buffer2, "test");
-    testrun(ov_match_c_string_case_ignore_strict(NULL, NULL));
-    testrun(!ov_match_c_string_case_ignore_strict(buffer1, NULL));
-    testrun(!ov_match_c_string_case_ignore_strict(NULL, buffer2));
+  strcat(buffer1, "test");
+  strcat(buffer2, "test");
+  testrun(ov_match_c_string_case_ignore_strict(NULL, NULL));
+  testrun(!ov_match_c_string_case_ignore_strict(buffer1, NULL));
+  testrun(!ov_match_c_string_case_ignore_strict(NULL, buffer2));
 
-    testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
 
-    buffer1[0] = 'T';
-    testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
-    buffer2[0] = 'T';
-    testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer1[0] = 'T';
+  testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer2[0] = 'T';
+  testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
 
-    buffer2[4] = 's';
-    testrun(!ov_match_c_string_case_ignore_strict(buffer1, buffer2));
-    buffer1[4] = 'S';
-    testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer2[4] = 's';
+  testrun(!ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer1[4] = 'S';
+  testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
 
-    buffer1[5] = '1';
-    testrun(!ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer1[5] = '1';
+  testrun(!ov_match_c_string_case_ignore_strict(buffer1, buffer2));
 
-    buffer2[5] = '1';
-    testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer2[5] = '1';
+  testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
 
-    buffer2[5] = 0xFF;
-    testrun(!ov_match_c_string_case_ignore_strict(buffer1, buffer2));
-    buffer1[5] = 0xFF;
-    testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer2[5] = 0xFF;
+  testrun(!ov_match_c_string_case_ignore_strict(buffer1, buffer2));
+  buffer1[5] = 0xFF;
+  testrun(ov_match_c_string_case_ignore_strict(buffer1, buffer2));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_match_intptr() {
 
-    intptr_t ptr1 = 123;
-    intptr_t ptr2 = 123;
+  intptr_t ptr1 = 123;
+  intptr_t ptr2 = 123;
 
-    testrun(ov_match_intptr(NULL, NULL));
-    testrun(!ov_match_intptr((void *)ptr1, NULL));
-    testrun(!ov_match_intptr(NULL, (void *)ptr2));
+  testrun(ov_match_intptr(NULL, NULL));
+  testrun(!ov_match_intptr((void *)ptr1, NULL));
+  testrun(!ov_match_intptr(NULL, (void *)ptr2));
 
-    testrun(ov_match_intptr((void *)ptr1, (void *)ptr2));
+  testrun(ov_match_intptr((void *)ptr1, (void *)ptr2));
 
-    ptr1 = 1;
-    testrun(!ov_match_intptr((void *)ptr1, (void *)ptr2));
-    ptr2 = 1;
-    testrun(ov_match_intptr((void *)ptr1, (void *)ptr2));
+  ptr1 = 1;
+  testrun(!ov_match_intptr((void *)ptr1, (void *)ptr2));
+  ptr2 = 1;
+  testrun(ov_match_intptr((void *)ptr1, (void *)ptr2));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_match_uint64() {
 
-    uint64_t ptr1 = 123;
-    uint64_t ptr2 = 123;
+  uint64_t ptr1 = 123;
+  uint64_t ptr2 = 123;
 
-    testrun(!ov_match_uint64(NULL, NULL));
-    testrun(!ov_match_uint64(&ptr1, NULL));
-    testrun(!ov_match_uint64(NULL, &ptr2));
+  testrun(!ov_match_uint64(NULL, NULL));
+  testrun(!ov_match_uint64(&ptr1, NULL));
+  testrun(!ov_match_uint64(NULL, &ptr2));
 
-    testrun(ov_match_uint64(&ptr1, &ptr2));
+  testrun(ov_match_uint64(&ptr1, &ptr2));
 
-    ptr1 = 1;
-    testrun(!ov_match_uint64(&ptr1, &ptr2));
-    ptr2 = 1;
-    testrun(ov_match_uint64(&ptr1, &ptr2));
+  ptr1 = 1;
+  testrun(!ov_match_uint64(&ptr1, &ptr2));
+  ptr2 = 1;
+  testrun(ov_match_uint64(&ptr1, &ptr2));
 
-    // check max
-    ptr1 = 0xFFFFFFFFFFFFFFFF;
-    testrun(!ov_match_uint64(&ptr1, &ptr2));
-    ptr2 = 0xFFFFFFFFFFFFFFFF;
-    testrun(ov_match_uint64(&ptr1, &ptr2));
+  // check max
+  ptr1 = 0xFFFFFFFFFFFFFFFF;
+  testrun(!ov_match_uint64(&ptr1, &ptr2));
+  ptr2 = 0xFFFFFFFFFFFFFFFF;
+  testrun(ov_match_uint64(&ptr1, &ptr2));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -218,14 +218,14 @@ int test_ov_match_uint64() {
 
 int all_tests() {
 
-    testrun_init();
+  testrun_init();
 
-    testrun_test(test_ov_match_c_string_strict);
-    testrun_test(test_ov_match_c_string_case_ignore_strict);
-    testrun_test(test_ov_match_intptr);
-    testrun_test(test_ov_match_uint64);
+  testrun_test(test_ov_match_c_string_strict);
+  testrun_test(test_ov_match_c_string_case_ignore_strict);
+  testrun_test(test_ov_match_intptr);
+  testrun_test(test_ov_match_uint64);
 
-    return testrun_counter;
+  return testrun_counter;
 }
 
 /*

@@ -38,7 +38,7 @@ int __ov_min_i(int const x, int const y) { return y < x ? y : x; }
 /*----------------------------------------------------------------------------*/
 
 unsigned __ov_min_u(unsigned const x, unsigned const y) {
-    return y < x ? y : x;
+  return y < x ? y : x;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -48,20 +48,20 @@ long __ov_min_l(long const x, long const y) { return y < x ? y : x; }
 /*----------------------------------------------------------------------------*/
 
 unsigned long __ov_min_ul(unsigned long const x, unsigned long const y) {
-    return y < x ? y : x;
+  return y < x ? y : x;
 }
 
 /*----------------------------------------------------------------------------*/
 
 long long __ov_min_ll(long long const x, long long const y) {
-    return y < x ? y : x;
+  return y < x ? y : x;
 }
 
 /*----------------------------------------------------------------------------*/
 
 unsigned long long __ov_min_ull(unsigned long long const x,
                                 unsigned long long const y) {
-    return y < x ? y : x;
+  return y < x ? y : x;
 }
 
 /*****************************************************************************
@@ -73,7 +73,7 @@ int __ov_max_i(int const x, int const y) { return y > x ? y : x; }
 /*----------------------------------------------------------------------------*/
 
 unsigned __ov_max_u(unsigned const x, unsigned const y) {
-    return y > x ? y : x;
+  return y > x ? y : x;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -83,20 +83,20 @@ long __ov_max_l(long const x, long const y) { return y > x ? y : x; }
 /*----------------------------------------------------------------------------*/
 
 unsigned long __ov_max_ul(unsigned long const x, unsigned long const y) {
-    return y > x ? y : x;
+  return y > x ? y : x;
 }
 
 /*----------------------------------------------------------------------------*/
 
 long long __ov_max_ll(long long const x, long long const y) {
-    return y > x ? y : x;
+  return y > x ? y : x;
 }
 
 /*----------------------------------------------------------------------------*/
 
 unsigned long long __ov_max_ull(unsigned long long const x,
                                 unsigned long long const y) {
-    return y > x ? y : x;
+  return y > x ? y : x;
 }
 
 /*----------------------------------------------------------------------------*/

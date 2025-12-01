@@ -25,8 +25,8 @@
 */
 
 #include "ov_alsa_audio_app.h"
-#include "ov_base/ov_socket.h"
 #include "ov_base/ov_config_keys.h"
+#include "ov_base/ov_socket.h"
 #include <ov_backend/ov_minion_app.h>
 #include <ov_base/ov_mc_socket.h>
 #include <ov_base/ov_string.h>
@@ -41,9 +41,9 @@
 
 typedef struct {
 
-    ov_json_value *original_config;
+  ov_json_value *original_config;
 
-    ov_alsa_audio_app_config alsa;
+  ov_alsa_audio_app_config alsa;
 
 } configuration;
 
@@ -66,13 +66,13 @@ configuration default_configuration = {
 
 static bool startup_configuration_clear(configuration *self) {
 
-    if (0 != self) {
-        ov_alsa_audio_app_config_clear(&self->alsa);
-        self->original_config = ov_json_value_free(self->original_config);
-        return true;
-    } else {
-        return false;
-    }
+  if (0 != self) {
+    ov_alsa_audio_app_config_clear(&self->alsa);
+    self->original_config = ov_json_value_free(self->original_config);
+    return true;
+  } else {
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -80,60 +80,57 @@ static bool startup_configuration_clear(configuration *self) {
 static bool startup_configuration_from_json(configuration *cfg,
                                             ov_json_value const *jcfg) {
 
-    if ((!ov_ptr_valid(cfg, "Config")) || (!ov_ptr_valid(jcfg, "JSON Value"))) {
+  if ((!ov_ptr_valid(cfg, "Config")) || (!ov_ptr_valid(jcfg, "JSON Value"))) {
 
-        return false;
+    return false;
 
-    } else {
+  } else {
 
-        bool ok = false;
+    bool ok = false;
 
-        ov_json_value_copy((void **)&cfg->original_config, jcfg);
-        cfg->alsa = ov_alsa_audio_app_config_from_json(
-            ov_json_get(jcfg, "/" OV_KEY_ALSA),
-            default_configuration.alsa,
-            &ok);
+    ov_json_value_copy((void **)&cfg->original_config, jcfg);
+    cfg->alsa = ov_alsa_audio_app_config_from_json(
+        ov_json_get(jcfg, "/" OV_KEY_ALSA), default_configuration.alsa, &ok);
 
-        return ok;
-    }
+    return ok;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ProcessResult get_startup_configuration(int argc,
-                                               char **argv,
+static ProcessResult get_startup_configuration(int argc, char **argv,
                                                configuration *cfg) {
 
-    ov_json_value *json_cfg = 0;
+  ov_json_value *json_cfg = 0;
 
-    ProcessResult result =
-        ov_minion_app_process_cmdline(argc, argv, APP_NAME, &json_cfg);
+  ProcessResult result =
+      ov_minion_app_process_cmdline(argc, argv, APP_NAME, &json_cfg);
 
-    if ((CONTINUE == result) &&
-        (!startup_configuration_from_json(cfg, json_cfg))) {
-        result = EXIT_FAIL;
-    }
+  if ((CONTINUE == result) &&
+      (!startup_configuration_from_json(cfg, json_cfg))) {
+    result = EXIT_FAIL;
+  }
 
-    json_cfg = ov_json_value_free(json_cfg);
+  json_cfg = ov_json_value_free(json_cfg);
 
-    return result;
+  return result;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_event_loop *get_loop(ov_json_value *jcfg) {
 
-    UNUSED(jcfg);
+  UNUSED(jcfg);
 
-    ov_event_loop *loop = ov_os_event_loop(ov_event_loop_config_default());
+  ov_event_loop *loop = ov_os_event_loop(ov_event_loop_config_default());
 
-    if (!ov_event_loop_setup_signals(loop)) {
+  if (!ov_event_loop_setup_signals(loop)) {
 
-        ov_log_error("Could not setup signal handling");
-        loop = ov_event_loop_free(loop);
-    }
+    ov_log_error("Could not setup signal handling");
+    loop = ov_event_loop_free(loop);
+  }
 
-    return loop;
+  return loop;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -144,63 +141,60 @@ static void enable_caching() { ov_alsa_audio_app_enable_caching(); };
 
 static ProcessResult run_gateway(ov_event_loop *loop, configuration cfg) {
 
-    ov_json_value *opus_json =
-        ov_json_value_from_string(OPUS_CODEC, strlen(OPUS_CODEC));
+  ov_json_value *opus_json =
+      ov_json_value_from_string(OPUS_CODEC, strlen(OPUS_CODEC));
 
-    ov_alsa_audio_app *audio = ov_alsa_audio_app_create(loop, cfg.alsa);
+  ov_alsa_audio_app *audio = ov_alsa_audio_app_create(loop, cfg.alsa);
 
-    bool succeeded = ov_alsa_audio_app_start_playbacks(
-                         audio,
-                         (char const **)cfg.alsa.static_loops.output,
-                         cfg.alsa.static_loops.output_ports,
-                         OV_ALSA_MAX_DEVICES) &&
-                     ov_alsa_audio_app_start_recordings(
-                         audio,
-                         (char const **)cfg.alsa.static_loops.input,
-                         cfg.alsa.static_loops.input_ports,
-                         OV_ALSA_MAX_DEVICES) &&
-                     ov_alsa_audio_app_start_playback_thread(audio) &&
-                     ov_event_loop_run(loop, OV_RUN_MAX);
+  bool succeeded =
+      ov_alsa_audio_app_start_playbacks(
+          audio, (char const **)cfg.alsa.static_loops.output,
+          cfg.alsa.static_loops.output_ports, OV_ALSA_MAX_DEVICES) &&
+      ov_alsa_audio_app_start_recordings(
+          audio, (char const **)cfg.alsa.static_loops.input,
+          cfg.alsa.static_loops.input_ports, OV_ALSA_MAX_DEVICES) &&
+      ov_alsa_audio_app_start_playback_thread(audio) &&
+      ov_event_loop_run(loop, OV_RUN_MAX);
 
-    opus_json = ov_json_value_free(opus_json);
+  opus_json = ov_json_value_free(opus_json);
 
-    audio = ov_alsa_audio_app_free(audio);
+  audio = ov_alsa_audio_app_free(audio);
 
-    if (succeeded) {
-        return EXIT_OK;
-    } else {
-        return EXIT_FAIL;
-    }
+  if (succeeded) {
+    return EXIT_OK;
+  } else {
+    return EXIT_FAIL;
+  }
 }
 
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
-    ov_log_init();
+  ov_log_init();
 
-    configuration cfg = {0};
+  configuration cfg = {0};
 
-    ProcessResult result = get_startup_configuration(argc, argv, &cfg);
-    ov_event_loop *loop = get_loop(cfg.original_config);
+  ProcessResult result = get_startup_configuration(argc, argv, &cfg);
+  ov_event_loop *loop = get_loop(cfg.original_config);
 
-    enable_caching();
+  enable_caching();
 
-    if (CONTINUE == result) {
-        result = run_gateway(loop, cfg);
-    }
+  if (CONTINUE == result) {
+    result = run_gateway(loop, cfg);
+  }
 
-    loop = ov_event_loop_free(loop);
-    startup_configuration_clear(&cfg);
+  loop = ov_event_loop_free(loop);
+  startup_configuration_clear(&cfg);
 
-    ov_registered_cache_free_all();
-    ov_codec_factory_free(0);
+  ov_registered_cache_free_all();
+  ov_codec_factory_free(0);
 
-    ov_teardown();
+  ov_teardown();
 
-    ov_log_close();
+  ov_log_close();
 
-    return ov_minion_app_process_result_to_retval(result);
+  return ov_minion_app_process_result_to_retval(result);
 }
 
 /*----------------------------------------------------------------------------*/

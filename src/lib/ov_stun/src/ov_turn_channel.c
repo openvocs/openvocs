@@ -32,23 +32,25 @@
 ov_turn_channel *ov_turn_channel_create(uint16_t number,
                                         ov_socket_data remote) {
 
-    ov_turn_channel *channel = calloc(1, sizeof(ov_turn_channel));
-    if (!channel) goto error;
+  ov_turn_channel *channel = calloc(1, sizeof(ov_turn_channel));
+  if (!channel)
+    goto error;
 
-    channel->number = number;
-    channel->remote = remote;
+  channel->number = number;
+  channel->remote = remote;
 
-    return channel;
+  return channel;
 error:
-    return NULL;
+  return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_turn_channel *ov_turn_channel_free(ov_turn_channel *self) {
 
-    if (!self) return self;
+  if (!self)
+    return self;
 
-    self = ov_data_pointer_free(self);
-    return NULL;
+  self = ov_data_pointer_free(self);
+  return NULL;
 }

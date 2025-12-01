@@ -35,109 +35,112 @@
 
 struct ov_event_engine {
 
-    uint16_t magic_bytes;
-    ov_dict *dict;
+  uint16_t magic_bytes;
+  ov_dict *dict;
 };
 
 /*----------------------------------------------------------------------------*/
 
 ov_event_engine *ov_event_engine_create() {
 
-    ov_event_engine *self = calloc(1, sizeof(ov_event_engine));
-    if (!self) goto error;
+  ov_event_engine *self = calloc(1, sizeof(ov_event_engine));
+  if (!self)
+    goto error;
 
-    self->magic_bytes = OV_EVENT_ENGINE_MAGIC_BYTES;
-    self->dict = ov_dict_create(ov_dict_string_key_config(255));
-    if (!self->dict) goto error;
+  self->magic_bytes = OV_EVENT_ENGINE_MAGIC_BYTES;
+  self->dict = ov_dict_create(ov_dict_string_key_config(255));
+  if (!self->dict)
+    goto error;
 
-    return self;
+  return self;
 
 error:
-    ov_event_engine_free(self);
-    return NULL;
+  ov_event_engine_free(self);
+  return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_event_engine *ov_event_engine_free(ov_event_engine *self) {
 
-    if (!ov_event_engine_cast(self)) goto error;
+  if (!ov_event_engine_cast(self))
+    goto error;
 
-    self->dict = ov_dict_free(self->dict);
-    self = ov_data_pointer_free(self);
+  self->dict = ov_dict_free(self->dict);
+  self = ov_data_pointer_free(self);
 
 error:
-    return self;
+  return self;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_event_engine *ov_event_engine_cast(const void *self) {
 
-    if (!self) goto error;
+  if (!self)
+    goto error;
 
-    if (*(uint16_t *)self == OV_EVENT_ENGINE_MAGIC_BYTES)
-        return (ov_event_engine *)self;
+  if (*(uint16_t *)self == OV_EVENT_ENGINE_MAGIC_BYTES)
+    return (ov_event_engine *)self;
 error:
-    return NULL;
+  return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_event_engine_register(
-    ov_event_engine *self,
-    const char *name,
-    bool (*process)(void *userdata,
-                    const int socket,
+    ov_event_engine *self, const char *name,
+    bool (*process)(void *userdata, const int socket,
                     const ov_event_parameter *parameter,
                     ov_json_value *input)) {
 
-    if (!self || !name || !process) goto error;
+  if (!self || !name || !process)
+    goto error;
 
-    char *key = strdup(name);
-    if (!ov_dict_set(self->dict, key, process, NULL)) {
-        key = ov_data_pointer_free(key);
-        goto error;
-    }
+  char *key = strdup(name);
+  if (!ov_dict_set(self->dict, key, process, NULL)) {
+    key = ov_data_pointer_free(key);
+    goto error;
+  }
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_event_engine_unregister(ov_event_engine *self, const char *name) {
 
-    if (!self || !name) goto error;
+  if (!self || !name)
+    goto error;
 
-    return ov_dict_del(self->dict, name);
+  return ov_dict_del(self->dict, name);
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_engine_push(ov_event_engine *self,
-                          void *userdata,
-                          int socket,
-                          ov_event_parameter parameter,
-                          ov_json_value *input) {
+bool ov_event_engine_push(ov_event_engine *self, void *userdata, int socket,
+                          ov_event_parameter parameter, ov_json_value *input) {
 
-    if (!self || !input || !userdata) goto error;
+  if (!self || !input || !userdata)
+    goto error;
 
-    const char *event = ov_event_api_get_event(input);
-    if (!event) goto error;
+  const char *event = ov_event_api_get_event(input);
+  if (!event)
+    goto error;
 
-    bool (*process)(void *userdata,
-                    const int socket,
-                    const ov_event_parameter *parameter,
-                    ov_json_value *input) = ov_dict_get(self->dict, event);
+  bool (*process)(void *userdata, const int socket,
+                  const ov_event_parameter *parameter, ov_json_value *input) =
+      ov_dict_get(self->dict, event);
 
-    if (!process) goto error;
+  if (!process)
+    goto error;
 
-    return process(userdata, socket, &parameter, input);
+  return process(userdata, socket, &parameter, input);
 error:
-    return false;
+  return false;
 }

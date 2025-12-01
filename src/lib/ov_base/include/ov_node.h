@@ -62,10 +62,10 @@ typedef struct ov_node ov_node;
 
 struct ov_node {
 
-    uint16_t type; /* free slot for custom type casts */
+  uint16_t type; /* free slot for custom type casts */
 
-    ov_node *next;
-    ov_node *prev;
+  ov_node *next;
+  ov_node *prev;
 };
 
 /*

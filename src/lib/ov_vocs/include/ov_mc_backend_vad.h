@@ -46,21 +46,21 @@ typedef struct ov_mc_backend_vad ov_mc_backend_vad;
 
 typedef struct ov_mc_backend_vad_config {
 
-    ov_event_loop *loop;
-    ov_io *io;
-    ov_vocs_db *db;
+  ov_event_loop *loop;
+  ov_io *io;
+  ov_vocs_db *db;
 
-    ov_socket_configuration socket;
+  ov_socket_configuration socket;
 
-    ov_vad_config vad;
+  ov_vad_config vad;
 
-    struct {
+  struct {
 
-        void *userdata;
+    void *userdata;
 
-        void (*vad)(void *userdata, const char *loop, bool on);
+    void (*vad)(void *userdata, const char *loop, bool on);
 
-    } callbacks;
+  } callbacks;
 
 } ov_mc_backend_vad_config;
 
@@ -76,7 +76,7 @@ ov_mc_backend_vad *ov_mc_backend_vad_create(ov_mc_backend_vad_config config);
 ov_mc_backend_vad *ov_mc_backend_vad_free(ov_mc_backend_vad *self);
 ov_mc_backend_vad *ov_mc_backend_vad_cast(const void *data);
 
-ov_mc_backend_vad_config ov_mc_backend_vad_config_from_json(
-    const ov_json_value *in);
+ov_mc_backend_vad_config
+ov_mc_backend_vad_config_from_json(const ov_json_value *in);
 
 #endif /* ov_mc_backend_vad_h */

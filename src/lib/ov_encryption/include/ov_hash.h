@@ -42,11 +42,11 @@
 
 typedef enum {
 
-    OV_HASH_UNSPEC = 0,
-    OV_HASH_SHA1,
-    OV_HASH_SHA256,
-    OV_HASH_SHA512,
-    OV_HASH_MD5
+  OV_HASH_UNSPEC = 0,
+  OV_HASH_SHA1,
+  OV_HASH_SHA256,
+  OV_HASH_SHA512,
+  OV_HASH_MD5
 
 } ov_hash_function;
 
@@ -102,11 +102,8 @@ const EVP_MD *ov_hash_function_to_EVP(ov_hash_function type);
         @param result   pointer to result buffer
         @param length   length of result buffer (will be set to used length)
 */
-bool ov_hash(ov_hash_function func,
-             const char *array[],
-             size_t items,
-             uint8_t **result,
-             size_t *length);
+bool ov_hash(ov_hash_function func, const char *array[], size_t items,
+             uint8_t **result, size_t *length);
 
 /*----------------------------------------------------------------------------*/
 
@@ -123,10 +120,7 @@ bool ov_hash(ov_hash_function func,
         @param length   length of result buffer (will be set to used length)
 
 */
-bool ov_hash_string(ov_hash_function func,
-                    const uint8_t *source,
-                    size_t src_len,
-                    uint8_t **result,
-                    size_t *length);
+bool ov_hash_string(ov_hash_function func, const uint8_t *source,
+                    size_t src_len, uint8_t **result, size_t *length);
 
 #endif /* ov_hash_h */

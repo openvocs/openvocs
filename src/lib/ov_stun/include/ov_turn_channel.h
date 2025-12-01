@@ -37,9 +37,9 @@
 
 typedef struct ov_turn_channel {
 
-    ov_node node;
-    uint16_t number;
-    ov_socket_data remote;
+  ov_node node;
+  uint16_t number;
+  ov_socket_data remote;
 
 } ov_turn_channel;
 

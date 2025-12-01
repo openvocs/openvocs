@@ -50,8 +50,8 @@
 
 ov_event_loop *ov_os_event_loop(ov_event_loop_config config) {
 
-    ov_log_info("Using " EVENT_LOOP_CREATOR_STR);
-    return EVENT_LOOP_CREATOR(config);
+  ov_log_info("Using " EVENT_LOOP_CREATOR_STR);
+  return EVENT_LOOP_CREATOR(config);
 }
 
 #undef EVENT_LOOP_CREATOR

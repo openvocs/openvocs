@@ -40,13 +40,13 @@ Copyright   2018        German Aerospace Center DLR e.V.,
 #define OV_THREAD_MESSAGE_MAGIC_BYTES 0x744D
 
 #define OV_THREAD_MESSAGE_VALID(x)                                             \
-    ((0 != x) && (x)->magic_bytes == OV_THREAD_MESSAGE_MAGIC_BYTES)
+  ((0 != x) && (x)->magic_bytes == OV_THREAD_MESSAGE_MAGIC_BYTES)
 
 typedef enum {
 
-    OV_THREAD_MESSAGE_TYPE_ENSURE_SIGNED_INT_TYPE = -1,
-    OV_GENERIC_MESSAGE,
-    OV_THREAD_MESSAGE_START_USER_TYPES /* Last entry to allow this */
+  OV_THREAD_MESSAGE_TYPE_ENSURE_SIGNED_INT_TYPE = -1,
+  OV_GENERIC_MESSAGE,
+  OV_THREAD_MESSAGE_START_USER_TYPES /* Last entry to allow this */
 
 } ov_thread_message_type;
 
@@ -60,29 +60,29 @@ typedef struct ov_thread_message_struct ov_thread_message;
 
 struct ov_thread_message_struct {
 
-    uint16_t magic_bytes;
+  uint16_t magic_bytes;
 
-    /**
-     * Sub-type to distinguish different thread messages
-     * Must be int to ensure enum constants fit in here ...
-     */
-    int type;
+  /**
+   * Sub-type to distinguish different thread messages
+   * Must be int to ensure enum constants fit in here ...
+   */
+  int type;
 
-    /**
-     * Original message received over signaling connection
-     */
-    ov_json_value *json_message;
+  /**
+   * Original message received over signaling connection
+   */
+  ov_json_value *json_message;
 
-    /**
-     * Hack
-     */
-    int socket;
+  /**
+   * Hack
+   */
+  int socket;
 
-    /**
-     * Free this message.
-     * Prefer ov_thread_message_free() instead of calling this method directly
-     */
-    ov_thread_message *(*free)(ov_thread_message *);
+  /**
+   * Free this message.
+   * Prefer ov_thread_message_free() instead of calling this method directly
+   */
+  ov_thread_message *(*free)(ov_thread_message *);
 };
 
 /******************************************************************************
@@ -99,8 +99,9 @@ struct ov_thread_message_struct {
  * Provides a default free()-method that frees the attached json value and
  * the message itself.
  */
-ov_thread_message *ov_thread_message_standard_create(
-    ov_thread_message_type type, ov_json_value *json_message);
+ov_thread_message *
+ov_thread_message_standard_create(ov_thread_message_type type,
+                                  ov_json_value *json_message);
 
 /*----------------------------------------------------------------------------*/
 

@@ -167,9 +167,9 @@ typedef struct ov_registered_cache_struct ov_registered_cache;
 
 typedef struct {
 
-    uint64_t timeout_usec;
-    void *(*item_free)(void *);
-    size_t capacity;
+  uint64_t timeout_usec;
+  void *(*item_free)(void *);
+  size_t capacity;
 
 } ov_registered_cache_config;
 
@@ -235,8 +235,8 @@ typedef struct ov_registered_cache_sizes ov_registered_cache_sizes;
 
 /*----------------------------------------------------------------------------*/
 
-ov_registered_cache_sizes *ov_registered_cache_sizes_free(
-    ov_registered_cache_sizes *self);
+ov_registered_cache_sizes *
+ov_registered_cache_sizes_free(ov_registered_cache_sizes *self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -252,8 +252,8 @@ ov_registered_cache_sizes *ov_registered_cache_sizes_free(
  *    }
  * }
  */
-ov_registered_cache_sizes *ov_registered_cache_sizes_from_json(
-    ov_json_value const *jval);
+ov_registered_cache_sizes *
+ov_registered_cache_sizes_from_json(ov_json_value const *jval);
 
 /*----------------------------------------------------------------------------*/
 

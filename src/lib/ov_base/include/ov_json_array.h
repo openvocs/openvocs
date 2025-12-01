@@ -87,16 +87,14 @@ ov_json_value *ov_json_array_get(ov_json_value *array, size_t position);
 
 ov_json_value *ov_json_array_remove(ov_json_value *array, size_t position);
 
-bool ov_json_array_insert(ov_json_value *array,
-                          size_t position,
+bool ov_json_array_insert(ov_json_value *array, size_t position,
                           ov_json_value *value);
 
 size_t ov_json_array_count(const ov_json_value *array);
 
 bool ov_json_array_is_empty(const ov_json_value *array);
 
-bool ov_json_array_for_each(ov_json_value *array,
-                            void *data,
+bool ov_json_array_for_each(ov_json_value *array, void *data,
                             bool (*function)(void *value, void *data));
 
 bool ov_json_array_remove_child(ov_json_value *array, ov_json_value *child);
@@ -114,28 +112,28 @@ bool ov_json_array_remove_child(ov_json_value *array, ov_json_value *child);
 extern ov_json_value *(*array_creator)();
 
 #define OV_JSON_ARRAY_PERFORM_INTERFACE_TESTS(create)                          \
-    do {                                                                       \
+  do {                                                                         \
                                                                                \
-        array_creator = create;                                                \
+    array_creator = create;                                                    \
                                                                                \
-        testrun_test(test_impl_json_array_clear);                              \
-        testrun_test(test_impl_json_array_free);                               \
+    testrun_test(test_impl_json_array_clear);                                  \
+    testrun_test(test_impl_json_array_free);                                   \
                                                                                \
-        testrun_test(test_impl_json_array_push);                               \
-        testrun_test(test_impl_json_array_pop);                                \
+    testrun_test(test_impl_json_array_push);                                   \
+    testrun_test(test_impl_json_array_pop);                                    \
                                                                                \
-        testrun_test(test_impl_json_array_find);                               \
-        testrun_test(test_impl_json_array_del);                                \
-        testrun_test(test_impl_json_array_get);                                \
-        testrun_test(test_impl_json_array_remove);                             \
-        testrun_test(test_impl_json_array_insert);                             \
+    testrun_test(test_impl_json_array_find);                                   \
+    testrun_test(test_impl_json_array_del);                                    \
+    testrun_test(test_impl_json_array_get);                                    \
+    testrun_test(test_impl_json_array_remove);                                 \
+    testrun_test(test_impl_json_array_insert);                                 \
                                                                                \
-        testrun_test(test_impl_json_array_count);                              \
-        testrun_test(test_impl_json_array_is_empty);                           \
-        testrun_test(test_impl_json_array_for_each);                           \
-        testrun_test(test_impl_json_array_remove_child);                       \
+    testrun_test(test_impl_json_array_count);                                  \
+    testrun_test(test_impl_json_array_is_empty);                               \
+    testrun_test(test_impl_json_array_for_each);                               \
+    testrun_test(test_impl_json_array_remove_child);                           \
                                                                                \
-    } while (0)
+  } while (0)
 
 /*
  *      ------------------------------------------------------------------------

@@ -73,19 +73,19 @@ typedef struct ov_vocs_db_app ov_vocs_db_app;
 
 typedef struct ov_vocs_db_app_config {
 
-    ov_event_loop *loop;
-    ov_vocs_db *db;
-    ov_vocs_db_persistance *persistance;
+  ov_event_loop *loop;
+  ov_vocs_db *db;
+  ov_vocs_db_persistance *persistance;
 
-    ov_vocs_env env;
+  ov_vocs_env env;
 
-    struct {
+  struct {
 
-        bool enable;
-        ov_ldap_config config;
-        uint64_t timeout_usec;
+    bool enable;
+    ov_ldap_config config;
+    uint64_t timeout_usec;
 
-    } ldap;
+  } ldap;
 
 } ov_vocs_db_app_config;
 
@@ -105,8 +105,7 @@ ov_event_io_config ov_vocs_db_app_io_uri_config(ov_vocs_db_app *self);
 
 ov_vocs_db_app_config ov_vocs_db_app_config_from_json(const ov_json_value *v);
 
-bool ov_vocs_db_app_send_broadcast(
-        ov_vocs_db_app *self,
-        const ov_json_value *broadcast);
+bool ov_vocs_db_app_send_broadcast(ov_vocs_db_app *self,
+                                   const ov_json_value *broadcast);
 
 #endif /* ov_vocs_db_app_h */

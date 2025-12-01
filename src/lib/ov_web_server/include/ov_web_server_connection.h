@@ -48,18 +48,19 @@ typedef struct ov_web_server_connection ov_web_server_connection;
  *      ------------------------------------------------------------------------
  */
 
-ov_web_server_connection *ov_web_server_connection_create(ov_web_server *srv, int socket);
+ov_web_server_connection *ov_web_server_connection_create(ov_web_server *srv,
+                                                          int socket);
 ov_web_server_connection *ov_web_server_connection_cast(const void *self);
 void *ov_web_server_connection_free(void *self);
 
 bool ov_web_server_connection_set_ssl(ov_web_server_connection *self, SSL *ssl);
 
-bool ov_web_server_connection_send(ov_web_server_connection *self, const ov_buffer *data);
+bool ov_web_server_connection_send(ov_web_server_connection *self,
+                                   const ov_buffer *data);
 
 bool ov_web_server_connection_uri_file_path(ov_web_server_connection *self,
-                                     const ov_http_message *request,
-                                     size_t length,
-                                     char *path);
+                                            const ov_http_message *request,
+                                            size_t length, char *path);
 
 ov_domain *ov_web_server_connection_get_domain(ov_web_server_connection *self);
 

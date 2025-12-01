@@ -77,10 +77,10 @@ typedef bool (*OV_DATA_DUMP)(FILE *stream, const void *source);
 
 struct ov_data_function {
 
-    OV_DATA_FREE free;   // terminate struct  and content
-    OV_DATA_CLEAR clear; // terminate content of a struct
-    OV_DATA_COPY copy;   // copy a struct including content
-    OV_DATA_DUMP dump;   // default dump a struct (e.g. debug)
+  OV_DATA_FREE free;   // terminate struct  and content
+  OV_DATA_CLEAR clear; // terminate content of a struct
+  OV_DATA_COPY copy;   // copy a struct including content
+  OV_DATA_DUMP dump;   // default dump a struct (e.g. debug)
 };
 
 /*
@@ -200,7 +200,7 @@ void *ov_data_function_wrapper_free(void *ptr);
         Create an allocated struct for ov_data_functions and fill
         the struct using a custom function.
 */
-ov_data_function *ov_data_function_allocated(
-    ov_data_function (*function_fill_struct)());
+ov_data_function *
+    ov_data_function_allocated(ov_data_function (*function_fill_struct)());
 
 #endif /* ov_data_function_h */

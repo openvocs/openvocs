@@ -35,21 +35,18 @@
 
 typedef struct {
 
-    char *id;
-    char *loop;
-    char *uri;
-    time_t start_epoch_secs;
-    time_t end_epoch_secs;
+  char *id;
+  char *loop;
+  char *uri;
+  time_t start_epoch_secs;
+  time_t end_epoch_secs;
 
 } ov_recording;
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_recording_set(ov_recording *self,
-                      char const *id,
-                      char const *loop,
-                      char const *uri,
-                      time_t start_epoch_secs,
+bool ov_recording_set(ov_recording *self, char const *id, char const *loop,
+                      char const *uri, time_t start_epoch_secs,
                       time_t end_epoch_secs);
 
 bool ov_recording_clear(ov_recording *self);

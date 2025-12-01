@@ -38,12 +38,12 @@ typedef struct ov_vad_app ov_vad_app;
 
 typedef struct ov_vad_app_config {
 
-    ov_event_loop *loop;
-    ov_io *io;
+  ov_event_loop *loop;
+  ov_io *io;
 
-    ov_socket_configuration manager;
+  ov_socket_configuration manager;
 
-    ov_vad_core_config core;
+  ov_vad_core_config core;
 
 } ov_vad_app_config;
 

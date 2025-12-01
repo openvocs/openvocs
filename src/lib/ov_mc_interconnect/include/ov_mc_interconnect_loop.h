@@ -45,10 +45,10 @@ typedef struct ov_mc_interconnect_loop ov_mc_interconnect_loop;
 
 typedef struct ov_mc_interconnect_loop_config {
 
-    ov_event_loop *loop;
-    ov_mc_interconnect *base;
-    char name[OV_HOST_NAME_MAX];
-    ov_socket_configuration socket;
+  ov_event_loop *loop;
+  ov_mc_interconnect *base;
+  char name[OV_HOST_NAME_MAX];
+  ov_socket_configuration socket;
 
 } ov_mc_interconnect_loop_config;
 
@@ -60,13 +60,13 @@ typedef struct ov_mc_interconnect_loop_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_interconnect_loop *ov_mc_interconnect_loop_create(
-    ov_mc_interconnect_loop_config config);
+ov_mc_interconnect_loop *
+ov_mc_interconnect_loop_create(ov_mc_interconnect_loop_config config);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_interconnect_loop *ov_mc_interconnect_loop_free(
-    ov_mc_interconnect_loop *self);
+ov_mc_interconnect_loop *
+ov_mc_interconnect_loop_free(ov_mc_interconnect_loop *self);
 
 void *ov_mc_interconnect_loop_free_void(void *self);
 
@@ -80,13 +80,12 @@ uint32_t ov_mc_interconnect_loop_get_ssrc(const ov_mc_interconnect_loop *self);
 
 /*----------------------------------------------------------------------------*/
 
-const char *ov_mc_interconnect_loop_get_name(
-    const ov_mc_interconnect_loop *self);
+const char *
+ov_mc_interconnect_loop_get_name(const ov_mc_interconnect_loop *self);
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_loop_send(ov_mc_interconnect_loop *self,
-                                  uint8_t *buffer,
-                                  size_t bytes);
+                                  uint8_t *buffer, size_t bytes);
 
 #endif /* ov_mc_interconnect_loop_h */

@@ -43,21 +43,25 @@
 
 bool ov_stun_attribute_frame_is_realm(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 8) goto error;
+  if (!buffer || length < 8)
+    goto error;
 
-    uint16_t type = ov_stun_attribute_get_type(buffer, length);
-    int64_t size = ov_stun_attribute_get_length(buffer, length);
+  uint16_t type = ov_stun_attribute_get_type(buffer, length);
+  int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != STUN_REALM) goto error;
+  if (type != STUN_REALM)
+    goto error;
 
-    if (size < 1 || size > 763) goto error;
+  if (size < 1 || size > 763)
+    goto error;
 
-    if (length < (size_t)size + 4) goto error;
+  if (length < (size_t)size + 4)
+    goto error;
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*      ------------------------------------------------------------------------
@@ -69,10 +73,11 @@ error:
 
 bool ov_stun_realm_validate(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 1 || length > 763) return false;
+  if (!buffer || length < 1 || length > 763)
+    return false;
 
-    // MUST be content of a RFC3629 quoted string
-    return ov_stun_grammar_is_quoted_string_content(buffer, length);
+  // MUST be content of a RFC3629 quoted string
+  return ov_stun_grammar_is_quoted_string_content(buffer, length);
 }
 
 /*
@@ -85,61 +90,67 @@ bool ov_stun_realm_validate(const uint8_t *buffer, size_t length) {
 
 size_t ov_stun_realm_encoding_length(const uint8_t *realm, size_t length) {
 
-    if (!realm || length == 0 || length > 763) goto error;
+  if (!realm || length == 0 || length > 763)
+    goto error;
 
-    size_t pad = 0;
-    pad = length % 4;
-    if (pad != 0) pad = 4 - pad;
+  size_t pad = 0;
+  pad = length % 4;
+  if (pad != 0)
+    pad = 4 - pad;
 
-    return length + 4 + pad;
+  return length + 4 + pad;
 error:
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_realm_encode(uint8_t *buffer,
-                          size_t length,
-                          uint8_t **next,
-                          const uint8_t *realm,
-                          size_t size) {
+bool ov_stun_realm_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                          const uint8_t *realm, size_t size) {
 
-    if (!buffer || !realm || size > 763 || size == 0) goto error;
+  if (!buffer || !realm || size > 763 || size == 0)
+    goto error;
 
-    size_t len = ov_stun_realm_encoding_length(realm, size);
+  size_t len = ov_stun_realm_encoding_length(realm, size);
 
-    if (length < len) goto error;
+  if (length < len)
+    goto error;
 
-    if (!ov_stun_realm_validate(realm, size)) goto error;
+  if (!ov_stun_realm_validate(realm, size))
+    goto error;
 
-    return ov_stun_attribute_encode(
-        buffer, length, next, STUN_REALM, realm, size);
+  return ov_stun_attribute_encode(buffer, length, next, STUN_REALM, realm,
+                                  size);
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_realm_decode(const uint8_t *buffer,
-                          size_t length,
-                          uint8_t **realm,
+bool ov_stun_realm_decode(const uint8_t *buffer, size_t length, uint8_t **realm,
                           size_t *size) {
 
-    if (!buffer || length < 5 || !realm || !size) goto error;
+  if (!buffer || length < 5 || !realm || !size)
+    goto error;
 
-    if (!ov_stun_attribute_frame_is_realm(buffer, length)) goto error;
+  if (!ov_stun_attribute_frame_is_realm(buffer, length))
+    goto error;
 
-    *size = ov_stun_attribute_get_length(buffer, length);
-    *realm = (uint8_t *)buffer + 4;
+  *size = ov_stun_attribute_get_length(buffer, length);
+  *realm = (uint8_t *)buffer + 4;
 
-    if (*size == 0) goto error;
+  if (*size == 0)
+    goto error;
 
-    if (!ov_stun_realm_validate(*realm, *size)) goto error;
+  if (!ov_stun_realm_validate(*realm, *size))
+    goto error;
 
-    return true;
+  return true;
 
 error:
-    if (realm) *realm = NULL;
-    if (size) *size = 0;
-    return false;
+  if (realm)
+    *realm = NULL;
+  if (size)
+    *size = 0;
+  return false;
 }

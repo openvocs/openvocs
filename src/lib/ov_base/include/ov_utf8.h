@@ -106,8 +106,7 @@
                                 Minimum distance between charater_start (TRUE)
                                 and character_start (FALSE) is 1 byte. (ASCII)
 */
-uint8_t *ov_utf8_last_valid(const uint8_t *start,
-                            uint64_t length,
+uint8_t *ov_utf8_last_valid(const uint8_t *start, uint64_t length,
                             bool character_start);
 
 /*----------------------------------------------------------------------------*/
@@ -145,9 +144,7 @@ bool ov_utf8_validate_sequence(const uint8_t *start, uint64_t length);
 
         @returns                true if number was written to *start
 */
-bool ov_utf8_encode_code_point(uint64_t number,
-                               uint8_t **start,
-                               uint64_t open,
+bool ov_utf8_encode_code_point(uint64_t number, uint8_t **start, uint64_t open,
                                uint64_t *used);
 
 /*----------------------------------------------------------------------------*/
@@ -176,8 +173,7 @@ bool ov_utf8_encode_code_point(uint64_t number,
                                 to clarify: Do we want to support 0 as the first
                                 UTF8 char of a valid UTF8 string?
 */
-uint64_t ov_utf8_decode_code_point(const uint8_t *start,
-                                   uint64_t length,
+uint64_t ov_utf8_decode_code_point(const uint8_t *start, uint64_t length,
                                    uint64_t *bytes);
 
 /*----------------------------------------------------------------------------*/
@@ -196,8 +192,7 @@ uint64_t ov_utf8_decode_code_point(const uint8_t *start,
 
         @NOTE
 */
-bool ov_utf8_generate_random_buffer(uint8_t **buffer,
-                                    size_t *size,
+bool ov_utf8_generate_random_buffer(uint8_t **buffer, size_t *size,
                                     uint16_t unicode_chars);
 
 #endif /* ov_utf8_h */

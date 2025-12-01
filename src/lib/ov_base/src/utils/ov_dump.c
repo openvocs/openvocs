@@ -38,70 +38,72 @@
 
 bool ov_dump_binary_as_hex(FILE *stream, uint8_t *binary, uint64_t length) {
 
-    uint64_t i = 0;
+  uint64_t i = 0;
 
-    if ((!binary) || (!length)) goto error;
+  if ((!binary) || (!length))
+    goto error;
 
-    if (!stream) goto error;
+  if (!stream)
+    goto error;
 
-    for (i = 0; i < length; i++) {
-        fprintf(stream, " %02x", binary[i]);
-    }
+  for (i = 0; i < length; i++) {
+    fprintf(stream, " %02x", binary[i]);
+  }
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_dump_socket_addrinfo(FILE *stream, struct addrinfo *info) {
 
-    if (!stream || !info) goto error;
+  if (!stream || !info)
+    goto error;
 
-    if (!fprintf(stream,
-                 "flags          %i\n"
-                 "family         %i\n"
-                 "type           %i\n"
-                 "protocol       %i\n"
-                 "sock_addr_len  %i\n"
-                 "canonname      %s\n"
-                 "next           %p\n",
-                 info->ai_flags,
-                 info->ai_family,
-                 info->ai_socktype,
-                 info->ai_protocol,
-                 info->ai_addrlen,
-                 info->ai_canonname,
-                 info->ai_next))
-        goto error;
+  if (!fprintf(stream,
+               "flags          %i\n"
+               "family         %i\n"
+               "type           %i\n"
+               "protocol       %i\n"
+               "sock_addr_len  %i\n"
+               "canonname      %s\n"
+               "next           %p\n",
+               info->ai_flags, info->ai_family, info->ai_socktype,
+               info->ai_protocol, info->ai_addrlen, info->ai_canonname,
+               info->ai_next))
+    goto error;
 
-    if (info->ai_addr) return ov_dump_socket_sockaddr(stream, info->ai_addr);
+  if (info->ai_addr)
+    return ov_dump_socket_sockaddr(stream, info->ai_addr);
 
-    if (fprintf(stream, "ai_addr          (null)\n")) return true;
+  if (fprintf(stream, "ai_addr          (null)\n"))
+    return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_dump_socket_sockaddr(FILE *stream, struct sockaddr *addr) {
 
-    if (!stream || !addr) goto error;
+  if (!stream || !addr)
+    goto error;
 
-    if (addr->sa_family == AF_INET) {
+  if (addr->sa_family == AF_INET) {
 
-        return ov_dump_socket_sockaddr_in(stream, (struct sockaddr_in *)addr);
+    return ov_dump_socket_sockaddr_in(stream, (struct sockaddr_in *)addr);
 
-    } else if (addr->sa_family == AF_INET6) {
+  } else if (addr->sa_family == AF_INET6) {
 
-        return ov_dump_socket_sockaddr_in6(stream, (struct sockaddr_in6 *)addr);
-    }
+    return ov_dump_socket_sockaddr_in6(stream, (struct sockaddr_in6 *)addr);
+  }
 
 error:
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -109,71 +111,69 @@ error:
 bool ov_dump_socket_sockaddr_storage(FILE *stream,
                                      struct sockaddr_storage *addr) {
 
-    if (!stream || !addr) goto error;
+  if (!stream || !addr)
+    goto error;
 
-    if (addr->ss_family == AF_INET) {
+  if (addr->ss_family == AF_INET) {
 
-        return ov_dump_socket_sockaddr_in(stream, (struct sockaddr_in *)addr);
+    return ov_dump_socket_sockaddr_in(stream, (struct sockaddr_in *)addr);
 
-    } else if (addr->ss_family == AF_INET6) {
+  } else if (addr->ss_family == AF_INET6) {
 
-        return ov_dump_socket_sockaddr_in6(stream, (struct sockaddr_in6 *)addr);
-    }
+    return ov_dump_socket_sockaddr_in6(stream, (struct sockaddr_in6 *)addr);
+  }
 
 error:
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_dump_socket_sockaddr_in(FILE *stream, struct sockaddr_in *addr) {
 
-    if (!stream || !addr) goto error;
+  if (!stream || !addr)
+    goto error;
 
-    char dest[INET6_ADDRSTRLEN] = {0};
+  char dest[INET6_ADDRSTRLEN] = {0};
 
-    if (0 == inet_ntop(AF_INET, &addr->sin_addr, dest, INET6_ADDRSTRLEN))
-        goto error;
+  if (0 == inet_ntop(AF_INET, &addr->sin_addr, dest, INET6_ADDRSTRLEN))
+    goto error;
 
-    if (!fprintf(stream,
-                 "sin_family     %i\n"
-                 "sin_port       %hu\n"
-                 "IP             %s\n",
-                 addr->sin_family,
-                 ntohs(addr->sin_port),
-                 dest))
-        goto error;
+  if (!fprintf(stream,
+               "sin_family     %i\n"
+               "sin_port       %hu\n"
+               "IP             %s\n",
+               addr->sin_family, ntohs(addr->sin_port), dest))
+    goto error;
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_dump_socket_sockaddr_in6(FILE *stream, struct sockaddr_in6 *addr) {
 
-    if (!stream || !addr) goto error;
+  if (!stream || !addr)
+    goto error;
 
-    char dest[INET6_ADDRSTRLEN] = {0};
+  char dest[INET6_ADDRSTRLEN] = {0};
 
-    if (0 == inet_ntop(AF_INET6, &addr->sin6_addr, dest, INET6_ADDRSTRLEN))
-        goto error;
+  if (0 == inet_ntop(AF_INET6, &addr->sin6_addr, dest, INET6_ADDRSTRLEN))
+    goto error;
 
-    if (!fprintf(stream,
-                 "sin6_family    %i\n"
-                 "sin6_port      %u\n"
-                 "sin6_flowinfo  %u\n"
-                 "sin6_scope_id  %u\n"
-                 "IP             %s\n",
-                 addr->sin6_family,
-                 ntohs(addr->sin6_port),
-                 addr->sin6_flowinfo,
-                 addr->sin6_scope_id,
-                 dest))
-        goto error;
+  if (!fprintf(stream,
+               "sin6_family    %i\n"
+               "sin6_port      %u\n"
+               "sin6_flowinfo  %u\n"
+               "sin6_scope_id  %u\n"
+               "IP             %s\n",
+               addr->sin6_family, ntohs(addr->sin6_port), addr->sin6_flowinfo,
+               addr->sin6_scope_id, dest))
+    goto error;
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }

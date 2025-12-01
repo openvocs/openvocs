@@ -72,10 +72,8 @@ size_t ov_stun_attr_userhash_encoding_length(size_t data);
         @param len      length of data
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_attr_userhash_encode(uint8_t *buffer,
-                                  size_t length,
-                                  uint8_t **next,
-                                  const uint8_t *data,
+bool ov_stun_attr_userhash_encode(uint8_t *buffer, size_t length,
+                                  uint8_t **next, const uint8_t *data,
                                   size_t len);
 
 /*----------------------------------------------------------------------------*/
@@ -88,9 +86,7 @@ bool ov_stun_attr_userhash_encode(uint8_t *buffer,
         @param data     pointer to data within buffer
         @param len      pointer to be set to length of data
 */
-bool ov_stun_attr_userhash_decode(const uint8_t *buffer,
-                                  size_t length,
-                                  uint8_t **data,
-                                  size_t *len);
+bool ov_stun_attr_userhash_decode(const uint8_t *buffer, size_t length,
+                                  uint8_t **data, size_t *len);
 
 #endif /* ov_stun_attr_userhash_h */

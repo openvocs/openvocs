@@ -96,10 +96,8 @@ bool ov_stun_frame_is_valid(const uint8_t *buffer, size_t length);
         @NOTE in case of NO ATTRIBUTES an empty list may be created
         @NOTE use ov_list_free(list) to delete the list of pointers
 */
-bool ov_stun_frame_slice(const uint8_t *frame,
-                         size_t frame_length,
-                         uint8_t *array[],
-                         size_t array_size);
+bool ov_stun_frame_slice(const uint8_t *frame, size_t frame_length,
+                         uint8_t *array[], size_t array_size);
 
 /*
  *      ------------------------------------------------------------------------
@@ -125,8 +123,7 @@ int64_t ov_stun_frame_get_length(const uint8_t *buffer, size_t length);
         @param length_to_set    length in host byte order
         @returns true           if lengths_to_set was written in network order
 */
-bool ov_stun_frame_set_length(uint8_t *head,
-                              size_t length,
+bool ov_stun_frame_set_length(uint8_t *head, size_t length,
                               uint16_t lengths_to_set);
 
 /*
@@ -155,8 +152,7 @@ bool ov_stun_frame_generate_transaction_id(uint8_t *buffer);
         @param length           length of the buffer (MUST be at least 20)
         @param id               id to be copied to header (MUST be 12 byte long)
 */
-bool ov_stun_frame_set_transaction_id(uint8_t *head,
-                                      size_t length,
+bool ov_stun_frame_set_transaction_id(uint8_t *head, size_t length,
                                       const uint8_t *id);
 
 /*----------------------------------------------------------------------------*/

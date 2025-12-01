@@ -35,15 +35,15 @@
 /*----------------------------------------------------------------------------*/
 
 #define OV_RTP_FRAME_MESSAGE_TYPE                                              \
-    ((int)(OV_THREAD_MESSAGE_START_USER_TYPES + 'r' + '0'))
+  ((int)(OV_THREAD_MESSAGE_START_USER_TYPES + 'r' + '0'))
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-    ov_thread_message public;
+  ov_thread_message public;
 
-    ov_rtp_frame *frame;
+  ov_rtp_frame *frame;
 
 } ov_rtp_frame_message;
 

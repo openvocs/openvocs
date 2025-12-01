@@ -35,15 +35,15 @@
 
 // Just in case - all our current architectures already use 2's complement
 #define OV_TWOS_COMPLEMENT(x)                                                  \
-    _Generic((x),                                                              \
-        int: (unsigned int)(x),                                                \
-        unsigned int: (x),                                                     \
-        long int: (unsigned long int)(x),                                      \
-        unsigned long int: (x),                                                \
-        long long int: (unsigned long long int)(x),                            \
-        unsigned long long int: (x),                                           \
-        short int: (unsigned short int)(x),                                    \
-        unsigned short int: (short int)(x))
+  _Generic((x),                                                                \
+      int: (unsigned int)(x),                                                  \
+      unsigned int: (x),                                                       \
+      long int: (unsigned long int)(x),                                        \
+      unsigned long int: (x),                                                  \
+      long long int: (unsigned long long int)(x),                              \
+      unsigned long long int: (x),                                             \
+      short int: (unsigned short int)(x),                                      \
+      unsigned short int: (short int)(x))
 
 #define OV_BIG_ENDIAN 128
 #define OV_LITTLE_ENDIAN 1

@@ -120,11 +120,10 @@ ov_item *ov_item_object_get(ov_item *self, const char *string);
 
 /*---------------------------------------------------------------------------*/
 
-bool ov_item_object_for_each(ov_item *self, 
-                             bool (*function)(
-                                char const *key,
-                                ov_item const *val,
-                                void *userdata),
+bool ov_item_object_for_each(ov_item *self,
+                             bool (*function)(char const *key,
+                                              ov_item const *val,
+                                              void *userdata),
                              void *userdata);
 /*
  *      ------------------------------------------------------------------------
@@ -207,6 +206,5 @@ bool ov_item_is_true(ov_item *self);
 
 ov_item *ov_item_false();
 bool ov_item_is_false(ov_item *self);
-
 
 #endif /* ov_item_h */

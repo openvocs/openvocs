@@ -46,31 +46,30 @@ typedef struct ov_alsa_record_struct ov_alsa_record;
 
 typedef struct {
 
-    struct {
-        ov_json_value const *codec_config;
-        uint64_t frame_length_ms;
-        uint16_t ssid;
-        ov_socket_configuration target;
-    } rtp_stream;
+  struct {
+    ov_json_value const *codec_config;
+    uint64_t frame_length_ms;
+    uint16_t ssid;
+    ov_socket_configuration target;
+  } rtp_stream;
 
-    uint64_t samplerate_hz;
+  uint64_t samplerate_hz;
 
-    double volume;
+  double volume;
 
-    char const *alsa_device;
-    char const *mixer_element;
+  char const *alsa_device;
+  char const *mixer_element;
 
-    struct {
-        uint16_t max_amplitude;
-    } comfort_noise;
+  struct {
+    uint16_t max_amplitude;
+  } comfort_noise;
 
 } ov_alsa_record_config;
 
 /*----------------------------------------------------------------------------*/
 
 ov_alsa_record *ov_alsa_record_create(const ov_alsa_record_config cfg,
-                                      int sd_for_sending,
-                                      ov_result *res);
+                                      int sd_for_sending, ov_result *res);
 
 /*----------------------------------------------------------------------------*/
 

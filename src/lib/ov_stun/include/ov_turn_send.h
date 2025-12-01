@@ -54,13 +54,9 @@
 */
 bool ov_turn_method_is_send(const uint8_t *frame, size_t length);
 
-bool ov_turn_create_send(uint8_t *start,
-                         size_t length,
-                         uint8_t **next,
+bool ov_turn_create_send(uint8_t *start, size_t length, uint8_t **next,
                          const uint8_t *transaction_id,
                          const struct sockaddr_storage *address,
-                         const uint8_t *buffer,
-                         size_t size,
-                         bool fingerprint);
+                         const uint8_t *buffer, size_t size, bool fingerprint);
 
 #endif /* ov_turn_send_h */

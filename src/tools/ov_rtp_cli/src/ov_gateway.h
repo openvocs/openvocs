@@ -47,8 +47,8 @@ typedef struct ov_gateway_struct ov_gateway;
  */
 typedef struct {
 
-    size_t frame_length_usecs;
-    uint64_t sample_rate_hertz;
+  size_t frame_length_usecs;
+  uint64_t sample_rate_hertz;
 
 } ov_gateway_configuration;
 
@@ -60,38 +60,38 @@ typedef struct {
  */
 struct ov_gateway_struct {
 
-    /**
-     * Gateway specific - depends on the actual gateway type
-     */
-    uint32_t magic_number;
+  /**
+   * Gateway specific - depends on the actual gateway type
+   */
+  uint32_t magic_number;
 
-    /**
-     * Tear down and free the gateway.
-     * This includes stopping all possibly running threads and the like.
-     */
-    ov_gateway *(*free)(ov_gateway *self);
+  /**
+   * Tear down and free the gateway.
+   * This includes stopping all possibly running threads and the like.
+   */
+  ov_gateway *(*free)(ov_gateway *self);
 
-    /**
-     * Retrieve a chunk of pcm data.
-     * The caller anounces the number of samples via requested_samples .
-     * The gateway might provide for a different size, however,
-     * by returing a buffer of different length (e.g. if not enough data
-     * is available).
-     *
-     *  BEWARE: The byte order ir ARCH DEPENDENT!
-     */
-    ov_buffer *(*get_pcm_s16)(ov_gateway *self, size_t requested_samples);
+  /**
+   * Retrieve a chunk of pcm data.
+   * The caller anounces the number of samples via requested_samples .
+   * The gateway might provide for a different size, however,
+   * by returing a buffer of different length (e.g. if not enough data
+   * is available).
+   *
+   *  BEWARE: The byte order ir ARCH DEPENDENT!
+   */
+  ov_buffer *(*get_pcm_s16)(ov_gateway *self, size_t requested_samples);
 
-    /**
-     * Hand over audio data to the gateway.
-     *
-     * BEWARE: The byte order is ARCH DEPENDENT!
-     *
-     * @return false in case of error, true else
-     */
-    bool (*put_pcm_s16)(ov_gateway *self, const ov_buffer *data);
+  /**
+   * Hand over audio data to the gateway.
+   *
+   * BEWARE: The byte order is ARCH DEPENDENT!
+   *
+   * @return false in case of error, true else
+   */
+  bool (*put_pcm_s16)(ov_gateway *self, const ov_buffer *data);
 
-    ov_json_value *(*get_state)(ov_gateway *self);
+  ov_json_value *(*get_state)(ov_gateway *self);
 };
 
 #endif /* ov_gateway_h */

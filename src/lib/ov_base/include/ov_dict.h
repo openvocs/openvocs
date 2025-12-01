@@ -50,101 +50,98 @@ typedef struct ov_dict_config ov_dict_config;
 
 struct ov_dict_config {
 
-    /* Buckets to be used */
-    uint64_t slots;
+  /* Buckets to be used */
+  uint64_t slots;
 
-    /* Key confguration */
-    struct {
+  /* Key confguration */
+  struct {
 
-        /* Key content configuration */
-        ov_data_function data_function;
+    /* Key content configuration */
+    ov_data_function data_function;
 
-        /* Key functions configuration */
-        uint64_t (*hash)(const void *key);
-        bool (*match)(const void *key, const void *value);
+    /* Key functions configuration */
+    uint64_t (*hash)(const void *key);
+    bool (*match)(const void *key, const void *value);
 
-        bool (*validate_input)(const void *data);
-    } key;
+    bool (*validate_input)(const void *data);
+  } key;
 
-    struct {
+  struct {
 
-        /* Value content configuration */
-        ov_data_function data_function;
-        bool (*validate_input)(const void *data);
-    } value;
+    /* Value content configuration */
+    ov_data_function data_function;
+    bool (*validate_input)(const void *data);
+  } value;
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct ov_dict {
 
-    uint16_t magic_byte;
-    uint16_t type;
+  uint16_t magic_byte;
+  uint16_t type;
 
-    ov_dict_config config;
+  ov_dict_config config;
 
-    /*      Check if any ANY item is set within the dict */
-    bool (*is_empty)(const ov_dict *self);
+  /*      Check if any ANY item is set within the dict */
+  bool (*is_empty)(const ov_dict *self);
 
-    /*
-     *      Function pointer to own create.
-     */
-    ov_dict *(*create)(ov_dict_config config);
+  /*
+   *      Function pointer to own create.
+   */
+  ov_dict *(*create)(ov_dict_config config);
 
-    /*
-     *      Clear MUST delete all key/value pairs,
-     *      using the configured configuration.
-     */
-    bool (*clear)(ov_dict *self);
+  /*
+   *      Clear MUST delete all key/value pairs,
+   *      using the configured configuration.
+   */
+  bool (*clear)(ov_dict *self);
 
-    /*
-     *      Free MUST delete all key/value pairs,
-     *      and free the dict pointer.
-     *      @returns NULL on success, self on error!
-     */
-    ov_dict *(*free)(ov_dict *self);
+  /*
+   *      Free MUST delete all key/value pairs,
+   *      and free the dict pointer.
+   *      @returns NULL on success, self on error!
+   */
+  ov_dict *(*free)(ov_dict *self);
 
-    /*
-     *      Check at all keys if the value pointer is contained.
-     *      If value is 0, all keys are returned.
-     *      return a list with pointers to all keys.
-     */
-    ov_list *(*get_keys)(const ov_dict *self, const void *value);
+  /*
+   *      Check at all keys if the value pointer is contained.
+   *      If value is 0, all keys are returned.
+   *      return a list with pointers to all keys.
+   */
+  ov_list *(*get_keys)(const ov_dict *self, const void *value);
 
-    /*
-     *      Get MUST return the pointer to value used
-     *      at key.
-     */
-    void *(*get)(const ov_dict *self, const void *key);
+  /*
+   *      Get MUST return the pointer to value used
+   *      at key.
+   */
+  void *(*get)(const ov_dict *self, const void *key);
 
-    /*
-     *      Set MUST set the value of key within the dict.
-     *      If replaced is NULL, ANY existing value MUST be
-     *      freed using the value configuration, if replaced is
-     *      NOT NULL, any old value MUST be returned over replaced.
-     */
-    bool (*set)(ov_dict *self, void *key, void *value, void **replaced);
+  /*
+   *      Set MUST set the value of key within the dict.
+   *      If replaced is NULL, ANY existing value MUST be
+   *      freed using the value configuration, if replaced is
+   *      NOT NULL, any old value MUST be returned over replaced.
+   */
+  bool (*set)(ov_dict *self, void *key, void *value, void **replaced);
 
-    /*
-     *      Del MUST remove the key/value pair and free the pointers
-     *      using the dict configuration.
-     */
-    bool (*del)(ov_dict *self, const void *key);
+  /*
+   *      Del MUST remove the key/value pair and free the pointers
+   *      using the dict configuration.
+   */
+  bool (*del)(ov_dict *self, const void *key);
 
-    /*
-     *      Remove MUST remove the key/value pair and return the value,
-     *      without deleting it automatically.
-     */
-    void *(*remove)(ov_dict *self, const void *key);
+  /*
+   *      Remove MUST remove the key/value pair and return the value,
+   *      without deleting it automatically.
+   */
+  void *(*remove)(ov_dict *self, const void *key);
 
-    /*
-     *      For_each MUST apply function at each key value pair.
-     */
-    bool (*for_each)(ov_dict *self,
-                     void *data,
-                     bool (*function)(const void *key,
-                                      void *value,
-                                      void *data));
+  /*
+   *      For_each MUST apply function at each key value pair.
+   */
+  bool (*for_each)(ov_dict *self, void *data,
+                   bool (*function)(const void *key, void *value, void *data));
 };
 
 /*
@@ -207,10 +204,8 @@ void *ov_dict_get(const ov_dict *dict, const void *key);
 bool ov_dict_set(ov_dict *dict, void *key, void *value, void **replaced);
 bool ov_dict_del(ov_dict *dict, const void *key);
 void *ov_dict_remove(ov_dict *dict, const void *key);
-bool ov_dict_for_each(ov_dict *dict,
-                      void *data,
-                      bool (*function)(const void *key,
-                                       void *value,
+bool ov_dict_for_each(ov_dict *dict, void *data,
+                      bool (*function)(const void *key, void *value,
                                        void *data));
 
 /*

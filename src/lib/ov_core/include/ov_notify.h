@@ -37,32 +37,32 @@
 
 typedef enum {
 
-    NOTIFY_INVALID = -1,     /* Requires ' entity' in parameters to be set */
-    NOTIFY_ENTITY_LOST = 0,  /* Requires ' entity' in parameters to be set */
-    NOTIFY_INCOMING_CALL,    /* Requires 'call' in parameters to be set */
-    NOTIFY_NEW_CALL,         /* Requires 'call' in parameters to be set */
-    NOTIFY_CALL_TERMINATED,  /* Requires 'call' in parameters to be set */
-    NOTIFY_NEW_RECORDING,    /* Requires 'recording' in parameters to be set */
-    NOTIFY_PLAYBACK_STOPPED, /* Unsupported as of now ... */
+  NOTIFY_INVALID = -1,     /* Requires ' entity' in parameters to be set */
+  NOTIFY_ENTITY_LOST = 0,  /* Requires ' entity' in parameters to be set */
+  NOTIFY_INCOMING_CALL,    /* Requires 'call' in parameters to be set */
+  NOTIFY_NEW_CALL,         /* Requires 'call' in parameters to be set */
+  NOTIFY_CALL_TERMINATED,  /* Requires 'call' in parameters to be set */
+  NOTIFY_NEW_RECORDING,    /* Requires 'recording' in parameters to be set */
+  NOTIFY_PLAYBACK_STOPPED, /* Unsupported as of now ... */
 
 } ov_notify_type;
 
 typedef union {
 
-    struct {
-        char const *name;
-        char const *type;
-    } entity;
+  struct {
+    char const *name;
+    char const *type;
+  } entity;
 
-    struct {
+  struct {
 
-        char const *id;
-        char const *loop;
-        char const *peer;
+    char const *id;
+    char const *loop;
+    char const *peer;
 
-    } call;
+  } call;
 
-    ov_recording recording;
+  ov_recording recording;
 
 } ov_notify_parameters;
 
@@ -72,8 +72,7 @@ char const *ov_notify_type_to_string(ov_notify_type type);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_notify_message(char const *uuid,
-                                 ov_notify_type notify_type,
+ov_json_value *ov_notify_message(char const *uuid, ov_notify_type notify_type,
                                  ov_notify_parameters parameters);
 
 /*----------------------------------------------------------------------------*/

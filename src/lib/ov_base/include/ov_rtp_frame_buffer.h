@@ -52,14 +52,14 @@ Copyright   2018        German Aerospace Center DLR e.V.,
 
 typedef struct {
 
-    uint32_t magic_number;
-    void *(*free)(void *);
+  uint32_t magic_number;
+  void *(*free)(void *);
 
 } ov_rtp_frame_buffer;
 
 typedef struct {
 
-    size_t num_frames_to_buffer_per_stream;
+  size_t num_frames_to_buffer_per_stream;
 
 } ov_rtp_frame_buffer_config;
 
@@ -67,8 +67,8 @@ typedef struct {
  *                                 FUNCTIONS
  ******************************************************************************/
 
-ov_rtp_frame_buffer *ov_rtp_frame_buffer_create(
-    ov_rtp_frame_buffer_config config);
+ov_rtp_frame_buffer *
+ov_rtp_frame_buffer_create(ov_rtp_frame_buffer_config config);
 
 /*----------------------------------------------------------------------------*/
 
@@ -86,8 +86,8 @@ ov_rtp_frame *ov_rtp_frame_buffer_add(ov_rtp_frame_buffer *restrict self,
 
 /*----------------------------------------------------------------------------*/
 
-ov_list *ov_rtp_frame_buffer_get_current_frames(
-    ov_rtp_frame_buffer *restrict self);
+ov_list *
+ov_rtp_frame_buffer_get_current_frames(ov_rtp_frame_buffer *restrict self);
 
 /*----------------------------------------------------------------------------*/
 

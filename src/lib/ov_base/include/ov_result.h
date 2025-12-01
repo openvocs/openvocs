@@ -38,8 +38,8 @@
 
 typedef struct ov_result {
 
-    uint64_t error_code; /* See ov_error_codes.h for possible values */
-    char *message;       /* If error_code == OV_ERROR_NOERROR, must be 0. */
+  uint64_t error_code; /* See ov_error_codes.h for possible values */
+  char *message;       /* If error_code == OV_ERROR_NOERROR, must be 0. */
 
 } ov_result;
 

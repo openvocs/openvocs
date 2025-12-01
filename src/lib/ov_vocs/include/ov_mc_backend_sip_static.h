@@ -44,16 +44,16 @@ typedef struct ov_mc_backend_sip_static ov_mc_backend_sip_static;
 
 typedef struct ov_mc_backend_sip_static_config {
 
-    ov_event_loop *loop;
-    ov_vocs_db *db;
-    ov_io *io;
-    ov_mc_backend *backend;
+  ov_event_loop *loop;
+  ov_vocs_db *db;
+  ov_io *io;
+  ov_mc_backend *backend;
 
-    struct {
+  struct {
 
-        ov_socket_configuration manager; // manager liege socket
+    ov_socket_configuration manager; // manager liege socket
 
-    } socket;
+  } socket;
 
 } ov_mc_backend_sip_static_config;
 
@@ -65,15 +65,15 @@ typedef struct ov_mc_backend_sip_static_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_backend_sip_static *ov_mc_backend_sip_static_create(
-    ov_mc_backend_sip_static_config config);
-ov_mc_backend_sip_static *ov_mc_backend_sip_static_free(
-    ov_mc_backend_sip_static *self);
+ov_mc_backend_sip_static *
+ov_mc_backend_sip_static_create(ov_mc_backend_sip_static_config config);
+ov_mc_backend_sip_static *
+ov_mc_backend_sip_static_free(ov_mc_backend_sip_static *self);
 ov_mc_backend_sip_static *ov_mc_backend_sip_static_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_sip_static_config ov_mc_backend_sip_static_config_from_json(
-    const ov_json_value *val);
+ov_mc_backend_sip_static_config
+ov_mc_backend_sip_static_config_from_json(const ov_json_value *val);
 
 #endif /* ov_mc_backend_sip_static_h */

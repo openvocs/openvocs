@@ -41,334 +41,329 @@
 
 struct deep_count_arg {
 
-    FILE *stream;
-    size_t counter;
+  FILE *stream;
+  size_t counter;
 };
 
 bool deep_count(char const *key, ov_value const *value, void *userdata) {
 
-    // For lists, `key` is always zero - anyways, we don't need it
+  // For lists, `key` is always zero - anyways, we don't need it
 
-    OV_ASSERT(0 != value);
+  OV_ASSERT(0 != value);
 
-    struct deep_count_arg *arg = userdata;
+  struct deep_count_arg *arg = userdata;
 
-    OV_ASSERT(0 != arg);
+  OV_ASSERT(0 != arg);
 
-    fprintf(arg->stream, "   %5zu : ", arg->counter);
+  fprintf(arg->stream, "   %5zu : ", arg->counter);
 
-    if (0 != key) {
+  if (0 != key) {
 
-        fprintf(arg->stream, " '%s' => ", key);
-    }
-    ov_value_dump(arg->stream, value);
-    fprintf(arg->stream, "\n");
+    fprintf(arg->stream, " '%s' => ", key);
+  }
+  ov_value_dump(arg->stream, value);
+  fprintf(arg->stream, "\n");
 
-    ++arg->counter;
+  ++arg->counter;
 
-    if (0 != ov_value_list_get((ov_value *)value, 0)) {
+  if (0 != ov_value_list_get((ov_value *)value, 0)) {
 
-        // We are a non-empty list
-        // -> Progress recursively to traverse deeply
-        return ov_value_for_each(value, deep_count, arg);
-    }
+    // We are a non-empty list
+    // -> Progress recursively to traverse deeply
+    return ov_value_for_each(value, deep_count, arg);
+  }
 
-    return true;
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
-    UNUSED(argc);
-    UNUSED(argv);
+  UNUSED(argc);
+  UNUSED(argv);
 
-    size_t NUMBERS_TO_CACHE = 20;
-    size_t STRINGS_TO_CACHE = 30;
-    size_t LISTS_TO_CACHE = 10;
-    size_t OBJECTS_TO_CACHE = 20;
+  size_t NUMBERS_TO_CACHE = 20;
+  size_t STRINGS_TO_CACHE = 30;
+  size_t LISTS_TO_CACHE = 10;
+  size_t OBJECTS_TO_CACHE = 20;
 
-    // For the following, include
-    //
-    //     "ov_base/ov_value.h"
+  // For the following, include
+  //
+  //     "ov_base/ov_value.h"
 
-    /* Enable caching for value data structures */
-    ov_value_enable_caching(
-        NUMBERS_TO_CACHE, STRINGS_TO_CACHE, LISTS_TO_CACHE, OBJECTS_TO_CACHE);
+  /* Enable caching for value data structures */
+  ov_value_enable_caching(NUMBERS_TO_CACHE, STRINGS_TO_CACHE, LISTS_TO_CACHE,
+                          OBJECTS_TO_CACHE);
 
-    /* Build simple Atoms */
+  /* Build simple Atoms */
 
-    ov_value *t = ov_value_true();
-    ov_value *f = ov_value_false();
-    ov_value *n = ov_value_null();
+  ov_value *t = ov_value_true();
+  ov_value *f = ov_value_false();
+  ov_value *n = ov_value_null();
 
-    /* Build numbers */
+  /* Build numbers */
 
-    ov_value *the_answer = ov_value_number(42);
-    ov_value *pi = ov_value_number(3.1415);
+  ov_value *the_answer = ov_value_number(42);
+  ov_value *pi = ov_value_number(3.1415);
 
-    /* Build strings */
+  /* Build strings */
 
-    ov_value *ass = ov_value_string("vidarr");
+  ov_value *ass = ov_value_string("vidarr");
 
-    /* Build lists */
+  /* Build lists */
 
-    ov_value *empty_list = ov_value_list(0);
+  ov_value *empty_list = ov_value_list(0);
 
-    ov_value *aesir = ov_value_list(ov_value_string("odin"),
-                                    ov_value_string("thor"),
-                                    ov_value_string("loki"),
-                                    ov_value_string("heimdall"),
-                                    ov_value_string("..."));
+  ov_value *aesir = ov_value_list(
+      ov_value_string("odin"), ov_value_string("thor"), ov_value_string("loki"),
+      ov_value_string("heimdall"), ov_value_string("..."));
 
-    /* lists might contain any other values */
+  /* lists might contain any other values */
 
-    ov_value *mezcla = ov_value_list(
-        ov_value_null(),
-        ov_value_list(ov_value_string("Cthulhu"), ov_value_string("naftagn")),
-        ov_value_number(1337),
-        ov_value_list(ov_value_list(0), ov_value_string("Aesir"), aesir));
+  ov_value *mezcla = ov_value_list(
+      ov_value_null(),
+      ov_value_list(ov_value_string("Cthulhu"), ov_value_string("naftagn")),
+      ov_value_number(1337),
+      ov_value_list(ov_value_list(0), ov_value_string("Aesir"), aesir));
 
-    /* Values are incorporated into compounds, not copied, thus our `aesir`
-     * is now part of the `mezcla` and should not be modified independently any
-     * more
-     */
+  /* Values are incorporated into compounds, not copied, thus our `aesir`
+   * is now part of the `mezcla` and should not be modified independently any
+   * more
+   */
 
-    aesir = 0;
+  aesir = 0;
 
-    /* values might be dumped to a stream */
+  /* values might be dumped to a stream */
 
-    fprintf(stdout, "Our mezcla: ");
-    ov_value_dump(stdout, mezcla);
-    fprintf(stdout, "\n");
+  fprintf(stdout, "Our mezcla: ");
+  ov_value_dump(stdout, mezcla);
+  fprintf(stdout, "\n");
 
-    /* Or turned into a string */
+  /* Or turned into a string */
 
-    char *t_str = ov_value_to_string(t);
+  char *t_str = ov_value_to_string(t);
 
-    /* Check whether value is a particular atom */
-    printf("%s is true: %s\n", t_str, ov_value_is_true(t) ? "true" : "false");
-    printf("%s is false: %s\n", t_str, ov_value_is_false(t) ? "true" : "false");
-    printf("%s is null: %s\n", t_str, ov_value_is_null(t) ? "true" : "false");
+  /* Check whether value is a particular atom */
+  printf("%s is true: %s\n", t_str, ov_value_is_true(t) ? "true" : "false");
+  printf("%s is false: %s\n", t_str, ov_value_is_false(t) ? "true" : "false");
+  printf("%s is null: %s\n", t_str, ov_value_is_null(t) ? "true" : "false");
 
-    free(t_str);
-    t_str = 0;
+  free(t_str);
+  t_str = 0;
 
-    /* Atoms are singletons */
+  /* Atoms are singletons */
 
-    OV_ASSERT(t == ov_value_true());
-    OV_ASSERT(f == ov_value_false());
-    OV_ASSERT(n == ov_value_null());
+  OV_ASSERT(t == ov_value_true());
+  OV_ASSERT(f == ov_value_false());
+  OV_ASSERT(n == ov_value_null());
 
-    /* List entries might be accessed by index */
+  /* List entries might be accessed by index */
 
-    ov_value *first = ov_value_list_get(mezcla, 0);
+  ov_value *first = ov_value_list_get(mezcla, 0);
 
-    printf("first entry of ");
-    ov_value_dump(stdout, mezcla);
-    printf("is null: %s\n", ov_value_is_null(first) ? "true" : "false");
+  printf("first entry of ");
+  ov_value_dump(stdout, mezcla);
+  printf("is null: %s\n", ov_value_is_null(first) ? "true" : "false");
 
-    first = 0;
+  first = 0;
 
-    /* Or entries set via their index */
+  /* Or entries set via their index */
 
-    ov_value_list_set(mezcla, 0, ov_value_true());
+  ov_value_list_set(mezcla, 0, ov_value_true());
 
-    /* Or appended at the end */
+  /* Or appended at the end */
 
-    ov_value_list_push(mezcla, ov_value_string("This is the end"));
+  ov_value_list_push(mezcla, ov_value_string("This is the end"));
 
-    printf("Mezcla now looks like: ");
-    ov_value_dump(stdout, mezcla);
-    printf("\n");
-
-    /* Usually, all functions return a value.
-     * If they do not create one, they return true in case of success or
-     * false in case of error.
-     *
-     * All functions are robust against 0 pointers:
-     */
+  printf("Mezcla now looks like: ");
+  ov_value_dump(stdout, mezcla);
+  printf("\n");
 
-    if (!ov_value_list_push(0, t)) {
-        printf("Pushing onto a 0 pointer failed");
-    }
+  /* Usually, all functions return a value.
+   * If they do not create one, they return true in case of success or
+   * false in case of error.
+   *
+   * All functions are robust against 0 pointers:
+   */
 
-    printf("objects are created using `ov_value_object()`\n");
-    ov_value *object = ov_value_object();
+  if (!ov_value_list_push(0, t)) {
+    printf("Pushing onto a 0 pointer failed");
+  }
 
-    printf("and entries set using `ov_value_object_set`\n");
-    ov_value_object_set(object, "our_mezcla", mezcla);
-
-    ov_value_dump(stdout, object);
-
-    /* Again, mezcla is incorporated into our new object */
-    mezcla = 0;
-
-    printf("ov_value_object_set returns an old entry if there: ");
-
-    mezcla = ov_value_object_set(object, "our_mezcla", ov_value_null());
-    ov_value_dump(stdout, object);
-
-    printf("and entries retrieved using ov_values_object_get()\n");
-    ov_value_dump(stdout, ov_value_object_get(object, "our_mezcla"));
-
-    /* Be sure to free any allocated values once you are done */
-
-    object = ov_value_free(object);
-
-    t = ov_value_free(t);
-    f = ov_value_free(f);
-    n = ov_value_free(n);
-    the_answer = ov_value_free(the_answer);
-    pi = ov_value_free(pi);
-    ass = ov_value_free(ass);
-    empty_list = ov_value_free(empty_list);
-
-    /* Pro tipp:
-     * ov_value_free - as all functions - is robust against 0 pointers.
-     *
-     * Don't bother writing something like
-     *
-     * if(0 != aesir) aesir = ov_value_free(aesir);
-     */
-    OV_ASSERT(0 == aesir);
-    aesir = ov_value_free(aesir);
-    OV_ASSERT(0 == aesir);
+  printf("objects are created using `ov_value_object()`\n");
+  ov_value *object = ov_value_object();
+
+  printf("and entries set using `ov_value_object_set`\n");
+  ov_value_object_set(object, "our_mezcla", mezcla);
+
+  ov_value_dump(stdout, object);
+
+  /* Again, mezcla is incorporated into our new object */
+  mezcla = 0;
+
+  printf("ov_value_object_set returns an old entry if there: ");
+
+  mezcla = ov_value_object_set(object, "our_mezcla", ov_value_null());
+  ov_value_dump(stdout, object);
+
+  printf("and entries retrieved using ov_values_object_get()\n");
+  ov_value_dump(stdout, ov_value_object_get(object, "our_mezcla"));
+
+  /* Be sure to free any allocated values once you are done */
+
+  object = ov_value_free(object);
+
+  t = ov_value_free(t);
+  f = ov_value_free(f);
+  n = ov_value_free(n);
+  the_answer = ov_value_free(the_answer);
+  pi = ov_value_free(pi);
+  ass = ov_value_free(ass);
+  empty_list = ov_value_free(empty_list);
+
+  /* Pro tipp:
+   * ov_value_free - as all functions - is robust against 0 pointers.
+   *
+   * Don't bother writing something like
+   *
+   * if(0 != aesir) aesir = ov_value_free(aesir);
+   */
+  OV_ASSERT(0 == aesir);
+  aesir = ov_value_free(aesir);
+  OV_ASSERT(0 == aesir);
 
-    mezcla = ov_value_free(mezcla);
-    OV_ASSERT(0 == mezcla);
-
-    /*
-     * For parsing, include
-     * ov_base/ov_value_parse.h
-     */
-
-    /* Parse from a string / buffer */
+  mezcla = ov_value_free(mezcla);
+  OV_ASSERT(0 == mezcla);
 
-    char const *gods_str =
-        "[\"aesir\", 4,\n"
-        "[\"odin\", \"thor\", \"loki\", \"heimdall\", "
-        "\"...\"],\n"
-        "\"vanir\", 3,\n"
-        "[\"freyr\", \"freya\", \"njoerdr\"],\n"
-        "\"swartalfar\", 0, null]";
+  /*
+   * For parsing, include
+   * ov_base/ov_value_parse.h
+   */
 
-    ov_buffer to_parse = {
-        .start = (uint8_t *)gods_str,
-        .length = strlen(gods_str),
-    };
+  /* Parse from a string / buffer */
 
-    ov_value *gods = ov_value_parse(&to_parse, 0);
+  char const *gods_str = "[\"aesir\", 4,\n"
+                         "[\"odin\", \"thor\", \"loki\", \"heimdall\", "
+                         "\"...\"],\n"
+                         "\"vanir\", 3,\n"
+                         "[\"freyr\", \"freya\", \"njoerdr\"],\n"
+                         "\"swartalfar\", 0, null]";
 
-    printf("For '%s'\n\nWe got:\n\n", gods_str);
-    ov_value_dump(stdout, gods);
-    printf("\n");
+  ov_buffer to_parse = {
+      .start = (uint8_t *)gods_str,
+      .length = strlen(gods_str),
+  };
 
-    gods = ov_value_free(gods);
-    OV_ASSERT(0 == gods);
+  ov_value *gods = ov_value_parse(&to_parse, 0);
 
-    /* Parse with trailing characters */
+  printf("For '%s'\n\nWe got:\n\n", gods_str);
+  ov_value_dump(stdout, gods);
+  printf("\n");
 
-    char const *gods_with_trailing_chars =
-        "[\"aesir\", 4,\n"
-        "[\"odin\", \"thor\", \"loki\", \"heimdall\", \"...\"],\n"
-        "\"vanir\", 3,\n"
-        "[\"freyr\", \"freya\", \"njoerdr\"],\n"
-        "\"swartalfar\", 0, null] We [got] LOST";
+  gods = ov_value_free(gods);
+  OV_ASSERT(0 == gods);
 
-    to_parse = (ov_buffer){
-        .start = (uint8_t *)gods_with_trailing_chars,
-        .length = strlen(gods_with_trailing_chars),
-    };
+  /* Parse with trailing characters */
 
-    char const *remainder = 0;
+  char const *gods_with_trailing_chars =
+      "[\"aesir\", 4,\n"
+      "[\"odin\", \"thor\", \"loki\", \"heimdall\", \"...\"],\n"
+      "\"vanir\", 3,\n"
+      "[\"freyr\", \"freya\", \"njoerdr\"],\n"
+      "\"swartalfar\", 0, null] We [got] LOST";
 
-    gods = ov_value_parse(&to_parse, &remainder);
+  to_parse = (ov_buffer){
+      .start = (uint8_t *)gods_with_trailing_chars,
+      .length = strlen(gods_with_trailing_chars),
+  };
 
-    printf("For '%s'\n\nWe got:\n\n", gods_with_trailing_chars);
-    ov_value_dump(stdout, gods);
-    printf("\n\nAnd trailing chars: '%s'\n\n", remainder);
+  char const *remainder = 0;
 
-    /* Parse objects */
+  gods = ov_value_parse(&to_parse, &remainder);
 
-    char const *object_string =
-        "   \n"
-        " {   \"Aesir\":[\"Heimdall\",\"Loki\"  ,     "
-        "\"Vidarr\"] , "
-        "     \"Wanir\"   :   [ \"Njordr\", \"Frey\"   "
-        ",\"Freya\"],  "
-        "     \"reverted\" :{ \n"
-        "  \"Heimdall\" : \"Ass\"  , "
-        " \"Loki\": \"Ass\",  \n"
-        "\"Vidarr\" : \"Ass\","
-        "\"Njordr\" : \"Wanr\","
-        "\"Frey\" : \"Wanr\","
-        "\"Freya\" : \"Wanr\"  }} Non-conclusive List "
-        "of the dwellers of Asgard";
+  printf("For '%s'\n\nWe got:\n\n", gods_with_trailing_chars);
+  ov_value_dump(stdout, gods);
+  printf("\n\nAnd trailing chars: '%s'\n\n", remainder);
 
-    to_parse = (ov_buffer){
-        .start = (uint8_t *)object_string,
-        .length = strlen(object_string) + 1,
-    };
+  /* Parse objects */
 
-    object = ov_value_parse(&to_parse, &remainder);
+  char const *object_string = "   \n"
+                              " {   \"Aesir\":[\"Heimdall\",\"Loki\"  ,     "
+                              "\"Vidarr\"] , "
+                              "     \"Wanir\"   :   [ \"Njordr\", \"Frey\"   "
+                              ",\"Freya\"],  "
+                              "     \"reverted\" :{ \n"
+                              "  \"Heimdall\" : \"Ass\"  , "
+                              " \"Loki\": \"Ass\",  \n"
+                              "\"Vidarr\" : \"Ass\","
+                              "\"Njordr\" : \"Wanr\","
+                              "\"Frey\" : \"Wanr\","
+                              "\"Freya\" : \"Wanr\"  }} Non-conclusive List "
+                              "of the dwellers of Asgard";
 
-    printf("%s:\n", remainder);
-    ov_value_dump(stdout, object);
+  to_parse = (ov_buffer){
+      .start = (uint8_t *)object_string,
+      .length = strlen(object_string) + 1,
+  };
 
-    // " and \ must be escaped in strings:
+  object = ov_value_parse(&to_parse, &remainder);
 
-    char const *escaped_string =
-        "A '\"' must be escaped like '\\\"', "
-        "a '\\' must be escaped like '\\\\'";
+  printf("%s:\n", remainder);
+  ov_value_dump(stdout, object);
 
-    to_parse = (ov_buffer){
-        .start = (uint8_t *)escaped_string,
-        .length = strlen(escaped_string),
-    };
+  // " and \ must be escaped in strings:
 
-    ov_value *string = ov_value_parse(&to_parse, 0);
+  char const *escaped_string = "A '\"' must be escaped like '\\\"', "
+                               "a '\\' must be escaped like '\\\\'";
 
-    ov_value_dump(stdout, string);
+  to_parse = (ov_buffer){
+      .start = (uint8_t *)escaped_string,
+      .length = strlen(escaped_string),
+  };
 
-    string = ov_value_free(string);
+  ov_value *string = ov_value_parse(&to_parse, 0);
 
-    // You can visit all immediate entries in an ov_value
-    // using ov_value_for_each()
-    //
-    // If you want to visit *all* entries, use recursion
-    // like in here (see `deep_count`) .
-    struct deep_count_arg arg = {
+  ov_value_dump(stdout, string);
 
-        .stream = stderr,
-        .counter = 0,
+  string = ov_value_free(string);
 
-    };
+  // You can visit all immediate entries in an ov_value
+  // using ov_value_for_each()
+  //
+  // If you want to visit *all* entries, use recursion
+  // like in here (see `deep_count`) .
+  struct deep_count_arg arg = {
 
-    printf("Our list looks like:\n");
+      .stream = stderr,
+      .counter = 0,
 
-    ov_value_for_each(gods, deep_count, &arg);
+  };
 
-    printf("Summarizing up to %zu entries\n", arg.counter);
+  printf("Our list looks like:\n");
 
-    printf("for_each also works on our object:\n");
+  ov_value_for_each(gods, deep_count, &arg);
 
-    arg.counter = 0;
+  printf("Summarizing up to %zu entries\n", arg.counter);
 
-    ov_value_for_each(object, deep_count, &arg);
+  printf("for_each also works on our object:\n");
 
-    printf("Summarizing up to %zu entries\n", arg.counter);
+  arg.counter = 0;
 
-    // You can do all kinds of stuff with for_each, implement own
-    // counters, filters, serializers...
+  ov_value_for_each(object, deep_count, &arg);
 
-    gods = ov_value_free(gods);
-    OV_ASSERT(0 == gods);
+  printf("Summarizing up to %zu entries\n", arg.counter);
 
-    object = ov_value_free(object);
+  // You can do all kinds of stuff with for_each, implement own
+  // counters, filters, serializers...
 
-    /* Don't forget to free all registered caches */
-    ov_registered_cache_free_all();
+  gods = ov_value_free(gods);
+  OV_ASSERT(0 == gods);
 
-    return EXIT_SUCCESS;
+  object = ov_value_free(object);
+
+  /* Don't forget to free all registered caches */
+  ov_registered_cache_free_all();
+
+  return EXIT_SUCCESS;
 }

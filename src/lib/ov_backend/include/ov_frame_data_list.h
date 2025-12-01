@@ -42,10 +42,10 @@
 
 typedef struct {
 
-    uint16_t magic_bytes;
+  uint16_t magic_bytes;
 
-    size_t capacity;
-    ov_frame_data **frames;
+  size_t capacity;
+  ov_frame_data **frames;
 
 } ov_frame_data_list;
 

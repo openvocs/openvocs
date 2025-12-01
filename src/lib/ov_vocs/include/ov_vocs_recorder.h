@@ -33,8 +33,8 @@
 #define ov_vocs_recorder_h
 
 #include <ov_base/ov_event_loop.h>
-#include <ov_base/ov_socket.h>
 #include <ov_base/ov_result.h>
+#include <ov_base/ov_socket.h>
 #include <ov_base/ov_vad_config.h>
 
 #include <ov_core/ov_event_io.h>
@@ -51,33 +51,33 @@ typedef struct ov_vocs_recorder ov_vocs_recorder;
 
 typedef struct ov_vocs_recorder_config {
 
-    ov_event_loop *loop;
-    ov_vocs_db *vocs_db;
+  ov_event_loop *loop;
+  ov_vocs_db *vocs_db;
 
-    ov_vad_config vad;
+  ov_vad_config vad;
 
-    struct {
+  struct {
 
-        uint64_t silence_cutoff_interval_msec;
+    uint64_t silence_cutoff_interval_msec;
 
-    } limits;
+  } limits;
 
-    struct {
+  struct {
 
-        ov_socket_configuration manager;
+    ov_socket_configuration manager;
 
-    } socket;
+  } socket;
 
-    struct {
+  struct {
 
-        void *userdata;
+    void *userdata;
 
-        void (*start_record)(void *userdata, const char *uuid, ov_result error);
-        void (*stop_record) (void *userdata, const char *uuid, ov_result error);
+    void (*start_record)(void *userdata, const char *uuid, ov_result error);
+    void (*stop_record)(void *userdata, const char *uuid, ov_result error);
 
-    } callbacks;
+  } callbacks;
 
-    ov_database_info db;
+  ov_database_info db;
 
 } ov_vocs_recorder_config;
 
@@ -95,8 +95,8 @@ ov_vocs_recorder *ov_vocs_recorder_cast(const void *data);
 
 /*----------------------------------------------------------------------------*/
 
-ov_vocs_recorder_config ov_vocs_recorder_config_from_json(
-    const ov_json_value *value);
+ov_vocs_recorder_config
+ov_vocs_recorder_config_from_json(const ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/
 
@@ -104,49 +104,41 @@ ov_event_io_config ov_vocs_recorder_io_uri_config(ov_vocs_recorder *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self, const char *loop, const char *uuid);
-bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop, const char *uuid);
+bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self, const char *loop,
+                                      const char *uuid);
+bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop,
+                                     const char *uuid);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_vocs_recorder_get_recording(
-    ov_vocs_recorder *self, ov_db_recordings_get_params params);
+ov_json_value *
+ov_vocs_recorder_get_recording(ov_vocs_recorder *self,
+                               ov_db_recordings_get_params params);
 
 /*----------------------------------------------------------------------------*/
 
-void ov_vocs_recorder_join_loop(ov_vocs_recorder *self,
-                                const char *user,
-                                const char *role,
-                                const char *loop);
+void ov_vocs_recorder_join_loop(ov_vocs_recorder *self, const char *user,
+                                const char *role, const char *loop);
 
 /*----------------------------------------------------------------------------*/
 
-void ov_vocs_recorder_leave_loop(ov_vocs_recorder *self,
-                                 const char *user,
-                                 const char *role,
-                                 const char *loop);
+void ov_vocs_recorder_leave_loop(ov_vocs_recorder *self, const char *user,
+                                 const char *role, const char *loop);
 
 /*----------------------------------------------------------------------------*/
 
-void ov_vocs_recorder_talk_on_loop(ov_vocs_recorder *self,
-                                   const char *user,
-                                   const char *role,
-                                   const char *loop);
+void ov_vocs_recorder_talk_on_loop(ov_vocs_recorder *self, const char *user,
+                                   const char *role, const char *loop);
 
 /*----------------------------------------------------------------------------*/
 
-void ov_vocs_recorder_talk_off_loop(ov_vocs_recorder *self,
-                                    const char *user,
-                                    const char *role,
-                                    const char *loop);
+void ov_vocs_recorder_talk_off_loop(ov_vocs_recorder *self, const char *user,
+                                    const char *role, const char *loop);
 
 /*----------------------------------------------------------------------------*/
 
-void ov_vocs_recorder_ptt(ov_vocs_recorder *self,
-                          const char *user,
-                          const char *role,
-                          const char *loop,
-                          bool off);
+void ov_vocs_recorder_ptt(ov_vocs_recorder *self, const char *user,
+                          const char *role, const char *loop, bool off);
 
 /*----------------------------------------------------------------------------*/
 

@@ -63,8 +63,8 @@ typedef enum { GENERAL, LESSER, AFFERO } ov_source_file_gpl_v3_types;
 
 struct ov_copyright_gpl_v3_parameter {
 
-    ov_source_file_gpl_v3_types type;
-    const char *program_name;
+  ov_source_file_gpl_v3_types type;
+  const char *program_name;
 };
 
 /*
@@ -77,29 +77,25 @@ struct ov_copyright_gpl_v3_parameter {
 
 struct ov_copyright {
 
-    char *(*generate_header_string)(const char *prefix,
-                                    const char *intro,
-                                    const char *year,
-                                    const char *owner,
-                                    const char *end_note,
-                                    const char *suffix,
-                                    uint16_t line_indent,
-                                    bool indent_using_spaces,
-                                    void *custom_data);
+  char *(*generate_header_string)(const char *prefix, const char *intro,
+                                  const char *year, const char *owner,
+                                  const char *end_note, const char *suffix,
+                                  uint16_t line_indent,
+                                  bool indent_using_spaces, void *custom_data);
 
-    char *(*generate_full_text_licence)(void *custom_data);
+  char *(*generate_full_text_licence)(void *custom_data);
 };
 
 /*----------------------------------------------------------------------------*/
 
 struct ov_copyright_config {
 
-    const char *author;
-    const char *owner;
-    const char *note;
+  const char *author;
+  const char *owner;
+  const char *note;
 
-    ov_copyright copyright;
-    ov_copyright_gpl_v3_parameter *gpl_parameter;
+  ov_copyright copyright;
+  ov_copyright_gpl_v3_parameter *gpl_parameter;
 };
 
 /**     ------------------------------------------------------------------------
@@ -119,14 +115,11 @@ struct ov_copyright_config {
 
         @returns                allocated c string or NULL
 */
-char *ov_copyright_generate_header_string(const char *prefix,
-                                          const char *intro,
-                                          const char *year,
-                                          const char *owner,
+char *ov_copyright_generate_header_string(const char *prefix, const char *intro,
+                                          const char *year, const char *owner,
                                           const char *text,
                                           const char *end_note,
-                                          const char *suffix,
-                                          uint16_t indent,
+                                          const char *suffix, uint16_t indent,
                                           bool spaces);
 
 /*      ------------------------------------------------------------------------

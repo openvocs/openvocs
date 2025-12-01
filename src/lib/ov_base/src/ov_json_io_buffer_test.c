@@ -44,785 +44,747 @@
 
 struct dummy_userdata {
 
-    ov_json_io_buffer *self;
-    ov_list *list;
-    int socket;
+  ov_json_io_buffer *self;
+  ov_list *list;
+  int socket;
 
-    bool error;
+  bool error;
 };
 
 /*----------------------------------------------------------------------------*/
 
-static void dummy_receive_no_drop(void *userdata,
-                                  int socket,
+static void dummy_receive_no_drop(void *userdata, int socket,
                                   ov_json_value *value) {
 
-    struct dummy_userdata *data = (struct dummy_userdata *)userdata;
-    ov_list_push(data->list, value);
-    data->socket = socket;
-    data->error = false;
-    return;
+  struct dummy_userdata *data = (struct dummy_userdata *)userdata;
+  ov_list_push(data->list, value);
+  data->socket = socket;
+  data->error = false;
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void dummy_receive_drop(void *userdata,
-                               int socket,
+static void dummy_receive_drop(void *userdata, int socket,
                                ov_json_value *value) {
 
-    struct dummy_userdata *data = (struct dummy_userdata *)userdata;
-    ov_list_push(data->list, value);
-    data->socket = socket;
-    ov_json_io_buffer_drop(data->self, socket);
-    data->error = false;
-    return;
+  struct dummy_userdata *data = (struct dummy_userdata *)userdata;
+  ov_list_push(data->list, value);
+  data->socket = socket;
+  ov_json_io_buffer_drop(data->self, socket);
+  data->error = false;
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void dummy_error(void *userdata, int socket) {
 
-    struct dummy_userdata *data = (struct dummy_userdata *)userdata;
+  struct dummy_userdata *data = (struct dummy_userdata *)userdata;
 
-    data->socket = socket;
-    data->error = true;
-    return;
+  data->socket = socket;
+  data->error = true;
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool dummy_init(struct dummy_userdata *dummy) {
 
-    if (!dummy) return false;
+  if (!dummy)
+    return false;
 
-    dummy->socket = 0;
+  dummy->socket = 0;
 
-    dummy->list =
-        ov_list_create((ov_list_config){.item.free = ov_json_value_free});
-    return true;
+  dummy->list =
+      ov_list_create((ov_list_config){.item.free = ov_json_value_free});
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool dummy_deinit(struct dummy_userdata *dummy) {
 
-    if (!dummy) return false;
+  if (!dummy)
+    return false;
 
-    dummy->self = NULL;
-    dummy->list = ov_list_free(dummy->list);
-    return true;
+  dummy->self = NULL;
+  dummy->list = ov_list_free(dummy->list);
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_json_io_buffer_create() {
 
-    struct dummy_userdata dummy;
-    testrun(dummy_init(&dummy));
+  struct dummy_userdata dummy;
+  testrun(dummy_init(&dummy));
 
-    ov_json_io_buffer_config config = (ov_json_io_buffer_config){0};
+  ov_json_io_buffer_config config = (ov_json_io_buffer_config){0};
 
-    testrun(!ov_json_io_buffer_create(config));
+  testrun(!ov_json_io_buffer_create(config));
 
-    config.callback.userdata = &dummy;
-    config.callback.success = dummy_receive_no_drop;
+  config.callback.userdata = &dummy;
+  config.callback.success = dummy_receive_no_drop;
 
-    ov_json_io_buffer *self = ov_json_io_buffer_create(config);
+  ov_json_io_buffer *self = ov_json_io_buffer_create(config);
 
-    testrun(self);
-    testrun(self->dict);
-    testrun(self->config.debug == false);
+  testrun(self);
+  testrun(self->dict);
+  testrun(self->config.debug == false);
 
-    testrun(NULL == ov_json_io_buffer_free(self));
+  testrun(NULL == ov_json_io_buffer_free(self));
 
-    testrun(dummy_deinit(&dummy));
-    return testrun_log_success();
+  testrun(dummy_deinit(&dummy));
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_json_io_buffer_free() {
 
-    struct dummy_userdata dummy;
-    testrun(dummy_init(&dummy));
+  struct dummy_userdata dummy;
+  testrun(dummy_init(&dummy));
 
-    ov_json_io_buffer_config config = (ov_json_io_buffer_config){
-        .callback.userdata = &dummy, .callback.success = dummy_receive_no_drop};
+  ov_json_io_buffer_config config = (ov_json_io_buffer_config){
+      .callback.userdata = &dummy, .callback.success = dummy_receive_no_drop};
 
-    ov_json_io_buffer *self = ov_json_io_buffer_create(config);
+  ov_json_io_buffer *self = ov_json_io_buffer_create(config);
 
-    testrun(NULL == ov_json_io_buffer_free(NULL));
-    testrun(NULL == ov_json_io_buffer_free(self));
+  testrun(NULL == ov_json_io_buffer_free(NULL));
+  testrun(NULL == ov_json_io_buffer_free(self));
 
-    /* check with content */
+  /* check with content */
 
-    self = ov_json_io_buffer_create(config);
+  self = ov_json_io_buffer_create(config);
 
-    char *valid_json = "{\"key\":";
+  char *valid_json = "{\"key\":";
 
-    ov_memory_pointer ptr = (ov_memory_pointer){
-        .start = (uint8_t *)valid_json, .length = strlen(valid_json)};
+  ov_memory_pointer ptr = (ov_memory_pointer){.start = (uint8_t *)valid_json,
+                                              .length = strlen(valid_json)};
 
-    dummy.socket = 0;
-    testrun(0 == ov_list_count(dummy.list));
+  dummy.socket = 0;
+  testrun(0 == ov_list_count(dummy.list));
 
-    testrun(ov_json_io_buffer_push(self, 1, ptr));
-    testrun(ov_json_io_buffer_push(self, 2, ptr));
-    testrun(ov_json_io_buffer_push(self, 3, ptr));
+  testrun(ov_json_io_buffer_push(self, 1, ptr));
+  testrun(ov_json_io_buffer_push(self, 2, ptr));
+  testrun(ov_json_io_buffer_push(self, 3, ptr));
 
-    testrun(0 == dummy.socket);
-    testrun(0 == ov_list_count(dummy.list));
+  testrun(0 == dummy.socket);
+  testrun(0 == ov_list_count(dummy.list));
 
-    testrun(ov_dict_get(self->dict, (void *)(intptr_t)1));
-    testrun(ov_dict_get(self->dict, (void *)(intptr_t)2));
-    testrun(ov_dict_get(self->dict, (void *)(intptr_t)3));
+  testrun(ov_dict_get(self->dict, (void *)(intptr_t)1));
+  testrun(ov_dict_get(self->dict, (void *)(intptr_t)2));
+  testrun(ov_dict_get(self->dict, (void *)(intptr_t)3));
 
-    testrun(NULL == ov_json_io_buffer_free(self));
+  testrun(NULL == ov_json_io_buffer_free(self));
 
-    testrun(dummy_deinit(&dummy));
-    return testrun_log_success();
+  testrun(dummy_deinit(&dummy));
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_json_io_buffer_push() {
 
-    ov_json_value *val = NULL;
-    ov_buffer *buffer = NULL;
+  ov_json_value *val = NULL;
+  ov_buffer *buffer = NULL;
 
-    struct dummy_userdata dummy;
-    testrun(dummy_init(&dummy));
+  struct dummy_userdata dummy;
+  testrun(dummy_init(&dummy));
 
-    ov_json_io_buffer_config config =
-        (ov_json_io_buffer_config){.callback.userdata = &dummy,
-                                   .callback.success = dummy_receive_no_drop,
-                                   .callback.failure = dummy_error};
+  ov_json_io_buffer_config config =
+      (ov_json_io_buffer_config){.callback.userdata = &dummy,
+                                 .callback.success = dummy_receive_no_drop,
+                                 .callback.failure = dummy_error};
 
-    ov_json_io_buffer *self = ov_json_io_buffer_create(config);
-    testrun(self);
-    dummy.self = self;
+  ov_json_io_buffer *self = ov_json_io_buffer_create(config);
+  testrun(self);
+  dummy.self = self;
 
-    char *str = "{\"key\":";
-    intptr_t key = 1;
+  char *str = "{\"key\":";
+  intptr_t key = 1;
 
-    testrun(!ov_json_io_buffer_push(
-        NULL,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_json_io_buffer_push(
+      NULL, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    testrun(!ov_json_io_buffer_push(
-        self, key, (ov_memory_pointer){.start = NULL, .length = strlen(str)}));
+  testrun(!ov_json_io_buffer_push(
+      self, key, (ov_memory_pointer){.start = NULL, .length = strlen(str)}));
 
-    testrun(!ov_json_io_buffer_push(
-        self, key, (ov_memory_pointer){.start = (uint8_t *)str, .length = 0}));
+  testrun(!ov_json_io_buffer_push(
+      self, key, (ov_memory_pointer){.start = (uint8_t *)str, .length = 0}));
 
-    testrun(key == dummy.socket);
-    testrun(true == dummy.error);
-    testrun(0 == ov_list_count(dummy.list));
+  testrun(key == dummy.socket);
+  testrun(true == dummy.error);
+  testrun(0 == ov_list_count(dummy.list));
 
-    // check negative indicies (allowed as ID based content from -INT to + INT)
+  // check negative indicies (allowed as ID based content from -INT to + INT)
 
-    testrun(ov_json_io_buffer_push(
-        self,
-        -1,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(ov_json_io_buffer_push(
+      self, -1,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    key = -1;
+  key = -1;
 
-    // no callback yet
-    testrun(1 == dummy.socket);
-    testrun(true == dummy.error);
-    // content added
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp(str, buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  // no callback yet
+  testrun(1 == dummy.socket);
+  testrun(true == dummy.error);
+  // content added
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp(str, buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    // check socket id
-    key = 1;
+  // check socket id
+  key = 1;
 
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp(str, buffer->start, buffer->length));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp(str, buffer->start, buffer->length));
 
-    str = "\"val\"";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  str = "\"val\"";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    // no callback yet
-    testrun(1 == dummy.socket);
-    testrun(true == dummy.error);
-    // content added
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp("{\"key\":\"val\"", buffer->start, buffer->length));
+  // no callback yet
+  testrun(1 == dummy.socket);
+  testrun(true == dummy.error);
+  // content added
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp("{\"key\":\"val\"", buffer->start, buffer->length));
 
-    str = "}{\"next\":";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  str = "}{\"next\":";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    testrun(1 == dummy.socket);
-    testrun(1 == ov_list_count(dummy.list));
+  testrun(1 == dummy.socket);
+  testrun(1 == ov_list_count(dummy.list));
 
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp("{\"next\":", buffer->start, buffer->length));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp("{\"next\":", buffer->start, buffer->length));
 
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_object(val));
-    val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_object(val));
+  val = ov_json_value_free(val);
 
-    // expect a drop of all content
-    str = "invalid content in terms of json";
-    testrun(!ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  // expect a drop of all content
+  str = "invalid content in terms of json";
+  testrun(!ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    testrun(!ov_dict_get(self->dict, (void *)key));
-    testrun(0 == ov_list_count(dummy.list));
+  testrun(!ov_dict_get(self->dict, (void *)key));
+  testrun(0 == ov_list_count(dummy.list));
 
-    // try to add invalid content (nothing added yet at socket id)
-    testrun(ov_dict_is_empty(self->dict));
-    testrun(!ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_get(self->dict, (void *)key));
-    testrun(ov_dict_is_empty(self->dict));
+  // try to add invalid content (nothing added yet at socket id)
+  testrun(ov_dict_is_empty(self->dict));
+  testrun(!ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_get(self->dict, (void *)key));
+  testrun(ov_dict_is_empty(self->dict));
 
-    str = "{:";
-    testrun(!ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(ov_dict_is_empty(self->dict));
+  str = "{:";
+  testrun(!ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(ov_dict_is_empty(self->dict));
 
-    str = "[\"some valid array\"]";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == buffer->length);
-    testrun(1 == dummy.socket);
-    testrun(1 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_array(val));
-    val = ov_json_value_free(val);
+  str = "[\"some valid array\"]";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == buffer->length);
+  testrun(1 == dummy.socket);
+  testrun(1 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_array(val));
+  val = ov_json_value_free(val);
 
-    str = "[\"some incomplete array ";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 ==
-            memcmp("[\"some incomplete array ", buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "[\"some incomplete array ";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 ==
+          memcmp("[\"some incomplete array ", buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "\"some valid string\"";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == buffer->length);
-    testrun(1 == dummy.socket);
-    testrun(1 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_string(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "\"some valid string\"";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == buffer->length);
+  testrun(1 == dummy.socket);
+  testrun(1 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_string(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "\"some incomplete string";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 ==
-            memcmp("\"some incomplete string", buffer->start, buffer->length));
-    testrun(0 == ov_list_count(dummy.list));
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "\"some incomplete string";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 ==
+          memcmp("\"some incomplete string", buffer->start, buffer->length));
+  testrun(0 == ov_list_count(dummy.list));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "null";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == buffer->length);
-    testrun(1 == dummy.socket);
-    testrun(1 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_null(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "null";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == buffer->length);
+  testrun(1 == dummy.socket);
+  testrun(1 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_null(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "true";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == buffer->length);
-    testrun(1 == dummy.socket);
-    testrun(1 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_true(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "true";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == buffer->length);
+  testrun(1 == dummy.socket);
+  testrun(1 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_true(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "false";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == buffer->length);
-    testrun(1 == dummy.socket);
-    testrun(1 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_false(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "false";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == buffer->length);
+  testrun(1 == dummy.socket);
+  testrun(1 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_false(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "tr";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp("tr", buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "tr";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp("tr", buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "fal";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp("fal", buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "fal";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp("fal", buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "n";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp("n", buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "n";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp("n", buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "{\"some incomplete object";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 ==
-            memcmp("{\"some incomplete object", buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "{\"some incomplete object";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 ==
+          memcmp("{\"some incomplete object", buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    testrun(0 == ov_list_count(dummy.list));
-    str = "{\"key\":\"1\"} {";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(1 == ov_list_count(dummy.list));
-    testrun(ov_list_clear(dummy.list));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp(" {", buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  testrun(0 == ov_list_count(dummy.list));
+  str = "{\"key\":\"1\"} {";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(1 == ov_list_count(dummy.list));
+  testrun(ov_list_clear(dummy.list));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp(" {", buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    str = "{\"key\":\"1\"} {    ";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(1 == ov_list_count(dummy.list));
-    testrun(ov_list_clear(dummy.list));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp(" {    ", buffer->start, buffer->length));
-    testrun(ov_json_io_buffer_drop(self, key));
+  str = "{\"key\":\"1\"} {    ";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(1 == ov_list_count(dummy.list));
+  testrun(ov_list_clear(dummy.list));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp(" {    ", buffer->start, buffer->length));
+  testrun(ov_json_io_buffer_drop(self, key));
 
-    // nothing added, as the whole buffer does not match
-    testrun(0 == ov_list_count(dummy.list));
-    testrun(dummy.error == false);
-    str = "{\"key\":\"1\"} {   : ";
-    testrun(!ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(0 == ov_list_count(dummy.list));
-    testrun(ov_dict_is_empty(self->dict));
-    testrun(dummy.error == true);
+  // nothing added, as the whole buffer does not match
+  testrun(0 == ov_list_count(dummy.list));
+  testrun(dummy.error == false);
+  str = "{\"key\":\"1\"} {   : ";
+  testrun(!ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(0 == ov_list_count(dummy.list));
+  testrun(ov_dict_is_empty(self->dict));
+  testrun(dummy.error == true);
 
-    // nothing added, as the whole buffer does not match
-    dummy.error = false;
-    str = "{\"key\":\"1\"} {[";
-    testrun(!ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(0 == ov_list_count(dummy.list));
-    testrun(ov_dict_is_empty(self->dict));
-    testrun(dummy.error == true);
+  // nothing added, as the whole buffer does not match
+  dummy.error = false;
+  str = "{\"key\":\"1\"} {[";
+  testrun(!ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(0 == ov_list_count(dummy.list));
+  testrun(ov_dict_is_empty(self->dict));
+  testrun(dummy.error == true);
 
-    str = "{} {\"key\":\"1\"} {\"key\":\"2\"} {\"key\":\"3\"} {";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp(" {", buffer->start, buffer->length));
-    testrun(4 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_object(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_object(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_object(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_object(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "{} {\"key\":\"1\"} {\"key\":\"2\"} {\"key\":\"3\"} {";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp(" {", buffer->start, buffer->length));
+  testrun(4 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_object(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_object(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_object(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_object(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "null null";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(2 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_null(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_null(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "null null";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(2 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_null(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_null(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "true true";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(2 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_true(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_true(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "true true";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(2 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_true(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_true(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "false false";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(2 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_false(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_false(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "false false";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(2 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_false(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_false(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "false true false true false";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(5 == ov_list_count(dummy.list));
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_false(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_true(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_false(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_true(val));
-    val = ov_json_value_free(val);
-    val = ov_list_pop(dummy.list);
-    testrun(ov_json_is_false(val));
-    val = ov_json_value_free(val);
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "false true false true false";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(5 == ov_list_count(dummy.list));
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_false(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_true(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_false(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_true(val));
+  val = ov_json_value_free(val);
+  val = ov_list_pop(dummy.list);
+  testrun(ov_json_is_false(val));
+  val = ov_json_value_free(val);
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "false true false true null";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(5 == ov_list_count(dummy.list));
-    val = ov_list_get(dummy.list, 1);
-    testrun(ov_json_is_false(val));
-    val = ov_list_get(dummy.list, 2);
-    testrun(ov_json_is_true(val));
-    val = ov_list_get(dummy.list, 3);
-    testrun(ov_json_is_false(val));
-    val = ov_list_get(dummy.list, 4);
-    testrun(ov_json_is_true(val));
-    val = ov_list_get(dummy.list, 5);
-    testrun(ov_json_is_null(val));
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "false true false true null";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(5 == ov_list_count(dummy.list));
+  val = ov_list_get(dummy.list, 1);
+  testrun(ov_json_is_false(val));
+  val = ov_list_get(dummy.list, 2);
+  testrun(ov_json_is_true(val));
+  val = ov_list_get(dummy.list, 3);
+  testrun(ov_json_is_false(val));
+  val = ov_list_get(dummy.list, 4);
+  testrun(ov_json_is_true(val));
+  val = ov_list_get(dummy.list, 5);
+  testrun(ov_json_is_null(val));
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "null true false";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(3 == ov_list_count(dummy.list));
-    val = ov_list_get(dummy.list, 1);
-    testrun(ov_json_is_null(val));
-    val = ov_list_get(dummy.list, 2);
-    testrun(ov_json_is_true(val));
-    val = ov_list_get(dummy.list, 3);
-    testrun(ov_json_is_false(val));
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "null true false";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(3 == ov_list_count(dummy.list));
+  val = ov_list_get(dummy.list, 1);
+  testrun(ov_json_is_null(val));
+  val = ov_list_get(dummy.list, 2);
+  testrun(ov_json_is_true(val));
+  val = ov_list_get(dummy.list, 3);
+  testrun(ov_json_is_false(val));
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    // we leave out number, as the implementation of
-    // parsing currently requires a closing element ,}]
-    // after optional whitespace
-    str = "{} [] \"string\" true false null";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(6 == ov_list_count(dummy.list));
-    val = ov_list_get(dummy.list, 1);
-    testrun(ov_json_is_object(val));
-    val = ov_list_get(dummy.list, 2);
-    testrun(ov_json_is_array(val));
-    val = ov_list_get(dummy.list, 3);
-    testrun(ov_json_is_string(val));
-    val = ov_list_get(dummy.list, 4);
-    testrun(ov_json_is_true(val));
-    val = ov_list_get(dummy.list, 5);
-    testrun(ov_json_is_false(val));
-    val = ov_list_get(dummy.list, 6);
-    testrun(ov_json_is_null(val));
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  // we leave out number, as the implementation of
+  // parsing currently requires a closing element ,}]
+  // after optional whitespace
+  str = "{} [] \"string\" true false null";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(6 == ov_list_count(dummy.list));
+  val = ov_list_get(dummy.list, 1);
+  testrun(ov_json_is_object(val));
+  val = ov_list_get(dummy.list, 2);
+  testrun(ov_json_is_array(val));
+  val = ov_list_get(dummy.list, 3);
+  testrun(ov_json_is_string(val));
+  val = ov_list_get(dummy.list, 4);
+  testrun(ov_json_is_true(val));
+  val = ov_list_get(dummy.list, 5);
+  testrun(ov_json_is_false(val));
+  val = ov_list_get(dummy.list, 6);
+  testrun(ov_json_is_null(val));
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "{}[]\"string\"truefalsenull";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(6 == ov_list_count(dummy.list));
-    val = ov_list_get(dummy.list, 1);
-    testrun(ov_json_is_object(val));
-    val = ov_list_get(dummy.list, 2);
-    testrun(ov_json_is_array(val));
-    val = ov_list_get(dummy.list, 3);
-    testrun(ov_json_is_string(val));
-    val = ov_list_get(dummy.list, 4);
-    testrun(ov_json_is_true(val));
-    val = ov_list_get(dummy.list, 5);
-    testrun(ov_json_is_false(val));
-    val = ov_list_get(dummy.list, 6);
-    testrun(ov_json_is_null(val));
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "{}[]\"string\"truefalsenull";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(6 == ov_list_count(dummy.list));
+  val = ov_list_get(dummy.list, 1);
+  testrun(ov_json_is_object(val));
+  val = ov_list_get(dummy.list, 2);
+  testrun(ov_json_is_array(val));
+  val = ov_list_get(dummy.list, 3);
+  testrun(ov_json_is_string(val));
+  val = ov_list_get(dummy.list, 4);
+  testrun(ov_json_is_true(val));
+  val = ov_list_get(dummy.list, 5);
+  testrun(ov_json_is_false(val));
+  val = ov_list_get(dummy.list, 6);
+  testrun(ov_json_is_null(val));
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "{}[]\"string\"truefalsenull";
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
-    testrun(!ov_dict_is_empty(self->dict));
-    testrun(6 == ov_list_count(dummy.list));
-    val = ov_list_get(dummy.list, 1);
-    testrun(ov_json_is_object(val));
-    val = ov_list_get(dummy.list, 2);
-    testrun(ov_json_is_array(val));
-    val = ov_list_get(dummy.list, 3);
-    testrun(ov_json_is_string(val));
-    val = ov_list_get(dummy.list, 4);
-    testrun(ov_json_is_true(val));
-    val = ov_list_get(dummy.list, 5);
-    testrun(ov_json_is_false(val));
-    val = ov_list_get(dummy.list, 6);
-    testrun(ov_json_is_null(val));
-    testrun(ov_json_io_buffer_drop(self, key));
-    testrun(ov_list_clear(dummy.list));
+  str = "{}[]\"string\"truefalsenull";
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_dict_is_empty(self->dict));
+  testrun(6 == ov_list_count(dummy.list));
+  val = ov_list_get(dummy.list, 1);
+  testrun(ov_json_is_object(val));
+  val = ov_list_get(dummy.list, 2);
+  testrun(ov_json_is_array(val));
+  val = ov_list_get(dummy.list, 3);
+  testrun(ov_json_is_string(val));
+  val = ov_list_get(dummy.list, 4);
+  testrun(ov_json_is_true(val));
+  val = ov_list_get(dummy.list, 5);
+  testrun(ov_json_is_false(val));
+  val = ov_list_get(dummy.list, 6);
+  testrun(ov_json_is_null(val));
+  testrun(ov_json_io_buffer_drop(self, key));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "{} {";
+  str = "{} {";
 
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == memcmp(" {", buffer->start, buffer->length));
-    testrun(1 == ov_list_count(dummy.list));
-    testrun(ov_list_clear(dummy.list));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == memcmp(" {", buffer->start, buffer->length));
+  testrun(1 == ov_list_count(dummy.list));
+  testrun(ov_list_clear(dummy.list));
 
-    str = "} {}{}";
-    testrun(0 == ov_list_count(dummy.list));
+  str = "} {}{}";
+  testrun(0 == ov_list_count(dummy.list));
 
-    testrun(ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    testrun(!ov_dict_is_empty(self->dict));
-    buffer = ov_dict_get(self->dict, (void *)key);
-    testrun(buffer);
-    testrun(0 == buffer->length);
-    testrun(3 == ov_list_count(dummy.list));
-    testrun(ov_list_clear(dummy.list));
+  testrun(!ov_dict_is_empty(self->dict));
+  buffer = ov_dict_get(self->dict, (void *)key);
+  testrun(buffer);
+  testrun(0 == buffer->length);
+  testrun(3 == ov_list_count(dummy.list));
+  testrun(ov_list_clear(dummy.list));
 
-    // check drop during receive
-    self->config.callback.success = dummy_receive_drop;
-    str = "{}{}{}";
+  // check drop during receive
+  self->config.callback.success = dummy_receive_drop;
+  str = "{}{}{}";
 
-    testrun(0 == ov_list_count(dummy.list));
+  testrun(0 == ov_list_count(dummy.list));
 
-    testrun(!ov_json_io_buffer_push(
-        self,
-        key,
-        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
+  testrun(!ov_json_io_buffer_push(
+      self, key,
+      (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-    // check we received the first JSON and dropped
-    testrun(ov_dict_is_empty(self->dict));
-    testrun(1 == ov_list_count(dummy.list));
-    testrun(ov_list_clear(dummy.list));
+  // check we received the first JSON and dropped
+  testrun(ov_dict_is_empty(self->dict));
+  testrun(1 == ov_list_count(dummy.list));
+  testrun(ov_list_clear(dummy.list));
 
-    testrun(NULL == ov_json_io_buffer_free(self));
+  testrun(NULL == ov_json_io_buffer_free(self));
 
-    testrun(dummy_deinit(&dummy));
-    return testrun_log_success();
+  testrun(dummy_deinit(&dummy));
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_json_io_buffer_drop() {
 
-    ov_buffer *buffer = NULL;
+  ov_buffer *buffer = NULL;
 
-    struct dummy_userdata dummy;
-    testrun(dummy_init(&dummy));
+  struct dummy_userdata dummy;
+  testrun(dummy_init(&dummy));
 
-    ov_json_io_buffer_config config =
-        (ov_json_io_buffer_config){.callback.userdata = &dummy,
-                                   .callback.success = dummy_receive_no_drop,
-                                   .callback.failure = dummy_error};
+  ov_json_io_buffer_config config =
+      (ov_json_io_buffer_config){.callback.userdata = &dummy,
+                                 .callback.success = dummy_receive_no_drop,
+                                 .callback.failure = dummy_error};
 
-    ov_json_io_buffer *self = ov_json_io_buffer_create(config);
-    testrun(self);
-    dummy.self = self;
+  ov_json_io_buffer *self = ov_json_io_buffer_create(config);
+  testrun(self);
+  dummy.self = self;
 
-    char *str = "{\"key\":";
-    intptr_t key = 1;
+  char *str = "{\"key\":";
+  intptr_t key = 1;
 
-    for (size_t i = 1; i < 10; i++) {
+  for (size_t i = 1; i < 10; i++) {
 
-        key = i;
-        testrun(
-            ov_json_io_buffer_push(self,
-                                   key,
-                                   (ov_memory_pointer){.start = (uint8_t *)str,
-                                                       .length = strlen(str)}));
+    key = i;
+    testrun(ov_json_io_buffer_push(
+        self, key,
+        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
-        buffer = ov_dict_get(self->dict, (void *)key);
-        testrun(buffer);
-        testrun(0 == memcmp(str, buffer->start, buffer->length));
-    }
+    buffer = ov_dict_get(self->dict, (void *)key);
+    testrun(buffer);
+    testrun(0 == memcmp(str, buffer->start, buffer->length));
+  }
 
-    testrun(9 == ov_dict_count(self->dict));
-    testrun(!ov_json_io_buffer_drop(NULL, 1));
-    testrun(ov_dict_get(self->dict, (void *)(intptr_t)1));
+  testrun(9 == ov_dict_count(self->dict));
+  testrun(!ov_json_io_buffer_drop(NULL, 1));
+  testrun(ov_dict_get(self->dict, (void *)(intptr_t)1));
 
-    testrun(ov_json_io_buffer_drop(self, 1));
-    testrun(8 == ov_dict_count(self->dict));
-    testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
+  testrun(ov_json_io_buffer_drop(self, 1));
+  testrun(8 == ov_dict_count(self->dict));
+  testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
 
-    testrun(ov_json_io_buffer_drop(self, 1));
-    testrun(8 == ov_dict_count(self->dict));
-    testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
+  testrun(ov_json_io_buffer_drop(self, 1));
+  testrun(8 == ov_dict_count(self->dict));
+  testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
 
-    testrun(ov_json_io_buffer_drop(self, 2));
-    testrun(7 == ov_dict_count(self->dict));
-    testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
-    testrun(!ov_dict_get(self->dict, (void *)(intptr_t)2));
+  testrun(ov_json_io_buffer_drop(self, 2));
+  testrun(7 == ov_dict_count(self->dict));
+  testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
+  testrun(!ov_dict_get(self->dict, (void *)(intptr_t)2));
 
-    testrun(ov_json_io_buffer_drop(self, 3));
-    testrun(6 == ov_dict_count(self->dict));
-    testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
-    testrun(!ov_dict_get(self->dict, (void *)(intptr_t)2));
-    testrun(!ov_dict_get(self->dict, (void *)(intptr_t)3));
+  testrun(ov_json_io_buffer_drop(self, 3));
+  testrun(6 == ov_dict_count(self->dict));
+  testrun(!ov_dict_get(self->dict, (void *)(intptr_t)1));
+  testrun(!ov_dict_get(self->dict, (void *)(intptr_t)2));
+  testrun(!ov_dict_get(self->dict, (void *)(intptr_t)3));
 
-    testrun(NULL == ov_json_io_buffer_free(self));
+  testrun(NULL == ov_json_io_buffer_free(self));
 
-    testrun(dummy_deinit(&dummy));
+  testrun(dummy_deinit(&dummy));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -837,14 +799,14 @@ int test_ov_json_io_buffer_drop() {
 
 int all_tests() {
 
-    testrun_init();
+  testrun_init();
 
-    testrun_test(test_ov_json_io_buffer_create);
-    testrun_test(test_ov_json_io_buffer_free);
+  testrun_test(test_ov_json_io_buffer_create);
+  testrun_test(test_ov_json_io_buffer_free);
 
-    testrun_test(test_ov_json_io_buffer_push);
-    testrun_test(test_ov_json_io_buffer_drop);
-    return testrun_counter;
+  testrun_test(test_ov_json_io_buffer_push);
+  testrun_test(test_ov_json_io_buffer_drop);
+  return testrun_counter;
 }
 
 /*

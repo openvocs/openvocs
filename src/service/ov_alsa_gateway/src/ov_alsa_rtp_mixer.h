@@ -43,12 +43,12 @@ typedef struct ov_alsa_rtp_mixer_struct ov_alsa_rtp_mixer;
 
 typedef struct {
 
-    ov_json_value const *codec_config;
-    size_t max_num_frames_per_stream;
-    uint32_t ssid_to_cancel;
-    uint16_t comfort_noise_max_amplitude;
-    size_t frame_length_ms;
-    double sample_rate_hertz;
+  ov_json_value const *codec_config;
+  size_t max_num_frames_per_stream;
+  uint32_t ssid_to_cancel;
+  uint16_t comfort_noise_max_amplitude;
+  size_t frame_length_ms;
+  double sample_rate_hertz;
 
 } ov_alsa_rtp_mixer_config;
 

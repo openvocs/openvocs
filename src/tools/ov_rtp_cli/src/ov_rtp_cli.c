@@ -68,46 +68,43 @@ This file is part of the openvocs project. http://openvocs.org
 /*---------------------------------------------------------------------------*/
 
 #define max(a, b)                                                              \
-    ({                                                                         \
-        __typeof__(a) _a = (a);                                                \
-        __typeof__(b) _b = (b);                                                \
-        _a > _b ? _a : _b;                                                     \
-    })
+  ({                                                                           \
+    __typeof__(a) _a = (a);                                                    \
+    __typeof__(b) _b = (b);                                                    \
+    _a > _b ? _a : _b;                                                         \
+  })
 
 /*----------------------------------------------------------------------------*/
 
 static void setup_logging() {
 
-    const char LOG_FILE_TEMPLATE[] = "/tmp/rtp_cli.log_";
+  const char LOG_FILE_TEMPLATE[] = "/tmp/rtp_cli.log_";
 
-    char cfg[1024] = {0};
+  char cfg[1024] = {0};
 
-    int retval = snprintf(cfg,
-                          sizeof(cfg),
-                          "{"
-                          "\"systemd\" : true,"
-                          "\"file\" : {"
-                          "\"file\" : \"%s%ld\","
-                          "\"messages_per_file\" : 10000,"
-                          "\"num_files\" : 4"
-                          "}"
-                          "}",
-                          LOG_FILE_TEMPLATE,
-                          (long)getpid());
+  int retval = snprintf(cfg, sizeof(cfg),
+                        "{"
+                        "\"systemd\" : true,"
+                        "\"file\" : {"
+                        "\"file\" : \"%s%ld\","
+                        "\"messages_per_file\" : 10000,"
+                        "\"num_files\" : 4"
+                        "}"
+                        "}",
+                        LOG_FILE_TEMPLATE, (long)getpid());
 
-    ov_json_value *jcfg = ov_json_value_from_string(cfg, ov_string_len(cfg));
+  ov_json_value *jcfg = ov_json_value_from_string(cfg, ov_string_len(cfg));
 
-    if ((0 > retval) || (0 == jcfg) || (!ov_config_log_from_json(jcfg))) {
+  if ((0 > retval) || (0 == jcfg) || (!ov_config_log_from_json(jcfg))) {
 
-        fprintf(stderr, "Could not setup logging - log to console\n");
+    fprintf(stderr, "Could not setup logging - log to console\n");
 
-    } else {
+  } else {
 
-        fprintf(
-            stdout, "Logging to %s%ld\n", LOG_FILE_TEMPLATE, (long)getpid());
-    }
+    fprintf(stdout, "Logging to %s%ld\n", LOG_FILE_TEMPLATE, (long)getpid());
+  }
 
-    jcfg = ov_json_value_free(jcfg);
+  jcfg = ov_json_value_free(jcfg);
 }
 
 /******************************************************************************
@@ -151,13 +148,13 @@ static void set_out_to_pulse(ov_rtp_client_parameters *cp,
                              ov_rtp_client_audio_parameters *ap,
                              char const *server_name) {
 
-    cp->mode = RECEIVE;
+  cp->mode = RECEIVE;
 
-    ap->receive.pa_server = 0;
+  ap->receive.pa_server = 0;
 
-    if (0 != strcmp(server_name, "-")) {
-        ap->receive.pa_server = (char *)server_name;
-    }
+  if (0 != strcmp(server_name, "-")) {
+    ap->receive.pa_server = (char *)server_name;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -166,240 +163,234 @@ static void set_in_from_pulse(ov_rtp_client_parameters *cp,
                               ov_rtp_client_audio_parameters *ap,
                               char const *server_name) {
 
-    cp->mode = SEND;
+  cp->mode = SEND;
 
-    ap->send.type = OV_PULSEAUDIO;
-    ap->send.pulse.server = 0;
+  ap->send.type = OV_PULSEAUDIO;
+  ap->send.pulse.server = 0;
 
-    if (0 != strcmp(server_name, "-")) {
-        ap->send.pulse.server = (char *)server_name;
-    }
+  if (0 != strcmp(server_name, "-")) {
+    ap->send.pulse.server = (char *)server_name;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_command_line_args(int argc,
-                                    char **argv,
+static bool parse_command_line_args(int argc, char **argv,
                                     ov_rtp_client_parameters *cp,
                                     ov_rtp_client_audio_parameters *ap) {
 
-    struct option *longoptions = calloc(
-        1, sizeof(struct ov_rtp_client_opt_entry) * ov_rtp_client_opt_size());
+  struct option *longoptions = calloc(
+      1, sizeof(struct ov_rtp_client_opt_entry) * ov_rtp_client_opt_size());
 
-    char *optstring = calloc(1, ov_rtp_client_opt_size() * 2 + 1);
-    size_t optstring_index = 0;
+  char *optstring = calloc(1, ov_rtp_client_opt_size() * 2 + 1);
+  size_t optstring_index = 0;
 
-    for (size_t i = 0; i < ov_rtp_client_opt_size(); ++i) {
+  for (size_t i = 0; i < ov_rtp_client_opt_size(); ++i) {
 
-        struct option opt = {
-            .name = OV_RTP_CLIENT_OPTIONS[i].lopt,
-            .flag = 0,
-            .val = OV_RTP_CLIENT_OPTIONS[i].sopt,
-        };
-
-        optstring[optstring_index++] = OV_RTP_CLIENT_OPTIONS[i].sopt;
-
-        if (OV_RTP_CLIENT_OPTIONS[i].arg_required) {
-
-            optstring[optstring_index++] = ':';
-            opt.has_arg = required_argument;
-        }
-
-        longoptions[i] = opt;
-    }
-
-    optstring[optstring_index] = 0;
-
-    bool ok = true;
-    int c = 0;
-    int index = -1;
-    uint32_t uint32_value = 0;
-
-    while (-1 !=
-           (c = getopt_long(argc, argv, optstring, longoptions, &index))) {
-        switch (c) {
-
-            case OPT_HELP:
-
-                ov_rtp_client_print_help(stdout);
-                exit(1);
-
-            case OPT_RHOST:
-
-                cp->remote_if = optarg;
-                break;
-
-            case OPT_RPORT:
-                cp->remote_port = ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_LISTENIF:
-                cp->local_if = optarg;
-                if (0 != cp->multicast_group) {
-                    fprintf(stderr,
-                            "BEWARE: Multicast is going to be used - if you "
-                            "select a specific local interface (%s), multicast "
-                            "might not be receivable.\nIf in doubt, don't set "
-                            "the local interface",
-                            cp->local_if);
-                }
-                break;
-
-            case OPT_LPORT:
-                cp->local_port = ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_INTERVAL:
-                ap->general_config.frame_length_usecs =
-                    ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_JITTER:
-                cp->max_jitter_usec = ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_SAMPLERATE:
-                uint32_value = ov_string_to_uint16(optarg, &ok);
-                if (0 == uint32_value) {
-
-                    fprintf(
-                        stderr, "Cowardly refusing to set sample rate to 0\n");
-                    exit(EXIT_FAILURE);
-                }
-                ap->general_config.sample_rate_hertz = uint32_value;
-                break;
-
-            case OPT_CODEC:
-                ap->codec_name = optarg;
-                break;
-
-            case OPT_TONEFREQ:
-                ap->send.sinusoids.frequency_hertz =
-                    ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_WOBBLEFREQ:
-                ap->send.sinusoids.wobble.frequency_disp_hertz =
-                    ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_WOBBLEPERIOD:
-                ap->send.sinusoids.wobble.period_secs =
-                    ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_SSID:
-                cp->ssrc_id = (uint32_t)ov_string_to_uint32(optarg, &ok);
-                break;
-
-            case OPT_PAYLOAD_TYPE:
-                cp->payload_type = ov_string_to_uint16(optarg, &ok);
-                break;
-
-            case OPT_PULSEOUT:
-                set_out_to_pulse(cp, ap, optarg);
-                break;
-
-            case OPT_PULSEIN:
-                set_in_from_pulse(cp, ap, optarg);
-                break;
-
-            case OPT_OUTPUTFILE:
-                cp->mode = RECEIVE;
-                ap->receive.file_name = optarg;
-                break;
-
-            case OPT_INPUTFILE:
-                cp->mode = SEND;
-                ap->send.type = OV_FROM_FILE;
-                ap->send.file.file_name = optarg;
-                ap->send.file.codec_config = 0;
-                break;
-
-            case OPT_SEND_SDES:
-
-                cp->sdes = optarg;
-                break;
-
-            case OPT_MULTICAST:
-
-                if (default_client_parameters.local_if != cp->local_if) {
-                    fprintf(stderr,
-                            "Warning: Interface to bind to (%s) might prevent "
-                            "receiving multicast - don't set local interface "
-                            "in case of troubles\n",
-                            cp->local_if);
-                }
-                cp->multicast_group = optarg;
-                break;
-
-            default:
-                fprintf(stderr, "Unknown command line option %c\n", c);
-                exit(EXIT_FAILURE);
-        };
+    struct option opt = {
+        .name = OV_RTP_CLIENT_OPTIONS[i].lopt,
+        .flag = 0,
+        .val = OV_RTP_CLIENT_OPTIONS[i].sopt,
     };
 
-    free(longoptions);
-    free(optstring);
+    optstring[optstring_index++] = OV_RTP_CLIENT_OPTIONS[i].sopt;
 
-    return true;
+    if (OV_RTP_CLIENT_OPTIONS[i].arg_required) {
+
+      optstring[optstring_index++] = ':';
+      opt.has_arg = required_argument;
+    }
+
+    longoptions[i] = opt;
+  }
+
+  optstring[optstring_index] = 0;
+
+  bool ok = true;
+  int c = 0;
+  int index = -1;
+  uint32_t uint32_value = 0;
+
+  while (-1 != (c = getopt_long(argc, argv, optstring, longoptions, &index))) {
+    switch (c) {
+
+    case OPT_HELP:
+
+      ov_rtp_client_print_help(stdout);
+      exit(1);
+
+    case OPT_RHOST:
+
+      cp->remote_if = optarg;
+      break;
+
+    case OPT_RPORT:
+      cp->remote_port = ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_LISTENIF:
+      cp->local_if = optarg;
+      if (0 != cp->multicast_group) {
+        fprintf(stderr,
+                "BEWARE: Multicast is going to be used - if you "
+                "select a specific local interface (%s), multicast "
+                "might not be receivable.\nIf in doubt, don't set "
+                "the local interface",
+                cp->local_if);
+      }
+      break;
+
+    case OPT_LPORT:
+      cp->local_port = ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_INTERVAL:
+      ap->general_config.frame_length_usecs = ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_JITTER:
+      cp->max_jitter_usec = ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_SAMPLERATE:
+      uint32_value = ov_string_to_uint16(optarg, &ok);
+      if (0 == uint32_value) {
+
+        fprintf(stderr, "Cowardly refusing to set sample rate to 0\n");
+        exit(EXIT_FAILURE);
+      }
+      ap->general_config.sample_rate_hertz = uint32_value;
+      break;
+
+    case OPT_CODEC:
+      ap->codec_name = optarg;
+      break;
+
+    case OPT_TONEFREQ:
+      ap->send.sinusoids.frequency_hertz = ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_WOBBLEFREQ:
+      ap->send.sinusoids.wobble.frequency_disp_hertz =
+          ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_WOBBLEPERIOD:
+      ap->send.sinusoids.wobble.period_secs = ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_SSID:
+      cp->ssrc_id = (uint32_t)ov_string_to_uint32(optarg, &ok);
+      break;
+
+    case OPT_PAYLOAD_TYPE:
+      cp->payload_type = ov_string_to_uint16(optarg, &ok);
+      break;
+
+    case OPT_PULSEOUT:
+      set_out_to_pulse(cp, ap, optarg);
+      break;
+
+    case OPT_PULSEIN:
+      set_in_from_pulse(cp, ap, optarg);
+      break;
+
+    case OPT_OUTPUTFILE:
+      cp->mode = RECEIVE;
+      ap->receive.file_name = optarg;
+      break;
+
+    case OPT_INPUTFILE:
+      cp->mode = SEND;
+      ap->send.type = OV_FROM_FILE;
+      ap->send.file.file_name = optarg;
+      ap->send.file.codec_config = 0;
+      break;
+
+    case OPT_SEND_SDES:
+
+      cp->sdes = optarg;
+      break;
+
+    case OPT_MULTICAST:
+
+      if (default_client_parameters.local_if != cp->local_if) {
+        fprintf(stderr,
+                "Warning: Interface to bind to (%s) might prevent "
+                "receiving multicast - don't set local interface "
+                "in case of troubles\n",
+                cp->local_if);
+      }
+      cp->multicast_group = optarg;
+      break;
+
+    default:
+      fprintf(stderr, "Unknown command line option %c\n", c);
+      exit(EXIT_FAILURE);
+    };
+  };
+
+  free(longoptions);
+  free(optstring);
+
+  return true;
 }
 
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
 
-    ov_rtp_client *client = 0;
+  ov_rtp_client *client = 0;
 
-    int retval = EXIT_SUCCESS;
+  int retval = EXIT_SUCCESS;
 
-    setup_logging();
+  setup_logging();
 
-    ov_rtp_frame_enable_caching(100);
-    ov_buffer_enable_caching(100);
+  ov_rtp_frame_enable_caching(100);
+  ov_buffer_enable_caching(100);
 
-    ov_rtp_client_parameters client_parameters = default_client_parameters;
-    ov_rtp_client_audio_parameters audio_parameters = default_audio_parameters;
+  ov_rtp_client_parameters client_parameters = default_client_parameters;
+  ov_rtp_client_audio_parameters audio_parameters = default_audio_parameters;
 
-    if (!parse_command_line_args(
-            argc, argv, &client_parameters, &audio_parameters)) {
-        fprintf(stderr, "Could not parse command line\n");
-        goto error;
-    }
+  if (!parse_command_line_args(argc, argv, &client_parameters,
+                               &audio_parameters)) {
+    fprintf(stderr, "Could not parse command line\n");
+    goto error;
+  }
 
-    fprintf(stdout, "Client configuration:\n");
-    ov_rtp_client_parameters_print(stdout, &client_parameters, 4);
-    ov_rtp_client_audio_parameters_print(stdout, &audio_parameters, 4);
-    fprintf(stdout, "\n");
+  fprintf(stdout, "Client configuration:\n");
+  ov_rtp_client_parameters_print(stdout, &client_parameters, 4);
+  ov_rtp_client_audio_parameters_print(stdout, &audio_parameters, 4);
+  fprintf(stdout, "\n");
 
-    client = ov_rtp_client_create(&client_parameters, &audio_parameters);
+  client = ov_rtp_client_create(&client_parameters, &audio_parameters);
 
-    fprintf(stdout, "\nStarting Client:\n");
-    ov_rtp_client_print(stdout, client, 4);
+  fprintf(stdout, "\nStarting Client:\n");
+  ov_rtp_client_print(stdout, client, 4);
 
-    if (0 == client) {
+  if (0 == client) {
 
-        fprintf(stderr, "Could not create client\n");
-        goto error;
-    }
+    fprintf(stderr, "Could not create client\n");
+    goto error;
+  }
 
-    ov_rtp_client_run(client);
+  ov_rtp_client_run(client);
 
-    goto finish;
+  goto finish;
 
 error:
 
-    retval = EXIT_FAILURE;
+  retval = EXIT_FAILURE;
 
 finish:
 
-    ov_rtp_client_free(client);
+  ov_rtp_client_free(client);
 
-    ov_registered_cache_free_all();
+  ov_registered_cache_free_all();
 
-    ov_codec_factory_free(0);
+  ov_codec_factory_free(0);
 
-    return retval;
+  return retval;
 }
 
 /*----------------------------------------------------------------------------*/

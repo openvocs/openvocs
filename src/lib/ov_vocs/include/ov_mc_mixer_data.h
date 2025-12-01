@@ -37,10 +37,10 @@
 
 typedef struct ov_mc_mixer_data {
 
-    int socket;
-    ov_socket_data remote;
-    ov_id uuid;
-    ov_id user;
+  int socket;
+  ov_socket_data remote;
+  ov_id uuid;
+  ov_id user;
 
 } ov_mc_mixer_data;
 

@@ -98,8 +98,8 @@ struct ov_alsa_struct;
 typedef struct ov_alsa_struct ov_alsa;
 
 typedef enum {
-    CAPTURE,
-    PLAYBACK,
+  CAPTURE,
+  PLAYBACK,
 } ov_alsa_mode;
 
 /*----------------------------------------------------------------------------*/
@@ -110,10 +110,8 @@ typedef enum {
  * cut off to '2'.
  * @param volume needs to be in range of [0,1]
  */
-bool ov_alsa_set_volume(char const *device_name,
-                        char const *element,
-                        ov_alsa_mode mode,
-                        double volume);
+bool ov_alsa_set_volume(char const *device_name, char const *element,
+                        ov_alsa_mode mode, double volume);
 
 /*----------------------------------------------------------------------------*/
 
@@ -126,10 +124,8 @@ bool ov_alsa_set_volume(char const *device_name,
  * call. Is set to the actually used number.
  * @param mode either PLAYBACK/CAPTURE
  */
-ov_alsa *ov_alsa_create(char const *device_name,
-                        unsigned int sample_rate,
-                        size_t *samples_per_period,
-                        ov_alsa_mode mode);
+ov_alsa *ov_alsa_create(char const *device_name, unsigned int sample_rate,
+                        size_t *samples_per_period, ov_alsa_mode mode);
 
 /*----------------------------------------------------------------------------*/
 
@@ -176,8 +172,7 @@ bool ov_alsa_play_period(ov_alsa *self, int16_t *buf, ov_result *res);
  *
  * @return number of SAMPLES captured
  */
-size_t ov_alsa_capture_period(ov_alsa *self,
-                              int16_t *target_buffer,
+size_t ov_alsa_capture_period(ov_alsa *self, int16_t *target_buffer,
                               ov_result *res);
 
 /*----------------------------------------------------------------------------*/
@@ -196,11 +191,11 @@ char const *ov_alsa_state_to_string(ov_alsa const *self);
 
 typedef struct {
 
-    ov_counter underruns;
-    ov_counter other_error;
-    ov_counter periods_played;
-    ov_counter periods_read;
-    ov_counter periods_written;
+  ov_counter underruns;
+  ov_counter other_error;
+  ov_counter periods_played;
+  ov_counter periods_read;
+  ov_counter periods_written;
 
 } ov_alsa_counters;
 

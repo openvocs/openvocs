@@ -95,9 +95,9 @@
 
 typedef enum {
 
-    OV_INVALID = -1,
-    OV_READ = 1,
-    OV_WRITE = 2
+  OV_INVALID = -1,
+  OV_READ = 1,
+  OV_WRITE = 2
 
 } ov_format_mode;
 
@@ -109,8 +109,8 @@ typedef struct ov_format_struct ov_format;
 
 struct ov_format_struct {
 
-    char const *type;
-    ov_format_mode mode;
+  char const *type;
+  ov_format_mode mode;
 };
 
 ov_format_mode ov_format_get_mode(ov_format *self);
@@ -125,47 +125,45 @@ ov_format_mode ov_format_get_mode(ov_format *self);
  */
 typedef struct {
 
-    /**
-     * Get next chunk from format.
-     * The buffer object returned is not a full-blown 'ov_buffer',
-     * just used to return both the data pointer and it's length.
-     * If it's capacity is greater than 0, the data pointer is freed.
-     * If it's capacity is 0, the data pointer is not freed.
-     */
-    ov_buffer (*next_chunk)(ov_format *f, size_t requested_bytes, void *data);
+  /**
+   * Get next chunk from format.
+   * The buffer object returned is not a full-blown 'ov_buffer',
+   * just used to return both the data pointer and it's length.
+   * If it's capacity is greater than 0, the data pointer is freed.
+   * If it's capacity is 0, the data pointer is not freed.
+   */
+  ov_buffer (*next_chunk)(ov_format *f, size_t requested_bytes, void *data);
 
-    ssize_t (*write_chunk)(ov_format *f, ov_buffer const *chunk, void *data);
+  ssize_t (*write_chunk)(ov_format *f, ov_buffer const *chunk, void *data);
 
-    ssize_t (*overwrite)(ov_format *f,
-                         size_t offset,
-                         ov_buffer const *chunk,
-                         void *data);
+  ssize_t (*overwrite)(ov_format *f, size_t offset, ov_buffer const *chunk,
+                       void *data);
 
-    /**
-     * Some formats are not streamable - like wav, which requires the entire
-     * length written into its headers.
-     * This function will be called whenever wants to receive the written
-     * result, in order to be able to 'ready' it, in the case of wave, by
-     * updating the length in the headers appropriately...
-     * Called on ov_format_close or ov_format_get_memory e.g.
-     */
-    bool (*ready_format)(ov_format *f, void *data);
+  /**
+   * Some formats are not streamable - like wav, which requires the entire
+   * length written into its headers.
+   * This function will be called whenever wants to receive the written
+   * result, in order to be able to 'ready' it, in the case of wave, by
+   * updating the length in the headers appropriately...
+   * Called on ov_format_close or ov_format_get_memory e.g.
+   */
+  bool (*ready_format)(ov_format *f, void *data);
 
-    void *(*create_data)(ov_format *f, void *options);
+  void *(*create_data)(ov_format *f, void *options);
 
-    /**
-     * Just there to free potentially present custom data - don't do
-     * anything else in here, for reading the written result, use 'ready_format'
-     */
-    void *(*free_data)(void *);
+  /**
+   * Just there to free potentially present custom data - don't do
+   * anything else in here, for reading the written result, use 'ready_format'
+   */
+  void *(*free_data)(void *);
 
-    /**
-     * If a format 'fmt' is requested, for each format in the stack
-     * it will be checked whether type equals 'fmt' OR this function
-     * is present - then this function is called with 'fmt' and if it returns
-     * a format pointer, this format pointer will be returned
-     */
-    ov_format *(*responsible_for)(ov_format const *f, char const *type_name);
+  /**
+   * If a format 'fmt' is requested, for each format in the stack
+   * it will be checked whether type equals 'fmt' OR this function
+   * is present - then this function is called with 'fmt' and if it returns
+   * a format pointer, this format pointer will be returned
+   */
+  ov_format *(*responsible_for)(ov_format const *f, char const *type_name);
 
 } ov_format_handler;
 
@@ -202,8 +200,7 @@ typedef struct {
  * @param length of mem chunk in bytes. Must never be 0.
  * @return pointer to the new format or 0 in case of error
  */
-ov_format *ov_format_from_memory(uint8_t *memory,
-                                 size_t length,
+ov_format *ov_format_from_memory(uint8_t *memory, size_t length,
                                  ov_format_mode mode);
 
 /*----------------------------------------------------------------------------*/
@@ -259,10 +256,8 @@ ov_format *ov_format_close_non_recursive(ov_format *f);
                                 Format stacking
  ****************************************************************************/
 
-ov_format *ov_format_wrap(ov_format *f,
-                          char const *type,
-                          ov_format_handler *handler,
-                          void *options);
+ov_format *ov_format_wrap(ov_format *f, char const *type,
+                          ov_format_handler *handler, void *options);
 
 ov_format const *ov_format_get(ov_format const *f, char const *format_desc);
 
@@ -315,8 +310,7 @@ ssize_t ov_format_payload_write_chunk(ov_format *f, ov_buffer const *chunk);
  *
  * @return number of overwritten bytes, or negative in case of error
  */
-ssize_t ov_format_payload_overwrite(ov_format *f,
-                                    size_t offset,
+ssize_t ov_format_payload_overwrite(ov_format *f, size_t offset,
                                     ov_buffer const *chunk);
 
 /**

@@ -37,18 +37,18 @@
 
 typedef struct {
 
-    ov_serde *serde;
+  ov_serde *serde;
 
-    // If true, all i/o is logged to file /tmp/APP_NAME-PID_serde_in.log
-    bool log_io;
-    uint32_t reconnect_interval_secs;
-    uint64_t accept_to_io_timeout_secs;
+  // If true, all i/o is logged to file /tmp/APP_NAME-PID_serde_in.log
+  bool log_io;
+  uint32_t reconnect_interval_secs;
+  uint64_t accept_to_io_timeout_secs;
 
-    void (*cb_closed)(int sckt, void *additional);
-    void (*cb_reconnected)(int sckt, void *additional);
-    void (*cb_accepted)(int sckt, void *additional);
+  void (*cb_closed)(int sckt, void *additional);
+  void (*cb_reconnected)(int sckt, void *additional);
+  void (*cb_accepted)(int sckt, void *additional);
 
-    void *additional;
+  void *additional;
 
 } ov_serde_app_configuration;
 
@@ -58,8 +58,7 @@ typedef struct ov_serde_app ov_serde_app;
                                 CREATE / DESTROY
  ****************************************************************************/
 
-ov_serde_app *ov_serde_app_create(char const *name,
-                                  ov_event_loop *loop,
+ov_serde_app *ov_serde_app_create(char const *name, ov_event_loop *loop,
                                   ov_serde_app_configuration cfg);
 
 ov_serde_app *ov_serde_app_free(ov_serde_app *app);
@@ -74,10 +73,8 @@ ov_serde_app *ov_serde_app_free(ov_serde_app *app);
  * types of Serde data is not supported.
  * If the parsed data does not fit `data_type` , the parsed data is dropped.
  */
-bool ov_serde_app_register_handler(ov_serde_app *self,
-                                   uint64_t data_type,
-                                   void (*handler)(void *data,
-                                                   int socket,
+bool ov_serde_app_register_handler(ov_serde_app *self, uint64_t data_type,
+                                   void (*handler)(void *data, int socket,
                                                    void *additional));
 
 /*----------------------------------------------------------------------------*/

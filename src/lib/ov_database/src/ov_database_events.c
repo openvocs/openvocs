@@ -32,93 +32,88 @@
 
 /*----------------------------------------------------------------------------*/
 
-static bool stradd(char **target,
-                   size_t *target_capacity,
+static bool stradd(char **target, size_t *target_capacity,
                    char const *to_append) {
 
-    size_t append_len = ov_string_len(to_append);
+  size_t append_len = ov_string_len(to_append);
 
-    if (0 == append_len) {
+  if (0 == append_len) {
 
-        return true;
+    return true;
 
-    } else if (ov_ptr_valid(target, "Cannot append string: No target string") ||
-               ov_ptr_valid(
-                   *target, "Cannot append string: No target string") ||
-               ov_ptr_valid(
-                   target_capacity, "Cannot append string: No target string") ||
-               ov_cond_valid(0 < *target_capacity,
-                             "Cannot append string: target capacity too small "
-                             "(0)") ||
-               ov_ptr_valid(
-                   to_append, "Cannot append string: No string to append") ||
-               ov_cond_valid(append_len + 1 <= *target_capacity,
-                             "Cannot append string: insufficient memory")) {
+  } else if (ov_ptr_valid(target, "Cannot append string: No target string") ||
+             ov_ptr_valid(*target, "Cannot append string: No target string") ||
+             ov_ptr_valid(target_capacity,
+                          "Cannot append string: No target string") ||
+             ov_cond_valid(0 < *target_capacity,
+                           "Cannot append string: target capacity too small "
+                           "(0)") ||
+             ov_ptr_valid(to_append,
+                          "Cannot append string: No string to append") ||
+             ov_cond_valid(append_len + 1 <= *target_capacity,
+                           "Cannot append string: insufficient memory")) {
 
-        memcpy(*target, to_append, append_len);
-        (*target)[append_len] = 0;
+    memcpy(*target, to_append, append_len);
+    (*target)[append_len] = 0;
 
-        *target += append_len;
-        *target_capacity -= append_len;
+    *target += append_len;
+    *target_capacity -= append_len;
 
-        return true;
+    return true;
 
-    } else {
+  } else {
 
-        return false;
-    }
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool set_bool(bool *var, bool value) {
 
-    if (0 != var) {
-        *var = value;
-        return true;
-    } else {
-        return false;
-    }
+  if (0 != var) {
+    *var = value;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool add_and_clause(char **target, size_t *capacity, bool add_and) {
 
-    if (add_and) {
+  if (add_and) {
 
-        return stradd(target, capacity, " AND ");
+    return stradd(target, capacity, " AND ");
 
-    } else {
-        return true;
-    }
+  } else {
+    return true;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool query(ov_database *self,
-                  char const *sql,
-                  ov_json_value **jtarget,
+static bool query(ov_database *self, char const *sql, ov_json_value **jtarget,
                   char const *error_msg) {
 
-    fprintf(stderr, "SQL: %s\n", sql);
+  fprintf(stderr, "SQL: %s\n", sql);
 
-    ov_result res = ov_database_query(self, sql, jtarget);
+  ov_result res = ov_database_query(self, sql, jtarget);
 
-    if (OV_ERROR_NOERROR != res.error_code) {
+  if (OV_ERROR_NOERROR != res.error_code) {
 
-        ov_log_error("%s: %s",
-                     ov_string_sanitize(error_msg),
-                     ov_result_get_message(res));
-        ov_result_clear(&res);
+    ov_log_error("%s: %s", ov_string_sanitize(error_msg),
+                 ov_result_get_message(res));
+    ov_result_clear(&res);
 
-        return false;
+    return false;
 
-    } else {
+  } else {
 
-        ov_result_clear(&res);
-        return true;
-    }
+    ov_result_clear(&res);
+    return true;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -126,79 +121,72 @@ static bool query(ov_database *self,
 static bool result_has_less_entries_than(ov_json_value const **res,
                                          uint32_t max_num_entries) {
 
-    return (0 == max_num_entries) || (0 == res) || (0 == *res) ||
-           (ov_json_is_array(*res) &&
-            (max_num_entries > ov_json_array_count(*res)));
+  return (0 == max_num_entries) || (0 == res) || (0 == *res) ||
+         (ov_json_is_array(*res) &&
+          (max_num_entries > ov_json_array_count(*res)));
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_limit_clause_if_required(ov_database *self,
-                                         char *target,
+static bool add_limit_clause_if_required(ov_database *self, char *target,
                                          size_t target_capacity_octets,
                                          char const *statement,
                                          uint32_t max_num_results) {
 
-    if (0 == max_num_results) {
+  if (0 == max_num_results) {
 
-        return (0 != target) && (0 != statement) &&
-               ((int64_t)target_capacity_octets >
-                snprintf(target, target_capacity_octets, "%s;", statement));
+    return (0 != target) && (0 != statement) &&
+           ((int64_t)target_capacity_octets >
+            snprintf(target, target_capacity_octets, "%s;", statement));
 
-    } else {
-        return ov_database_add_limit_clause(self,
-                                            target,
-                                            target_capacity_octets,
-                                            statement,
-                                            max_num_results + 1,
-                                            0);
-    }
+  } else {
+    return ov_database_add_limit_clause(self, target, target_capacity_octets,
+                                        statement, max_num_results + 1, 0);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 typedef enum { OK, TOO_MANY_RESULTS, ERROR } QueryResult;
 
-static QueryResult query_select(ov_database *self,
-                                uint32_t max_num_results,
-                                char const *sql,
-                                ov_json_value **jtarget,
+static QueryResult query_select(ov_database *self, uint32_t max_num_results,
+                                char const *sql, ov_json_value **jtarget,
                                 char const *error_msg) {
 
-    char select_sql[1000] = {0};
+  char select_sql[1000] = {0};
 
-    if (ov_ptr_valid(sql, "No SQL statement") &&
-        add_limit_clause_if_required(
-            self, select_sql, sizeof(select_sql), sql, max_num_results)) {
+  if (ov_ptr_valid(sql, "No SQL statement") &&
+      add_limit_clause_if_required(self, select_sql, sizeof(select_sql), sql,
+                                   max_num_results)) {
 
-        bool ok = query(self, select_sql, jtarget, error_msg);
+    bool ok = query(self, select_sql, jtarget, error_msg);
 
-        if (ok) {
+    if (ok) {
 
-            if ((0 == max_num_results) ||
-                result_has_less_entries_than(
-                    (ov_json_value const **)jtarget, max_num_results + 1)) {
+      if ((0 == max_num_results) ||
+          result_has_less_entries_than((ov_json_value const **)jtarget,
+                                       max_num_results + 1)) {
 
-                return OK;
+        return OK;
 
-            } else {
+      } else {
 
-                if (0 != jtarget) {
-                    *jtarget = ov_json_value_free(*jtarget);
-                }
-
-                return TOO_MANY_RESULTS;
-            }
-
-        } else {
-
-            return ERROR;
+        if (0 != jtarget) {
+          *jtarget = ov_json_value_free(*jtarget);
         }
+
+        return TOO_MANY_RESULTS;
+      }
 
     } else {
 
-        return ERROR;
+      return ERROR;
     }
+
+  } else {
+
+    return ERROR;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -218,525 +206,464 @@ static QueryResult query_select(ov_database *self,
 
 bool ov_db_prepare(ov_database *self) {
 
-    return query(self,
-                  "CREATE TABLE IF NOT EXISTS "
-                  RECORDINGS_TABLE
-                  " (id CHAR(" STR(ID_LEN)
-                  "), uri VARCHAR(" STR(URI_LEN)
-                  "), loop VARCHAR(" STR(LOOP_LEN)
-                  "), starttime TIMESTAMP, endtime TIMESTAMP);",
-                  0,
-                  "Could not prepare recordings database") &&
-            query(
-                self,
-                "CREATE TABLE IF NOT EXISTS "
-                PARTICIPATION_EVENTS_TABLE 
-                " (usr VARCHAR(" STR(USER_LEN)
-                "), role VARCHAR(" STR(ROLE_LEN)
-                "), loop VARCHAR(" STR(LOOP_LEN)
-                "), evstate VARCHAR(" STR(PARTICIPATION_STATE_LEN)
-                "), evtime TIMESTAMP);",
-                0,
-                "Could not prepare recordings database");
+  return query(
+             self,
+             "CREATE TABLE IF NOT EXISTS " RECORDINGS_TABLE
+             " (id CHAR(" STR(ID_LEN) "), uri VARCHAR(" STR(
+                 URI_LEN) "), loop VARCHAR(" STR(LOOP_LEN) "), starttime "
+                                                           "TIMESTAMP, endtime "
+                                                           "TIMESTAMP);",
+             0, "Could not prepare recordings database") &&
+         query(self,
+               "CREATE TABLE IF NOT EXISTS " PARTICIPATION_EVENTS_TABLE
+               " (usr VARCHAR(" STR(USER_LEN) "), role VARCHAR(" STR(ROLE_LEN) "), loop VARCHAR(" STR(
+                   LOOP_LEN) "), evstate VARCHAR(" STR(PARTICIPATION_STATE_LEN) "), evtime TIMESTAMP);",
+               0, "Could not prepare recordings database");
 }
 
 /*----------------------------------------------------------------------------*/
 
-static char *epoch_secs_to_sql_datetime(char *target,
-                                        size_t target_capacity,
+static char *epoch_secs_to_sql_datetime(char *target, size_t target_capacity,
                                         time_t time_epoch_secs) {
 
-    struct tm time_tm = {0};
+  struct tm time_tm = {0};
 
-    if (0 != target) {
+  if (0 != target) {
 
-        gmtime_r(&time_epoch_secs, &time_tm);
-        snprintf(target,
-                 target_capacity,
-                 "%04d-%02d-%02d %02d:%02d:%02d",
-                 1900 + time_tm.tm_year,
-                 1 + time_tm.tm_mon,
-                 time_tm.tm_mday,
-                 time_tm.tm_hour,
-                 time_tm.tm_min,
-                 time_tm.tm_sec);
-    }
+    gmtime_r(&time_epoch_secs, &time_tm);
+    snprintf(target, target_capacity, "%04d-%02d-%02d %02d:%02d:%02d",
+             1900 + time_tm.tm_year, 1 + time_tm.tm_mon, time_tm.tm_mday,
+             time_tm.tm_hour, time_tm.tm_min, time_tm.tm_sec);
+  }
 
-    return target;
+  return target;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_db_events_add_participation_state(ov_database *self,
-                                          const char *user,
-                                          const char *role,
-                                          const char *loop,
+bool ov_db_events_add_participation_state(ov_database *self, const char *user,
+                                          const char *role, const char *loop,
                                           ov_participation_state state,
                                           time_t time_epoch) {
 
-    size_t user_len = ov_string_len(user);
-    size_t role_len = ov_string_len(role);
-    size_t loop_len = ov_string_len(loop);
+  size_t user_len = ov_string_len(user);
+  size_t role_len = ov_string_len(role);
+  size_t loop_len = ov_string_len(loop);
 
-    char sql[500] = {0};
-    char str_time[30] = {0};
-    char const *str_state = ov_participation_state_to_string(state);
+  char sql[500] = {0};
+  char str_time[30] = {0};
+  char const *str_state = ov_participation_state_to_string(state);
 
-    if (ov_ptr_valid(user,
-                     "Cannot insert participation event into database: No user "
-                     "given") &&
-        ov_ptr_valid(role,
-                     "Cannot insert participation event into database: No role "
-                     "given") &&
-        ov_ptr_valid(loop,
-                     "Cannot insert participation event into database: No loop "
-                     "given") &&
-        ov_cond_valid(user_len <= USER_LEN,
-                      "Cannot insert recording into database: User string is "
-                      "too long") &&
-        ov_cond_valid(role_len <= ROLE_LEN,
-                      "Cannot insert recording into database: Role string is "
-                      "too long") &&
-        ov_cond_valid(loop_len <= LOOP_LEN,
-                      "Cannot insert recording into database: Role string is "
-                      "too long") &&
-        ov_ptr_valid(str_state,
-                     "Cannot insert participation event into database: "
-                     "Invalid participation state") &&
-        ov_cond_valid(OV_PARTICIPATION_STATE_NONE != state,
-                      "Cannot insert participation event into database: "
-                      "Invalid participation state")) {
+  if (ov_ptr_valid(user,
+                   "Cannot insert participation event into database: No user "
+                   "given") &&
+      ov_ptr_valid(role,
+                   "Cannot insert participation event into database: No role "
+                   "given") &&
+      ov_ptr_valid(loop,
+                   "Cannot insert participation event into database: No loop "
+                   "given") &&
+      ov_cond_valid(user_len <= USER_LEN,
+                    "Cannot insert recording into database: User string is "
+                    "too long") &&
+      ov_cond_valid(role_len <= ROLE_LEN,
+                    "Cannot insert recording into database: Role string is "
+                    "too long") &&
+      ov_cond_valid(loop_len <= LOOP_LEN,
+                    "Cannot insert recording into database: Role string is "
+                    "too long") &&
+      ov_ptr_valid(str_state,
+                   "Cannot insert participation event into database: "
+                   "Invalid participation state") &&
+      ov_cond_valid(OV_PARTICIPATION_STATE_NONE != state,
+                    "Cannot insert participation event into database: "
+                    "Invalid participation state")) {
 
-        snprintf(
-            sql,
-            sizeof(sql),
-            "INSERT INTO " PARTICIPATION_EVENTS_TABLE
-            " (usr, role, loop, evstate, evtime) "
-            " VALUES ('%s', '%s', '%s', '%s', '%s');",
-            user,
-            role,
-            loop,
-            str_state,
-            epoch_secs_to_sql_datetime(str_time, sizeof(str_time), time_epoch));
+    snprintf(
+        sql, sizeof(sql),
+        "INSERT INTO " PARTICIPATION_EVENTS_TABLE
+        " (usr, role, loop, evstate, evtime) "
+        " VALUES ('%s', '%s', '%s', '%s', '%s');",
+        user, role, loop, str_state,
+        epoch_secs_to_sql_datetime(str_time, sizeof(str_time), time_epoch));
 
-        return query(
-            self, sql, 0, "Cannot insert participation event into database");
+    return query(self, sql, 0,
+                 "Cannot insert participation event into database");
 
-    } else {
-        return false;
-    }
+  } else {
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool pstate_params_to_sql_query(
-    char *target,
-    size_t target_capacity,
-    ov_db_events_get_participation_state_params params) {
+static bool
+pstate_params_to_sql_query(char *target, size_t target_capacity,
+                           ov_db_events_get_participation_state_params params) {
 
-    char *write_ptr = target;
+  char *write_ptr = target;
 
-    stradd(&write_ptr,
-           &target_capacity,
-           "SELECT usr, loop, evstate, evtime  "
-           "FROM " PARTICIPATION_EVENTS_TABLE);
+  stradd(&write_ptr, &target_capacity,
+         "SELECT usr, loop, evstate, evtime  "
+         "FROM " PARTICIPATION_EVENTS_TABLE);
 
-    if ((0 != params.user) || (0 != params.from_epoch_secs) ||
-        (0 != params.until_epoch_secs) || (0 != params.loop) ||
-        (0 != params.role)) {
+  if ((0 != params.user) || (0 != params.from_epoch_secs) ||
+      (0 != params.until_epoch_secs) || (0 != params.loop) ||
+      (0 != params.role)) {
 
-        stradd(&write_ptr, &target_capacity, " WHERE ");
-    }
+    stradd(&write_ptr, &target_capacity, " WHERE ");
+  }
 
-    bool condition_already_there = false;
+  bool condition_already_there = false;
 
-    if ((0 != params.user) &&
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "usr='")) ||
-         (!stradd(&write_ptr, &target_capacity, params.user)) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
-        return false;
-    }
+  if ((0 != params.user) &&
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "usr='")) ||
+       (!stradd(&write_ptr, &target_capacity, params.user)) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
+    return false;
+  }
 
-    if ((0 != params.role) &&
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "role='")) ||
-         (!stradd(&write_ptr, &target_capacity, params.role)) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
-        return false;
-    }
+  if ((0 != params.role) &&
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "role='")) ||
+       (!stradd(&write_ptr, &target_capacity, params.role)) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
+    return false;
+  }
 
-    if ((0 != params.loop) &&
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "loop='")) ||
-         (!stradd(&write_ptr, &target_capacity, params.loop)) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
-        return false;
-    }
+  if ((0 != params.loop) &&
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "loop='")) ||
+       (!stradd(&write_ptr, &target_capacity, params.loop)) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
+    return false;
+  }
 
-    if ((OV_PARTICIPATION_STATE_NONE != params.state) &&
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "evstate='")) ||
-         (!stradd(&write_ptr,
-                  &target_capacity,
-                  ov_participation_state_to_string(params.state))) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
-        return false;
-    }
+  if ((OV_PARTICIPATION_STATE_NONE != params.state) &&
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "evstate='")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                ov_participation_state_to_string(params.state))) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
+    return false;
+  }
 
-    char timestamp[30] = {0};
+  char timestamp[30] = {0};
 
-    if ((0 != params.from_epoch_secs) &&
+  if ((0 != params.from_epoch_secs) &&
 
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "evtime>'")) ||
-         (!stradd(&write_ptr,
-                  &target_capacity,
-                  epoch_secs_to_sql_datetime(
-                      timestamp, sizeof(timestamp), params.from_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "evtime>'")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.from_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    if ((0 != params.until_epoch_secs) &&
+  if ((0 != params.until_epoch_secs) &&
 
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "evtime<'")) ||
-         (!stradd(
-             &write_ptr,
-             &target_capacity,
-             epoch_secs_to_sql_datetime(
-                 timestamp, sizeof(timestamp), params.until_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "evtime<'")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.until_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    return (0 != target);
+  return (0 != target);
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_db_events_get_participation_state_struct(
-    ov_database *self,
-    uint32_t max_num_results,
+    ov_database *self, uint32_t max_num_results,
     ov_db_events_get_participation_state_params params) {
 
-    char sql[1000] = {0};
+  char sql[1000] = {0};
 
-    QueryResult result = ERROR;
+  QueryResult result = ERROR;
 
-    ov_json_value *jtarget = 0;
+  ov_json_value *jtarget = 0;
 
-    if (pstate_params_to_sql_query(sql, sizeof(sql), params)) {
+  if (pstate_params_to_sql_query(sql, sizeof(sql), params)) {
 
-        result = query_select(self,
-                              max_num_results,
-                              sql,
-                              &jtarget,
-                              "Could not query database for pariticipation "
-                              "states");
-    }
+    result = query_select(self, max_num_results, sql, &jtarget,
+                          "Could not query database for pariticipation "
+                          "states");
+  }
 
-    switch (result) {
+  switch (result) {
 
-        case TOO_MANY_RESULTS:
-            jtarget = ov_json_value_free(jtarget);
-            return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
+  case TOO_MANY_RESULTS:
+    jtarget = ov_json_value_free(jtarget);
+    return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
 
-        case ERROR:
-            jtarget = ov_json_value_free(jtarget);
-            return jtarget;
+  case ERROR:
+    jtarget = ov_json_value_free(jtarget);
+    return jtarget;
 
-        case OK:
-            return jtarget;
+  case OK:
+    return jtarget;
 
-        default:
-            return jtarget;
-    };
+  default:
+    return jtarget;
+  };
 
-    return 0;
+  return 0;
 }
 
 /*****************************************************************************
                                    Recordings
  ****************************************************************************/
 
-bool ov_db_recordings_add(ov_database *self,
-                          char const *id,
-                          char const *loop,
-                          char const *uri,
-                          time_t start_epoch_secs,
+bool ov_db_recordings_add(ov_database *self, char const *id, char const *loop,
+                          char const *uri, time_t start_epoch_secs,
                           time_t end_epoch_secs) {
 
-    char sql[500] = {0};
+  char sql[500] = {0};
 
-    size_t id_len = ov_string_len(id);
-    size_t uri_len = ov_string_len(uri);
-    size_t loop_len = ov_string_len(loop);
+  size_t id_len = ov_string_len(id);
+  size_t uri_len = ov_string_len(uri);
+  size_t loop_len = ov_string_len(loop);
 
-    char tsstart[30] = {0};
-    char tsend[30] = {0};
+  char tsstart[30] = {0};
+  char tsend[30] = {0};
 
-    fprintf(stderr,
-            "Inserting %s %s Loop: %s from %zu until %zu\n",
-            ov_string_sanitize(id),
-            ov_string_sanitize(uri),
-            ov_string_sanitize(loop),
-            start_epoch_secs,
-            end_epoch_secs);
+  fprintf(stderr, "Inserting %s %s Loop: %s from %zu until %zu\n",
+          ov_string_sanitize(id), ov_string_sanitize(uri),
+          ov_string_sanitize(loop), start_epoch_secs, end_epoch_secs);
 
-    if (ov_ptr_valid(
-            id, "Cannot insert recording into database: No ID given") &&
-        ov_ptr_valid(
-            uri, "Cannot insert recording into database: No URI given") &&
-        ov_ptr_valid(
-            loop, "Cannot insert recording into database: No Loop given") &&
-        ov_cond_valid(id_len == ID_LEN,
-                      "Cannot insert recording into database: ID is not a "
-                      "UUID") &&
-        ov_cond_valid(uri_len <= URI_LEN,
-                      "Cannot insert recording into database: URI too long") &&
-        ov_cond_valid(loop_len <= LOOP_LEN,
-                      "Cannot insert recording into database: Loop too long")) {
+  if (ov_ptr_valid(id, "Cannot insert recording into database: No ID given") &&
+      ov_ptr_valid(uri,
+                   "Cannot insert recording into database: No URI given") &&
+      ov_ptr_valid(loop,
+                   "Cannot insert recording into database: No Loop given") &&
+      ov_cond_valid(id_len == ID_LEN,
+                    "Cannot insert recording into database: ID is not a "
+                    "UUID") &&
+      ov_cond_valid(uri_len <= URI_LEN,
+                    "Cannot insert recording into database: URI too long") &&
+      ov_cond_valid(loop_len <= LOOP_LEN,
+                    "Cannot insert recording into database: Loop too long")) {
 
-        snprintf(
-            sql,
-            sizeof(sql),
-            "INSERT INTO " RECORDINGS_TABLE
-            " (id, uri, loop, starttime, endtime) "
-            " VALUES ('%s', '%s', '%s', '%s', '%s');",
-            id,
-            uri,
-            loop,
-            epoch_secs_to_sql_datetime(
-                tsstart, sizeof(tsstart), start_epoch_secs),
-            epoch_secs_to_sql_datetime(tsend, sizeof(tsend), end_epoch_secs));
+    snprintf(
+        sql, sizeof(sql),
+        "INSERT INTO " RECORDINGS_TABLE " (id, uri, loop, starttime, endtime) "
+        " VALUES ('%s', '%s', '%s', '%s', '%s');",
+        id, uri, loop,
+        epoch_secs_to_sql_datetime(tsstart, sizeof(tsstart), start_epoch_secs),
+        epoch_secs_to_sql_datetime(tsend, sizeof(tsend), end_epoch_secs));
 
-        return query(self, sql, 0, "Could not add recording to database");
+    return query(self, sql, 0, "Could not add recording to database");
 
-    } else {
+  } else {
 
-        return false;
-    }
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool params_to_sql_query_without_user(
-    char *target,
-    size_t target_capacity,
-    const ov_db_recordings_get_params params) {
+static bool
+params_to_sql_query_without_user(char *target, size_t target_capacity,
+                                 const ov_db_recordings_get_params params) {
 
-    char *write_ptr = target;
+  char *write_ptr = target;
 
-    stradd(&write_ptr,
-           &target_capacity,
-           "SELECT r.id, r.uri, r.loop, r.starttime, r.endtime "
-           "FROM " RECORDINGS_TABLE " r");
+  stradd(&write_ptr, &target_capacity,
+         "SELECT r.id, r.uri, r.loop, r.starttime, r.endtime "
+         "FROM " RECORDINGS_TABLE " r");
 
-    if ((0 != params.id) || (0 != params.from_epoch_secs) ||
-        (0 != params.until_epoch_secs) || (0 != params.loop)) {
+  if ((0 != params.id) || (0 != params.from_epoch_secs) ||
+      (0 != params.until_epoch_secs) || (0 != params.loop)) {
 
-        stradd(&write_ptr, &target_capacity, " WHERE ");
-    }
+    stradd(&write_ptr, &target_capacity, " WHERE ");
+  }
 
-    bool condition_already_there = false;
+  bool condition_already_there = false;
 
-    if ((0 != params.id) &&
+  if ((0 != params.id) &&
 
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "id='")) ||
-         (!stradd(&write_ptr, &target_capacity, params.id)) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
-        return false;
-    }
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "id='")) ||
+       (!stradd(&write_ptr, &target_capacity, params.id)) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
+    return false;
+  }
 
-    if ((0 != params.loop) &&
+  if ((0 != params.loop) &&
 
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "loop='")) ||
-         (!stradd(&write_ptr, &target_capacity, params.loop)) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
-        return false;
-    }
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "loop='")) ||
+       (!stradd(&write_ptr, &target_capacity, params.loop)) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
+    return false;
+  }
 
-    char timestamp[30] = {0};
+  char timestamp[30] = {0};
 
-    if ((0 != params.from_epoch_secs) &&
+  if ((0 != params.from_epoch_secs) &&
 
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "starttime>'")) ||
-         (!stradd(&write_ptr,
-                  &target_capacity,
-                  epoch_secs_to_sql_datetime(
-                      timestamp, sizeof(timestamp), params.from_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "starttime>'")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.from_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    if ((0 != params.until_epoch_secs) &&
+  if ((0 != params.until_epoch_secs) &&
 
-        ((!add_and_clause(
-             &write_ptr, &target_capacity, condition_already_there)) ||
-         (!stradd(&write_ptr, &target_capacity, "endtime<'")) ||
-         (!stradd(
-             &write_ptr,
-             &target_capacity,
-             epoch_secs_to_sql_datetime(
-                 timestamp, sizeof(timestamp), params.until_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "'")) ||
-         (!set_bool(&condition_already_there, true)))) {
+      ((!add_and_clause(&write_ptr, &target_capacity,
+                        condition_already_there)) ||
+       (!stradd(&write_ptr, &target_capacity, "endtime<'")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.until_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "'")) ||
+       (!set_bool(&condition_already_there, true)))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    return (0 != target);
+  return (0 != target);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool params_to_sql_query_with_user(
-    char *target,
-    size_t target_capacity,
-    const ov_db_recordings_get_params params) {
+static bool
+params_to_sql_query_with_user(char *target, size_t target_capacity,
+                              const ov_db_recordings_get_params params) {
 
-    char timestamp[30] = {0};
-    char *write_ptr = target;
+  char timestamp[30] = {0};
+  char *write_ptr = target;
 
-    stradd(&write_ptr,
-           &target_capacity,
-           "SELECT r.id, r.uri, r.loop, r.starttime, r.endtime "
-           "FROM " RECORDINGS_TABLE " r, " PARTICIPATION_EVENTS_TABLE
-           " e WHERE e.usr='");
+  stradd(&write_ptr, &target_capacity,
+         "SELECT r.id, r.uri, r.loop, r.starttime, r.endtime "
+         "FROM " RECORDINGS_TABLE " r, " PARTICIPATION_EVENTS_TABLE
+         " e WHERE e.usr='");
 
-    stradd(&write_ptr, &target_capacity, params.user);
-    stradd(&write_ptr, &target_capacity, "' AND r.loop=e.loop");
+  stradd(&write_ptr, &target_capacity, params.user);
+  stradd(&write_ptr, &target_capacity, "' AND r.loop=e.loop");
 
-    if (((OV_PARTICIPATION_STATE_RECV == params.user_state) ||
-         (OV_PARTICIPATION_STATE_SEND == params.user_state)) &&
-        ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
-         (!stradd(&write_ptr, &target_capacity, "e.evstate='")) ||
-         (!stradd(&write_ptr,
-                  &target_capacity,
-                  ov_participation_state_to_string(params.user_state))) ||
-         (!stradd(&write_ptr, &target_capacity, "'")))) {
+  if (((OV_PARTICIPATION_STATE_RECV == params.user_state) ||
+       (OV_PARTICIPATION_STATE_SEND == params.user_state)) &&
+      ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
+       (!stradd(&write_ptr, &target_capacity, "e.evstate='")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                ov_participation_state_to_string(params.user_state))) ||
+       (!stradd(&write_ptr, &target_capacity, "'")))) {
 
-        return false;
+    return false;
 
-    } else if ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
-               (!stradd(&write_ptr, &target_capacity, "(")) ||
-               (!stradd(&write_ptr, &target_capacity, "e.evstate='")) ||
-               (!stradd(&write_ptr,
-                        &target_capacity,
-                        ov_participation_state_to_string(
-                            OV_PARTICIPATION_STATE_SEND))) ||
+  } else if ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
+             (!stradd(&write_ptr, &target_capacity, "(")) ||
+             (!stradd(&write_ptr, &target_capacity, "e.evstate='")) ||
+             (!stradd(&write_ptr, &target_capacity,
+                      ov_participation_state_to_string(
+                          OV_PARTICIPATION_STATE_SEND))) ||
 
-               (!stradd(&write_ptr, &target_capacity, "' OR ")) ||
-               (!stradd(&write_ptr, &target_capacity, "e.evstate='")) ||
-               (!stradd(&write_ptr,
-                        &target_capacity,
-                        ov_participation_state_to_string(
-                            OV_PARTICIPATION_STATE_RECV))) ||
-               (!stradd(&write_ptr, &target_capacity, "')"))) {
+             (!stradd(&write_ptr, &target_capacity, "' OR ")) ||
+             (!stradd(&write_ptr, &target_capacity, "e.evstate='")) ||
+             (!stradd(&write_ptr, &target_capacity,
+                      ov_participation_state_to_string(
+                          OV_PARTICIPATION_STATE_RECV))) ||
+             (!stradd(&write_ptr, &target_capacity, "')"))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    if ((0 != params.id) &&
-        ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
-         (!stradd(&write_ptr, &target_capacity, "r.id='")) ||
-         (!stradd(&write_ptr, &target_capacity, params.id)) ||
-         (!stradd(&write_ptr, &target_capacity, "'")))) {
+  if ((0 != params.id) &&
+      ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
+       (!stradd(&write_ptr, &target_capacity, "r.id='")) ||
+       (!stradd(&write_ptr, &target_capacity, params.id)) ||
+       (!stradd(&write_ptr, &target_capacity, "'")))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    if ((0 != params.loop) &&
-        ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
-         (!stradd(&write_ptr, &target_capacity, "e.loop='")) ||
-         (!stradd(&write_ptr, &target_capacity, params.loop)) ||
-         (!stradd(&write_ptr, &target_capacity, "'")))) {
+  if ((0 != params.loop) &&
+      ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
+       (!stradd(&write_ptr, &target_capacity, "e.loop='")) ||
+       (!stradd(&write_ptr, &target_capacity, params.loop)) ||
+       (!stradd(&write_ptr, &target_capacity, "'")))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    if ((0 != params.until_epoch_secs) &&
+  if ((0 != params.until_epoch_secs) &&
 
-        ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
-         (!stradd(&write_ptr, &target_capacity, "e.evtime<'")) ||
-         (!stradd(
-             &write_ptr,
-             &target_capacity,
-             epoch_secs_to_sql_datetime(
-                 timestamp, sizeof(timestamp), params.until_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "' AND '")) ||
-         (!stradd(
-             &write_ptr,
-             &target_capacity,
-             epoch_secs_to_sql_datetime(
-                 timestamp, sizeof(timestamp), params.until_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "'>r.starttime")))) {
+      ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
+       (!stradd(&write_ptr, &target_capacity, "e.evtime<'")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.until_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "' AND '")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.until_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "'>r.starttime")))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    if ((0 != params.from_epoch_secs) &&
+  if ((0 != params.from_epoch_secs) &&
 
-        ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
-         (!stradd(&write_ptr, &target_capacity, "e.evtime>'")) ||
-         (!stradd(&write_ptr,
-                  &target_capacity,
-                  epoch_secs_to_sql_datetime(
-                      timestamp, sizeof(timestamp), params.from_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "' AND r.endtime>'")) ||
-         (!stradd(&write_ptr,
-                  &target_capacity,
-                  epoch_secs_to_sql_datetime(
-                      timestamp, sizeof(timestamp), params.from_epoch_secs))) ||
-         (!stradd(&write_ptr, &target_capacity, "'")))) {
+      ((!add_and_clause(&write_ptr, &target_capacity, true)) ||
+       (!stradd(&write_ptr, &target_capacity, "e.evtime>'")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.from_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "' AND r.endtime>'")) ||
+       (!stradd(&write_ptr, &target_capacity,
+                epoch_secs_to_sql_datetime(timestamp, sizeof(timestamp),
+                                           params.from_epoch_secs))) ||
+       (!stradd(&write_ptr, &target_capacity, "'")))) {
 
-        return false;
-    }
+    return false;
+  }
 
-    return (0 != target);
+  return (0 != target);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool params_to_sql_query(char *target,
-                                size_t target_capacity,
+static bool params_to_sql_query(char *target, size_t target_capacity,
                                 const ov_db_recordings_get_params params) {
 
-    if (0 == params.user) {
+  if (0 == params.user) {
 
-        return params_to_sql_query_without_user(
-            target, target_capacity, params);
+    return params_to_sql_query_without_user(target, target_capacity, params);
 
-    } else {
+  } else {
 
-        return params_to_sql_query_with_user(target, target_capacity, params);
-    }
+    return params_to_sql_query_with_user(target, target_capacity, params);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -748,37 +675,34 @@ ov_json_value *ov_db_recordings_get_struct(ov_database *self,
                                            uint32_t max_num_results,
                                            ov_db_recordings_get_params params) {
 
-    char sql[1000] = {0};
+  char sql[1000] = {0};
 
-    QueryResult result = ERROR;
+  QueryResult result = ERROR;
 
-    ov_json_value *jtarget = 0;
+  ov_json_value *jtarget = 0;
 
-    if (params_to_sql_query(sql, sizeof(sql), params)) {
+  if (params_to_sql_query(sql, sizeof(sql), params)) {
 
-        result = query_select(self,
-                              max_num_results,
-                              sql,
-                              &jtarget,
-                              "Could not query database for recordings");
-    }
+    result = query_select(self, max_num_results, sql, &jtarget,
+                          "Could not query database for recordings");
+  }
 
-    switch (result) {
+  switch (result) {
 
-        case TOO_MANY_RESULTS:
-            jtarget = ov_json_value_free(jtarget);
-            return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
+  case TOO_MANY_RESULTS:
+    jtarget = ov_json_value_free(jtarget);
+    return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
 
-        case ERROR:
-            jtarget = ov_json_value_free(jtarget);
-            return jtarget;
+  case ERROR:
+    jtarget = ov_json_value_free(jtarget);
+    return jtarget;
 
-        case OK:
-            return jtarget;
+  case OK:
+    return jtarget;
 
-        default:
-            return jtarget;
-    };
+  default:
+    return jtarget;
+  };
 }
 
 /*----------------------------------------------------------------------------*/

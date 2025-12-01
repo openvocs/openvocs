@@ -47,65 +47,52 @@ typedef struct ov_mc_frontend ov_mc_frontend;
 
 typedef struct ov_mc_frontend_config {
 
-    ov_event_loop *loop;
-    ov_io *io;
+  ov_event_loop *loop;
+  ov_io *io;
+
+  struct {
+
+    ov_socket_configuration manager; // manager liege socket
+
+  } socket;
+
+  struct {
+
+    void *userdata;
 
     struct {
 
-        ov_socket_configuration manager; // manager liege socket
+      void (*dropped)(void *userdata, const char *session_id);
 
-    } socket;
+      void (*created)(void *userdata, const ov_response_state event,
+                      const char *session_id, const char *type, const char *sdp,
+                      size_t array_size,
+                      const ov_ice_proxy_vocs_stream_forward_data *array);
 
-    struct {
+      void (*completed)(void *userdata, const char *session_id, bool success);
 
-        void *userdata;
+      void (*update)(void *userdata, const ov_response_state event,
+                     const char *session_id);
 
-        struct {
+      void (*state)(void *userdata, const ov_response_state event,
+                    const char *session_id, const ov_json_value *state);
 
-            void (*dropped)(void *userdata, const char *session_id);
+    } session;
 
-            void (*created)(void *userdata,
-                            const ov_response_state event,
-                            const char *session_id,
-                            const char *type,
-                            const char *sdp,
-                            size_t array_size,
-                            const ov_ice_proxy_vocs_stream_forward_data *array);
+    /* callback for info from ice proxy, or response send to ice proxy */
+    void (*candidate)(void *userdata, const ov_response_state event,
+                      const char *session_id,
+                      const ov_ice_candidate_info *info);
 
-            void (*completed)(void *userdata,
+    /* callback for info from ice proxy, or response send to ice proxy */
+    void (*end_of_candidates)(void *userdata, const ov_response_state event,
                               const char *session_id,
-                              bool success);
+                              const ov_ice_candidate_info *info);
 
-            void (*update)(void *userdata,
-                           const ov_response_state event,
-                           const char *session_id);
+    void (*talk)(void *userdata, const ov_response_state event,
+                 const char *session_id, const ov_mc_loop_data data, bool on);
 
-            void (*state)(void *userdata,
-                          const ov_response_state event,
-                          const char *session_id,
-                          const ov_json_value *state);
-
-        } session;
-
-        /* callback for info from ice proxy, or response send to ice proxy */
-        void (*candidate)(void *userdata,
-                          const ov_response_state event,
-                          const char *session_id,
-                          const ov_ice_candidate_info *info);
-
-        /* callback for info from ice proxy, or response send to ice proxy */
-        void (*end_of_candidates)(void *userdata,
-                                  const ov_response_state event,
-                                  const char *session_id,
-                                  const ov_ice_candidate_info *info);
-
-        void (*talk)(void *userdata,
-                     const ov_response_state event,
-                     const char *session_id,
-                     const ov_mc_loop_data data,
-                     bool on);
-
-    } callback;
+  } callback;
 
 } ov_mc_frontend_config;
 
@@ -141,8 +128,7 @@ ov_mc_frontend_config ov_mc_frontend_config_from_json(const ov_json_value *in);
  *
  * NOTE will callback whenever some response arrives.
  */
-bool ov_mc_frontend_create_session(ov_mc_frontend *self,
-                                   char const *uuid,
+bool ov_mc_frontend_create_session(ov_mc_frontend *self, char const *uuid,
                                    const char *sdp);
 
 /*----------------------------------------------------------------------------*/
@@ -156,10 +142,8 @@ bool ov_mc_frontend_create_session(ov_mc_frontend *self,
  * @params type         OFFER or ANSWER
  * @params sdp          SDP definition to be used
  */
-bool ov_mc_frontend_update_session(ov_mc_frontend *self,
-                                   char const *uuid,
-                                   const char *session_uuid,
-                                   ov_media_type type,
+bool ov_mc_frontend_update_session(ov_mc_frontend *self, char const *uuid,
+                                   const char *session_uuid, ov_media_type type,
                                    const char *sdp);
 
 /*----------------------------------------------------------------------------*/
@@ -174,8 +158,7 @@ bool ov_mc_frontend_update_session(ov_mc_frontend *self,
  *
  * NOTE will callback whenever some response arrives.
  */
-bool ov_mc_frontend_drop_session(ov_mc_frontend *self,
-                                 const char *uuid,
+bool ov_mc_frontend_drop_session(ov_mc_frontend *self, const char *uuid,
                                  const char *session_id);
 
 /*----------------------------------------------------------------------------*/
@@ -191,8 +174,7 @@ bool ov_mc_frontend_drop_session(ov_mc_frontend *self,
  *
  * NOTE will callback whenever some response arrives.
  */
-bool ov_mc_frontend_candidate(ov_mc_frontend *self,
-                              char const *uuid,
+bool ov_mc_frontend_candidate(ov_mc_frontend *self, char const *uuid,
                               const char *ice_session_id,
                               const ov_ice_candidate_info *info);
 
@@ -208,8 +190,7 @@ bool ov_mc_frontend_candidate(ov_mc_frontend *self,
  *
  * NOTE will callback whenever some response arrives.
  */
-bool ov_mc_frontend_end_of_candidates(ov_mc_frontend *self,
-                                      char const *uuid,
+bool ov_mc_frontend_end_of_candidates(ov_mc_frontend *self, char const *uuid,
                                       const char *session_id);
 
 /*----------------------------------------------------------------------------*/
@@ -225,16 +206,12 @@ bool ov_mc_frontend_end_of_candidates(ov_mc_frontend *self,
  *
  * NOTE will callback whenever some response arrives.
  */
-bool ov_mc_frontend_talk(ov_mc_frontend *self,
-                         char const *uuid,
-                         const char *session_id,
-                         bool on,
-                         ov_mc_loop_data data);
+bool ov_mc_frontend_talk(ov_mc_frontend *self, char const *uuid,
+                         const char *session_id, bool on, ov_mc_loop_data data);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_frontened_get_session_state(ov_mc_frontend *self,
-                                       const char *uuid,
+bool ov_mc_frontened_get_session_state(ov_mc_frontend *self, const char *uuid,
                                        const char *session_id);
 
 #endif /* ov_mc_frontend_h */

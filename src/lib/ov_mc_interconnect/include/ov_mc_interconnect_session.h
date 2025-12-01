@@ -42,24 +42,24 @@ typedef struct ov_mc_interconnect_session ov_mc_interconnect_session;
 
 typedef struct {
 
-    ov_mc_interconnect *base;
-    ov_event_loop *loop;
-    ov_dtls *dtls;
+  ov_mc_interconnect *base;
+  ov_event_loop *loop;
+  ov_dtls *dtls;
 
-    int signaling;
+  int signaling;
 
-    ov_socket_configuration internal;
+  ov_socket_configuration internal;
 
-    struct {
+  struct {
 
-        char interface[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
-        ov_socket_data signaling;
-        ov_socket_data media;
+    char interface[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
+    ov_socket_data signaling;
+    ov_socket_data media;
 
-    } remote;
+  } remote;
 
-    uint64_t reconnect_interval_usecs;
-    uint64_t keepalive_trigger_usec;
+  uint64_t reconnect_interval_usecs;
+  uint64_t keepalive_trigger_usec;
 
 } ov_mc_interconnect_session_config;
 
@@ -71,13 +71,13 @@ typedef struct {
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_interconnect_session *ov_mc_interconnect_session_create(
-    ov_mc_interconnect_session_config config);
+ov_mc_interconnect_session *
+ov_mc_interconnect_session_create(ov_mc_interconnect_session_config config);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_interconnect_session *ov_mc_interconnect_session_free(
-    ov_mc_interconnect_session *self);
+ov_mc_interconnect_session *
+ov_mc_interconnect_session_free(ov_mc_interconnect_session *self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -90,8 +90,7 @@ ov_mc_interconnect_session *ov_mc_interconnect_session_cast(const void *data);
 /*----------------------------------------------------------------------------*/
 
 int ov_mc_interconnect_session_send(ov_mc_interconnect_session *self,
-                                    const uint8_t *buffer,
-                                    size_t size);
+                                    const uint8_t *buffer, size_t size);
 
 /*----------------------------------------------------------------------------*/
 
@@ -115,14 +114,12 @@ ov_dtls *ov_mc_interconnect_session_get_dtls(ov_mc_interconnect_session *self);
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_session_dtls_io(ov_mc_interconnect_session *self,
-                                        const uint8_t *buffer,
-                                        size_t size);
+                                        const uint8_t *buffer, size_t size);
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
-                                    const char *loop,
-                                    uint32_t ssrc);
+                                    const char *loop, uint32_t ssrc);
 
 /*----------------------------------------------------------------------------*/
 
@@ -132,17 +129,13 @@ bool ov_mc_interconnect_session_remove(ov_mc_interconnect_session *self,
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
-    ov_mc_interconnect_session *self,
-    uint8_t *buffer,
-    size_t size,
+    ov_mc_interconnect_session *self, uint8_t *buffer, size_t size,
     const ov_socket_data *remote);
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_session_forward_multicast_to_external(
-    ov_mc_interconnect_session *self,
-    ov_mc_interconnect_loop *loop,
-    uint8_t *buffer,
-    size_t size);
+    ov_mc_interconnect_session *self, ov_mc_interconnect_loop *loop,
+    uint8_t *buffer, size_t size);
 
 #endif /* ov_mc_interconnect_session_h */

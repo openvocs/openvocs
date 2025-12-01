@@ -77,8 +77,8 @@ typedef struct ov_event_broadcast ov_event_broadcast;
 
 typedef struct ov_event_broadcast_config {
 
-    uint64_t lock_timeout_usec;
-    uint32_t max_sockets;
+  uint64_t lock_timeout_usec;
+  uint32_t max_sockets;
 
 } ov_event_broadcast_config;
 
@@ -104,8 +104,9 @@ ov_event_broadcast *ov_event_broadcast_free(ov_event_broadcast *self);
     @returns ov_event_handler_config on success
     @returns empty ov_event_handler_config on error
 */
-ov_event_io_config ov_event_broadcast_configure_uri_event_io(
-    ov_event_broadcast *self, const char *name);
+ov_event_io_config
+ov_event_broadcast_configure_uri_event_io(ov_event_broadcast *self,
+                                          const char *name);
 
 /*----------------------------------------------------------------------------*/
 
@@ -132,10 +133,8 @@ bool ov_event_broadcast_set(ov_event_broadcast *self, int socket, uint8_t type);
 
     @returns true if the socket was added to the broadcast instance
 */
-bool ov_event_broadcast_set_send(ov_event_broadcast *self,
-                                 int socket,
-                                 uint8_t type,
-                                 ov_event_parameter_send send);
+bool ov_event_broadcast_set_send(ov_event_broadcast *self, int socket,
+                                 uint8_t type, ov_event_parameter_send send);
 
 /*----------------------------------------------------------------------------*/
 
@@ -206,8 +205,7 @@ ov_list *ov_event_broadcast_get_sockets(ov_event_broadcast *self, uint8_t type);
     ov_event_broadcast_send(self, input, OV_LOOP_BROADCAST|OV_USER_BROADCAST);
 */
 bool ov_event_broadcast_send(ov_event_broadcast *self,
-                             const ov_json_value *input,
-                             uint8_t type);
+                             const ov_json_value *input, uint8_t type);
 
 /*----------------------------------------------------------------------------*/
 
@@ -236,8 +234,7 @@ bool ov_event_broadcast_send(ov_event_broadcast *self,
 */
 bool ov_event_broadcast_send_params(ov_event_broadcast *self,
                                     const ov_event_parameter *parameter,
-                                    const ov_json_value *input,
-                                    uint8_t type);
+                                    const ov_json_value *input, uint8_t type);
 
 /*----------------------------------------------------------------------------*/
 

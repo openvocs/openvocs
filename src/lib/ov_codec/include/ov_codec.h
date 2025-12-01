@@ -101,10 +101,8 @@ char const *ov_codec_type_id(ov_codec const *codec);
  * @return number of written bytes or a negative number in case of
  * error;
  */
-int32_t ov_codec_encode(ov_codec *codec,
-                        const uint8_t *input,
-                        size_t length_bytes,
-                        uint8_t *output,
+int32_t ov_codec_encode(ov_codec *codec, const uint8_t *input,
+                        size_t length_bytes, uint8_t *output,
                         size_t max_out_length_bytes);
 
 /*----------------------------------------------------------------------------*/
@@ -117,12 +115,9 @@ int32_t ov_codec_encode(ov_codec *codec,
  * @return number of written bytes or a negative number in case of
  * error;
  */
-int32_t ov_codec_decode(ov_codec *codec,
-                        uint64_t seq_number,
-                        const uint8_t *input,
-                        size_t length_bytes,
-                        uint8_t *output,
-                        size_t max_out_length_bytes);
+int32_t ov_codec_decode(ov_codec *codec, uint64_t seq_number,
+                        const uint8_t *input, size_t length_bytes,
+                        uint8_t *output, size_t max_out_length_bytes);
 
 /*----------------------------------------------------------------------------*/
 
@@ -207,59 +202,52 @@ struct resampling;
  */
 struct ov_codec_struct {
 
-    /**
-     * Each particular codec should be identiable by a magic number.
-     * This number should be kept in here, in order for `terminate`,
-     * `encode`
-     * etc. to verify that they operate on the correct codec structure.
-     * Thus before using, each of those functions should first do a
-     * if(MY_MAGIC_NUMBER != *(uint32_t)codec) goto error;
-     *
-     * before starting to use codec as codec strcture.
-     */
-    uint32_t type;
+  /**
+   * Each particular codec should be identiable by a magic number.
+   * This number should be kept in here, in order for `terminate`,
+   * `encode`
+   * etc. to verify that they operate on the correct codec structure.
+   * Thus before using, each of those functions should first do a
+   * if(MY_MAGIC_NUMBER != *(uint32_t)codec) goto error;
+   *
+   * before starting to use codec as codec strcture.
+   */
+  uint32_t type;
 
-    /**
-     * Return id of the codec type (like 'raw', 'opus' ...)
-     */
-    const char *(*type_id)(const ov_codec *codec);
+  /**
+   * Return id of the codec type (like 'raw', 'opus' ...)
+   */
+  const char *(*type_id)(const ov_codec *codec);
 
-    ov_codec *(*free)(ov_codec *codec);
+  ov_codec *(*free)(ov_codec *codec);
 
-    int32_t (*encode)(ov_codec *codec,
-                      const uint8_t *input,
-                      size_t length,
-                      uint8_t *output,
-                      size_t max_out_length);
+  int32_t (*encode)(ov_codec *codec, const uint8_t *input, size_t length,
+                    uint8_t *output, size_t max_out_length);
 
-    int32_t (*decode)(ov_codec *codec,
-                      uint64_t seq_number,
-                      const uint8_t *input,
-                      size_t length,
-                      uint8_t *output,
-                      size_t max_out_length);
+  int32_t (*decode)(ov_codec *codec, uint64_t seq_number, const uint8_t *input,
+                    size_t length, uint8_t *output, size_t max_out_length);
 
-    ov_json_value *(*get_parameters)(const ov_codec *);
+  ov_json_value *(*get_parameters)(const ov_codec *);
 
-    uint32_t (*get_samplerate_hertz)(const ov_codec *codec);
+  uint32_t (*get_samplerate_hertz)(const ov_codec *codec);
 
-    /**
-     * SSID of the stream this codec is associated with.
-     */
-    uint32_t ssid;
+  /**
+   * SSID of the stream this codec is associated with.
+   */
+  uint32_t ssid;
 
-    /**
-     * Payload type number for RTP streams of this codec if defined.
-     * A negative number indicates that there is no fixed payload type for this
-     * codec defined. You have to get your payload type somewhere else.
-     * In that case, you can leave this function pointer at 0.
-     */
-    int8_t (*rtp_payload_type)(ov_codec const *);
+  /**
+   * Payload type number for RTP streams of this codec if defined.
+   * A negative number indicates that there is no fixed payload type for this
+   * codec defined. You have to get your payload type somewhere else.
+   * In that case, you can leave this function pointer at 0.
+   */
+  int8_t (*rtp_payload_type)(ov_codec const *);
 
-    /**
-     * Don't touch!
-     */
-    struct resampling *resampling;
+  /**
+   * Don't touch!
+   */
+  struct resampling *resampling;
 };
 
 /*----------------------------------------------------------------------------*/

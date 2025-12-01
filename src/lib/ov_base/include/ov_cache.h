@@ -47,7 +47,7 @@
 typedef struct ov_cache_struct ov_cache;
 
 typedef struct {
-    size_t capacity;
+  size_t capacity;
 } ov_cache_config;
 
 /*----------------------------------------------------------------------------*/
@@ -70,8 +70,7 @@ ov_cache *ov_cache_extend(ov_cache *cache, size_t capacity);
         Free (terminate) a cache.
         @param timeout_usec if 0, will try locking forever
 */
-ov_cache *ov_cache_free(ov_cache *restrict self,
-                        uint64_t timeout_usec,
+ov_cache *ov_cache_free(ov_cache *restrict self, uint64_t timeout_usec,
                         void *(*item_free)(void *));
 
 /*----------------------------------------------------------------------------*/

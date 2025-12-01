@@ -41,12 +41,12 @@
 
 typedef struct {
 
-    uint16_t packet_type;
-    uint16_t arphrd_type;
+  uint16_t packet_type;
+  uint16_t arphrd_type;
 
-    uint16_t link_layer_address_length;
-    uint8_t link_layer_address[8];
-    uint16_t protocol_type;
+  uint16_t link_layer_address_length;
+  uint8_t link_layer_address[8];
+  uint16_t protocol_type;
 
 } ov_format_linux_sll_header;
 

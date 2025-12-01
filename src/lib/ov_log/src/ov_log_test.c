@@ -37,7 +37,7 @@
 
 static void lets_log_something(ov_log_level level) {
 
-    ov_log_ng(level, __FILE__, __FUNCTION__, __LINE__, "LOGGED SOMETHIN");
+  ov_log_ng(level, __FILE__, __FUNCTION__, __LINE__, "LOGGED SOMETHIN");
 }
 
 /*****************************************************************************
@@ -47,43 +47,42 @@ static void lets_log_something(ov_log_level level) {
 #define OUR_TEMP_DIR "/tmp/ov_log"
 
 static bool init_tmp_dir() {
-    return 0 == mkdir(OUR_TEMP_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
+  return 0 == mkdir(OUR_TEMP_DIR, S_IRUSR | S_IWUSR | S_IXUSR);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static int delete_node(char const *path,
-                       const struct stat *sb,
-                       int typeflag,
+static int delete_node(char const *path, const struct stat *sb, int typeflag,
                        struct FTW *ftwbuf) {
 
-    UNUSED(sb);
-    UNUSED(typeflag);
-    UNUSED(ftwbuf);
+  UNUSED(sb);
+  UNUSED(typeflag);
+  UNUSED(ftwbuf);
 
-    int retval = remove(path);
+  int retval = remove(path);
 
-    return retval;
+  return retval;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool remove_tmp_dir() {
 
-    struct stat statbuf = {0};
-    errno = 0;
+  struct stat statbuf = {0};
+  errno = 0;
 
-    char const *path = OUR_TEMP_DIR;
+  char const *path = OUR_TEMP_DIR;
 
-    // no stat not existing
-    if (0 != stat(path, &statbuf)) return true;
-
-    if (0 !=
-        nftw(path, delete_node, FOPEN_MAX, FTW_DEPTH | FTW_MOUNT | FTW_PHYS)) {
-        return false;
-    }
-
+  // no stat not existing
+  if (0 != stat(path, &statbuf))
     return true;
+
+  if (0 !=
+      nftw(path, delete_node, FOPEN_MAX, FTW_DEPTH | FTW_MOUNT | FTW_PHYS)) {
+    return false;
+  }
+
+  return true;
 }
 
 /*****************************************************************************
@@ -92,42 +91,42 @@ static bool remove_tmp_dir() {
 
 static FILE *get_file_ptr(int fh) {
 
-    FILE *f = fdopen(dup(fh), "w+");
-    return f;
+  FILE *f = fdopen(dup(fh), "w+");
+  return f;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool file_empty(FILE *f) {
 
-    long old_pos = ftell(f);
-    LOG_ASSERT(0 <= old_pos);
+  long old_pos = ftell(f);
+  LOG_ASSERT(0 <= old_pos);
 
-    int retval = fseek(f, 0, SEEK_END);
-    LOG_ASSERT(0 <= retval);
+  int retval = fseek(f, 0, SEEK_END);
+  LOG_ASSERT(0 <= retval);
 
-    bool is_empty = 0 == ftell(f);
+  bool is_empty = 0 == ftell(f);
 
-    retval = fseek(f, old_pos, SEEK_SET);
-    LOG_ASSERT(0 <= retval);
+  retval = fseek(f, old_pos, SEEK_SET);
+  LOG_ASSERT(0 <= retval);
 
-    return is_empty;
+  return is_empty;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool file_clear(FILE *f) {
 
-    int retval = fseek(f, 0, SEEK_SET);
-    LOG_ASSERT(0 <= retval);
-    return 0 == ftruncate(fileno(f), 0);
+  int retval = fseek(f, 0, SEEK_SET);
+  LOG_ASSERT(0 <= retval);
+  return 0 == ftruncate(fileno(f), 0);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int file_temp() {
-    char template[] = OUR_TEMP_DIR "/ov_log_XXXXXX";
-    return mkstemp(template);
+  char template[] = OUR_TEMP_DIR "/ov_log_XXXXXX";
+  return mkstemp(template);
 }
 
 /*****************************************************************************
@@ -139,7 +138,7 @@ static int file_temp() {
 /*----------------------------------------------------------------------------*/
 
 static bool stdout_redirect() {
-    return stdout == freopen(STDOUT_FILE, "w+", stdout);
+  return stdout == freopen(STDOUT_FILE, "w+", stdout);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -165,7 +164,7 @@ static bool stderr_clear() { return file_clear(stderr); }
 /*----------------------------------------------------------------------------*/
 
 static bool stderr_redirect() {
-    return stderr == freopen(STDERR_FILE, "w+", stderr);
+  return stderr == freopen(STDERR_FILE, "w+", stderr);
 }
 
 /*****************************************************************************
@@ -174,265 +173,252 @@ static bool stderr_redirect() {
 
 static int init() {
 
-    init_tmp_dir();
-    return testrun_log_success();
+  init_tmp_dir();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_log() {
 
-    testrun(stdout_redirect());
-    testrun(stdout_empty());
-    testrun(stderr_redirect());
-    testrun(stderr_empty());
+  testrun(stdout_redirect());
+  testrun(stdout_empty());
+  testrun(stderr_redirect());
+  testrun(stderr_empty());
 
-    // Should log stdout, up to level info
-    ov_log_error("ERROR");
-    ov_log_warning("WARNING");
-    ov_log_info("INFO");
-    ov_log_debug("DEBUG");
+  // Should log stdout, up to level info
+  ov_log_error("ERROR");
+  ov_log_warning("WARNING");
+  ov_log_info("INFO");
+  ov_log_debug("DEBUG");
 
-    testrun(!stdout_empty());
-    testrun(stdout_clear());
-    testrun(stderr_empty());
-    testrun(stderr_clear());
+  testrun(!stdout_empty());
+  testrun(stdout_clear());
+  testrun(stderr_empty());
+  testrun(stderr_clear());
 
-    ov_log_init();
+  ov_log_init();
 
-    // Should stdout, up to level info
-    ov_log_error("ERROR");
-    ov_log_warning("WARNING");
-    ov_log_info("INFO");
-    ov_log_debug("DEBUG");
+  // Should stdout, up to level info
+  ov_log_error("ERROR");
+  ov_log_warning("WARNING");
+  ov_log_info("INFO");
+  ov_log_debug("DEBUG");
 
-    testrun(!stdout_empty());
-    testrun(stdout_clear());
-    testrun(stderr_empty());
-    testrun(stderr_clear());
+  testrun(!stdout_empty());
+  testrun(stdout_clear());
+  testrun(stderr_empty());
+  testrun(stderr_clear());
 
-    ov_log_set_output(0,
-                      0,
-                      OV_LOG_INFO,
-                      (ov_log_output){
-                          .use.systemd = false,
-                          .filehandle = -1,
-                      });
+  ov_log_set_output(0, 0, OV_LOG_INFO,
+                    (ov_log_output){
+                        .use.systemd = false,
+                        .filehandle = -1,
+                    });
 
-    // Should log nowhere
-    ov_log_error("ERROR");
-    ov_log_warning("WARNING");
-    ov_log_info("INFO");
-    ov_log_debug("DEBUG");
+  // Should log nowhere
+  ov_log_error("ERROR");
+  ov_log_warning("WARNING");
+  ov_log_info("INFO");
+  ov_log_debug("DEBUG");
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
+  testrun(stdout_empty());
+  testrun(stderr_empty());
 
-    int fh = file_temp();
-    FILE *aaa = get_file_ptr(fh);
-    testrun(0 != aaa);
+  int fh = file_temp();
+  FILE *aaa = get_file_ptr(fh);
+  testrun(0 != aaa);
 
-    testrun(ov_log_set_output("aaa",
-                              0,
-                              OV_LOG_DEBUG,
-                              (ov_log_output){
-                                  .filehandle = fh,
-                              }));
+  testrun(ov_log_set_output("aaa", 0, OV_LOG_DEBUG,
+                            (ov_log_output){
+                                .filehandle = fh,
+                            }));
 
-    // Since we are in module 'ov_log_test.c', we should still log nowhere
+  // Since we are in module 'ov_log_test.c', we should still log nowhere
 
-    ov_log_error("ERROR");
+  ov_log_error("ERROR");
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
 
-    /* Now install an output handler for our own file -
-     * `ov_log_test_c` file should receive our logs
-     */
+  /* Now install an output handler for our own file -
+   * `ov_log_test_c` file should receive our logs
+   */
 
-    fh = file_temp();
-    FILE *ov_log_test_c = get_file_ptr(fh);
-    testrun(0 != ov_log_test_c);
+  fh = file_temp();
+  FILE *ov_log_test_c = get_file_ptr(fh);
+  testrun(0 != ov_log_test_c);
 
-    testrun(ov_log_set_output("ov_log_test.c",
-                              0,
-                              OV_LOG_WARNING,
-                              (ov_log_output){
-                                  .filehandle = fh,
-                              }));
+  testrun(ov_log_set_output("ov_log_test.c", 0, OV_LOG_WARNING,
+                            (ov_log_output){
+                                .filehandle = fh,
+                            }));
 
-    ov_log_error("ERROR");
+  ov_log_error("ERROR");
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
-    testrun(!file_empty(ov_log_test_c));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
+  testrun(!file_empty(ov_log_test_c));
 
-    testrun(file_clear(ov_log_test_c));
+  testrun(file_clear(ov_log_test_c));
 
-    // Warning level should be logged as well
+  // Warning level should be logged as well
 
-    ov_log_warning("WARNING");
+  ov_log_warning("WARNING");
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
-    testrun(!file_empty(ov_log_test_c));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
+  testrun(!file_empty(ov_log_test_c));
 
-    testrun(file_clear(ov_log_test_c));
+  testrun(file_clear(ov_log_test_c));
 
-    // INFO should not logged since the highest level was set to WARNING
+  // INFO should not logged since the highest level was set to WARNING
 
-    ov_log_info("INFO");
+  ov_log_info("INFO");
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
-    testrun(file_empty(ov_log_test_c));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
+  testrun(file_empty(ov_log_test_c));
 
-    // DEBUG should not logged since the highest level was set to WARNING
+  // DEBUG should not logged since the highest level was set to WARNING
 
-    ov_log_debug("DEBUG");
+  ov_log_debug("DEBUG");
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
-    testrun(file_empty(ov_log_test_c));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
+  testrun(file_empty(ov_log_test_c));
 
-    // A function whose name has not been configured should log into
-    // the output for our module
-    lets_log_something(OV_LOG_ERR);
+  // A function whose name has not been configured should log into
+  // the output for our module
+  lets_log_something(OV_LOG_ERR);
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
-    testrun(!file_empty(ov_log_test_c));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
+  testrun(!file_empty(ov_log_test_c));
 
-    testrun(file_clear(ov_log_test_c));
+  testrun(file_clear(ov_log_test_c));
 
-    // Install handler for another function that does not log
+  // Install handler for another function that does not log
 
-    fh = file_temp();
-    FILE *ov_log_test_c_not_our_func = get_file_ptr(fh);
-    testrun(0 != ov_log_test_c_not_our_func);
+  fh = file_temp();
+  FILE *ov_log_test_c_not_our_func = get_file_ptr(fh);
+  testrun(0 != ov_log_test_c_not_our_func);
 
-    testrun(ov_log_set_output("ov_log_test.c",
-                              "not_our_func",
-                              OV_LOG_WARNING,
-                              (ov_log_output){
-                                  .filehandle = fh,
-                              }));
+  testrun(ov_log_set_output("ov_log_test.c", "not_our_func", OV_LOG_WARNING,
+                            (ov_log_output){
+                                .filehandle = fh,
+                            }));
 
-    // Function should still log into our module log
-    lets_log_something(OV_LOG_ERR);
+  // Function should still log into our module log
+  lets_log_something(OV_LOG_ERR);
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
-    testrun(!file_empty(ov_log_test_c));
-    testrun(file_empty(ov_log_test_c_not_our_func));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
+  testrun(!file_empty(ov_log_test_c));
+  testrun(file_empty(ov_log_test_c_not_our_func));
 
-    testrun(file_clear(ov_log_test_c));
+  testrun(file_clear(ov_log_test_c));
 
-    // Install handler for lets_log_something
+  // Install handler for lets_log_something
 
-    fh = file_temp();
-    FILE *ov_log_test_c_lets_log_something = get_file_ptr(fh);
-    testrun(0 != ov_log_test_c_lets_log_something);
+  fh = file_temp();
+  FILE *ov_log_test_c_lets_log_something = get_file_ptr(fh);
+  testrun(0 != ov_log_test_c_lets_log_something);
 
-    testrun(ov_log_set_output("ov_log_test.c",
-                              "lets_log_something",
-                              OV_LOG_WARNING,
-                              (ov_log_output){
-                                  .filehandle = fh,
-                              }));
+  testrun(ov_log_set_output("ov_log_test.c", "lets_log_something",
+                            OV_LOG_WARNING,
+                            (ov_log_output){
+                                .filehandle = fh,
+                            }));
 
-    lets_log_something(OV_LOG_ERR);
+  lets_log_something(OV_LOG_ERR);
 
-    testrun(stdout_empty());
-    testrun(stderr_empty());
-    testrun(file_empty(aaa));
-    testrun(file_empty(ov_log_test_c));
-    testrun(file_empty(ov_log_test_c_not_our_func));
-    testrun(!file_empty(ov_log_test_c_lets_log_something));
+  testrun(stdout_empty());
+  testrun(stderr_empty());
+  testrun(file_empty(aaa));
+  testrun(file_empty(ov_log_test_c));
+  testrun(file_empty(ov_log_test_c_not_our_func));
+  testrun(!file_empty(ov_log_test_c_lets_log_something));
 
-    testrun(file_clear(ov_log_test_c_lets_log_something));
+  testrun(file_clear(ov_log_test_c_lets_log_something));
 
-    /*************************************************************************
-                                   Tear down
-     ************************************************************************/
+  /*************************************************************************
+                                 Tear down
+   ************************************************************************/
 
-    fclose(aaa);
-    aaa = 0;
-    fclose(ov_log_test_c);
-    ov_log_test_c = 0;
-    fclose(ov_log_test_c_not_our_func);
-    ov_log_test_c_not_our_func = 0;
-    fclose(ov_log_test_c_lets_log_something);
-    ov_log_test_c_lets_log_something = 0;
+  fclose(aaa);
+  aaa = 0;
+  fclose(ov_log_test_c);
+  ov_log_test_c = 0;
+  fclose(ov_log_test_c_not_our_func);
+  ov_log_test_c_not_our_func = 0;
+  fclose(ov_log_test_c_lets_log_something);
+  ov_log_test_c_lets_log_something = 0;
 
-    ov_log_close();
+  ov_log_close();
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_log_level_from_string() {
 
-    testrun(OV_LOG_INVALID == ov_log_level_from_string(0));
-    testrun(OV_LOG_INVALID == ov_log_level_from_string("Drugstore from Hell"));
+  testrun(OV_LOG_INVALID == ov_log_level_from_string(0));
+  testrun(OV_LOG_INVALID == ov_log_level_from_string("Drugstore from Hell"));
 
-    testrun(OV_LOG_EMERG == ov_log_level_from_string("emergency"));
-    testrun(OV_LOG_ALERT == ov_log_level_from_string("alert"));
-    testrun(OV_LOG_CRIT == ov_log_level_from_string("critical"));
-    testrun(OV_LOG_ERR == ov_log_level_from_string("error"));
-    testrun(OV_LOG_WARNING == ov_log_level_from_string("warning"));
-    testrun(OV_LOG_NOTICE == ov_log_level_from_string("notice"));
-    testrun(OV_LOG_INFO == ov_log_level_from_string("info"));
-    testrun(OV_LOG_DEBUG == ov_log_level_from_string("debug"));
-    testrun(OV_LOG_DEV == ov_log_level_from_string("dev"));
-    testrun(OV_LOG_INVALID == ov_log_level_from_string("invalid"));
+  testrun(OV_LOG_EMERG == ov_log_level_from_string("emergency"));
+  testrun(OV_LOG_ALERT == ov_log_level_from_string("alert"));
+  testrun(OV_LOG_CRIT == ov_log_level_from_string("critical"));
+  testrun(OV_LOG_ERR == ov_log_level_from_string("error"));
+  testrun(OV_LOG_WARNING == ov_log_level_from_string("warning"));
+  testrun(OV_LOG_NOTICE == ov_log_level_from_string("notice"));
+  testrun(OV_LOG_INFO == ov_log_level_from_string("info"));
+  testrun(OV_LOG_DEBUG == ov_log_level_from_string("debug"));
+  testrun(OV_LOG_DEV == ov_log_level_from_string("dev"));
+  testrun(OV_LOG_INVALID == ov_log_level_from_string("invalid"));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_log_level_to_string() {
 
-    testrun(0 == strcmp("emergency", ov_log_level_to_string(OV_LOG_EMERG)));
-    testrun(0 == strcmp("alert", ov_log_level_to_string(OV_LOG_ALERT)));
-    testrun(0 == strcmp("critical", ov_log_level_to_string(OV_LOG_CRIT)));
-    testrun(0 == strcmp("error", ov_log_level_to_string(OV_LOG_ERR)));
-    testrun(0 == strcmp("warning", ov_log_level_to_string(OV_LOG_WARNING)));
-    testrun(0 == strcmp("notice", ov_log_level_to_string(OV_LOG_NOTICE)));
-    testrun(0 == strcmp("info", ov_log_level_to_string(OV_LOG_INFO)));
-    testrun(0 == strcmp("debug", ov_log_level_to_string(OV_LOG_DEBUG)));
-    testrun(0 == strcmp("dev", ov_log_level_to_string(OV_LOG_DEV)));
-    testrun(0 == strcmp("invalid", ov_log_level_to_string(OV_LOG_INVALID)));
+  testrun(0 == strcmp("emergency", ov_log_level_to_string(OV_LOG_EMERG)));
+  testrun(0 == strcmp("alert", ov_log_level_to_string(OV_LOG_ALERT)));
+  testrun(0 == strcmp("critical", ov_log_level_to_string(OV_LOG_CRIT)));
+  testrun(0 == strcmp("error", ov_log_level_to_string(OV_LOG_ERR)));
+  testrun(0 == strcmp("warning", ov_log_level_to_string(OV_LOG_WARNING)));
+  testrun(0 == strcmp("notice", ov_log_level_to_string(OV_LOG_NOTICE)));
+  testrun(0 == strcmp("info", ov_log_level_to_string(OV_LOG_INFO)));
+  testrun(0 == strcmp("debug", ov_log_level_to_string(OV_LOG_DEBUG)));
+  testrun(0 == strcmp("dev", ov_log_level_to_string(OV_LOG_DEV)));
+  testrun(0 == strcmp("invalid", ov_log_level_to_string(OV_LOG_INVALID)));
 
-    testrun(0 == ov_log_level_to_string(-1));
-    testrun(0 == ov_log_level_to_string(UINT16_MAX));
+  testrun(0 == ov_log_level_to_string(-1));
+  testrun(0 == ov_log_level_to_string(UINT16_MAX));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int tear_down() {
 
-    remove_tmp_dir();
+  remove_tmp_dir();
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
-RUN_TESTS("ov_log",
-          init,
-          test_ov_log,
-          test_ov_log_level_from_string,
-          test_ov_log_level_to_string,
-          tear_down);
+RUN_TESTS("ov_log", init, test_ov_log, test_ov_log_level_from_string,
+          test_ov_log_level_to_string, tear_down);

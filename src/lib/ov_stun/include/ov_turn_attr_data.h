@@ -72,11 +72,8 @@ size_t ov_turn_attr_data_encoding_length(size_t data);
         @param len      length of data
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_data_encode(uint8_t *buffer,
-                              size_t length,
-                              uint8_t **next,
-                              const uint8_t *data,
-                              size_t len);
+bool ov_turn_attr_data_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                              const uint8_t *data, size_t len);
 
 /*----------------------------------------------------------------------------*/
 
@@ -88,9 +85,7 @@ bool ov_turn_attr_data_encode(uint8_t *buffer,
         @param data     pointer to data within buffer
         @param len      pointer to be set to length of data
 */
-bool ov_turn_attr_data_decode(const uint8_t *buffer,
-                              size_t length,
-                              const uint8_t **data,
-                              size_t *len);
+bool ov_turn_attr_data_decode(const uint8_t *buffer, size_t length,
+                              const uint8_t **data, size_t *len);
 
 #endif /* ov_turn_attr_data_h */

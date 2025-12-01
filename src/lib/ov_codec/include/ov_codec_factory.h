@@ -87,10 +87,10 @@ ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory);
  * encode/decode a stream with a given ssid from/to codec type.
  * @param factory Factory to install codec to or 0 if install to global factory
  */
-ov_codec_generator ov_codec_factory_install_codec(
-    ov_codec_factory *factory,
-    const char *codec_name,
-    ov_codec_generator generate_codec);
+ov_codec_generator
+ov_codec_factory_install_codec(ov_codec_factory *factory,
+                               const char *codec_name,
+                               ov_codec_generator generate_codec);
 
 /**
  * Get a new codec to decode a particular stream.
@@ -102,8 +102,7 @@ ov_codec_generator ov_codec_factory_install_codec(
  * @return pointer to new codec or 0 in case of error.
  */
 ov_codec *ov_codec_factory_get_codec(ov_codec_factory *factory,
-                                     const char *codec_name,
-                                     uint32_t ssid,
+                                     const char *codec_name, uint32_t ssid,
                                      const ov_json_value *parameters);
 
 /**

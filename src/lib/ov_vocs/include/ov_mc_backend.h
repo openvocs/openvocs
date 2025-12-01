@@ -40,29 +40,23 @@
 
 #define OV_MC_BACKEND_DEFAULT_TIMEOUT 10000000 // 10 seconds
 
-typedef void (*ov_mc_backend_cb_mixer)(void *userdata,
-                                       const char *uuid,
+typedef void (*ov_mc_backend_cb_mixer)(void *userdata, const char *uuid,
                                        const char *user_uuid,
                                        uint64_t error_code,
                                        const char *error_desc);
 
-typedef void (*ov_mc_backend_cb_loop)(void *userdata,
-                                      const char *uuid,
+typedef void (*ov_mc_backend_cb_loop)(void *userdata, const char *uuid,
                                       const char *session_id,
-                                      const char *loopname,
-                                      uint64_t error_code,
+                                      const char *loopname, uint64_t error_code,
                                       const char *error_desc);
 
-typedef void (*ov_mc_backend_cb_volume)(void *userdata,
-                                        const char *uuid,
+typedef void (*ov_mc_backend_cb_volume)(void *userdata, const char *uuid,
                                         const char *session_id,
-                                        const char *loopname,
-                                        uint8_t volume,
+                                        const char *loopname, uint8_t volume,
                                         uint64_t error_code,
                                         const char *error_desc);
 
-typedef void (*ov_mc_backend_cb_state)(void *userdata,
-                                       const char *uuid,
+typedef void (*ov_mc_backend_cb_state)(void *userdata, const char *uuid,
                                        const ov_json_value *state);
 
 /*----------------------------------------------------------------------------*/
@@ -73,38 +67,38 @@ typedef struct ov_mc_backend ov_mc_backend;
 
 typedef struct ov_mc_backend_config {
 
-    ov_event_loop *loop;
-    ov_io *io;
+  ov_event_loop *loop;
+  ov_io *io;
+
+  struct {
+
+    ov_socket_configuration manager; // manager liege socket
+
+  } socket;
+
+  struct {
+
+    ov_mc_mixer_core_config config;
+
+  } mixer;
+
+  struct {
+
+    uint64_t request_usec;
+
+  } timeout;
+
+  struct {
+
+    void *userdata;
 
     struct {
 
-        ov_socket_configuration manager; // manager liege socket
-
-    } socket;
-
-    struct {
-
-        ov_mc_mixer_core_config config;
+      void (*lost)(void *userdata, const char *uuid);
 
     } mixer;
 
-    struct {
-
-        uint64_t request_usec;
-
-    } timeout;
-
-    struct {
-
-        void *userdata;
-
-        struct {
-
-            void (*lost)(void *userdata, const char *uuid);
-
-        } mixer;
-
-    } callback;
+  } callback;
 
 } ov_mc_backend_config;
 
@@ -136,11 +130,9 @@ ov_mc_backend_config ov_mc_backend_config_from_json(const ov_json_value *val);
  *  @params userdata    userdata to be used in callback
  *  @params callback    callback to be called once answer arrives
  */
-bool ov_mc_backend_acquire_mixer(ov_mc_backend *self,
-                                 const char *uuid,
+bool ov_mc_backend_acquire_mixer(ov_mc_backend *self, const char *uuid,
                                  const char *user_uuid,
-                                 ov_mc_mixer_core_forward data,
-                                 void *userdata,
+                                 ov_mc_mixer_core_forward data, void *userdata,
                                  ov_mc_backend_cb_mixer callback);
 
 /*----------------------------------------------------------------------------*/
@@ -155,8 +147,7 @@ bool ov_mc_backend_acquire_mixer(ov_mc_backend *self,
  *  @params userdata    userdata to be used in callback
  *  @params callback    callback to be called once answer arrives
  */
-bool ov_mc_backend_set_mixer_forward(ov_mc_backend *self,
-                                     const char *uuid,
+bool ov_mc_backend_set_mixer_forward(ov_mc_backend *self, const char *uuid,
                                      const char *user_uuid,
                                      ov_mc_mixer_core_forward data,
                                      void *userdata,
@@ -173,10 +164,8 @@ bool ov_mc_backend_set_mixer_forward(ov_mc_backend *self,
  *  @params userdata    userdata to be used in callback
  *  @params callback    callback to be called once answer arrives
  */
-bool ov_mc_backend_release_mixer(ov_mc_backend *self,
-                                 const char *uuid,
-                                 const char *user_uuid,
-                                 void *userdata,
+bool ov_mc_backend_release_mixer(ov_mc_backend *self, const char *uuid,
+                                 const char *user_uuid, void *userdata,
                                  ov_mc_backend_cb_mixer callback);
 
 /*----------------------------------------------------------------------------*/
@@ -191,12 +180,9 @@ bool ov_mc_backend_release_mixer(ov_mc_backend *self,
  *  @params userdata    userdata to be used in callback
  *  @params callback    callback to be called once answer arrives
  */
-bool ov_mc_backend_join_loop(ov_mc_backend *self,
-                             const char *uuid,
-                             const char *user_uuid,
-                             ov_mc_loop_data data,
-                             void *userdata,
-                             ov_mc_backend_cb_loop callback);
+bool ov_mc_backend_join_loop(ov_mc_backend *self, const char *uuid,
+                             const char *user_uuid, ov_mc_loop_data data,
+                             void *userdata, ov_mc_backend_cb_loop callback);
 
 /*----------------------------------------------------------------------------*/
 
@@ -210,12 +196,9 @@ bool ov_mc_backend_join_loop(ov_mc_backend *self,
  *  @params userdata    userdata to be used in callback
  *  @params callback    callback to be called once answer arrives
  */
-bool ov_mc_backend_leave_loop(ov_mc_backend *self,
-                              const char *uuid,
-                              const char *user_uuid,
-                              const char *loopname,
-                              void *userdata,
-                              ov_mc_backend_cb_loop callback);
+bool ov_mc_backend_leave_loop(ov_mc_backend *self, const char *uuid,
+                              const char *user_uuid, const char *loopname,
+                              void *userdata, ov_mc_backend_cb_loop callback);
 
 /*----------------------------------------------------------------------------*/
 
@@ -230,12 +213,9 @@ bool ov_mc_backend_leave_loop(ov_mc_backend *self,
  *  @params userdata    userdata to be used in callback
  *  @params callback    callback to be called once answer arrives
  */
-bool ov_mc_backend_set_loop_volume(ov_mc_backend *self,
-                                   const char *uuid,
-                                   const char *user_uuid,
-                                   const char *loopname,
-                                   uint8_t volume,
-                                   void *userdata,
+bool ov_mc_backend_set_loop_volume(ov_mc_backend *self, const char *uuid,
+                                   const char *user_uuid, const char *loopname,
+                                   uint8_t volume, void *userdata,
                                    ov_mc_backend_cb_volume callback);
 
 /*----------------------------------------------------------------------------*/
@@ -253,14 +233,10 @@ ov_mc_backend_registry_count ov_mc_backend_state_mixers(ov_mc_backend *self);
  *  @params userdata    userdata to be used in callback
  *  @params callback    callback to be called once answer arrives
  */
-bool ov_mc_backend_get_session_state(ov_mc_backend *self,
-                                     const char *uuid,
-                                     const char *session_id,
-                                     void *userdata,
+bool ov_mc_backend_get_session_state(ov_mc_backend *self, const char *uuid,
+                                     const char *session_id, void *userdata,
                                      ov_mc_backend_cb_state callback);
 
 /*----------------------------------------------------------------------------*/
-
-
 
 #endif /* ov_mc_backend_h */

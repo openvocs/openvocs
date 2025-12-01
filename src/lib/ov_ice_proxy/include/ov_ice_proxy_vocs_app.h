@@ -45,20 +45,20 @@ typedef struct ov_ice_proxy_vocs_app ov_ice_proxy_vocs_app;
 
 typedef struct ov_ice_proxy_vocs_app_config {
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    ov_ice_proxy_vocs_config proxy;
+  ov_ice_proxy_vocs_config proxy;
 
-    ov_socket_configuration manager;
+  ov_socket_configuration manager;
 
-    struct {
+  struct {
 
-        uint64_t io_timeout_usec;
-        uint64_t accept_to_io_timeout_usec;
-        uint64_t reconnect_interval_usec;
-        uint64_t client_connect_sec;
+    uint64_t io_timeout_usec;
+    uint64_t accept_to_io_timeout_usec;
+    uint64_t reconnect_interval_usec;
+    uint64_t client_connect_sec;
 
-    } timer;
+  } timer;
 
 } ov_ice_proxy_vocs_app_config;
 
@@ -70,19 +70,19 @@ typedef struct ov_ice_proxy_vocs_app_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_vocs_app *ov_ice_proxy_vocs_app_create(
-    ov_ice_proxy_vocs_app_config config);
+ov_ice_proxy_vocs_app *
+ov_ice_proxy_vocs_app_create(ov_ice_proxy_vocs_app_config config);
 ov_ice_proxy_vocs_app *ov_ice_proxy_vocs_app_free(ov_ice_proxy_vocs_app *self);
 ov_ice_proxy_vocs_app *ov_ice_proxy_vocs_app_cast(const void *userdata);
 
 /*----------------------------------------------------------------------------*/
 
-ov_ice_proxy_vocs_app_config ov_ice_proxy_vocs_app_config_from_json(
-    const ov_json_value *v);
+ov_ice_proxy_vocs_app_config
+ov_ice_proxy_vocs_app_config_from_json(const ov_json_value *v);
 
 /*----------------------------------------------------------------------------*/
 
-ov_event_io_config ov_ice_proxy_vocs_app_io_uri_config(
-    ov_ice_proxy_vocs_app *self);
+ov_event_io_config
+ov_ice_proxy_vocs_app_io_uri_config(ov_ice_proxy_vocs_app *self);
 
 #endif /* ov_ice_proxy_vocs_app_h */

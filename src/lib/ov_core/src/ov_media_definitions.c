@@ -33,36 +33,40 @@
 
 ov_media_type ov_media_type_from_string(const char *string) {
 
-    if (!string) goto error;
+  if (!string)
+    goto error;
 
-    if (0 == strcmp(string, OV_MEDIA_KEY_REQUEST)) return OV_MEDIA_REQUEST;
+  if (0 == strcmp(string, OV_MEDIA_KEY_REQUEST))
+    return OV_MEDIA_REQUEST;
 
-    if (0 == strcmp(string, OV_MEDIA_KEY_OFFER)) return OV_MEDIA_OFFER;
+  if (0 == strcmp(string, OV_MEDIA_KEY_OFFER))
+    return OV_MEDIA_OFFER;
 
-    if (0 == strcmp(string, OV_MEDIA_KEY_ANSWER)) return OV_MEDIA_ANSWER;
+  if (0 == strcmp(string, OV_MEDIA_KEY_ANSWER))
+    return OV_MEDIA_ANSWER;
 
 error:
-    return OV_MEDIA_ERROR;
+  return OV_MEDIA_ERROR;
 }
 
 /*----------------------------------------------------------------------------*/
 
 const char *ov_media_type_to_string(ov_media_type type) {
 
-    switch (type) {
+  switch (type) {
 
-        case OV_MEDIA_REQUEST:
-            return OV_MEDIA_KEY_REQUEST;
+  case OV_MEDIA_REQUEST:
+    return OV_MEDIA_KEY_REQUEST;
 
-        case OV_MEDIA_OFFER:
-            return OV_MEDIA_KEY_OFFER;
+  case OV_MEDIA_OFFER:
+    return OV_MEDIA_KEY_OFFER;
 
-        case OV_MEDIA_ANSWER:
-            return OV_MEDIA_KEY_ANSWER;
+  case OV_MEDIA_ANSWER:
+    return OV_MEDIA_KEY_ANSWER;
 
-        default:
-            break;
-    }
+  default:
+    break;
+  }
 
-    return NULL;
+  return NULL;
 }

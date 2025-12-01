@@ -50,17 +50,17 @@ typedef struct ov_source_file_config ov_source_file_config;
 
 struct ov_source_file_config {
 
-    struct {
+  struct {
 
-        const char *name;
-        const char *path;
-        const char *url; // optional URL to use
+    const char *name;
+    const char *path;
+    const char *url; // optional URL to use
 
-        bool create;
+    bool create;
 
-    } project;
+  } project;
 
-    ov_copyright_config copyright;
+  ov_copyright_config copyright;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -71,8 +71,7 @@ struct ov_source_file_config {
         @param config   config to fill
         @param app_name name of the implementation binary, using the functions
 */
-bool ov_source_file_read_user_input(int argc,
-                                    char *argv[],
+bool ov_source_file_read_user_input(int argc, char *argv[],
                                     ov_source_file_config *config,
                                     const char *app_name);
 
@@ -115,8 +114,7 @@ bool ov_source_file_create_project(ov_source_file_config *config);
 /**
         Write some intro and outro around some text lines.
 */
-char *ov_source_file_insert_at_each_line(const char *text,
-                                         const char *intro,
+char *ov_source_file_insert_at_each_line(const char *text, const char *intro,
                                          const char *outro);
 
 #endif /* ov_source_file_h */

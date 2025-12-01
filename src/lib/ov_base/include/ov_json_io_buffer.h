@@ -43,16 +43,16 @@ typedef struct ov_json_io_buffer ov_json_io_buffer;
 
 typedef struct ov_json_io_buffer_config {
 
-    bool debug;
-    bool objects_only;
+  bool debug;
+  bool objects_only;
 
-    struct {
+  struct {
 
-        void *userdata;
-        void (*success)(void *userdata, int socket, ov_json_value *value);
-        void (*failure)(void *userdata, int socket);
+    void *userdata;
+    void (*success)(void *userdata, int socket, ov_json_value *value);
+    void (*failure)(void *userdata, int socket);
 
-    } callback;
+  } callback;
 
 } ov_json_io_buffer_config;
 
@@ -82,8 +82,7 @@ ov_json_io_buffer *ov_json_io_buffer_cast(const void *self);
     @returns false if the content within the IO buffer is not valid JSON
     in case of non valid content, the buffer will be emptied at id socket.
 */
-bool ov_json_io_buffer_push(ov_json_io_buffer *self,
-                            int socket,
+bool ov_json_io_buffer_push(ov_json_io_buffer *self, int socket,
                             const ov_memory_pointer content);
 
 /*----------------------------------------------------------------------------*/

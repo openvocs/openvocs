@@ -41,17 +41,17 @@ Copyright   2018    German Aerospace Center DLR e.V.,
 
 struct ov_pulse_parameters_struct {
 
-    char const *name;
+  char const *name;
 
-    uint64_t sample_rate_hertz;
-    uint64_t usecs_to_buffer;
+  uint64_t sample_rate_hertz;
+  uint64_t usecs_to_buffer;
 
-    size_t frame_length_usecs;
+  size_t frame_length_usecs;
 
-    char const *server;
+  char const *server;
 
-    char const *playback_device;
-    char const *record_device;
+  char const *playback_device;
+  char const *record_device;
 };
 
 typedef struct ov_pulse_parameters_struct ov_pulse_parameters;

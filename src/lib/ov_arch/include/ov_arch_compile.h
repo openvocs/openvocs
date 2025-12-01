@@ -33,13 +33,13 @@
 /*----------------------------------------------------------------------------*/
 
 #define OV_ARCH_COMPILE_WARNING(message)                                       \
-    OV_ARCH_COMPILE_WARNING_INTERNAL(message)
+  OV_ARCH_COMPILE_WARNING_INTERNAL(message)
 
 #define OV_ARCH_COMPILE_DEPRECATED(message)                                    \
-    OV_ARCH_COMPILE_DEPRECATED_INTERNAL(message)
+  OV_ARCH_COMPILE_DEPRECATED_INTERNAL(message)
 
 #define OV_ARCH_COMPILE_ATTRIBUTE_WARNING(message)                             \
-    OV_ARCH_COMPILE_ATTRIBUTE_WARNING_INTERNAL(message)
+  OV_ARCH_COMPILE_ATTRIBUTE_WARNING_INTERNAL(message)
 
 /**
  * Returns the backtrace of the current function
@@ -59,11 +59,11 @@ char *ov_arch_compile_backtrace(size_t max_frames);
  * [GCC 4.5.0](https://gcc.gnu.org/gcc-4.5/changes.html) */
 
 #define OV_ARCH_COMPILE_DEPRECATED_INTERNAL(message)                           \
-    __attribute__((deprecated(message)))
+  __attribute__((deprecated(message)))
 
 /* Earliest GCC version support unknown - 4.5.4 does it ... */
 #define OV_ARCH_COMPILE_ATTRIBUTE_WARNING_INTERNAL(message)                    \
-    __attribute__((warning(message)))
+  __attribute__((warning(message)))
 
 /*----------------------------------------------------------------------------
                                    Older GCC
@@ -78,7 +78,7 @@ char *ov_arch_compile_backtrace(size_t max_frames);
 #define OV_ARCH_COMPILE_DEPRECATED_INTERNAL(message) __attribute__((deprecated))
 
 #define OV_ARCH_COMPILE_ATTRIBUTE_WARNING_INTERNAL(message)                    \
-    __attribute__((warning(message)))
+  __attribute__((warning(message)))
 
 /*----------------------------------------------------------------------------
                                      CLANG
@@ -91,7 +91,7 @@ char *ov_arch_compile_backtrace(size_t max_frames);
 #define OV_ARCH_COMPILE_DEPRECATED_INTERNAL(message) __attribute__((deprecated))
 
 #define OV_ARCH_COMPILE_ATTRIBUTE_WARNING_INTERNAL(message)                    \
-    __attribute__((warning(message)))
+  __attribute__((warning(message)))
 
 /*----------------------------------------------------------------------------
                                     GARBAGE

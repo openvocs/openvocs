@@ -32,21 +32,25 @@
 bool ov_turn_attr_is_additional_addr_family(const uint8_t *buffer,
                                             size_t length) {
 
-    if (!buffer || length < 8) goto error;
+  if (!buffer || length < 8)
+    goto error;
 
-    uint16_t type = ov_stun_attribute_get_type(buffer, length);
-    int64_t size = ov_stun_attribute_get_length(buffer, length);
+  uint16_t type = ov_stun_attribute_get_type(buffer, length);
+  int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != TURN_ADDITIONAL_ADDRESS_FAMILY) goto error;
+  if (type != TURN_ADDITIONAL_ADDRESS_FAMILY)
+    goto error;
 
-    if (size != 4) goto error;
+  if (size != 4)
+    goto error;
 
-    if (length < (size_t)size + 4) goto error;
+  if (length < (size_t)size + 4)
+    goto error;
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*
@@ -61,33 +65,34 @@ size_t ov_turn_attr_additional_addr_family_encoding_length() { return 8; }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_attr_additional_addr_family_encode(uint8_t *buffer,
-                                                size_t length,
+bool ov_turn_attr_additional_addr_family_encode(uint8_t *buffer, size_t length,
                                                 uint8_t **next,
                                                 uint16_t number) {
 
-    if (!buffer) goto error;
+  if (!buffer)
+    goto error;
 
-    size_t len = ov_turn_attr_additional_addr_family_encoding_length();
+  size_t len = ov_turn_attr_additional_addr_family_encoding_length();
 
-    if (length < len) goto error;
+  if (length < len)
+    goto error;
 
-    switch (number) {
+  switch (number) {
 
-        case 0x01:
-        case 0x02:
-            break;
-        default:
-            goto error;
-    }
+  case 0x01:
+  case 0x02:
+    break;
+  default:
+    goto error;
+  }
 
-    uint8_t buf[4] = {0};
-    buf[0] = number;
+  uint8_t buf[4] = {0};
+  buf[0] = number;
 
-    return ov_stun_attribute_encode(
-        buffer, length, next, TURN_ADDITIONAL_ADDRESS_FAMILY, buf, 4);
+  return ov_stun_attribute_encode(buffer, length, next,
+                                  TURN_ADDITIONAL_ADDRESS_FAMILY, buf, 4);
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -96,15 +101,17 @@ bool ov_turn_attr_additional_addr_family_decode(const uint8_t *buffer,
                                                 size_t length,
                                                 uint16_t *number) {
 
-    if (!buffer || length < 8 || !number) goto error;
+  if (!buffer || length < 8 || !number)
+    goto error;
 
-    if (!ov_turn_attr_is_additional_addr_family(buffer, length)) goto error;
+  if (!ov_turn_attr_is_additional_addr_family(buffer, length))
+    goto error;
 
-    uint16_t num = 0;
-    num = buffer[4];
+  uint16_t num = 0;
+  num = buffer[4];
 
-    *number = num;
-    return true;
+  *number = num;
+  return true;
 error:
-    return false;
+  return false;
 }

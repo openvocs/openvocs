@@ -54,8 +54,7 @@
         @returns        true is no linear whitespace to offset
         @returns        false if buffer is whitespace only
 */
-bool ov_stun_grammar_offset_linear_whitespace(const char *start,
-                                              size_t length,
+bool ov_stun_grammar_offset_linear_whitespace(const char *start, size_t length,
                                               char **next);
 
 /*----------------------------------------------------------------------------*/

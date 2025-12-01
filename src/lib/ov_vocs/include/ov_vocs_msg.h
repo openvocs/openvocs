@@ -72,8 +72,7 @@ ov_json_value *ov_vocs_msg_logout();
        "uuid":"9fc88431-dc85-46d3-bfbd-1139ab92d2b1"
     }
 */
-ov_json_value *ov_vocs_msg_login(const char *user,
-                                 const char *password,
+ov_json_value *ov_vocs_msg_login(const char *user, const char *password,
                                  const char *optional_client_id);
 
 /*----------------------------------------------------------------------------*/

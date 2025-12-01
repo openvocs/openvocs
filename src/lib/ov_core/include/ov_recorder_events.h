@@ -39,14 +39,14 @@
 
 typedef struct {
 
-    char *loop;
-    char *mc_ip;
-    uint16_t mc_port;
-    uint16_t roll_after_secs;
+  char *loop;
+  char *mc_ip;
+  uint16_t mc_port;
+  uint16_t roll_after_secs;
 
-    ov_vad_config vad;
+  ov_vad_config vad;
 
-    uint64_t silence_cutoff_interval_msecs;
+  uint64_t silence_cutoff_interval_msecs;
 
 } ov_recorder_event_start;
 
@@ -109,8 +109,8 @@ bool ov_recorder_event_start_from_json(ov_json_value const *json,
 
 typedef struct {
 
-    ov_id id;
-    char *filename;
+  ov_id id;
+  char *filename;
 
 } ov_recorder_response_start;
 
@@ -167,7 +167,7 @@ bool ov_recorder_response_start_from_json(ov_json_value const *json,
 
 typedef struct {
 
-    ov_id id;
+  ov_id id;
 
 } ov_recorder_event_stop;
 

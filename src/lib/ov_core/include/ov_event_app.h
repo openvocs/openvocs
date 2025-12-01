@@ -35,19 +35,19 @@ typedef struct ov_event_app ov_event_app;
 
 typedef struct ov_event_app_config {
 
-    ov_io *io;
+  ov_io *io;
 
-    struct {
+  struct {
 
-        /* Socket level callbacks for non IO messages (if required) */
+    /* Socket level callbacks for non IO messages (if required) */
 
-        void *userdata;
+    void *userdata;
 
-        bool (*accept)(void *userdata, int listener, int connection);
-        void (*close)(void *userdata, int connection);
-        void (*connected)(void *userdata, int connection);
+    bool (*accept)(void *userdata, int listener, int connection);
+    void (*close)(void *userdata, int connection);
+    void (*connected)(void *userdata, int connection);
 
-    } callbacks;
+  } callbacks;
 
 } ov_event_app_config;
 
@@ -75,8 +75,7 @@ bool ov_event_app_close(ov_event_app *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_app_send(ov_event_app *self,
-                       int socket,
+bool ov_event_app_send(ov_event_app *self, int socket,
                        const ov_json_value *msg);
 
 /*
@@ -99,13 +98,9 @@ bool ov_event_app_send(ov_event_app *self,
     JSON will be freed in ov_event_app. If some event callback is defined, that
     callback MUST free the input JSON transported.
 */
-bool ov_event_app_register(ov_event_app *app,
-                           const char *name,
-                           void *userdata,
-                           void (*callback)(void *userdata,
-                                            const char *name,
-                                            int socket,
-                                            ov_json_value *input));
+bool ov_event_app_register(ov_event_app *app, const char *name, void *userdata,
+                           void (*callback)(void *userdata, const char *name,
+                                            int socket, ov_json_value *input));
 
 /*----------------------------------------------------------------------------*/
 

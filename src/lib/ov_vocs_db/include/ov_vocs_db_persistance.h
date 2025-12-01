@@ -32,8 +32,6 @@
 
 #define OV_VOCS_DB_PERSISTANCE_CONFIG_FILE "config.json"
 
-
-
 #include <ov_base/ov_event_loop.h>
 #include <ov_core/ov_io.h>
 
@@ -47,28 +45,28 @@ typedef struct ov_vocs_db_persistance ov_vocs_db_persistance;
 
 typedef struct ov_vocs_db_persistance_config {
 
-    ov_event_loop *loop;
-    ov_vocs_db *db;
-    ov_io *io;
+  ov_event_loop *loop;
+  ov_vocs_db *db;
+  ov_io *io;
 
-    char path[PATH_MAX];
+  char path[PATH_MAX];
 
-    struct {
+  struct {
 
-        bool manager;
-        ov_socket_configuration socket;
-   
-    } cluster; 
+    bool manager;
+    ov_socket_configuration socket;
 
-    struct {
+  } cluster;
 
-        uint64_t thread_lock_usec;
-        uint64_t ldap_request_usec;
+  struct {
 
-        uint64_t state_snapshot_seconds;
-        uint64_t auth_snapshot_seconds;
+    uint64_t thread_lock_usec;
+    uint64_t ldap_request_usec;
 
-    } timeout;
+    uint64_t state_snapshot_seconds;
+    uint64_t auth_snapshot_seconds;
+
+  } timeout;
 
 } ov_vocs_db_persistance_config;
 
@@ -80,25 +78,24 @@ typedef struct ov_vocs_db_persistance_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_vocs_db_persistance *ov_vocs_db_persistance_create(
-    ov_vocs_db_persistance_config config);
-ov_vocs_db_persistance *ov_vocs_db_persistance_free(
-    ov_vocs_db_persistance *self);
+ov_vocs_db_persistance *
+ov_vocs_db_persistance_create(ov_vocs_db_persistance_config config);
+ov_vocs_db_persistance *
+ov_vocs_db_persistance_free(ov_vocs_db_persistance *self);
 ov_vocs_db_persistance *ov_vocs_db_persistance_cast(const void *self);
 
 bool ov_vocs_db_persistance_load(ov_vocs_db_persistance *self);
 bool ov_vocs_db_persistance_save(ov_vocs_db_persistance *self);
 
-ov_vocs_db_persistance_config ov_vocs_db_persistance_config_from_json(
-    const ov_json_value *val);
+ov_vocs_db_persistance_config
+ov_vocs_db_persistance_config_from_json(const ov_json_value *val);
 
 bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
-                                        const char *host,
-                                        const char *base,
-                                        const char *user,
-                                        const char *pass,
+                                        const char *host, const char *base,
+                                        const char *user, const char *pass,
                                         const char *domain);
 
-bool ov_vocs_db_persistance_broadcast(ov_vocs_db_persistance *self, const ov_json_value *update);
+bool ov_vocs_db_persistance_broadcast(ov_vocs_db_persistance *self,
+                                      const ov_json_value *update);
 
 #endif /* ov_vocs_db_persistance_h */

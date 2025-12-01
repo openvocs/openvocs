@@ -36,19 +36,19 @@
 
 typedef struct {
 
-    uint32_t magic_bytes;
+  uint32_t magic_bytes;
 
-    pthread_t thread_id;
-    bool running;
+  pthread_t thread_id;
+  bool running;
 
-    int client_socket;
+  int client_socket;
 
-    void *userdata;
+  void *userdata;
 
-    ov_dict *event_trackers;
-    ov_thread_lock lock;
+  ov_dict *event_trackers;
+  ov_thread_lock lock;
 
-    ov_app *(*old_free)(ov_app *);
+  ov_app *(*old_free)(ov_app *);
 
 } mockup;
 
@@ -56,105 +56,104 @@ typedef struct {
 
 static mockup *as_mockup(void *vptr) {
 
-    if (0 == vptr) return 0;
+  if (0 == vptr)
+    return 0;
 
-    mockup *m = vptr;
+  mockup *m = vptr;
 
-    if (MAGIC_BYTES != m->magic_bytes) return 0;
+  if (MAGIC_BYTES != m->magic_bytes)
+    return 0;
 
-    return m;
+  return m;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static mockup *get_mockup_from_app(ov_app *app) {
 
-    return as_mockup(ov_signaling_app_get_userdata(app));
+  return as_mockup(ov_signaling_app_get_userdata(app));
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void close_cb(ov_app *app,
-                     int socket,
-                     const char *uuid,
+static void close_cb(ov_app *app, int socket, const char *uuid,
                      void *userdata) {
 
-    UNUSED(app);
-    UNUSED(socket);
-    UNUSED(uuid);
-    UNUSED(userdata);
+  UNUSED(app);
+  UNUSED(socket);
+  UNUSED(uuid);
+  UNUSED(userdata);
 
-    mockup *m = get_mockup_from_app(app);
+  mockup *m = get_mockup_from_app(app);
 
-    if (0 == m) {
+  if (0 == m) {
 
-        ov_log_error("No/wrong app supplied");
-        return;
-    }
+    ov_log_error("No/wrong app supplied");
+    return;
+  }
 
-    if (m->client_socket != socket) {
+  if (m->client_socket != socket) {
 
-        ov_log_error("Close: Sockets do not match");
-        return;
-    }
+    ov_log_error("Close: Sockets do not match");
+    return;
+  }
 
-    m->client_socket = -1;
+  m->client_socket = -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool connected_cb(ov_app *app,
-                         int server_socket,
-                         int accepted_socket,
+static bool connected_cb(ov_app *app, int server_socket, int accepted_socket,
                          void *userdata) {
 
-    UNUSED(server_socket);
-    UNUSED(accepted_socket);
-    UNUSED(userdata);
+  UNUSED(server_socket);
+  UNUSED(accepted_socket);
+  UNUSED(userdata);
 
-    fprintf(stderr, "connected called \n");
+  fprintf(stderr, "connected called \n");
 
-    mockup *m = get_mockup_from_app(app);
+  mockup *m = get_mockup_from_app(app);
 
-    if (0 == m) {
+  if (0 == m) {
 
-        ov_log_error("No/wrong app supplied");
-        return false;
-    }
+    ov_log_error("No/wrong app supplied");
+    return false;
+  }
 
-    if (0 < m->client_socket) {
+  if (0 < m->client_socket) {
 
-        ov_log_warning("Connected: ALready connected");
-        return false;
-    }
+    ov_log_warning("Connected: ALready connected");
+    return false;
+  }
 
-    m->client_socket = accepted_socket;
+  m->client_socket = accepted_socket;
 
-    return true;
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_app *impl_free(ov_app *self) {
 
-    fprintf(stderr, "Close called\n");
+  fprintf(stderr, "Close called\n");
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) return 0;
+  if (0 == m)
+    return 0;
 
-    ov_signaling_app_set_userdata(self, 0);
+  ov_signaling_app_set_userdata(self, 0);
 
-    self = m->old_free(self);
+  self = m->old_free(self);
 
-    ov_thread_lock_clear(&m->lock);
+  ov_thread_lock_clear(&m->lock);
 
-    m->event_trackers = ov_dict_free(m->event_trackers);
-    OV_ASSERT(0 == m->event_trackers);
+  m->event_trackers = ov_dict_free(m->event_trackers);
+  OV_ASSERT(0 == m->event_trackers);
 
-    free(m);
+  free(m);
 
-    return self;
+  return self;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -167,61 +166,61 @@ ov_app *ov_signaling_server_mockup_create(ov_event_loop *loop,
                                           ov_socket_configuration server_socket,
                                           uint32_t timeout_secs) {
 
-    ov_app *app = 0;
-    mockup *m = 0;
+  ov_app *app = 0;
+  mockup *m = 0;
 
-    if (0 == loop) {
-        ov_log_error("Require event loop");
-        goto error;
-    }
+  if (0 == loop) {
+    ov_log_error("Require event loop");
+    goto error;
+  }
 
-    m = calloc(1, sizeof(mockup));
-    m->magic_bytes = MAGIC_BYTES;
+  m = calloc(1, sizeof(mockup));
+  m->magic_bytes = MAGIC_BYTES;
 
-    m->running = false;
+  m->running = false;
 
-    ov_thread_lock_init(&m->lock, timeout_secs * 1000 * 1000);
+  ov_thread_lock_init(&m->lock, timeout_secs * 1000 * 1000);
 
-    m->event_trackers = event_tracker_dict_create();
+  m->event_trackers = event_tracker_dict_create();
 
-    ov_app_config config = {.loop = loop, .name = "signaling_server_mockup"};
+  ov_app_config config = {.loop = loop, .name = "signaling_server_mockup"};
 
-    app = ov_signaling_app_create(config);
-    OV_ASSERT(0 != app);
+  app = ov_signaling_app_create(config);
+  OV_ASSERT(0 != app);
 
-    m->old_free = app->free;
-    app->free = impl_free;
+  m->old_free = app->free;
+  app->free = impl_free;
 
-    ov_signaling_app_set_userdata(app, m);
+  ov_signaling_app_set_userdata(app, m);
 
-    ov_app_socket_config app_socket_config = {
-        .socket_config = server_socket,
+  ov_app_socket_config app_socket_config = {
+      .socket_config = server_socket,
 
-        .parser.create = ov_parser_json_create_default,
-        .parser.config = (ov_parser_config){0},
+      .parser.create = ov_parser_json_create_default,
+      .parser.config = (ov_parser_config){0},
 
-        .callback.io = ov_signaling_app_io_signaling,
-        .callback.accepted = connected_cb,
-        .callback.close = close_cb,
+      .callback.io = ov_signaling_app_io_signaling,
+      .callback.accepted = connected_cb,
+      .callback.close = close_cb,
 
-    };
+  };
 
-    if (!ov_app_open_socket(app, app_socket_config, 0, 0)) {
+  if (!ov_app_open_socket(app, app_socket_config, 0, 0)) {
 
-        goto error;
-    }
+    goto error;
+  }
 
-    return app;
+  return app;
 
 error:
 
-    if (0 != app) {
-        app = app->free(app);
-    }
+  if (0 != app) {
+    app = app->free(app);
+  }
 
-    OV_ASSERT(0 == app);
+  OV_ASSERT(0 == app);
 
-    return 0;
+  return 0;
 }
 
 /*****************************************************************************
@@ -230,25 +229,27 @@ error:
 
 void *ov_signaling_server_mockup_set_userdata(ov_app *self, void *userdata) {
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) return 0;
+  if (0 == m)
+    return 0;
 
-    void *old = m->userdata;
-    m->userdata = userdata;
+  void *old = m->userdata;
+  m->userdata = userdata;
 
-    return old;
+  return old;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_signaling_server_mockup_get_userdata(ov_app *self) {
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) return 0;
+  if (0 == m)
+    return 0;
 
-    return m->userdata;
+  return m->userdata;
 }
 
 /*****************************************************************************
@@ -257,84 +258,85 @@ void *ov_signaling_server_mockup_get_userdata(ov_app *self) {
 
 static void *run_mockup(void *arg) {
 
-    ov_app *app = arg;
+  ov_app *app = arg;
 
-    OV_ASSERT(0 != app);
+  OV_ASSERT(0 != app);
 
-    ov_event_loop *loop = app->config.loop;
+  ov_event_loop *loop = app->config.loop;
 
-    OV_ASSERT(0 != loop);
+  OV_ASSERT(0 != loop);
 
-    loop->run(loop, UINT64_MAX);
+  loop->run(loop, UINT64_MAX);
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_signaling_server_mockup_run(ov_app *self) {
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) {
+  if (0 == m) {
 
-        ov_log_error("No minion mockup to run");
-        goto error;
-    }
+    ov_log_error("No minion mockup to run");
+    goto error;
+  }
 
-    pthread_create(&m->thread_id, 0, run_mockup, self);
+  pthread_create(&m->thread_id, 0, run_mockup, self);
 
-    m->running = true;
+  m->running = true;
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_signaling_server_mockup_stop(ov_app *self) {
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) {
+  if (0 == m) {
 
-        ov_log_error("Require minion mockup, got a different app");
-        goto error;
-    }
+    ov_log_error("Require minion mockup, got a different app");
+    goto error;
+  }
 
-    if (!m->running) {
+  if (!m->running) {
 
-        goto finish;
-    }
+    goto finish;
+  }
 
-    ov_event_loop *loop = self->config.loop;
+  ov_event_loop *loop = self->config.loop;
 
-    if (0 == loop) return false;
+  if (0 == loop)
+    return false;
 
-    OV_ASSERT(0 != loop);
+  OV_ASSERT(0 != loop);
 
-    loop->stop(loop);
+  loop->stop(loop);
 
-    void *retval = 0;
+  void *retval = 0;
 
-    if (0 != pthread_join(m->thread_id, &retval)) {
+  if (0 != pthread_join(m->thread_id, &retval)) {
 
-        testrun_log_error("Could not stop loop thread");
-        goto error;
-    }
+    testrun_log_error("Could not stop loop thread");
+    goto error;
+  }
 
-    m->running = false;
+  m->running = false;
 
 finish:
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*****************************************************************************
@@ -343,25 +345,25 @@ error:
 
 bool ov_signaling_server_mockup_send(ov_app *self, ov_json_value *msg) {
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if ((0 == m) || (0 == msg)) {
+  if ((0 == m) || (0 == msg)) {
 
-        ov_log_error("Got 0 pointer");
-        goto error;
-    }
+    ov_log_error("Got 0 pointer");
+    goto error;
+  }
 
-    if (0 >= m->client_socket) {
+  if (0 >= m->client_socket) {
 
-        ov_log_error("Not connected");
-        goto error;
-    }
+    ov_log_error("Not connected");
+    goto error;
+  }
 
-    return ov_app_send(self, m->client_socket, 0, (void *)msg);
+  return ov_app_send(self, m->client_socket, 0, (void *)msg);
 
 error:
 
-    return false;
+  return false;
 }
 
 /*****************************************************************************
@@ -369,8 +371,8 @@ error:
  ****************************************************************************/
 
 typedef struct {
-    bool called;
-    ov_json_value *parameters;
+  bool called;
+  ov_json_value *parameters;
 
 } event_tracker;
 
@@ -378,111 +380,113 @@ typedef struct {
 
 static void *event_tracker_free(void *vptr) {
 
-    if (0 == vptr) return 0;
-
-    event_tracker *et = vptr;
-
-    if (0 != et->parameters) {
-        et->parameters = ov_json_value_free(et->parameters);
-    }
-
-    OV_ASSERT(0 == et->parameters);
-
-    free(et);
-
+  if (0 == vptr)
     return 0;
+
+  event_tracker *et = vptr;
+
+  if (0 != et->parameters) {
+    et->parameters = ov_json_value_free(et->parameters);
+  }
+
+  OV_ASSERT(0 == et->parameters);
+
+  free(et);
+
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_dict *event_tracker_dict_create() {
 
-    ov_dict_config cfg = ov_dict_string_key_config(30);
+  ov_dict_config cfg = ov_dict_string_key_config(30);
 
-    cfg.value.data_function.free = event_tracker_free;
+  cfg.value.data_function.free = event_tracker_free;
 
-    return ov_dict_create(cfg);
+  return ov_dict_create(cfg);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool get_lock(ov_thread_lock *lock) {
 
-    if (0 == lock) return false;
+  if (0 == lock)
+    return false;
 
-    bool success_p = ov_thread_lock_try_lock(lock);
+  bool success_p = ov_thread_lock_try_lock(lock);
 
-    if (!success_p) return false;
+  if (!success_p)
+    return false;
 
-    success_p = ov_thread_lock_wait(lock);
+  success_p = ov_thread_lock_wait(lock);
 
-    // Mutex should still be locked ?
+  // Mutex should still be locked ?
 
-    return true;
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *track_event_cb(ov_app *app,
-                                     const char *name,
-                                     const ov_json_value *msg,
-                                     int socket,
+static ov_json_value *track_event_cb(ov_app *app, const char *name,
+                                     const ov_json_value *msg, int socket,
                                      const ov_socket_data *remote) {
 
-    UNUSED(app);
-    UNUSED(socket);
-    UNUSED(remote);
+  UNUSED(app);
+  UNUSED(socket);
+  UNUSED(remote);
 
-    fprintf(stderr, "Received %s\n", name);
+  fprintf(stderr, "Received %s\n", name);
 
-    bool locked = 0;
+  bool locked = 0;
 
-    mockup *m = get_mockup_from_app(app);
+  mockup *m = get_mockup_from_app(app);
 
-    if (0 == m) {
+  if (0 == m) {
 
-        ov_log_error("Require signaling server app, got 0 pointer");
-        goto error;
-    }
+    ov_log_error("Require signaling server app, got 0 pointer");
+    goto error;
+  }
 
-    locked = ov_thread_lock_try_lock(&m->lock);
+  locked = ov_thread_lock_try_lock(&m->lock);
 
-    if (!locked) goto error;
+  if (!locked)
+    goto error;
 
-    event_tracker *et = ov_dict_get(m->event_trackers, name);
+  event_tracker *et = ov_dict_get(m->event_trackers, name);
 
-    if (0 == et) {
+  if (0 == et) {
 
-        ov_log_error("No event tracker for %s", name);
-        goto error;
-    }
+    ov_log_error("No event tracker for %s", name);
+    goto error;
+  }
 
-    et->called = true;
+  et->called = true;
 
-    ov_json_value *params = ov_event_api_get_parameter(msg);
+  ov_json_value *params = ov_event_api_get_parameter(msg);
 
-    OV_ASSERT(0 != params);
+  OV_ASSERT(0 != params);
 
-    if (0 != et->parameters) {
+  if (0 != et->parameters) {
 
-        et->parameters = ov_json_value_free(et->parameters);
-    }
+    et->parameters = ov_json_value_free(et->parameters);
+  }
 
-    ov_json_value_copy((void **)&et->parameters, params);
+  ov_json_value_copy((void **)&et->parameters, params);
 
-    ov_thread_lock_unlock(&m->lock);
+  ov_thread_lock_unlock(&m->lock);
 
-    ov_thread_lock_notify(&m->lock);
+  ov_thread_lock_notify(&m->lock);
 
-    return 0;
+  return 0;
 
 error:
 
-    if (locked) {
-        ov_thread_lock_unlock(&m->lock);
-    }
+  if (locked) {
+    ov_thread_lock_unlock(&m->lock);
+  }
 
-    return (ov_json_value *)FAILURE_CLOSE_SOCKET;
+  return (ov_json_value *)FAILURE_CLOSE_SOCKET;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -490,57 +494,59 @@ error:
 void ov_signaling_server_mockup_track_event(ov_app *self,
                                             char const *event_name) {
 
-    bool locked = false;
+  bool locked = false;
 
-    event_tracker *old_et = 0;
+  event_tracker *old_et = 0;
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) goto finish;
+  if (0 == m)
+    goto finish;
 
-    locked = ov_thread_lock_try_lock(&m->lock);
+  locked = ov_thread_lock_try_lock(&m->lock);
 
-    if (!locked) goto finish;
+  if (!locked)
+    goto finish;
 
-    event_tracker *et = calloc(1, sizeof(event_tracker));
+  event_tracker *et = calloc(1, sizeof(event_tracker));
 
-    char *event_name_copy = strdup(event_name);
+  char *event_name_copy = strdup(event_name);
 
-    bool success_p =
-        ov_dict_set(m->event_trackers, event_name_copy, et, (void **)&old_et);
+  bool success_p =
+      ov_dict_set(m->event_trackers, event_name_copy, et, (void **)&old_et);
 
-    OV_ASSERT(success_p);
+  OV_ASSERT(success_p);
 
-    et = 0;
+  et = 0;
 
-    success_p =
-        ov_signaling_app_register_command(self, event_name, 0, track_event_cb);
+  success_p =
+      ov_signaling_app_register_command(self, event_name, 0, track_event_cb);
 
-    OV_ASSERT(success_p);
+  OV_ASSERT(success_p);
 
-    ov_thread_lock_unlock(&m->lock);
+  ov_thread_lock_unlock(&m->lock);
 
-    locked = false;
+  locked = false;
 
-    if (0 == old_et) {
+  if (0 == old_et) {
 
-        goto finish;
-    }
+    goto finish;
+  }
 
-    if (0 != old_et->parameters) {
+  if (0 != old_et->parameters) {
 
-        old_et->parameters = ov_json_value_free(old_et->parameters);
-    }
+    old_et->parameters = ov_json_value_free(old_et->parameters);
+  }
 
-    OV_ASSERT(0 == old_et->parameters);
+  OV_ASSERT(0 == old_et->parameters);
 
-    free(old_et);
+  free(old_et);
 
-    old_et = 0;
+  old_et = 0;
 
 finish:
 
-    OV_ASSERT(0 == old_et);
+  OV_ASSERT(0 == old_et);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -548,61 +554,70 @@ finish:
 bool ov_signaling_server_mockup_event_received(ov_app *self,
                                                char const *event_name) {
 
-    bool called = false;
+  bool called = false;
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) return false;
+  if (0 == m)
+    return false;
 
-    bool locked = get_lock(&m->lock);
+  bool locked = get_lock(&m->lock);
 
-    if (!locked) return false;
+  if (!locked)
+    return false;
 
-    event_tracker *t = ov_dict_get(m->event_trackers, event_name);
+  event_tracker *t = ov_dict_get(m->event_trackers, event_name);
 
-    if (0 == t) goto error;
+  if (0 == t)
+    goto error;
 
-    called = t->called;
-    t->called = false;
+  called = t->called;
+  t->called = false;
 
 error:
 
-    if (locked) ov_thread_lock_unlock(&m->lock);
+  if (locked)
+    ov_thread_lock_unlock(&m->lock);
 
-    return called;
+  return called;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_signaling_server_mockup_event_parameters(
-    ov_app *self, char const *event_name) {
+ov_json_value *
+ov_signaling_server_mockup_event_parameters(ov_app *self,
+                                            char const *event_name) {
 
-    ov_json_value *params = 0;
+  ov_json_value *params = 0;
 
-    mockup *m = get_mockup_from_app(self);
+  mockup *m = get_mockup_from_app(self);
 
-    if (0 == m) return 0;
+  if (0 == m)
+    return 0;
 
-    bool locked = get_lock(&m->lock);
+  bool locked = get_lock(&m->lock);
 
-    if (!locked) return false;
+  if (!locked)
+    return false;
 
-    event_tracker *t = ov_dict_get(m->event_trackers, event_name);
+  event_tracker *t = ov_dict_get(m->event_trackers, event_name);
 
-    if (0 == t) goto error;
+  if (0 == t)
+    goto error;
 
-    params = t->parameters;
-    t->parameters = 0;
+  params = t->parameters;
+  t->parameters = 0;
 
-    ov_thread_lock_unlock(&m->lock);
+  ov_thread_lock_unlock(&m->lock);
 
-    return params;
+  return params;
 
 error:
 
-    if (locked) ov_thread_lock_unlock(&m->lock);
+  if (locked)
+    ov_thread_lock_unlock(&m->lock);
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/

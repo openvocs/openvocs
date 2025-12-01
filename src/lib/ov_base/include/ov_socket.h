@@ -48,13 +48,13 @@
 
 typedef enum {
 
-    NETWORK_TRANSPORT_TYPE_ERROR = 0,
-    TCP,
-    UDP,
-    TLS,
-    DTLS,
-    LOCAL,
-    NETWORK_TRANSPORT_TYPE_OOB
+  NETWORK_TRANSPORT_TYPE_ERROR = 0,
+  TCP,
+  UDP,
+  TLS,
+  DTLS,
+  LOCAL,
+  NETWORK_TRANSPORT_TYPE_OOB
 
 } ov_socket_transport;
 
@@ -62,10 +62,10 @@ typedef enum {
 
 typedef struct {
 
-    char host[OV_HOST_NAME_MAX];
-    uint16_t port;
+  char host[OV_HOST_NAME_MAX];
+  uint16_t port;
 
-    ov_socket_transport type;
+  ov_socket_transport type;
 
 } ov_socket_configuration;
 
@@ -73,8 +73,8 @@ typedef struct {
 
 typedef struct {
 
-    int gai; // carry gai_error
-    int err; // carry errno
+  int gai; // carry gai_error
+  int err; // carry errno
 
 } ov_socket_error;
 
@@ -86,10 +86,10 @@ typedef struct {
 */
 typedef struct {
 
-    struct sockaddr_storage sa;
+  struct sockaddr_storage sa;
 
-    char host[OV_HOST_NAME_MAX]; // parsed host from sa
-    uint16_t port;               // parsed port from sa
+  char host[OV_HOST_NAME_MAX]; // parsed host from sa
+  uint16_t port;               // parsed port from sa
 
 } ov_socket_data;
 
@@ -114,8 +114,7 @@ typedef struct {
         @returns                on success (socket created)
                                 on error -1
 */
-int ov_socket_create(ov_socket_configuration config,
-                     bool as_client,
+int ov_socket_create(ov_socket_configuration config, bool as_client,
                      ov_socket_error *err_return);
 
 /*
@@ -171,8 +170,7 @@ bool ov_socket_config_from_sockaddr_storage(const struct sockaddr_storage *sa,
         @param err_return       (optional) container for error messages
         @returns                true if provided configs was filled
 */
-bool ov_socket_get_config(int socket_fd,
-                          ov_socket_configuration *local,
+bool ov_socket_get_config(int socket_fd, ov_socket_configuration *local,
                           ov_socket_configuration *remote,
                           ov_socket_error *err_return);
 
@@ -190,8 +188,7 @@ bool ov_socket_get_config(int socket_fd,
         @returns                true if provided configs was filled
 */
 
-bool ov_socket_get_sockaddr_storage(int fd,
-                                    struct sockaddr_storage *local,
+bool ov_socket_get_sockaddr_storage(int fd, struct sockaddr_storage *local,
                                     struct sockaddr_storage *remote,
                                     ov_socket_error *err_return);
 
@@ -214,8 +211,9 @@ bool ov_socket_get_sockaddr_storage(int fd,
                         "host" : "localhost"
                 }
 */
-ov_socket_configuration ov_socket_configuration_from_json(
-    const ov_json_value *object, const ov_socket_configuration default_values);
+ov_socket_configuration
+ov_socket_configuration_from_json(const ov_json_value *object,
+                                  const ov_socket_configuration default_values);
 
 /*---------------------------------------------------------------------------*/
 
@@ -257,8 +255,7 @@ ov_socket_data ov_socket_data_from_json(const ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_socket_data_to_string(char *target,
-                              size_t target_max_len_bytes,
+bool ov_socket_data_to_string(char *target, size_t target_max_len_bytes,
                               ov_socket_data const *sd);
 
 /*
@@ -278,9 +275,7 @@ bool ov_socket_data_to_string(char *target,
         @param port     pointer to port
  */
 bool ov_socket_parse_sockaddr_storage(const struct sockaddr_storage *sa,
-                                      char *ip,
-                                      size_t ip_len,
-                                      uint16_t *port);
+                                      char *ip, size_t ip_len, uint16_t *port);
 
 /*----------------------------------------------------------------------------*/
 
@@ -288,8 +283,8 @@ bool ov_socket_parse_sockaddr_storage(const struct sockaddr_storage *sa,
         Create ov_socket_data from a given
         sockaddr_storage
  */
-ov_socket_data ov_socket_data_from_sockaddr_storage(
-    const struct sockaddr_storage *sa);
+ov_socket_data
+ov_socket_data_from_sockaddr_storage(const struct sockaddr_storage *sa);
 
 /*----------------------------------------------------------------------------*/
 
@@ -297,8 +292,7 @@ ov_socket_data ov_socket_data_from_sockaddr_storage(
         Create ov_socket_data from a given
         sockaddr_storage
  */
-bool ov_socket_get_data(int socket,
-                        ov_socket_data *local,
+bool ov_socket_get_data(int socket, ov_socket_data *local,
                         ov_socket_data *remote);
 
 /*----------------------------------------------------------------------------*/
@@ -313,8 +307,7 @@ bool ov_socket_get_data(int socket,
         @return         true if the sockaddr_storage was filled with data
  */
 bool ov_socket_fill_sockaddr_storage(struct sockaddr_storage *sa,
-                                     sa_family_t family,
-                                     const char *ip,
+                                     sa_family_t family, const char *ip,
                                      uint16_t port);
 
 /*
@@ -379,9 +372,7 @@ ov_list *ov_socket_configuration_list();
         @param remote           ov_socket_date generate of remote using
                                 @see ov_socket_data_from_sockaddr_storage
 */
-bool ov_socket_generate_5tuple(char **dest,
-                               size_t *dest_len,
-                               int socket,
+bool ov_socket_generate_5tuple(char **dest, size_t *dest_len, int socket,
                                const ov_socket_data *remote);
 
 /*---------------------------------------------------------------------------*/
@@ -473,8 +464,8 @@ int ov_socket_open_server(ov_socket_configuration *scfg);
 
     @param config   prepared config with host and type, port will be overriden
 */
-ov_socket_configuration ov_socket_load_dynamic_port(
-    ov_socket_configuration config);
+ov_socket_configuration
+ov_socket_load_dynamic_port(ov_socket_configuration config);
 
 /*---------------------------------------------------------------------------*/
 
@@ -494,16 +485,16 @@ bool ov_socket_configuration_to_sockaddr(const ov_socket_configuration in,
 
 /*----------------------------------------------------------------------------*/
 
-ov_socket_data ov_socket_configuration_to_socket_data(
-    const ov_socket_configuration in);
+ov_socket_data
+ov_socket_configuration_to_socket_data(const ov_socket_configuration in);
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-    ov_socket_configuration peer;
-    ov_socket_configuration local;
-    bool connected;
+  ov_socket_configuration peer;
+  ov_socket_configuration local;
+  bool connected;
 
 } ov_socket_state;
 

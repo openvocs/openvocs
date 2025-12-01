@@ -34,11 +34,11 @@
 
 typedef enum {
 
-    OV_ICE_ERROR = -1,
-    OV_ICE_INIT = 0,
-    OV_ICE_RUNNING = 1,
-    OV_ICE_COMPLETED = 2,
-    OV_ICE_FAILED = 3
+  OV_ICE_ERROR = -1,
+  OV_ICE_INIT = 0,
+  OV_ICE_RUNNING = 1,
+  OV_ICE_COMPLETED = 2,
+  OV_ICE_FAILED = 3
 
 } ov_ice_state;
 
@@ -46,11 +46,11 @@ typedef enum {
 
 typedef enum {
 
-    OV_ICE_PAIR_FROZEN = 0,
-    OV_ICE_PAIR_WAITING = 1,
-    OV_ICE_PAIR_PROGRESS = 2,
-    OV_ICE_PAIR_SUCCESS = 4,
-    OV_ICE_PAIR_FAILED = 8
+  OV_ICE_PAIR_FROZEN = 0,
+  OV_ICE_PAIR_WAITING = 1,
+  OV_ICE_PAIR_PROGRESS = 2,
+  OV_ICE_PAIR_SUCCESS = 4,
+  OV_ICE_PAIR_FAILED = 8
 
 } ov_ice_pair_state;
 

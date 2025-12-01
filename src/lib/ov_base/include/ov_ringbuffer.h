@@ -48,36 +48,36 @@ typedef struct ov_ringbuffer_statistics_struct ov_ringbuffer_statistics;
 
 struct ov_ringbuffer_struct {
 
-    uint32_t magic_bytes;
+  uint32_t magic_bytes;
 
-    /**
-     * Returns the max number of elements this buffer may hold before
-     * starting to overwrite elements.
-     */
-    size_t (*capacity)(const ov_ringbuffer *self);
-    /**
-     * Retrieves and erases an element from the ring buffer.
-     * Prefer directly calling ov_ringbufer_pop() ...
-     */
-    void *(*pop)(ov_ringbuffer *self);
+  /**
+   * Returns the max number of elements this buffer may hold before
+   * starting to overwrite elements.
+   */
+  size_t (*capacity)(const ov_ringbuffer *self);
+  /**
+   * Retrieves and erases an element from the ring buffer.
+   * Prefer directly calling ov_ringbufer_pop() ...
+   */
+  void *(*pop)(ov_ringbuffer *self);
 
-    /**
-     * Inserts an element into the ring buffer.
-     * '0' as element is prohibited.
-     * Prefer ov_ringbuffer_insert() ...
-     */
-    bool (*insert)(ov_ringbuffer *self, void *element);
-    bool (*clear)(ov_ringbuffer *self);
-    ov_ringbuffer *(*free)(ov_ringbuffer *self);
-    ov_ringbuffer_statistics (*get_statistics)(const ov_ringbuffer *self);
+  /**
+   * Inserts an element into the ring buffer.
+   * '0' as element is prohibited.
+   * Prefer ov_ringbuffer_insert() ...
+   */
+  bool (*insert)(ov_ringbuffer *self, void *element);
+  bool (*clear)(ov_ringbuffer *self);
+  ov_ringbuffer *(*free)(ov_ringbuffer *self);
+  ov_ringbuffer_statistics (*get_statistics)(const ov_ringbuffer *self);
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct ov_ringbuffer_statistics_struct {
 
-    uint64_t elements_inserted;
-    uint64_t elements_dropped;
+  uint64_t elements_inserted;
+  uint64_t elements_dropped;
 };
 
 /*---------------------------------------------------------------------------*/

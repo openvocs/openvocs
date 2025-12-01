@@ -45,15 +45,15 @@
 
 typedef struct ov_vocs_connection {
 
-    int socket;
+  int socket;
 
-    ov_socket_data local;
-    ov_socket_data remote;
+  ov_socket_data local;
+  ov_socket_data remote;
 
-    ov_json_value *data;
+  ov_json_value *data;
 
-    bool ice_success;
-    bool media_ready;
+  bool ice_success;
+  bool media_ready;
 
 } ov_vocs_connection;
 
@@ -93,8 +93,7 @@ bool ov_vocs_connection_set_loop_state(ov_vocs_connection *self,
 uint8_t ov_vocs_connection_get_loop_volume(ov_vocs_connection *self,
                                            const char *loop);
 bool ov_vocs_connection_set_loop_volume(ov_vocs_connection *self,
-                                        const char *loop,
-                                        uint8_t percent);
+                                        const char *loop, uint8_t percent);
 
 ov_json_value *ov_vocs_connection_get_state(const ov_vocs_connection *self);
 

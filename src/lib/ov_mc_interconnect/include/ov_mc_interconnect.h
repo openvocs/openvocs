@@ -59,47 +59,47 @@ typedef struct ov_mc_interconnect ov_mc_interconnect;
 
 typedef struct ov_mc_interconnect_config {
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    char name[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
-    char password[OV_MC_INTERCONNECT_PASSWORD_MAX];
+  char name[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
+  char password[OV_MC_INTERCONNECT_PASSWORD_MAX];
 
-    struct {
+  struct {
 
-        bool client;
-        ov_socket_configuration signaling;
-        ov_socket_configuration media;
-        ov_socket_configuration internal;
+    bool client;
+    ov_socket_configuration signaling;
+    ov_socket_configuration media;
+    ov_socket_configuration internal;
 
-    } socket;
+  } socket;
 
-    struct {
+  struct {
 
-        char domains[PATH_MAX]; // domains to configure in listener
-
-        struct {
-
-            char domain[PATH_MAX]; // hostname to use in handshake
-            struct {
-
-                char file[PATH_MAX]; // path to CA verify file
-                char path[PATH_MAX]; // path to CAs to use
-
-            } ca;
-
-        } client;
-
-    } tls;
+    char domains[PATH_MAX]; // domains to configure in listener
 
     struct {
 
-        uint8_t threads;
-        uint64_t client_connect_trigger_usec;
-        uint64_t keepalive_trigger_usec;
+      char domain[PATH_MAX]; // hostname to use in handshake
+      struct {
 
-    } limits;
+        char file[PATH_MAX]; // path to CA verify file
+        char path[PATH_MAX]; // path to CAs to use
 
-    ov_dtls_config dtls;
+      } ca;
+
+    } client;
+
+  } tls;
+
+  struct {
+
+    uint8_t threads;
+    uint64_t client_connect_trigger_usec;
+    uint64_t keepalive_trigger_usec;
+
+  } limits;
+
+  ov_dtls_config dtls;
 
 } ov_mc_interconnect_config;
 
@@ -120,8 +120,8 @@ ov_mc_interconnect *ov_mc_interconnect_cast(const void *data);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_interconnect_config ov_mc_interconnect_config_from_json(
-    const ov_json_value *val);
+ov_mc_interconnect_config
+ov_mc_interconnect_config_from_json(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
@@ -132,8 +132,7 @@ bool ov_mc_interconnect_load_loops(ov_mc_interconnect *self,
 
 bool ov_mc_interconnect_multicast_io(ov_mc_interconnect *self,
                                      ov_mc_interconnect_loop *loop,
-                                     uint8_t *buffer,
-                                     size_t bytes);
+                                     uint8_t *buffer, size_t bytes);
 
 /*
  *      ------------------------------------------------------------------------
@@ -143,8 +142,7 @@ bool ov_mc_interconnect_multicast_io(ov_mc_interconnect *self,
  *      ------------------------------------------------------------------------
  */
 
-bool ov_mc_interconnect_register_session(ov_mc_interconnect *self,
-                                         ov_id id,
+bool ov_mc_interconnect_register_session(ov_mc_interconnect *self, ov_id id,
                                          ov_socket_data signaling,
                                          ov_socket_data media,
                                          ov_mc_interconnect_session *session);

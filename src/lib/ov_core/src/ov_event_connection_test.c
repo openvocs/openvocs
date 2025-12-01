@@ -32,27 +32,27 @@
 
 struct userdata {
 
-    int socket;
-    ov_json_value *value;
+  int socket;
+  ov_json_value *value;
 };
 
 /*----------------------------------------------------------------------------*/
 
 static void dummy_clear(struct userdata *dummy) {
 
-    dummy->socket = 0;
-    dummy->value = ov_json_value_free(dummy->value);
+  dummy->socket = 0;
+  dummy->value = ov_json_value_free(dummy->value);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool dummy_send(void *instance, int socket, const ov_json_value *v) {
 
-    struct userdata *dummy = (struct userdata *)instance;
-    dummy_clear(dummy);
-    dummy->socket = socket;
-    ov_json_value_copy((void **)&dummy->value, v);
-    return true;
+  struct userdata *dummy = (struct userdata *)instance;
+  dummy_clear(dummy);
+  dummy->socket = socket;
+  ov_json_value_copy((void **)&dummy->value, v);
+  return true;
 }
 
 /*
@@ -65,208 +65,205 @@ static bool dummy_send(void *instance, int socket, const ov_json_value *v) {
 
 int test_ov_event_connection_create() {
 
-    struct userdata dummy = {0};
+  struct userdata dummy = {0};
 
-    ov_event_connection *c =
-        ov_event_connection_create((ov_event_connection_config){0});
-    testrun(c);
-    testrun(ov_event_connection_cast(c));
-    testrun(NULL == ov_event_connection_free(c));
+  ov_event_connection *c =
+      ov_event_connection_create((ov_event_connection_config){0});
+  testrun(c);
+  testrun(ov_event_connection_cast(c));
+  testrun(NULL == ov_event_connection_free(c));
 
-    c = ov_event_connection_create(
-        (ov_event_connection_config){.socket = 1,
-                                     .params.send.instance = &dummy,
-                                     .params.send.send = dummy_send});
+  c = ov_event_connection_create(
+      (ov_event_connection_config){.socket = 1,
+                                   .params.send.instance = &dummy,
+                                   .params.send.send = dummy_send});
 
-    testrun(c);
-    testrun(c->config.socket == 1);
-    testrun(c->config.params.send.instance == &dummy);
-    testrun(c->config.params.send.send == dummy_send);
-    testrun(NULL == ov_event_connection_free(c));
+  testrun(c);
+  testrun(c->config.socket == 1);
+  testrun(c->config.params.send.instance == &dummy);
+  testrun(c->config.params.send.send == dummy_send);
+  testrun(NULL == ov_event_connection_free(c));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_event_connection_free() {
 
-    struct userdata dummy = {0};
+  struct userdata dummy = {0};
 
-    ov_event_connection *c = NULL;
+  ov_event_connection *c = NULL;
 
-    c = ov_event_connection_create(
-        (ov_event_connection_config){.socket = 1,
-                                     .params.send.instance = &dummy,
-                                     .params.send.send = dummy_send});
+  c = ov_event_connection_create(
+      (ov_event_connection_config){.socket = 1,
+                                   .params.send.instance = &dummy,
+                                   .params.send.send = dummy_send});
 
-    testrun(c);
-    testrun(NULL == ov_event_connection_free(c));
+  testrun(c);
+  testrun(NULL == ov_event_connection_free(c));
 
-    c = ov_event_connection_create(
-        (ov_event_connection_config){.socket = 1,
-                                     .params.send.instance = &dummy,
-                                     .params.send.send = dummy_send});
+  c = ov_event_connection_create(
+      (ov_event_connection_config){.socket = 1,
+                                   .params.send.instance = &dummy,
+                                   .params.send.send = dummy_send});
 
-    testrun(c);
-    testrun(ov_event_connection_set(c, "key", "value"));
-    testrun(NULL == ov_event_connection_free(c));
+  testrun(c);
+  testrun(ov_event_connection_set(c, "key", "value"));
+  testrun(NULL == ov_event_connection_free(c));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_event_connection_free_void() {
 
-    struct userdata dummy = {0};
+  struct userdata dummy = {0};
 
-    ov_event_connection *c = NULL;
+  ov_event_connection *c = NULL;
 
-    c = ov_event_connection_create(
-        (ov_event_connection_config){.socket = 1,
-                                     .params.send.instance = &dummy,
-                                     .params.send.send = dummy_send});
+  c = ov_event_connection_create(
+      (ov_event_connection_config){.socket = 1,
+                                   .params.send.instance = &dummy,
+                                   .params.send.send = dummy_send});
 
-    testrun(c);
-    testrun(NULL == ov_event_connection_free_void(c));
-    testrun(&dummy == ov_event_connection_free_void(&dummy));
+  testrun(c);
+  testrun(NULL == ov_event_connection_free_void(c));
+  testrun(&dummy == ov_event_connection_free_void(&dummy));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_event_connection_send() {
 
-    struct userdata dummy = {0};
+  struct userdata dummy = {0};
 
-    ov_event_connection *c = NULL;
+  ov_event_connection *c = NULL;
 
-    c = ov_event_connection_create(
-        (ov_event_connection_config){.socket = 1,
-                                     .params.send.instance = &dummy,
-                                     .params.send.send = dummy_send});
+  c = ov_event_connection_create(
+      (ov_event_connection_config){.socket = 1,
+                                   .params.send.instance = &dummy,
+                                   .params.send.send = dummy_send});
 
-    testrun(c);
-    ov_json_value *val = ov_json_string("test");
+  testrun(c);
+  ov_json_value *val = ov_json_string("test");
 
-    testrun(ov_event_connection_send(c, val));
-    testrun(dummy.value);
-    testrun(ov_json_is_string(dummy.value));
-    testrun(0 == strcmp("test", ov_json_string_get(dummy.value)));
+  testrun(ov_event_connection_send(c, val));
+  testrun(dummy.value);
+  testrun(ov_json_is_string(dummy.value));
+  testrun(0 == strcmp("test", ov_json_string_get(dummy.value)));
 
-    dummy_clear(&dummy);
-    testrun(NULL == ov_event_connection_free(c));
-    val = ov_json_value_free(val);
+  dummy_clear(&dummy);
+  testrun(NULL == ov_event_connection_free(c));
+  val = ov_json_value_free(val);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_event_connection_set() {
 
-    ov_event_connection *c =
-        ov_event_connection_create((ov_event_connection_config){0});
+  ov_event_connection *c =
+      ov_event_connection_create((ov_event_connection_config){0});
 
-    testrun(c);
+  testrun(c);
 
-    testrun(!ov_event_connection_set(NULL, NULL, NULL));
-    testrun(!ov_event_connection_set(c, "key", NULL));
-    testrun(!ov_event_connection_set(NULL, "key", "val"));
-    testrun(!ov_event_connection_set(c, NULL, "val"));
+  testrun(!ov_event_connection_set(NULL, NULL, NULL));
+  testrun(!ov_event_connection_set(c, "key", NULL));
+  testrun(!ov_event_connection_set(NULL, "key", "val"));
+  testrun(!ov_event_connection_set(c, NULL, "val"));
 
-    testrun(ov_event_connection_set(c, "key", "val"));
-    testrun(
-        0 ==
-        strcmp("val", ov_json_string_get(ov_json_object_get(c->data, "key"))));
+  testrun(ov_event_connection_set(c, "key", "val"));
+  testrun(0 == strcmp("val",
+                      ov_json_string_get(ov_json_object_get(c->data, "key"))));
 
-    testrun(ov_event_connection_set(c, "key", "other"));
-    testrun(0 ==
-            strcmp("other",
-                   ov_json_string_get(ov_json_object_get(c->data, "key"))));
+  testrun(ov_event_connection_set(c, "key", "other"));
+  testrun(0 == strcmp("other",
+                      ov_json_string_get(ov_json_object_get(c->data, "key"))));
 
-    testrun(1 == ov_json_object_count(c->data));
+  testrun(1 == ov_json_object_count(c->data));
 
-    testrun(NULL == ov_event_connection_free(c));
+  testrun(NULL == ov_event_connection_free(c));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_event_connection_get() {
 
-    ov_event_connection *c =
-        ov_event_connection_create((ov_event_connection_config){0});
+  ov_event_connection *c =
+      ov_event_connection_create((ov_event_connection_config){0});
 
-    testrun(c);
+  testrun(c);
 
-    testrun(ov_event_connection_set(c, "key", "val"));
-    testrun(0 == strcmp("val", ov_event_connection_get(c, "key")));
+  testrun(ov_event_connection_set(c, "key", "val"));
+  testrun(0 == strcmp("val", ov_event_connection_get(c, "key")));
 
-    testrun(ov_event_connection_set(c, "key", "other"));
-    testrun(0 == strcmp("other", ov_event_connection_get(c, "key")));
+  testrun(ov_event_connection_set(c, "key", "other"));
+  testrun(0 == strcmp("other", ov_event_connection_get(c, "key")));
 
-    testrun(1 == ov_json_object_count(c->data));
+  testrun(1 == ov_json_object_count(c->data));
 
-    testrun(NULL == ov_event_connection_free(c));
+  testrun(NULL == ov_event_connection_free(c));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_event_connection_set_json() {
 
-    ov_event_connection *c =
-        ov_event_connection_create((ov_event_connection_config){0});
+  ov_event_connection *c =
+      ov_event_connection_create((ov_event_connection_config){0});
 
-    testrun(c);
+  testrun(c);
 
-    ov_json_value *val = ov_json_string("test");
+  ov_json_value *val = ov_json_string("test");
 
-    testrun(!ov_event_connection_set_json(NULL, NULL, NULL));
-    testrun(!ov_event_connection_set_json(c, "key", NULL));
-    testrun(!ov_event_connection_set_json(NULL, "key", val));
-    testrun(!ov_event_connection_set_json(c, NULL, val));
+  testrun(!ov_event_connection_set_json(NULL, NULL, NULL));
+  testrun(!ov_event_connection_set_json(c, "key", NULL));
+  testrun(!ov_event_connection_set_json(NULL, "key", val));
+  testrun(!ov_event_connection_set_json(c, NULL, val));
 
-    testrun(ov_event_connection_set_json(c, "key", val));
-    testrun(0 == strcmp("test", ov_event_connection_get(c, "key")));
+  testrun(ov_event_connection_set_json(c, "key", val));
+  testrun(0 == strcmp("test", ov_event_connection_get(c, "key")));
 
-    testrun(ov_event_connection_set(c, "key", "other"));
-    testrun(0 == strcmp("other", ov_event_connection_get(c, "key")));
+  testrun(ov_event_connection_set(c, "key", "other"));
+  testrun(0 == strcmp("other", ov_event_connection_get(c, "key")));
 
-    testrun(1 == ov_json_object_count(c->data));
+  testrun(1 == ov_json_object_count(c->data));
 
-    testrun(NULL == ov_event_connection_free(c));
-    val = ov_json_value_free(val);
+  testrun(NULL == ov_event_connection_free(c));
+  val = ov_json_value_free(val);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_event_connection_get_json() {
 
-    ov_event_connection *c =
-        ov_event_connection_create((ov_event_connection_config){0});
+  ov_event_connection *c =
+      ov_event_connection_create((ov_event_connection_config){0});
 
-    testrun(c);
+  testrun(c);
 
-    ov_json_value *val = ov_json_string("test");
+  ov_json_value *val = ov_json_string("test");
 
-    testrun(ov_event_connection_set_json(c, "key", val));
-    testrun(0 == strcmp("test", ov_event_connection_get(c, "key")));
-    testrun(0 ==
-            strcmp("test",
-                   ov_json_string_get(ov_event_connection_get_json(c, "key"))));
+  testrun(ov_event_connection_set_json(c, "key", val));
+  testrun(0 == strcmp("test", ov_event_connection_get(c, "key")));
+  testrun(0 == strcmp("test", ov_json_string_get(
+                                  ov_event_connection_get_json(c, "key"))));
 
-    testrun(NULL == ov_event_connection_free(c));
-    val = ov_json_value_free(val);
+  testrun(NULL == ov_event_connection_free(c));
+  val = ov_json_value_free(val);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*
@@ -279,20 +276,20 @@ int test_ov_event_connection_get_json() {
 
 int all_tests() {
 
-    testrun_init();
-    testrun_test(test_ov_event_connection_create);
-    testrun_test(test_ov_event_connection_free);
-    testrun_test(test_ov_event_connection_free_void);
+  testrun_init();
+  testrun_test(test_ov_event_connection_create);
+  testrun_test(test_ov_event_connection_free);
+  testrun_test(test_ov_event_connection_free_void);
 
-    testrun_test(test_ov_event_connection_send);
+  testrun_test(test_ov_event_connection_send);
 
-    testrun_test(test_ov_event_connection_set);
-    testrun_test(test_ov_event_connection_get);
+  testrun_test(test_ov_event_connection_set);
+  testrun_test(test_ov_event_connection_get);
 
-    testrun_test(test_ov_event_connection_set_json);
-    testrun_test(test_ov_event_connection_get_json);
+  testrun_test(test_ov_event_connection_set_json);
+  testrun_test(test_ov_event_connection_get_json);
 
-    return testrun_counter;
+  return testrun_counter;
 }
 
 /*

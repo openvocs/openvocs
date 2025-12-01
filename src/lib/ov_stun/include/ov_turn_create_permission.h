@@ -54,20 +54,13 @@
 */
 bool ov_turn_method_is_create_permission(const uint8_t *frame, size_t length);
 
-bool ov_turn_create_permission(uint8_t *start,
-                               size_t length,
-                               uint8_t **next,
+bool ov_turn_create_permission(uint8_t *start, size_t length, uint8_t **next,
                                const uint8_t *transaction_id,
-                               const uint8_t *software,
-                               size_t software_length,
-                               const uint8_t *username,
-                               size_t username_length,
-                               const uint8_t *realm,
-                               size_t realm_length,
-                               const uint8_t *nonce,
-                               size_t nonce_length,
-                               const uint8_t *key,
-                               size_t key_length,
+                               const uint8_t *software, size_t software_length,
+                               const uint8_t *username, size_t username_length,
+                               const uint8_t *realm, size_t realm_length,
+                               const uint8_t *nonce, size_t nonce_length,
+                               const uint8_t *key, size_t key_length,
                                const struct sockaddr_storage *address,
                                bool fingerprint);
 

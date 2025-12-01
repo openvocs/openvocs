@@ -42,21 +42,22 @@
 
 int main(int argc, char **argv) {
 
-    int fh = open(argv[1], O_RDONLY);
+  int fh = open(argv[1], O_RDONLY);
 
-    int16_t in_buffer[1024] = {0};
+  int16_t in_buffer[1024] = {0};
 
-    ssize_t bytes_read = 0;
+  ssize_t bytes_read = 0;
 
-    while (1) {
+  while (1) {
 
-        bytes_read = read(fh, in_buffer, sizeof(in_buffer));
+    bytes_read = read(fh, in_buffer, sizeof(in_buffer));
 
-        if (1 > bytes_read) break;
+    if (1 > bytes_read)
+      break;
 
-        for (size_t i = 0; i < bytes_read / 2; ++i) {
+    for (size_t i = 0; i < bytes_read / 2; ++i) {
 
-            printf("%" PRIi16 "\n", in_buffer[i]);
-        }
-    };
+      printf("%" PRIi16 "\n", in_buffer[i]);
+    }
+  };
 }

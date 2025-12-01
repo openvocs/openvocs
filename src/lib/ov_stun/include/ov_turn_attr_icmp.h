@@ -73,12 +73,8 @@ size_t ov_turn_attr_icmp_encoding_length();
         @param error    error to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_icmp_encode(uint8_t *buffer,
-                              size_t length,
-                              uint8_t **next,
-                              uint8_t type,
-                              uint8_t code,
-                              uint32_t error);
+bool ov_turn_attr_icmp_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                              uint8_t type, uint8_t code, uint32_t error);
 
 /*----------------------------------------------------------------------------*/
 
@@ -91,10 +87,7 @@ bool ov_turn_attr_icmp_encode(uint8_t *buffer,
         @param code     code decoded
         @param error    error decoded
 */
-bool ov_turn_attr_icmp_decode(const uint8_t *buffer,
-                              size_t length,
-                              uint8_t *type,
-                              uint8_t *code,
-                              uint32_t *error);
+bool ov_turn_attr_icmp_decode(const uint8_t *buffer, size_t length,
+                              uint8_t *type, uint8_t *code, uint32_t *error);
 
 #endif /* ov_turn_attr_icmp_h */

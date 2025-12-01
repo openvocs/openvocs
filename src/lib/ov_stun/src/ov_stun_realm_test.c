@@ -45,181 +45,182 @@
 
 int test_ov_stun_attribute_frame_is_realm() {
 
-    size_t size = 1000;
-    uint8_t buf[size];
-    uint8_t *buffer = buf;
+  size_t size = 1000;
+  uint8_t buf[size];
+  uint8_t *buffer = buf;
 
-    memset(buf, 'a', size);
+  memset(buf, 'a', size);
 
-    // prepare valid frame
+  // prepare valid frame
+  testrun(ov_stun_attribute_set_type(buffer, size, STUN_REALM));
+  testrun(ov_stun_attribute_set_length(buffer, size, 1));
+
+  testrun(ov_stun_attribute_frame_is_realm(buffer, size));
+
+  testrun(!ov_stun_attribute_frame_is_realm(NULL, size));
+  testrun(!ov_stun_attribute_frame_is_realm(buffer, 0));
+  testrun(!ov_stun_attribute_frame_is_realm(buffer, 4));
+
+  // min buffer min valid
+  testrun(ov_stun_attribute_frame_is_realm(buffer, 8));
+
+  // length < size
+  testrun(ov_stun_attribute_set_length(buffer, size, 2));
+  testrun(!ov_stun_attribute_frame_is_realm(buffer, 7));
+  testrun(ov_stun_attribute_frame_is_realm(buffer, 8));
+
+  // type not realm
+  testrun(ov_stun_attribute_set_type(buffer, size, 0));
+  testrun(!ov_stun_attribute_frame_is_realm(buffer, size));
+  testrun(ov_stun_attribute_set_type(buffer, size, STUN_REALM));
+  testrun(ov_stun_attribute_frame_is_realm(buffer, size));
+
+  // check length
+  for (size_t i = 1; i < size; i++) {
+
     testrun(ov_stun_attribute_set_type(buffer, size, STUN_REALM));
-    testrun(ov_stun_attribute_set_length(buffer, size, 1));
-
-    testrun(ov_stun_attribute_frame_is_realm(buffer, size));
-
-    testrun(!ov_stun_attribute_frame_is_realm(NULL, size));
-    testrun(!ov_stun_attribute_frame_is_realm(buffer, 0));
-    testrun(!ov_stun_attribute_frame_is_realm(buffer, 4));
-
-    // min buffer min valid
-    testrun(ov_stun_attribute_frame_is_realm(buffer, 8));
-
-    // length < size
-    testrun(ov_stun_attribute_set_length(buffer, size, 2));
-    testrun(!ov_stun_attribute_frame_is_realm(buffer, 7));
-    testrun(ov_stun_attribute_frame_is_realm(buffer, 8));
-
-    // type not realm
-    testrun(ov_stun_attribute_set_type(buffer, size, 0));
-    testrun(!ov_stun_attribute_frame_is_realm(buffer, size));
-    testrun(ov_stun_attribute_set_type(buffer, size, STUN_REALM));
-    testrun(ov_stun_attribute_frame_is_realm(buffer, size));
-
-    // check length
-    for (size_t i = 1; i < size; i++) {
-
-        testrun(ov_stun_attribute_set_type(buffer, size, STUN_REALM));
-        testrun(ov_stun_attribute_set_length(buffer, size, i));
-        if (i <= 763) {
-            testrun(ov_stun_attribute_frame_is_realm(buffer, size));
-        } else {
-            testrun(!ov_stun_attribute_frame_is_realm(buffer, size));
-        }
+    testrun(ov_stun_attribute_set_length(buffer, size, i));
+    if (i <= 763) {
+      testrun(ov_stun_attribute_frame_is_realm(buffer, size));
+    } else {
+      testrun(!ov_stun_attribute_frame_is_realm(buffer, size));
     }
+  }
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_stun_realm_encoding_length() {
 
-    uint8_t *name = (uint8_t *)"name";
+  uint8_t *name = (uint8_t *)"name";
 
-    testrun(0 == ov_stun_realm_encoding_length(NULL, 0));
-    testrun(0 == ov_stun_realm_encoding_length(name, 0));
-    testrun(0 == ov_stun_realm_encoding_length(NULL, 10));
+  testrun(0 == ov_stun_realm_encoding_length(NULL, 0));
+  testrun(0 == ov_stun_realm_encoding_length(name, 0));
+  testrun(0 == ov_stun_realm_encoding_length(NULL, 10));
 
-    size_t pad = 0;
+  size_t pad = 0;
 
-    for (size_t i = 1; i < 1000; i++) {
+  for (size_t i = 1; i < 1000; i++) {
 
-        pad = i % 4;
-        if (pad != 0) pad = 4 - pad;
+    pad = i % 4;
+    if (pad != 0)
+      pad = 4 - pad;
 
-        if (i <= 763) {
-            testrun(4 + i + pad == ov_stun_realm_encoding_length(name, i));
-        } else {
-            testrun(0 == ov_stun_realm_encoding_length(name, i));
-        }
+    if (i <= 763) {
+      testrun(4 + i + pad == ov_stun_realm_encoding_length(name, i));
+    } else {
+      testrun(0 == ov_stun_realm_encoding_length(name, i));
     }
+  }
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_stun_realm_validate() {
 
-    size_t size = 1000;
-    uint8_t buf[size];
-    uint8_t *buffer = buf;
+  size_t size = 1000;
+  uint8_t buf[size];
+  uint8_t *buffer = buf;
 
-    memset(buf, 'a', size);
+  memset(buf, 'a', size);
 
-    for (size_t i = 1; i < size; i++) {
+  for (size_t i = 1; i < size; i++) {
 
-        if (i <= 763) {
-            testrun(ov_stun_realm_validate(buffer, i));
-        } else {
-            testrun(!ov_stun_realm_validate(buffer, i));
-        }
+    if (i <= 763) {
+      testrun(ov_stun_realm_validate(buffer, i));
+    } else {
+      testrun(!ov_stun_realm_validate(buffer, i));
     }
+  }
 
-    // on UTF8 content
-    buf[10] = 0xff;
-    testrun(ov_stun_realm_validate(buffer, 10));
-    testrun(!ov_stun_realm_validate(buffer, 11));
+  // on UTF8 content
+  buf[10] = 0xff;
+  testrun(ov_stun_realm_validate(buffer, 10));
+  testrun(!ov_stun_realm_validate(buffer, 11));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_stun_realm_encode() {
 
-    size_t size = 100;
-    uint8_t buf[size];
-    uint8_t *buffer = buf;
-    uint8_t *next = NULL;
+  size_t size = 100;
+  uint8_t buf[size];
+  uint8_t *buffer = buf;
+  uint8_t *next = NULL;
 
-    uint8_t *realm = (uint8_t *)"test1234";
+  uint8_t *realm = (uint8_t *)"test1234";
 
-    testrun(!ov_stun_realm_encode(NULL, 0, NULL, NULL, 0));
-    testrun(!ov_stun_realm_encode(NULL, size, NULL, realm, 8));
-    testrun(!ov_stun_realm_encode(buffer, 0, NULL, realm, 8));
-    testrun(!ov_stun_realm_encode(buffer, size, NULL, NULL, 8));
-    testrun(!ov_stun_realm_encode(buffer, size, NULL, realm, 0));
+  testrun(!ov_stun_realm_encode(NULL, 0, NULL, NULL, 0));
+  testrun(!ov_stun_realm_encode(NULL, size, NULL, realm, 8));
+  testrun(!ov_stun_realm_encode(buffer, 0, NULL, realm, 8));
+  testrun(!ov_stun_realm_encode(buffer, size, NULL, NULL, 8));
+  testrun(!ov_stun_realm_encode(buffer, size, NULL, realm, 0));
 
-    memset(buf, 0, size);
-    testrun(ov_stun_realm_encode(buffer, size, NULL, realm, 8));
-    testrun(STUN_REALM == ov_stun_attribute_get_type(buffer, size));
-    testrun(8 == ov_stun_attribute_get_length(buffer, size));
-    testrun(0 == strncmp((char *)buffer + 4, (char *)realm, 8));
+  memset(buf, 0, size);
+  testrun(ov_stun_realm_encode(buffer, size, NULL, realm, 8));
+  testrun(STUN_REALM == ov_stun_attribute_get_type(buffer, size));
+  testrun(8 == ov_stun_attribute_get_length(buffer, size));
+  testrun(0 == strncmp((char *)buffer + 4, (char *)realm, 8));
 
-    memset(buf, 0, size);
-    testrun(ov_stun_realm_encode(buffer, size, NULL, realm, 2));
-    testrun(STUN_REALM == ov_stun_attribute_get_type(buffer, size));
-    testrun(2 == ov_stun_attribute_get_length(buffer, size));
-    testrun(0 == strncmp((char *)buffer + 4, (char *)realm, 2));
+  memset(buf, 0, size);
+  testrun(ov_stun_realm_encode(buffer, size, NULL, realm, 2));
+  testrun(STUN_REALM == ov_stun_attribute_get_type(buffer, size));
+  testrun(2 == ov_stun_attribute_get_length(buffer, size));
+  testrun(0 == strncmp((char *)buffer + 4, (char *)realm, 2));
 
-    // size to small
-    memset(buf, 0, size);
-    testrun(!ov_stun_realm_encode(buffer, 7, NULL, realm, 2));
-    testrun(ov_stun_realm_encode(buffer, 8, &next, realm, 2));
-    testrun(STUN_REALM == ov_stun_attribute_get_type(buffer, size));
-    testrun(2 == ov_stun_attribute_get_length(buffer, size));
-    testrun(0 == strncmp((char *)buffer + 4, (char *)realm, 2));
-    testrun(next == buffer + 4 + 4);
+  // size to small
+  memset(buf, 0, size);
+  testrun(!ov_stun_realm_encode(buffer, 7, NULL, realm, 2));
+  testrun(ov_stun_realm_encode(buffer, 8, &next, realm, 2));
+  testrun(STUN_REALM == ov_stun_attribute_get_type(buffer, size));
+  testrun(2 == ov_stun_attribute_get_length(buffer, size));
+  testrun(0 == strncmp((char *)buffer + 4, (char *)realm, 2));
+  testrun(next == buffer + 4 + 4);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_stun_realm_decode() {
 
-    size_t size = 100;
-    uint8_t buf[size];
-    uint8_t *buffer = buf;
+  size_t size = 100;
+  uint8_t buf[size];
+  uint8_t *buffer = buf;
 
-    uint8_t *name = NULL;
-    size_t length = 0;
-    memset(buf, 0, size);
+  uint8_t *name = NULL;
+  size_t length = 0;
+  memset(buf, 0, size);
 
-    testrun(memcpy(buffer, "1234ABCDEFGH", 12));
-    testrun(ov_stun_attribute_set_type(buffer, size, STUN_REALM));
-    testrun(ov_stun_attribute_set_length(buffer, size, 2));
+  testrun(memcpy(buffer, "1234ABCDEFGH", 12));
+  testrun(ov_stun_attribute_set_type(buffer, size, STUN_REALM));
+  testrun(ov_stun_attribute_set_length(buffer, size, 2));
 
-    testrun(!ov_stun_realm_decode(NULL, size, NULL, NULL));
-    testrun(!ov_stun_realm_decode(NULL, size, &name, &length));
-    testrun(!ov_stun_realm_decode(buffer, 0, &name, &length));
-    testrun(!ov_stun_realm_decode(buffer, size, NULL, &length));
-    testrun(!ov_stun_realm_decode(buffer, size, &name, NULL));
+  testrun(!ov_stun_realm_decode(NULL, size, NULL, NULL));
+  testrun(!ov_stun_realm_decode(NULL, size, &name, &length));
+  testrun(!ov_stun_realm_decode(buffer, 0, &name, &length));
+  testrun(!ov_stun_realm_decode(buffer, size, NULL, &length));
+  testrun(!ov_stun_realm_decode(buffer, size, &name, NULL));
 
-    testrun(ov_stun_realm_decode(buffer, size, &name, &length));
-    testrun(name == buffer + 4);
-    testrun(length == 2);
+  testrun(ov_stun_realm_decode(buffer, size, &name, &length));
+  testrun(name == buffer + 4);
+  testrun(length == 2);
 
-    // frame invalid
-    testrun(ov_stun_attribute_set_length(buffer, size, 0));
-    testrun(!ov_stun_realm_decode(buffer, size, &name, &length));
-    testrun(ov_stun_attribute_set_length(buffer, size, 1));
-    testrun(ov_stun_realm_decode(buffer, size, &name, &length));
-    testrun(name == buffer + 4);
-    testrun(length == 1);
+  // frame invalid
+  testrun(ov_stun_attribute_set_length(buffer, size, 0));
+  testrun(!ov_stun_realm_decode(buffer, size, &name, &length));
+  testrun(ov_stun_attribute_set_length(buffer, size, 1));
+  testrun(ov_stun_realm_decode(buffer, size, &name, &length));
+  testrun(name == buffer + 4);
+  testrun(length == 1);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*
@@ -232,14 +233,14 @@ int test_ov_stun_realm_decode() {
 
 int all_tests() {
 
-    testrun_init();
-    testrun_test(test_ov_stun_attribute_frame_is_realm);
-    testrun_test(test_ov_stun_realm_encoding_length);
-    testrun_test(test_ov_stun_realm_validate);
-    testrun_test(test_ov_stun_realm_encode);
-    testrun_test(test_ov_stun_realm_decode);
+  testrun_init();
+  testrun_test(test_ov_stun_attribute_frame_is_realm);
+  testrun_test(test_ov_stun_realm_encoding_length);
+  testrun_test(test_ov_stun_realm_validate);
+  testrun_test(test_ov_stun_realm_encode);
+  testrun_test(test_ov_stun_realm_decode);
 
-    return testrun_counter;
+  return testrun_counter;
 }
 
 /*

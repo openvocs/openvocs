@@ -60,28 +60,18 @@ bool ov_turn_method_is_allocate(const uint8_t *frame, size_t length);
  *      Generate initial allocate request
  */
 
-bool ov_turn_allocate_generate_request(uint8_t *start,
-                                       size_t length,
-                                       uint8_t **next,
-                                       uint8_t *transaction_id,
+bool ov_turn_allocate_generate_request(uint8_t *start, size_t length,
+                                       uint8_t **next, uint8_t *transaction_id,
                                        uint8_t *software,
                                        size_t software_length,
                                        bool fingerprint);
 
-bool ov_turn_allocate_generate_request_long_term(uint8_t *start,
-                                                 size_t length,
-                                                 uint8_t **next,
-                                                 const uint8_t *transaction_id,
-                                                 const uint8_t *software,
-                                                 size_t software_length,
-                                                 const uint8_t *username,
-                                                 size_t username_length,
-                                                 const uint8_t *realm,
-                                                 size_t realm_length,
-                                                 const uint8_t *nonce,
-                                                 size_t nonce_length,
-                                                 const uint8_t *key,
-                                                 size_t key_length,
-                                                 bool fingerprint);
+bool ov_turn_allocate_generate_request_long_term(
+    uint8_t *start, size_t length, uint8_t **next,
+    const uint8_t *transaction_id, const uint8_t *software,
+    size_t software_length, const uint8_t *username, size_t username_length,
+    const uint8_t *realm, size_t realm_length, const uint8_t *nonce,
+    size_t nonce_length, const uint8_t *key, size_t key_length,
+    bool fingerprint);
 
 #endif /* ov_turn_allocate_h */

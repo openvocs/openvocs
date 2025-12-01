@@ -43,7 +43,7 @@
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_generic *ov_ice_proxy_multiplexing_create(
-    ov_ice_proxy_generic_config config);
+ov_ice_proxy_generic *
+ov_ice_proxy_multiplexing_create(ov_ice_proxy_generic_config config);
 
 #endif /* ov_ice_proxy_multiplexing_h */

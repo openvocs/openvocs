@@ -51,12 +51,9 @@
 
 /*----------------------------------------------------------------------------*/
 
-ov_buffer *ov_sip_headers_auth(char const *uri,
-                               char const *user,
-                               char const *password,
-                               char const *realm,
-                               char const *method,
-                               char const *nonce);
+ov_buffer *ov_sip_headers_auth(char const *uri, char const *user,
+                               char const *password, char const *realm,
+                               char const *method, char const *nonce);
 
 /*----------------------------------------------------------------------------*/
 
@@ -77,8 +74,7 @@ ov_buffer *ov_sip_headers_auth(char const *uri,
  *  extracted user/tag.
  *
  */
-bool ov_sip_headers_get_user_and_tag(char const *str,
-                                     ov_buffer **user,
+bool ov_sip_headers_get_user_and_tag(char const *str, ov_buffer **user,
                                      ov_buffer **tag);
 
 /*----------------------------------------------------------------------------*/

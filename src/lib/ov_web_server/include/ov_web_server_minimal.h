@@ -44,7 +44,8 @@ typedef struct ov_web_server_minimal ov_web_server_minimal;
  *      ------------------------------------------------------------------------
  */
 
-ov_web_server_minimal *ov_web_server_minimal_create(ov_web_server_config config);
+ov_web_server_minimal *
+ov_web_server_minimal_create(ov_web_server_config config);
 ov_web_server_minimal *ov_web_server_minimal_free(ov_web_server_minimal *self);
 ov_web_server_minimal *ov_web_server_minimal_cast(const void *data);
 
@@ -58,13 +59,11 @@ bool ov_web_server_minimal_close(ov_web_server_minimal *self, int socket);
  *      ------------------------------------------------------------------------
  */
 
-bool ov_web_server_minimal_send(ov_web_server_minimal *self, 
-                                int socket, 
+bool ov_web_server_minimal_send(ov_web_server_minimal *self, int socket,
                                 const ov_buffer *data);
 
-bool ov_web_server_minimal_send_json(ov_web_server_minimal *self,
-                                 int socket,
-                                 ov_json_value const *const data);
+bool ov_web_server_minimal_send_json(ov_web_server_minimal *self, int socket,
+                                     ov_json_value const *const data);
 
 /*
  *      ------------------------------------------------------------------------
@@ -75,9 +74,7 @@ bool ov_web_server_minimal_send_json(ov_web_server_minimal *self,
  */
 
 bool ov_web_server_minimal_configure_uri_event_io(
-    ov_web_server_minimal *self,
-    const ov_memory_pointer hostname,
+    ov_web_server_minimal *self, const ov_memory_pointer hostname,
     const ov_event_io_config input);
-
 
 #endif /* ov_web_server_minimal_h */

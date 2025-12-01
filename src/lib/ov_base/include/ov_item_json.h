@@ -30,8 +30,8 @@
 #ifndef ov_item_json_h
 #define ov_item_json_h
 
-#include "ov_json_grammar.h"
 #include "ov_item.h"
+#include "ov_json_grammar.h"
 
 /*---------------------------------------------------------------------------*/
 
@@ -50,23 +50,23 @@ char *ov_item_to_json(const ov_item *self);
 
 typedef struct ov_item_config {
 
-    struct entry {
+  struct entry {
 
-        char *intro;  //      ... item intro e.g. space, quote
-        char *outro;  //      ... item intro e.g. space, quote
-        bool depth;   //      ... enable depth
-        char *indent; //      ... whitespace indent (e.g. tab)
-    } entry;
+    char *intro;  //      ... item intro e.g. space, quote
+    char *outro;  //      ... item intro e.g. space, quote
+    bool depth;   //      ... enable depth
+    char *indent; //      ... whitespace indent (e.g. tab)
+  } entry;
 
-    struct item {
+  struct item {
 
-        char *intro;     // {    ... intro after depth
-        char *out;       // \n   ... out before depth
-        char *outro;     // }    ... outro after depth
-        char *separator; // ,    ... separation of collection items
-        char *delimiter; // :    ... delimiter within object
+    char *intro;     // {    ... intro after depth
+    char *out;       // \n   ... out before depth
+    char *outro;     // }    ... outro after depth
+    char *separator; // ,    ... separation of collection items
+    char *delimiter; // :    ... delimiter within object
 
-    } item;
+  } item;
 
 } ov_item_json_config;
 
@@ -74,15 +74,15 @@ typedef struct ov_item_config {
 
 typedef struct ov_item_json_stringify_config {
 
-    char *intro;
+  char *intro;
 
-    ov_item_json_config literal;
-    ov_item_json_config number;
-    ov_item_json_config string;
-    ov_item_json_config array;
-    ov_item_json_config object;
+  ov_item_json_config literal;
+  ov_item_json_config number;
+  ov_item_json_config string;
+  ov_item_json_config array;
+  ov_item_json_config object;
 
-    char *outro;
+  char *outro;
 
 } ov_item_json_stringify_config;
 
@@ -93,7 +93,7 @@ ov_item_json_stringify_config ov_item_json_config_stringify_default();
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_item_to_json_with_config(const ov_item *self, 
+char *ov_item_to_json_with_config(const ov_item *self,
                                   ov_item_json_stringify_config config);
 
 #endif /* ov_item_json_h */

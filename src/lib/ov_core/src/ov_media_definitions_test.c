@@ -38,9 +38,9 @@
  */
 
 int test_case() {
-    testrun(1 == 1);
+  testrun(1 == 1);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -55,10 +55,10 @@ int test_case() {
 
 int all_tests() {
 
-    testrun_init();
-    testrun_test(test_case);
+  testrun_init();
+  testrun_test(test_case);
 
-    return testrun_counter;
+  return testrun_counter;
 }
 
 /*

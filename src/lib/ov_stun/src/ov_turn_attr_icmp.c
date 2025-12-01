@@ -31,21 +31,25 @@
 
 bool ov_turn_attr_is_icmp(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 12) goto error;
+  if (!buffer || length < 12)
+    goto error;
 
-    uint16_t type = ov_stun_attribute_get_type(buffer, length);
-    int64_t size = ov_stun_attribute_get_length(buffer, length);
+  uint16_t type = ov_stun_attribute_get_type(buffer, length);
+  int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != TURN_ICMP) goto error;
+  if (type != TURN_ICMP)
+    goto error;
 
-    if (size != 8) goto error;
+  if (size != 8)
+    goto error;
 
-    if (length < (size_t)size + 4) goto error;
+  if (length < (size_t)size + 4)
+    goto error;
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*
@@ -60,54 +64,51 @@ size_t ov_turn_attr_icmp_encoding_length() { return 12; }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_attr_icmp_encode(uint8_t *buffer,
-                              size_t length,
-                              uint8_t **next,
-                              uint8_t type,
-                              uint8_t code,
-                              uint32_t error) {
+bool ov_turn_attr_icmp_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                              uint8_t type, uint8_t code, uint32_t error) {
 
-    if (!buffer) goto error;
+  if (!buffer)
+    goto error;
 
-    size_t len = ov_turn_attr_icmp_encoding_length();
+  size_t len = ov_turn_attr_icmp_encoding_length();
 
-    if (length < len) goto error;
+  if (length < len)
+    goto error;
 
-    uint8_t buf[12] = {0};
-    buf[2] = type;
-    buf[3] = code;
-    buf[4] = error >> 24;
-    buf[5] = error >> 16;
-    buf[6] = error >> 8;
-    buf[7] = error;
+  uint8_t buf[12] = {0};
+  buf[2] = type;
+  buf[3] = code;
+  buf[4] = error >> 24;
+  buf[5] = error >> 16;
+  buf[6] = error >> 8;
+  buf[7] = error;
 
-    return ov_stun_attribute_encode(buffer, length, next, TURN_ICMP, buf, 8);
+  return ov_stun_attribute_encode(buffer, length, next, TURN_ICMP, buf, 8);
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_attr_icmp_decode(const uint8_t *buffer,
-                              size_t length,
-                              uint8_t *type,
-                              uint8_t *code,
-                              uint32_t *error) {
+bool ov_turn_attr_icmp_decode(const uint8_t *buffer, size_t length,
+                              uint8_t *type, uint8_t *code, uint32_t *error) {
 
-    if (!buffer || length < 12 || !type || !code || !error) goto error;
+  if (!buffer || length < 12 || !type || !code || !error)
+    goto error;
 
-    if (!ov_turn_attr_is_icmp(buffer, length)) goto error;
+  if (!ov_turn_attr_is_icmp(buffer, length))
+    goto error;
 
-    *type = buffer[6];
-    *code = buffer[7];
+  *type = buffer[6];
+  *code = buffer[7];
 
-    uint32_t err = buffer[11];
-    err += buffer[10] << 8;
-    err += buffer[9] << 16;
-    err += buffer[8] << 24;
+  uint32_t err = buffer[11];
+  err += buffer[10] << 8;
+  err += buffer[9] << 16;
+  err += buffer[8] << 24;
 
-    *error = err;
-    return true;
+  *error = err;
+  return true;
 error:
-    return false;
+  return false;
 }

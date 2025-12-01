@@ -41,206 +41,204 @@ Copyright   2018        German Aerospace Center DLR e.V.,
  *****************************************************************************/
 
 #define CALC_ABS_TIMEOUT(target, relative)                                     \
-    do {                                                                       \
-        if (0 != clock_gettime(CLOCK_REALTIME, &target)) {                     \
-            goto error;                                                        \
-        }                                                                      \
-        uint64_t carry_secs = 0;                                               \
-        uint64_t nsecs = target.tv_nsec + relative.tv_nsec;                    \
-        if (nsecs > 1000 * 1000 * 1000) {                                      \
-            carry_secs = nsecs / 1000 / 1000 / 1000;                           \
-            nsecs -= carry_secs * 1000 * 1000 * 1000;                          \
-        }                                                                      \
-        target.tv_sec += relative.tv_sec + carry_secs;                         \
-        target.tv_nsec = nsecs;                                                \
-    } while (0)
+  do {                                                                         \
+    if (0 != clock_gettime(CLOCK_REALTIME, &target)) {                         \
+      goto error;                                                              \
+    }                                                                          \
+    uint64_t carry_secs = 0;                                                   \
+    uint64_t nsecs = target.tv_nsec + relative.tv_nsec;                        \
+    if (nsecs > 1000 * 1000 * 1000) {                                          \
+      carry_secs = nsecs / 1000 / 1000 / 1000;                                 \
+      nsecs -= carry_secs * 1000 * 1000 * 1000;                                \
+    }                                                                          \
+    target.tv_sec += relative.tv_sec + carry_secs;                             \
+    target.tv_nsec = nsecs;                                                    \
+  } while (0)
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_thread_lock_init(ov_thread_lock *lock, uint64_t timeout_usecs) {
 
-    if (!lock) {
+  if (!lock) {
 
-        ov_log_error("Got 0 pointer");
-        goto error;
-    }
+    ov_log_error("Got 0 pointer");
+    goto error;
+  }
 
-    if (0 == timeout_usecs) {
+  if (0 == timeout_usecs) {
 
-        ov_log_error(
-            "Refusing to create lock with a default timeout "
-            "of 0");
-        goto error;
-    }
+    ov_log_error("Refusing to create lock with a default timeout "
+                 "of 0");
+    goto error;
+  }
 
-    if (0 != pthread_mutex_init(&lock->mutex, 0)) {
+  if (0 != pthread_mutex_init(&lock->mutex, 0)) {
 
-        ov_log_error("Could not initialize mutex");
-        goto error;
-    }
+    ov_log_error("Could not initialize mutex");
+    goto error;
+  }
 
-    if (0 != pthread_cond_init(&lock->cond, 0)) {
+  if (0 != pthread_cond_init(&lock->cond, 0)) {
 
-        ov_log_error("Could not initialize condition variable");
-        pthread_mutex_destroy(&lock->mutex);
-        goto error;
-    }
+    ov_log_error("Could not initialize condition variable");
+    pthread_mutex_destroy(&lock->mutex);
+    goto error;
+  }
 
-    time_t secs = timeout_usecs / 1000 / 1000;
-    lock->timeout.tv_sec = secs;
-    lock->timeout.tv_nsec = (timeout_usecs - (secs * 1000 * 1000)) * 1000;
+  time_t secs = timeout_usecs / 1000 / 1000;
+  lock->timeout.tv_sec = secs;
+  lock->timeout.tv_nsec = (timeout_usecs - (secs * 1000 * 1000)) * 1000;
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_thread_lock_clear(ov_thread_lock *lock) {
 
-    if (!lock) {
+  if (!lock) {
 
-        ov_log_error("Called with 0 pointer");
-        goto error;
-    }
+    ov_log_error("Called with 0 pointer");
+    goto error;
+  }
 
-    if (0 != pthread_cond_destroy(&lock->cond)) {
+  if (0 != pthread_cond_destroy(&lock->cond)) {
 
-        ov_log_error("Could not destroy condition");
-        goto error;
-    }
+    ov_log_error("Could not destroy condition");
+    goto error;
+  }
 
-    if (0 != pthread_mutex_destroy(&lock->mutex)) {
+  if (0 != pthread_mutex_destroy(&lock->mutex)) {
 
-        /* Try not to leave the lock in an undefined state ... */
-        ov_log_error("Could not destroy mutex");
-        pthread_cond_init(&lock->cond, 0);
-        goto error;
-    }
+    /* Try not to leave the lock in an undefined state ... */
+    ov_log_error("Could not destroy mutex");
+    pthread_cond_init(&lock->cond, 0);
+    goto error;
+  }
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_thread_lock_try_lock(ov_thread_lock *lock) {
 
-    struct timespec abs_timeout = {0};
+  struct timespec abs_timeout = {0};
 
-    if (!lock) {
+  if (!lock) {
 
-        ov_log_error("Called with 0 pointer");
-        goto error;
-    }
+    ov_log_error("Called with 0 pointer");
+    goto error;
+  }
 
-    struct timespec rel_timeout = lock->timeout;
-    CALC_ABS_TIMEOUT(abs_timeout, rel_timeout);
+  struct timespec rel_timeout = lock->timeout;
+  CALC_ABS_TIMEOUT(abs_timeout, rel_timeout);
 
-    int retval = 0;
+  int retval = 0;
 
-    retval = OV_ARCH_PTHREAD_MUTEX_TIMEDLOCK(&lock->mutex, &abs_timeout);
+  retval = OV_ARCH_PTHREAD_MUTEX_TIMEDLOCK(&lock->mutex, &abs_timeout);
 
-    if (0 != retval) {
+  if (0 != retval) {
 
-        ov_log_warning("Could not acquire lock: %s", strerror(retval));
-        goto error;
-    }
+    ov_log_warning("Could not acquire lock: %s", strerror(retval));
+    goto error;
+  }
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_thread_lock_unlock(ov_thread_lock *lock) {
 
-    if (!lock) {
+  if (!lock) {
 
-        ov_log_error("Called with 0 pointer");
-        goto error;
-    }
+    ov_log_error("Called with 0 pointer");
+    goto error;
+  }
 
-    if (0 != pthread_mutex_unlock(&lock->mutex)) {
+  if (0 != pthread_mutex_unlock(&lock->mutex)) {
 
-        ov_log_error("Could not unlock mutex");
-        goto error;
-    }
+    ov_log_error("Could not unlock mutex");
+    goto error;
+  }
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_thread_lock_wait(ov_thread_lock *lock) {
 
-    if (!lock) {
+  if (!lock) {
 
-        ov_log_error("Called with 0 pointer");
-        goto error;
-    }
+    ov_log_error("Called with 0 pointer");
+    goto error;
+  }
 
-    /* Assert: lock->mutex locked! */
+  /* Assert: lock->mutex locked! */
 
-    struct timespec rel_timeout = lock->timeout;
-    struct timespec abs_timeout = {0};
-    CALC_ABS_TIMEOUT(abs_timeout, rel_timeout);
+  struct timespec rel_timeout = lock->timeout;
+  struct timespec abs_timeout = {0};
+  CALC_ABS_TIMEOUT(abs_timeout, rel_timeout);
 
-    int retval =
-        pthread_cond_timedwait(&lock->cond, &lock->mutex, &abs_timeout);
+  int retval = pthread_cond_timedwait(&lock->cond, &lock->mutex, &abs_timeout);
 
-    if (0 != retval) {
+  if (0 != retval) {
 
-        goto error;
-    }
+    goto error;
+  }
 
-    /* Assert: lock->mutex locked */
+  /* Assert: lock->mutex locked */
 
-    return true;
+  return true;
 
 error:
 
-    /* Assert: lock->mutex not locked */
+  /* Assert: lock->mutex not locked */
 
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_thread_lock_notify(ov_thread_lock *lock) {
 
-    if (!lock) {
+  if (!lock) {
 
-        ov_log_error("Called with 0 pointer");
-        goto error;
-    }
+    ov_log_error("Called with 0 pointer");
+    goto error;
+  }
 
-    int retval = pthread_cond_signal(&lock->cond);
+  int retval = pthread_cond_signal(&lock->cond);
 
-    if (0 != retval) {
+  if (0 != retval) {
 
-        ov_log_error("Could not notify: %s", strerror(retval));
-        goto error;
-    }
+    ov_log_error("Could not notify: %s", strerror(retval));
+    goto error;
+  }
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*---------------------------------------------------------------------------*/

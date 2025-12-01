@@ -35,8 +35,8 @@
 #define ov_error_codes_h
 
 #define OV_ERROR_IS_CRITICAL(error_code)                                       \
-    ((OV_ERROR_NON_CRITICAL > error_code) ||                                   \
-     (OV_ERROR_NON_CRITICAL_END < error_code))
+  ((OV_ERROR_NON_CRITICAL > error_code) ||                                     \
+   (OV_ERROR_NON_CRITICAL_END < error_code))
 
 #define OV_ERROR_NOERROR 0
 #define OV_ERROR_NO_ERROR OV_ERROR_NOERROR
@@ -305,7 +305,7 @@
 
 #define OV_ERROR_TABLE_FULL 52010
 #define OV_ERROR_DESC_TABLE_FULL                                               \
-    "Translation cannot be added. Translation table full"
+  "Translation cannot be added. Translation table full"
 
 #define OV_ERROR_ALREADY_IN_STATE 58000
 #define OV_ERROR_DESC_ALREADY_IN_STATE "System already in desired state"

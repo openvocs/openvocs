@@ -31,9 +31,9 @@
 
 ov_mc_mixer_data ov_mc_mixer_data_set_socket(int socket) {
 
-    ov_mc_mixer_data data = (ov_mc_mixer_data){0};
-    data.socket = socket;
-    ov_socket_get_data(socket, NULL, &data.remote);
+  ov_mc_mixer_data data = (ov_mc_mixer_data){0};
+  data.socket = socket;
+  ov_socket_get_data(socket, NULL, &data.remote);
 
-    return data;
+  return data;
 }
