@@ -27,7 +27,7 @@
 #
 #       ------------------------------------------------------------------------
 
--include makefiles/makefile_const.mk
+-include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
 OV_RPM_ARCH=x86_64
 
