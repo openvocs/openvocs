@@ -38,12 +38,12 @@ OV_TARGET            = $(OV_EXECUTABLE)
 OV_LIBS        = -L$(OV_LIBDIR)
 OV_LIBS       += -lm
 OV_LIBS       += -l ov_arch$(OV_EDITION)
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_base2
-OV_LIBS       += -l ov_os2
-OV_LIBS       += -l ov_pcm16s2
-OV_LIBS       += -l ov_pcm_gen2
-OV_LIBS       += -l ov_codec2
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_os$(OV_EDITION)
+OV_LIBS       += -l ov_pcm16s$(OV_EDITION)
+OV_LIBS       += -l ov_pcm_gen$(OV_EDITION)
+OV_LIBS       += -l ov_codec$(OV_EDITION)
 
 #-----------------------------------------------------------------------------
 include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk

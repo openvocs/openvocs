@@ -36,7 +36,7 @@ OV_FLAGS       =
 #-----------------------------------------------------------------------------
 
 OV_LIBS        = -L$(OV_LIBDIR)
-OV_LIBS       += -l ov_base2
+OV_LIBS       += -l ov_base$(OV_EDITION)
 
 #-----------------------------------------------------------------------------
 include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk

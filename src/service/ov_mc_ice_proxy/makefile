@@ -54,19 +54,19 @@ OV_LIBS       += -pthread
 
 OV_LIBS       += -L$(OV_LIBDIR)
 
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_base2
-OV_LIBS       += -l ov_core2
-OV_LIBS       += -l ov_encryption2
-OV_LIBS       += -l ov_arch2
-OV_LIBS       += -l ov_codec2
-OV_LIBS       += -l ov_test2
-OV_LIBS       += -l ov_os2
-OV_LIBS       += -l ov_pcm16s2
-OV_LIBS       += -l ov_pcm_gen2
-OV_LIBS 	  += -l ov_ice2
-OV_LIBS 	  += -l ov_ice_proxy2
-OV_LIBS       += -l ov_vocs2
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_core$(OV_EDITION)
+OV_LIBS       += -l ov_encryption$(OV_EDITION)
+OV_LIBS       += -l ov_arch$(OV_EDITION)
+OV_LIBS       += -l ov_codec$(OV_EDITION)
+OV_LIBS       += -l ov_test$(OV_EDITION)
+OV_LIBS       += -l ov_os$(OV_EDITION)
+OV_LIBS       += -l ov_pcm16s$(OV_EDITION)
+OV_LIBS       += -l ov_pcm_gen$(OV_EDITION)
+OV_LIBS 	  += -l ov_ice$(OV_EDITION)
+OV_LIBS 	  += -l ov_ice_proxy$(OV_EDITION)
+OV_LIBS       += -l ov_vocs$(OV_EDITION)
 
 OV_LIBS       += -l m
 

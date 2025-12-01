@@ -44,17 +44,17 @@ OV_LIBS        += `pkg-config --libs ldap`
 OV_LIBS        = -L$(OV_LIBDIR)
 
 OV_LIBS       += -l ov_arch$(OV_EDITION)
-OV_LIBS       += -l ov_test2
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_base2
-OV_LIBS       += -l ov_backend2
-OV_LIBS       += -l ov_core2
-OV_LIBS 	  += -l ov_ice2
-OV_LIBS 	  += -l ov_ldap2
-OV_LIBS 	  += -l ov_codec2
-OV_LIBS 	  += -l ov_pcm16s2
-OV_LIBS 	  += -l ov_pcm_gen2
-OV_LIBS 	  += -l ov_sip2
+OV_LIBS       += -l ov_test$(OV_EDITION)
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_backend$(OV_EDITION)
+OV_LIBS       += -l ov_core$(OV_EDITION)
+OV_LIBS 	  += -l ov_ice$(OV_EDITION)
+OV_LIBS 	  += -l ov_ldap$(OV_EDITION)
+OV_LIBS 	  += -l ov_codec$(OV_EDITION)
+OV_LIBS 	  += -l ov_pcm16s$(OV_EDITION)
+OV_LIBS 	  += -l ov_pcm_gen$(OV_EDITION)
+OV_LIBS 	  += -l ov_sip$(OV_EDITION)
 
 
 OV_LIBS       += -l m

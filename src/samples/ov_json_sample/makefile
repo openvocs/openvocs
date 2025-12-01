@@ -50,8 +50,8 @@ OV_LIBS       += -pthread
 OV_LIBS       += -L$(OV_LIBDIR)
 
 OV_LIBS       += -l ov_arch$(OV_EDITION)
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_base2
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
 OV_LIBS       += -l m
 
 #-----------------------------------------------------------------------------

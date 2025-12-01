@@ -45,7 +45,7 @@ endif
 #-----------------------------------------------------------------------------
 
 OV_LIBS     = -L$(OV_LIBDIR)
-OV_LIBS     += -l ov_arch2
+OV_LIBS     += -l ov_arch$(OV_EDITION)
 
 ifeq ($(OV_UNAME), Linux)
 	OV_LIBS += `pkg-config --libs libsystemd`

@@ -39,12 +39,12 @@ OV_FLAGS       += `pkg-config --cflags openssl`
 
 OV_LIBS        = -L$(OV_LIBDIR)
 OV_LIBS       += -l ov_arch$(OV_EDITION)
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_base2
-OV_LIBS       += -l ov_core2
-OV_LIBS       += -l ov_value2
-OV_LIBS       += -l ov_test2
-OV_LIBS       += -l ov_encryption2
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_core$(OV_EDITION)
+OV_LIBS       += -l ov_value$(OV_EDITION)
+OV_LIBS       += -l ov_test$(OV_EDITION)
+OV_LIBS       += -l ov_encryption$(OV_EDITION)
 
 OV_LIBS       += `pkg-config --libs openssl`
 
