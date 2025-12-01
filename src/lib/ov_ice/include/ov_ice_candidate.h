@@ -34,6 +34,7 @@ typedef struct ov_ice_candidate ov_ice_candidate;
 
 #include "ov_ice_base.h"
 #include "ov_ice_server.h"
+#include "ov_ice_stream.h"
 
 #include <ov_base/ov_buffer.h>
 #include <ov_base/ov_node.h>
