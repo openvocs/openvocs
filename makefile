@@ -26,13 +26,13 @@
 #
 #       Some Flags that can be overwritten to control behaviour of makefile:
 #
-#       DTN_QUIET    If set, commands to be executed are hidden
-#       DTN_FLAGS    contains compiler flags
-#       DTN_LIBS     contains libraries to link against (BE AWARE OF ORDER)
-#       DTN_TARGET   contains desired target (default: shared and static lib)
+#       OV_QUIET    If set, commands to be executed are hidden
+#       OV_FLAGS    contains compiler flags
+#       OV_LIBS     contains libraries to link against (BE AWARE OF ORDER)
+#       OV_TARGET   contains desired target (default: shared and static lib)
 #                   may be overriden to executable
 #
-#       for example have a look @see src/lib/DTN_base/makefile
+#       for example have a look @see src/lib/OV_base/makefile
 #
 #       ------------------------------------------------------------------------
 
@@ -40,14 +40,14 @@
 -include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
 # define (sub)directories to dive in
-DTN_DIRECTORIES   = src/lib
-DTN_DIRECTORIES  += src/os
-DTN_DIRECTORIES  += src/service
-DTN_DIRECTORIES  += src/tools
-DTN_DIRECTORIES  += src/samples
+OV_DIRECTORIES   = src/lib
+OV_DIRECTORIES  += src/os
+OV_DIRECTORIES  += src/service
+OV_DIRECTORIES  += src/tools
+OV_DIRECTORIES  += src/samples
 
-ifeq ($(DTN_PLUGINS_PRESENT), 1)
-    DTN_DIRECTORIES  += $(DTN_PLUGINS_DIR)
+ifeq ($(OV_PLUGINS_PRESENT), 1)
+    OV_DIRECTORIES  += $(OV_PLUGINS_DIR)
 endif
 
 #.............................................................................
@@ -75,16 +75,16 @@ clean               : target_clean
 #.............................................................................
 debug               : target_debug
 #.............................................................................
-test                : target_test $(DTN_TEST_RESOURCE) $(DTN_LOCAL_TEST_RESOURCE)
+test                : target_test $(OV_TEST_RESOURCE) $(OV_LOCAL_TEST_RESOURCE)
 #.............................................................................
 build_info          : target_build_info
 #.............................................................................
 
 target_depend:
 	@echo "[DEPEND ] scanning dependencies"
-	@for dir in $(DTN_DIRECTORIES); do \
+	@for dir in $(OV_DIRECTORIES); do \
 		echo "[DEPEND ] entering $$dir ..."; \
-		$(MAKE) depend $(DTN_QUIET_MAKE) -C $$dir || exit 1; \
+		$(MAKE) depend $(OV_QUIET_MAKE) -C $$dir || exit 1; \
 		echo "[DEPEND ] leaving $$dir ."; \
 	done
 	@echo "[DEPEND ] dependencies done"
@@ -93,9 +93,9 @@ target_depend:
 
 target_build_all:
 	@echo "[BUILD  ] building all"
-	@for dir in $(DTN_DIRECTORIES); do \
+	@for dir in $(OV_DIRECTORIES); do \
 		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) $(DTN_QUIET_MAKE) -C $$dir || exit 1; \
+		$(MAKE) $(OV_QUIET_MAKE) -C $$dir || exit 1; \
 		echo "[BUILD  ] leaving $$dir ."; \
 	done
 	@echo "[BUILD  ] build done"
@@ -104,9 +104,9 @@ target_build_all:
 
 target_test:
 	@echo "[BUILD  ] building tests"
-	@for dir in $(DTN_DIRECTORIES); do \
+	@for dir in $(OV_DIRECTORIES); do \
 		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) $(DTN_QUIET_MAKE) target_test -C $$dir || exit 1; \
+		$(MAKE) $(OV_QUIET_MAKE) target_test -C $$dir || exit 1; \
 		echo "[BUILD  ] leaving $$dir ."; \
 	done
 	@echo "[BUILD  ] build tests done"
@@ -115,20 +115,20 @@ target_test:
 
 target_test_resources:
 	@echo "[COPY  ] copying generic test resources"
-	$(shell cp $(DTN_RESOURCE_GENERIC)/* $(DTN_TESTRESOURCES)/)
+	$(shell cp $(OV_RESOURCE_GENERIC)/* $(OV_TESTRESOURCES)/)
 	@echo "[COPY  ] copying generic test resources done"
 
 #-----------------------------------------------------------------------------
 
 target_clean:
 	@echo "[CLEAN  ] clean up ..."
-	$(DTN_QUIET)rm -rf $(DTN_JAVASCRIPT_VERSION_FILE)
-	$(DTN_QUIET)$(DTN_RMDIR) $(DTN_BUILDDIR)
-	$(DTN_QUIET)$(shell find $(OPENVOCS_ROOT) -name "*.pyc" -exec rm {} \;)
-	$(DTN_QUIET)$(shell find $(OPENVOCS_ROOT) -name "__pycache__" -exec rm -r {} \;)
-	$(DTN_QUIET)$(DTN_RM) $(DTN_TARBALL_RELEASE_ARCHIVE)
+	$(OV_QUIET)rm -rf $(OV_JAVASCRIPT_VERSION_FILE)
+	$(OV_QUIET)$(OV_RMDIR) $(OV_BUILDDIR)
+	$(OV_QUIET)$(shell find $(OPENVOCS_ROOT) -name "*.pyc" -exec rm {} \;)
+	$(OV_QUIET)$(shell find $(OPENVOCS_ROOT) -name "__pycache__" -exec rm -r {} \;)
+	$(OV_QUIET)$(OV_RM) $(OV_TARBALL_RELEASE_ARCHIVE)
 ifeq ($(CC), clang)
-	$(DTN_QUIET)$(DTN_RM) $(DTN_COMPILE_COMMANDS)
+	$(OV_QUIET)$(OV_RM) $(OV_COMPILE_COMMANDS)
 endif
 	@echo "[CLEAN  ] done"
 
@@ -139,15 +139,15 @@ target_debug:
 
 #-----------------------------------------------------------------------------
 
-$(DTN_VERSION_BUILD_ID_FILE):
-	$(error "Build system error - $(DTN_VERSION_BUILD_ID_FILE) must be present at this point")
+$(OV_VERSION_BUILD_ID_FILE):
+	$(error "Build system error - $(OV_VERSION_BUILD_ID_FILE) must be present at this point")
 
-target_build_id_file: $(DTN_VERSION_BUILD_ID_FILE)
-	@echo $$(($$(cat $(DTN_VERSION_BUILD_ID_FILE)) + 1)) > $(DTN_VERSION_BUILD_ID_FILE)
+target_build_id_file: $(OV_VERSION_BUILD_ID_FILE)
+	@echo $$(($$(cat $(OV_VERSION_BUILD_ID_FILE)) + 1)) > $(OV_VERSION_BUILD_ID_FILE)
 
 #-----------------------------------------------------------------------------
 
-$(DTN_BUILDDIR): target_prepare
+$(OV_BUILDDIR): target_prepare
 
 target_prepare:
 # check if OPENVOCS_ROOT environment variable is set
@@ -156,30 +156,30 @@ ifndef OPENVOCS_ROOT
 endif
 #
 # check if build directory already exists
-ifneq ($(wildcard $(DTN_BUILDDIR)/.*),)
+ifneq ($(wildcard $(OV_BUILDDIR)/.*),)
 	@echo "[PREPARE] build dir FOUND"
 else
 	@echo "[PREPARE] build dir NOT found, creating ..."
-	$(DTN_QUIET)$(DTN_MKDIR) $(DTN_BUILDDIR) $(DTN_NUL_STDERR)
-	$(DTN_QUIET)test -d $(DTN_BUILDDIR) || exit 1
-	$(DTN_QUIET)$(DTN_MKDIR) $(DTN_OBJDIR) $(DTN_NUL_STDERR)
-	$(DTN_QUIET)$(DTN_MKDIR) $(DTN_LIBDIR) $(DTN_NUL_STDERR)
-	$(DTN_QUIET)$(DTN_MKDIR) $(DTN_BINDIR) $(DTN_NUL_STDERR)
-	$(DTN_QUIET)$(DTN_MKDIR) $(DTN_TESTDIR) $(DTN_NUL_STDERR)
+	$(OV_QUIET)$(OV_MKDIR) $(OV_BUILDDIR) $(OV_NUL_STDERR)
+	$(OV_QUIET)test -d $(OV_BUILDDIR) || exit 1
+	$(OV_QUIET)$(OV_MKDIR) $(OV_OBJDIR) $(OV_NUL_STDERR)
+	$(OV_QUIET)$(OV_MKDIR) $(OV_LIBDIR) $(OV_NUL_STDERR)
+	$(OV_QUIET)$(OV_MKDIR) $(OV_BINDIR) $(OV_NUL_STDERR)
+	$(OV_QUIET)$(OV_MKDIR) $(OV_TESTDIR) $(OV_NUL_STDERR)
 endif
 
 #-----------------------------------------------------------------------------
 
 target_build_info:
-	$(DTN_QUIET)echo "Compiler " $$($$CC --version)
+	$(OV_QUIET)echo "Compiler " $$($$CC --version)
 
 #-----------------------------------------------------------------------------
 
 print:
-	@echo "temp release dir: $(DTN_TEMP_RELEASE_DIR)"
-	@echo "temp res:         $(DTN_TEMP_RELEASE_RESOURCES)"
-	@echo "res:              $(DTN_RELEASE_RESOURCES)"
-	@echo "archive:          $(DTN_RELEASE_ARCHIVE)"
+	@echo "temp release dir: $(OV_TEMP_RELEASE_DIR)"
+	@echo "temp res:         $(OV_TEMP_RELEASE_RESOURCES)"
+	@echo "res:              $(OV_RELEASE_RESOURCES)"
+	@echo "archive:          $(OV_RELEASE_ARCHIVE)"
 
 print-%  : ; @echo $* = $($*)
 
