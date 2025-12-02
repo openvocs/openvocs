@@ -86,22 +86,13 @@ struct ov_item {
 
 /*---------------------------------------------------------------------------*/
 
-static ov_item root_item = (ov_item){
-                                     .magic_bytes = OV_ITEM_MAGIC_BYTES,
-                                     .config = (ov_item_config){0},
-                                     .parent = NULL
-                                   };
-
-/*---------------------------------------------------------------------------*/
-
 static ov_item *item_create(ov_item_config config) {
 
   ov_item *item = calloc(1, sizeof(ov_item));
   if (!item)
     goto error;
 
-  memcpy(item, &root_item, sizeof(ov_item));
-
+  item->magic_bytes = OV_ITEM_MAGIC_BYTES;
   item->config = config;
   item->parent = NULL;
 
