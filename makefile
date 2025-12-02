@@ -32,12 +32,12 @@
 #       OV_TARGET   contains desired target (default: shared and static lib)
 #                   may be overriden to executable
 #
-#       for example have a look @see src/lib/OV_base/makefile
+#       for example have a look @see src/lib/ov_base/makefile
 #
 #       ------------------------------------------------------------------------
 
 # note the '-' ...
--include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
+-include ./makefiles/makefile_const.mk
 
 # define (sub)directories to dive in
 OV_DIRECTORIES   = src/lib
@@ -185,10 +185,51 @@ print-%  : ; @echo $* = $($*)
 
 #-----------------------------------------------------------------------------
 
--include $(OPENVOCS_ROOT)/makefiles/makefile_build_tools.mk
+.phony: tarball
+
+tarball: $(OV_BUILDDIR) $(OV_RELEASE_ARCHIVE)
+
+$(OV_TEMP_RELEASE_DIR): $(OV_TEMPDIR)
+	$(OV_QUIET)$(OV_MKDIR) $@
+
+$(OV_TEMP_RELEASE_DIR)/bin: $(OPENVOCS_ROOT)/build/bin $(OV_TEMP_RELEASE_DIR)
+	$(OV_QUIET)$(OV_COPY)  $< $(dir $@)
+
+$(OV_TEMP_RELEASE_DIR)/lib: $(OPENVOCS_ROOT)/build/lib $(OV_TEMP_RELEASE_DIR)
+	$(OV_QUIET)$(OV_COPY)  $< $(dir $@)
+
+$(OV_TEMP_RELEASE_DIR)/%: $(OPENVOCS_ROOT)/% $(OV_TEMP_RELEASE_DIR)
+	$(OV_QUIET)$(OV_MKDIR) $(dir $@)
+	$(OV_QUIET)$(OV_COPY)  $< $(dir $@)
+
+$(OV_RELEASE_CONFIG_DIR):
+	$(OV_QUIET)mkdir -p $(OV_RELEASE_CONFIG_DIR)
+
+release_config: $(OV_RELEASE_CONFIG_DIR)
+	$(OV_QUIET)rich/generate_config.py --target_path $(OV_RELEASE_CONFIG_DIR)
+
+$(OV_RELEASE_ARCHIVE): build $(OV_TEMP_RELEASE_RESOURCES)
+	@echo "[RELEASE  ] Create release archive $@"
+	$(OV_QUIET)tar -cf - -C $(OV_TEMPDIR)  $(patsubst $(OV_TEMPDIR)/%,%,$(OV_TEMP_RELEASE_DIR)) | gzip - > $@
+	$(OV_QUIET)$(OV_RMDIR) $(OV_TEMP_RELEASE_DIR)
+	@echo "[RELEASE  ] done"
 
 #-----------------------------------------------------------------------------
 
--include $(OPENVOCS_ROOT)/makefiles/makefile_lib.mk
+# Packaging for different distributions
+
+# Prerequisite for all specific packaging makefiles...
+-include ./makefiles/makefile_localdist.mk
+
+-include ./makefiles/makefile_deb.mk
+-include ./makefiles/makefile_rpm.mk
+
+#-----------------------------------------------------------------------------
+
+-include ./makefiles/makefile_build_tools.mk
+
+#-----------------------------------------------------------------------------
+
+-include ./makefiles/makefile_lib.mk
 
 #-----------------------------------------------------------------------------

@@ -27,7 +27,7 @@
 #
 #       ------------------------------------------------------------------------
 
--include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
+-include makefiles/makefile_const.mk
 
 LIB_FILES_0=$(addsuffix $(OV_EDITION).so, $(OV_LIBS_TO_PACKAGE))
 LIB_FILES_1=$(addsuffix $(OV_EDITION).so.$(OV_VERSION_MAJOR), $(OV_LIBS_TO_PACKAGE))
