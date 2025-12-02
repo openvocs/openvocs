@@ -87,7 +87,9 @@ struct ov_item {
 /*---------------------------------------------------------------------------*/
 
 static ov_item root_item = (ov_item){.magic_bytes = OV_ITEM_MAGIC_BYTES,
-                                     .config = (ov_item_config){0}};
+                                     .config = (ov_item_config){0},
+                                     .parent = NULL
+                                   };
 
 /*---------------------------------------------------------------------------*/
 
@@ -100,6 +102,7 @@ static ov_item *item_create(ov_item_config config) {
   memcpy(item, &root_item, sizeof(ov_item));
 
   item->config = config;
+  item->parent = NULL;
 
   return item;
 error:
