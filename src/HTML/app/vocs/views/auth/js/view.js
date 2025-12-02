@@ -153,11 +153,13 @@ function populate_role_list() {
     } else {
         user.roles.sort();
         for (let role of user.roles.values) {
-            let name = role.name;
-            if (!name)
-                name = role.id;
-            // DOM.role_list.add_item(role.dom_id, name + " (" + role.project + ")", role.id);
-            DOM.role_list.add_item(role.dom_id, name, role.id);
+            if (role.id !== "admin") {
+                let name = role.name;
+                if (!name)
+                    name = role.id;
+                // DOM.role_list.add_item(role.dom_id, name + " (" + role.project + ")", role.id);
+                DOM.role_list.add_item(role.dom_id, name, role.id);
+            }
         }
     }
     activate_stepper(DOM.authorization_step);
