@@ -43,7 +43,7 @@
 #include <ov_vocs_db/ov_vocs_db_persistance.h>
 
 #include <ov_base/ov_plugin_system.h>
-#include <ov_vocs/ov_vocs_core.h>
+#include <ov_vocs/ov_vocs.h>
 
 #define CONFIG_PATH                                                            \
     OPENVOCS_ROOT                                                              \
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
     ov_json_value *json_config = NULL;
     ov_vocs_db *db = NULL;
     ov_vocs_db_persistance *db_persistance = NULL;
-    ov_vocs_core *vocs = NULL;
+    ov_vocs *vocs = NULL;
     ov_event_trigger *trigger = NULL;
     ov_io *io = NULL;
 
@@ -143,7 +143,6 @@ int main(int argc, char **argv) {
      *  (2) DB persistance layer
      *  (3) DB service layer
      */
-        
     trigger = ov_event_trigger_create((ov_event_trigger_config){0});
     if (!trigger) goto error;
 
@@ -174,9 +173,10 @@ int main(int argc, char **argv) {
     
     if (!ov_vocs_db_set_persistance(db, db_persistance)) goto error;
 
+    
     /* Create the vocs core */
 
-    ov_vocs_core_config core_config = ov_vocs_core_config_from_json(json_config);
+    ov_vocs_config core_config = ov_vocs_config_from_json(json_config);
     core_config.loop = loop;
     core_config.db = db;
     core_config.persistance = db_persistance;
@@ -186,10 +186,10 @@ int main(int argc, char **argv) {
     core_config.env.send = env_send_socket;
     core_config.trigger = trigger;
 
-    vocs = ov_vocs_core_create(core_config);
+    vocs = ov_vocs_create(core_config);
     if (!vocs) goto error;
 
-    /* Enable uri domain/management for VOCS operation */
+    /* Enable uri domain/api for VOCS operation */
 
     if (!ov_webserver_minimal_configure_uri_event_io(
             server,
@@ -197,7 +197,7 @@ int main(int argc, char **argv) {
                 .start = (uint8_t *)domain, .length = strlen(domain)
 
             },
-            ov_vocs_core_event_io_uri_config(vocs))) {
+            ov_vocs_event_io_uri_config(vocs))) {
 
         ov_log_error(
             "Failed to enable vocs URI callback "
@@ -208,8 +208,6 @@ int main(int argc, char **argv) {
         goto error;
     }
 
-
-
     /*  Run event loop */
     loop->run(loop, OV_RUN_MAX);
 
@@ -218,7 +216,7 @@ int main(int argc, char **argv) {
 error:
 
     json_config = ov_json_value_free(json_config);
-    vocs = ov_vocs_core_free(vocs);
+    vocs = ov_vocs_free(vocs);
     db_persistance = ov_vocs_db_persistance_free(db_persistance);
     db = ov_vocs_db_free(db);
     server = ov_webserver_minimal_free(server);
