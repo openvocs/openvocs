@@ -51,7 +51,7 @@ export async function domains(ws) {
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
         try {
             console.log(log_prefix(ws) + "collecting domains with admin rights...");
-            await ws.send_event(ov_Websocket.EVENT.ADMIN_DOMAINS);
+            await ws.send_event(ov_Websocket.EVENT.ADMIN_DOMAINS, { user: ws.user.id });
             console.log(log_prefix(ws) + "received " + ws.user.domains.size +
                 " domains with admin rights: " + ws.user.domains.toString());
             break;
@@ -76,7 +76,7 @@ export async function projects(ws) {
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
         try {
             console.log(log_prefix(ws) + "collecting projects with admin rights...");
-            await ws.send_event(ov_Websocket.EVENT.ADMIN_PROJECTS);
+            await ws.send_event(ov_Websocket.EVENT.ADMIN_PROJECTS, { user: ws.user.id });
             console.log(log_prefix(ws) + "received " + ws.user.projects.size +
                 " projects with admin rights: " + ws.user.projects.toString());
             break;
@@ -468,7 +468,7 @@ export async function user_ldap_import(host, base, domain, user, passwd, ws) {
                 await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
             } else {
                 console.warn(log_prefix(ws) +
-                    "importing users from ldap " +  host + " - " + base + " failed.", error);
+                    "importing users from ldap " + host + " - " + base + " failed.", error);
                 return false;
             }
         }
@@ -476,7 +476,7 @@ export async function user_ldap_import(host, base, domain, user, passwd, ws) {
     return result;
 }
 
-export async function set_keyset_layout(id, domain, layout, ws){
+export async function set_keyset_layout(id, domain, layout, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
     let result = false;
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
@@ -497,7 +497,7 @@ export async function set_keyset_layout(id, domain, layout, ws){
                 await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
             } else {
                 console.warn(log_prefix(ws) +
-                    "saving layout " +  id + " in domain " + domain + " failed.", error);
+                    "saving layout " + id + " in domain " + domain + " failed.", error);
                 return false;
             }
         }
@@ -505,7 +505,7 @@ export async function set_keyset_layout(id, domain, layout, ws){
     return result;
 }
 
-export async function persist(ws){
+export async function persist(ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
     let result = false;
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
