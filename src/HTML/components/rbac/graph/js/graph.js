@@ -67,10 +67,14 @@ export function create_node(type, data, subset_id) {
             if (data.highlight_color) {
                 element.node_highlight_color = data.highlight_color;
             }
-        } else if (type === "role" && data.users) {
-            for (let user_id of Object.keys(data.users))
-                element.linked_nodes.set(user_id, data.users[user_id]);
+        } else if (type === "role") {
+            if (data.id === "admin" && !element.node_name)
+                element.node_name = data.global ? "domain admin" : "project admin";
+            if (data.users)
+                for (let user_id of Object.keys(data.users))
+                    element.linked_nodes.set(user_id, data.users[user_id]);
         }
+        console.log(element)
         register_node(element);
     }
     element.onmouseenter = function () {
