@@ -86,7 +86,8 @@ struct ov_item {
 
 /*---------------------------------------------------------------------------*/
 
-static ov_item root_item = (const ov_item){.magic_bytes = OV_ITEM_MAGIC_BYTES,
+static ov_item root_item = (const ov_item){
+                                     .magic_bytes = 0x17e9,
                                      .config = (ov_item_config){0},
                                      .parent = NULL
                                    };
