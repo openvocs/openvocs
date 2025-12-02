@@ -79,7 +79,7 @@ typedef struct ov_item_config {
 
 struct ov_item {
 
-  const uint16_t magic_bytes;
+  uint16_t magic_bytes;
   ov_item_config config;
   ov_item *parent;
 };
@@ -87,7 +87,7 @@ struct ov_item {
 /*---------------------------------------------------------------------------*/
 
 static ov_item root_item = (const ov_item){
-                                     .magic_bytes = 0x17e9,
+                                     .magic_bytes = OV_ITEM_MAGIC_BYTES,
                                      .config = (ov_item_config){0},
                                      .parent = NULL
                                    };
