@@ -201,8 +201,8 @@ dialog input, dialog select {
 :host([type=loop]) #edit_multicast_ip,
 :host([type=loop]) #edit_multicast_port,
 :host([type=loop]) #edit_multicast_split,
-:host([type=loop]) label[for=edit_highlight_color],
-:host([type=loop]) #edit_highlight_color {
+:host([type=loop][allow_highlighting]) label[for=edit_highlight_color],
+:host([type=loop][allow_highlighting]) #edit_highlight_color {
     display: initial;
 }
 

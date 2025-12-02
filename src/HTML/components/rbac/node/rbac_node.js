@@ -38,6 +38,7 @@ export default class ov_RBAC_Node extends HTMLElement {
     #frozen;
     #global;
     #subset;
+    #allow_highlighting;
 
     #node_name;
     #node_id;
@@ -67,7 +68,7 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["type", "value", "frozen", "global"];
+        return ["type", "value", "frozen", "global", "allow_highlighting"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -81,6 +82,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#update_frozen(this.hasAttribute("frozen"));
         } else if (name === "global") {
             this.#update_global(this.hasAttribute("global"));
+        } else if (name === "allow_highlighting") {
+            this.#allow_highlighting = newValue;
         }
     }
 
@@ -115,7 +118,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         if (boolean)
             this.setAttribute("global", "");
         else
-            this.removeAttribute("global")
+            this.removeAttribute("global");
     }
 
     get global() {
@@ -224,6 +227,17 @@ export default class ov_RBAC_Node extends HTMLElement {
         return data;
     }
 
+    set allow_highlighting(boolean) {
+        if (boolean)
+            this.setAttribute("allow_highlighting", "");
+        else
+            this.removeAttribute("allow_highlighting");
+    }
+
+    get allow_highlighting() {
+        return this.#allow_highlighting;
+    }
+
     #update_value(text) {
         this.#value = text;
         let name = this.shadowRoot.querySelector("#node_name");
@@ -250,7 +264,7 @@ export default class ov_RBAC_Node extends HTMLElement {
             edit_multicast_ip.disabled = boolean;
         if (edit_multicast_port)
             edit_multicast_port.disabled = boolean;
-        if(edit_highlight_color)
+        if (edit_highlight_color)
             edit_highlight_color.disabled = boolean;
         if (delete_button)
             delete_button.disabled = boolean;
