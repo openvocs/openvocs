@@ -386,8 +386,12 @@ static bool event_connect_media(void *userdata, const int socket,
   }
 
   ov_mc_interconnect_session_config config =
-      (ov_mc_interconnect_session_config){
-          .base = self, .loop = self->config.loop, .dtls = self->dtls};
+        (ov_mc_interconnect_session_config){
+            .base = self, 
+            .loop = self->config.loop, 
+            .dtls = self->dtls, 
+            .keepalive_trigger_usec =
+                self->config.limits.keepalive_trigger_usec};
 
   ov_socket_data remote = (ov_socket_data){0};
   if (!ov_socket_get_data(socket, NULL, &remote))

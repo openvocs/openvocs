@@ -988,12 +988,12 @@ static bool add_srtp_stream(const void *key, void *val, void *data) {
 
   srtp_t srtp_session = self->srtp.local.session;
 
-  self->srtp.local.policy.ssrc.type = ssrc_specific;
+  self->srtp.local.policy.ssrc.type = ssrc_any_inbound;
   self->srtp.local.policy.ssrc.value = remote_ssrc;
   self->srtp.local.policy.key = self->srtp.local.key;
   self->srtp.local.policy.next = NULL;
 
-  self->srtp.remote.policy.ssrc.type = ssrc_specific;
+  self->srtp.remote.policy.ssrc.type = ssrc_any_inbound;
   self->srtp.remote.policy.ssrc.value = local_ssrc;
   self->srtp.remote.policy.key = self->srtp.remote.key;
   self->srtp.remote.policy.next = NULL;
