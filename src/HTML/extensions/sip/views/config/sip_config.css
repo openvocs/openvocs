@@ -32,3 +32,15 @@ ov-sip-config-role:nth-child(2n + 1), ov-sip-whitelist:nth-child(2n + 1) {
     height: 100%;
     overflow-y: auto;
 }
+
+#warning {
+    display: none;
+}
+
+#sip_loops:empty ~ #warning {
+    display: inherit;
+}
+
+#sip_loops:empty + #sip_settings {
+    display: none;
+}
