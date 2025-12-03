@@ -67,27 +67,16 @@ typedef struct ov_item_config {
     void *data;
   };
 
-  struct {
-
-    uint64_t thread_lock_timeout_usecs;
-
-  } limits;
-
 } ov_item_config;
 
 /*---------------------------------------------------------------------------*/
 
 struct ov_item {
 
-  const uint16_t magic_bytes;
+  uint16_t magic_bytes;
   ov_item_config config;
   ov_item *parent;
 };
-
-/*---------------------------------------------------------------------------*/
-
-static ov_item root_item = (ov_item){.magic_bytes = OV_ITEM_MAGIC_BYTES,
-                                     .config = (ov_item_config){0}};
 
 /*---------------------------------------------------------------------------*/
 
@@ -97,9 +86,9 @@ static ov_item *item_create(ov_item_config config) {
   if (!item)
     goto error;
 
-  memcpy(item, &root_item, sizeof(ov_item));
-
+  item->magic_bytes = OV_ITEM_MAGIC_BYTES;
   item->config = config;
+  item->parent = NULL;
 
   return item;
 error:
@@ -423,9 +412,7 @@ bool ov_item_is_empty(ov_item *self) {
 ov_item *ov_item_object() {
 
   ov_item *item = item_create(
-      (ov_item_config){.literal = OV_ITEM_OBJECT,
-                       .limits.thread_lock_timeout_usecs =
-                           root_item.config.limits.thread_lock_timeout_usecs});
+      (ov_item_config){.literal = OV_ITEM_OBJECT});
 
   if (!item)
     goto error;
@@ -560,9 +547,7 @@ error:
 ov_item *ov_item_array() {
 
   ov_item *item = item_create(
-      (ov_item_config){.literal = OV_ITEM_ARRAY,
-                       .limits.thread_lock_timeout_usecs =
-                           root_item.config.limits.thread_lock_timeout_usecs});
+      (ov_item_config){.literal = OV_ITEM_ARRAY});
 
   if (!item)
     goto error;
@@ -711,9 +696,7 @@ ov_item *ov_item_string(const char *string) {
     return NULL;
 
   ov_item *item = item_create(
-      (ov_item_config){.literal = OV_ITEM_STRING,
-                       .limits.thread_lock_timeout_usecs =
-                           root_item.config.limits.thread_lock_timeout_usecs});
+      (ov_item_config){.literal = OV_ITEM_STRING});
 
   if (!item)
     goto error;
@@ -766,9 +749,7 @@ error:
 ov_item *ov_item_number(double number) {
 
   ov_item *item = item_create(
-      (ov_item_config){.literal = OV_ITEM_NUMBER,
-                       .limits.thread_lock_timeout_usecs =
-                           root_item.config.limits.thread_lock_timeout_usecs});
+      (ov_item_config){.literal = OV_ITEM_NUMBER});
 
   if (!item)
     goto error;
@@ -848,9 +829,7 @@ error:
 ov_item *ov_item_null() {
 
   ov_item *item = item_create(
-      (ov_item_config){.literal = OV_ITEM_NULL,
-                       .limits.thread_lock_timeout_usecs =
-                           root_item.config.limits.thread_lock_timeout_usecs});
+      (ov_item_config){.literal = OV_ITEM_NULL});
 
   if (!item)
     goto error;
@@ -880,9 +859,7 @@ error:
 ov_item *ov_item_true() {
 
   ov_item *item = item_create(
-      (ov_item_config){.literal = OV_ITEM_TRUE,
-                       .limits.thread_lock_timeout_usecs =
-                           root_item.config.limits.thread_lock_timeout_usecs});
+      (ov_item_config){.literal = OV_ITEM_TRUE});
 
   if (!item)
     goto error;
@@ -912,9 +889,7 @@ error:
 ov_item *ov_item_false() {
 
   ov_item *item = item_create(
-      (ov_item_config){.literal = OV_ITEM_FALSE,
-                       .limits.thread_lock_timeout_usecs =
-                           root_item.config.limits.thread_lock_timeout_usecs});
+      (ov_item_config){.literal = OV_ITEM_FALSE});
 
   if (!item)
     goto error;

@@ -27,7 +27,7 @@
 #
 #       ------------------------------------------------------------------------
 
--include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
+-include makefiles/makefile_const.mk
 
 ifeq (, $(shell which dpkg))
 

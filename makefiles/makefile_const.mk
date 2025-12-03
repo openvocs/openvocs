@@ -27,11 +27,11 @@
 include $(OPENVOCS_ROOT)/makefiles/makefile_version.mk
 
 # generic source files
-G_HEADERS           := $(wildcard include/*.h)
-G_SOURCES_C         := $(wildcard src/*.c)
-G_TEST_SOURCES      := $(wildcard src/*_test.c)
-G_TEST_IF_SRC       := $(wildcard src/*_test_interface.c)
-G_SOURCES           := $(filter-out $(G_TEST_SOURCES), $(G_SOURCES_C))
+G_HEADERS            := $(wildcard include/*.h)
+G_SOURCES_C        := $(wildcard src/*.c)
+G_TEST_SOURCES     := $(wildcard src/*_test.c)
+G_TEST_IF_SRC    := $(wildcard src/*_test_interface.c)
+G_SOURCES        := $(filter-out $(G_TEST_SOURCES), $(G_SOURCES_C))
 
 # const variables to use (generic may be overriden using L_* )
 OV_HDR            := $(if $(L_HEADERS),$(L_HEADERS),$(G_HEADERS))
