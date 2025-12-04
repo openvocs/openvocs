@@ -443,6 +443,7 @@ static bool client_get(ov_vocs *vocs,
 
 
         val = ov_vocs_db_get_entity(vocs->config.db, OV_VOCS_DB_USER, user);
+        
         result_obj = ov_json_object();
         if (!ov_json_object_set(result_obj, OV_KEY_RESULT, val)) goto error;
 
@@ -466,8 +467,8 @@ static bool client_get(ov_vocs *vocs,
     }
 
     out = ov_event_api_create_success_response(input);
-    ov_json_value *res = ov_event_api_get_response(result_obj);
-    if (!ov_json_object_set(res, OV_KEY_RESULT, val)) goto error;
+    ov_json_value *res = ov_event_api_get_response(out);
+    if (!ov_json_object_set(res, OV_KEY_RESULT, result_obj)) goto error;
 
     val = ov_json_string(type);
     if (!ov_json_object_set(res, OV_KEY_TYPE, val)) goto error;
