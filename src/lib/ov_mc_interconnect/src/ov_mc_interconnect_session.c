@@ -1316,7 +1316,7 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
   self->srtp.local.policy.key = self->srtp.local.key;
   self->srtp.local.policy.next = NULL;
 
-  self->srtp.remote.policy.ssrc.type = ssrc_any_inbound;
+  self->srtp.remote.policy.ssrc.type = ssrc_specific;
   self->srtp.remote.policy.ssrc.value = local_ssrc;
   self->srtp.remote.policy.key = self->srtp.remote.key;
   self->srtp.remote.policy.next = NULL;
@@ -1326,6 +1326,7 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
   switch (r) {
 
   case srtp_err_status_ok:
+    ov_log_debug("add srtp_stream local policy");
     break;
 
   default:  
@@ -1339,6 +1340,7 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
   switch (r) {
 
   case srtp_err_status_ok:
+    ov_log_debug("add srtp_stream remote policy");
     break;
 
   default:
