@@ -1579,21 +1579,23 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
     break;
 
   default:
-    ov_log_error("SRTP protect error %i", r);
+    ov_log_error("SRTP protect error %i for %s cannot send.", r ,
+      ov_mc_interconnect_loop_get_name(loop));
     goto done;
     break;
   }
 
   ssize_t bytes = ov_mc_interconnect_session_send(self, buffer, out);
   UNUSED(bytes);
-/*
-    ov_log_debug("%s to external SRTP send %zi bytes for %s to %s:%i",
+
+    ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
+        ov_mc_interconnect_loop_get_name(loop),
         bytes,
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-*/
+
 done:
   return true;
 error:
