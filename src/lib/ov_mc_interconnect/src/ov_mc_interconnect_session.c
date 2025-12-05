@@ -1312,7 +1312,7 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
 
   srtp_t srtp_session = self->srtp.local.session;
 
-  self->srtp.local.policy.ssrc.type = ssrc_any_inbound;
+  self->srtp.local.policy.ssrc.type = ssrc_specific;
   self->srtp.local.policy.ssrc.value = remote_ssrc;
   self->srtp.local.policy.key = self->srtp.local.key;
   self->srtp.local.policy.next = NULL;
@@ -1486,7 +1486,7 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
   if (!remove_and_readd_srtp_stream(self))
     goto error;
   */
-
+/*
   srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
   switch (r) {
@@ -1500,7 +1500,7 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     goto ignore;
     break;
   }
-
+*/
   if (frame->expanded.payload_type != 100)
     goto ignore;
 
@@ -1571,6 +1571,8 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
   if (!remove_and_readd_srtp_stream(self))
     goto error;
   */
+
+  /*
   srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
   switch (r) {
@@ -1579,23 +1581,23 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
     break;
 
   default:
-    ov_log_error("SRTP protect error %i for %s cannot send.", r ,
-      ov_mc_interconnect_loop_get_name(loop));
+    ov_log_error("SRTP protect error %i for %s cannot send.", r , name);
     goto done;
     break;
   }
+  */
 
   ssize_t bytes = ov_mc_interconnect_session_send(self, buffer, out);
   UNUSED(bytes);
-
+/*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
-        ov_mc_interconnect_loop_get_name(loop),
+        name,
         bytes,
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-
+*/
 done:
   return true;
 error:
