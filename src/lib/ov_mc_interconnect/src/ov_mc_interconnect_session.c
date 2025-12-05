@@ -1316,8 +1316,8 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
   self->srtp.local.policy.key = self->srtp.local.key;
   self->srtp.local.policy.next = NULL;
 
-  self->srtp.remote.policy.ssrc.type = ssrc_any_inbound;
-  self->srtp.remote.policy.ssrc.value = local_ssrc;
+  self->srtp.remote.policy.ssrc.type = ssrc_any_outbound;
+  self->srtp.remote.policy.ssrc.value = remote_ssrc;
   self->srtp.remote.policy.key = self->srtp.remote.key;
   self->srtp.remote.policy.next = NULL;
 
@@ -1568,7 +1568,7 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
   if (!remove_and_readd_srtp_stream(self))
     goto error;
   */
-  srtp_err_status_t r = srtp_protect(self->srtp.remote.session, buffer, &out);
+  srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
   switch (r) {
 
