@@ -1328,7 +1328,8 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
   case srtp_err_status_ok:
     break;
 
-  default:
+  default:  
+    ov_log_error("Failed to add srtp_stream local policy");
     goto done;
     break;
   }
@@ -1341,6 +1342,7 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
     break;
 
   default:
+    ov_log_error("Failed to add srtp_stream remote policy");
     goto done;
     break;
   }
