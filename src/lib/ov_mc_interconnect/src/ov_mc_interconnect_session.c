@@ -1311,12 +1311,12 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
 
   srtp_t srtp_session = self->srtp.local.session;
 
-  self->srtp.local.policy.ssrc.type = ssrc_any_outbound;
+  self->srtp.local.policy.ssrc.type = ssrc_any_inbound;
   self->srtp.local.policy.ssrc.value = remote_ssrc;
   self->srtp.local.policy.key = self->srtp.local.key;
   self->srtp.local.policy.next = NULL;
 
-  self->srtp.remote.policy.ssrc.type = ssrc_any_outbound;
+  self->srtp.remote.policy.ssrc.type = ssrc_any_inbound;
   self->srtp.remote.policy.ssrc.value = local_ssrc;
   self->srtp.remote.policy.key = self->srtp.remote.key;
   self->srtp.remote.policy.next = NULL;
