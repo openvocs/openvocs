@@ -1372,7 +1372,7 @@ error:
 }
 
 /*----------------------------------------------------------------------------*/
-/*
+
 static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self) {
 
   if (!self)
@@ -1428,7 +1428,7 @@ static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self) {
 error:
   return false;
 }
-*/
+
 
 /*----------------------------------------------------------------------------*/
 
@@ -1564,10 +1564,9 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
   buffer[1] |= 0X64;
 
   int out = size;
-  /*
+  
   if (!remove_and_readd_srtp_stream(self))
     goto error;
-  */
 
   srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
