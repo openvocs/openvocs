@@ -1196,13 +1196,13 @@ bool ov_mc_interconnect_session_dtls_io(ov_mc_interconnect_session *self,
         switch (r) {
 
         case srtp_err_status_ok:
-          ov_log_debug("session %s SRTP READY", self->id);
+          ov_log_debug("Session %s SRTP READY", self->id);
           prepare_streams(self);
           ov_mc_interconnect_srtp_ready(self->config.base, self);
           break;
 
         default:
-          ov_log_error("session %s srtp failed %i", self->id, r);
+          ov_log_error("Session %s srtp failed %i", self->id, r);
           goto error;
         }
       }
@@ -1305,13 +1305,14 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
   if (!loop)
     goto done;
 
+
   uint32_t local_ssrc = ov_mc_interconnect_loop_get_ssrc(loop);
   if (0 == local_ssrc)
     goto done;
 
   srtp_t srtp_session = self->srtp.local.session;
 
-  self->srtp.local.policy.ssrc.type = ssrc_any_inbound;
+  self->srtp.local.policy.ssrc.type = ssrc_specific;
   self->srtp.local.policy.ssrc.value = remote_ssrc;
   self->srtp.local.policy.key = self->srtp.local.key;
   self->srtp.local.policy.next = NULL;
@@ -1331,7 +1332,6 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
 
   default:  
     ov_log_error("Failed to add srtp_stream local policy");
-    goto done;
     break;
   }
 
@@ -1345,7 +1345,6 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
 
   default:
     ov_log_error("Failed to add srtp_stream remote policy");
-    goto done;
     break;
   }
 
