@@ -65,7 +65,6 @@ export async function render_project(container, user, page) {
             for (let loop_id of Object.keys(domain_config.loops))
                 domain_config.loops[loop_id].frozen = true;
     } else {
-        console.log("admin")
         if (domain_config.users)
             for (let user_id of Object.keys(domain_config.users))
                 domain_config.users[user_id].global = true;

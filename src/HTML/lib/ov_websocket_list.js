@@ -48,7 +48,7 @@ export function setup_connections(ov_Websocket) {
         let websocket_address = server.WEBSOCKET_URL ? server.WEBSOCKET_URL + "/api" :
             "wss://" + window.location.hostname + "/api";
 
-        let active_session = ov_Web_Storage.get_session(websocket_address);
+        let active_session = ov_Web_Storage.get_session(APP, websocket_address);
         let client_id = active_session ? active_session.client : undefined;
         if (client_id !== undefined)
             temp_auto_login = true;
@@ -207,7 +207,7 @@ async function find_new_server(already_authorized) {
             }
 
             if (finding_new_server) {
-                console.log("no server reachable, try again after timeout")
+                console.log("no server reachable, try again to find server after timeout");
                 await sleep(PERS_ERROR_TIMEOUT);
             }
         }
@@ -216,11 +216,11 @@ async function find_new_server(already_authorized) {
 }
 
 export async function sleep(time, ws) {
-    await new Promise((resolve) => {
+    return new Promise(resolve => {
         if (ws)
             console.warn("(" + ws.server_name + ") Sleep for " + time + "ms.");
         else
             console.warn("Sleep for " + time + "ms.");
-        setTimeout(() => { resolve(); }, time);
+        setTimeout(resolve, time);
     });
 }

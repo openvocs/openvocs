@@ -180,7 +180,7 @@ export async function init(view_id, container, type) {
         await save(config, type, true);
     });
 
-    view_container.addEventListener("delete_project", async () => {
+    DOM.sub_view.addEventListener("delete_project", async (event) => {
         DOM.loading_screen.show("Deleting project on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
@@ -208,7 +208,7 @@ export async function init(view_id, container, type) {
         }
     });
 
-    view_container.addEventListener("delete_domain", async () => {
+    DOM.sub_view.addEventListener("delete_domain", async () => {
         DOM.loading_screen.show("Deleting domain on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
@@ -235,11 +235,11 @@ export async function init(view_id, container, type) {
         }
     });
 
-    view_container.addEventListener("changed_name", (event) => {
+    DOM.sub_view.addEventListener("changed_name", (event) => {
         DOM.config_name.innerText = event.detail;
     });
 
-    view_container.addEventListener("import_ldap_user", async (event) => {
+    DOM.sub_view.addEventListener("import_ldap_user", async (event) => {
         DOM.loading_screen.show("Importing users from LDAP...");
         let settings = Config_Settings.collect();
         let errors = [];
@@ -385,7 +385,7 @@ export async function render_project(project, domain, id, domain_id, page) {
 
     DOM.sub_view_nav.addEventListener("change", () => {
         for (let ws of ov_Websockets.list) {
-            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
+            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
         }
         DOM.sub_view.className = DOM.sub_view_nav.value;
         if (DOM.sub_view_nav.value === "rbac")
@@ -438,7 +438,7 @@ export async function render_domain(domain, id, page) {
     DOM.sub_view_nav.addEventListener("change", () => {
         DOM.sub_view.className = DOM.sub_view_nav.value;
         for (let ws of ov_Websockets.list) {
-            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
+            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
         }
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();

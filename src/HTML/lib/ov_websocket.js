@@ -300,7 +300,7 @@ export default class ov_Websocket {
 
             if (error.code === 5000) { // Auth error
                 console.log("(" + this.#url + ") clear session");
-                ov_Web_Storage.clear(this.#url);
+                ov_Web_Storage.clear(APP, this.#url);
             }
         } else if (!event.hasOwnProperty("response") && !event.hasOwnProperty("parameter")) {
             console.error(this.#log_prefix() + "received no response or parameter in " + event.event);
@@ -415,17 +415,17 @@ export default class ov_Websocket {
                 if (!error) {
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHENTICATED;
                     let session = !message.session ? event.session : message.session;
-                    ov_Web_Storage.extend_session(this.#url, this.#client_id, this.#user.id, session);
+                    ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, session);
                     clearInterval(this.#extend_session_interval_id);
                     this.#extend_session_interval_id = setInterval(async () => {
-                        let session = ov_Web_Storage.get_session(this.#url);
+                        let session = ov_Web_Storage.get_session(APP, this.#url);
                         if (session === null) {
                             console.warn("(" + this.server_name + ") session not found or expired.");
                         } else {
                             try {
                                 console.log("(" + this.server_name + ") extend session...");
                                 let result = await this.send_event(ov_Websocket.EVENT.EXTEND_SESSION, { session: session.session, user: this.#user.id });
-                                ov_Web_Storage.extend_session(this.#url, this.#client_id, this.#user.id, result.session);
+                                ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, result.session);
                                 console.log("(" + this.server_name + ") extended session");
                             } catch (error) {
                                 console.warn("(" + this.server_name + ") extend session failed.", error);
@@ -444,7 +444,7 @@ export default class ov_Websocket {
                         if (role)
                             this.#user.project = role.project;
                     }
-                    ov_Web_Storage.add_role_to_session(this.#url, this.#user.role);
+                    ov_Web_Storage.add_role_to_session(APP, this.#url, this.#user.role);
                 }
                 message = event.response.id;
                 break;
@@ -455,10 +455,10 @@ export default class ov_Websocket {
             case ov_Websocket.EVENT.GET:
                 if (event.response.type === ov_Websocket.REQUEST_SCOPE.USER) {
                     this.#user.parse_values(event.response.result);
-                    if (event.response.domain) {
-                        this.#user.domain = event.response.domain.domain;
+                    if (event.response.result.domain) {
+                        this.#user.domain = event.response.result.domain.domain;
                         if (!this.#user.project)
-                            this.#user.project = event.response.domain.project;
+                            this.#user.project = event.response.result.domain.project;
                     }
                     message = this.#user;
                 } else if (event.response.type === ov_Websocket.REQUEST_SCOPE.PROJECT)
@@ -496,7 +496,7 @@ export default class ov_Websocket {
     }
 
     logout() {
-        ov_Web_Storage.clear(this.websocket_url);
+        ov_Web_Storage.clear(APP, this.websocket_url);
         if (this.is_ready || this.authenticated)
             return this.#request(this.#create_event(ov_Websocket.EVENT.LOGOUT));
         return true;
