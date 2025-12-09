@@ -442,16 +442,11 @@ static bool client_get(ov_vocs *vocs,
     if (0 == strcmp(type, OV_KEY_USER)) {
 
 
-        val = ov_vocs_db_get_entity(vocs->config.db, OV_VOCS_DB_USER, user);
-        
-        result_obj = ov_json_object();
-        if (!ov_json_object_set(result_obj, OV_KEY_RESULT, val)) goto error;
-
-        val = ov_json_string(type);
-        if (!ov_json_object_set(result_obj, OV_KEY_TYPE, val)) goto error;
+        result_obj = ov_vocs_db_get_entity(vocs->config.db, OV_VOCS_DB_USER, user);
 
         val = ov_vocs_db_get_entity_domain(
             vocs->config.db, OV_VOCS_DB_USER, user);
+
         if (val) ov_json_object_set(result_obj, OV_KEY_DOMAIN, val);
 
         val = NULL;
