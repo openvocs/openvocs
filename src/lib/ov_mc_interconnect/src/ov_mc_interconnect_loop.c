@@ -90,10 +90,12 @@ static bool io_multicast(int socket, uint8_t events, void *userdata) {
       ov_log_debug("--> recv %zi bytes at %s %"PRIu32,
           bytes, self->config.name, frame->expanded.ssrc);
   */
-  frame = ov_rtp_frame_free(frame);
 
-  return ov_mc_interconnect_multicast_io(self->config.base, self, buffer,
+  bool result = ov_mc_interconnect_multicast_io(self->config.base, self, buffer,
                                          bytes);
+
+  frame = ov_rtp_frame_free(frame);
+  return result;
 error:
   frame = ov_rtp_frame_free(frame);
   return false;

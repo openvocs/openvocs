@@ -117,6 +117,14 @@ uint64_t ov_event_api_get_error_code(const ov_json_value *val) {
 
 /*----------------------------------------------------------------------------*/
 
+const char* ov_event_api_get_error_desc(const ov_json_value *val) {
+
+  return ov_json_string_get(
+      ov_json_object_get(ov_event_api_get_error(val), OV_EVENT_API_KEY_DESCRIPTION));
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_event_api_get_error_parameter(const ov_json_value *val, uint64_t *code,
                                       const char **desc) {
 

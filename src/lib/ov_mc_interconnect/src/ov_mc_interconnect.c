@@ -184,11 +184,11 @@ static bool event_register_response(ov_mc_interconnect *self, const int socket,
   UNUSED(self);
 
   uint64_t error_code = ov_event_api_get_error_code(input);
-  if (0 != error_code)
+  const char *error_desc = ov_event_api_get_error_desc(input);
+  if (0 != error_code){
+    ov_log_error("Register error %i|%s", error_code, error_desc);
     goto error;
-
-  if (!ov_dict_is_set(self->registered, (void *)(intptr_t)socket))
-    goto error;
+  }
 
   const char *name = ov_json_string_get(
       ov_json_get(input, "/" OV_KEY_RESPONSE "/" OV_KEY_NAME));
@@ -199,9 +199,12 @@ static bool event_register_response(ov_mc_interconnect *self, const int socket,
       self->config.name, OV_MC_INTERCONNECT_DEFAULT_CODEC,
       self->config.socket.media.host, self->config.socket.media.port);
 
-  ov_event_io_send(parameter, socket, out);
+  bool result = ov_event_io_send(parameter, socket, out);
   ov_json_value_free(out);
   ov_json_value_free(input);
+
+  if (result) ov_log_debug("SEND msg connect.");
+
   return true;
 error:
   ov_json_value_free(input);
@@ -286,6 +289,14 @@ static bool event_connect_media_response(ov_mc_interconnect *self,
     goto error;
   UNUSED(socket);
 
+  uint64_t error_code = ov_event_api_get_error_code(input);
+  const char *error_desc = ov_event_api_get_error_desc(input);
+
+  if (0 != error_code){
+    ov_log_error("MEDIA error %i|%s", error_code, error_desc);
+    goto error;
+  }
+
   const char *host = ov_json_string_get(
       ov_json_get(input, "/" OV_KEY_RESPONSE "/" OV_KEY_HOST));
 
@@ -351,11 +362,13 @@ static bool event_connect_media(void *userdata, const int socket,
   if (!self || !parameter || !input)
     goto error;
 
-  if (!ov_dict_is_set(self->registered, (void *)(intptr_t)socket))
-    goto error;
-
   if (ov_event_api_get_response(input))
     return event_connect_media_response(self, socket, parameter, input);
+
+  if (!ov_dict_is_set(self->registered, (void *)(intptr_t)socket)){
+    ov_log_error("GOT MEDIA - client not registered yet. - ignoring");
+    goto error;
+  }
 
   const char *name = ov_json_string_get(
       ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_NAME));
@@ -474,6 +487,8 @@ static bool add_loops_response(void *value, void *data) {
   if (!ov_mc_interconnect_session_add(c->session, name, ssrc))
     goto done;
 
+  ov_log_debug("adding Loop %s to session.", name);
+
 done:
   return true;
 
@@ -536,6 +551,8 @@ static bool add_loops(void *value, void *data) {
 
   const char *name = ov_json_string_get(ov_json_object_get(item, OV_KEY_NAME));
 
+  ov_log_debug("adding loop %s", name);
+
   uint32_t ssrc = ov_json_number_get(ov_json_object_get(item, OV_KEY_SSRC));
 
   if (!name || !ssrc)
@@ -583,9 +600,6 @@ static bool event_connect_loops(void *userdata, const int socket,
 
   ov_mc_interconnect *self = ov_mc_interconnect_cast(userdata);
   if (!self || !parameter || !input)
-    goto error;
-
-  if (!ov_dict_is_set(self->registered, (void *)(intptr_t)socket))
     goto error;
 
   if (ov_event_api_get_response(input))
@@ -746,6 +760,10 @@ static bool io_stun(ov_mc_interconnect *self, int socket, uint8_t *buffer,
     goto ignore;
   if (!ov_stun_frame_has_magic_cookie(buffer, bytes))
     goto ignore;
+  if (ov_stun_frame_class_is_success_response(buffer, bytes)){
+    ov_log_debug("Received STUN response from %s:%i", remote->host, remote->port);
+    goto ignore;
+  }
   if (!ov_stun_frame_class_is_request(buffer, bytes))
     goto ignore;
   if (!ov_stun_method_is_binding(buffer, bytes))
@@ -771,6 +789,7 @@ static bool io_stun(ov_mc_interconnect *self, int socket, uint8_t *buffer,
   ssize_t send =
       sendto(socket, buffer, out, 0, (const struct sockaddr *)&remote->sa, len);
 
+  ov_log_debug("Send STUN response to %s:%i", remote->host, remote->port);
   UNUSED(send);
 ignore:
   return true;

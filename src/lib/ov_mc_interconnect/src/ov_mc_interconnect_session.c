@@ -1505,7 +1505,7 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     goto ignore;
 
   char *loop_name =
-      ov_dict_get(self->ssrcs, (void *)(intptr_t)frame->expanded.ssrc);
+      ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
 
   if (!loop_name)
     goto ignore;

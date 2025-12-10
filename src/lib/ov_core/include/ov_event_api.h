@@ -161,6 +161,7 @@ bool ov_event_api_get_error_parameter(const ov_json_value *val, uint64_t *code,
                                       const char **desc);
 
 uint64_t ov_event_api_get_error_code(const ov_json_value *val);
+const char *ov_event_api_get_error_desc(const ov_json_value *val);
 
 bool ov_event_api_set_event(ov_json_value *val, const char *str);
 bool ov_event_api_set_uuid(ov_json_value *val, const char *str);
