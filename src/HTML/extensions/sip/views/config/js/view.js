@@ -106,7 +106,7 @@ export function clear_loops() {
 function get_current_loop() {
     let loops = document.querySelectorAll("ov-sip-config-loop");
     for (let element of loops) {
-        if (element.disabled)
+        if (element.selected)
             return element;
     }
 }
@@ -132,9 +132,10 @@ function save_settings_of_current_loop() {
 export function select_loop(loop) {
     let prev_loop = save_settings_of_current_loop();
     if (prev_loop)
-        prev_loop.disabled = false;
+        prev_loop.selected = false;
 
-    loop.disabled = true;
+    loop.selected = true;
+    DOM.add_whitelist.disabled = loop.disabled;
 
     DOM.whitelist.replaceChildren();
     for (let entry of loop.whitelist) {
@@ -143,6 +144,8 @@ export function select_loop(loop) {
 
         element.callee = entry.callee;
         element.caller = entry.caller;
+        if(loop.disabled)
+            element.disabled = true;
 
         element.addEventListener("delete_entry", () => {
             DOM.whitelist.removeChild(element);
@@ -157,6 +160,8 @@ export function select_loop(loop) {
 
         element.id = role_id;
         element.name = loop.roles[role_id].name ? loop.roles[role_id].name : role_id;
+        if(loop.disabled)
+            element.disabled = true;
 
         let value = "none";
         if (loop.roles[role_id].value === true)

@@ -43,7 +43,7 @@ export async function init(container) {
     View.init(VIEW_ID);
 }
 
-export function render(loops, roles) {
+export function render(loops, roles, disable_global) {
     let first_loop;
 
     View.clear_loops();
@@ -51,6 +51,8 @@ export function render(loops, roles) {
     if (loops)
         for (let id of Object.keys(loops)) {
             let loop = View.add_loop(id, loops[id], roles);
+            if (disable_global && loops[id].global)
+                loop.disabled = true;
             if (!first_loop)
                 first_loop = loop;
         }

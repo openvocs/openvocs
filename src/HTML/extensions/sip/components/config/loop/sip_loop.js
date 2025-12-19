@@ -35,6 +35,7 @@ export default class ov_SIP_Loop extends HTMLElement {
     #name;
     #whitelist = [];
     #roles = {};
+    #selected = false;
     #disabled = false;
 
     constructor() {
@@ -92,15 +93,23 @@ export default class ov_SIP_Loop extends HTMLElement {
         return this.#roles;
     }
 
-    #update_disabled() {
+    #update_selected() {
         let button = this.shadowRoot.querySelector("button");
         if (button)
-            button.disabled = this.#disabled;
+            button.disabled = this.#selected;
+    }
+
+    set selected(value) {
+        this.#selected = value;
+        this.#update_selected();
+    }
+
+    get selected() {
+        return this.#selected;
     }
 
     set disabled(value) {
         this.#disabled = value;
-        this.#update_disabled();
     }
 
     get disabled() {
@@ -110,13 +119,12 @@ export default class ov_SIP_Loop extends HTMLElement {
     attributeChangedCallback(name, old_value, new_value) {
         if (old_value === new_value)
             return;
-
     }
 
     async connectedCallback() {
         await this.#render();
         this.#update_name();
-        this.#update_disabled();
+        this.#update_selected();
         this.#update_sip_indicator();
     }
 

@@ -401,7 +401,10 @@ export async function render_project(project, domain, id, domain_id, page) {
             let proj_config = collect_config();
             let dom_config = collect_config({ id: proj_config.domain });
             let roles = { ...proj_config.roles, ...dom_config.roles };
-            Config_SIP.render(proj_config.loops, roles);
+            for (let loop_id of Object.keys(dom_config.loops)) 
+                dom_config.loops[loop_id].global = true;
+            let loops = { ...proj_config.loops, ...dom_config.loops };
+            Config_SIP.render(loops, roles, true);
         } else if (DOM.sub_view_nav.value === "recorder" && RECORDER) {
             let proj_config = collect_config();
             Config_Recorder.render(proj_config.loops);
@@ -415,7 +418,7 @@ export async function render_project(project, domain, id, domain_id, page) {
     Config_Layout.disable_settings(false);
     let roles = { ...project.roles, ...domain.roles };
     if (SIP)
-        Config_SIP.render(project.loops, roles);
+        Config_SIP.render(loops, roles, true);
     if (RECORDER)
         Config_Recorder.render(project.loops);
 
