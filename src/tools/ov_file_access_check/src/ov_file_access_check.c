@@ -42,45 +42,45 @@
 
 int main(int argc, char **argv) {
 
-  struct stat statbuf = {0};
-  errno = 0;
+    struct stat statbuf = {0};
+    errno = 0;
 
-  const char *path = ov_config_path_from_command_line(argc, argv);
-  if (!path)
-    goto error;
+    const char *path = ov_config_path_from_command_line(argc, argv);
+    if (!path)
+        goto error;
 
-  if (access(path, F_OK) == -1) {
-    fprintf(stdout, "access failed errno %i|%s", errno, strerror(errno));
-    goto error;
-  }
-
-  if (0 != stat(path, &statbuf)) {
-    fprintf(stdout, "stat failed errno %i|%s", errno, strerror(errno));
-    goto error;
-  }
-
-  mode_t mode = statbuf.st_mode & S_IFMT;
-
-  if (mode == S_IFDIR) {
-    fprintf(stdout, "mode is dir errno %i|%s", errno, strerror(errno));
-    goto error;
-  }
-
-  if ((mode == S_IFIFO) || (mode == S_IFREG) || (mode == S_IFSOCK)) {
-
-    int fd = -1;
-    fd = open(path, O_RDONLY);
-
-    if (0 > fd) {
-      fprintf(stdout, "open failed errno %i|%s", errno, strerror(errno));
-      goto error;
+    if (access(path, F_OK) == -1) {
+        fprintf(stdout, "access failed errno %i|%s", errno, strerror(errno));
+        goto error;
     }
 
-    close(fd);
-  }
+    if (0 != stat(path, &statbuf)) {
+        fprintf(stdout, "stat failed errno %i|%s", errno, strerror(errno));
+        goto error;
+    }
 
-  return EXIT_SUCCESS;
+    mode_t mode = statbuf.st_mode & S_IFMT;
+
+    if (mode == S_IFDIR) {
+        fprintf(stdout, "mode is dir errno %i|%s", errno, strerror(errno));
+        goto error;
+    }
+
+    if ((mode == S_IFIFO) || (mode == S_IFREG) || (mode == S_IFSOCK)) {
+
+        int fd = -1;
+        fd = open(path, O_RDONLY);
+
+        if (0 > fd) {
+            fprintf(stdout, "open failed errno %i|%s", errno, strerror(errno));
+            goto error;
+        }
+
+        close(fd);
+    }
+
+    return EXIT_SUCCESS;
 
 error:
-  return EXIT_FAILURE;
+    return EXIT_FAILURE;
 }

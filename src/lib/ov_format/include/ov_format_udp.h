@@ -40,11 +40,11 @@
 
 typedef struct {
 
-  uint16_t source_port;
-  uint16_t destination_port;
+    uint16_t source_port;
+    uint16_t destination_port;
 
-  uint16_t length_octets;
-  uint16_t checksum;
+    uint16_t length_octets;
+    uint16_t checksum;
 
 } ov_format_udp_header;
 

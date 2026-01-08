@@ -47,45 +47,45 @@
 
 _Noreturn static void usage(char const *cmd) {
 
-  fprintf(stderr,
-          "\n"
-          "    USAGE:\n"
-          "        %s [-O] OGG_FILE_NAME\n\n"
-          "    Tries to open OGG file, verify it and\n"
-          "    copy payload to another OGG\n\n"
-          "    Options\n\n"
-          "      -O   Read as OGG Opus instead of plain OGG\n\n\n",
-          cmd);
+    fprintf(stderr,
+            "\n"
+            "    USAGE:\n"
+            "        %s [-O] OGG_FILE_NAME\n\n"
+            "    Tries to open OGG file, verify it and\n"
+            "    copy payload to another OGG\n\n"
+            "    Options\n\n"
+            "      -O   Read as OGG Opus instead of plain OGG\n\n\n",
+            cmd);
 
-  fprintf(stderr, "\n"
-                  "\n"
-                  "\n");
+    fprintf(stderr, "\n"
+                    "\n"
+                    "\n");
 
-  exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool process_ogg(ov_format *ogg, ov_format *out) {
 
-  ov_buffer *chunk = ov_format_payload_read_chunk(ogg, 100);
-  size_t total = 0;
-  size_t c = 0;
+    ov_buffer *chunk = ov_format_payload_read_chunk(ogg, 100);
+    size_t total = 0;
+    size_t c = 0;
 
-  while (0 != chunk) {
+    while (0 != chunk) {
 
-    total += chunk->length;
-    fprintf(stdout, "Chunk %zu: Read %zu bytes\n", c++, chunk->length);
+        total += chunk->length;
+        fprintf(stdout, "Chunk %zu: Read %zu bytes\n", c++, chunk->length);
 
-    ov_format_payload_write_chunk(out, chunk);
+        ov_format_payload_write_chunk(out, chunk);
 
-    chunk = ov_buffer_free(chunk);
-    chunk = ov_format_payload_read_chunk(ogg, 100);
-  };
+        chunk = ov_buffer_free(chunk);
+        chunk = ov_format_payload_read_chunk(ogg, 100);
+    };
 
-  fprintf(stdout, "Read %zu bytes\n", total);
+    fprintf(stdout, "Read %zu bytes\n", total);
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -93,89 +93,91 @@ static bool process_ogg(ov_format *ogg, ov_format *out) {
 static ov_format *create_format(char const *fpath, bool opus,
                                 ov_format_mode mode) {
 
-  ov_format *format = 0;
+    ov_format *format = 0;
 
-  if (0 != fpath) {
+    if (0 != fpath) {
 
-    format = ov_format_as(ov_format_open(fpath, mode),
-                          OV_FORMAT_OGG_TYPE_STRING, 0, 0);
+        format = ov_format_as(ov_format_open(fpath, mode),
+                              OV_FORMAT_OGG_TYPE_STRING, 0, 0);
 
-    if (opus) {
+        if (opus) {
 
-      fprintf(stdout, "Accessing %s as OGG OPUS\n", ov_string_sanitize(fpath));
+            fprintf(stdout, "Accessing %s as OGG OPUS\n",
+                    ov_string_sanitize(fpath));
 
-      format = ov_format_as(format, OV_FORMAT_OGG_OPUS_TYPE_STRING, 0, 0);
+            format = ov_format_as(format, OV_FORMAT_OGG_OPUS_TYPE_STRING, 0, 0);
 
-    } else {
+        } else {
 
-      fprintf(stdout, "Accessing %s as plain OGG\n", ov_string_sanitize(fpath));
+            fprintf(stdout, "Accessing %s as plain OGG\n",
+                    ov_string_sanitize(fpath));
+        }
     }
-  }
 
-  return format;
+    return format;
 }
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-  char const *infile;
+    char const *infile;
 
-  struct {
+    struct {
 
-    bool opus : 1;
-  };
+        bool opus : 1;
+    };
 
 } configuration;
 
 configuration parse_arguments(int argc, char const **argv) {
 
-  int c = 0;
+    int c = 0;
 
-  configuration args = {0};
+    configuration args = {0};
 
-  while ((c = getopt(argc, (char **)argv, "O")) != -1) {
+    while ((c = getopt(argc, (char **)argv, "O")) != -1) {
 
-    switch (c) {
+        switch (c) {
 
-    case 'O':
-      args.opus = true;
-      break;
+        case 'O':
+            args.opus = true;
+            break;
+        };
     };
-  };
 
-  args.infile = argv[optind];
+    args.infile = argv[optind];
 
-  return args;
+    return args;
 }
 
 /*----------------------------------------------------------------------------*/
 
 int main(int argc, char const **argv) {
 
-  ov_format_ogg_install(0);
-  ov_format_ogg_opus_install(0);
+    ov_format_ogg_install(0);
+    ov_format_ogg_opus_install(0);
 
-  configuration args = parse_arguments(argc, argv);
+    configuration args = parse_arguments(argc, argv);
 
-  if (0 == args.infile) {
+    if (0 == args.infile) {
 
-    usage(argv[0]);
+        usage(argv[0]);
 
-  } else {
+    } else {
 
-    char outfile[PATH_MAX + 1] = {0};
-    snprintf(outfile, sizeof(outfile), "%s.out", args.infile);
-    outfile[sizeof(outfile) - 1] = 0;
+        char outfile[PATH_MAX + 1] = {0};
+        snprintf(outfile, sizeof(outfile), "%s.out", args.infile);
+        outfile[sizeof(outfile) - 1] = 0;
 
-    ov_format *out = create_format(outfile, args.opus, OV_WRITE);
-    ov_format *in = create_format(args.infile, args.opus, OV_READ);
+        ov_format *out = create_format(outfile, args.opus, OV_WRITE);
+        ov_format *in = create_format(args.infile, args.opus, OV_READ);
 
-    process_ogg(in, out);
+        process_ogg(in, out);
 
-    out = ov_format_close(out);
-    in = ov_format_close(in);
+        out = ov_format_close(out);
+        in = ov_format_close(in);
 
-    return EXIT_SUCCESS;
-  }
+        return EXIT_SUCCESS;
+    }
 }

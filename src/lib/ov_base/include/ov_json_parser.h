@@ -139,23 +139,23 @@ bool ov_json_parser_collocate_ascending(const char *key, ov_list *list);
 
 typedef struct ov_json_value_config {
 
-  struct entry {
+    struct entry {
 
-    char *intro;  //      ... item intro e.g. space, quote
-    char *outro;  //      ... item intro e.g. space, quote
-    bool depth;   //      ... enable depth
-    char *indent; //      ... whitespace indent (e.g. tab)
-  } entry;
+        char *intro;  //      ... item intro e.g. space, quote
+        char *outro;  //      ... item intro e.g. space, quote
+        bool depth;   //      ... enable depth
+        char *indent; //      ... whitespace indent (e.g. tab)
+    } entry;
 
-  struct item {
+    struct item {
 
-    char *intro;     // {    ... intro after depth
-    char *out;       // \n   ... out before depth
-    char *outro;     // }    ... outro after depth
-    char *separator; // ,    ... separation of collection items
-    char *delimiter; // :    ... delimiter within object
+        char *intro;     // {    ... intro after depth
+        char *out;       // \n   ... out before depth
+        char *outro;     // }    ... outro after depth
+        char *separator; // ,    ... separation of collection items
+        char *delimiter; // :    ... delimiter within object
 
-  } item;
+    } item;
 
 } ov_json_value_config;
 
@@ -163,15 +163,15 @@ typedef struct ov_json_value_config {
 
 typedef struct ov_json_stringify_config {
 
-  char *intro;
+    char *intro;
 
-  ov_json_value_config literal;
-  ov_json_value_config number;
-  ov_json_value_config string;
-  ov_json_value_config array;
-  ov_json_value_config object;
+    ov_json_value_config literal;
+    ov_json_value_config number;
+    ov_json_value_config string;
+    ov_json_value_config array;
+    ov_json_value_config object;
 
-  char *outro;
+    char *outro;
 
 } ov_json_stringify_config;
 

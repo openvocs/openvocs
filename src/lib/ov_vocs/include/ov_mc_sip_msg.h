@@ -46,8 +46,8 @@
 
 typedef struct ov_sip_socket {
 
-  ov_socket_configuration config;
-  uint8_t payload_type;
+    ov_socket_configuration config;
+    uint8_t payload_type;
 
 } ov_sip_socket;
 

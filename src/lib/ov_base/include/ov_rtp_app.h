@@ -40,10 +40,10 @@ typedef struct ov_rtp_app ov_rtp_app;
 
 typedef struct {
 
-  bool multicast;
-  ov_socket_configuration rtp_socket;
-  bool (*rtp_handler)(ov_rtp_frame *rtp_frame, void *userdata);
-  void *rtp_handler_userdata;
+    bool multicast;
+    ov_socket_configuration rtp_socket;
+    bool (*rtp_handler)(ov_rtp_frame *rtp_frame, void *userdata);
+    void *rtp_handler_userdata;
 
 } ov_rtp_app_config;
 
@@ -65,8 +65,8 @@ bool ov_rtp_app_send_to_sockaddr(int sd_to_send_from, ov_rtp_frame const *frame,
                                  struct sockaddr *dest, socklen_t dest_len);
 
 typedef enum {
-  IPV4 = AF_INET,
-  IPV6 = AF_INET6,
+    IPV4 = AF_INET,
+    IPV6 = AF_INET6,
 } ov_ip_version;
 
 bool ov_rtp_app_send_socket(int sd_to_send_from, ov_rtp_frame const *frame,

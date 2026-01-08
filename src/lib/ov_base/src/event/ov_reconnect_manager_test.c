@@ -46,8 +46,8 @@
 
 int prepare() {
 
-  ov_test_ignore_signals();
-  return testrun_log_success();
+    ov_test_ignore_signals();
+    return testrun_log_success();
 }
 
 /******************************************************************************
@@ -56,42 +56,42 @@ int prepare() {
 
 int test_ov_reconnect_manager_create() {
 
-  testrun(0 == ov_reconnect_manager_create(0, 0, 0));
-  testrun(0 == ov_reconnect_manager_create(0, 0, 1));
-  testrun(0 == ov_reconnect_manager_create(0, 0, 2));
-  testrun(0 == ov_reconnect_manager_create(0, 0, SIZE_MAX));
+    testrun(0 == ov_reconnect_manager_create(0, 0, 0));
+    testrun(0 == ov_reconnect_manager_create(0, 0, 1));
+    testrun(0 == ov_reconnect_manager_create(0, 0, 2));
+    testrun(0 == ov_reconnect_manager_create(0, 0, SIZE_MAX));
 
-  ov_event_loop *el = ov_event_loop_default(ov_event_loop_config_default());
+    ov_event_loop *el = ov_event_loop_default(ov_event_loop_config_default());
 
-  testrun(0 != el);
+    testrun(0 != el);
 
-  testrun(0 == ov_reconnect_manager_create(el, 0, 0));
+    testrun(0 == ov_reconnect_manager_create(el, 0, 0));
 
-  ov_reconnect_manager *rm = ov_reconnect_manager_create(el, 0, 1);
+    ov_reconnect_manager *rm = ov_reconnect_manager_create(el, 0, 1);
 
-  testrun(0 != rm);
+    testrun(0 != rm);
 
-  testrun(0 == ov_reconnect_manager_free(rm));
+    testrun(0 == ov_reconnect_manager_free(rm));
 
-  rm = ov_reconnect_manager_create(el, 0, 2);
+    rm = ov_reconnect_manager_create(el, 0, 2);
 
-  testrun(0 != rm);
+    testrun(0 != rm);
 
-  testrun(0 == ov_reconnect_manager_free(rm));
+    testrun(0 == ov_reconnect_manager_free(rm));
 
-  rm = ov_reconnect_manager_create(el, 5, 2);
+    rm = ov_reconnect_manager_create(el, 5, 2);
 
-  testrun(0 != rm);
+    testrun(0 != rm);
 
-  testrun(0 == ov_reconnect_manager_free(rm));
+    testrun(0 == ov_reconnect_manager_free(rm));
 
-  rm = 0;
+    rm = 0;
 
-  testrun(0 == el->free(el));
+    testrun(0 == el->free(el));
 
-  el = 0;
+    el = 0;
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /******************************************************************************
@@ -100,30 +100,30 @@ int test_ov_reconnect_manager_create() {
 
 int test_ov_reconnect_manager_free() {
 
-  testrun(0 == ov_reconnect_manager_free(0));
+    testrun(0 == ov_reconnect_manager_free(0));
 
-  ov_event_loop *el = ov_event_loop_default(ov_event_loop_config_default());
+    ov_event_loop *el = ov_event_loop_default(ov_event_loop_config_default());
 
-  testrun(0 != el);
+    testrun(0 != el);
 
-  testrun(0 == ov_reconnect_manager_create(el, 0, 0));
+    testrun(0 == ov_reconnect_manager_create(el, 0, 0));
 
-  ov_reconnect_manager *rm = ov_reconnect_manager_create(el, 0, 1);
+    ov_reconnect_manager *rm = ov_reconnect_manager_create(el, 0, 1);
 
-  testrun(0 != rm);
+    testrun(0 != rm);
 
-  testrun(0 == ov_reconnect_manager_free(rm));
+    testrun(0 == ov_reconnect_manager_free(rm));
 
-  testrun(0 == el->free(el));
+    testrun(0 == el->free(el));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_reconnect_manager_connect() {
 
-  return ov_reconnect_manager_connect_test(ov_event_loop_default);
+    return ov_reconnect_manager_connect_test(ov_event_loop_default);
 }
 
 /******************************************************************************

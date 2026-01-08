@@ -45,28 +45,28 @@ typedef struct ov_vocs_db_persistance ov_vocs_db_persistance;
 
 typedef struct ov_vocs_db_persistance_config {
 
-  ov_event_loop *loop;
-  ov_vocs_db *db;
-  ov_io *io;
+    ov_event_loop *loop;
+    ov_vocs_db *db;
+    ov_io *io;
 
-  char path[PATH_MAX];
+    char path[PATH_MAX];
 
-  struct {
+    struct {
 
-    bool manager;
-    ov_socket_configuration socket;
+        bool manager;
+        ov_socket_configuration socket;
 
-  } cluster;
+    } cluster;
 
-  struct {
+    struct {
 
-    uint64_t thread_lock_usec;
-    uint64_t ldap_request_usec;
+        uint64_t thread_lock_usec;
+        uint64_t ldap_request_usec;
 
-    uint64_t state_snapshot_seconds;
-    uint64_t auth_snapshot_seconds;
+        uint64_t state_snapshot_seconds;
+        uint64_t auth_snapshot_seconds;
 
-  } timeout;
+    } timeout;
 
 } ov_vocs_db_persistance_config;
 

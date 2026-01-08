@@ -43,22 +43,22 @@
 
 bool ov_stun_attribute_frame_is_priority(const uint8_t *buffer, size_t length) {
 
-  if (!buffer || length < 8)
-    goto error;
+    if (!buffer || length < 8)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != ICE_PRIORITY)
-    goto error;
+    if (type != ICE_PRIORITY)
+        goto error;
 
-  if (size != 4)
-    goto error;
+    if (size != 4)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -66,22 +66,22 @@ error:
 bool ov_stun_attribute_frame_is_use_candidate(const uint8_t *buffer,
                                               size_t length) {
 
-  if (!buffer || length < 4)
-    goto error;
+    if (!buffer || length < 4)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != ICE_USE_CANDIDATE)
-    goto error;
+    if (type != ICE_USE_CANDIDATE)
+        goto error;
 
-  if (size != 0)
-    goto error;
+    if (size != 0)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -89,22 +89,22 @@ error:
 bool ov_stun_attribute_frame_is_ice_controlled(const uint8_t *buffer,
                                                size_t length) {
 
-  if (!buffer || length < 12)
-    goto error;
+    if (!buffer || length < 12)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != ICE_CONTROLLED)
-    goto error;
+    if (type != ICE_CONTROLLED)
+        goto error;
 
-  if (size != 8)
-    goto error;
+    if (size != 8)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -112,22 +112,22 @@ error:
 bool ov_stun_attribute_frame_is_ice_controlling(const uint8_t *buffer,
                                                 size_t length) {
 
-  if (!buffer || length < 12)
-    goto error;
+    if (!buffer || length < 12)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != ICE_CONTROLLING)
-    goto error;
+    if (type != ICE_CONTROLLING)
+        goto error;
 
-  if (size != 8)
-    goto error;
+    if (size != 8)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*
@@ -157,19 +157,19 @@ size_t ov_stun_ice_controlling_encoding_length() { return 12; }
 bool ov_stun_ice_priority_encode(uint8_t *buffer, size_t length, uint8_t **next,
                                  uint32_t priority) {
 
-  if (!buffer || length < 8)
-    goto error;
+    if (!buffer || length < 8)
+        goto error;
 
-  if (!ov_stun_attribute_set_type(buffer, length, ICE_PRIORITY))
-    goto error;
+    if (!ov_stun_attribute_set_type(buffer, length, ICE_PRIORITY))
+        goto error;
 
-  if (!ov_stun_attribute_set_length(buffer, length, 4))
-    goto error;
+    if (!ov_stun_attribute_set_length(buffer, length, 4))
+        goto error;
 
-  return ov_endian_write_uint32_be(buffer + 4, length - 4, next, priority);
+    return ov_endian_write_uint32_be(buffer + 4, length - 4, next, priority);
 
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -177,21 +177,21 @@ error:
 bool ov_stun_ice_priority_decode(const uint8_t *buffer, size_t length,
                                  uint32_t *priority) {
 
-  if (!buffer || length < 8 || !priority)
-    goto error;
+    if (!buffer || length < 8 || !priority)
+        goto error;
 
-  if (!ov_stun_attribute_frame_is_priority(buffer, length))
-    goto error;
+    if (!ov_stun_attribute_frame_is_priority(buffer, length))
+        goto error;
 
-  if (ov_endian_read_uint32_be(buffer + 4, length - 4, priority))
+    if (ov_endian_read_uint32_be(buffer + 4, length - 4, priority))
+        return true;
+
     return true;
 
-  return true;
-
 error:
-  if (priority)
-    *priority = 0;
-  return false;
+    if (priority)
+        *priority = 0;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -199,21 +199,21 @@ error:
 bool ov_stun_ice_use_candidate_encode(uint8_t *buffer, size_t length,
                                       uint8_t **next) {
 
-  if (!buffer || length < 4)
-    goto error;
+    if (!buffer || length < 4)
+        goto error;
 
-  if (!ov_stun_attribute_set_type(buffer, length, ICE_USE_CANDIDATE))
-    goto error;
+    if (!ov_stun_attribute_set_type(buffer, length, ICE_USE_CANDIDATE))
+        goto error;
 
-  if (!ov_stun_attribute_set_length(buffer, length, 0))
-    goto error;
+    if (!ov_stun_attribute_set_length(buffer, length, 0))
+        goto error;
 
-  if (next)
-    *next = buffer + 4;
+    if (next)
+        *next = buffer + 4;
 
-  return true;
+    return true;
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -221,18 +221,18 @@ error:
 bool ov_stun_ice_controlled_encode(uint8_t *buffer, size_t length,
                                    uint8_t **next, uint64_t number) {
 
-  if (!buffer || length < 12)
-    goto error;
+    if (!buffer || length < 12)
+        goto error;
 
-  if (!ov_stun_attribute_set_type(buffer, length, ICE_CONTROLLED))
-    goto error;
+    if (!ov_stun_attribute_set_type(buffer, length, ICE_CONTROLLED))
+        goto error;
 
-  if (!ov_stun_attribute_set_length(buffer, length, 8))
-    goto error;
+    if (!ov_stun_attribute_set_length(buffer, length, 8))
+        goto error;
 
-  return ov_endian_write_uint64_be(buffer + 4, length - 4, next, number);
+    return ov_endian_write_uint64_be(buffer + 4, length - 4, next, number);
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -240,19 +240,19 @@ error:
 bool ov_stun_ice_controlled_decode(const uint8_t *buffer, size_t length,
                                    uint64_t *number) {
 
-  if (!buffer || length < 12 || !number)
-    goto error;
+    if (!buffer || length < 12 || !number)
+        goto error;
 
-  if (!ov_stun_attribute_frame_is_ice_controlled(buffer, length))
-    goto error;
+    if (!ov_stun_attribute_frame_is_ice_controlled(buffer, length))
+        goto error;
 
-  if (ov_endian_read_uint64_be(buffer + 4, length - 4, number))
-    return true;
+    if (ov_endian_read_uint64_be(buffer + 4, length - 4, number))
+        return true;
 
 error:
-  if (number)
-    *number = 0;
-  return false;
+    if (number)
+        *number = 0;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -260,18 +260,18 @@ error:
 bool ov_stun_ice_controlling_encode(uint8_t *buffer, size_t length,
                                     uint8_t **next, uint64_t number) {
 
-  if (!buffer || length < 12)
-    goto error;
+    if (!buffer || length < 12)
+        goto error;
 
-  if (!ov_stun_attribute_set_type(buffer, length, ICE_CONTROLLING))
-    goto error;
+    if (!ov_stun_attribute_set_type(buffer, length, ICE_CONTROLLING))
+        goto error;
 
-  if (!ov_stun_attribute_set_length(buffer, length, 8))
-    goto error;
+    if (!ov_stun_attribute_set_length(buffer, length, 8))
+        goto error;
 
-  return ov_endian_write_uint64_be(buffer + 4, length - 4, next, number);
+    return ov_endian_write_uint64_be(buffer + 4, length - 4, next, number);
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -279,19 +279,19 @@ error:
 bool ov_stun_ice_controlling_decode(const uint8_t *buffer, size_t length,
                                     uint64_t *number) {
 
-  if (!buffer || length < 12 || !number)
-    goto error;
+    if (!buffer || length < 12 || !number)
+        goto error;
 
-  if (!ov_stun_attribute_frame_is_ice_controlling(buffer, length))
-    goto error;
+    if (!ov_stun_attribute_frame_is_ice_controlling(buffer, length))
+        goto error;
 
-  if (ov_endian_read_uint64_be(buffer + 4, length - 4, number))
-    return true;
+    if (ov_endian_read_uint64_be(buffer + 4, length - 4, number))
+        return true;
 
 error:
-  if (number)
-    *number = 0;
-  return false;
+    if (number)
+        *number = 0;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -299,8 +299,8 @@ error:
 bool ov_stun_error_code_set_ice_role_conflict(uint8_t *buffer, size_t length,
                                               uint8_t **next) {
 
-  char *phrase = "role conflict";
+    char *phrase = "role conflict";
 
-  return ov_stun_error_code_encode(buffer, length, next, ICE_ROLE_CONFLICT,
-                                   (uint8_t *)phrase, strlen(phrase));
+    return ov_stun_error_code_encode(buffer, length, next, ICE_ROLE_CONFLICT,
+                                     (uint8_t *)phrase, strlen(phrase));
 }

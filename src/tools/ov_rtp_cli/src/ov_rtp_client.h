@@ -46,8 +46,8 @@ typedef struct ov_rtp_client ov_rtp_client;
 
 typedef enum operation_mode {
 
-  SEND,
-  RECEIVE
+    SEND,
+    RECEIVE
 
 } operation_mode;
 
@@ -60,25 +60,25 @@ typedef enum operation_mode {
  */
 typedef struct ov_rtp_client_parameters {
 
-  operation_mode mode;
+    operation_mode mode;
 
-  bool debug : 1;
+    bool debug : 1;
 
-  char const *multicast_group;
+    char const *multicast_group;
 
-  char const *local_if;
-  uint16_t local_port;
-  char const *remote_if;
-  uint16_t remote_port;
+    char const *local_if;
+    uint16_t local_port;
+    char const *remote_if;
+    uint16_t remote_port;
 
-  int64_t max_jitter_usec;
-  uint32_t ssrc_id;
+    int64_t max_jitter_usec;
+    uint32_t ssrc_id;
 
-  uint8_t payload_type;
+    uint8_t payload_type;
 
-  uint16_t sequence_number;
+    uint16_t sequence_number;
 
-  char const *sdes;
+    char const *sdes;
 
 } ov_rtp_client_parameters;
 
@@ -90,25 +90,25 @@ typedef struct ov_rtp_client_parameters {
  */
 typedef struct ov_rtp_client_audio_parameters {
 
-  ov_pcm_gen_config general_config;
-
-  struct {
-    struct {
-      int type;
-      union {
-        ov_pcm_gen_sinusoids sinusoids;
-        ov_pcm_gen_from_file file;
-        ov_pcm_gen_pulse pulse;
-      };
-    } send;
+    ov_pcm_gen_config general_config;
 
     struct {
+        struct {
+            int type;
+            union {
+                ov_pcm_gen_sinusoids sinusoids;
+                ov_pcm_gen_from_file file;
+                ov_pcm_gen_pulse pulse;
+            };
+        } send;
 
-      char const *file_name; /* if 0, use pa_server */
-      char const *pa_server; /* if 0, use default server */
-    } receive;
-  };
-  char const *codec_name;
+        struct {
+
+            char const *file_name; /* if 0, use pa_server */
+            char const *pa_server; /* if 0, use default server */
+        } receive;
+    };
+    char const *codec_name;
 
 } ov_rtp_client_audio_parameters;
 
@@ -116,64 +116,65 @@ typedef struct ov_rtp_client_audio_parameters {
 
 struct ov_rtp_client {
 
-  operation_mode mode;
+    operation_mode mode;
 
-  union {
-    struct send_t {
-      struct sockaddr *dest_sockaddr;
-      socklen_t dest_sockaddr_len;
+    union {
+        struct send_t {
+            struct sockaddr *dest_sockaddr;
+            socklen_t dest_sockaddr_len;
 
-      ov_pcm_gen *pcm_generator;
+            ov_pcm_gen *pcm_generator;
 
-      int64_t max_jitter_usec;
-      uint32_t ssrc_id;
-      uint8_t payload_type;
-      uint16_t sequence_number;
+            int64_t max_jitter_usec;
+            uint32_t ssrc_id;
+            uint8_t payload_type;
+            uint16_t sequence_number;
 
-      struct sockaddr *rtcp_dest_sockaddr;
-      socklen_t rtcp_dest_sockaddr_len;
+            struct sockaddr *rtcp_dest_sockaddr;
+            socklen_t rtcp_dest_sockaddr_len;
 
-      bool first_frame;
+            bool first_frame;
 
-      size_t sdes_count;
+            size_t sdes_count;
 
-      char const *sdes;
+            char const *sdes;
 
-    } send;
+        } send;
 
-    struct receive_t {
+        struct receive_t {
 
-      struct {
-        int fd;
-        ov_buffer *encode_buffer;
-        ov_codec *codec;
-      } file;
+            struct {
+                int fd;
+                ov_buffer *encode_buffer;
+                ov_codec *codec;
+            } file;
 
-      ov_pulse_context *pulse_context; /* If 0, out to file */
+            ov_pulse_context *pulse_context; /* If 0, out to file */
 
-      /**
-       * Processed PCM data received via RTP.
-       * @return number of samples in buffer.
-       */
-      size_t (*output_pcm)(ov_rtp_client *, uint8_t *pcm, size_t length_bytes);
-      uint16_t last_sequence_number;
-    } receive;
-  };
+            /**
+             * Processed PCM data received via RTP.
+             * @return number of samples in buffer.
+             */
+            size_t (*output_pcm)(ov_rtp_client *, uint8_t *pcm,
+                                 size_t length_bytes);
+            uint16_t last_sequence_number;
+        } receive;
+    };
 
-  struct {
-    bool debug : 1;
-  };
+    struct {
+        bool debug : 1;
+    };
 
-  ov_rtp_client_audio_parameters audio;
+    ov_rtp_client_audio_parameters audio;
 
-  int udp_socket;
-  int rtcp_socket;
+    int udp_socket;
+    int rtcp_socket;
 
-  ov_codec *codec; /* Codec for encoding/decoding RTP payload */
+    ov_codec *codec; /* Codec for encoding/decoding RTP payload */
 
-  ov_event_loop *event;
+    ov_event_loop *event;
 
-  bool (*io_handler)(int socket_fd, uint8_t events, void *userdata);
+    bool (*io_handler)(int socket_fd, uint8_t events, void *userdata);
 };
 
 /*----------------------------------------------------------------------------*/

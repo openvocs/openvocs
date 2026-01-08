@@ -91,8 +91,8 @@
 
 typedef enum ov_vocs_db_scope {
 
-  OV_VOCS_DB_SCOPE_DOMAIN = 0,
-  OV_VOCS_DB_SCOPE_PROJECT = 1
+    OV_VOCS_DB_SCOPE_DOMAIN = 0,
+    OV_VOCS_DB_SCOPE_PROJECT = 1
 
 } ov_vocs_db_scope;
 
@@ -100,8 +100,8 @@ typedef enum ov_vocs_db_scope {
 
 typedef struct ov_vocs_db_parent {
 
-  ov_vocs_db_scope scope;
-  char *id;
+    ov_vocs_db_scope scope;
+    char *id;
 
 } ov_vocs_db_parent;
 
@@ -109,8 +109,8 @@ typedef struct ov_vocs_db_parent {
 
 typedef enum ov_vocs_db_type {
 
-  OV_VOCS_DB_TYPE_AUTH = 0,
-  OV_VOCS_DB_TYPE_STATE = 1
+    OV_VOCS_DB_TYPE_AUTH = 0,
+    OV_VOCS_DB_TYPE_STATE = 1
 
 } ov_vocs_db_type;
 
@@ -118,12 +118,12 @@ typedef enum ov_vocs_db_type {
 
 typedef enum ov_vocs_db_entity {
 
-  OV_VOCS_DB_ENTITY_ERROR = -1,
-  OV_VOCS_DB_DOMAIN = 0,
-  OV_VOCS_DB_PROJECT = 1,
-  OV_VOCS_DB_LOOP = 2,
-  OV_VOCS_DB_ROLE = 3,
-  OV_VOCS_DB_USER = 4
+    OV_VOCS_DB_ENTITY_ERROR = -1,
+    OV_VOCS_DB_DOMAIN = 0,
+    OV_VOCS_DB_PROJECT = 1,
+    OV_VOCS_DB_LOOP = 2,
+    OV_VOCS_DB_ROLE = 3,
+    OV_VOCS_DB_USER = 4
 
 } ov_vocs_db_entity;
 
@@ -135,20 +135,20 @@ typedef struct ov_vocs_db ov_vocs_db;
 
 typedef struct ov_vocs_db_config {
 
-  struct {
+    struct {
 
-    uint64_t thread_lock_usec;
+        uint64_t thread_lock_usec;
 
-  } timeout;
+    } timeout;
 
-  struct {
+    struct {
 
-    ov_password_hash_parameter params;
-    size_t length;
+        ov_password_hash_parameter params;
+        size_t length;
 
-  } password;
+    } password;
 
-  ov_event_trigger *trigger;
+    ov_event_trigger *trigger;
 
 } ov_vocs_db_config;
 

@@ -40,8 +40,8 @@ typedef struct ov_event_connection ov_event_connection;
 
 typedef struct ov_event_connection_config {
 
-  int socket;
-  ov_event_parameter params;
+    int socket;
+    ov_event_parameter params;
 
 } ov_event_connection_config;
 

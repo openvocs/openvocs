@@ -62,62 +62,62 @@ typedef struct ov_list_config ov_list_config;
 
 struct ov_list_config {
 
-  ov_data_function item;
+    ov_data_function item;
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct ov_list {
 
-  uint16_t magic_byte;
-  uint16_t type;
+    uint16_t magic_byte;
+    uint16_t type;
 
-  ov_list_config config;
+    ov_list_config config;
 
-  bool (*is_empty)(const ov_list *self);
+    bool (*is_empty)(const ov_list *self);
 
-  bool (*clear)(ov_list *self);
-  /* Returns self on ERROR, NULL on SUCCESS */
-  ov_list *(*free)(ov_list *self);
+    bool (*clear)(ov_list *self);
+    /* Returns self on ERROR, NULL on SUCCESS */
+    ov_list *(*free)(ov_list *self);
 
-  /* Returns pointer to destination on success, NULL otherwise */
-  ov_list *(*copy)(const ov_list *self, ov_list *destination);
+    /* Returns pointer to destination on success, NULL otherwise */
+    ov_list *(*copy)(const ov_list *self, ov_list *destination);
 
-  /* GET position of item within list, returns 0 on error */
-  size_t (*get_pos)(const ov_list *self, const void *item);
+    /* GET position of item within list, returns 0 on error */
+    size_t (*get_pos)(const ov_list *self, const void *item);
 
-  /* GET returns list item at pos FIRST item is at pos 1*/
-  void *(*get)(ov_list *self, size_t pos);
-  /* SET returns any previously set old_item over the replaced pointer */
-  bool (*set)(ov_list *self, size_t pos, void *item, void **replaced);
+    /* GET returns list item at pos FIRST item is at pos 1*/
+    void *(*get)(ov_list *self, size_t pos);
+    /* SET returns any previously set old_item over the replaced pointer */
+    bool (*set)(ov_list *self, size_t pos, void *item, void **replaced);
 
-  /* INSERT will move all following items to pos + 1 */
-  bool (*insert)(ov_list *self, size_t pos, void *item);
-  /* REMOVE will return a removed element, NULL on error, all following
-   * will move pos - 1*/
-  void *(*remove)(ov_list *self, size_t pos);
+    /* INSERT will move all following items to pos + 1 */
+    bool (*insert)(ov_list *self, size_t pos, void *item);
+    /* REMOVE will return a removed element, NULL on error, all following
+     * will move pos - 1*/
+    void *(*remove)(ov_list *self, size_t pos);
 
-  bool (*push)(ov_list *self, void *item);
-  void *(*pop)(ov_list *self);
+    bool (*push)(ov_list *self, void *item);
+    void *(*pop)(ov_list *self);
 
-  size_t (*count)(const ov_list *self);
+    size_t (*count)(const ov_list *self);
 
-  bool (*for_each)(ov_list *self, void *data,
-                   bool (*function)(void *item, void *data));
+    bool (*for_each)(ov_list *self, void *data,
+                     bool (*function)(void *item, void *data));
 
-  /**
-   * @return an iterator pointing at the front of the list. To be used
-   * with next. Becomes invalid if list is modified.
-   */
-  void *(*iter)(ov_list *self);
+    /**
+     * @return an iterator pointing at the front of the list. To be used
+     * with next. Becomes invalid if list is modified.
+     */
+    void *(*iter)(ov_list *self);
 
-  /**
-   * @param iter an iterator retrieved with e.g. ov_llist->iter.
-   * @param element receives a pointer to the element iter currently
-   * points at
-   * @return updated iterator
-   */
-  void *(*next)(ov_list *self, void *iter, void **element);
+    /**
+     * @param iter an iterator retrieved with e.g. ov_llist->iter.
+     * @param element receives a pointer to the element iter currently
+     * points at
+     * @return updated iterator
+     */
+    void *(*next)(ov_list *self, void *iter, void **element);
 };
 
 /*
@@ -188,7 +188,7 @@ ov_list *ov_list_set_magic_bytes(ov_list *list);
 
 typedef struct ov_list_default_implementations {
 
-  ov_list *(*copy)(const ov_list *self, ov_list *destination);
+    ov_list *(*copy)(const ov_list *self, ov_list *destination);
 
 } ov_list_default_implementations;
 

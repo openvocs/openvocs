@@ -31,39 +31,39 @@
 
 bool ov_counter_reset(ov_counter *self) {
 
-  if (ov_ptr_valid(self, "Cannot initialize counter - invalid counter")) {
+    if (ov_ptr_valid(self, "Cannot initialize counter - invalid counter")) {
 
-    memset(self, 0, sizeof(*self));
-    self->since_usecs = ov_time_get_current_time_usecs();
-    return true;
-  } else {
-    return false;
-  }
+        memset(self, 0, sizeof(*self));
+        self->since_usecs = ov_time_get_current_time_usecs();
+        return true;
+    } else {
+        return false;
+    }
 }
 
 /*----------------------------------------------------------------------------*/
 
 double ov_counter_average_per_sec(ov_counter counter) {
 
-  double timediff_msecs =
-      ov_time_get_current_time_usecs() - counter.since_usecs;
-  timediff_msecs /= 1000;
-  double inverse_timediff_msecs = 1.0f / timediff_msecs;
-  double average = counter.counter;
-  return average * inverse_timediff_msecs * 1000.0;
+    double timediff_msecs =
+        ov_time_get_current_time_usecs() - counter.since_usecs;
+    timediff_msecs /= 1000;
+    double inverse_timediff_msecs = 1.0f / timediff_msecs;
+    double average = counter.counter;
+    return average * inverse_timediff_msecs * 1000.0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_counter_to_json(ov_counter self) {
 
-  ov_json_value *jval = ov_json_object();
+    ov_json_value *jval = ov_json_object();
 
-  ov_json_object_set(jval, OV_KEY_COUNT, ov_json_number(self.counter));
-  ov_json_object_set(jval, OV_KEY_AVERAGE_PER_SEC,
-                     ov_json_number(ov_counter_average_per_sec(self)));
+    ov_json_object_set(jval, OV_KEY_COUNT, ov_json_number(self.counter));
+    ov_json_object_set(jval, OV_KEY_AVERAGE_PER_SEC,
+                       ov_json_number(ov_counter_average_per_sec(self)));
 
-  return jval;
+    return jval;
 }
 
 /*----------------------------------------------------------------------------*/

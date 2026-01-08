@@ -32,73 +32,73 @@
 
 static void *run_loop(void *varg) {
 
-  ov_event_loop *loop = varg;
+    ov_event_loop *loop = varg;
 
-  OV_ASSERT(0 != loop);
+    OV_ASSERT(0 != loop);
 
-  loop->run(loop, UINT64_MAX);
+    loop->run(loop, UINT64_MAX);
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_test_event_loop_run_in_thread(ov_event_loop *loop, pthread_t *tid) {
 
-  if (0 == loop)
-    return false;
+    if (0 == loop)
+        return false;
 
-  OV_ASSERT(0 != loop);
+    OV_ASSERT(0 != loop);
 
-  if (0 != pthread_create(tid, 0, run_loop, loop)) {
+    if (0 != pthread_create(tid, 0, run_loop, loop)) {
 
-    testrun_log_error("Could not start loop thread");
+        testrun_log_error("Could not start loop thread");
 
-    return false;
-  }
+        return false;
+    }
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_test_event_loop_stop_thread(ov_event_loop *loop, pthread_t tid) {
 
-  if (0 == loop)
-    return false;
+    if (0 == loop)
+        return false;
 
-  OV_ASSERT(0 != loop);
+    OV_ASSERT(0 != loop);
 
-  loop->stop(loop);
+    loop->stop(loop);
 
-  void *retval = 0;
+    void *retval = 0;
 
-  if (0 != pthread_join(tid, &retval)) {
+    if (0 != pthread_join(tid, &retval)) {
 
-    testrun_log_error("Could not stop loop thread");
-    abort();
+        testrun_log_error("Could not stop loop thread");
+        abort();
 
-  } else {
+    } else {
 
-    ov_log_info("Stopped loop thread");
-  }
+        ov_log_info("Stopped loop thread");
+    }
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_test_event_loop_run_for_secs(ov_event_loop *loop, unsigned int secs) {
 
-  if (0 == loop)
-    return false;
+    if (0 == loop)
+        return false;
 
-  pthread_t minions_loop_tid;
-  ov_test_event_loop_run_in_thread(loop, &minions_loop_tid);
+    pthread_t minions_loop_tid;
+    ov_test_event_loop_run_in_thread(loop, &minions_loop_tid);
 
-  sleep(secs);
+    sleep(secs);
 
-  return ov_test_event_loop_stop_thread(loop, minions_loop_tid);
+    return ov_test_event_loop_stop_thread(loop, minions_loop_tid);
 }
 
 /*----------------------------------------------------------------------------*/

@@ -40,7 +40,7 @@ typedef struct ov_mc_backend_sip_registry ov_mc_backend_sip_registry;
 
 typedef struct ov_mc_backend_sip_registry_config {
 
-  bool debug;
+    bool debug;
 
 } ov_mc_backend_sip_registry_config;
 

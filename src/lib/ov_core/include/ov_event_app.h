@@ -35,19 +35,19 @@ typedef struct ov_event_app ov_event_app;
 
 typedef struct ov_event_app_config {
 
-  ov_io *io;
+    ov_io *io;
 
-  struct {
+    struct {
 
-    /* Socket level callbacks for non IO messages (if required) */
+        /* Socket level callbacks for non IO messages (if required) */
 
-    void *userdata;
+        void *userdata;
 
-    bool (*accept)(void *userdata, int listener, int connection);
-    void (*close)(void *userdata, int connection);
-    void (*connected)(void *userdata, int connection);
+        bool (*accept)(void *userdata, int listener, int connection);
+        void (*close)(void *userdata, int connection);
+        void (*connected)(void *userdata, int connection);
 
-  } callbacks;
+    } callbacks;
 
 } ov_event_app_config;
 

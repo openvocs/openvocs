@@ -40,19 +40,19 @@ typedef struct ov_mc_frontend_registry ov_mc_frontend_registry;
 
 typedef struct ov_mc_frontend_registry_config {
 
-  bool debug;
-
-  struct {
-
-    void *userdata;
+    bool debug;
 
     struct {
 
-      void (*drop)(void *userdata, const char *uuid);
+        void *userdata;
 
-    } session;
+        struct {
 
-  } callback;
+            void (*drop)(void *userdata, const char *uuid);
+
+        } session;
+
+    } callback;
 
 } ov_mc_frontend_registry_config;
 

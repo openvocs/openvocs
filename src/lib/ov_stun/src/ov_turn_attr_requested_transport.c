@@ -31,25 +31,25 @@
 
 bool ov_turn_attr_is_requested_transport(const uint8_t *buffer, size_t length) {
 
-  if (!buffer || length < 8)
-    goto error;
+    if (!buffer || length < 8)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != TURN_REQUESTED_TRANSPORT)
-    goto error;
+    if (type != TURN_REQUESTED_TRANSPORT)
+        goto error;
 
-  if (size != 4)
-    goto error;
+    if (size != 4)
+        goto error;
 
-  if (length < (size_t)size + 4)
-    goto error;
+    if (length < (size_t)size + 4)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*
@@ -67,21 +67,21 @@ size_t ov_turn_attr_requested_transport_encoding_length() { return 8; }
 bool ov_turn_attr_requested_transport_encode(uint8_t *buffer, size_t length,
                                              uint8_t **next, uint8_t protocol) {
 
-  if (!buffer)
-    goto error;
+    if (!buffer)
+        goto error;
 
-  size_t len = ov_turn_attr_requested_transport_encoding_length();
+    size_t len = ov_turn_attr_requested_transport_encoding_length();
 
-  if (length < len)
-    goto error;
+    if (length < len)
+        goto error;
 
-  uint8_t buf[4] = {0};
-  buf[0] = protocol;
+    uint8_t buf[4] = {0};
+    buf[0] = protocol;
 
-  return ov_stun_attribute_encode(buffer, length, next,
-                                  TURN_REQUESTED_TRANSPORT, buf, 4);
+    return ov_stun_attribute_encode(buffer, length, next,
+                                    TURN_REQUESTED_TRANSPORT, buf, 4);
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -89,14 +89,14 @@ error:
 bool ov_turn_attr_requested_transport_decode(const uint8_t *buffer,
                                              size_t length, uint8_t *protocol) {
 
-  if (!buffer || length < 8 || !protocol)
-    goto error;
+    if (!buffer || length < 8 || !protocol)
+        goto error;
 
-  if (!ov_turn_attr_is_requested_transport(buffer, length))
-    goto error;
+    if (!ov_turn_attr_is_requested_transport(buffer, length))
+        goto error;
 
-  *protocol = buffer[4];
-  return true;
+    *protocol = buffer[4];
+    return true;
 error:
-  return false;
+    return false;
 }

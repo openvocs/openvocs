@@ -40,24 +40,24 @@
 extern ov_event_loop *(*event_loop_creator)(ov_event_loop_config config);
 
 #define OV_EVENT_LOOP_PERFORM_INTERFACE_TESTS(create)                          \
-  do {                                                                         \
+    do {                                                                       \
                                                                                \
-    event_loop_creator = create;                                               \
+        event_loop_creator = create;                                           \
                                                                                \
-    testrun_log("test_interface will run for several seconds "                 \
-                "!!!");                                                        \
-    testrun_test(test_impl_event_loop_free);                                   \
-    testrun_test(test_impl_event_loop_is_running);                             \
-    testrun_test(test_impl_event_loop_stop);                                   \
-    testrun_test(test_impl_event_loop_run);                                    \
+        testrun_log("test_interface will run for several seconds "             \
+                    "!!!");                                                    \
+        testrun_test(test_impl_event_loop_free);                               \
+        testrun_test(test_impl_event_loop_is_running);                         \
+        testrun_test(test_impl_event_loop_stop);                               \
+        testrun_test(test_impl_event_loop_run);                                \
                                                                                \
-    testrun_test(test_impl_event_loop_callback_set);                           \
-    testrun_test(test_impl_event_loop_callback_unset);                         \
+        testrun_test(test_impl_event_loop_callback_set);                       \
+        testrun_test(test_impl_event_loop_callback_unset);                     \
                                                                                \
-    testrun_test(test_impl_event_loop_timer_set);                              \
-    testrun_test(test_impl_event_loop_timer_unset);                            \
+        testrun_test(test_impl_event_loop_timer_set);                          \
+        testrun_test(test_impl_event_loop_timer_unset);                        \
                                                                                \
-  } while (0)
+    } while (0)
 
 /*
  *      ------------------------------------------------------------------------

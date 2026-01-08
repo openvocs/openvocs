@@ -45,27 +45,27 @@ typedef struct ov_ice_proxy_vocs ov_ice_proxy_vocs;
 
 typedef struct ov_ice_proxy_vocs_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  bool multiplexing;
+    bool multiplexing;
 
-  struct {
+    struct {
 
-    ov_socket_configuration internal;
+        ov_socket_configuration internal;
 
-  } socket;
+    } socket;
 
-  ov_ice_proxy_generic_config proxy;
+    ov_ice_proxy_generic_config proxy;
 
-  struct {
+    struct {
 
-    void *userdata;
-    bool (*send_candidate)(void *userdata, ov_json_value *out);
-    bool (*send_end_of_candidates)(void *userdata, const char *session_id);
-    bool (*session_completed)(void *userdata, const char *uuid,
-                              ov_ice_state state);
+        void *userdata;
+        bool (*send_candidate)(void *userdata, ov_json_value *out);
+        bool (*send_end_of_candidates)(void *userdata, const char *session_id);
+        bool (*session_completed)(void *userdata, const char *uuid,
+                                  ov_ice_state state);
 
-  } callback;
+    } callback;
 
 } ov_ice_proxy_vocs_config;
 

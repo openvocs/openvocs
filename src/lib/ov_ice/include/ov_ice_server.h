@@ -42,8 +42,8 @@ typedef struct ov_ice_server ov_ice_server;
 
 typedef enum {
 
-  OV_ICE_STUN_SERVER = 0,
-  OV_ICE_TURN_SERVER = 1
+    OV_ICE_STUN_SERVER = 0,
+    OV_ICE_TURN_SERVER = 1
 
 } ov_ice_server_type;
 
@@ -51,30 +51,30 @@ typedef enum {
 
 struct ov_ice_server {
 
-  ov_node node;
-  ov_ice_server_type type;
-  ov_event_loop *loop;
+    ov_node node;
+    ov_ice_server_type type;
+    ov_event_loop *loop;
 
-  ov_socket_configuration socket;
+    ov_socket_configuration socket;
 
-  struct {
+    struct {
 
-    char user[OV_ICE_STUN_USER_MAX];
-    char pass[OV_ICE_STUN_PASS_MAX];
+        char user[OV_ICE_STUN_USER_MAX];
+        char pass[OV_ICE_STUN_PASS_MAX];
 
-  } auth;
+    } auth;
 
-  struct {
+    struct {
 
-    uint64_t keepalive_time_usecs;
+        uint64_t keepalive_time_usecs;
 
-  } limits;
+    } limits;
 
-  struct {
+    struct {
 
-    uint32_t keepalive;
+        uint32_t keepalive;
 
-  } timer;
+    } timer;
 };
 
 /*

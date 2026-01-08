@@ -44,34 +44,34 @@ typedef struct ov_ice_session ov_ice_session;
 
 struct ov_ice_session {
 
-  ov_node node;
-  ov_id uuid;
+    ov_node node;
+    ov_id uuid;
 
-  ov_ice_state state;
-  bool controlling;
-  bool nominate_started;
-  bool trickling_started;
+    ov_ice_state state;
+    bool controlling;
+    bool nominate_started;
+    bool trickling_started;
 
-  uint64_t tiebreaker;
+    uint64_t tiebreaker;
 
-  ov_ice *ice;
+    ov_ice *ice;
 
-  struct {
+    struct {
 
-    srtp_t session;
+        srtp_t session;
 
-  } srtp;
+    } srtp;
 
-  struct {
+    struct {
 
-    uint32_t session_timeout;
-    uint32_t nominate_timeout;
-    uint32_t trickling;
-    uint32_t connectivity;
+        uint32_t session_timeout;
+        uint32_t nominate_timeout;
+        uint32_t trickling;
+        uint32_t connectivity;
 
-  } timer;
+    } timer;
 
-  ov_ice_stream *streams;
+    ov_ice_stream *streams;
 };
 
 /*

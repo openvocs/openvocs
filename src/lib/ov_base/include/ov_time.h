@@ -47,33 +47,33 @@
 #include "ov_json.h"
 
 typedef enum ov_time_scope {
-  TIME_SCOPE_YEAR,
-  TIME_SCOPE_MONTH,
-  TIME_SCOPE_DAY,
-  TIME_SCOPE_HOUR,
-  TIME_SCOPE_MINUTE,
-  TIME_SCOPE_SECOND,
-  TIME_SCOPE_MILLISECOND,
-  TIME_SCOPE_MICROSECOND
+    TIME_SCOPE_YEAR,
+    TIME_SCOPE_MONTH,
+    TIME_SCOPE_DAY,
+    TIME_SCOPE_HOUR,
+    TIME_SCOPE_MINUTE,
+    TIME_SCOPE_SECOND,
+    TIME_SCOPE_MILLISECOND,
+    TIME_SCOPE_MICROSECOND
 } ov_time_scope_t;
 
 /*----------------------------------------------------------------------------*/
 
 typedef enum ov_time_unit {
-  SEC = 1,
-  USEC,
+    SEC = 1,
+    USEC,
 } ov_time_unit;
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-  uint16_t year;
-  uint8_t month;
-  uint8_t day;
-  uint8_t hour;
-  uint8_t minute;
-  uint8_t second;
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
 
 } ov_time;
 

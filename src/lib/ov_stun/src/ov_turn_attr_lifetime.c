@@ -31,24 +31,24 @@
 
 bool ov_turn_attr_is_lifetime(const uint8_t *buffer, size_t length) {
 
-  if (!buffer || length < 8)
-    goto error;
+    if (!buffer || length < 8)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != TURN_LIFETIME)
-    goto error;
+    if (type != TURN_LIFETIME)
+        goto error;
 
-  if (size != 4)
-    goto error;
+    if (size != 4)
+        goto error;
 
-  if (length < (size_t)size + 4)
-    goto error;
+    if (length < (size_t)size + 4)
+        goto error;
 
-  return true;
+    return true;
 error:
-  return false;
+    return false;
 }
 
 /*
@@ -66,23 +66,24 @@ size_t ov_turn_attr_lifetime_encoding_length() { return 8; }
 bool ov_turn_attr_lifetime_encode(uint8_t *buffer, size_t length,
                                   uint8_t **next, uint32_t number) {
 
-  if (!buffer)
-    goto error;
+    if (!buffer)
+        goto error;
 
-  size_t len = ov_turn_attr_lifetime_encoding_length();
+    size_t len = ov_turn_attr_lifetime_encoding_length();
 
-  if (length < len)
-    goto error;
+    if (length < len)
+        goto error;
 
-  uint8_t buf[4] = {0};
-  buf[0] = number >> 24;
-  buf[1] = number >> 16;
-  buf[2] = number >> 8;
-  buf[3] = number;
+    uint8_t buf[4] = {0};
+    buf[0] = number >> 24;
+    buf[1] = number >> 16;
+    buf[2] = number >> 8;
+    buf[3] = number;
 
-  return ov_stun_attribute_encode(buffer, length, next, TURN_LIFETIME, buf, 4);
+    return ov_stun_attribute_encode(buffer, length, next, TURN_LIFETIME, buf,
+                                    4);
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -90,21 +91,21 @@ error:
 bool ov_turn_attr_lifetime_decode(const uint8_t *buffer, size_t length,
                                   uint32_t *number) {
 
-  if (!buffer || length < 8 || !number)
-    goto error;
+    if (!buffer || length < 8 || !number)
+        goto error;
 
-  if (!ov_turn_attr_is_lifetime(buffer, length))
-    goto error;
+    if (!ov_turn_attr_is_lifetime(buffer, length))
+        goto error;
 
-  uint32_t num = 0;
+    uint32_t num = 0;
 
-  num = buffer[7];
-  num += (buffer[6] << 8);
-  num += (buffer[5] << 16);
-  num += (buffer[4] << 24);
+    num = buffer[7];
+    num += (buffer[6] << 8);
+    num += (buffer[5] << 16);
+    num += (buffer[4] << 24);
 
-  *number = num;
-  return true;
+    *number = num;
+    return true;
 error:
-  return false;
+    return false;
 }

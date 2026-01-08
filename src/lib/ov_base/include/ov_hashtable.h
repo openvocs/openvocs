@@ -142,10 +142,10 @@ typedef struct ov_hashtable_struct ov_hashtable;
 
 typedef struct {
 
-  void (*key_free)(void *key);
-  void *(*key_copy)(const void *key);
-  int (*key_cmp)(const void *key, const void *value);
-  uint64_t (*hash)(const void *);
+    void (*key_free)(void *key);
+    void *(*key_copy)(const void *key);
+    int (*key_cmp)(const void *key, const void *value);
+    uint64_t (*hash)(const void *);
 
 } ov_hashtable_funcs;
 

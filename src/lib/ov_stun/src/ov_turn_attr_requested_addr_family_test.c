@@ -40,107 +40,111 @@
 
 int test_ov_turn_attr_is_requested_addr_family() {
 
-  uint8_t buffer[100] = {0};
+    uint8_t buffer[100] = {0};
 
-  testrun(!ov_turn_attr_is_requested_addr_family(NULL, 10));
-  testrun(!ov_turn_attr_is_requested_addr_family(buffer, 0));
-  testrun(!ov_turn_attr_is_requested_addr_family(buffer, 7));
-  testrun(!ov_turn_attr_is_requested_addr_family(buffer, 10));
+    testrun(!ov_turn_attr_is_requested_addr_family(NULL, 10));
+    testrun(!ov_turn_attr_is_requested_addr_family(buffer, 0));
+    testrun(!ov_turn_attr_is_requested_addr_family(buffer, 7));
+    testrun(!ov_turn_attr_is_requested_addr_family(buffer, 10));
 
-  testrun(ov_stun_attribute_set_type(buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY));
-  testrun(ov_stun_attribute_set_length(buffer, 4, 4));
-  testrun(ov_turn_attr_is_requested_addr_family(buffer, 100));
-  testrun(ov_turn_attr_is_requested_addr_family(buffer, 9));
-  testrun(ov_turn_attr_is_requested_addr_family(buffer, 8));
-  testrun(!ov_turn_attr_is_requested_addr_family(buffer, 7));
+    testrun(
+        ov_stun_attribute_set_type(buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY));
+    testrun(ov_stun_attribute_set_length(buffer, 4, 4));
+    testrun(ov_turn_attr_is_requested_addr_family(buffer, 100));
+    testrun(ov_turn_attr_is_requested_addr_family(buffer, 9));
+    testrun(ov_turn_attr_is_requested_addr_family(buffer, 8));
+    testrun(!ov_turn_attr_is_requested_addr_family(buffer, 7));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_turn_attr_requested_addr_family_encoding_length() {
 
-  testrun(8 == ov_turn_attr_requested_addr_family_encoding_length());
-  return testrun_log_success();
+    testrun(8 == ov_turn_attr_requested_addr_family_encoding_length());
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_turn_attr_requested_addr_family_encode() {
 
-  uint8_t buffer[100] = {0};
-  uint8_t *next = NULL;
-  uint16_t out = 0;
+    uint8_t buffer[100] = {0};
+    uint8_t *next = NULL;
+    uint16_t out = 0;
 
-  testrun(ov_stun_attribute_set_type(buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY));
-  testrun(ov_stun_attribute_set_length(buffer, 4, 4));
+    testrun(
+        ov_stun_attribute_set_type(buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY));
+    testrun(ov_stun_attribute_set_length(buffer, 4, 4));
 
-  testrun(ov_turn_attr_requested_addr_family_encode(buffer, 100, &next, 1));
-  testrun(next = buffer + 8);
-  testrun(buffer[0] == 0x00);
-  testrun(buffer[1] == 0x17);
-  testrun(buffer[2] == 0x00);
-  testrun(buffer[3] == 0x04);
-  testrun(buffer[4] == 0x01);
-  testrun(buffer[5] == 0x00);
-  testrun(buffer[6] == 0x00);
-  testrun(buffer[7] == 0x00);
-  testrun(buffer[8] == 0x00);
-  testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
-  testrun(0x01 == out);
+    testrun(ov_turn_attr_requested_addr_family_encode(buffer, 100, &next, 1));
+    testrun(next = buffer + 8);
+    testrun(buffer[0] == 0x00);
+    testrun(buffer[1] == 0x17);
+    testrun(buffer[2] == 0x00);
+    testrun(buffer[3] == 0x04);
+    testrun(buffer[4] == 0x01);
+    testrun(buffer[5] == 0x00);
+    testrun(buffer[6] == 0x00);
+    testrun(buffer[7] == 0x00);
+    testrun(buffer[8] == 0x00);
+    testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
+    testrun(0x01 == out);
 
-  testrun(!ov_turn_attr_requested_addr_family_encode(buffer, 100, &next, 0xff));
+    testrun(
+        !ov_turn_attr_requested_addr_family_encode(buffer, 100, &next, 0xff));
 
-  testrun(ov_turn_attr_requested_addr_family_encode(buffer, 100, &next, 2));
-  testrun(next = buffer + 8);
-  testrun(buffer[0] == 0x00);
-  testrun(buffer[1] == 0x17);
-  testrun(buffer[2] == 0x00);
-  testrun(buffer[3] == 0x04);
-  testrun(buffer[4] == 0x02);
-  testrun(buffer[5] == 0x00);
-  testrun(buffer[6] == 0x00);
-  testrun(buffer[7] == 0x00);
-  testrun(buffer[8] == 0x00);
-  testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
-  testrun(0x02 == out);
+    testrun(ov_turn_attr_requested_addr_family_encode(buffer, 100, &next, 2));
+    testrun(next = buffer + 8);
+    testrun(buffer[0] == 0x00);
+    testrun(buffer[1] == 0x17);
+    testrun(buffer[2] == 0x00);
+    testrun(buffer[3] == 0x04);
+    testrun(buffer[4] == 0x02);
+    testrun(buffer[5] == 0x00);
+    testrun(buffer[6] == 0x00);
+    testrun(buffer[7] == 0x00);
+    testrun(buffer[8] == 0x00);
+    testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
+    testrun(0x02 == out);
 
-  testrun(ov_turn_attr_is_requested_addr_family(buffer, 100));
-  testrun(ov_turn_attr_is_requested_addr_family(buffer, 9));
-  testrun(ov_turn_attr_is_requested_addr_family(buffer, 8));
-  testrun(!ov_turn_attr_is_requested_addr_family(buffer, 7));
+    testrun(ov_turn_attr_is_requested_addr_family(buffer, 100));
+    testrun(ov_turn_attr_is_requested_addr_family(buffer, 9));
+    testrun(ov_turn_attr_is_requested_addr_family(buffer, 8));
+    testrun(!ov_turn_attr_is_requested_addr_family(buffer, 7));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_turn_attr_requested_addr_family_decode() {
 
-  uint8_t buffer[100] = {0};
-  uint16_t out = 0;
+    uint8_t buffer[100] = {0};
+    uint16_t out = 0;
 
-  testrun(ov_stun_attribute_set_type(buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY));
-  testrun(ov_stun_attribute_set_length(buffer, 4, 4));
-  testrun(ov_turn_attr_requested_addr_family_encode(buffer, 100, NULL, 0x01));
+    testrun(
+        ov_stun_attribute_set_type(buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY));
+    testrun(ov_stun_attribute_set_length(buffer, 4, 4));
+    testrun(ov_turn_attr_requested_addr_family_encode(buffer, 100, NULL, 0x01));
 
-  testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
-  testrun(out == 0x01);
+    testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
+    testrun(out == 0x01);
 
-  testrun(!ov_turn_attr_requested_addr_family_decode(buffer, 7, &out));
-  testrun(ov_turn_attr_requested_addr_family_decode(buffer, 8, &out));
+    testrun(!ov_turn_attr_requested_addr_family_decode(buffer, 7, &out));
+    testrun(ov_turn_attr_requested_addr_family_decode(buffer, 8, &out));
 
-  testrun(ov_stun_attribute_set_length(buffer, 4, 8));
-  testrun(!ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
-  testrun(ov_stun_attribute_set_length(buffer, 4, 4));
-  testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
+    testrun(ov_stun_attribute_set_length(buffer, 4, 8));
+    testrun(!ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
+    testrun(ov_stun_attribute_set_length(buffer, 4, 4));
+    testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
 
-  testrun(
-      ov_stun_attribute_set_type(buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY - 1));
-  testrun(!ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
+    testrun(ov_stun_attribute_set_type(buffer, 4,
+                                       TURN_REQUESTED_ADDRESS_FAMILY - 1));
+    testrun(!ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -155,14 +159,14 @@ int test_ov_turn_attr_requested_addr_family_decode() {
 
 int all_tests() {
 
-  testrun_init();
-  testrun_test(test_ov_turn_attr_is_requested_addr_family);
+    testrun_init();
+    testrun_test(test_ov_turn_attr_is_requested_addr_family);
 
-  testrun_test(test_ov_turn_attr_requested_addr_family_encoding_length);
-  testrun_test(test_ov_turn_attr_requested_addr_family_encode);
-  testrun_test(test_ov_turn_attr_requested_addr_family_decode);
+    testrun_test(test_ov_turn_attr_requested_addr_family_encoding_length);
+    testrun_test(test_ov_turn_attr_requested_addr_family_encode);
+    testrun_test(test_ov_turn_attr_requested_addr_family_decode);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 /*

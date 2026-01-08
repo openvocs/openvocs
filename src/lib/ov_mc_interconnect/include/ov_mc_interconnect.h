@@ -59,47 +59,47 @@ typedef struct ov_mc_interconnect ov_mc_interconnect;
 
 typedef struct ov_mc_interconnect_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  char name[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
-  char password[OV_MC_INTERCONNECT_PASSWORD_MAX];
-
-  struct {
-
-    bool client;
-    ov_socket_configuration signaling;
-    ov_socket_configuration media;
-    ov_socket_configuration internal;
-
-  } socket;
-
-  struct {
-
-    char domains[PATH_MAX]; // domains to configure in listener
+    char name[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
+    char password[OV_MC_INTERCONNECT_PASSWORD_MAX];
 
     struct {
 
-      char domain[PATH_MAX]; // hostname to use in handshake
-      struct {
+        bool client;
+        ov_socket_configuration signaling;
+        ov_socket_configuration media;
+        ov_socket_configuration internal;
 
-        char file[PATH_MAX]; // path to CA verify file
-        char path[PATH_MAX]; // path to CAs to use
+    } socket;
 
-      } ca;
+    struct {
 
-    } client;
+        char domains[PATH_MAX]; // domains to configure in listener
 
-  } tls;
+        struct {
 
-  struct {
+            char domain[PATH_MAX]; // hostname to use in handshake
+            struct {
 
-    uint8_t threads;
-    uint64_t client_connect_trigger_usec;
-    uint64_t keepalive_trigger_usec;
+                char file[PATH_MAX]; // path to CA verify file
+                char path[PATH_MAX]; // path to CAs to use
 
-  } limits;
+            } ca;
 
-  ov_dtls_config dtls;
+        } client;
+
+    } tls;
+
+    struct {
+
+        uint8_t threads;
+        uint64_t client_connect_trigger_usec;
+        uint64_t keepalive_trigger_usec;
+
+    } limits;
+
+    ov_dtls_config dtls;
 
 } ov_mc_interconnect_config;
 

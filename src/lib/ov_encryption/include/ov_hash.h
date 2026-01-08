@@ -42,11 +42,11 @@
 
 typedef enum {
 
-  OV_HASH_UNSPEC = 0,
-  OV_HASH_SHA1,
-  OV_HASH_SHA256,
-  OV_HASH_SHA512,
-  OV_HASH_MD5
+    OV_HASH_UNSPEC = 0,
+    OV_HASH_SHA1,
+    OV_HASH_SHA256,
+    OV_HASH_SHA512,
+    OV_HASH_MD5
 
 } ov_hash_function;
 

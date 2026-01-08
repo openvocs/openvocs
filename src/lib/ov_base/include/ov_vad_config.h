@@ -34,8 +34,8 @@
 
 typedef struct {
 
-  double zero_crossings_rate_threshold_hertz;
-  double powerlevel_density_threshold_db;
+    double zero_crossings_rate_threshold_hertz;
+    double powerlevel_density_threshold_db;
 
 } ov_vad_config;
 
@@ -43,8 +43,8 @@ typedef struct {
 
 typedef struct {
 
-  double zero_crossings_per_sample;
-  double powerlevel_density_per_sample;
+    double zero_crossings_per_sample;
+    double powerlevel_density_per_sample;
 
 } ov_vad_parameters;
 

@@ -42,19 +42,19 @@ bool ov_hmac(ov_hash_function type, const uint8_t *buffer, size_t size,
              const void *key, size_t key_len, uint8_t *result,
              size_t *result_len) {
 
-  if (!buffer || !key || !result || !result_len)
-    goto error;
+    if (!buffer || !key || !result || !result_len)
+        goto error;
 
-  const EVP_MD *hash_func = ov_hash_function_to_EVP(type);
-  if (!hash_func)
-    goto error;
+    const EVP_MD *hash_func = ov_hash_function_to_EVP(type);
+    if (!hash_func)
+        goto error;
 
-  if (!HMAC(hash_func, key, key_len, buffer, size, result,
-            (unsigned int *)result_len))
-    goto error;
+    if (!HMAC(hash_func, key, key_len, buffer, size, result,
+              (unsigned int *)result_len))
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }

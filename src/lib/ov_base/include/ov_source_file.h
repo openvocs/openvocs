@@ -50,17 +50,17 @@ typedef struct ov_source_file_config ov_source_file_config;
 
 struct ov_source_file_config {
 
-  struct {
+    struct {
 
-    const char *name;
-    const char *path;
-    const char *url; // optional URL to use
+        const char *name;
+        const char *path;
+        const char *url; // optional URL to use
 
-    bool create;
+        bool create;
 
-  } project;
+    } project;
 
-  ov_copyright_config copyright;
+    ov_copyright_config copyright;
 };
 
 /*----------------------------------------------------------------------------*/

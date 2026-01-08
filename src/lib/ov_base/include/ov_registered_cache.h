@@ -167,9 +167,9 @@ typedef struct ov_registered_cache_struct ov_registered_cache;
 
 typedef struct {
 
-  uint64_t timeout_usec;
-  void *(*item_free)(void *);
-  size_t capacity;
+    uint64_t timeout_usec;
+    void *(*item_free)(void *);
+    size_t capacity;
 
 } ov_registered_cache_config;
 

@@ -34,10 +34,10 @@
 
 typedef struct ov_vocs_env {
 
-  void *userdata;
+    void *userdata;
 
-  bool (*close)(void *userdata, int socket);
-  bool (*send)(void *userdata, int socket, const ov_json_value *msg);
+    bool (*close)(void *userdata, int socket);
+    bool (*send)(void *userdata, int socket, const ov_json_value *msg);
 
 } ov_vocs_env;
 

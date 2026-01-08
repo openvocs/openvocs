@@ -60,8 +60,8 @@ bool ov_test_tcp_received(int fd, char const *msg);
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
-  void (*serve_client_callback)(int fd, void *userdata);
-  void *userdata;
+    void (*serve_client_callback)(int fd, void *userdata);
+    void *userdata;
 
 } ov_test_tcp_server_config;
 

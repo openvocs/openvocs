@@ -53,15 +53,15 @@
 /*----------------------------------------------------------------------------*/
 
 #define OV_VOCS_DEFAULT_SDP                                                    \
-  "v=0\\r\\n"                                                                  \
-  "o=- 0 0 IN IP4 0.0.0.0\\r\\n"                                               \
-  "s=-\\r\\n"                                                                  \
-  "t=0 0\\r\\n"                                                                \
-  "m=audio 0 UDP/TLS/RTP/SAVPF 100\\r\\n"                                      \
-  "a=rtpmap:100 opus/48000/2\\r\\n"                                            \
-  "a=fmtp:100 "                                                                \
-  "maxplaybackrate=48000;stereo=1;"                                            \
-  "useinbandfec=1\\r\\n"
+    "v=0\\r\\n"                                                                \
+    "o=- 0 0 IN IP4 0.0.0.0\\r\\n"                                             \
+    "s=-\\r\\n"                                                                \
+    "t=0 0\\r\\n"                                                              \
+    "m=audio 0 UDP/TLS/RTP/SAVPF 100\\r\\n"                                    \
+    "a=rtpmap:100 opus/48000/2\\r\\n"                                          \
+    "a=fmtp:100 "                                                              \
+    "maxplaybackrate=48000;stereo=1;"                                          \
+    "useinbandfec=1\\r\\n"
 
 /*----------------------------------------------------------------------------*/
 
@@ -82,7 +82,7 @@ typedef struct {
     ov_event_trigger *trigger;
     ov_vocs_env env;
 
-  struct {
+    struct {
 
         ov_mc_backend_config backend;
         ov_mc_frontend_config frontend;
@@ -91,27 +91,27 @@ typedef struct {
         ov_vocs_recorder_config recorder;
         ov_mc_backend_vad_config vad;
 
-  } module;
+    } module;
 
-  struct {
+    struct {
 
-    uint64_t response_usec;
-    uint64_t reconnect_interval_usec;
+        uint64_t response_usec;
+        uint64_t reconnect_interval_usec;
 
-  } timeout;
+    } timeout;
 
-  struct {
+    struct {
 
-    bool enable;
-    ov_ldap_config config;
+        bool enable;
+        ov_ldap_config config;
 
-  } ldap;
+    } ldap;
 
-  struct {
+    struct {
 
-    char path[PATH_MAX];
+        char path[PATH_MAX];
 
-  } sessions;
+    } sessions;
 
 } ov_vocs_config;
 

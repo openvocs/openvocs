@@ -46,9 +46,9 @@
 typedef struct ov_sip_message ov_sip_message;
 
 typedef enum {
-  OV_SIP_REQUEST,
-  OV_SIP_RESPONSE,
-  OV_SIP_INVALID
+    OV_SIP_REQUEST,
+    OV_SIP_RESPONSE,
+    OV_SIP_INVALID
 } ov_sip_message_type;
 
 char const *ov_sip_message_type_to_string(ov_sip_message_type type);

@@ -47,52 +47,54 @@ typedef struct ov_mc_frontend ov_mc_frontend;
 
 typedef struct ov_mc_frontend_config {
 
-  ov_event_loop *loop;
-  ov_io *io;
-
-  struct {
-
-    ov_socket_configuration manager; // manager liege socket
-
-  } socket;
-
-  struct {
-
-    void *userdata;
+    ov_event_loop *loop;
+    ov_io *io;
 
     struct {
 
-      void (*dropped)(void *userdata, const char *session_id);
+        ov_socket_configuration manager; // manager liege socket
 
-      void (*created)(void *userdata, const ov_response_state event,
-                      const char *session_id, const char *type, const char *sdp,
-                      size_t array_size,
-                      const ov_ice_proxy_vocs_stream_forward_data *array);
+    } socket;
 
-      void (*completed)(void *userdata, const char *session_id, bool success);
+    struct {
 
-      void (*update)(void *userdata, const ov_response_state event,
-                     const char *session_id);
+        void *userdata;
 
-      void (*state)(void *userdata, const ov_response_state event,
-                    const char *session_id, const ov_json_value *state);
+        struct {
 
-    } session;
+            void (*dropped)(void *userdata, const char *session_id);
 
-    /* callback for info from ice proxy, or response send to ice proxy */
-    void (*candidate)(void *userdata, const ov_response_state event,
-                      const char *session_id,
-                      const ov_ice_candidate_info *info);
+            void (*created)(void *userdata, const ov_response_state event,
+                            const char *session_id, const char *type,
+                            const char *sdp, size_t array_size,
+                            const ov_ice_proxy_vocs_stream_forward_data *array);
 
-    /* callback for info from ice proxy, or response send to ice proxy */
-    void (*end_of_candidates)(void *userdata, const ov_response_state event,
-                              const char *session_id,
-                              const ov_ice_candidate_info *info);
+            void (*completed)(void *userdata, const char *session_id,
+                              bool success);
 
-    void (*talk)(void *userdata, const ov_response_state event,
-                 const char *session_id, const ov_mc_loop_data data, bool on);
+            void (*update)(void *userdata, const ov_response_state event,
+                           const char *session_id);
 
-  } callback;
+            void (*state)(void *userdata, const ov_response_state event,
+                          const char *session_id, const ov_json_value *state);
+
+        } session;
+
+        /* callback for info from ice proxy, or response send to ice proxy */
+        void (*candidate)(void *userdata, const ov_response_state event,
+                          const char *session_id,
+                          const ov_ice_candidate_info *info);
+
+        /* callback for info from ice proxy, or response send to ice proxy */
+        void (*end_of_candidates)(void *userdata, const ov_response_state event,
+                                  const char *session_id,
+                                  const ov_ice_candidate_info *info);
+
+        void (*talk)(void *userdata, const ov_response_state event,
+                     const char *session_id, const ov_mc_loop_data data,
+                     bool on);
+
+    } callback;
 
 } ov_mc_frontend_config;
 

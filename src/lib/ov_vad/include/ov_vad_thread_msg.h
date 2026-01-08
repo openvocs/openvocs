@@ -41,9 +41,9 @@
 
 typedef struct ov_vad_thread_msg {
 
-  ov_thread_message public;
-  ov_buffer *buffer;
-  int socket;
+    ov_thread_message public;
+    ov_buffer *buffer;
+    int socket;
 
 } ov_vad_thread_msg;
 

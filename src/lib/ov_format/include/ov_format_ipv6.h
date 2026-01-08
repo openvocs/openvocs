@@ -45,20 +45,20 @@
 
 typedef struct {
 
-  uint8_t traffic_class;
+    uint8_t traffic_class;
 
-  struct {
+    struct {
 
-    uint32_t flow_label : 20;
-    uint32_t payload_length : 20;
-  };
+        uint32_t flow_label : 20;
+        uint32_t payload_length : 20;
+    };
 
-  uint8_t next_header;
+    uint8_t next_header;
 
-  uint8_t hop_limit;
+    uint8_t hop_limit;
 
-  uint8_t src_ip[16];
-  uint8_t dst_ip[16];
+    uint8_t src_ip[16];
+    uint8_t dst_ip[16];
 
 } ov_format_ipv6_header;
 

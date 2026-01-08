@@ -48,13 +48,13 @@
 
 typedef enum {
 
-  NETWORK_TRANSPORT_TYPE_ERROR = 0,
-  TCP,
-  UDP,
-  TLS,
-  DTLS,
-  LOCAL,
-  NETWORK_TRANSPORT_TYPE_OOB
+    NETWORK_TRANSPORT_TYPE_ERROR = 0,
+    TCP,
+    UDP,
+    TLS,
+    DTLS,
+    LOCAL,
+    NETWORK_TRANSPORT_TYPE_OOB
 
 } ov_socket_transport;
 
@@ -62,10 +62,10 @@ typedef enum {
 
 typedef struct {
 
-  char host[OV_HOST_NAME_MAX];
-  uint16_t port;
+    char host[OV_HOST_NAME_MAX];
+    uint16_t port;
 
-  ov_socket_transport type;
+    ov_socket_transport type;
 
 } ov_socket_configuration;
 
@@ -73,8 +73,8 @@ typedef struct {
 
 typedef struct {
 
-  int gai; // carry gai_error
-  int err; // carry errno
+    int gai; // carry gai_error
+    int err; // carry errno
 
 } ov_socket_error;
 
@@ -86,10 +86,10 @@ typedef struct {
 */
 typedef struct {
 
-  struct sockaddr_storage sa;
+    struct sockaddr_storage sa;
 
-  char host[OV_HOST_NAME_MAX]; // parsed host from sa
-  uint16_t port;               // parsed port from sa
+    char host[OV_HOST_NAME_MAX]; // parsed host from sa
+    uint16_t port;               // parsed port from sa
 
 } ov_socket_data;
 
@@ -492,9 +492,9 @@ ov_socket_configuration_to_socket_data(const ov_socket_configuration in);
 
 typedef struct {
 
-  ov_socket_configuration peer;
-  ov_socket_configuration local;
-  bool connected;
+    ov_socket_configuration peer;
+    ov_socket_configuration local;
+    bool connected;
 
 } ov_socket_state;
 

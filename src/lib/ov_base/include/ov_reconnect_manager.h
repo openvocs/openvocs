@@ -112,8 +112,8 @@ ov_reconnect_manager *ov_reconnect_manager_free(ov_reconnect_manager *self);
 
 typedef struct {
 
-  bool (*io)(int, uint8_t, void *);
-  bool (*reconnected)(int, void *);
+    bool (*io)(int, uint8_t, void *);
+    bool (*reconnected)(int, void *);
 
 } ov_reconnect_callbacks;
 

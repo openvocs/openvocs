@@ -31,8 +31,8 @@
 
 bool ov_turn_method_is_channel_bind(const uint8_t *frame, size_t length) {
 
-  if (TURN_CHANNEL_BIND == ov_stun_frame_get_method(frame, length))
-    return true;
+    if (TURN_CHANNEL_BIND == ov_stun_frame_get_method(frame, length))
+        return true;
 
-  return false;
+    return false;
 }

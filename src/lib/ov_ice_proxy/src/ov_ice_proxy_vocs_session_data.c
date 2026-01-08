@@ -34,14 +34,14 @@
 ov_ice_proxy_vocs_session_data
 ov_ice_proxy_vocs_session_data_clear(ov_ice_proxy_vocs_session_data *self) {
 
-  if (!self)
-    goto error;
+    if (!self)
+        goto error;
 
-  if (self->desc)
-    self->desc = ov_sdp_session_free(self->desc);
+    if (self->desc)
+        self->desc = ov_sdp_session_free(self->desc);
 
 error:
-  return (ov_ice_proxy_vocs_session_data){0};
+    return (ov_ice_proxy_vocs_session_data){0};
 }
 
 /*----------------------------------------------------------------------------*/
@@ -49,15 +49,15 @@ error:
 ov_json_value *ov_ice_proxy_vocs_session_data_description_to_json(
     const ov_ice_proxy_vocs_session_data *data) {
 
-  if (!data)
-    goto error;
-  if (!data->desc)
-    goto error;
+    if (!data)
+        goto error;
+    if (!data->desc)
+        goto error;
 
-  return ov_sdp_session_to_json(data->desc);
+    return ov_sdp_session_to_json(data->desc);
 
 error:
-  return NULL;
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -65,31 +65,31 @@ error:
 static ov_json_value *
 stream_create_proxy_data(const ov_ice_proxy_vocs_session_data *in) {
 
-  /*
-      {
-          "socket" : {
-              host" : "<internal host>",
-              "port" : <internal port>,
-              "type" : "UDP"
-          },
-          "ssrc" : <ssrc>
-      }
-  */
+    /*
+        {
+            "socket" : {
+                host" : "<internal host>",
+                "port" : <internal port>,
+                "type" : "UDP"
+            },
+            "ssrc" : <ssrc>
+        }
+    */
 
-  if (!in)
-    goto error;
+    if (!in)
+        goto error;
 
-  ov_ice_proxy_vocs_stream_forward_data data =
-      (ov_ice_proxy_vocs_stream_forward_data){
-          .ssrc = in->ssrc,
-          (ov_socket_configuration){.type = UDP, .port = in->proxy.port}};
+    ov_ice_proxy_vocs_stream_forward_data data =
+        (ov_ice_proxy_vocs_stream_forward_data){
+            .ssrc = in->ssrc,
+            (ov_socket_configuration){.type = UDP, .port = in->proxy.port}};
 
-  memcpy(data.socket.host, in->proxy.host, OV_HOST_NAME_MAX);
+    memcpy(data.socket.host, in->proxy.host, OV_HOST_NAME_MAX);
 
-  return ov_ice_proxy_vocs_stream_forward_data_to_json(data);
+    return ov_ice_proxy_vocs_stream_forward_data_to_json(data);
 
 error:
-  return NULL;
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -97,21 +97,21 @@ error:
 ov_json_value *ov_ice_proxy_vocs_session_data_to_json(
     const ov_ice_proxy_vocs_session_data *data) {
 
-  ov_json_value *out = NULL;
-  ov_json_value *val = NULL;
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
 
-  if (!data)
-    goto error;
+    if (!data)
+        goto error;
 
-  out = ov_json_array();
-  val = stream_create_proxy_data(data);
+    out = ov_json_array();
+    val = stream_create_proxy_data(data);
 
-  if (!ov_json_array_push(out, val))
-    goto error;
+    if (!ov_json_array_push(out, val))
+        goto error;
 
-  return out;
+    return out;
 error:
-  ov_json_value_free(out);
-  ov_json_value_free(val);
-  return NULL;
+    ov_json_value_free(out);
+    ov_json_value_free(val);
+    return NULL;
 }

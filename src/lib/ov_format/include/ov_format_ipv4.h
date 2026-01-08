@@ -38,15 +38,15 @@
 
 typedef struct {
 
-  uint8_t src_ip[4];
-  uint8_t dst_ip[4];
+    uint8_t src_ip[4];
+    uint8_t dst_ip[4];
 
-  size_t header_length_octets;
-  uint16_t total_length_octets;
-  uint8_t protocol;
-  uint8_t time_to_live;
+    size_t header_length_octets;
+    uint16_t total_length_octets;
+    uint8_t protocol;
+    uint8_t time_to_live;
 
-  uint16_t header_checksum;
+    uint16_t header_checksum;
 
 } ov_format_ipv4_header;
 

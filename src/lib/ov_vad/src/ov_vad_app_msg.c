@@ -36,14 +36,14 @@
 
 ov_json_value *ov_vad_app_msg_register() {
 
-  ov_json_value *out = ov_event_api_message_create(OV_KEY_REGISTER, NULL, 0);
-  return out;
+    ov_json_value *out = ov_event_api_message_create(OV_KEY_REGISTER, NULL, 0);
+    return out;
 }
 
 /*---------------------------------------------------------------------------*/
 
 ov_json_value *ov_vad_app_msg_loops() {
 
-  ov_json_value *out = ov_event_api_message_create(OV_KEY_LOOPS, NULL, 0);
-  return out;
+    ov_json_value *out = ov_event_api_message_create(OV_KEY_LOOPS, NULL, 0);
+    return out;
 }

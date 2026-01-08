@@ -51,7 +51,7 @@
  * Requires a samplerate obviously.
  */
 #define ov_convert_msecs_to_samples(msecs, samplerate_hz)                      \
-  ((msecs * samplerate_hz) / 1000)
+    ((msecs * samplerate_hz) / 1000)
 
 /**
  * Give time span in msecs formed by a number of samples.
@@ -59,7 +59,7 @@
  * Returns 0 in case of the samplerate being 0.
  */
 #define ov_convert_samples_to_msecs(samples, samplerate_hz)                    \
-  (0 == samplerate_hz ? 0 : ((samples * 1000) / samplerate_hz))
+    (0 == samplerate_hz ? 0 : ((samples * 1000) / samplerate_hz))
 
 /*
  *      ------------------------------------------------------------------------

@@ -45,125 +45,125 @@
 
 int test_ov_imf_write_timestamp() {
 
-  size_t size = 1000;
-  char buffer[size];
-  memset(buffer, 0, size);
+    size_t size = 1000;
+    char buffer[size];
+    memset(buffer, 0, size);
 
-  char *next = NULL;
+    char *next = NULL;
 
-  testrun(!ov_imf_write_timestamp(NULL, 0, NULL));
-  testrun(!ov_imf_write_timestamp(buffer, 0, NULL));
-  testrun(!ov_imf_write_timestamp(NULL, 30, NULL));
-  testrun(!ov_imf_write_timestamp(buffer, 29, NULL));
+    testrun(!ov_imf_write_timestamp(NULL, 0, NULL));
+    testrun(!ov_imf_write_timestamp(buffer, 0, NULL));
+    testrun(!ov_imf_write_timestamp(NULL, 30, NULL));
+    testrun(!ov_imf_write_timestamp(buffer, 29, NULL));
 
-  struct timeval tv;
-  testrun(0 == gettimeofday(&tv, NULL));
-  struct tm *current = gmtime(&tv.tv_sec);
+    struct timeval tv;
+    testrun(0 == gettimeofday(&tv, NULL));
+    struct tm *current = gmtime(&tv.tv_sec);
 
-  testrun(ov_imf_write_timestamp(buffer, 30, &next));
-  struct tm value = ov_imf_timestamp_to_tm(buffer, 30, NULL);
-  testrun(next == buffer + 29);
+    testrun(ov_imf_write_timestamp(buffer, 30, &next));
+    struct tm value = ov_imf_timestamp_to_tm(buffer, 30, NULL);
+    testrun(next == buffer + 29);
 
-  /*
-  ov_log_debug("current %i %i %i %i %i %i \n",
-          current->tm_mday,
-          current->tm_mon,
-          current->tm_year,
-          current->tm_hour,
-          current->tm_min,
-          current->tm_sec);
+    /*
+    ov_log_debug("current %i %i %i %i %i %i \n",
+            current->tm_mday,
+            current->tm_mon,
+            current->tm_year,
+            current->tm_hour,
+            current->tm_min,
+            current->tm_sec);
 
-  ov_log_debug("value %i %i %i %i %i %i",
-          value.tm_mday,
-          value.tm_mon,
-          value.tm_year,
-          value.tm_hour,
-          value.tm_min,
-          value.tm_sec);
-  */
+    ov_log_debug("value %i %i %i %i %i %i",
+            value.tm_mday,
+            value.tm_mon,
+            value.tm_year,
+            value.tm_hour,
+            value.tm_min,
+            value.tm_sec);
+    */
 
-  testrun(current->tm_mday == value.tm_mday);
-  testrun(current->tm_mon == value.tm_mon);
-  testrun(current->tm_year == value.tm_year);
-  testrun(current->tm_hour == value.tm_hour);
-  testrun(current->tm_min == value.tm_min);
-  if (current->tm_sec != value.tm_sec)
-    testrun(current->tm_sec == value.tm_sec - 1);
+    testrun(current->tm_mday == value.tm_mday);
+    testrun(current->tm_mon == value.tm_mon);
+    testrun(current->tm_year == value.tm_year);
+    testrun(current->tm_hour == value.tm_hour);
+    testrun(current->tm_min == value.tm_min);
+    if (current->tm_sec != value.tm_sec)
+        testrun(current->tm_sec == value.tm_sec - 1);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_imf_timestamp_to_tm() {
 
-  struct tm empty = {0};
-  size_t size = 1000;
-  char buffer[size];
-  memset(buffer, 0, size);
+    struct tm empty = {0};
+    size_t size = 1000;
+    char buffer[size];
+    memset(buffer, 0, size);
 
-  struct timeval tv;
-  testrun(0 == gettimeofday(&tv, NULL));
-  struct tm *current = gmtime(&tv.tv_sec);
+    struct timeval tv;
+    testrun(0 == gettimeofday(&tv, NULL));
+    struct tm *current = gmtime(&tv.tv_sec);
 
-  testrun(ov_imf_write_timestamp(buffer, 30, NULL));
+    testrun(ov_imf_write_timestamp(buffer, 30, NULL));
 
-  struct tm value = ov_imf_timestamp_to_tm(buffer, 30, NULL);
+    struct tm value = ov_imf_timestamp_to_tm(buffer, 30, NULL);
 
-  testrun(current->tm_mday == value.tm_mday);
-  testrun(current->tm_mon == value.tm_mon);
-  testrun(current->tm_year == value.tm_year);
-  testrun(current->tm_hour == value.tm_hour);
-  testrun(current->tm_min == value.tm_min);
-  testrun(current->tm_wday == value.tm_wday);
-  if (current->tm_sec != value.tm_sec)
-    testrun(current->tm_sec == value.tm_sec - 1);
+    testrun(current->tm_mday == value.tm_mday);
+    testrun(current->tm_mon == value.tm_mon);
+    testrun(current->tm_year == value.tm_year);
+    testrun(current->tm_hour == value.tm_hour);
+    testrun(current->tm_min == value.tm_min);
+    testrun(current->tm_wday == value.tm_wday);
+    if (current->tm_sec != value.tm_sec)
+        testrun(current->tm_sec == value.tm_sec - 1);
 
-  value = ov_imf_timestamp_to_tm(NULL, 0, NULL);
-  testrun(0 == memcmp(&value, &empty, sizeof(struct tm)));
+    value = ov_imf_timestamp_to_tm(NULL, 0, NULL);
+    testrun(0 == memcmp(&value, &empty, sizeof(struct tm)));
 
-  value = ov_imf_timestamp_to_tm(buffer, 0, NULL);
-  testrun(0 == memcmp(&value, &empty, sizeof(struct tm)));
+    value = ov_imf_timestamp_to_tm(buffer, 0, NULL);
+    testrun(0 == memcmp(&value, &empty, sizeof(struct tm)));
 
-  value = ov_imf_timestamp_to_tm(NULL, 28, NULL);
-  testrun(0 == memcmp(&value, &empty, sizeof(struct tm)));
+    value = ov_imf_timestamp_to_tm(NULL, 28, NULL);
+    testrun(0 == memcmp(&value, &empty, sizeof(struct tm)));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_imf_tm_to_timestamp() {
 
-  size_t size = 1000;
-  char buffer[size];
-  memset(buffer, 0, size);
+    size_t size = 1000;
+    char buffer[size];
+    memset(buffer, 0, size);
 
-  char *next = NULL;
+    char *next = NULL;
 
-  struct timeval tv;
-  testrun(0 == gettimeofday(&tv, NULL));
-  struct tm *current = gmtime(&tv.tv_sec);
+    struct timeval tv;
+    testrun(0 == gettimeofday(&tv, NULL));
+    struct tm *current = gmtime(&tv.tv_sec);
 
-  testrun(!ov_imf_tm_to_timestamp(NULL, NULL, 0, NULL, NULL));
-  testrun(!ov_imf_tm_to_timestamp(current, buffer, 0, NULL, NULL));
-  testrun(!ov_imf_tm_to_timestamp(current, NULL, 30, NULL, NULL));
-  testrun(!ov_imf_tm_to_timestamp(current, buffer, 29, NULL, NULL));
-  testrun(!ov_imf_tm_to_timestamp(NULL, buffer, 30, NULL, NULL));
+    testrun(!ov_imf_tm_to_timestamp(NULL, NULL, 0, NULL, NULL));
+    testrun(!ov_imf_tm_to_timestamp(current, buffer, 0, NULL, NULL));
+    testrun(!ov_imf_tm_to_timestamp(current, NULL, 30, NULL, NULL));
+    testrun(!ov_imf_tm_to_timestamp(current, buffer, 29, NULL, NULL));
+    testrun(!ov_imf_tm_to_timestamp(NULL, buffer, 30, NULL, NULL));
 
-  testrun(ov_imf_tm_to_timestamp(current, buffer, 30, &next, NULL));
-  struct tm value = ov_imf_timestamp_to_tm(buffer, 30, NULL);
-  testrun(next == buffer + 29);
+    testrun(ov_imf_tm_to_timestamp(current, buffer, 30, &next, NULL));
+    struct tm value = ov_imf_timestamp_to_tm(buffer, 30, NULL);
+    testrun(next == buffer + 29);
 
-  testrun(current->tm_mday == value.tm_mday);
-  testrun(current->tm_mon == value.tm_mon);
-  testrun(current->tm_year == value.tm_year);
-  testrun(current->tm_hour == value.tm_hour);
-  testrun(current->tm_min == value.tm_min);
-  if (current->tm_sec != value.tm_sec)
-    testrun(current->tm_sec == value.tm_sec - 1);
+    testrun(current->tm_mday == value.tm_mday);
+    testrun(current->tm_mon == value.tm_mon);
+    testrun(current->tm_year == value.tm_year);
+    testrun(current->tm_hour == value.tm_hour);
+    testrun(current->tm_min == value.tm_min);
+    if (current->tm_sec != value.tm_sec)
+        testrun(current->tm_sec == value.tm_sec - 1);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*
@@ -176,12 +176,12 @@ int test_ov_imf_tm_to_timestamp() {
 
 int all_tests() {
 
-  testrun_init();
-  testrun_test(test_ov_imf_write_timestamp);
-  testrun_test(test_ov_imf_timestamp_to_tm);
-  testrun_test(test_ov_imf_tm_to_timestamp);
+    testrun_init();
+    testrun_test(test_ov_imf_write_timestamp);
+    testrun_test(test_ov_imf_timestamp_to_tm);
+    testrun_test(test_ov_imf_tm_to_timestamp);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 /*

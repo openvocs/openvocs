@@ -45,31 +45,31 @@ typedef struct ov_io_web ov_io_web;
 
 typedef struct ov_io_web_config {
 
-  ov_event_loop *loop;
-  ov_io *io;
+    ov_event_loop *loop;
+    ov_io *io;
 
-  char name[PATH_MAX];
+    char name[PATH_MAX];
 
-  ov_http_message_config http_config;
-  ov_websocket_frame_config frame_config;
+    ov_http_message_config http_config;
+    ov_websocket_frame_config frame_config;
 
-  ov_socket_configuration socket;
+    ov_socket_configuration socket;
 
-  struct {
+    struct {
 
-    int sockets;
+        int sockets;
 
-  } limits;
+    } limits;
 
-  struct {
+    struct {
 
-    void *userdata;
-    bool (*accept)(void *userdata, int listener, int socket);
-    void (*close)(void *userdata, int socket);
+        void *userdata;
+        bool (*accept)(void *userdata, int listener, int socket);
+        void (*close)(void *userdata, int socket);
 
-    bool (*https)(void *userdata, int socket, ov_http_message *msg);
+        bool (*https)(void *userdata, int socket, ov_http_message *msg);
 
-  } callbacks;
+    } callbacks;
 
 } ov_io_web_config;
 

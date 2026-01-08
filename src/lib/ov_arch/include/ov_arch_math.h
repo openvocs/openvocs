@@ -51,11 +51,11 @@
  * but no standard C11 */
 
 #define __OV_MIN(x, y)                                                         \
-  ({                                                                           \
-    __typeof__(x) _x = (x);                                                    \
-    __typeof__(y) _y = (y);                                                    \
-    _x < _y ? _x : _y;                                                         \
-  })
+    ({                                                                         \
+        __typeof__(x) _x = (x);                                                \
+        __typeof__(y) _y = (y);                                                \
+        _x < _y ? _x : _y;                                                     \
+    })
 
 #else
 
@@ -70,16 +70,16 @@ unsigned long long __ov_min_ull(unsigned long long const x,
                                 unsigned long long const y);
 
 #define __OV_MIN(X, Y)                                                         \
-  (_Generic((X) + (Y),                                                         \
-      int: __ov_min_i,                                                         \
-      unsigned: __ov_min_u,                                                    \
-      long: __ov_min_l,                                                        \
-      unsigned long: __ov_min_ul,                                              \
-      long long: __ov_min_ll,                                                  \
-      unsigned long long: __ov_min_ull,                                        \
-      float: fminf,                                                            \
-      double: fmin,                                                            \
-      long double: fminl)((X), (Y)))
+    (_Generic((X) + (Y),                                                       \
+        int: __ov_min_i,                                                       \
+        unsigned: __ov_min_u,                                                  \
+        long: __ov_min_l,                                                      \
+        unsigned long: __ov_min_ul,                                            \
+        long long: __ov_min_ll,                                                \
+        unsigned long long: __ov_min_ull,                                      \
+        float: fminf,                                                          \
+        double: fmin,                                                          \
+        long double: fminl)((X), (Y)))
 
 #endif
 
@@ -92,11 +92,11 @@ unsigned long long __ov_min_ull(unsigned long long const x,
  * but no standard C11 */
 
 #define __OV_MAX(x, y)                                                         \
-  ({                                                                           \
-    __typeof__(x) _x = (x);                                                    \
-    __typeof__(y) _y = (y);                                                    \
-    _x > _y ? _x : _y;                                                         \
-  })
+    ({                                                                         \
+        __typeof__(x) _x = (x);                                                \
+        __typeof__(y) _y = (y);                                                \
+        _x > _y ? _x : _y;                                                     \
+    })
 
 #else
 
@@ -111,16 +111,16 @@ unsigned long long __ov_max_ull(unsigned long long const x,
                                 unsigned long long const y);
 
 #define __OV_MAX(X, Y)                                                         \
-  (_Generic((X) + (Y),                                                         \
-      int: __ov_max_i,                                                         \
-      unsigned: __ov_max_u,                                                    \
-      long: __ov_max_l,                                                        \
-      unsigned long: __ov_max_ul,                                              \
-      long long: __ov_max_ll,                                                  \
-      unsigned long long: __ov_max_ull,                                        \
-      float: fmaxf,                                                            \
-      double: fmax,                                                            \
-      long double: fmaxl)((X), (Y)))
+    (_Generic((X) + (Y),                                                       \
+        int: __ov_max_i,                                                       \
+        unsigned: __ov_max_u,                                                  \
+        long: __ov_max_l,                                                      \
+        unsigned long: __ov_max_ul,                                            \
+        long long: __ov_max_ll,                                                \
+        unsigned long long: __ov_max_ull,                                      \
+        float: fmaxf,                                                          \
+        double: fmax,                                                          \
+        long double: fmaxl)((X), (Y)))
 
 #endif
 

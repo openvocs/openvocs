@@ -47,15 +47,15 @@
 
 typedef struct {
 
-  uint32_t counter;
-  uint64_t since_usecs;
+    uint32_t counter;
+    uint64_t since_usecs;
 
 } ov_counter;
 
 bool ov_counter_reset(ov_counter *self);
 
 #define ov_counter_increase(c, increment)                                      \
-  __ov_counter_increase_internal(c, increment)
+    __ov_counter_increase_internal(c, increment)
 
 double ov_counter_average_per_sec(ov_counter counter);
 
@@ -66,18 +66,18 @@ ov_json_value *ov_counter_to_json(ov_counter self);
  ****************************************************************************/
 
 #define __ov_counter_increase_internal(c, increment)                           \
-  do {                                                                         \
-    uint32_t inc32 = (uint32_t)increment;                                      \
-    uint32_t diff = UINT32_MAX - c.counter;                                    \
-    if (diff > inc32) {                                                        \
-      /* No overflow */                                                        \
-      c.counter += inc32;                                                      \
-    } else {                                                                   \
-      /* Counter would overflow -> Reset */                                    \
-      c.counter = 0;                                                           \
-      c.since_usecs = ov_time_get_current_time_usecs();                        \
-    }                                                                          \
-  } while (0)
+    do {                                                                       \
+        uint32_t inc32 = (uint32_t)increment;                                  \
+        uint32_t diff = UINT32_MAX - c.counter;                                \
+        if (diff > inc32) {                                                    \
+            /* No overflow */                                                  \
+            c.counter += inc32;                                                \
+        } else {                                                               \
+            /* Counter would overflow -> Reset */                              \
+            c.counter = 0;                                                     \
+            c.since_usecs = ov_time_get_current_time_usecs();                  \
+        }                                                                      \
+    } while (0)
 
 /*----------------------------------------------------------------------------*/
 #endif

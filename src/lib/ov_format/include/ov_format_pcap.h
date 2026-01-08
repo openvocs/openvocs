@@ -59,24 +59,24 @@ extern char const *OV_FORMAT_PCAP_TYPE_STRING;
 
 typedef struct {
 
-  bool bytes_swapped;
-  uint16_t version_major;
-  uint16_t version_minor;
+    bool bytes_swapped;
+    uint16_t version_major;
+    uint16_t version_minor;
 
-  int32_t thiszone;
-  uint32_t sigfigs;
-  uint32_t snaplen;
-  uint32_t data_link_type; /* 'network' in documentation - one of
-                              OV_FORMAT_PCAP_LINKTYPE_* */
+    int32_t thiszone;
+    uint32_t sigfigs;
+    uint32_t snaplen;
+    uint32_t data_link_type; /* 'network' in documentation - one of
+                                OV_FORMAT_PCAP_LINKTYPE_* */
 
 } ov_format_pcap_global_header;
 
 typedef struct {
 
-  uint32_t timestamp_secs;
-  uint32_t timestamp_usecs;
-  uint32_t length_stored_bytes;
-  uint32_t length_origin_bytes;
+    uint32_t timestamp_secs;
+    uint32_t timestamp_usecs;
+    uint32_t length_stored_bytes;
+    uint32_t length_origin_bytes;
 
 } ov_format_pcap_packet_header;
 

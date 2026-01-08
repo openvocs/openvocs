@@ -42,48 +42,49 @@
 
 int test_ov_mc_socket() {
 
-  ov_socket_configuration config = ov_socket_load_dynamic_port(
-      (ov_socket_configuration){.type = UDP, .host = "239.255.255.255"});
+    ov_socket_configuration config = ov_socket_load_dynamic_port(
+        (ov_socket_configuration){.type = UDP, .host = "239.255.255.255"});
 
-  int server = ov_mc_test_common_open_socket(AF_INET);
-  testrun(-1 != server);
+    int server = ov_mc_test_common_open_socket(AF_INET);
+    testrun(-1 != server);
 
-  struct sockaddr_in address;
-  memset(&address, 0, sizeof(address));
-  address.sin_family = AF_INET;
-  address.sin_addr.s_addr = inet_addr(config.host);
-  address.sin_port = htons(config.port);
+    struct sockaddr_in address;
+    memset(&address, 0, sizeof(address));
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = inet_addr(config.host);
+    address.sin_port = htons(config.port);
 
-  int client = ov_mc_socket(config);
-  testrun(-1 != client);
+    int client = ov_mc_socket(config);
+    testrun(-1 != client);
 
-  char *out = "test";
-  char buffer[1024] = {0};
+    char *out = "test";
+    char buffer[1024] = {0};
 
-  ssize_t bytes = sendto(server, out, 4, 0, (struct sockaddr *)&address,
-                         sizeof(struct sockaddr_in));
+    ssize_t bytes = sendto(server, out, 4, 0, (struct sockaddr *)&address,
+                           sizeof(struct sockaddr_in));
 
-  testrun(4 == bytes);
+    testrun(4 == bytes);
 
-  bytes = -1;
+    bytes = -1;
 
-  struct sockaddr_in in = {0};
-  socklen_t in_len;
+    struct sockaddr_in in = {0};
+    socklen_t in_len;
 
-  while (-1 == bytes) {
+    while (-1 == bytes) {
 
-    in_len = sizeof(in);
-    bytes = recvfrom(client, buffer, 1024, 0, (struct sockaddr *)&in, &in_len);
-  }
+        in_len = sizeof(in);
+        bytes =
+            recvfrom(client, buffer, 1024, 0, (struct sockaddr *)&in, &in_len);
+    }
 
-  testrun(4 == bytes);
-  testrun(0 == strcmp(buffer, out));
+    testrun(4 == bytes);
+    testrun(0 == strcmp(buffer, out));
 
-  testrun(ov_mc_socket_drop_membership(client));
-  close(client);
-  close(server);
+    testrun(ov_mc_socket_drop_membership(client));
+    close(client);
+    close(server);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -98,10 +99,10 @@ int test_ov_mc_socket() {
 
 int all_tests() {
 
-  testrun_init();
-  testrun_test(test_ov_mc_socket);
+    testrun_init();
+    testrun_test(test_ov_mc_socket);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 /*

@@ -35,7 +35,7 @@
 
 typedef struct {
 
-  ov_json_value *codec_parameters;
+    ov_json_value *codec_parameters;
 
 } ov_stream_parameters;
 

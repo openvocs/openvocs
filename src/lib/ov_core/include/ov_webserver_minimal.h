@@ -75,23 +75,23 @@ typedef struct ov_webserver_minimal ov_webserver_minimal;
 
 typedef struct ov_webserver_minimal_config {
 
-  ov_webserver_base_config base;
+    ov_webserver_base_config base;
 
-  struct {
+    struct {
 
-    char path[PATH_MAX];
-    char ext[PATH_MAX];
+        char path[PATH_MAX];
+        char ext[PATH_MAX];
 
-  } mime;
+    } mime;
 
-  struct {
+    struct {
 
-    void *userdata;
+        void *userdata;
 
-    bool (*accept)(void *userdata, int server_socket, int accepted_socket);
-    void (*close)(void *userdata, int connection_socket);
+        bool (*accept)(void *userdata, int server_socket, int accepted_socket);
+        void (*close)(void *userdata, int connection_socket);
 
-  } callback;
+    } callback;
 
 } ov_webserver_minimal_config;
 

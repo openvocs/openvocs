@@ -49,174 +49,174 @@
 static int delete_node(char const *path, const struct stat *sb, int typeflag,
                        struct FTW *ftwbuf) {
 
-  UNUSED(sb);
-  UNUSED(typeflag);
-  UNUSED(ftwbuf);
+    UNUSED(sb);
+    UNUSED(typeflag);
+    UNUSED(ftwbuf);
 
-  int retval = remove(path);
+    int retval = remove(path);
 
-  return retval;
+    return retval;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_dir_tree_remove(const char *path) {
 
-  struct stat statbuf = {0};
-  errno = 0;
+    struct stat statbuf = {0};
+    errno = 0;
 
-  if (0 == path)
-    return false;
+    if (0 == path)
+        return false;
 
-  // no stat not existing
-  if (0 != stat(path, &statbuf))
+    // no stat not existing
+    if (0 != stat(path, &statbuf))
+        return true;
+
+    if (0 !=
+        nftw(path, delete_node, FOPEN_MAX, FTW_DEPTH | FTW_MOUNT | FTW_PHYS)) {
+        return false;
+    }
+
     return true;
-
-  if (0 !=
-      nftw(path, delete_node, FOPEN_MAX, FTW_DEPTH | FTW_MOUNT | FTW_PHYS)) {
-    return false;
-  }
-
-  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static mode_t get_path_mode(char const *path) {
-  // Returns 0 if path does not exist
+    // Returns 0 if path does not exist
 
-  struct stat statbuf = {0};
-  if (stat(path, &statbuf)) {
+    struct stat statbuf = {0};
+    if (stat(path, &statbuf)) {
 
-    /* Does not exist */
-    return 0;
-  }
+        /* Does not exist */
+        return 0;
+    }
 
-  return statbuf.st_mode;
+    return statbuf.st_mode;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool our_mkdir(char const *path) {
 
-  return 0 == mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
+    return 0 == mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool mkdir_recursive(char *path) {
-  // Modifies path
+    // Modifies path
 
-  bool result = false;
+    bool result = false;
 
-  if (0 == path)
-    goto error;
+    if (0 == path)
+        goto error;
 
-  mode_t path_mode = get_path_mode(path);
+    mode_t path_mode = get_path_mode(path);
 
-  /* Special cases */
+    /* Special cases */
 
-  /* 1. Path exists */
-  if (0 != path_mode) {
+    /* 1. Path exists */
+    if (0 != path_mode) {
 
-    return S_ISDIR(path_mode);
-  }
+        return S_ISDIR(path_mode);
+    }
 
-  char *last_occurrence = strrchr(path, '/');
+    char *last_occurrence = strrchr(path, '/');
 
-  /* 2: one relative dir, no path separator */
-  if (0 == last_occurrence) {
+    /* 2: one relative dir, no path separator */
+    if (0 == last_occurrence) {
+        result = our_mkdir(path);
+        goto finish;
+    }
+
+    /* 3. Absolute path, one tier */
+    if (last_occurrence == path) {
+
+        result = our_mkdir(path);
+        goto finish;
+    }
+
+    /* General case: Path separator found ... */
+
+    /* 'Cut' path at second last dir */
+    *last_occurrence = 0;
+
+    if (!mkdir_recursive(path)) {
+
+        ov_log_error("Could not create %s", path);
+        goto error;
+    }
+
+    /* Now, path minus last dir exists,
+     * 'append' last path component again and create entire path
+     */
+
+    *last_occurrence = '/';
+
     result = our_mkdir(path);
-    goto finish;
-  }
-
-  /* 3. Absolute path, one tier */
-  if (last_occurrence == path) {
-
-    result = our_mkdir(path);
-    goto finish;
-  }
-
-  /* General case: Path separator found ... */
-
-  /* 'Cut' path at second last dir */
-  *last_occurrence = 0;
-
-  if (!mkdir_recursive(path)) {
-
-    ov_log_error("Could not create %s", path);
-    goto error;
-  }
-
-  /* Now, path minus last dir exists,
-   * 'append' last path component again and create entire path
-   */
-
-  *last_occurrence = '/';
-
-  result = our_mkdir(path);
 
 finish:
 
-  return result;
+    return result;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_dir_tree_create(char const *path) {
 
-  if (0 == path)
-    goto error;
+    if (0 == path)
+        goto error;
 
-  char clean[PATH_MAX] = {0};
+    char clean[PATH_MAX] = {0};
 
-  if (!ov_uri_path_remove_dot_segments(path, clean))
-    goto error;
+    if (!ov_uri_path_remove_dot_segments(path, clean))
+        goto error;
 
-  size_t len = strlen(clean);
-  if ('/' == clean[len - 1])
-    clean[len - 1] = 0;
+    size_t len = strlen(clean);
+    if ('/' == clean[len - 1])
+        clean[len - 1] = 0;
 
-  char *path_copy = strdup(clean);
-  len = strlen(path_copy);
+    char *path_copy = strdup(clean);
+    len = strlen(path_copy);
 
-  bool result = mkdir_recursive(path_copy);
+    bool result = mkdir_recursive(path_copy);
 
-  free(path_copy);
+    free(path_copy);
 
-  return result;
+    return result;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_dir_access_to_path(const char *path) {
 
-  struct stat statbuf = {0};
-  errno = 0;
+    struct stat statbuf = {0};
+    errno = 0;
 
-  if (!path)
-    goto error;
+    if (!path)
+        goto error;
 
-  if (0 != stat(path, &statbuf))
-    goto error;
+    if (0 != stat(path, &statbuf))
+        goto error;
 
-  mode_t mode = statbuf.st_mode & S_IFMT;
+    mode_t mode = statbuf.st_mode & S_IFMT;
 
-  if (mode != S_IFDIR)
-    goto error;
+    if (mode != S_IFDIR)
+        goto error;
 
-  if (0 != access(path, F_OK))
-    goto error;
+    if (0 != access(path, F_OK))
+        goto error;
 
-  return true;
+    return true;
 error:
-  return false;
+    return false;
 }

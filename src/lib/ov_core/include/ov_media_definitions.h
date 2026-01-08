@@ -31,10 +31,10 @@
 
 typedef enum {
 
-  OV_MEDIA_ERROR = 0,
-  OV_MEDIA_REQUEST,
-  OV_MEDIA_OFFER,
-  OV_MEDIA_ANSWER
+    OV_MEDIA_ERROR = 0,
+    OV_MEDIA_REQUEST,
+    OV_MEDIA_OFFER,
+    OV_MEDIA_ANSWER
 
 } ov_media_type;
 

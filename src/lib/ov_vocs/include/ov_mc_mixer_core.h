@@ -45,9 +45,9 @@ typedef struct ov_mc_mixer_core ov_mc_mixer_core;
 
 typedef struct ov_mc_mixer_core_forward {
 
-  ov_socket_configuration socket;
-  uint32_t ssrc;
-  uint32_t payload_type;
+    ov_socket_configuration socket;
+    uint32_t ssrc;
+    uint32_t payload_type;
 
 } ov_mc_mixer_core_forward;
 
@@ -55,30 +55,30 @@ typedef struct ov_mc_mixer_core_forward {
 
 typedef struct ov_mc_mixer_core_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  ov_vad_config vad;
-  bool incoming_vad;
-  bool drop_no_va;
+    ov_vad_config vad;
+    bool incoming_vad;
+    bool drop_no_va;
 
-  uint64_t samplerate_hz;
+    uint64_t samplerate_hz;
 
-  int16_t comfort_noise_max_amplitude;
+    int16_t comfort_noise_max_amplitude;
 
-  bool normalize_input;
+    bool normalize_input;
 
-  bool rtp_keepalive;
+    bool rtp_keepalive;
 
-  size_t max_num_frames_to_mix;
-  bool normalize_mixing_result_by_square_root;
+    size_t max_num_frames_to_mix;
+    bool normalize_mixing_result_by_square_root;
 
-  struct {
+    struct {
 
-    size_t frame_buffer_max;
+        size_t frame_buffer_max;
 
-  } limit;
+    } limit;
 
-  ov_socket_configuration manager;
+    ov_socket_configuration manager;
 
 } ov_mc_mixer_core_config;
 

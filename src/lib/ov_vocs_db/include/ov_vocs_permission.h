@@ -37,9 +37,9 @@
 
 typedef enum ov_vocs_permission {
 
-  OV_VOCS_NONE = 0,
-  OV_VOCS_RECV = 1,
-  OV_VOCS_SEND = 2
+    OV_VOCS_NONE = 0,
+    OV_VOCS_RECV = 1,
+    OV_VOCS_SEND = 2
 
 } ov_vocs_permission;
 

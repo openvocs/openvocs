@@ -48,20 +48,20 @@ typedef struct ov_io_socket_config ov_io_socket_config;
 
 typedef struct ov_io_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  struct {
+    struct {
 
-    char path[PATH_MAX];
+        char path[PATH_MAX];
 
-  } domain;
+    } domain;
 
-  struct {
+    struct {
 
-    uint64_t reconnect_interval_usec;
-    uint64_t timeout_usec;
+        uint64_t reconnect_interval_usec;
+        uint64_t timeout_usec;
 
-  } limits;
+    } limits;
 
 } ov_io_config;
 
@@ -91,57 +91,57 @@ ov_io_config ov_io_config_from_json(const ov_json_value *input);
 
 struct ov_io_callback {
 
-  void *userdata;
+    void *userdata;
 
-  // will be called back in listener based setup
-  bool (*accept)(void *userdata, int listener, int connection);
+    // will be called back in listener based setup
+    bool (*accept)(void *userdata, int listener, int connection);
 
-  bool (*io)(void *userdata, int connection,
-             const char *optional_domain, // only transmitted for TLS
-             const ov_memory_pointer data);
+    bool (*io)(void *userdata, int connection,
+               const char *optional_domain, // only transmitted for TLS
+               const ov_memory_pointer data);
 
-  void (*close)(void *userdata, int connection);
+    void (*close)(void *userdata, int connection);
 
-  // will be called back in connection based setup
-  void (*connected)(void *userdata, int connection);
+    // will be called back in connection based setup
+    void (*connected)(void *userdata, int connection);
 };
 
 /*----------------------------------------------------------------------------*/
 
 struct ov_io_ssl_config {
 
-  char domain[PATH_MAX]; // hostname to use in handshake
+    char domain[PATH_MAX]; // hostname to use in handshake
 
-  struct {
+    struct {
 
-    char cert[PATH_MAX];
-    char key[PATH_MAX];
+        char cert[PATH_MAX];
+        char key[PATH_MAX];
 
-  } certificate;
+    } certificate;
 
-  struct {
+    struct {
 
-    char file[PATH_MAX]; // path to CA verify file
-    char path[PATH_MAX]; // path to CAs to use
+        char file[PATH_MAX]; // path to CA verify file
+        char path[PATH_MAX]; // path to CAs to use
 
-    char client_ca[PATH_MAX]; // client CA to request for certificate auth
+        char client_ca[PATH_MAX]; // client CA to request for certificate auth
 
-  } ca;
+    } ca;
 
-  uint8_t verify_depth;
+    uint8_t verify_depth;
 };
 
 /*----------------------------------------------------------------------------*/
 
 struct ov_io_socket_config {
 
-  bool auto_reconnect; // only used for clients
+    bool auto_reconnect; // only used for clients
 
-  ov_socket_configuration socket;
+    ov_socket_configuration socket;
 
-  ov_io_callback callbacks;
+    ov_io_callback callbacks;
 
-  ov_io_ssl_config ssl;
+    ov_io_ssl_config ssl;
 };
 
 /*----------------------------------------------------------------------------*/

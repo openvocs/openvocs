@@ -148,8 +148,8 @@ extern "C" {
 #define SQLITE_VERSION "3.45.3"
 #define SQLITE_VERSION_NUMBER 3045003
 #define SQLITE_SOURCE_ID                                                       \
-  "2024-04-15 13:34:05 "                                                       \
-  "8653b758870e6ef0c98d46b3ace27849054af85da891eb121e9aaa537f1e8355"
+    "2024-04-15 13:34:05 "                                                     \
+    "8653b758870e6ef0c98d46b3ace27849054af85da891eb121e9aaa537f1e8355"
 
 /*
 ** CAPI3REF: Run-Time Library Version Numbers
@@ -729,7 +729,7 @@ SQLITE_API int sqlite3_exec(sqlite3 *,       /* An open database */
 */
 typedef struct sqlite3_file sqlite3_file;
 struct sqlite3_file {
-  const struct sqlite3_io_methods *pMethods; /* Methods for an open file */
+    const struct sqlite3_io_methods *pMethods; /* Methods for an open file */
 };
 
 /*
@@ -835,29 +835,29 @@ struct sqlite3_file {
 */
 typedef struct sqlite3_io_methods sqlite3_io_methods;
 struct sqlite3_io_methods {
-  int iVersion;
-  int (*xClose)(sqlite3_file *);
-  int (*xRead)(sqlite3_file *, void *, int iAmt, sqlite3_int64 iOfst);
-  int (*xWrite)(sqlite3_file *, const void *, int iAmt, sqlite3_int64 iOfst);
-  int (*xTruncate)(sqlite3_file *, sqlite3_int64 size);
-  int (*xSync)(sqlite3_file *, int flags);
-  int (*xFileSize)(sqlite3_file *, sqlite3_int64 *pSize);
-  int (*xLock)(sqlite3_file *, int);
-  int (*xUnlock)(sqlite3_file *, int);
-  int (*xCheckReservedLock)(sqlite3_file *, int *pResOut);
-  int (*xFileControl)(sqlite3_file *, int op, void *pArg);
-  int (*xSectorSize)(sqlite3_file *);
-  int (*xDeviceCharacteristics)(sqlite3_file *);
-  /* Methods above are valid for version 1 */
-  int (*xShmMap)(sqlite3_file *, int iPg, int pgsz, int, void volatile **);
-  int (*xShmLock)(sqlite3_file *, int offset, int n, int flags);
-  void (*xShmBarrier)(sqlite3_file *);
-  int (*xShmUnmap)(sqlite3_file *, int deleteFlag);
-  /* Methods above are valid for version 2 */
-  int (*xFetch)(sqlite3_file *, sqlite3_int64 iOfst, int iAmt, void **pp);
-  int (*xUnfetch)(sqlite3_file *, sqlite3_int64 iOfst, void *p);
-  /* Methods above are valid for version 3 */
-  /* Additional methods may be added in future releases */
+    int iVersion;
+    int (*xClose)(sqlite3_file *);
+    int (*xRead)(sqlite3_file *, void *, int iAmt, sqlite3_int64 iOfst);
+    int (*xWrite)(sqlite3_file *, const void *, int iAmt, sqlite3_int64 iOfst);
+    int (*xTruncate)(sqlite3_file *, sqlite3_int64 size);
+    int (*xSync)(sqlite3_file *, int flags);
+    int (*xFileSize)(sqlite3_file *, sqlite3_int64 *pSize);
+    int (*xLock)(sqlite3_file *, int);
+    int (*xUnlock)(sqlite3_file *, int);
+    int (*xCheckReservedLock)(sqlite3_file *, int *pResOut);
+    int (*xFileControl)(sqlite3_file *, int op, void *pArg);
+    int (*xSectorSize)(sqlite3_file *);
+    int (*xDeviceCharacteristics)(sqlite3_file *);
+    /* Methods above are valid for version 1 */
+    int (*xShmMap)(sqlite3_file *, int iPg, int pgsz, int, void volatile **);
+    int (*xShmLock)(sqlite3_file *, int offset, int n, int flags);
+    void (*xShmBarrier)(sqlite3_file *);
+    int (*xShmUnmap)(sqlite3_file *, int deleteFlag);
+    /* Methods above are valid for version 2 */
+    int (*xFetch)(sqlite3_file *, sqlite3_int64 iOfst, int iAmt, void **pp);
+    int (*xUnfetch)(sqlite3_file *, sqlite3_int64 iOfst, void *p);
+    /* Methods above are valid for version 3 */
+    /* Additional methods may be added in future releases */
 };
 
 /*
@@ -1464,42 +1464,44 @@ typedef const char *sqlite3_filename;
 typedef struct sqlite3_vfs sqlite3_vfs;
 typedef void (*sqlite3_syscall_ptr)(void);
 struct sqlite3_vfs {
-  int iVersion;       /* Structure version number (currently 3) */
-  int szOsFile;       /* Size of subclassed sqlite3_file */
-  int mxPathname;     /* Maximum file pathname length */
-  sqlite3_vfs *pNext; /* Next registered VFS */
-  const char *zName;  /* Name of this virtual file system */
-  void *pAppData;     /* Pointer to application-specific data */
-  int (*xOpen)(sqlite3_vfs *, sqlite3_filename zName, sqlite3_file *, int flags,
-               int *pOutFlags);
-  int (*xDelete)(sqlite3_vfs *, const char *zName, int syncDir);
-  int (*xAccess)(sqlite3_vfs *, const char *zName, int flags, int *pResOut);
-  int (*xFullPathname)(sqlite3_vfs *, const char *zName, int nOut, char *zOut);
-  void *(*xDlOpen)(sqlite3_vfs *, const char *zFilename);
-  void (*xDlError)(sqlite3_vfs *, int nByte, char *zErrMsg);
-  void (*(*xDlSym)(sqlite3_vfs *, void *, const char *zSymbol))(void);
-  void (*xDlClose)(sqlite3_vfs *, void *);
-  int (*xRandomness)(sqlite3_vfs *, int nByte, char *zOut);
-  int (*xSleep)(sqlite3_vfs *, int microseconds);
-  int (*xCurrentTime)(sqlite3_vfs *, double *);
-  int (*xGetLastError)(sqlite3_vfs *, int, char *);
-  /*
-  ** The methods above are in version 1 of the sqlite_vfs object
-  ** definition.  Those that follow are added in version 2 or later
-  */
-  int (*xCurrentTimeInt64)(sqlite3_vfs *, sqlite3_int64 *);
-  /*
-  ** The methods above are in versions 1 and 2 of the sqlite_vfs object.
-  ** Those below are for version 3 and greater.
-  */
-  int (*xSetSystemCall)(sqlite3_vfs *, const char *zName, sqlite3_syscall_ptr);
-  sqlite3_syscall_ptr (*xGetSystemCall)(sqlite3_vfs *, const char *zName);
-  const char *(*xNextSystemCall)(sqlite3_vfs *, const char *zName);
-  /*
-  ** The methods above are in versions 1 through 3 of the sqlite_vfs object.
-  ** New fields may be appended in future versions.  The iVersion
-  ** value will increment whenever this happens.
-  */
+    int iVersion;       /* Structure version number (currently 3) */
+    int szOsFile;       /* Size of subclassed sqlite3_file */
+    int mxPathname;     /* Maximum file pathname length */
+    sqlite3_vfs *pNext; /* Next registered VFS */
+    const char *zName;  /* Name of this virtual file system */
+    void *pAppData;     /* Pointer to application-specific data */
+    int (*xOpen)(sqlite3_vfs *, sqlite3_filename zName, sqlite3_file *,
+                 int flags, int *pOutFlags);
+    int (*xDelete)(sqlite3_vfs *, const char *zName, int syncDir);
+    int (*xAccess)(sqlite3_vfs *, const char *zName, int flags, int *pResOut);
+    int (*xFullPathname)(sqlite3_vfs *, const char *zName, int nOut,
+                         char *zOut);
+    void *(*xDlOpen)(sqlite3_vfs *, const char *zFilename);
+    void (*xDlError)(sqlite3_vfs *, int nByte, char *zErrMsg);
+    void (*(*xDlSym)(sqlite3_vfs *, void *, const char *zSymbol))(void);
+    void (*xDlClose)(sqlite3_vfs *, void *);
+    int (*xRandomness)(sqlite3_vfs *, int nByte, char *zOut);
+    int (*xSleep)(sqlite3_vfs *, int microseconds);
+    int (*xCurrentTime)(sqlite3_vfs *, double *);
+    int (*xGetLastError)(sqlite3_vfs *, int, char *);
+    /*
+    ** The methods above are in version 1 of the sqlite_vfs object
+    ** definition.  Those that follow are added in version 2 or later
+    */
+    int (*xCurrentTimeInt64)(sqlite3_vfs *, sqlite3_int64 *);
+    /*
+    ** The methods above are in versions 1 and 2 of the sqlite_vfs object.
+    ** Those below are for version 3 and greater.
+    */
+    int (*xSetSystemCall)(sqlite3_vfs *, const char *zName,
+                          sqlite3_syscall_ptr);
+    sqlite3_syscall_ptr (*xGetSystemCall)(sqlite3_vfs *, const char *zName);
+    const char *(*xNextSystemCall)(sqlite3_vfs *, const char *zName);
+    /*
+    ** The methods above are in versions 1 through 3 of the sqlite_vfs object.
+    ** New fields may be appended in future versions.  The iVersion
+    ** value will increment whenever this happens.
+    */
 };
 
 /*
@@ -1764,14 +1766,14 @@ SQLITE_API int sqlite3_db_config(sqlite3 *, int op, ...);
 */
 typedef struct sqlite3_mem_methods sqlite3_mem_methods;
 struct sqlite3_mem_methods {
-  void *(*xMalloc)(int);          /* Memory allocation function */
-  void (*xFree)(void *);          /* Free a prior allocation */
-  void *(*xRealloc)(void *, int); /* Resize an allocation */
-  int (*xSize)(void *);           /* Return the size of an allocation */
-  int (*xRoundup)(int);           /* Round up request size to allocation size */
-  int (*xInit)(void *);           /* Initialize the memory allocator */
-  void (*xShutdown)(void *);      /* Deinitialize the memory allocator */
-  void *pAppData;                 /* Argument to xInit() and xShutdown() */
+    void *(*xMalloc)(int);          /* Memory allocation function */
+    void (*xFree)(void *);          /* Free a prior allocation */
+    void *(*xRealloc)(void *, int); /* Resize an allocation */
+    int (*xSize)(void *);           /* Return the size of an allocation */
+    int (*xRoundup)(int);      /* Round up request size to allocation size */
+    int (*xInit)(void *);      /* Initialize the memory allocator */
+    void (*xShutdown)(void *); /* Deinitialize the memory allocator */
+    void *pAppData;            /* Argument to xInit() and xShutdown() */
 };
 
 /*
@@ -7284,45 +7286,45 @@ typedef struct sqlite3_module sqlite3_module;
 ** any database connection.
 */
 struct sqlite3_module {
-  int iVersion;
-  int (*xCreate)(sqlite3 *, void *pAux, int argc, const char *const *argv,
-                 sqlite3_vtab **ppVTab, char **);
-  int (*xConnect)(sqlite3 *, void *pAux, int argc, const char *const *argv,
-                  sqlite3_vtab **ppVTab, char **);
-  int (*xBestIndex)(sqlite3_vtab *pVTab, sqlite3_index_info *);
-  int (*xDisconnect)(sqlite3_vtab *pVTab);
-  int (*xDestroy)(sqlite3_vtab *pVTab);
-  int (*xOpen)(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor);
-  int (*xClose)(sqlite3_vtab_cursor *);
-  int (*xFilter)(sqlite3_vtab_cursor *, int idxNum, const char *idxStr,
-                 int argc, sqlite3_value **argv);
-  int (*xNext)(sqlite3_vtab_cursor *);
-  int (*xEof)(sqlite3_vtab_cursor *);
-  int (*xColumn)(sqlite3_vtab_cursor *, sqlite3_context *, int);
-  int (*xRowid)(sqlite3_vtab_cursor *, sqlite3_int64 *pRowid);
-  int (*xUpdate)(sqlite3_vtab *, int, sqlite3_value **, sqlite3_int64 *);
-  int (*xBegin)(sqlite3_vtab *pVTab);
-  int (*xSync)(sqlite3_vtab *pVTab);
-  int (*xCommit)(sqlite3_vtab *pVTab);
-  int (*xRollback)(sqlite3_vtab *pVTab);
-  int (*xFindFunction)(sqlite3_vtab *pVtab, int nArg, const char *zName,
-                       void (**pxFunc)(sqlite3_context *, int,
-                                       sqlite3_value **),
-                       void **ppArg);
-  int (*xRename)(sqlite3_vtab *pVtab, const char *zNew);
-  /* The methods above are in version 1 of the sqlite_module object. Those
-  ** below are for version 2 and greater. */
-  int (*xSavepoint)(sqlite3_vtab *pVTab, int);
-  int (*xRelease)(sqlite3_vtab *pVTab, int);
-  int (*xRollbackTo)(sqlite3_vtab *pVTab, int);
-  /* The methods above are in versions 1 and 2 of the sqlite_module object.
-  ** Those below are for version 3 and greater. */
-  int (*xShadowName)(const char *);
-  /* The methods above are in versions 1 through 3 of the sqlite_module
-   *object.
-   ** Those below are for version 4 and greater. */
-  int (*xIntegrity)(sqlite3_vtab *pVTab, const char *zSchema,
-                    const char *zTabName, int mFlags, char **pzErr);
+    int iVersion;
+    int (*xCreate)(sqlite3 *, void *pAux, int argc, const char *const *argv,
+                   sqlite3_vtab **ppVTab, char **);
+    int (*xConnect)(sqlite3 *, void *pAux, int argc, const char *const *argv,
+                    sqlite3_vtab **ppVTab, char **);
+    int (*xBestIndex)(sqlite3_vtab *pVTab, sqlite3_index_info *);
+    int (*xDisconnect)(sqlite3_vtab *pVTab);
+    int (*xDestroy)(sqlite3_vtab *pVTab);
+    int (*xOpen)(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor);
+    int (*xClose)(sqlite3_vtab_cursor *);
+    int (*xFilter)(sqlite3_vtab_cursor *, int idxNum, const char *idxStr,
+                   int argc, sqlite3_value **argv);
+    int (*xNext)(sqlite3_vtab_cursor *);
+    int (*xEof)(sqlite3_vtab_cursor *);
+    int (*xColumn)(sqlite3_vtab_cursor *, sqlite3_context *, int);
+    int (*xRowid)(sqlite3_vtab_cursor *, sqlite3_int64 *pRowid);
+    int (*xUpdate)(sqlite3_vtab *, int, sqlite3_value **, sqlite3_int64 *);
+    int (*xBegin)(sqlite3_vtab *pVTab);
+    int (*xSync)(sqlite3_vtab *pVTab);
+    int (*xCommit)(sqlite3_vtab *pVTab);
+    int (*xRollback)(sqlite3_vtab *pVTab);
+    int (*xFindFunction)(sqlite3_vtab *pVtab, int nArg, const char *zName,
+                         void (**pxFunc)(sqlite3_context *, int,
+                                         sqlite3_value **),
+                         void **ppArg);
+    int (*xRename)(sqlite3_vtab *pVtab, const char *zNew);
+    /* The methods above are in version 1 of the sqlite_module object. Those
+    ** below are for version 2 and greater. */
+    int (*xSavepoint)(sqlite3_vtab *pVTab, int);
+    int (*xRelease)(sqlite3_vtab *pVTab, int);
+    int (*xRollbackTo)(sqlite3_vtab *pVTab, int);
+    /* The methods above are in versions 1 and 2 of the sqlite_module object.
+    ** Those below are for version 3 and greater. */
+    int (*xShadowName)(const char *);
+    /* The methods above are in versions 1 through 3 of the sqlite_module
+     *object.
+     ** Those below are for version 4 and greater. */
+    int (*xIntegrity)(sqlite3_vtab *pVTab, const char *zSchema,
+                      const char *zTabName, int mFlags, char **pzErr);
 };
 
 /*
@@ -7428,35 +7430,35 @@ struct sqlite3_module {
 ** 3009000.
 */
 struct sqlite3_index_info {
-  /* Inputs */
-  int nConstraint; /* Number of entries in aConstraint */
-  struct sqlite3_index_constraint {
-    int iColumn;          /* Column constrained.  -1 for ROWID */
-    unsigned char op;     /* Constraint operator */
-    unsigned char usable; /* True if this constraint is usable */
-    int iTermOffset;      /* Used internally - xBestIndex should ignore */
-  } *aConstraint;         /* Table of WHERE clause constraints */
-  int nOrderBy;           /* Number of terms in the ORDER BY clause */
-  struct sqlite3_index_orderby {
-    int iColumn;        /* Column number */
-    unsigned char desc; /* True for DESC.  False for ASC. */
-  } *aOrderBy;          /* The ORDER BY clause */
-  /* Outputs */
-  struct sqlite3_index_constraint_usage {
-    int argvIndex;      /* if >0, constraint is part of argv to xFilter */
-    unsigned char omit; /* Do not code a test for this constraint */
-  } *aConstraintUsage;
-  int idxNum;           /* Number used to identify the index */
-  char *idxStr;         /* String, possibly obtained from sqlite3_malloc */
-  int needToFreeIdxStr; /* Free idxStr using sqlite3_free() if true */
-  int orderByConsumed;  /* True if output is already ordered */
-  double estimatedCost; /* Estimated cost of using this index */
-  /* Fields below are only available in SQLite 3.8.2 and later */
-  sqlite3_int64 estimatedRows; /* Estimated number of rows returned */
-  /* Fields below are only available in SQLite 3.9.0 and later */
-  int idxFlags; /* Mask of SQLITE_INDEX_SCAN_* flags */
-  /* Fields below are only available in SQLite 3.10.0 and later */
-  sqlite3_uint64 colUsed; /* Input: Mask of columns used by statement */
+    /* Inputs */
+    int nConstraint; /* Number of entries in aConstraint */
+    struct sqlite3_index_constraint {
+        int iColumn;          /* Column constrained.  -1 for ROWID */
+        unsigned char op;     /* Constraint operator */
+        unsigned char usable; /* True if this constraint is usable */
+        int iTermOffset;      /* Used internally - xBestIndex should ignore */
+    } *aConstraint;           /* Table of WHERE clause constraints */
+    int nOrderBy;             /* Number of terms in the ORDER BY clause */
+    struct sqlite3_index_orderby {
+        int iColumn;        /* Column number */
+        unsigned char desc; /* True for DESC.  False for ASC. */
+    } *aOrderBy;            /* The ORDER BY clause */
+    /* Outputs */
+    struct sqlite3_index_constraint_usage {
+        int argvIndex;      /* if >0, constraint is part of argv to xFilter */
+        unsigned char omit; /* Do not code a test for this constraint */
+    } *aConstraintUsage;
+    int idxNum;           /* Number used to identify the index */
+    char *idxStr;         /* String, possibly obtained from sqlite3_malloc */
+    int needToFreeIdxStr; /* Free idxStr using sqlite3_free() if true */
+    int orderByConsumed;  /* True if output is already ordered */
+    double estimatedCost; /* Estimated cost of using this index */
+    /* Fields below are only available in SQLite 3.8.2 and later */
+    sqlite3_int64 estimatedRows; /* Estimated number of rows returned */
+    /* Fields below are only available in SQLite 3.9.0 and later */
+    int idxFlags; /* Mask of SQLITE_INDEX_SCAN_* flags */
+    /* Fields below are only available in SQLite 3.10.0 and later */
+    sqlite3_uint64 colUsed; /* Input: Mask of columns used by statement */
 };
 
 /*
@@ -7606,10 +7608,10 @@ SQLITE_API int sqlite3_drop_modules(
 ** freed by sqlite3_free() and the zErrMsg field will be zeroed.
 */
 struct sqlite3_vtab {
-  const sqlite3_module *pModule; /* The module for this virtual table */
-  int nRef;                      /* Number of open cursors */
-  char *zErrMsg;                 /* Error message from sqlite3_mprintf() */
-  /* Virtual table implementations will typically add additional fields */
+    const sqlite3_module *pModule; /* The module for this virtual table */
+    int nRef;                      /* Number of open cursors */
+    char *zErrMsg;                 /* Error message from sqlite3_mprintf() */
+    /* Virtual table implementations will typically add additional fields */
 };
 
 /*
@@ -7630,8 +7632,8 @@ struct sqlite3_vtab {
 ** are common to all implementations.
 */
 struct sqlite3_vtab_cursor {
-  sqlite3_vtab *pVtab; /* Virtual table of this cursor */
-  /* Virtual table implementations will typically add additional fields */
+    sqlite3_vtab *pVtab; /* Virtual table of this cursor */
+    /* Virtual table implementations will typically add additional fields */
 };
 
 /*
@@ -8123,15 +8125,15 @@ SQLITE_API void sqlite3_mutex_leave(sqlite3_mutex *);
 */
 typedef struct sqlite3_mutex_methods sqlite3_mutex_methods;
 struct sqlite3_mutex_methods {
-  int (*xMutexInit)(void);
-  int (*xMutexEnd)(void);
-  sqlite3_mutex *(*xMutexAlloc)(int);
-  void (*xMutexFree)(sqlite3_mutex *);
-  void (*xMutexEnter)(sqlite3_mutex *);
-  int (*xMutexTry)(sqlite3_mutex *);
-  void (*xMutexLeave)(sqlite3_mutex *);
-  int (*xMutexHeld)(sqlite3_mutex *);
-  int (*xMutexNotheld)(sqlite3_mutex *);
+    int (*xMutexInit)(void);
+    int (*xMutexEnd)(void);
+    sqlite3_mutex *(*xMutexAlloc)(int);
+    void (*xMutexFree)(sqlite3_mutex *);
+    void (*xMutexEnter)(sqlite3_mutex *);
+    int (*xMutexTry)(sqlite3_mutex *);
+    void (*xMutexLeave)(sqlite3_mutex *);
+    int (*xMutexHeld)(sqlite3_mutex *);
+    int (*xMutexNotheld)(sqlite3_mutex *);
 };
 
 /*
@@ -8892,8 +8894,8 @@ typedef struct sqlite3_pcache sqlite3_pcache;
 */
 typedef struct sqlite3_pcache_page sqlite3_pcache_page;
 struct sqlite3_pcache_page {
-  void *pBuf;   /* The content of the page */
-  void *pExtra; /* Extra information associated with the page */
+    void *pBuf;   /* The content of the page */
+    void *pExtra; /* Extra information associated with the page */
 };
 
 /*
@@ -9057,21 +9059,21 @@ struct sqlite3_pcache_page {
 */
 typedef struct sqlite3_pcache_methods2 sqlite3_pcache_methods2;
 struct sqlite3_pcache_methods2 {
-  int iVersion;
-  void *pArg;
-  int (*xInit)(void *);
-  void (*xShutdown)(void *);
-  sqlite3_pcache *(*xCreate)(int szPage, int szExtra, int bPurgeable);
-  void (*xCachesize)(sqlite3_pcache *, int nCachesize);
-  int (*xPagecount)(sqlite3_pcache *);
-  sqlite3_pcache_page *(*xFetch)(sqlite3_pcache *, unsigned key,
-                                 int createFlag);
-  void (*xUnpin)(sqlite3_pcache *, sqlite3_pcache_page *, int discard);
-  void (*xRekey)(sqlite3_pcache *, sqlite3_pcache_page *, unsigned oldKey,
-                 unsigned newKey);
-  void (*xTruncate)(sqlite3_pcache *, unsigned iLimit);
-  void (*xDestroy)(sqlite3_pcache *);
-  void (*xShrink)(sqlite3_pcache *);
+    int iVersion;
+    void *pArg;
+    int (*xInit)(void *);
+    void (*xShutdown)(void *);
+    sqlite3_pcache *(*xCreate)(int szPage, int szExtra, int bPurgeable);
+    void (*xCachesize)(sqlite3_pcache *, int nCachesize);
+    int (*xPagecount)(sqlite3_pcache *);
+    sqlite3_pcache_page *(*xFetch)(sqlite3_pcache *, unsigned key,
+                                   int createFlag);
+    void (*xUnpin)(sqlite3_pcache *, sqlite3_pcache_page *, int discard);
+    void (*xRekey)(sqlite3_pcache *, sqlite3_pcache_page *, unsigned oldKey,
+                   unsigned newKey);
+    void (*xTruncate)(sqlite3_pcache *, unsigned iLimit);
+    void (*xDestroy)(sqlite3_pcache *);
+    void (*xShrink)(sqlite3_pcache *);
 };
 
 /*
@@ -9081,17 +9083,17 @@ struct sqlite3_pcache_methods2 {
 */
 typedef struct sqlite3_pcache_methods sqlite3_pcache_methods;
 struct sqlite3_pcache_methods {
-  void *pArg;
-  int (*xInit)(void *);
-  void (*xShutdown)(void *);
-  sqlite3_pcache *(*xCreate)(int szPage, int bPurgeable);
-  void (*xCachesize)(sqlite3_pcache *, int nCachesize);
-  int (*xPagecount)(sqlite3_pcache *);
-  void *(*xFetch)(sqlite3_pcache *, unsigned key, int createFlag);
-  void (*xUnpin)(sqlite3_pcache *, void *, int discard);
-  void (*xRekey)(sqlite3_pcache *, void *, unsigned oldKey, unsigned newKey);
-  void (*xTruncate)(sqlite3_pcache *, unsigned iLimit);
-  void (*xDestroy)(sqlite3_pcache *);
+    void *pArg;
+    int (*xInit)(void *);
+    void (*xShutdown)(void *);
+    sqlite3_pcache *(*xCreate)(int szPage, int bPurgeable);
+    void (*xCachesize)(sqlite3_pcache *, int nCachesize);
+    int (*xPagecount)(sqlite3_pcache *);
+    void *(*xFetch)(sqlite3_pcache *, unsigned key, int createFlag);
+    void (*xUnpin)(sqlite3_pcache *, void *, int discard);
+    void (*xRekey)(sqlite3_pcache *, void *, unsigned oldKey, unsigned newKey);
+    void (*xTruncate)(sqlite3_pcache *, unsigned iLimit);
+    void (*xDestroy)(sqlite3_pcache *);
 };
 
 /*
@@ -10453,7 +10455,7 @@ SQLITE_API int sqlite3_system_errno(sqlite3 *);
 ** the most recent version.
 */
 typedef struct sqlite3_snapshot {
-  unsigned char hidden[48];
+    unsigned char hidden[48];
 } sqlite3_snapshot;
 
 /*
@@ -10835,11 +10837,11 @@ SQLITE_API int sqlite3_rtree_geometry_callback(
 ** argument to callbacks registered using rtree_geometry_callback().
 */
 struct sqlite3_rtree_geometry {
-  void *pContext;            /* Copy of pContext passed to s_r_g_c() */
-  int nParam;                /* Size of array aParam[] */
-  sqlite3_rtree_dbl *aParam; /* Parameters passed to SQL geom function */
-  void *pUser;               /* Callback implementation user data */
-  void (*xDelUser)(void *);  /* Called by SQLite to clean up pUser */
+    void *pContext;            /* Copy of pContext passed to s_r_g_c() */
+    int nParam;                /* Size of array aParam[] */
+    sqlite3_rtree_dbl *aParam; /* Parameters passed to SQL geom function */
+    void *pUser;               /* Callback implementation user data */
+    void (*xDelUser)(void *);  /* Called by SQLite to clean up pUser */
 };
 
 /*
@@ -10863,23 +10865,23 @@ sqlite3_rtree_query_callback(sqlite3 *db, const char *zQueryFunc,
 ** sqlite3_rtree_geometry.
 */
 struct sqlite3_rtree_query_info {
-  void *pContext;                 /* pContext from when function registered */
-  int nParam;                     /* Number of function parameters */
-  sqlite3_rtree_dbl *aParam;      /* value of function parameters */
-  void *pUser;                    /* callback can use this, if desired */
-  void (*xDelUser)(void *);       /* function to free pUser */
-  sqlite3_rtree_dbl *aCoord;      /* Coordinates of node or entry to check */
-  unsigned int *anQueue;          /* Number of pending entries in the queue */
-  int nCoord;                     /* Number of coordinates */
-  int iLevel;                     /* Level of current node or entry */
-  int mxLevel;                    /* The largest iLevel value in the tree */
-  sqlite3_int64 iRowid;           /* Rowid for current entry */
-  sqlite3_rtree_dbl rParentScore; /* Score of parent node */
-  int eParentWithin;              /* Visibility of parent node */
-  int eWithin;                    /* OUT: Visibility */
-  sqlite3_rtree_dbl rScore;       /* OUT: Write the score here */
-  /* The following fields are only available in 3.8.11 and later */
-  sqlite3_value **apSqlParam; /* Original SQL values of parameters */
+    void *pContext;                 /* pContext from when function registered */
+    int nParam;                     /* Number of function parameters */
+    sqlite3_rtree_dbl *aParam;      /* value of function parameters */
+    void *pUser;                    /* callback can use this, if desired */
+    void (*xDelUser)(void *);       /* function to free pUser */
+    sqlite3_rtree_dbl *aCoord;      /* Coordinates of node or entry to check */
+    unsigned int *anQueue;          /* Number of pending entries in the queue */
+    int nCoord;                     /* Number of coordinates */
+    int iLevel;                     /* Level of current node or entry */
+    int mxLevel;                    /* The largest iLevel value in the tree */
+    sqlite3_int64 iRowid;           /* Rowid for current entry */
+    sqlite3_rtree_dbl rParentScore; /* Score of parent node */
+    int eParentWithin;              /* Visibility of parent node */
+    int eWithin;                    /* OUT: Visibility */
+    sqlite3_rtree_dbl rScore;       /* OUT: Write the score here */
+    /* The following fields are only available in 3.8.11 and later */
+    sqlite3_value **apSqlParam; /* Original SQL values of parameters */
 };
 
 /*
@@ -12714,8 +12716,8 @@ typedef void (*fts5_extension_function)(
 );
 
 struct Fts5PhraseIter {
-  const unsigned char *a;
-  const unsigned char *b;
+    const unsigned char *a;
+    const unsigned char *b;
 };
 
 /*
@@ -12973,48 +12975,52 @@ struct Fts5PhraseIter {
 **   "detail=none" or "detail=column" option.
 */
 struct Fts5ExtensionApi {
-  int iVersion; /* Currently always set to 3 */
+    int iVersion; /* Currently always set to 3 */
 
-  void *(*xUserData)(Fts5Context *);
+    void *(*xUserData)(Fts5Context *);
 
-  int (*xColumnCount)(Fts5Context *);
-  int (*xRowCount)(Fts5Context *, sqlite3_int64 *pnRow);
-  int (*xColumnTotalSize)(Fts5Context *, int iCol, sqlite3_int64 *pnToken);
+    int (*xColumnCount)(Fts5Context *);
+    int (*xRowCount)(Fts5Context *, sqlite3_int64 *pnRow);
+    int (*xColumnTotalSize)(Fts5Context *, int iCol, sqlite3_int64 *pnToken);
 
-  int (*xTokenize)(Fts5Context *, const char *pText,
-                   int nText,  /* Text to tokenize */
-                   void *pCtx, /* Context passed to xToken() */
-                   int (*xToken)(void *, int, const char *, int, int,
-                                 int) /* Callback */
-  );
+    int (*xTokenize)(Fts5Context *, const char *pText,
+                     int nText,  /* Text to tokenize */
+                     void *pCtx, /* Context passed to xToken() */
+                     int (*xToken)(void *, int, const char *, int, int,
+                                   int) /* Callback */
+    );
 
-  int (*xPhraseCount)(Fts5Context *);
-  int (*xPhraseSize)(Fts5Context *, int iPhrase);
+    int (*xPhraseCount)(Fts5Context *);
+    int (*xPhraseSize)(Fts5Context *, int iPhrase);
 
-  int (*xInstCount)(Fts5Context *, int *pnInst);
-  int (*xInst)(Fts5Context *, int iIdx, int *piPhrase, int *piCol, int *piOff);
+    int (*xInstCount)(Fts5Context *, int *pnInst);
+    int (*xInst)(Fts5Context *, int iIdx, int *piPhrase, int *piCol,
+                 int *piOff);
 
-  sqlite3_int64 (*xRowid)(Fts5Context *);
-  int (*xColumnText)(Fts5Context *, int iCol, const char **pz, int *pn);
-  int (*xColumnSize)(Fts5Context *, int iCol, int *pnToken);
+    sqlite3_int64 (*xRowid)(Fts5Context *);
+    int (*xColumnText)(Fts5Context *, int iCol, const char **pz, int *pn);
+    int (*xColumnSize)(Fts5Context *, int iCol, int *pnToken);
 
-  int (*xQueryPhrase)(Fts5Context *, int iPhrase, void *pUserData,
-                      int (*)(const Fts5ExtensionApi *, Fts5Context *, void *));
-  int (*xSetAuxdata)(Fts5Context *, void *pAux, void (*xDelete)(void *));
-  void *(*xGetAuxdata)(Fts5Context *, int bClear);
+    int (*xQueryPhrase)(Fts5Context *, int iPhrase, void *pUserData,
+                        int (*)(const Fts5ExtensionApi *, Fts5Context *,
+                                void *));
+    int (*xSetAuxdata)(Fts5Context *, void *pAux, void (*xDelete)(void *));
+    void *(*xGetAuxdata)(Fts5Context *, int bClear);
 
-  int (*xPhraseFirst)(Fts5Context *, int iPhrase, Fts5PhraseIter *, int *,
+    int (*xPhraseFirst)(Fts5Context *, int iPhrase, Fts5PhraseIter *, int *,
+                        int *);
+    void (*xPhraseNext)(Fts5Context *, Fts5PhraseIter *, int *piCol,
+                        int *piOff);
+
+    int (*xPhraseFirstColumn)(Fts5Context *, int iPhrase, Fts5PhraseIter *,
+                              int *);
+    void (*xPhraseNextColumn)(Fts5Context *, Fts5PhraseIter *, int *piCol);
+
+    /* Below this point are iVersion>=3 only */
+    int (*xQueryToken)(Fts5Context *, int iPhrase, int iToken,
+                       const char **ppToken, int *pnToken);
+    int (*xInstToken)(Fts5Context *, int iIdx, int iToken, const char **,
                       int *);
-  void (*xPhraseNext)(Fts5Context *, Fts5PhraseIter *, int *piCol, int *piOff);
-
-  int (*xPhraseFirstColumn)(Fts5Context *, int iPhrase, Fts5PhraseIter *,
-                            int *);
-  void (*xPhraseNextColumn)(Fts5Context *, Fts5PhraseIter *, int *piCol);
-
-  /* Below this point are iVersion>=3 only */
-  int (*xQueryToken)(Fts5Context *, int iPhrase, int iToken,
-                     const char **ppToken, int *pnToken);
-  int (*xInstToken)(Fts5Context *, int iIdx, int iToken, const char **, int *);
 };
 
 /*
@@ -13216,19 +13222,20 @@ struct Fts5ExtensionApi {
 typedef struct Fts5Tokenizer Fts5Tokenizer;
 typedef struct fts5_tokenizer fts5_tokenizer;
 struct fts5_tokenizer {
-  int (*xCreate)(void *, const char **azArg, int nArg, Fts5Tokenizer **ppOut);
-  void (*xDelete)(Fts5Tokenizer *);
-  int (*xTokenize)(
-      Fts5Tokenizer *, void *pCtx,
-      int flags, /* Mask of FTS5_TOKENIZE_* flags */
-      const char *pText, int nText,
-      int (*xToken)(void *pCtx, /* Copy of 2nd argument to xTokenize() */
-                    int tflags, /* Mask of FTS5_TOKEN_* flags */
-                    const char *pToken, /* Pointer to buffer containing token */
-                    int nToken,         /* Size of token in bytes */
-                    int iStart, /* Byte offset of token within input text */
-                    int iEnd /* Byte offset of end of token within input text */
-                    ));
+    int (*xCreate)(void *, const char **azArg, int nArg, Fts5Tokenizer **ppOut);
+    void (*xDelete)(Fts5Tokenizer *);
+    int (*xTokenize)(
+        Fts5Tokenizer *, void *pCtx,
+        int flags, /* Mask of FTS5_TOKENIZE_* flags */
+        const char *pText, int nText,
+        int (*xToken)(
+            void *pCtx,         /* Copy of 2nd argument to xTokenize() */
+            int tflags,         /* Mask of FTS5_TOKEN_* flags */
+            const char *pToken, /* Pointer to buffer containing token */
+            int nToken,         /* Size of token in bytes */
+            int iStart,         /* Byte offset of token within input text */
+            int iEnd /* Byte offset of end of token within input text */
+            ));
 };
 
 /* Flags that may be passed as the third argument to xTokenize() */
@@ -13250,20 +13257,21 @@ struct fts5_tokenizer {
 */
 typedef struct fts5_api fts5_api;
 struct fts5_api {
-  int iVersion; /* Currently always set to 2 */
+    int iVersion; /* Currently always set to 2 */
 
-  /* Create a new tokenizer */
-  int (*xCreateTokenizer)(fts5_api *pApi, const char *zName, void *pUserData,
-                          fts5_tokenizer *pTokenizer, void (*xDestroy)(void *));
+    /* Create a new tokenizer */
+    int (*xCreateTokenizer)(fts5_api *pApi, const char *zName, void *pUserData,
+                            fts5_tokenizer *pTokenizer,
+                            void (*xDestroy)(void *));
 
-  /* Find an existing tokenizer */
-  int (*xFindTokenizer)(fts5_api *pApi, const char *zName, void **ppUserData,
-                        fts5_tokenizer *pTokenizer);
+    /* Find an existing tokenizer */
+    int (*xFindTokenizer)(fts5_api *pApi, const char *zName, void **ppUserData,
+                          fts5_tokenizer *pTokenizer);
 
-  /* Create a new auxiliary function */
-  int (*xCreateFunction)(fts5_api *pApi, const char *zName, void *pUserData,
-                         fts5_extension_function xFunction,
-                         void (*xDestroy)(void *));
+    /* Create a new auxiliary function */
+    int (*xCreateFunction)(fts5_api *pApi, const char *zName, void *pUserData,
+                           fts5_extension_function xFunction,
+                           void (*xDestroy)(void *));
 };
 
 /*

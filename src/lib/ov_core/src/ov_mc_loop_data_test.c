@@ -40,46 +40,46 @@
 
 int test_ov_mc_loop_data_from_json() {
 
-  ov_json_value *val =
-      ov_mc_loop_data_to_json((ov_mc_loop_data){.socket.host = "229.0.0.1",
-                                                .socket.port = 12345,
-                                                .socket.type = UDP,
-                                                .name = "loop1",
-                                                .volume = 50});
+    ov_json_value *val =
+        ov_mc_loop_data_to_json((ov_mc_loop_data){.socket.host = "229.0.0.1",
+                                                  .socket.port = 12345,
+                                                  .socket.type = UDP,
+                                                  .name = "loop1",
+                                                  .volume = 50});
 
-  testrun(val);
+    testrun(val);
 
-  ov_mc_loop_data data = ov_mc_loop_data_from_json(val);
-  testrun(0 == strcmp("229.0.0.1", data.socket.host));
-  testrun(12345 == data.socket.port);
-  testrun(UDP == data.socket.type);
-  testrun(0 == strcmp("loop1", data.name));
-  testrun(50 == data.volume);
+    ov_mc_loop_data data = ov_mc_loop_data_from_json(val);
+    testrun(0 == strcmp("229.0.0.1", data.socket.host));
+    testrun(12345 == data.socket.port);
+    testrun(UDP == data.socket.type);
+    testrun(0 == strcmp("loop1", data.name));
+    testrun(50 == data.volume);
 
-  val = ov_json_value_free(val);
+    val = ov_json_value_free(val);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_mc_loop_data_to_json() {
 
-  ov_json_value *val =
-      ov_mc_loop_data_to_json((ov_mc_loop_data){.socket.host = "229.0.0.1",
-                                                .socket.port = 12345,
-                                                .socket.type = UDP,
-                                                .name = "loop1",
-                                                .volume = 50});
+    ov_json_value *val =
+        ov_mc_loop_data_to_json((ov_mc_loop_data){.socket.host = "229.0.0.1",
+                                                  .socket.port = 12345,
+                                                  .socket.type = UDP,
+                                                  .name = "loop1",
+                                                  .volume = 50});
 
-  testrun(val);
-  testrun(ov_json_get(val, "/" OV_KEY_SOCKET));
-  testrun(ov_json_get(val, "/" OV_KEY_NAME));
-  testrun(ov_json_get(val, "/" OV_KEY_VOLUME));
+    testrun(val);
+    testrun(ov_json_get(val, "/" OV_KEY_SOCKET));
+    testrun(ov_json_get(val, "/" OV_KEY_NAME));
+    testrun(ov_json_get(val, "/" OV_KEY_VOLUME));
 
-  val = ov_json_value_free(val);
+    val = ov_json_value_free(val);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*
@@ -92,11 +92,11 @@ int test_ov_mc_loop_data_to_json() {
 
 int all_tests() {
 
-  testrun_init();
-  testrun_test(test_ov_mc_loop_data_from_json);
-  testrun_test(test_ov_mc_loop_data_to_json);
+    testrun_init();
+    testrun_test(test_ov_mc_loop_data_from_json);
+    testrun_test(test_ov_mc_loop_data_to_json);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 /*

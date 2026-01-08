@@ -67,38 +67,38 @@ typedef struct ov_mc_backend ov_mc_backend;
 
 typedef struct ov_mc_backend_config {
 
-  ov_event_loop *loop;
-  ov_io *io;
-
-  struct {
-
-    ov_socket_configuration manager; // manager liege socket
-
-  } socket;
-
-  struct {
-
-    ov_mc_mixer_core_config config;
-
-  } mixer;
-
-  struct {
-
-    uint64_t request_usec;
-
-  } timeout;
-
-  struct {
-
-    void *userdata;
+    ov_event_loop *loop;
+    ov_io *io;
 
     struct {
 
-      void (*lost)(void *userdata, const char *uuid);
+        ov_socket_configuration manager; // manager liege socket
+
+    } socket;
+
+    struct {
+
+        ov_mc_mixer_core_config config;
 
     } mixer;
 
-  } callback;
+    struct {
+
+        uint64_t request_usec;
+
+    } timeout;
+
+    struct {
+
+        void *userdata;
+
+        struct {
+
+            void (*lost)(void *userdata, const char *uuid);
+
+        } mixer;
+
+    } callback;
 
 } ov_mc_backend_config;
 

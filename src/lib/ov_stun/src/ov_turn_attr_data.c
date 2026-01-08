@@ -31,19 +31,19 @@
 
 bool ov_turn_attr_is_data(const uint8_t *buffer, size_t length) {
 
-  if (!buffer || length < 8)
-    goto error;
+    if (!buffer || length < 8)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  // int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    // int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != TURN_ATTR_DATA)
-    goto error;
+    if (type != TURN_ATTR_DATA)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*
@@ -56,12 +56,12 @@ error:
 
 size_t ov_turn_attr_data_encoding_length(size_t data) {
 
-  size_t pad = 0;
-  pad = data % 4;
-  if (pad != 0)
-    pad = 4 - pad;
+    size_t pad = 0;
+    pad = data % 4;
+    if (pad != 0)
+        pad = 4 - pad;
 
-  return data + 4 + pad;
+    return data + 4 + pad;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -69,18 +69,18 @@ size_t ov_turn_attr_data_encoding_length(size_t data) {
 bool ov_turn_attr_data_encode(uint8_t *buffer, size_t length, uint8_t **next,
                               const uint8_t *data, size_t size) {
 
-  if (!buffer || !data || size < 1)
-    goto error;
+    if (!buffer || !data || size < 1)
+        goto error;
 
-  size_t len = ov_turn_attr_data_encoding_length(size);
+    size_t len = ov_turn_attr_data_encoding_length(size);
 
-  if (length < len)
-    goto error;
+    if (length < len)
+        goto error;
 
-  return ov_stun_attribute_encode(buffer, length, next, TURN_ATTR_DATA, data,
-                                  size);
+    return ov_stun_attribute_encode(buffer, length, next, TURN_ATTR_DATA, data,
+                                    size);
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -88,20 +88,20 @@ error:
 bool ov_turn_attr_data_decode(const uint8_t *buffer, size_t length,
                               const uint8_t **data, size_t *size) {
 
-  if (!buffer || length < 8 || !data || !size)
-    goto error;
+    if (!buffer || length < 8 || !data || !size)
+        goto error;
 
-  if (!ov_turn_attr_is_data(buffer, length))
-    goto error;
+    if (!ov_turn_attr_is_data(buffer, length))
+        goto error;
 
-  int64_t len = ov_stun_attribute_get_length(buffer, length);
-  if (len <= 0)
-    goto error;
+    int64_t len = ov_stun_attribute_get_length(buffer, length);
+    if (len <= 0)
+        goto error;
 
-  *size = (size_t)len;
-  *data = (uint8_t *)buffer + 4;
+    *size = (size_t)len;
+    *data = (uint8_t *)buffer + 4;
 
-  return true;
+    return true;
 error:
-  return false;
+    return false;
 }

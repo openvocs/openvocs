@@ -33,85 +33,85 @@
 
 const char *ov_vocs_json_get_id(const ov_json_value *val) {
 
-  ov_json_value *itm = ov_json_object_get(val, OV_KEY_ID);
-  return ov_json_string_get(itm);
+    ov_json_value *itm = ov_json_object_get(val, OV_KEY_ID);
+    return ov_json_string_get(itm);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_vocs_json_set_id(ov_json_value *val, const char *id) {
 
-  ov_json_value *out = NULL;
-  if (!val || !id)
-    goto error;
+    ov_json_value *out = NULL;
+    if (!val || !id)
+        goto error;
 
-  out = ov_json_string(id);
-  if (!ov_json_object_set(val, OV_KEY_ID, out))
-    goto error;
+    out = ov_json_string(id);
+    if (!ov_json_object_set(val, OV_KEY_ID, out))
+        goto error;
 
-  return true;
+    return true;
 error:
-  ov_json_value_free(out);
-  return false;
+    ov_json_value_free(out);
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_vocs_json_set_session_id(ov_json_value *val, const char *id) {
 
-  ov_json_value *out = NULL;
-  if (!val || !id)
-    goto error;
+    ov_json_value *out = NULL;
+    if (!val || !id)
+        goto error;
 
-  out = ov_json_string(id);
-  if (!ov_json_object_set(val, OV_KEY_SESSION, out))
-    goto error;
+    out = ov_json_string(id);
+    if (!ov_json_object_set(val, OV_KEY_SESSION, out))
+        goto error;
 
-  return true;
+    return true;
 error:
-  ov_json_value_free(out);
-  return false;
+    ov_json_value_free(out);
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 const char *ov_vocs_json_get_name(const ov_json_value *val) {
 
-  ov_json_value *itm = ov_json_object_get(val, OV_KEY_NAME);
-  return ov_json_string_get(itm);
+    ov_json_value *itm = ov_json_object_get(val, OV_KEY_NAME);
+    return ov_json_string_get(itm);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_vocs_json_is_admin_user(const ov_json_value *val, const char *user) {
 
-  if (!val || !user)
-    goto error;
+    if (!val || !user)
+        goto error;
 
-  ov_json_value *roles = ov_json_object_get(val, OV_KEY_ROLES);
-  ov_json_value *role = ov_json_object_get(roles, OV_KEY_ADMIN);
-  ov_json_value *users = ov_json_object_get(role, OV_KEY_USERS);
+    ov_json_value *roles = ov_json_object_get(val, OV_KEY_ROLES);
+    ov_json_value *role = ov_json_object_get(roles, OV_KEY_ADMIN);
+    ov_json_value *users = ov_json_object_get(role, OV_KEY_USERS);
 
-  if (ov_json_object_get(users, user))
-    return true;
+    if (ov_json_object_get(users, user))
+        return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 const char *ov_vocs_json_get_domain_id(const ov_json_value *project) {
 
-  ov_json_value *projects = project->parent;
-  if (!projects)
-    goto error;
+    ov_json_value *projects = project->parent;
+    if (!projects)
+        goto error;
 
-  ov_json_value *domain = projects->parent;
-  if (!domain)
-    goto error;
+    ov_json_value *domain = projects->parent;
+    if (!domain)
+        goto error;
 
-  return ov_vocs_json_get_id(domain);
+    return ov_vocs_json_get_id(domain);
 error:
-  return NULL;
+    return NULL;
 }

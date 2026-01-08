@@ -77,8 +77,8 @@ typedef struct ov_event_broadcast ov_event_broadcast;
 
 typedef struct ov_event_broadcast_config {
 
-  uint64_t lock_timeout_usec;
-  uint32_t max_sockets;
+    uint64_t lock_timeout_usec;
+    uint32_t max_sockets;
 
 } ov_event_broadcast_config;
 

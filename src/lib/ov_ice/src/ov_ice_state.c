@@ -34,46 +34,46 @@
 
 const char *ov_ice_state_to_string(ov_ice_state state) {
 
-  switch (state) {
+    switch (state) {
 
-  case OV_ICE_ERROR:
-    return OV_KEY_ERROR;
+    case OV_ICE_ERROR:
+        return OV_KEY_ERROR;
 
-  case OV_ICE_INIT:
-    return OV_KEY_INIT;
+    case OV_ICE_INIT:
+        return OV_KEY_INIT;
 
-  case OV_ICE_RUNNING:
-    return OV_KEY_RUNNING;
+    case OV_ICE_RUNNING:
+        return OV_KEY_RUNNING;
 
-  case OV_ICE_COMPLETED:
-    return OV_KEY_COMPLETED;
+    case OV_ICE_COMPLETED:
+        return OV_KEY_COMPLETED;
 
-  case OV_ICE_FAILED:
-    return OV_KEY_FAILED;
-  }
+    case OV_ICE_FAILED:
+        return OV_KEY_FAILED;
+    }
 
-  return NULL;
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_ice_state ov_ice_state_from_string(const char *string) {
 
-  if (!string)
-    goto error;
+    if (!string)
+        goto error;
 
-  if (0 == strcmp(string, OV_KEY_COMPLETED))
-    return OV_ICE_COMPLETED;
+    if (0 == strcmp(string, OV_KEY_COMPLETED))
+        return OV_ICE_COMPLETED;
 
-  if (0 == strcmp(string, OV_KEY_FAILED))
-    return OV_ICE_FAILED;
+    if (0 == strcmp(string, OV_KEY_FAILED))
+        return OV_ICE_FAILED;
 
-  if (0 == strcmp(string, OV_KEY_RUNNING))
-    return OV_ICE_RUNNING;
+    if (0 == strcmp(string, OV_KEY_RUNNING))
+        return OV_ICE_RUNNING;
 
-  if (0 == strcmp(string, OV_KEY_INIT))
-    return OV_ICE_INIT;
+    if (0 == strcmp(string, OV_KEY_INIT))
+        return OV_ICE_INIT;
 
 error:
-  return OV_ICE_ERROR;
+    return OV_ICE_ERROR;
 }

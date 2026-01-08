@@ -146,7 +146,7 @@ char const *ov_value_get_string(ov_value const *value);
  * and not copied
  */
 #define ov_value_list(...)                                                     \
-  internal_ov_value_list((ov_value *[]){__VA_ARGS__, 0})
+    internal_ov_value_list((ov_value *[]){__VA_ARGS__, 0})
 
 ov_value *ov_value_list_get(ov_value *list, size_t i);
 
@@ -207,31 +207,31 @@ ov_value *internal_ov_value_list(ov_value **values);
 
 typedef struct {
 
-  char const *key;
-  ov_value *value;
+    char const *key;
+    ov_value *value;
 
 } ov_key_value_pair;
 
 #define PAIR(k, v)                                                             \
-  (ov_key_value_pair) { .key = k, .value = v }
+    (ov_key_value_pair) { .key = k, .value = v }
 
 #define OBJECT(n, ...) object_build(n, (ov_key_value_pair[]){__VA_ARGS__, {0}})
 
 static ov_value *object_build(size_t dummy, ov_key_value_pair pairs[]) {
 
-  UNUSED(dummy);
+    UNUSED(dummy);
 
-  ov_value *o = ov_value_object();
+    ov_value *o = ov_value_object();
 
-  ov_key_value_pair *pair = pairs;
+    ov_key_value_pair *pair = pairs;
 
-  while (0 != pair->key) {
+    while (0 != pair->key) {
 
-    ov_value_object_set(o, pair->key, pair->value);
-    ++pair;
-  }
+        ov_value_object_set(o, pair->key, pair->value);
+        ++pair;
+    }
 
-  return o;
+    return o;
 }
 #endif
 

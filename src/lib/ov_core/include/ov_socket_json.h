@@ -40,13 +40,13 @@ typedef struct ov_socket_json ov_socket_json;
 
 typedef struct ov_socket_json_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  struct {
+    struct {
 
-    uint64_t threadlock_timeout_usec;
+        uint64_t threadlock_timeout_usec;
 
-  } limits;
+    } limits;
 
 } ov_socket_json_config;
 

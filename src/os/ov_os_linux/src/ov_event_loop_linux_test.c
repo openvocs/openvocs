@@ -42,19 +42,19 @@
 
 static int test_reconnect() {
 
-  return ov_reconnect_manager_connect_test(ov_event_loop_linux);
+    return ov_reconnect_manager_connect_test(ov_event_loop_linux);
 }
 
 /*----------------------------------------------------------------------------*/
 
 int all_tests() {
 
-  testrun_init();
+    testrun_init();
 
-  OV_EVENT_LOOP_PERFORM_INTERFACE_TESTS(ov_event_loop_linux);
-  testrun_test(test_reconnect);
+    OV_EVENT_LOOP_PERFORM_INTERFACE_TESTS(ov_event_loop_linux);
+    testrun_test(test_reconnect);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 testrun_run(all_tests);

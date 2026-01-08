@@ -37,44 +37,44 @@
 bool ov_stream_parameters_to_json(ov_stream_parameters const params,
                                   ov_json_value *target) {
 
-  ov_json_value *spars = 0;
+    ov_json_value *spars = 0;
 
-  if (!ov_ptr_valid(target, "No JSON to add stream parameters to")) {
-    goto error;
-  }
+    if (!ov_ptr_valid(target, "No JSON to add stream parameters to")) {
+        goto error;
+    }
 
-  spars = ov_json_object();
+    spars = ov_json_object();
 
-  OV_ASSERT(0 != spars);
+    OV_ASSERT(0 != spars);
 
-  ov_json_value *copy = 0;
+    ov_json_value *copy = 0;
 
-  if ((0 != params.codec_parameters) &&
-      (!ov_json_value_copy((void **)&copy, params.codec_parameters))) {
+    if ((0 != params.codec_parameters) &&
+        (!ov_json_value_copy((void **)&copy, params.codec_parameters))) {
+
+        copy = 0;
+    }
+
+    if (0 != copy) {
+
+        ov_json_object_set(spars, OV_KEY_CODEC, copy);
+    }
 
     copy = 0;
-  }
 
-  if (0 != copy) {
+    ov_json_object_set(target, OV_KEY_STREAM_PARAMETERS, spars);
 
-    ov_json_object_set(spars, OV_KEY_CODEC, copy);
-  }
-
-  copy = 0;
-
-  ov_json_object_set(target, OV_KEY_STREAM_PARAMETERS, spars);
-
-  return true;
+    return true;
 
 error:
 
-  if (0 != spars) {
-    spars = spars->free(spars);
-  }
+    if (0 != spars) {
+        spars = spars->free(spars);
+    }
 
-  OV_ASSERT(0 == spars);
+    OV_ASSERT(0 == spars);
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -82,44 +82,44 @@ error:
 bool ov_stream_parameters_from_json(ov_json_value const *jv,
                                     ov_stream_parameters *target_params) {
 
-  if ((0 == jv) || (0 == target_params)) {
-    goto error;
-  }
+    if ((0 == jv) || (0 == target_params)) {
+        goto error;
+    }
 
-  ov_json_value const *sparam = ov_json_get(jv, "/" OV_KEY_STREAM_PARAMETERS);
+    ov_json_value const *sparam = ov_json_get(jv, "/" OV_KEY_STREAM_PARAMETERS);
 
-  ov_json_value const *codec_params = ov_json_get(sparam, "/" OV_KEY_CODEC);
+    ov_json_value const *codec_params = ov_json_get(sparam, "/" OV_KEY_CODEC);
 
-  if (0 == codec_params) {
-    ov_log_error(OV_KEY_CODEC " not found in json");
-    goto error;
-  }
+    if (0 == codec_params) {
+        ov_log_error(OV_KEY_CODEC " not found in json");
+        goto error;
+    }
 
-  // Here it's crinching...
-  target_params->codec_parameters = (ov_json_value *)codec_params;
+    // Here it's crinching...
+    target_params->codec_parameters = (ov_json_value *)codec_params;
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_stream_parameters_clear(ov_stream_parameters *params) {
 
-  if (0 == params) {
-    goto error;
-  }
+    if (0 == params) {
+        goto error;
+    }
 
-  params->codec_parameters = ov_json_value_free(params->codec_parameters);
+    params->codec_parameters = ov_json_value_free(params->codec_parameters);
 
-  return 0 != params->codec_parameters;
+    return 0 != params->codec_parameters;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/

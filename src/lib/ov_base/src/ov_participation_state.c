@@ -33,63 +33,63 @@
 
 char const *ov_participation_state_to_string(ov_participation_state state) {
 
-  switch (state) {
+    switch (state) {
 
-  case OV_PARTICIPATION_STATE_RECV:
-    return OV_KEY_RECV;
+    case OV_PARTICIPATION_STATE_RECV:
+        return OV_KEY_RECV;
 
-  case OV_PARTICIPATION_STATE_RECV_OFF:
-    return OV_KEY_RECV "_OFF";
+    case OV_PARTICIPATION_STATE_RECV_OFF:
+        return OV_KEY_RECV "_OFF";
 
-  case OV_PARTICIPATION_STATE_SEND:
-    return OV_KEY_SEND;
+    case OV_PARTICIPATION_STATE_SEND:
+        return OV_KEY_SEND;
 
-  case OV_PARTICIPATION_STATE_SEND_OFF:
-    return OV_KEY_SEND "_OFF";
+    case OV_PARTICIPATION_STATE_SEND_OFF:
+        return OV_KEY_SEND "_OFF";
 
-  case OV_PARTICIPATION_STATE_PTT_OFF:
-    return OV_KEY_PTT "_OFF";
+    case OV_PARTICIPATION_STATE_PTT_OFF:
+        return OV_KEY_PTT "_OFF";
 
-  case OV_PARTICIPATION_STATE_PTT:
-    return OV_KEY_PTT;
+    case OV_PARTICIPATION_STATE_PTT:
+        return OV_KEY_PTT;
 
-  default:
-    return OV_KEY_NONE;
-  }
+    default:
+        return OV_KEY_NONE;
+    }
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_participation_state ov_participation_state_from_string(char const *state) {
 
-  if (ov_string_equal(state, OV_KEY_SEND)) {
+    if (ov_string_equal(state, OV_KEY_SEND)) {
 
-    return OV_PARTICIPATION_STATE_SEND;
+        return OV_PARTICIPATION_STATE_SEND;
 
-  } else if (ov_string_equal(state, OV_KEY_SEND "_OFF")) {
+    } else if (ov_string_equal(state, OV_KEY_SEND "_OFF")) {
 
-    return OV_PARTICIPATION_STATE_SEND_OFF;
+        return OV_PARTICIPATION_STATE_SEND_OFF;
 
-  } else if (ov_string_equal(state, OV_KEY_RECV)) {
+    } else if (ov_string_equal(state, OV_KEY_RECV)) {
 
-    return OV_PARTICIPATION_STATE_RECV_OFF;
+        return OV_PARTICIPATION_STATE_RECV_OFF;
 
-  } else if (ov_string_equal(state, OV_KEY_RECV "_OFF")) {
+    } else if (ov_string_equal(state, OV_KEY_RECV "_OFF")) {
 
-    return OV_PARTICIPATION_STATE_RECV_OFF;
+        return OV_PARTICIPATION_STATE_RECV_OFF;
 
-  } else if (ov_string_equal(state, OV_KEY_PTT "_OFF")) {
+    } else if (ov_string_equal(state, OV_KEY_PTT "_OFF")) {
 
-    return OV_PARTICIPATION_STATE_PTT_OFF;
+        return OV_PARTICIPATION_STATE_PTT_OFF;
 
-  } else if (ov_string_equal(state, OV_KEY_PTT)) {
+    } else if (ov_string_equal(state, OV_KEY_PTT)) {
 
-    return OV_PARTICIPATION_STATE_PTT;
+        return OV_PARTICIPATION_STATE_PTT;
 
-  } else {
+    } else {
 
-    return OV_PARTICIPATION_STATE_NONE;
-  }
+        return OV_PARTICIPATION_STATE_NONE;
+    }
 }
 
 /*----------------------------------------------------------------------------*/

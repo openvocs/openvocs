@@ -42,18 +42,18 @@ typedef struct ov_alsa_playback ov_alsa_playback;
 
 typedef struct {
 
-  char const *alsa_device;
-  char const *mixer_element;
+    char const *alsa_device;
+    char const *mixer_element;
 
-  uint16_t msecs_to_buffer_ahead;
+    uint16_t msecs_to_buffer_ahead;
 
-  double volume;
+    double volume;
 
-  struct {
-    uint16_t max_amplitude;
-  } comfort_noise;
+    struct {
+        uint16_t max_amplitude;
+    } comfort_noise;
 
-  int logging_fd;
+    int logging_fd;
 
 } ov_alsa_playback_config;
 
@@ -70,9 +70,9 @@ ov_alsa_playback *ov_alsa_playback_free(ov_alsa_playback *self);
 
 typedef enum {
 
-  ALSA_REPLAY_FAILED,
-  ALSA_REPLAY_OK,
-  ALSA_REPLAY_INSUFFICIENT
+    ALSA_REPLAY_FAILED,
+    ALSA_REPLAY_OK,
+    ALSA_REPLAY_INSUFFICIENT
 } ov_alsa_playback_play_result;
 
 ov_alsa_playback_play_result ov_alsa_playback_play(ov_alsa_playback *self,

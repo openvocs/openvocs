@@ -42,13 +42,13 @@ typedef struct ov_stun_transaction_store ov_stun_transaction_store;
 
 typedef struct ov_stun_transaction_store_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  struct {
+    struct {
 
-    uint64_t invalidation_usec;
+        uint64_t invalidation_usec;
 
-  } timer;
+    } timer;
 
 } ov_stun_transaction_store_config;
 

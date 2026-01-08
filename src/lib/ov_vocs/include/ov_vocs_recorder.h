@@ -51,24 +51,24 @@ typedef struct ov_vocs_recorder ov_vocs_recorder;
 
 typedef struct ov_vocs_recorder_config {
 
-  ov_event_loop *loop;
-  ov_vocs_db *vocs_db;
+    ov_event_loop *loop;
+    ov_vocs_db *vocs_db;
 
-  ov_vad_config vad;
+    ov_vad_config vad;
 
-  struct {
+    struct {
 
-    uint64_t silence_cutoff_interval_msec;
+        uint64_t silence_cutoff_interval_msec;
 
-  } limits;
+    } limits;
 
-  struct {
+    struct {
 
-    ov_socket_configuration manager;
+        ov_socket_configuration manager;
 
-  } socket;
+    } socket;
 
-  struct {
+    struct {
 
         uint64_t response_usec;
 
@@ -78,12 +78,12 @@ typedef struct ov_vocs_recorder_config {
 
         void *userdata;
 
-    void (*start_record)(void *userdata, const char *uuid, ov_result error);
-    void (*stop_record)(void *userdata, const char *uuid, ov_result error);
+        void (*start_record)(void *userdata, const char *uuid, ov_result error);
+        void (*stop_record)(void *userdata, const char *uuid, ov_result error);
 
-  } callbacks;
+    } callbacks;
 
-  ov_database_info db;
+    ov_database_info db;
 
 } ov_vocs_recorder_config;
 
@@ -152,16 +152,16 @@ ov_json_value *ov_vocs_recorder_get_recorded_loops(ov_vocs_recorder *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_recorder_start_loop_recording(ov_vocs_recorder *self, 
-    const char *uuid, const char *loop,
-    void *userdata, int socket, 
-    void (*callback)(void*, int, const char*, const char*, ov_result));
+bool ov_vocs_recorder_start_loop_recording(
+    ov_vocs_recorder *self, const char *uuid, const char *loop, void *userdata,
+    int socket,
+    void (*callback)(void *, int, const char *, const char *, ov_result));
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_recorder_stop_loop_recording(ov_vocs_recorder *self, 
-    const char *uuid, const char *loop,
-    void *userdata, int socket, 
-    void (*callback)(void*, int, const char*, const char*, ov_result));
+bool ov_vocs_recorder_stop_loop_recording(
+    ov_vocs_recorder *self, const char *uuid, const char *loop, void *userdata,
+    int socket,
+    void (*callback)(void *, int, const char *, const char *, ov_result));
 
 #endif /* ov_vocs_recorder_h */

@@ -31,22 +31,22 @@
 
 bool ov_turn_attr_is_dont_fragment(const uint8_t *buffer, size_t length) {
 
-  if (!buffer || length < 4)
-    goto error;
+    if (!buffer || length < 4)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != TURN_DONT_FRAGMENT)
-    goto error;
+    if (type != TURN_DONT_FRAGMENT)
+        goto error;
 
-  if (size != 0)
-    goto error;
+    if (size != 0)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*
@@ -64,16 +64,16 @@ size_t ov_turn_attr_dont_fragment_encoding_length() { return 4; }
 bool ov_turn_attr_dont_fragment_encode(uint8_t *buffer, size_t length,
                                        uint8_t **next) {
 
-  if (!buffer)
-    goto error;
+    if (!buffer)
+        goto error;
 
-  size_t len = ov_turn_attr_dont_fragment_encoding_length();
+    size_t len = ov_turn_attr_dont_fragment_encoding_length();
 
-  if (length < len)
-    goto error;
+    if (length < len)
+        goto error;
 
-  return ov_stun_attribute_encode(buffer, length, next, TURN_DONT_FRAGMENT,
-                                  NULL, 0);
+    return ov_stun_attribute_encode(buffer, length, next, TURN_DONT_FRAGMENT,
+                                    NULL, 0);
 error:
-  return false;
+    return false;
 }

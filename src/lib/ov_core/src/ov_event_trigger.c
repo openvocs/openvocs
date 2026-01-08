@@ -40,62 +40,62 @@
 
 struct ov_event_trigger {
 
-  uint16_t magic_bytes;
-  ov_event_trigger_config config;
+    uint16_t magic_bytes;
+    ov_event_trigger_config config;
 
-  ov_dict *events;
+    ov_dict *events;
 };
 
 /*----------------------------------------------------------------------------*/
 
 ov_event_trigger *ov_event_trigger_create(ov_event_trigger_config config) {
 
-  ov_event_trigger *trigger = NULL;
+    ov_event_trigger *trigger = NULL;
 
-  trigger = calloc(1, sizeof(ov_event_trigger));
-  if (!trigger)
-    goto error;
+    trigger = calloc(1, sizeof(ov_event_trigger));
+    if (!trigger)
+        goto error;
 
-  trigger->magic_bytes = OV_EVENT_TRIGGER_MAGIC_BYTES;
-  trigger->config = config;
+    trigger->magic_bytes = OV_EVENT_TRIGGER_MAGIC_BYTES;
+    trigger->config = config;
 
-  ov_dict_config d_config = ov_dict_string_key_config(255);
-  d_config.value.data_function.free = ov_data_pointer_free;
+    ov_dict_config d_config = ov_dict_string_key_config(255);
+    d_config.value.data_function.free = ov_data_pointer_free;
 
-  trigger->events = ov_dict_create(d_config);
-  if (!trigger->events)
-    goto error;
+    trigger->events = ov_dict_create(d_config);
+    if (!trigger->events)
+        goto error;
 
-  return trigger;
+    return trigger;
 error:
-  ov_event_trigger_free(trigger);
-  return NULL;
+    ov_event_trigger_free(trigger);
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_event_trigger *ov_event_trigger_cast(const void *self) {
 
-  if (!self)
-    goto error;
+    if (!self)
+        goto error;
 
-  if (*(uint16_t *)self == OV_EVENT_TRIGGER_MAGIC_BYTES)
-    return (ov_event_trigger *)self;
+    if (*(uint16_t *)self == OV_EVENT_TRIGGER_MAGIC_BYTES)
+        return (ov_event_trigger *)self;
 error:
-  return NULL;
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_event_trigger_free(void *self) {
 
-  ov_event_trigger *trigger = ov_event_trigger_cast(self);
-  if (!trigger)
-    return self;
+    ov_event_trigger *trigger = ov_event_trigger_cast(self);
+    if (!trigger)
+        return self;
 
-  trigger->events = ov_dict_free(trigger->events);
-  trigger = ov_data_pointer_free(trigger);
-  return NULL;
+    trigger->events = ov_dict_free(trigger->events);
+    trigger = ov_data_pointer_free(trigger);
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -103,24 +103,24 @@ void *ov_event_trigger_free(void *self) {
 bool ov_event_trigger_register_listener(ov_event_trigger *self, const char *key,
                                         ov_event_trigger_data data) {
 
-  if (!self || !key || !data.userdata || !data.process)
-    goto error;
+    if (!self || !key || !data.userdata || !data.process)
+        goto error;
 
-  char *k = ov_string_dup(key);
-  ov_event_trigger_data *val = calloc(1, sizeof(ov_event_trigger_data));
-  *val = data;
+    char *k = ov_string_dup(key);
+    ov_event_trigger_data *val = calloc(1, sizeof(ov_event_trigger_data));
+    *val = data;
 
-  if (!ov_dict_set(self->events, k, val, NULL)) {
+    if (!ov_dict_set(self->events, k, val, NULL)) {
 
-    k = ov_data_pointer_free(k);
-    val = ov_data_pointer_free(val);
-    goto error;
-  }
+        k = ov_data_pointer_free(k);
+        val = ov_data_pointer_free(val);
+        goto error;
+    }
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -128,18 +128,18 @@ error:
 bool ov_event_trigger_send(ov_event_trigger *self, const char *key,
                            ov_json_value *event) {
 
-  if (!self || !key || !event)
-    goto error;
+    if (!self || !key || !event)
+        goto error;
 
-  ov_event_trigger_data *data = ov_dict_get(self->events, key);
-  if (!data)
-    goto error;
+    ov_event_trigger_data *data = ov_dict_get(self->events, key);
+    if (!data)
+        goto error;
 
-  if (!data->process)
-    goto error;
+    if (!data->process)
+        goto error;
 
-  data->process(data->userdata, event);
-  return true;
+    data->process(data->userdata, event);
+    return true;
 error:
-  return false;
+    return false;
 }

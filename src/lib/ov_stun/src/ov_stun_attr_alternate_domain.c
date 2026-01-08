@@ -32,17 +32,17 @@
 bool ov_stun_attribute_frame_is_alternate_domain(const uint8_t *buffer,
                                                  size_t length) {
 
-  if (!buffer || length < 8)
-    goto error;
+    if (!buffer || length < 8)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  // int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    // int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != STUN_ATTR_ALTERNATE_DOMAIN)
-    goto error;
+    if (type != STUN_ATTR_ALTERNATE_DOMAIN)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }

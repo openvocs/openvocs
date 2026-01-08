@@ -108,24 +108,24 @@ bool ov_json_object_remove_child(ov_json_value *obj, ov_json_value *child);
 extern ov_json_value *(*object_creator)();
 
 #define OV_JSON_OBJECT_PERFORM_INTERFACE_TESTS(create)                         \
-  do {                                                                         \
+    do {                                                                       \
                                                                                \
-    object_creator = create;                                                   \
+        object_creator = create;                                               \
                                                                                \
-    testrun_test(test_impl_json_object_clear);                                 \
-    testrun_test(test_impl_json_object_free);                                  \
+        testrun_test(test_impl_json_object_clear);                             \
+        testrun_test(test_impl_json_object_free);                              \
                                                                                \
-    testrun_test(test_impl_json_object_set);                                   \
-    testrun_test(test_impl_json_object_del);                                   \
-    testrun_test(test_impl_json_object_get);                                   \
-    testrun_test(test_impl_json_object_remove);                                \
+        testrun_test(test_impl_json_object_set);                               \
+        testrun_test(test_impl_json_object_del);                               \
+        testrun_test(test_impl_json_object_get);                               \
+        testrun_test(test_impl_json_object_remove);                            \
                                                                                \
-    testrun_test(test_impl_json_object_count);                                 \
-    testrun_test(test_impl_json_object_is_empty);                              \
-    testrun_test(test_impl_json_object_for_each);                              \
-    testrun_test(test_impl_json_object_remove_child);                          \
+        testrun_test(test_impl_json_object_count);                             \
+        testrun_test(test_impl_json_object_is_empty);                          \
+        testrun_test(test_impl_json_object_for_each);                          \
+        testrun_test(test_impl_json_object_remove_child);                      \
                                                                                \
-  } while (0)
+    } while (0)
 
 /*
  *      ------------------------------------------------------------------------

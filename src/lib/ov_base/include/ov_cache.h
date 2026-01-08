@@ -47,7 +47,7 @@
 typedef struct ov_cache_struct ov_cache;
 
 typedef struct {
-  size_t capacity;
+    size_t capacity;
 } ov_cache_config;
 
 /*----------------------------------------------------------------------------*/

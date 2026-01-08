@@ -33,9 +33,9 @@
 
 typedef enum {
 
-  ANALOGUE_INVALID = -1,
-  ANALOGUE_IN,
-  ANALOGUE_OUT,
+    ANALOGUE_INVALID = -1,
+    ANALOGUE_IN,
+    ANALOGUE_OUT,
 
 } ov_analogue_event_type;
 
@@ -45,15 +45,15 @@ char const *ov_analogue_event_type_to_string(ov_analogue_event_type type);
 
 typedef struct {
 
-  ov_analogue_event_type type;
+    ov_analogue_event_type type;
 
-  struct {
-    ov_socket_configuration mc_socket;
-    ov_json_value const *codec_config;
-    uint32_t ssid;
-  } rtp;
+    struct {
+        ov_socket_configuration mc_socket;
+        ov_json_value const *codec_config;
+        uint32_t ssid;
+    } rtp;
 
-  uint32_t channel;
+    uint32_t channel;
 
 } ov_analogue_event;
 
@@ -66,8 +66,8 @@ ov_analogue_event ov_analogue_event_from_json(ov_json_value const *jval);
 
 typedef struct {
 
-  ov_analogue_event_type type;
-  uint32_t channel;
+    ov_analogue_event_type type;
+    uint32_t channel;
 
 } ov_analogue_stop_event;
 
@@ -81,7 +81,7 @@ ov_analogue_stop_event_from_json(ov_json_value const *jval);
 
 typedef struct {
 
-  ov_analogue_event_type type;
+    ov_analogue_event_type type;
 
 } ov_analogue_list_channel_event;
 
@@ -92,8 +92,8 @@ ov_analogue_list_channel_event_from_json(ov_json_value const *jval);
 
 typedef struct {
 
-  ov_analogue_event_type type;
-  size_t number;
+    ov_analogue_event_type type;
+    size_t number;
 
 } ov_analogue_channel;
 

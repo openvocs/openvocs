@@ -46,15 +46,15 @@ typedef struct ov_event_session ov_event_session;
 
 typedef struct ov_event_session_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  char path[PATH_MAX];
+    char path[PATH_MAX];
 
-  struct {
+    struct {
 
-    uint64_t max_lifetime_usec;
+        uint64_t max_lifetime_usec;
 
-  } limit;
+    } limit;
 
 } ov_event_session_config;
 

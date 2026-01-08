@@ -81,8 +81,8 @@ bool ov_rtp_stream_buffer_put(ov_rtp_stream_buffer *self, ov_rtp_frame *frame);
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
-  size_t number_of_frames_ready;
-  uint16_t sequence_number;
+    size_t number_of_frames_ready;
+    uint16_t sequence_number;
 } ov_rtp_stream_buffer_lookahead_info;
 
 ov_rtp_stream_buffer_lookahead_info

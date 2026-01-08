@@ -50,11 +50,11 @@
 
 typedef enum {
 
-  OV_ICE_PROXY_GENERIC_ERROR = -1,
-  OV_ICE_PROXY_GENERIC_INIT = 0,
-  OV_ICE_PROXY_GENERIC_RUNNING = 1,
-  OV_ICE_PROXY_GENERIC_COMPLETED = 2,
-  OV_ICE_PROXY_GENERIC_FAILED = 3
+    OV_ICE_PROXY_GENERIC_ERROR = -1,
+    OV_ICE_PROXY_GENERIC_INIT = 0,
+    OV_ICE_PROXY_GENERIC_RUNNING = 1,
+    OV_ICE_PROXY_GENERIC_COMPLETED = 2,
+    OV_ICE_PROXY_GENERIC_FAILED = 3
 
 } ov_ice_proxy_generic_state;
 
@@ -62,88 +62,88 @@ typedef enum {
 
 typedef struct ov_ice_proxy_generic_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  ov_socket_configuration external;
-
-  struct {
-
-    // only for dynamic proxy not for multiplexing
+    ov_socket_configuration external;
 
     struct {
 
-      uint32_t min;
-      uint32_t max;
+        // only for dynamic proxy not for multiplexing
 
-    } ports;
+        struct {
 
-    struct {
+            uint32_t min;
+            uint32_t max;
 
-      ov_socket_configuration server;
+        } ports;
 
-    } stun;
+        struct {
 
-    struct {
+            ov_socket_configuration server;
 
-      ov_socket_configuration server;
-      char username[OV_ICE_PROXY_GENERIC_TURN_USERNAME_MAX];
-      char password[OV_ICE_PROXY_GENERIC_TURN_PASSWORD_MAX];
+        } stun;
 
-    } turn;
+        struct {
 
-  } dynamic;
+            ov_socket_configuration server;
+            char username[OV_ICE_PROXY_GENERIC_TURN_USERNAME_MAX];
+            char password[OV_ICE_PROXY_GENERIC_TURN_PASSWORD_MAX];
 
-  struct {
+        } turn;
 
-    ov_ice_proxy_generic_dtls_config dtls;
-
-    struct {
-
-      uint64_t transaction_lifetime_usecs;
-
-    } limits;
+    } dynamic;
 
     struct {
 
-      struct {
+        ov_ice_proxy_generic_dtls_config dtls;
 
-        uint64_t connectivity_pace_usecs;
-        uint64_t session_timeout_usecs;
-        uint64_t keepalive_usecs;
+        struct {
 
-      } stun;
+            uint64_t transaction_lifetime_usecs;
 
-    } timeouts;
+        } limits;
 
-  } config;
+        struct {
 
-  struct {
+            struct {
 
-    void *userdata;
+                uint64_t connectivity_pace_usecs;
+                uint64_t session_timeout_usecs;
+                uint64_t keepalive_usecs;
 
-    struct {
+            } stun;
 
-      void (*drop)(void *userdata, const char *uuid);
-      void (*state)(void *userdata, const char *uuid,
-                    ov_ice_proxy_generic_state state);
+        } timeouts;
 
-    } session;
+    } config;
 
     struct {
 
-      void (*io)(void *userdata, const char *session_id, int stream_id,
-                 uint8_t *buffer, size_t size);
+        void *userdata;
 
-    } stream;
+        struct {
 
-    struct {
+            void (*drop)(void *userdata, const char *uuid);
+            void (*state)(void *userdata, const char *uuid,
+                          ov_ice_proxy_generic_state state);
 
-      bool (*send)(void *userdata, ov_json_value *out);
-      void (*end_of_candidates)(void *userdata, const char *session_id);
+        } session;
 
-    } candidate;
+        struct {
 
-  } callbacks;
+            void (*io)(void *userdata, const char *session_id, int stream_id,
+                       uint8_t *buffer, size_t size);
+
+        } stream;
+
+        struct {
+
+            bool (*send)(void *userdata, ov_json_value *out);
+            void (*end_of_candidates)(void *userdata, const char *session_id);
+
+        } candidate;
+
+    } callbacks;
 
 } ov_ice_proxy_generic_config;
 
@@ -153,39 +153,41 @@ typedef struct ov_ice_proxy_generic ov_ice_proxy_generic;
 
 struct ov_ice_proxy_generic {
 
-  uint16_t magic_bytes;
-  uint16_t type;
+    uint16_t magic_bytes;
+    uint16_t type;
 
-  ov_ice_proxy_generic_config config;
+    ov_ice_proxy_generic_config config;
 
-  ov_ice_proxy_generic *(*free)(ov_ice_proxy_generic *self);
+    ov_ice_proxy_generic *(*free)(ov_ice_proxy_generic *self);
 
-  struct {
+    struct {
 
-    const char *(*create)(ov_ice_proxy_generic *self, ov_sdp_session *sdp);
+        const char *(*create)(ov_ice_proxy_generic *self, ov_sdp_session *sdp);
 
-    bool (*drop)(ov_ice_proxy_generic *self, const char *session_id);
+        bool (*drop)(ov_ice_proxy_generic *self, const char *session_id);
 
-    bool (*update)(ov_ice_proxy_generic *self, const char *session_id,
-                   const ov_sdp_session *sdp);
+        bool (*update)(ov_ice_proxy_generic *self, const char *session_id,
+                       const ov_sdp_session *sdp);
 
-  } session;
+    } session;
 
-  struct {
+    struct {
 
-    bool (*candidate_in)(ov_ice_proxy_generic *self, const char *session_id,
-                         uint32_t stream_id, const ov_ice_candidate *candidate);
+        bool (*candidate_in)(ov_ice_proxy_generic *self, const char *session_id,
+                             uint32_t stream_id,
+                             const ov_ice_candidate *candidate);
 
-    bool (*end_of_candidates_in)(ov_ice_proxy_generic *self,
-                                 const char *session_id, uint32_t stream_id);
+        bool (*end_of_candidates_in)(ov_ice_proxy_generic *self,
+                                     const char *session_id,
+                                     uint32_t stream_id);
 
-    uint32_t (*get_ssrc)(ov_ice_proxy_generic *self, const char *session_id,
-                         uint32_t stream_id);
+        uint32_t (*get_ssrc)(ov_ice_proxy_generic *self, const char *session_id,
+                             uint32_t stream_id);
 
-    ssize_t (*send)(ov_ice_proxy_generic *self, const char *session_id,
-                    uint32_t stream_id, uint8_t *buffer, size_t size);
+        ssize_t (*send)(ov_ice_proxy_generic *self, const char *session_id,
+                        uint32_t stream_id, uint8_t *buffer, size_t size);
 
-  } stream;
+    } stream;
 };
 
 /*

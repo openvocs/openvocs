@@ -475,28 +475,28 @@
 #define OV_DEFAULT_LOCK_TIMEOUT_USECS (1000 * OV_DEFAULT_LOCK_TIMEOUT_MSECS)
 
 #define OV_DEFAULT_LOG_LEVEL                                                   \
-  ov_log_level_from_string(OV_DEFAULT_LOG_LEVEL_STRING)
+    ov_log_level_from_string(OV_DEFAULT_LOG_LEVEL_STRING)
 
 /*----------------------------------------------------------------------------*/
 
 #define OV_MAX_FRAME_LENGTH_SAMPLES                                            \
-  (OV_MAX_SAMPLERATE_HZ * OV_MAX_FRAME_LENGTH_MS / 1000)
+    (OV_MAX_SAMPLERATE_HZ * OV_MAX_FRAME_LENGTH_MS / 1000)
 
 #define OV_MAX_FRAME_LENGTH_BYTES                                              \
-  (OV_MAX_FRAME_LENGTH_SAMPLES * sizeof(int16_t))
+    (OV_MAX_FRAME_LENGTH_SAMPLES * sizeof(int16_t))
 
 #define OV_DEFAULT_FRAME_LENGTH_SAMPLES                                        \
-  (OV_DEFAULT_SAMPLERATE * OV_DEFAULT_FRAME_LENGTH_MS / 1000)
+    (OV_DEFAULT_SAMPLERATE * OV_DEFAULT_FRAME_LENGTH_MS / 1000)
 
 /*----------------------------------------------------------------------------*/
 
 #define OV_INTERNAL_CODEC                                                      \
-  "{"                                                                          \
-  "\"sample_rate_hz\": " TO_STR(OV_DEFAULT_SAMPLERATE) ","                     \
-                                                       "\"codec\": "           \
-                                                       "\"" OV_DEFAULT_CODEC   \
-                                                       "\""                    \
-                                                       "}"
+    "{"                                                                        \
+    "\"sample_rate_hz\": " TO_STR(OV_DEFAULT_SAMPLERATE) ","                   \
+                                                         "\"codec\": "         \
+                                                         "\"" OV_DEFAULT_CODEC \
+                                                         "\""                  \
+                                                         "}"
 
 /*----------------------------------------------------------------------------*/
 #endif

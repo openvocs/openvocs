@@ -55,17 +55,17 @@ extern char const *OV_DB_SQLITE_MEMORY;
 
 typedef struct ov_database_struct {
 
-  // Set by us - modules shall NOT use these!
-  uint32_t magic_bytes;
+    // Set by us - modules shall NOT use these!
+    uint32_t magic_bytes;
 
-  bool (*close)(struct ov_database_struct *self);
+    bool (*close)(struct ov_database_struct *self);
 
-  ov_result (*query)(struct ov_database_struct *self, char const *sql,
-                     ov_json_value **jtarget);
+    ov_result (*query)(struct ov_database_struct *self, char const *sql,
+                       ov_json_value **jtarget);
 
-  bool (*add_limit_clause)(char *target, size_t target_capacity_octets,
-                           char const *select_statement, uint32_t limit,
-                           uint32_t offset);
+    bool (*add_limit_clause)(char *target, size_t target_capacity_octets,
+                             char const *select_statement, uint32_t limit,
+                             uint32_t offset);
 
 } ov_database;
 
@@ -77,14 +77,14 @@ typedef struct ov_database_struct {
  */
 typedef struct {
 
-  char const *type;
-  char const *host;
-  uint16_t port;
-  char const *dbname;
-  char const *user;
-  char const *password;
+    char const *type;
+    char const *host;
+    uint16_t port;
+    char const *dbname;
+    char const *user;
+    char const *password;
 
-  uint64_t reconnect_secs;
+    uint64_t reconnect_secs;
 
 } ov_database_info;
 

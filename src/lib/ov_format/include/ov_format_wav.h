@@ -46,14 +46,14 @@ extern char const *OV_FORMAT_WAV_TYPE_STRING;
 
 typedef struct {
 
-  /* Only PCM format (== OV_FORMAT_WAV_PCM) allowed here */
-  uint16_t format;
+    /* Only PCM format (== OV_FORMAT_WAV_PCM) allowed here */
+    uint16_t format;
 
-  uint16_t channels;
-  uint32_t samplerate_hz;
+    uint16_t channels;
+    uint32_t samplerate_hz;
 
-  uint16_t blockAlignmentBytes;
-  uint16_t bitsPerSample;
+    uint16_t blockAlignmentBytes;
+    uint16_t bitsPerSample;
 
 } ov_format_wav_options;
 

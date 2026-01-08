@@ -77,10 +77,10 @@ typedef bool (*OV_DATA_DUMP)(FILE *stream, const void *source);
 
 struct ov_data_function {
 
-  OV_DATA_FREE free;   // terminate struct  and content
-  OV_DATA_CLEAR clear; // terminate content of a struct
-  OV_DATA_COPY copy;   // copy a struct including content
-  OV_DATA_DUMP dump;   // default dump a struct (e.g. debug)
+    OV_DATA_FREE free;   // terminate struct  and content
+    OV_DATA_CLEAR clear; // terminate content of a struct
+    OV_DATA_COPY copy;   // copy a struct including content
+    OV_DATA_DUMP dump;   // default dump a struct (e.g. debug)
 };
 
 /*

@@ -47,373 +47,387 @@ static bool testing = true;
 
 int test_ov_base64_alphabetPosition() {
 
-  uint8_t byte = 0;
-  uint8_t alphabet[64] = {};
+    uint8_t byte = 0;
+    uint8_t alphabet[64] = {};
 
-  testrun(ov_base64_alphabetPosition(byte, alphabet) == -1);
+    testrun(ov_base64_alphabetPosition(byte, alphabet) == -1);
 
-  alphabet[0] = 1;
-  byte = 1;
-  testrun(ov_base64_alphabetPosition(byte, alphabet) == 0);
-  byte = 2;
-  testrun(ov_base64_alphabetPosition(byte, alphabet) == -1);
+    alphabet[0] = 1;
+    byte = 1;
+    testrun(ov_base64_alphabetPosition(byte, alphabet) == 0);
+    byte = 2;
+    testrun(ov_base64_alphabetPosition(byte, alphabet) == -1);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_base64_decode_with_alphabet() {
 
-  uint8_t alphabet[64] = {};
-  uint8_t *source = NULL;
+    uint8_t alphabet[64] = {};
+    uint8_t *source = NULL;
 
-  size_t size = 100;
-  uint8_t buffer[size];
-  uint8_t *ptr = buffer;
-  memset(buffer, 0, size);
+    size_t size = 100;
+    uint8_t buffer[size];
+    uint8_t *ptr = buffer;
+    memset(buffer, 0, size);
 
-  testrun(!ov_base64_decode_with_alphabet(NULL, 1, &ptr, &size, alphabet));
-  testrun(!ov_base64_decode_with_alphabet(source, 1, &ptr, &size, NULL));
-  testrun(!ov_base64_decode_with_alphabet(source, 0, &ptr, &size, alphabet));
+    testrun(!ov_base64_decode_with_alphabet(NULL, 1, &ptr, &size, alphabet));
+    testrun(!ov_base64_decode_with_alphabet(source, 1, &ptr, &size, NULL));
+    testrun(!ov_base64_decode_with_alphabet(source, 0, &ptr, &size, alphabet));
 
-  source = (uint8_t *)"NjM_";
-  testrun(!ov_base64_decode_with_alphabet(source, 1, &ptr, &size, alphabet));
-  testrun(!ov_base64_decode_with_alphabet(source, 2, &ptr, &size, alphabet));
-  testrun(!ov_base64_decode_with_alphabet(source, 3, &ptr, &size, alphabet));
+    source = (uint8_t *)"NjM_";
+    testrun(!ov_base64_decode_with_alphabet(source, 1, &ptr, &size, alphabet));
+    testrun(!ov_base64_decode_with_alphabet(source, 2, &ptr, &size, alphabet));
+    testrun(!ov_base64_decode_with_alphabet(source, 3, &ptr, &size, alphabet));
 
-  size = 100;
-  testrun(!ov_base64_decode_with_alphabet(source, 4, &ptr, &size, alphabet));
+    size = 100;
+    testrun(!ov_base64_decode_with_alphabet(source, 4, &ptr, &size, alphabet));
 
-  size = 100;
-  testrun(
-      !ov_base64_decode_with_alphabet(source, 4, &ptr, &size, base64Alphabet));
+    size = 100;
+    testrun(!ov_base64_decode_with_alphabet(source, 4, &ptr, &size,
+                                            base64Alphabet));
 
-  size = 100;
-  testrun(ov_base64_decode_with_alphabet(source, 4, &ptr, &size,
-                                         base64urlAlphabet));
+    size = 100;
+    testrun(ov_base64_decode_with_alphabet(source, 4, &ptr, &size,
+                                           base64urlAlphabet));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_base64_encode_with_alphabet() {
 
-  uint8_t alphabet[64] = {};
-  uint8_t *source = NULL;
+    uint8_t alphabet[64] = {};
+    uint8_t *source = NULL;
 
-  size_t size = 100;
-  uint8_t buffer[size];
-  uint8_t *ptr = buffer;
-  memset(buffer, 0, size);
+    size_t size = 100;
+    uint8_t buffer[size];
+    uint8_t *ptr = buffer;
+    memset(buffer, 0, size);
 
-  testrun(!ov_base64_encode_with_alphabet(NULL, 1, &ptr, &size, alphabet));
-  testrun(!ov_base64_encode_with_alphabet(source, 1, &ptr, &size, NULL));
-  testrun(!ov_base64_encode_with_alphabet(source, 0, &ptr, &size, alphabet));
+    testrun(!ov_base64_encode_with_alphabet(NULL, 1, &ptr, &size, alphabet));
+    testrun(!ov_base64_encode_with_alphabet(source, 1, &ptr, &size, NULL));
+    testrun(!ov_base64_encode_with_alphabet(source, 0, &ptr, &size, alphabet));
 
-  source = (uint8_t *)"63?";
+    source = (uint8_t *)"63?";
 
-  size = 100;
-  testrun(
-      ov_base64_encode_with_alphabet(source, 4, &ptr, &size, base64Alphabet));
+    size = 100;
+    testrun(
+        ov_base64_encode_with_alphabet(source, 4, &ptr, &size, base64Alphabet));
 
-  size = 100;
-  testrun(ov_base64_encode_with_alphabet(source, 4, &ptr, &size,
-                                         base64urlAlphabet));
+    size = 100;
+    testrun(ov_base64_encode_with_alphabet(source, 4, &ptr, &size,
+                                           base64urlAlphabet));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_base64_encode() {
 
-  char *rfcTest[] = {"", "f", "fo", "foo", "foob", "fooba", "foobar"};
+    char *rfcTest[] = {"", "f", "fo", "foo", "foob", "fooba", "foobar"};
 
-  char *rfcResult[] = {"",         "Zg==",     "Zm8=",    "Zm9v",
-                       "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
+    char *rfcResult[] = {"",         "Zg==",     "Zm8=",    "Zm9v",
+                         "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
 
-  uint8_t *result = NULL;
-  size_t rsize = 0;
-  size_t bsize = 100;
-  uint8_t buffer[bsize];
-  uint8_t *ptr = buffer;
-  memset(buffer, 0, bsize);
+    uint8_t *result = NULL;
+    size_t rsize = 0;
+    size_t bsize = 100;
+    uint8_t buffer[bsize];
+    uint8_t *ptr = buffer;
+    memset(buffer, 0, bsize);
 
-  testrun(!ov_base64_encode(NULL, 0, NULL, 0));
-  testrun(!ov_base64_encode((uint8_t *)"test", 4, &result, 0));
-  testrun(!ov_base64_encode((uint8_t *)"test", 4, NULL, &rsize));
-  testrun(!ov_base64_encode((uint8_t *)"test", 0, &result, &rsize));
-  testrun(!ov_base64_encode(NULL, 4, &result, &rsize));
+    testrun(!ov_base64_encode(NULL, 0, NULL, 0));
+    testrun(!ov_base64_encode((uint8_t *)"test", 4, &result, 0));
+    testrun(!ov_base64_encode((uint8_t *)"test", 4, NULL, &rsize));
+    testrun(!ov_base64_encode((uint8_t *)"test", 0, &result, &rsize));
+    testrun(!ov_base64_encode(NULL, 4, &result, &rsize));
 
-  testrun(ov_base64_encode((uint8_t *)"test", 4, &result, &rsize));
-  testrun(result);
-  testrun(0 == strncmp("dGVzdA==", (char *)result, rsize));
-  free(result);
+    testrun(ov_base64_encode((uint8_t *)"test", 4, &result, &rsize));
+    testrun(result);
+    testrun(0 == strncmp("dGVzdA==", (char *)result, rsize));
+    free(result);
 
-  // check buffer fill
-  testrun(ov_base64_encode((uint8_t *)"test", 4, &ptr, &bsize));
-  testrun(0 == strncmp("dGVzdA==", (char *)buffer, bsize));
-  testrun(8 == bsize);
+    // check buffer fill
+    testrun(ov_base64_encode((uint8_t *)"test", 4, &ptr, &bsize));
+    testrun(0 == strncmp("dGVzdA==", (char *)buffer, bsize));
+    testrun(8 == bsize);
 
-  int i;
-  for (i = 0; i < 7; i++) {
+    int i;
+    for (i = 0; i < 7; i++) {
 
-    bsize = 100;
+        bsize = 100;
 
-    if (i == 0) {
-      testrun(!ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr,
-                                &bsize));
-    } else {
-      testrun(ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr,
-                               &bsize));
+        if (i == 0) {
+            testrun(!ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                      &ptr, &bsize));
+        } else {
+            testrun(ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                     &ptr, &bsize));
 
-      testrun(0 == strncmp((char *)buffer, rfcResult[i], strlen(rfcResult[i])));
-      testrun(bsize == strlen(rfcResult[i]));
+            testrun(0 == strncmp((char *)buffer, rfcResult[i],
+                                 strlen(rfcResult[i])));
+            testrun(bsize == strlen(rfcResult[i]));
+        }
     }
-  }
 
-  char *check = NULL;
+    char *check = NULL;
 
-  // check 1st value of the alphabet
-  check = "00A";
-  bsize = 100;
-  testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("MDBB", (char *)buffer, bsize));
+    // check 1st value of the alphabet
+    check = "00A";
+    bsize = 100;
+    testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("MDBB", (char *)buffer, bsize));
 
-  // check last 4 values of the alphabet
-  check = "60<";
-  bsize = 100;
-  testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjA8", (char *)buffer, bsize));
+    // check last 4 values of the alphabet
+    check = "60<";
+    bsize = 100;
+    testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjA8", (char *)buffer, bsize));
 
-  check = "61=";
-  bsize = 100;
-  testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjE9", (char *)buffer, bsize));
+    check = "61=";
+    bsize = 100;
+    testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjE9", (char *)buffer, bsize));
 
-  check = "62>";
-  bsize = 100;
-  testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjI+", (char *)buffer, bsize));
+    check = "62>";
+    bsize = 100;
+    testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjI+", (char *)buffer, bsize));
 
-  check = "63?";
-  bsize = 100;
-  testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjM/", (char *)buffer, bsize));
+    check = "63?";
+    bsize = 100;
+    testrun(ov_base64_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjM/", (char *)buffer, bsize));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_base64_decode() {
 
-  char *rfcTest[] = {"", "f", "fo", "foo", "foob", "fooba", "foobar"};
+    char *rfcTest[] = {"", "f", "fo", "foo", "foob", "fooba", "foobar"};
 
-  char *rfcResult[] = {"",         "Zg==",     "Zm8=",    "Zm9v",
-                       "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
+    char *rfcResult[] = {"",         "Zg==",     "Zm8=",    "Zm9v",
+                         "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
 
-  uint8_t *result = NULL;
-  size_t rsize = 0;
-  size_t bsize = 100;
-  uint8_t buffer[bsize];
-  uint8_t *ptr = buffer;
-  memset(buffer, 0, bsize);
+    uint8_t *result = NULL;
+    size_t rsize = 0;
+    size_t bsize = 100;
+    uint8_t buffer[bsize];
+    uint8_t *ptr = buffer;
+    memset(buffer, 0, bsize);
 
-  testrun(!ov_base64_decode(NULL, 0, NULL, 0));
-  testrun(!ov_base64_decode((uint8_t *)"test", 4, &result, 0));
-  testrun(!ov_base64_decode((uint8_t *)"test", 4, NULL, &rsize));
-  testrun(!ov_base64_decode((uint8_t *)"test", 0, &result, &rsize));
-  testrun(!ov_base64_decode(NULL, 4, &result, &rsize));
+    testrun(!ov_base64_decode(NULL, 0, NULL, 0));
+    testrun(!ov_base64_decode((uint8_t *)"test", 4, &result, 0));
+    testrun(!ov_base64_decode((uint8_t *)"test", 4, NULL, &rsize));
+    testrun(!ov_base64_decode((uint8_t *)"test", 0, &result, &rsize));
+    testrun(!ov_base64_decode(NULL, 4, &result, &rsize));
 
-  testrun(!ov_base64_decode((uint8_t *)"test", 7, &result, &rsize));
+    testrun(!ov_base64_decode((uint8_t *)"test", 7, &result, &rsize));
 
-  testrun(ov_base64_decode((uint8_t *)"test", 4, &result, &rsize));
-  free(result);
+    testrun(ov_base64_decode((uint8_t *)"test", 4, &result, &rsize));
+    free(result);
 
-  // check buffer fill
-  testrun(ov_base64_decode((uint8_t *)"test", 4, &ptr, &bsize));
+    // check buffer fill
+    testrun(ov_base64_decode((uint8_t *)"test", 4, &ptr, &bsize));
 
-  int i;
-  for (i = 0; i < 7; i++) {
+    int i;
+    for (i = 0; i < 7; i++) {
 
-    bsize = 100;
+        bsize = 100;
 
-    if (i == 0) {
-      testrun(!ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr,
-                                &bsize));
-    } else {
-      testrun(ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr,
-                               &bsize));
+        if (i == 0) {
+            testrun(!ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                      &ptr, &bsize));
+        } else {
+            testrun(ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                     &ptr, &bsize));
 
-      testrun(0 == strncmp((char *)buffer, rfcResult[i], strlen(rfcResult[i])));
-      testrun(bsize == strlen(rfcResult[i]));
+            testrun(0 == strncmp((char *)buffer, rfcResult[i],
+                                 strlen(rfcResult[i])));
+            testrun(bsize == strlen(rfcResult[i]));
+        }
     }
-  }
 
-  char *check = NULL;
+    char *check = NULL;
 
-  // check 1st value of the alphabet
-  check = "MDBB";
-  bsize = 100;
-  testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("00A", (char *)buffer, bsize));
+    // check 1st value of the alphabet
+    check = "MDBB";
+    bsize = 100;
+    testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("00A", (char *)buffer, bsize));
 
-  // check last 4 values of the alphabet
-  check = "NjA8";
-  bsize = 100;
-  testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("60<", (char *)buffer, bsize));
+    // check last 4 values of the alphabet
+    check = "NjA8";
+    bsize = 100;
+    testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("60<", (char *)buffer, bsize));
 
-  check = "NjE9";
-  bsize = 100;
-  testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("61=", (char *)buffer, bsize));
+    check = "NjE9";
+    bsize = 100;
+    testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("61=", (char *)buffer, bsize));
 
-  check = "NjI+";
-  bsize = 100;
-  testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("62>", (char *)buffer, bsize));
+    check = "NjI+";
+    bsize = 100;
+    testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("62>", (char *)buffer, bsize));
 
-  check = "NjM/";
-  bsize = 100;
-  testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("63?", (char *)buffer, bsize));
+    check = "NjM/";
+    bsize = 100;
+    testrun(ov_base64_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("63?", (char *)buffer, bsize));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_base64_url_encode() {
 
-  uint8_t *result = NULL;
-  size_t rsize = 0;
-  size_t bsize = 100;
-  uint8_t buffer[bsize];
-  uint8_t *ptr = buffer;
-  memset(buffer, 0, bsize);
+    uint8_t *result = NULL;
+    size_t rsize = 0;
+    size_t bsize = 100;
+    uint8_t buffer[bsize];
+    uint8_t *ptr = buffer;
+    memset(buffer, 0, bsize);
 
-  testrun(!ov_base64_url_encode(NULL, 0, NULL, 0));
-  testrun(!ov_base64_url_encode((uint8_t *)"test", 4, &result, 0));
-  testrun(!ov_base64_url_encode((uint8_t *)"test", 4, NULL, &rsize));
-  testrun(!ov_base64_url_encode((uint8_t *)"test", 0, &result, &rsize));
-  testrun(!ov_base64_url_encode(NULL, 4, &result, &rsize));
+    testrun(!ov_base64_url_encode(NULL, 0, NULL, 0));
+    testrun(!ov_base64_url_encode((uint8_t *)"test", 4, &result, 0));
+    testrun(!ov_base64_url_encode((uint8_t *)"test", 4, NULL, &rsize));
+    testrun(!ov_base64_url_encode((uint8_t *)"test", 0, &result, &rsize));
+    testrun(!ov_base64_url_encode(NULL, 4, &result, &rsize));
 
-  testrun(ov_base64_url_encode((uint8_t *)"test", 4, &result, &rsize));
-  testrun(result);
-  testrun(0 == strncmp("dGVzdA==", (char *)result, rsize));
-  free(result);
+    testrun(ov_base64_url_encode((uint8_t *)"test", 4, &result, &rsize));
+    testrun(result);
+    testrun(0 == strncmp("dGVzdA==", (char *)result, rsize));
+    free(result);
 
-  char *check = NULL;
+    char *check = NULL;
 
-  // check 1st value of the alphabet
-  check = "00A";
-  bsize = 100;
-  testrun(ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("MDBB", (char *)buffer, bsize));
+    // check 1st value of the alphabet
+    check = "00A";
+    bsize = 100;
+    testrun(
+        ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("MDBB", (char *)buffer, bsize));
 
-  // check last 4 values of the alphabet
-  check = "60<";
-  bsize = 100;
-  testrun(ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjA8", (char *)buffer, bsize));
+    // check last 4 values of the alphabet
+    check = "60<";
+    bsize = 100;
+    testrun(
+        ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjA8", (char *)buffer, bsize));
 
-  check = "61=";
-  bsize = 100;
-  testrun(ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjE9", (char *)buffer, bsize));
+    check = "61=";
+    bsize = 100;
+    testrun(
+        ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjE9", (char *)buffer, bsize));
 
-  check = "62>";
-  bsize = 100;
-  testrun(ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjI-", (char *)buffer, bsize));
+    check = "62>";
+    bsize = 100;
+    testrun(
+        ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjI-", (char *)buffer, bsize));
 
-  check = "63?";
-  bsize = 100;
-  testrun(ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(4 == bsize);
-  testrun(0 == strncmp("NjM_", (char *)buffer, bsize));
+    check = "63?";
+    bsize = 100;
+    testrun(
+        ov_base64_url_encode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(4 == bsize);
+    testrun(0 == strncmp("NjM_", (char *)buffer, bsize));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_base64_url_decode() {
 
-  uint8_t *result = NULL;
-  size_t rsize = 0;
-  size_t bsize = 100;
-  uint8_t buffer[bsize];
-  uint8_t *ptr = buffer;
-  memset(buffer, 0, bsize);
+    uint8_t *result = NULL;
+    size_t rsize = 0;
+    size_t bsize = 100;
+    uint8_t buffer[bsize];
+    uint8_t *ptr = buffer;
+    memset(buffer, 0, bsize);
 
-  testrun(!ov_base64_url_decode(NULL, 0, NULL, 0));
-  testrun(!ov_base64_url_decode((uint8_t *)"test", 4, &result, 0));
-  testrun(!ov_base64_url_decode((uint8_t *)"test", 4, NULL, &rsize));
-  testrun(!ov_base64_url_decode((uint8_t *)"test", 0, &result, &rsize));
-  testrun(!ov_base64_url_decode(NULL, 4, &result, &rsize));
+    testrun(!ov_base64_url_decode(NULL, 0, NULL, 0));
+    testrun(!ov_base64_url_decode((uint8_t *)"test", 4, &result, 0));
+    testrun(!ov_base64_url_decode((uint8_t *)"test", 4, NULL, &rsize));
+    testrun(!ov_base64_url_decode((uint8_t *)"test", 0, &result, &rsize));
+    testrun(!ov_base64_url_decode(NULL, 4, &result, &rsize));
 
-  char *check = NULL;
+    char *check = NULL;
 
-  // check 1st value of the alphabet
-  check = "MDBB";
-  bsize = 100;
-  testrun(ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("00A", (char *)buffer, bsize));
+    // check 1st value of the alphabet
+    check = "MDBB";
+    bsize = 100;
+    testrun(
+        ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("00A", (char *)buffer, bsize));
 
-  // check last 4 values of the alphabet
-  check = "NjA8";
-  bsize = 100;
-  testrun(ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("60<", (char *)buffer, bsize));
+    // check last 4 values of the alphabet
+    check = "NjA8";
+    bsize = 100;
+    testrun(
+        ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("60<", (char *)buffer, bsize));
 
-  check = "NjE9";
-  bsize = 100;
-  testrun(ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("61=", (char *)buffer, bsize));
+    check = "NjE9";
+    bsize = 100;
+    testrun(
+        ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("61=", (char *)buffer, bsize));
 
-  check = "NjI-";
-  bsize = 100;
-  testrun(ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("62>", (char *)buffer, bsize));
+    check = "NjI-";
+    bsize = 100;
+    testrun(
+        ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("62>", (char *)buffer, bsize));
 
-  check = "NjM_";
-  bsize = 100;
-  testrun(ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
-  testrun(3 == bsize);
-  testrun(0 == strncmp("63?", (char *)buffer, bsize));
+    check = "NjM_";
+    bsize = 100;
+    testrun(
+        ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    testrun(3 == bsize);
+    testrun(0 == strncmp("63?", (char *)buffer, bsize));
 
-  check = "NjI+";
-  bsize = 100;
-  testrun(!ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    check = "NjI+";
+    bsize = 100;
+    testrun(
+        !ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
 
-  check = "NjM/";
-  bsize = 100;
-  testrun(!ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
+    check = "NjM/";
+    bsize = 100;
+    testrun(
+        !ov_base64_url_decode((uint8_t *)check, strlen(check), &ptr, &bsize));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 /*----------------------------------------------------------------------------*/
 
@@ -427,24 +441,24 @@ int test_ov_base64_url_decode() {
 
 int all_tests() {
 
-  testrun_init();
+    testrun_init();
 
-  if (!testing) {
-    fprintf(stdout, "TESTING SWITCHED OFF for ov_base64");
-    return 1;
-  }
+    if (!testing) {
+        fprintf(stdout, "TESTING SWITCHED OFF for ov_base64");
+        return 1;
+    }
 
-  testrun_test(test_ov_base64_alphabetPosition);
-  testrun_test(test_ov_base64_decode_with_alphabet);
-  testrun_test(test_ov_base64_encode_with_alphabet);
+    testrun_test(test_ov_base64_alphabetPosition);
+    testrun_test(test_ov_base64_decode_with_alphabet);
+    testrun_test(test_ov_base64_encode_with_alphabet);
 
-  testrun_test(test_ov_base64_encode);
-  testrun_test(test_ov_base64_decode);
+    testrun_test(test_ov_base64_encode);
+    testrun_test(test_ov_base64_decode);
 
-  testrun_test(test_ov_base64_url_encode);
-  testrun_test(test_ov_base64_url_decode);
+    testrun_test(test_ov_base64_url_encode);
+    testrun_test(test_ov_base64_url_decode);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 /*

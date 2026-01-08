@@ -58,10 +58,10 @@ This file is part of the openvocs project. http://openvocs.org
 
 struct ov_rtp_client_opt_entry {
 
-  char sopt;
-  char const *lopt;
-  char const *desc;
-  bool arg_required;
+    char sopt;
+    char const *lopt;
+    char const *desc;
+    bool arg_required;
 };
 
 extern const struct ov_rtp_client_opt_entry OV_RTP_CLIENT_OPTIONS[];
@@ -69,14 +69,14 @@ extern const struct ov_rtp_client_opt_entry OV_RTP_CLIENT_OPTIONS[];
 /*----------------------------------------------------------------------------*/
 
 #define OV_RTP_CLIENT_HELP                                                     \
-  "Generates / receives RTP streams\n\n"                                       \
-  "Supported reception modes are\n\n"                                          \
-  "* Playback to Pulseaudio (activate with switch '-d')\n"                     \
-  "* PCM to file (activate with switch '-o')\n\n"                              \
-  "\n\nSupported send modes are\n\n"                                           \
-  "* PCM generation (default)\n"                                               \
-  "* PCM from file (activate with switch '-a')\n"                              \
-  "* Record from Pulseaudio (activate with switch '-m')\n\n"
+    "Generates / receives RTP streams\n\n"                                     \
+    "Supported reception modes are\n\n"                                        \
+    "* Playback to Pulseaudio (activate with switch '-d')\n"                   \
+    "* PCM to file (activate with switch '-o')\n\n"                            \
+    "\n\nSupported send modes are\n\n"                                         \
+    "* PCM generation (default)\n"                                             \
+    "* PCM from file (activate with switch '-a')\n"                            \
+    "* Record from Pulseaudio (activate with switch '-m')\n\n"
 
 /*----------------------------------------------------------------------------*/
 

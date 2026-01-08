@@ -40,106 +40,106 @@
 
 int test_ov_data_init() {
 
-  ov_data source = {0};
+    ov_data source = {0};
 
-  ov_data *data = ov_data_init(&source, sizeof(source));
-  testrun(data);
-  testrun(data->magic_byte == OV_DATA_MAGIC_BYTE);
-  testrun(data->type == 0);
-  testrun(data->free == NULL);
+    ov_data *data = ov_data_init(&source, sizeof(source));
+    testrun(data);
+    testrun(data->magic_byte == OV_DATA_MAGIC_BYTE);
+    testrun(data->type == 0);
+    testrun(data->free == NULL);
 
-  testrun(ov_data_cast(&source));
+    testrun(ov_data_cast(&source));
 
-  /*
-   *      Check size < sizeof(ov_data)
-   */
+    /*
+     *      Check size < sizeof(ov_data)
+     */
 
-  testrun(!ov_data_init(data, sizeof(data)));
-  testrun(!ov_data_init(data, sizeof(ov_data) - 1));
+    testrun(!ov_data_init(data, sizeof(data)));
+    testrun(!ov_data_init(data, sizeof(ov_data) - 1));
 
-  testrun(ov_data_init(data, sizeof(ov_data)));
-  return testrun_log_success();
+    testrun(ov_data_init(data, sizeof(ov_data)));
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_data_cast() {
 
-  ov_data source = {0};
+    ov_data source = {0};
 
-  ov_data *data = ov_data_init(&source, sizeof(source));
-  testrun(data);
-  testrun(data->magic_byte == OV_DATA_MAGIC_BYTE);
-  testrun(data->type == 0);
-  testrun(data->free == NULL);
+    ov_data *data = ov_data_init(&source, sizeof(source));
+    testrun(data);
+    testrun(data->magic_byte == OV_DATA_MAGIC_BYTE);
+    testrun(data->type == 0);
+    testrun(data->free == NULL);
 
-  testrun(ov_data_cast(&source));
+    testrun(ov_data_cast(&source));
 
-  for (size_t i = 0; i <= 0xffff; i++) {
+    for (size_t i = 0; i <= 0xffff; i++) {
 
-    ov_data check = (ov_data){.magic_byte = i};
+        ov_data check = (ov_data){.magic_byte = i};
 
-    if (i != OV_DATA_MAGIC_BYTE) {
-      testrun(!ov_data_cast(&check));
-    } else {
-      testrun(ov_data_cast(&check));
+        if (i != OV_DATA_MAGIC_BYTE) {
+            testrun(!ov_data_cast(&check));
+        } else {
+            testrun(ov_data_cast(&check));
+        }
     }
-  }
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_data *dummy_free(ov_data *data) {
 
-  if (data) { /* ignore */
-  }
+    if (data) { /* ignore */
+    }
 
-  return NULL;
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_data *dummy_free_with_free(ov_data *data) {
 
-  free(data);
-  return NULL;
+    free(data);
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_data_free() {
 
-  ov_data source = {0};
+    ov_data source = {0};
 
-  testrun(NULL == ov_data_free(NULL));
+    testrun(NULL == ov_data_free(NULL));
 
-  ov_data *data = ov_data_init(&source, sizeof(source));
-  testrun(ov_data_cast(&source));
+    ov_data *data = ov_data_init(&source, sizeof(source));
+    testrun(ov_data_cast(&source));
 
-  /*
-   *      Check with no free
-   */
+    /*
+     *      Check with no free
+     */
 
-  testrun(data == ov_data_free((void *)data));
+    testrun(data == ov_data_free((void *)data));
 
-  /*
-   *      Check with dummy free
-   */
+    /*
+     *      Check with dummy free
+     */
 
-  data->free = dummy_free;
-  testrun(NULL == ov_data_free((void *)data));
+    data->free = dummy_free;
+    testrun(NULL == ov_data_free((void *)data));
 
-  ov_data *allocated = calloc(1, sizeof(ov_data));
-  data = ov_data_init(allocated, sizeof(ov_data));
-  testrun(ov_data_cast(data));
-  testrun(data == allocated);
-  data->free = dummy_free_with_free;
+    ov_data *allocated = calloc(1, sizeof(ov_data));
+    data = ov_data_init(allocated, sizeof(ov_data));
+    testrun(ov_data_cast(data));
+    testrun(data == allocated);
+    data->free = dummy_free_with_free;
 
-  testrun(NULL == ov_data_free((void *)data));
+    testrun(NULL == ov_data_free((void *)data));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -154,13 +154,13 @@ int test_ov_data_free() {
 
 int all_tests() {
 
-  testrun_init();
+    testrun_init();
 
-  testrun_test(test_ov_data_init);
-  testrun_test(test_ov_data_cast);
-  testrun_test(test_ov_data_free);
+    testrun_test(test_ov_data_init);
+    testrun_test(test_ov_data_cast);
+    testrun_test(test_ov_data_free);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 /*

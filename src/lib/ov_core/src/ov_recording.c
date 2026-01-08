@@ -40,92 +40,93 @@ bool ov_recording_set(ov_recording *self, char const *id, char const *loop,
                       char const *uri, time_t start_epoch_secs,
                       time_t end_epoch_secs) {
 
-  if (ov_ptr_valid(self, "Cannot set recording - no recording")) {
+    if (ov_ptr_valid(self, "Cannot set recording - no recording")) {
 
-    self->id = ov_string_dup(id);
-    self->loop = ov_string_dup(loop);
-    self->uri = ov_string_dup(uri);
-    self->start_epoch_secs = start_epoch_secs;
-    self->end_epoch_secs = end_epoch_secs;
-  }
+        self->id = ov_string_dup(id);
+        self->loop = ov_string_dup(loop);
+        self->uri = ov_string_dup(uri);
+        self->start_epoch_secs = start_epoch_secs;
+        self->end_epoch_secs = end_epoch_secs;
+    }
 
-  return 0 != self;
+    return 0 != self;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_recording_clear(ov_recording *self) {
 
-  if (0 != self) {
+    if (0 != self) {
 
-    self->id = ov_free(self->id);
-    self->loop = ov_free(self->loop);
-    self->uri = ov_free(self->uri);
-    self->start_epoch_secs = 0;
-    self->end_epoch_secs = 0;
-  }
+        self->id = ov_free(self->id);
+        self->loop = ov_free(self->loop);
+        self->uri = ov_free(self->uri);
+        self->start_epoch_secs = 0;
+        self->end_epoch_secs = 0;
+    }
 
-  return 0 != self;
+    return 0 != self;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_recording_to_json(ov_recording recording) {
 
-  if (ov_ptr_valid(recording.id,
-                   "Cannot notify lieges about new recording: Invalid "
-                   "recording ID") &&
-      ov_ptr_valid(recording.loop,
-                   "Cannot notify lieges about new recording: Invalid "
-                   "loop") &&
-      ov_ptr_valid(recording.uri,
-                   "Cannot notify lieges about new recording: Invalid "
-                   "URI")) {
+    if (ov_ptr_valid(recording.id,
+                     "Cannot notify lieges about new recording: Invalid "
+                     "recording ID") &&
+        ov_ptr_valid(recording.loop,
+                     "Cannot notify lieges about new recording: Invalid "
+                     "loop") &&
+        ov_ptr_valid(recording.uri,
+                     "Cannot notify lieges about new recording: Invalid "
+                     "URI")) {
 
-    ov_json_value *jval = ov_json_object();
+        ov_json_value *jval = ov_json_object();
 
-    ov_json_object_set(jval, OV_KEY_ID, ov_json_string(recording.id));
-    ov_json_object_set(jval, OV_KEY_LOOP, ov_json_string(recording.loop));
-    ov_json_object_set(jval, OV_KEY_URI, ov_json_string(recording.uri));
-    ov_json_object_set(jval, START_EPOCH_SECS,
-                       ov_json_number(recording.start_epoch_secs));
-    ov_json_object_set(jval, END_EPOCH_SECS,
-                       ov_json_number(recording.end_epoch_secs));
+        ov_json_object_set(jval, OV_KEY_ID, ov_json_string(recording.id));
+        ov_json_object_set(jval, OV_KEY_LOOP, ov_json_string(recording.loop));
+        ov_json_object_set(jval, OV_KEY_URI, ov_json_string(recording.uri));
+        ov_json_object_set(jval, START_EPOCH_SECS,
+                           ov_json_number(recording.start_epoch_secs));
+        ov_json_object_set(jval, END_EPOCH_SECS,
+                           ov_json_number(recording.end_epoch_secs));
 
-    return jval;
+        return jval;
 
-  } else {
+    } else {
 
-    return 0;
-  }
+        return 0;
+    }
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_recording ov_recording_from_json(ov_json_value const *jval) {
 
-  ov_recording rec = {
-      .id = ov_string_dup(ov_json_string_get(ov_json_get(jval, "/" OV_KEY_ID))),
-      .loop =
-          ov_string_dup(ov_json_string_get(ov_json_get(jval, "/" OV_KEY_LOOP))),
-      .uri =
-          ov_string_dup(ov_json_string_get(ov_json_get(jval, "/" OV_KEY_URI))),
-      .start_epoch_secs =
-          ov_json_number_get(ov_json_get(jval, "/" START_EPOCH_SECS)),
-      .end_epoch_secs =
-          ov_json_number_get(ov_json_get(jval, "/" END_EPOCH_SECS)),
-  };
+    ov_recording rec = {
+        .id =
+            ov_string_dup(ov_json_string_get(ov_json_get(jval, "/" OV_KEY_ID))),
+        .loop = ov_string_dup(
+            ov_json_string_get(ov_json_get(jval, "/" OV_KEY_LOOP))),
+        .uri = ov_string_dup(
+            ov_json_string_get(ov_json_get(jval, "/" OV_KEY_URI))),
+        .start_epoch_secs =
+            ov_json_number_get(ov_json_get(jval, "/" START_EPOCH_SECS)),
+        .end_epoch_secs =
+            ov_json_number_get(ov_json_get(jval, "/" END_EPOCH_SECS)),
+    };
 
-  if ((!ov_ptr_valid(rec.id, "Could not read recording ID")) ||
-      (!ov_ptr_valid(rec.loop, "Could not read recording loop")) ||
-      (!ov_ptr_valid(rec.uri, "Could not read recording URI"))) {
+    if ((!ov_ptr_valid(rec.id, "Could not read recording ID")) ||
+        (!ov_ptr_valid(rec.loop, "Could not read recording loop")) ||
+        (!ov_ptr_valid(rec.uri, "Could not read recording URI"))) {
 
-    rec.id = ov_free(rec.id);
-    rec.loop = ov_free(rec.loop);
-    rec.uri = ov_free(rec.uri);
-  }
+        rec.id = ov_free(rec.id);
+        rec.loop = ov_free(rec.loop);
+        rec.uri = ov_free(rec.uri);
+    }
 
-  return rec;
+    return rec;
 }
 
 /*----------------------------------------------------------------------------*/

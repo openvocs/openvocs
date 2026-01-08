@@ -60,25 +60,25 @@
 #endif
 
 #define OV_COPYRIGHT                                                           \
-  "Copyright (c) 2020 German Aerospace Center DLR e.V. (GSOC)\n"               \
-  "\n"                                                                         \
-  "Licensed under the Apache License, Version 2.0 (the \"License\");\n"        \
-  "you may not use this file except in compliance with the License.\n"         \
-  "You may obtain a copy of the License at\n"                                  \
-  "\n"                                                                         \
-  "        http://www.apache.org/licenses/LICENSE-2.0\n"                       \
-  "\n"                                                                         \
-  "Unless required by applicable law or agreed to in writing, "                \
-  "software\n"                                                                 \
-  "distributed under the License is distributed on an \"AS IS\" "              \
-  "BASIS,\n"                                                                   \
-  "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or "           \
-  "implied.\n"                                                                 \
-  "See the License for the specific language governing permissions "           \
-  "and\n"                                                                      \
-  "limitations under the License.\n"                                           \
-  "\n"                                                                         \
-  "This file is part of the openvocs project. https://openvocs.org\n"
+    "Copyright (c) 2020 German Aerospace Center DLR e.V. (GSOC)\n"             \
+    "\n"                                                                       \
+    "Licensed under the Apache License, Version 2.0 (the \"License\");\n"      \
+    "you may not use this file except in compliance with the License.\n"       \
+    "You may obtain a copy of the License at\n"                                \
+    "\n"                                                                       \
+    "        http://www.apache.org/licenses/LICENSE-2.0\n"                     \
+    "\n"                                                                       \
+    "Unless required by applicable law or agreed to in writing, "              \
+    "software\n"                                                               \
+    "distributed under the License is distributed on an \"AS IS\" "            \
+    "BASIS,\n"                                                                 \
+    "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or "         \
+    "implied.\n"                                                               \
+    "See the License for the specific language governing permissions "         \
+    "and\n"                                                                    \
+    "limitations under the License.\n"                                         \
+    "\n"                                                                       \
+    "This file is part of the openvocs project. https://openvocs.org\n"
 
 /*----------------------------------------------------------------------------*/
 
@@ -87,23 +87,23 @@
         @param stream   filestream e.g. stdout
 */
 #define OV_VERSION_PRINT(stream)                                               \
-  fprintf(stream,                                                              \
-          "\n"                                                                 \
-          "%s"                                                                 \
-          "------------------------------------------------------------"       \
-          "----------------\n"                                                 \
-          "    build date : %s\n"                                              \
-          " build version : %s\n"                                              \
-          "      build id : %s\n"                                              \
-          "     commit id : %s\n"                                              \
-          " Compiler      : %s\n"                                              \
-          "%s\n"                                                               \
-          "------------------------------------------------------------"       \
-          "----------------\n"                                                 \
-          "\n",                                                                \
-          OV_COPYRIGHT, OV_VERSION_BUILD_DATE, OV_VERSION,                     \
-          OV_VERSION_BUILD_ID, OV_VERSION_COMMIT_ID, OV_VERSION_COMPILER,      \
-          ov_version_additional_info());
+    fprintf(stream,                                                            \
+            "\n"                                                               \
+            "%s"                                                               \
+            "------------------------------------------------------------"     \
+            "----------------\n"                                               \
+            "    build date : %s\n"                                            \
+            " build version : %s\n"                                            \
+            "      build id : %s\n"                                            \
+            "     commit id : %s\n"                                            \
+            " Compiler      : %s\n"                                            \
+            "%s\n"                                                             \
+            "------------------------------------------------------------"     \
+            "----------------\n"                                               \
+            "\n",                                                              \
+            OV_COPYRIGHT, OV_VERSION_BUILD_DATE, OV_VERSION,                   \
+            OV_VERSION_BUILD_ID, OV_VERSION_COMMIT_ID, OV_VERSION_COMPILER,    \
+            ov_version_additional_info());
 
 /*----------------------------------------------------------------------------*/
 

@@ -41,20 +41,20 @@ typedef struct ov_ice_base ov_ice_base;
 
 struct ov_ice_base {
 
-  ov_node node;
-  ov_id uuid;
+    ov_node node;
+    ov_id uuid;
 
-  ov_ice_stream *stream;
+    ov_ice_stream *stream;
 
-  int socket;
+    int socket;
 
-  struct {
+    struct {
 
-    ov_socket_data data;
+        ov_socket_data data;
 
-  } local;
+    } local;
 
-  ov_list *candidates;
+    ov_list *candidates;
 };
 
 /*

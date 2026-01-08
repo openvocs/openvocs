@@ -51,13 +51,13 @@
 
 // Only reproduce the behaviour of `assert`
 #define LOG_ASSERT_INTERNAL(x)                                                 \
-  do {                                                                         \
-    bool cond = (x);                                                           \
-    if (!cond) {                                                               \
-      fprintf(stderr, "%s\n", LOG_ASSERT_TO_STR_INTERNAL(x));                  \
-      abort();                                                                 \
-    }                                                                          \
-  } while (0)
+    do {                                                                       \
+        bool cond = (x);                                                       \
+        if (!cond) {                                                           \
+            fprintf(stderr, "%s\n", LOG_ASSERT_TO_STR_INTERNAL(x));            \
+            abort();                                                           \
+        }                                                                      \
+    } while (0)
 
 #else
 

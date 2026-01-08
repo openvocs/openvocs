@@ -51,12 +51,12 @@
 
 typedef enum {
 
-  OV_FILE_ERROR,        // general error (unspecific, no log)
-  OV_FILE_FAILURE,      // failure during processing (err log)
-  OV_FILE_NOT_FOUND,    // not found
-  OV_FILE_NO_ACCESS,    // no access
-  OV_FILE_MEMORY_ERROR, // (e.g. input to small, out of memory)
-  OV_FILE_SUCCESS
+    OV_FILE_ERROR,        // general error (unspecific, no log)
+    OV_FILE_FAILURE,      // failure during processing (err log)
+    OV_FILE_NOT_FOUND,    // not found
+    OV_FILE_NO_ACCESS,    // no access
+    OV_FILE_MEMORY_ERROR, // (e.g. input to small, out of memory)
+    OV_FILE_SUCCESS
 
 } ov_file_handle_state;
 
@@ -162,10 +162,10 @@ ov_file_handle_state ov_file_write(const char *path, const uint8_t *buffer,
 
 typedef enum {
 
-  OV_FILE_RAW,
-  OV_FILE_LITTLE_ENDIAN,
-  OV_FILE_BIG_ENDIAN,
-  OV_FILE_SWAP_BYTES
+    OV_FILE_RAW,
+    OV_FILE_LITTLE_ENDIAN,
+    OV_FILE_BIG_ENDIAN,
+    OV_FILE_SWAP_BYTES
 
 } ov_file_byteorder;
 

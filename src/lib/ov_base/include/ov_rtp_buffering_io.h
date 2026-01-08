@@ -60,9 +60,9 @@ typedef struct ov_rtp_buffering_io ov_rtp_buffering_io;
 
 typedef struct {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  size_t num_frames_to_buffer_per_stream;
+    size_t num_frames_to_buffer_per_stream;
 
 } ov_rtp_buffering_io_config;
 

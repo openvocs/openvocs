@@ -57,8 +57,8 @@ typedef struct ov_ldap ov_ldap;
 
 typedef enum ov_ldap_auth_result {
 
-  OV_LDAP_AUTH_REJECTED = 0,
-  OV_LDAP_AUTH_GRANTED = 1
+    OV_LDAP_AUTH_REJECTED = 0,
+    OV_LDAP_AUTH_GRANTED = 1
 
 } ov_ldap_auth_result;
 
@@ -66,9 +66,9 @@ typedef enum ov_ldap_auth_result {
 
 typedef struct ov_ldap_auth_callback {
 
-  void *userdata;
-  void (*callback)(void *userdata, const char *uuid,
-                   ov_ldap_auth_result result);
+    void *userdata;
+    void (*callback)(void *userdata, const char *uuid,
+                     ov_ldap_auth_result result);
 
 } ov_ldap_auth_callback;
 
@@ -76,18 +76,18 @@ typedef struct ov_ldap_auth_callback {
 
 typedef struct ov_ldap_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  char host[OV_HOST_NAME_MAX];
-  char user_dn_tree[OV_LDAP_USER_DN_TREE];
+    char host[OV_HOST_NAME_MAX];
+    char user_dn_tree[OV_LDAP_USER_DN_TREE];
 
-  struct {
+    struct {
 
-    uint64_t network_timeout_usec;
+        uint64_t network_timeout_usec;
 
-  } timeout;
+    } timeout;
 
-  ov_thread_loop_config threads;
+    ov_thread_loop_config threads;
 
 } ov_ldap_config;
 
@@ -95,27 +95,27 @@ typedef struct ov_ldap_config {
 
 struct ov_ldap {
 
-  uint16_t magic_byte;
-  uint16_t type;
+    uint16_t magic_byte;
+    uint16_t type;
 
-  ov_ldap_config config;
+    ov_ldap_config config;
 
-  /* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
 
-  ov_ldap *(*free)(ov_ldap *self);
+    ov_ldap *(*free)(ov_ldap *self);
 
-  /* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
 
-  bool (*reconfigure)(ov_ldap *self, ov_ldap_config config);
+    bool (*reconfigure)(ov_ldap *self, ov_ldap_config config);
 
-  /* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
 
-  struct {
+    struct {
 
-    bool (*password)(ov_ldap *self, const char *user, const char *password,
-                     const char *uuid, ov_ldap_auth_callback callback);
+        bool (*password)(ov_ldap *self, const char *user, const char *password,
+                         const char *uuid, ov_ldap_auth_callback callback);
 
-  } authenticate;
+    } authenticate;
 };
 
 /*

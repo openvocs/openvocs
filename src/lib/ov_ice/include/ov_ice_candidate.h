@@ -43,11 +43,11 @@ typedef struct ov_ice_candidate ov_ice_candidate;
 
 typedef enum {
 
-  OV_ICE_INVALID = 0,
-  OV_ICE_HOST = 1,
-  OV_ICE_SERVER_REFLEXIVE = 2,
-  OV_ICE_PEER_REFLEXIVE = 3,
-  OV_ICE_RELAYED = 4
+    OV_ICE_INVALID = 0,
+    OV_ICE_HOST = 1,
+    OV_ICE_SERVER_REFLEXIVE = 2,
+    OV_ICE_PEER_REFLEXIVE = 3,
+    OV_ICE_RELAYED = 4
 
 } ov_ice_candidate_type;
 
@@ -55,9 +55,9 @@ typedef enum {
 
 typedef enum {
 
-  OV_ICE_GATHERING_FAILED = 0,
-  OV_ICE_GATHERING = 1,
-  OV_ICE_GATHERING_SUCCESS = 2
+    OV_ICE_GATHERING_FAILED = 0,
+    OV_ICE_GATHERING = 1,
+    OV_ICE_GATHERING_SUCCESS = 2
 
 } ov_ice_candidate_gathering;
 
@@ -65,9 +65,9 @@ typedef enum {
 
 typedef struct {
 
-  ov_node node;
-  ov_buffer *key;
-  ov_buffer *val;
+    ov_node node;
+    ov_buffer *key;
+    ov_buffer *val;
 
 } ov_ice_candidate_extension;
 
@@ -75,53 +75,53 @@ typedef struct {
 
 struct ov_ice_candidate {
 
-  ov_node node;
+    ov_node node;
 
-  ov_ice_base *base;
-  ov_ice_stream *stream;
+    ov_ice_base *base;
+    ov_ice_stream *stream;
 
-  uint8_t transaction_id[13];
-  bool trickled;
+    uint8_t transaction_id[13];
+    bool trickled;
 
-  ov_ice_candidate_gathering gathering;
+    ov_ice_candidate_gathering gathering;
 
-  ov_ice_candidate_type type;
-  ov_socket_transport transport;
+    ov_ice_candidate_type type;
+    ov_socket_transport transport;
 
-  uint8_t foundation[33];
-  uint16_t component_id;
+    uint8_t foundation[33];
+    uint16_t component_id;
 
-  uint32_t priority;
-  uint32_t priority_prflx;
+    uint32_t priority;
+    uint32_t priority_prflx;
 
-  char addr[OV_HOST_NAME_MAX];
-  uint16_t port;
+    char addr[OV_HOST_NAME_MAX];
+    uint16_t port;
 
-  char raddr[OV_HOST_NAME_MAX];
-  uint16_t rport;
+    char raddr[OV_HOST_NAME_MAX];
+    uint16_t rport;
 
-  ov_ice_candidate_extension *ext;
+    ov_ice_candidate_extension *ext;
 
-  char *string;
+    char *string;
 
-  ov_ice_server server;
+    ov_ice_server server;
 
-  struct {
+    struct {
 
-    char *realm;
-    char *nonce;
+        char *realm;
+        char *nonce;
 
-  } turn;
+    } turn;
 };
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-  const char *candidate;
-  uint64_t SDPMlineIndex;
-  uint64_t SDPMid;
-  const char *ufrag;
+    const char *candidate;
+    uint64_t SDPMlineIndex;
+    uint64_t SDPMid;
+    const char *ufrag;
 
 } ov_ice_candidate_info;
 

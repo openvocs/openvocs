@@ -42,7 +42,7 @@ typedef struct ov_mc_backend_registry ov_mc_backend_registry;
 
 typedef struct ov_mc_backend_registry_config {
 
-  bool debug;
+    bool debug;
 
 } ov_mc_backend_registry_config;
 
@@ -50,8 +50,8 @@ typedef struct ov_mc_backend_registry_config {
 
 typedef struct ov_mc_backend_registry_count {
 
-  size_t mixers;
-  size_t used;
+    size_t mixers;
+    size_t used;
 
 } ov_mc_backend_registry_count;
 

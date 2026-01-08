@@ -76,229 +76,230 @@ static const size_t ref_payload_length = 5;
 
 static void print_header(FILE *out, ov_format_ipv4_header hdr) {
 
-  // uint8_t src_ip[4];
-  // uint8_t dst_ip[4];
+    // uint8_t src_ip[4];
+    // uint8_t dst_ip[4];
 
-  // size_t header_length_octets;
-  // uint16_t total_length_octets;
-  // uint8_t protocol;
-  // uint8_t time_to_live;
+    // size_t header_length_octets;
+    // uint16_t total_length_octets;
+    // uint8_t protocol;
+    // uint8_t time_to_live;
 
-  // uint16_t header_checksum;
+    // uint16_t header_checksum;
 
-  OV_ASSERT(0 != out);
+    OV_ASSERT(0 != out);
 
-  fprintf(out,
-          "SRC IP: %s  DST IP: %s\n"
-          "Header Length: %zu    Total length: %" PRIu16 "\n"
-          "protocol %" PRIu8 "   TTL: %" PRIu8 "\n",
-          ov_format_ipv4_ip_to_string(hdr.src_ip, 0, 0),
-          ov_format_ipv4_ip_to_string(hdr.dst_ip, 0, 0),
-          hdr.header_length_octets, hdr.total_length_octets, hdr.protocol,
-          hdr.time_to_live);
+    fprintf(out,
+            "SRC IP: %s  DST IP: %s\n"
+            "Header Length: %zu    Total length: %" PRIu16 "\n"
+            "protocol %" PRIu8 "   TTL: %" PRIu8 "\n",
+            ov_format_ipv4_ip_to_string(hdr.src_ip, 0, 0),
+            ov_format_ipv4_ip_to_string(hdr.dst_ip, 0, 0),
+            hdr.header_length_octets, hdr.total_length_octets, hdr.protocol,
+            hdr.time_to_live);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_format_ipv4_install() {
 
-  ov_format *fmt = ov_format_from_memory(ref_ipv4_frame_min,
-                                         sizeof(ref_ipv4_frame_min), OV_READ);
-  testrun(0 != fmt);
-  ov_format *ipv4_fmt = ov_format_as(fmt, "ipv4", 0, 0);
-  testrun(0 == ipv4_fmt);
+    ov_format *fmt = ov_format_from_memory(ref_ipv4_frame_min,
+                                           sizeof(ref_ipv4_frame_min), OV_READ);
+    testrun(0 != fmt);
+    ov_format *ipv4_fmt = ov_format_as(fmt, "ipv4", 0, 0);
+    testrun(0 == ipv4_fmt);
 
-  ov_format_ipv4_install(0);
+    ov_format_ipv4_install(0);
 
-  ipv4_fmt = ov_format_as(fmt, "ipv4", 0, 0);
-  testrun(0 != ipv4_fmt);
+    ipv4_fmt = ov_format_as(fmt, "ipv4", 0, 0);
+    testrun(0 != ipv4_fmt);
 
-  fmt = 0;
+    fmt = 0;
 
-  ipv4_fmt = ov_format_close(ipv4_fmt);
-  testrun(0 == ipv4_fmt);
+    ipv4_fmt = ov_format_close(ipv4_fmt);
+    testrun(0 == ipv4_fmt);
 
-  ov_format_registry_clear(0);
+    ov_format_registry_clear(0);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_impl_next_chunk() {
 
-  ov_format *mem_fmt = ov_format_from_memory(
-      ref_ipv4_frame_min, sizeof(ref_ipv4_frame_min), OV_READ);
+    ov_format *mem_fmt = ov_format_from_memory(
+        ref_ipv4_frame_min, sizeof(ref_ipv4_frame_min), OV_READ);
 
-  testrun(0 != mem_fmt);
+    testrun(0 != mem_fmt);
 
-  testrun(0 == ov_format_as(mem_fmt, "ipv4", 0, 0));
+    testrun(0 == ov_format_as(mem_fmt, "ipv4", 0, 0));
 
-  testrun(ov_format_ipv4_install(0));
+    testrun(ov_format_ipv4_install(0));
 
-  ov_format *ipv4_fmt = ov_format_as(mem_fmt, "ipv4", 0, 0);
-  testrun(0 != ipv4_fmt);
+    ov_format *ipv4_fmt = ov_format_as(mem_fmt, "ipv4", 0, 0);
+    testrun(0 != ipv4_fmt);
 
-  mem_fmt = 0;
+    mem_fmt = 0;
 
-  /*************************************************************************
-                             Test single frame - header only
-   ************************************************************************/
+    /*************************************************************************
+                               Test single frame - header only
+     ************************************************************************/
 
-  ov_buffer buf = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
+    ov_buffer buf = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
 
-  testrun(buf.length == 0);
+    testrun(buf.length == 0);
 
-  ipv4_fmt = ov_format_close(ipv4_fmt);
+    ipv4_fmt = ov_format_close(ipv4_fmt);
 
-  testrun(0 == ipv4_fmt);
+    testrun(0 == ipv4_fmt);
 
-  /*************************************************************************
-                             Test single frame - with payload
-   ************************************************************************/
+    /*************************************************************************
+                               Test single frame - with payload
+     ************************************************************************/
 
-  mem_fmt = ov_format_from_memory(ref_ipv4_frame_payload,
-                                  sizeof(ref_ipv4_frame_payload), OV_READ);
+    mem_fmt = ov_format_from_memory(ref_ipv4_frame_payload,
+                                    sizeof(ref_ipv4_frame_payload), OV_READ);
 
-  testrun(0 != mem_fmt);
+    testrun(0 != mem_fmt);
 
-  ipv4_fmt = ov_format_as(mem_fmt, "ipv4", 0, 0);
-  testrun(0 != ipv4_fmt);
+    ipv4_fmt = ov_format_as(mem_fmt, "ipv4", 0, 0);
+    testrun(0 != ipv4_fmt);
 
-  mem_fmt = 0;
+    mem_fmt = 0;
 
-  buf = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
+    buf = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
 
-  testrun(buf.length == ref_payload_length);
-  testrun(0 == memcmp(buf.start, ref_payload, buf.length));
+    testrun(buf.length == ref_payload_length);
+    testrun(0 == memcmp(buf.start, ref_payload, buf.length));
 
-  ipv4_fmt = ov_format_close(ipv4_fmt);
+    ipv4_fmt = ov_format_close(ipv4_fmt);
 
-  testrun(0 == ipv4_fmt);
+    testrun(0 == ipv4_fmt);
 
-  /*************************************************************************
-                 Test with several frames in PCAP container
-   ************************************************************************/
+    /*************************************************************************
+                   Test with several frames in PCAP container
+     ************************************************************************/
 
-  char *test_pcap_file_path = ov_test_get_resource_path(TEST_PCAP_FILE);
-  testrun(0 != test_pcap_file_path);
+    char *test_pcap_file_path = ov_test_get_resource_path(TEST_PCAP_FILE);
+    testrun(0 != test_pcap_file_path);
 
-  ov_format *file_fmt = ov_format_open(test_pcap_file_path, OV_READ);
-  testrun(0 != file_fmt);
+    ov_format *file_fmt = ov_format_open(test_pcap_file_path, OV_READ);
+    testrun(0 != file_fmt);
 
-  free(test_pcap_file_path);
-  test_pcap_file_path = 0;
+    free(test_pcap_file_path);
+    test_pcap_file_path = 0;
 
-  ov_format_pcap_install(0);
-  ov_format_ethernet_install(0);
+    ov_format_pcap_install(0);
+    ov_format_ethernet_install(0);
 
-  ov_format *pcap_fmt = ov_format_as(file_fmt, "pcap", 0, 0);
-  testrun(0 != pcap_fmt);
+    ov_format *pcap_fmt = ov_format_as(file_fmt, "pcap", 0, 0);
+    testrun(0 != pcap_fmt);
 
-  file_fmt = 0;
+    file_fmt = 0;
 
-  ov_format_option_ethernet fo_ethernet = {
-      .crc_present = false,
-  };
+    ov_format_option_ethernet fo_ethernet = {
+        .crc_present = false,
+    };
 
-  ov_format *ethernet_fmt = ov_format_as(pcap_fmt, "ethernet", &fo_ethernet, 0);
+    ov_format *ethernet_fmt =
+        ov_format_as(pcap_fmt, "ethernet", &fo_ethernet, 0);
 
-  testrun(0 != ethernet_fmt);
+    testrun(0 != ethernet_fmt);
 
-  pcap_fmt = 0;
+    pcap_fmt = 0;
 
-  ipv4_fmt = ov_format_as(ethernet_fmt, "ipv4", 0, 0);
-  testrun(0 != ipv4_fmt);
+    ipv4_fmt = ov_format_as(ethernet_fmt, "ipv4", 0, 0);
+    testrun(0 != ipv4_fmt);
 
-  ethernet_fmt = 0;
+    ethernet_fmt = 0;
 
-  ov_buffer payload = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
+    ov_buffer payload = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
 
-  while (0 != payload.start) {
+    while (0 != payload.start) {
 
-    ov_format_ipv4_header hdr = {0};
+        ov_format_ipv4_header hdr = {0};
 
-    testrun(ov_format_ipv4_get_header(ipv4_fmt, &hdr));
+        testrun(ov_format_ipv4_get_header(ipv4_fmt, &hdr));
 
-    testrun(hdr.header_length_octets + payload.length ==
-            hdr.total_length_octets);
+        testrun(hdr.header_length_octets + payload.length ==
+                hdr.total_length_octets);
 
-    print_header(stderr, hdr);
+        print_header(stderr, hdr);
 
-    testrun_log("Read payload octets: %zu", payload.length);
+        testrun_log("Read payload octets: %zu", payload.length);
 
-    payload = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
-  };
+        payload = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
+    };
 
-  ipv4_fmt = ov_format_close(ipv4_fmt);
+    ipv4_fmt = ov_format_close(ipv4_fmt);
 
-  testrun(0 == ipv4_fmt);
+    testrun(0 == ipv4_fmt);
 
-  /*************************************************************************
-                                  Cleanup
-   ************************************************************************/
+    /*************************************************************************
+                                    Cleanup
+     ************************************************************************/
 
-  ov_format_registry_clear(0);
+    ov_format_registry_clear(0);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_format_ipv4_get_header() {
 
-  // const uint8_t empty_mac[OV_FORMAT_IPV4_MAC_LEN_OCTETS] = {0};
+    // const uint8_t empty_mac[OV_FORMAT_IPV4_MAC_LEN_OCTETS] = {0};
 
-  // ov_format_ipv4_header hdr = {0};
+    // ov_format_ipv4_header hdr = {0};
 
-  // testrun(!ov_format_ipv4_get_header(0, &hdr));
-  // testrun(0 == hdr.length);
-  // testrun(0 == hdr.type);
-  // testrun(!hdr.type_set);
-  // testrun(0 == memcmp(empty_mac, hdr.dst_mac,
-  // OV_FORMAT_IPV4_MAC_LEN_OCTETS)); testrun(0 == memcmp(empty_mac,
-  // hdr.src_mac, OV_FORMAT_IPV4_MAC_LEN_OCTETS));
+    // testrun(!ov_format_ipv4_get_header(0, &hdr));
+    // testrun(0 == hdr.length);
+    // testrun(0 == hdr.type);
+    // testrun(!hdr.type_set);
+    // testrun(0 == memcmp(empty_mac, hdr.dst_mac,
+    // OV_FORMAT_IPV4_MAC_LEN_OCTETS)); testrun(0 == memcmp(empty_mac,
+    // hdr.src_mac, OV_FORMAT_IPV4_MAC_LEN_OCTETS));
 
-  // ov_buffer *frame = get_ipv4_frame(0, 0, 0, 0, 0, 0);
+    // ov_buffer *frame = get_ipv4_frame(0, 0, 0, 0, 0, 0);
 
-  // ov_format *fmt =
-  //    ov_format_from_memory(frame->start, frame->length, OV_READ);
-  // testrun(0 != fmt);
+    // ov_format *fmt =
+    //    ov_format_from_memory(frame->start, frame->length, OV_READ);
+    // testrun(0 != fmt);
 
-  // ov_format_ipv4_install(0);
+    // ov_format_ipv4_install(0);
 
-  // ov_format *ipv4_fmt = ov_format_as(fmt, "ipv4", 0, 0);
-  // testrun(0 != ipv4_fmt);
+    // ov_format *ipv4_fmt = ov_format_as(fmt, "ipv4", 0, 0);
+    // testrun(0 != ipv4_fmt);
 
-  // fmt = 0;
+    // fmt = 0;
 
-  // ov_buffer payload = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
-  // testrun(0 != payload.start);
-  // testrun(ref_payload_len == payload.length);
-  // testrun(0 == memcmp(ref_payload, payload.start, ref_payload_len));
+    // ov_buffer payload = ov_format_payload_read_chunk_nocopy(ipv4_fmt, 0);
+    // testrun(0 != payload.start);
+    // testrun(ref_payload_len == payload.length);
+    // testrun(0 == memcmp(ref_payload, payload.start, ref_payload_len));
 
-  // testrun(ov_format_ipv4_get_header(ipv4_fmt, &hdr));
-  // testrun(0 == hdr.length);
-  // testrun(ref_ethertype == hdr.type);
-  // testrun(hdr.type_set);
-  // testrun(0 ==
-  //        memcmp(ref_dst_mac, hdr.dst_mac,
-  //        OV_FORMAT_IPV4_MAC_LEN_OCTETS));
-  // testrun(0 ==
-  //        memcmp(ref_src_mac, hdr.src_mac,
-  //        OV_FORMAT_IPV4_MAC_LEN_OCTETS));
+    // testrun(ov_format_ipv4_get_header(ipv4_fmt, &hdr));
+    // testrun(0 == hdr.length);
+    // testrun(ref_ethertype == hdr.type);
+    // testrun(hdr.type_set);
+    // testrun(0 ==
+    //        memcmp(ref_dst_mac, hdr.dst_mac,
+    //        OV_FORMAT_IPV4_MAC_LEN_OCTETS));
+    // testrun(0 ==
+    //        memcmp(ref_src_mac, hdr.src_mac,
+    //        OV_FORMAT_IPV4_MAC_LEN_OCTETS));
 
-  // testrun(ref_crc32 == ov_format_ipv4_get_crc32(ipv4_fmt));
+    // testrun(ref_crc32 == ov_format_ipv4_get_crc32(ipv4_fmt));
 
-  // ipv4_fmt = ov_format_close(ipv4_fmt);
-  // testrun(0 == ipv4_fmt);
+    // ipv4_fmt = ov_format_close(ipv4_fmt);
+    // testrun(0 == ipv4_fmt);
 
-  // frame = ov_buffer_free(frame);
-  // testrun(0 == frame);
+    // frame = ov_buffer_free(frame);
+    // testrun(0 == frame);
 
-  ov_format_registry_clear(0);
+    ov_format_registry_clear(0);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/

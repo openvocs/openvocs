@@ -52,14 +52,14 @@ Copyright   2018        German Aerospace Center DLR e.V.,
 
 typedef struct {
 
-  uint32_t magic_number;
-  void *(*free)(void *);
+    uint32_t magic_number;
+    void *(*free)(void *);
 
 } ov_rtp_frame_buffer;
 
 typedef struct {
 
-  size_t num_frames_to_buffer_per_stream;
+    size_t num_frames_to_buffer_per_stream;
 
 } ov_rtp_frame_buffer_config;
 

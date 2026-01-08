@@ -43,16 +43,16 @@ typedef struct ov_json_io_buffer ov_json_io_buffer;
 
 typedef struct ov_json_io_buffer_config {
 
-  bool debug;
-  bool objects_only;
+    bool debug;
+    bool objects_only;
 
-  struct {
+    struct {
 
-    void *userdata;
-    void (*success)(void *userdata, int socket, ov_json_value *value);
-    void (*failure)(void *userdata, int socket);
+        void *userdata;
+        void (*success)(void *userdata, int socket, ov_json_value *value);
+        void (*failure)(void *userdata, int socket);
 
-  } callback;
+    } callback;
 
 } ov_json_io_buffer_config;
 

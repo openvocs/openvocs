@@ -37,9 +37,9 @@
 
 typedef struct {
 
-  uint16_t id;
-  uint32_t ssrc;
-  ov_socket_configuration socket;
+    uint16_t id;
+    uint32_t ssrc;
+    ov_socket_configuration socket;
 
 } ov_ice_proxy_vocs_stream_forward_data;
 

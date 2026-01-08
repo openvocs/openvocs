@@ -41,7 +41,7 @@ typedef struct ov_event_trigger ov_event_trigger;
 
 typedef struct ov_event_trigger_config {
 
-  bool debug;
+    bool debug;
 
 } ov_event_trigger_config;
 
@@ -49,8 +49,8 @@ typedef struct ov_event_trigger_config {
 
 typedef struct ov_event_trigger_data {
 
-  void *userdata;
-  void (*process)(void *userdata, ov_json_value *event);
+    void *userdata;
+    void (*process)(void *userdata, ov_json_value *event);
 
 } ov_event_trigger_data;
 

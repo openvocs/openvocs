@@ -37,81 +37,81 @@
 #include <ov_vad/ov_vad_app.h>
 
 #define CONFIG_PATH                                                            \
-  OPENVOCS_ROOT                                                                \
-  "/src/service/ov_mc_vad/config/default_config.json"
+    OPENVOCS_ROOT                                                              \
+    "/src/service/ov_mc_vad/config/default_config.json"
 
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
-  int retval = EXIT_FAILURE;
+    int retval = EXIT_FAILURE;
 
-  ov_vad_app *app = NULL;
-  ov_io *io = NULL;
-  ov_event_loop *loop = NULL;
-  ov_json_value *json_config = NULL;
+    ov_vad_app *app = NULL;
+    ov_io *io = NULL;
+    ov_event_loop *loop = NULL;
+    ov_json_value *json_config = NULL;
 
-  ov_event_loop_config loop_config = (ov_event_loop_config){
-      .max.sockets = ov_socket_get_max_supported_runtime_sockets(0),
-      .max.timers = ov_socket_get_max_supported_runtime_sockets(0)};
+    ov_event_loop_config loop_config = (ov_event_loop_config){
+        .max.sockets = ov_socket_get_max_supported_runtime_sockets(0),
+        .max.timers = ov_socket_get_max_supported_runtime_sockets(0)};
 
-  const char *path = ov_config_path_from_command_line(argc, argv);
-  if (!path)
-    path = CONFIG_PATH;
+    const char *path = ov_config_path_from_command_line(argc, argv);
+    if (!path)
+        path = CONFIG_PATH;
 
-  if (path == VERSION_REQUEST_ONLY)
-    goto error;
+    if (path == VERSION_REQUEST_ONLY)
+        goto error;
 
-  json_config = ov_config_load(path);
-  if (!json_config) {
-    ov_log_error("Failed to load config from %s", path);
-    goto error;
-  } else {
-    ov_log_debug("Config load from PATH %s", path);
-  }
+    json_config = ov_config_load(path);
+    if (!json_config) {
+        ov_log_error("Failed to load config from %s", path);
+        goto error;
+    } else {
+        ov_log_debug("Config load from PATH %s", path);
+    }
 
-  if (!ov_config_log_from_json(json_config))
-    goto error;
+    if (!ov_config_log_from_json(json_config))
+        goto error;
 
-  loop = ov_os_event_loop(loop_config);
+    loop = ov_os_event_loop(loop_config);
 
-  if (!loop) {
-    ov_log_error("Failed to create eventloop");
-    goto error;
-  }
+    if (!loop) {
+        ov_log_error("Failed to create eventloop");
+        goto error;
+    }
 
-  if (!ov_event_loop_setup_signals(loop))
-    goto error;
+    if (!ov_event_loop_setup_signals(loop))
+        goto error;
 
-  ov_io_config io_config = ov_io_config_from_json(json_config);
-  io_config.loop = loop;
+    ov_io_config io_config = ov_io_config_from_json(json_config);
+    io_config.loop = loop;
 
-  io = ov_io_create(io_config);
-  if (!io) {
-    ov_log_error("Failed to create io");
-    goto error;
-  }
+    io = ov_io_create(io_config);
+    if (!io) {
+        ov_log_error("Failed to create io");
+        goto error;
+    }
 
-  ov_vad_app_config app_config = ov_vad_app_config_from_json(json_config);
-  app_config.loop = loop;
-  app_config.io = io;
+    ov_vad_app_config app_config = ov_vad_app_config_from_json(json_config);
+    app_config.loop = loop;
+    app_config.io = io;
 
-  app = ov_vad_app_create(app_config);
-  if (!app) {
-    ov_log_error("Failed to create app");
-    goto error;
-  }
+    app = ov_vad_app_create(app_config);
+    if (!app) {
+        ov_log_error("Failed to create app");
+        goto error;
+    }
 
-  /*  Run event loop */
-  loop->run(loop, OV_RUN_MAX);
+    /*  Run event loop */
+    loop->run(loop, OV_RUN_MAX);
 
-  retval = EXIT_SUCCESS;
+    retval = EXIT_SUCCESS;
 
 error:
 
-  json_config = ov_json_value_free(json_config);
-  app = ov_vad_app_free(app);
-  io = ov_io_free(io);
-  loop = ov_event_loop_free(loop);
-  return retval;
+    json_config = ov_json_value_free(json_config);
+    app = ov_vad_app_free(app);
+    io = ov_io_free(io);
+    loop = ov_event_loop_free(loop);
+    return retval;
 }

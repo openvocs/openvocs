@@ -51,52 +51,52 @@
 bool utils_fill_buffer_random_string(uint8_t **buffer, size_t length,
                                      const char *alphabet_in) {
 
-  static const char *alphabet_default = "1234567890AbCdEfGhJkMnPqRsTwXz";
+    static const char *alphabet_default = "1234567890AbCdEfGhJkMnPqRsTwXz";
 
-  const char *alphabet = alphabet_in;
-  if (!alphabet)
-    alphabet = alphabet_default;
+    const char *alphabet = alphabet_in;
+    if (!alphabet)
+        alphabet = alphabet_default;
 
-  size_t alphabet_max_index = strlen(alphabet);
+    size_t alphabet_max_index = strlen(alphabet);
 
-  if (0 == alphabet_max_index)
-    goto error;
+    if (0 == alphabet_max_index)
+        goto error;
 
-  --alphabet_max_index;
+    --alphabet_max_index;
 
-  size_t index = 0;
-  uint8_t *pointer = NULL;
-  int64_t number = 0;
+    size_t index = 0;
+    uint8_t *pointer = NULL;
+    int64_t number = 0;
 
-  if (!length)
-    goto error;
+    if (!length)
+        goto error;
 
-  pointer = *buffer;
+    pointer = *buffer;
 
-  if (!pointer) {
-    pointer = calloc(length, sizeof(uint8_t));
-    *buffer = pointer;
-  }
+    if (!pointer) {
+        pointer = calloc(length, sizeof(uint8_t));
+        *buffer = pointer;
+    }
 
-  for (index = 0; index + 1 < length; index++) {
-    number = random();
-    pointer[index] = alphabet[(number * alphabet_max_index) / RAND_MAX];
-  }
+    for (index = 0; index + 1 < length; index++) {
+        number = random();
+        pointer[index] = alphabet[(number * alphabet_max_index) / RAND_MAX];
+    }
 
-  pointer[length - 1] = 0;
+    pointer[length - 1] = 0;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 void create_random_c_strings(char **keys, size_t num_keys) {
 
-  for (size_t i = 0; i < num_keys; ++i) {
+    for (size_t i = 0; i < num_keys; ++i) {
 
-    utils_fill_buffer_random_string((uint8_t **)&keys[i], 5 + i % 250, 0);
-  }
+        utils_fill_buffer_random_string((uint8_t **)&keys[i], 5 + i % 250, 0);
+    }
 }
 
 char *keys[1 << 20] = {};
@@ -106,26 +106,26 @@ char *keys[1 << 20] = {};
 void helper_hash_function_c_string(uint64_t (*f)(const void *),
                                    double expected_avg) {
 
-  OV_ASSERT(0 == f(0));
+    OV_ASSERT(0 == f(0));
 
-  uint64_t hash_value = 0;
-  double average = 0;
-  double variance = 0;
+    uint64_t hash_value = 0;
+    double average = 0;
+    double variance = 0;
 
-  const size_t num_keys = sizeof(keys) / sizeof(keys[0]);
+    const size_t num_keys = sizeof(keys) / sizeof(keys[0]);
 
-  for (size_t i = 0; i < num_keys; ++i) {
+    for (size_t i = 0; i < num_keys; ++i) {
 
-    hash_value = f(keys[i]);
-    average += hash_value;
-    variance = VARIANCE(variance, expected_avg, hash_value);
-  }
+        hash_value = f(keys[i]);
+        average += hash_value;
+        variance = VARIANCE(variance, expected_avg, hash_value);
+    }
 
-  average /= num_keys;
-  variance /= num_keys;
+    average /= num_keys;
+    variance /= num_keys;
 
-  fprintf(stderr, "AVERAGE EXPECTED: %f    REAL:  %f    VARIANCE %f\n",
-          expected_avg, average, variance);
+    fprintf(stderr, "AVERAGE EXPECTED: %f    REAL:  %f    VARIANCE %f\n",
+            expected_avg, average, variance);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -140,62 +140,62 @@ void helper_hash_function_c_string(uint64_t (*f)(const void *),
 
 int test_ov_hash_simple_c_string() {
 
-  helper_hash_function_c_string(ov_hash_simple_c_string, UINT8_MAX / 2);
+    helper_hash_function_c_string(ov_hash_simple_c_string, UINT8_MAX / 2);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*---------------------------------------------------------------------------*/
 
 int test_ov_hash_pearson_c_string() {
 
-  helper_hash_function_c_string(ov_hash_pearson_c_string, UINT8_MAX / 2);
+    helper_hash_function_c_string(ov_hash_pearson_c_string, UINT8_MAX / 2);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_hash_intptr() {
 
-  for (intptr_t i = 0; i < 0xffff; i++) {
+    for (intptr_t i = 0; i < 0xffff; i++) {
 
-    testrun((uint64_t)i == ov_hash_intptr((void *)i));
-  }
+        testrun((uint64_t)i == ov_hash_intptr((void *)i));
+    }
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_hash_uint64() {
 
-  uint64_t i = 0;
+    uint64_t i = 0;
 
-  for (i = 0; i < 0xffff; i++) {
+    for (i = 0; i < 0xffff; i++) {
 
-    testrun((uint64_t)i == ov_hash_uint64(&i));
-  }
+        testrun((uint64_t)i == ov_hash_uint64(&i));
+    }
 
-  // check max
-  i = 0xFFFFFFFFFFFFFFFF;
-  testrun(i == ov_hash_uint64(&i));
+    // check max
+    i = 0xFFFFFFFFFFFFFFFF;
+    testrun(i == ov_hash_uint64(&i));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_hash_int64() {
 
-  int64_t i = 0;
+    int64_t i = 0;
 
-  for (i = -0xffff; i < 0xffff; i++) {
+    for (i = -0xffff; i < 0xffff; i++) {
 
-    testrun((uint64_t)i == ov_hash_int64(&i));
-  }
+        testrun((uint64_t)i == ov_hash_int64(&i));
+    }
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -210,14 +210,14 @@ int test_ov_hash_int64() {
 
 int all_tests() {
 
-  testrun_init();
-  testrun_test(test_ov_hash_simple_c_string);
-  testrun_test(test_ov_hash_pearson_c_string);
-  testrun_test(test_ov_hash_intptr);
-  testrun_test(test_ov_hash_uint64);
-  testrun_test(test_ov_hash_int64);
+    testrun_init();
+    testrun_test(test_ov_hash_simple_c_string);
+    testrun_test(test_ov_hash_pearson_c_string);
+    testrun_test(test_ov_hash_intptr);
+    testrun_test(test_ov_hash_uint64);
+    testrun_test(test_ov_hash_int64);
 
-  return testrun_counter;
+    return testrun_counter;
 }
 
 /*

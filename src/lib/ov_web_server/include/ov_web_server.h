@@ -48,55 +48,56 @@ typedef struct ov_web_server ov_web_server;
 
 typedef struct ov_web_server_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  bool debug;
+    bool debug;
 
-  ov_socket_configuration socket; // default 443 HTTPS
+    ov_socket_configuration socket; // default 443 HTTPS
 
-  char name[PATH_MAX];
-  char domain_config_path[PATH_MAX];
+    char name[PATH_MAX];
+    char domain_config_path[PATH_MAX];
 
-  struct {
+    struct {
 
-    char path[PATH_MAX];
-    char ext[PATH_MAX];
+        char path[PATH_MAX];
+        char ext[PATH_MAX];
 
-  } mime;
+    } mime;
 
-  struct {
+    struct {
 
-    uint32_t max_content_bytes_per_websocket_frame;
+        uint32_t max_content_bytes_per_websocket_frame;
 
-  } limits;
+    } limits;
 
-  ov_http_message_config http_message;
-  ov_websocket_frame_config websocket_frame;
+    ov_http_message_config http_message;
+    ov_websocket_frame_config websocket_frame;
 
-  struct {
+    struct {
 
-    void *userdata;
+        void *userdata;
 
-    /*
-     *  This callback SHOULD be set to process incoming HTTPs messages.
-     *
-     *  NOTE msg MUST be freed by the callback handler.
-     *  NOTE an error return will close the connection socket
-     *  NOTE websocket upgrades are already processed within
-     * ov_webserver_base NOTE this function will get the buffer as read from
-     * the wire and validated as some valid HTTP content with all pointer of
-     * the msg pointing to the data read. Nothing is copied, but data is
-     * preparsed.
-     */
-    bool (*https)(void *userdata, int connection_socket, ov_http_message *msg);
+        /*
+         *  This callback SHOULD be set to process incoming HTTPs messages.
+         *
+         *  NOTE msg MUST be freed by the callback handler.
+         *  NOTE an error return will close the connection socket
+         *  NOTE websocket upgrades are already processed within
+         * ov_webserver_base NOTE this function will get the buffer as read from
+         * the wire and validated as some valid HTTP content with all pointer of
+         * the msg pointing to the data read. Nothing is copied, but data is
+         * preparsed.
+         */
+        bool (*https)(void *userdata, int connection_socket,
+                      ov_http_message *msg);
 
-    /*
-     * Close callback for connection_sockets to
-     * cleanup connection based settings in userdata.
-     */
-    void (*close)(void *userdata, int connection_socket);
+        /*
+         * Close callback for connection_sockets to
+         * cleanup connection based settings in userdata.
+         */
+        void (*close)(void *userdata, int connection_socket);
 
-  } callback;
+    } callback;
 
 } ov_web_server_config;
 

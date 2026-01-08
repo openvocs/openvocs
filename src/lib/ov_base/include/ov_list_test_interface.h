@@ -42,35 +42,35 @@
 extern ov_list *(*list_creator)(ov_list_config);
 
 #define OV_LIST_PERFORM_INTERFACE_TESTS(create)                                \
-  do {                                                                         \
+    do {                                                                       \
                                                                                \
-    list_creator = create;                                                     \
+        list_creator = create;                                                 \
                                                                                \
-    testrun_test(test_impl_list_is_empty);                                     \
+        testrun_test(test_impl_list_is_empty);                                 \
                                                                                \
-    testrun_test(test_impl_list_clear);                                        \
-    testrun_test(test_impl_list_free);                                         \
+        testrun_test(test_impl_list_clear);                                    \
+        testrun_test(test_impl_list_free);                                     \
                                                                                \
-    testrun_test(test_impl_list_get_pos);                                      \
+        testrun_test(test_impl_list_get_pos);                                  \
                                                                                \
-    testrun_test(test_impl_list_get);                                          \
-    testrun_test(test_impl_list_set);                                          \
+        testrun_test(test_impl_list_get);                                      \
+        testrun_test(test_impl_list_set);                                      \
                                                                                \
-    testrun_test(test_impl_list_insert);                                       \
-    testrun_test(test_impl_list_remove);                                       \
+        testrun_test(test_impl_list_insert);                                   \
+        testrun_test(test_impl_list_remove);                                   \
                                                                                \
-    testrun_test(test_impl_list_push);                                         \
-    testrun_test(test_impl_list_pop);                                          \
+        testrun_test(test_impl_list_push);                                     \
+        testrun_test(test_impl_list_pop);                                      \
                                                                                \
-    testrun_test(test_impl_list_count);                                        \
-    testrun_test(test_impl_list_for_each);                                     \
+        testrun_test(test_impl_list_count);                                    \
+        testrun_test(test_impl_list_for_each);                                 \
                                                                                \
-    testrun_test(test_impl_list_copy);                                         \
+        testrun_test(test_impl_list_copy);                                     \
                                                                                \
-    testrun_test(test_impl_list_iter);                                         \
-    testrun_test(test_impl_list_next);                                         \
+        testrun_test(test_impl_list_iter);                                     \
+        testrun_test(test_impl_list_next);                                     \
                                                                                \
-  } while (0)
+    } while (0)
 
 /******************************************************************************
                                      TESTS

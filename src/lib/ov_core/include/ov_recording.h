@@ -35,11 +35,11 @@
 
 typedef struct {
 
-  char *id;
-  char *loop;
-  char *uri;
-  time_t start_epoch_secs;
-  time_t end_epoch_secs;
+    char *id;
+    char *loop;
+    char *uri;
+    time_t start_epoch_secs;
+    time_t end_epoch_secs;
 
 } ov_recording;
 

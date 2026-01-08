@@ -45,8 +45,8 @@ static const size_t INT_HEADER_LENGTH = sizeof(uint16_t) * 4;
 
 typedef struct {
 
-  uint32_t magic_bytes;
-  ov_format_udp_header header;
+    uint32_t magic_bytes;
+    ov_format_udp_header header;
 
 } udp_data;
 
@@ -54,77 +54,77 @@ typedef struct {
 
 static udp_data *as_udp_data(void *data) {
 
-  if (0 == data)
-    return 0;
+    if (0 == data)
+        return 0;
 
-  udp_data *udp_data = data;
+    udp_data *udp_data = data;
 
-  if (UDP_MAGIC_BYTES != udp_data->magic_bytes)
-    return 0;
+    if (UDP_MAGIC_BYTES != udp_data->magic_bytes)
+        return 0;
 
-  return udp_data;
+    return udp_data;
 }
 
 /*----------------------------------------------------------------------------*/
 static bool get_udp_header_unsafe(ov_format_udp_header *out, uint8_t **rd_ptr,
                                   size_t *length) {
 
-  OV_ASSERT(0 != out);
-  OV_ASSERT(0 != rd_ptr);
-  OV_ASSERT(0 != *rd_ptr);
-  OV_ASSERT(0 != length);
-  OV_ASSERT(0 != length);
+    OV_ASSERT(0 != out);
+    OV_ASSERT(0 != rd_ptr);
+    OV_ASSERT(0 != *rd_ptr);
+    OV_ASSERT(0 != length);
+    OV_ASSERT(0 != length);
 
-  ov_format_udp_header hdr = {0};
+    ov_format_udp_header hdr = {0};
 
-  if (*length < INT_HEADER_LENGTH) {
+    if (*length < INT_HEADER_LENGTH) {
 
-    ov_log_error("UDP header too small");
-    goto error;
-  }
+        ov_log_error("UDP header too small");
+        goto error;
+    }
 
-  uint8_t *ptr = *rd_ptr;
-  OV_ASSERT(0 != ptr);
+    uint8_t *ptr = *rd_ptr;
+    OV_ASSERT(0 != ptr);
 
-  size_t read_octets = 0;
+    size_t read_octets = 0;
 
-  hdr.source_port = ntohs(*(uint16_t *)ptr);
-  ptr += 2;
+    hdr.source_port = ntohs(*(uint16_t *)ptr);
+    ptr += 2;
 
-  hdr.destination_port = ntohs(*(uint16_t *)ptr);
-  ptr += 2;
+    hdr.destination_port = ntohs(*(uint16_t *)ptr);
+    ptr += 2;
 
-  hdr.length_octets = ntohs(*(uint16_t *)ptr);
-  ptr += 2;
+    hdr.length_octets = ntohs(*(uint16_t *)ptr);
+    ptr += 2;
 
-  hdr.checksum = ntohs(*(uint16_t *)ptr);
-  ptr += 2;
+    hdr.checksum = ntohs(*(uint16_t *)ptr);
+    ptr += 2;
 
-  if (hdr.length_octets != *length) {
+    if (hdr.length_octets != *length) {
 
-    ov_log_error("Length given in UDP header (%" PRIu16 " octets) "
-                 "and received from lower layer (%zu octets) do not match",
-                 hdr.length_octets, *length);
+        ov_log_error("Length given in UDP header (%" PRIu16 " octets) "
+                     "and received from lower layer (%zu octets) do not match",
+                     hdr.length_octets, *length);
 
-    goto error;
-  }
+        goto error;
+    }
 
-  read_octets = INT_HEADER_LENGTH;
+    read_octets = INT_HEADER_LENGTH;
 
-  /*************************************************************************
-                           Update out parameters
-   ************************************************************************/
+    /*************************************************************************
+                             Update out parameters
+     ************************************************************************/
 
-  *rd_ptr += read_octets;
-  *length -= read_octets;
+    *rd_ptr += read_octets;
+    *length -= read_octets;
 
-  memcpy(out, &hdr, sizeof(hdr));
+    memcpy(out, &hdr, sizeof(hdr));
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*****************************************************************************
@@ -134,44 +134,45 @@ error:
 static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
-  UNUSED(requested_bytes);
+    UNUSED(requested_bytes);
 
-  ov_buffer payload = {0};
+    ov_buffer payload = {0};
 
-  udp_data *rdata = as_udp_data(data);
+    udp_data *rdata = as_udp_data(data);
 
-  if (0 == rdata) {
+    if (0 == rdata) {
 
-    ov_log_error("Expected format udp, but got something different");
-    goto error;
-  }
+        ov_log_error("Expected format udp, but got something different");
+        goto error;
+    }
 
-  ov_buffer buf = ov_format_payload_read_chunk_nocopy(f, 0);
+    ov_buffer buf = ov_format_payload_read_chunk_nocopy(f, 0);
 
-  if (0 == buf.start) {
+    if (0 == buf.start) {
 
-    goto error;
-  }
+        goto error;
+    }
 
-  if (!get_udp_header_unsafe(&rdata->header, &buf.start, &buf.length)) {
+    if (!get_udp_header_unsafe(&rdata->header, &buf.start, &buf.length)) {
 
-    goto error;
-  }
+        goto error;
+    }
 
-  if (rdata->header.length_octets != INT_HEADER_LENGTH + buf.length) {
+    if (rdata->header.length_octets != INT_HEADER_LENGTH + buf.length) {
 
-    ov_log_error("UDP paket corrupt - header length(%zu) + payload length "
-                 "(%zu) do not match packet length (%" PRIu16,
-                 INT_HEADER_LENGTH, buf.length, rdata->header.length_octets);
+        ov_log_error("UDP paket corrupt - header length(%zu) + payload length "
+                     "(%zu) do not match packet length (%" PRIu16,
+                     INT_HEADER_LENGTH, buf.length,
+                     rdata->header.length_octets);
 
-    goto error;
-  }
+        goto error;
+    }
 
-  payload = buf;
+    payload = buf;
 
 error:
 
-  return payload;
+    return payload;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -179,47 +180,47 @@ error:
 static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
-  UNUSED(f);
-  UNUSED(chunk);
-  UNUSED(data);
+    UNUSED(f);
+    UNUSED(chunk);
+    UNUSED(data);
 
-  TODO("Implement");
+    TODO("Implement");
 
-  return -1;
+    return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *impl_create_data(ov_format *f, void *options) {
 
-  UNUSED(f);
-  UNUSED(options);
+    UNUSED(f);
+    UNUSED(options);
 
-  udp_data *rdata = calloc(1, sizeof(udp_data));
-  OV_ASSERT(0 != rdata);
+    udp_data *rdata = calloc(1, sizeof(udp_data));
+    OV_ASSERT(0 != rdata);
 
-  rdata->magic_bytes = UDP_MAGIC_BYTES;
+    rdata->magic_bytes = UDP_MAGIC_BYTES;
 
-  return rdata;
+    return rdata;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *impl_free_data(void *data) {
 
-  if (0 == as_udp_data(data)) {
+    if (0 == as_udp_data(data)) {
 
-    ov_log_error("Internal error: Expected to be called with format "
-                 "udp");
-    goto error;
-  }
+        ov_log_error("Internal error: Expected to be called with format "
+                     "udp");
+        goto error;
+    }
 
-  free(data);
-  data = 0;
+    free(data);
+    data = 0;
 
 error:
 
-  return data;
+    return data;
 }
 
 /*****************************************************************************
@@ -228,42 +229,42 @@ error:
 
 bool ov_format_udp_install(ov_format_registry *registry) {
 
-  ov_format_handler handler = {
-      .next_chunk = impl_next_chunk,
-      .write_chunk = impl_write_chunk,
-      .create_data = impl_create_data,
-      .free_data = impl_free_data,
-  };
+    ov_format_handler handler = {
+        .next_chunk = impl_next_chunk,
+        .write_chunk = impl_write_chunk,
+        .create_data = impl_create_data,
+        .free_data = impl_free_data,
+    };
 
-  return ov_format_registry_register_type(OV_FORMAT_UDP_TYPE_STRING, handler,
-                                          registry);
+    return ov_format_registry_register_type(OV_FORMAT_UDP_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_format_udp_get_header(ov_format const *f, ov_format_udp_header *hdr) {
 
-  if (0 == hdr) {
+    if (0 == hdr) {
 
-    ov_log_error("No receiving header given");
-    goto error;
-  }
+        ov_log_error("No receiving header given");
+        goto error;
+    }
 
-  udp_data *rdata = as_udp_data(ov_format_get_custom_data(f));
+    udp_data *rdata = as_udp_data(ov_format_get_custom_data(f));
 
-  if (0 == rdata) {
+    if (0 == rdata) {
 
-    ov_log_error("Expected UDP format");
-    goto error;
-  }
+        ov_log_error("Expected UDP format");
+        goto error;
+    }
 
-  memcpy(hdr, &rdata->header, sizeof(ov_format_udp_header));
+    memcpy(hdr, &rdata->header, sizeof(ov_format_udp_header));
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/

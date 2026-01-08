@@ -32,12 +32,12 @@ Copyright   2018    German Aerospace Center DLR e.V.,
 
 typedef struct {
 
-  char *server;
-  char *playback_device;
-  char *record_device;
-  uint64_t usecs_to_buffer;
-  uint64_t sample_rate_hertz;
-  uint64_t frame_length_usecs;
+    char *server;
+    char *playback_device;
+    char *record_device;
+    uint64_t usecs_to_buffer;
+    uint64_t sample_rate_hertz;
+    uint64_t frame_length_usecs;
 
 } ov_gateway_pulse_configuration;
 

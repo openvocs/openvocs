@@ -41,9 +41,9 @@ extern const uint16_t OV_OGG_OPUS_PRESKIP_SAMPLES;
 
 typedef struct {
 
-  uint16_t preskip_samples;
-  float output_gain_db;
-  uint32_t samplerate_hz;
+    uint16_t preskip_samples;
+    float output_gain_db;
+    uint32_t samplerate_hz;
 
 } ov_format_ogg_opus_options;
 

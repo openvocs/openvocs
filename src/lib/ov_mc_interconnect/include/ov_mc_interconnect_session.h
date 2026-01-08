@@ -42,24 +42,24 @@ typedef struct ov_mc_interconnect_session ov_mc_interconnect_session;
 
 typedef struct {
 
-  ov_mc_interconnect *base;
-  ov_event_loop *loop;
-  ov_dtls *dtls;
+    ov_mc_interconnect *base;
+    ov_event_loop *loop;
+    ov_dtls *dtls;
 
-  int signaling;
+    int signaling;
 
-  ov_socket_configuration internal;
+    ov_socket_configuration internal;
 
-  struct {
+    struct {
 
-    char interface[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
-    ov_socket_data signaling;
-    ov_socket_data media;
+        char interface[OV_MC_INTERCONNECT_INTERFACE_NAME_MAX];
+        ov_socket_data signaling;
+        ov_socket_data media;
 
-  } remote;
+    } remote;
 
-  uint64_t reconnect_interval_usecs;
-  uint64_t keepalive_trigger_usec;
+    uint64_t reconnect_interval_usecs;
+    uint64_t keepalive_trigger_usec;
 
 } ov_mc_interconnect_session_config;
 

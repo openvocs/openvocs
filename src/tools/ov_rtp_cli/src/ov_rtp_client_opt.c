@@ -80,24 +80,24 @@ const struct ov_rtp_client_opt_entry OV_RTP_CLIENT_OPTIONS[] = {
 
 size_t ov_rtp_client_opt_size() {
 
-  return sizeof(OV_RTP_CLIENT_OPTIONS) / sizeof(OV_RTP_CLIENT_OPTIONS[0]);
+    return sizeof(OV_RTP_CLIENT_OPTIONS) / sizeof(OV_RTP_CLIENT_OPTIONS[0]);
 }
 
 /*----------------------------------------------------------------------------*/
 
 void ov_rtp_client_print_help(FILE *f) {
 
-  fprintf(f, OV_RTP_CLIENT_HELP);
-  fprintf(f, "\nUnderstood command line arguments:\n\n");
+    fprintf(f, OV_RTP_CLIENT_HELP);
+    fprintf(f, "\nUnderstood command line arguments:\n\n");
 
-  for (size_t i = 0;
-       i < sizeof(OV_RTP_CLIENT_OPTIONS) / sizeof(OV_RTP_CLIENT_OPTIONS[0]);
-       ++i) {
+    for (size_t i = 0;
+         i < sizeof(OV_RTP_CLIENT_OPTIONS) / sizeof(OV_RTP_CLIENT_OPTIONS[0]);
+         ++i) {
 
-    struct ov_rtp_client_opt_entry entry = OV_RTP_CLIENT_OPTIONS[i];
+        struct ov_rtp_client_opt_entry entry = OV_RTP_CLIENT_OPTIONS[i];
 
-    fprintf(f, "-%c   --%s     %s\n", entry.sopt, entry.lopt, entry.desc);
-  }
+        fprintf(f, "-%c   --%s     %s\n", entry.sopt, entry.lopt, entry.desc);
+    }
 
-  fprintf(f, "\n\n");
+    fprintf(f, "\n\n");
 }

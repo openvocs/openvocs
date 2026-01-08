@@ -73,19 +73,19 @@ typedef struct ov_vocs_db_app ov_vocs_db_app;
 
 typedef struct ov_vocs_db_app_config {
 
-  ov_event_loop *loop;
-  ov_vocs_db *db;
-  ov_vocs_db_persistance *persistance;
+    ov_event_loop *loop;
+    ov_vocs_db *db;
+    ov_vocs_db_persistance *persistance;
 
-  ov_vocs_env env;
+    ov_vocs_env env;
 
-  struct {
+    struct {
 
-    bool enable;
-    ov_ldap_config config;
-    uint64_t timeout_usec;
+        bool enable;
+        ov_ldap_config config;
+        uint64_t timeout_usec;
 
-  } ldap;
+    } ldap;
 
 } ov_vocs_db_app_config;
 

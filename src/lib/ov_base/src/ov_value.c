@@ -48,33 +48,33 @@ static const char TO_ESCAPE[] = "\\\"";
 
 struct ov_value {
 
-  uint16_t magic_bytes;
-  uint8_t type;
+    uint16_t magic_bytes;
+    uint8_t type;
 
-  struct ov_value *(*free)(struct ov_value *);
+    struct ov_value *(*free)(struct ov_value *);
 
-  struct ov_value *(*copy)(struct ov_value const *);
+    struct ov_value *(*copy)(struct ov_value const *);
 
-  size_t (*count)(struct ov_value const *);
+    size_t (*count)(struct ov_value const *);
 
-  bool (*dump)(FILE *stream, ov_value const *);
+    bool (*dump)(FILE *stream, ov_value const *);
 
-  bool (*for_each)(ov_value const *,
-                   bool (*func)(char const *key, ov_value const *,
-                                void *userdata),
-                   void *userdata);
+    bool (*for_each)(ov_value const *,
+                     bool (*func)(char const *key, ov_value const *,
+                                  void *userdata),
+                     void *userdata);
 
-  bool (*match)(ov_value const *v1, ov_value const *v2);
+    bool (*match)(ov_value const *v1, ov_value const *v2);
 };
 
 /*----------------------------------------------------------------------------*/
 
 static bool is_value(ov_value const *val) {
 
-  if (0 == val)
-    return false;
+    if (0 == val)
+        return false;
 
-  return MAGIC_BYTES == val->magic_bytes;
+    return MAGIC_BYTES == val->magic_bytes;
 }
 
 /*****************************************************************************
@@ -83,89 +83,89 @@ static bool is_value(ov_value const *val) {
 
 ov_value *ov_value_free(ov_value *value) {
 
-  if ((0 == value) || (0 == value->free))
-    goto error;
+    if ((0 == value) || (0 == value->free))
+        goto error;
 
-  return value->free(value);
+    return value->free(value);
 
 error:
 
-  return value;
+    return value;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_value *ov_value_copy(ov_value const *value) {
 
-  if ((0 == value) || (0 == value->copy))
-    goto error;
+    if ((0 == value) || (0 == value->copy))
+        goto error;
 
-  return value->copy(value);
+    return value->copy(value);
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 size_t ov_value_count(ov_value const *value) {
-  if ((0 == value) || (0 == value->count))
-    goto error;
+    if ((0 == value) || (0 == value->count))
+        goto error;
 
-  return value->count(value);
+    return value->count(value);
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_value_dump(FILE *stream, ov_value const *value) {
 
-  if ((0 == value) || (0 == value->dump))
-    goto error;
+    if ((0 == value) || (0 == value->dump))
+        goto error;
 
-  return value->dump(stream, value);
+    return value->dump(stream, value);
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 char *ov_value_to_string(ov_value const *value) {
 
-  char *dumped = 0;
-  size_t length = 0;
+    char *dumped = 0;
+    size_t length = 0;
 
-  if (0 == value)
-    goto error;
+    if (0 == value)
+        goto error;
 
-  FILE *string_stream = open_memstream(&dumped, &length);
-  OV_ASSERT(0 != string_stream);
+    FILE *string_stream = open_memstream(&dumped, &length);
+    OV_ASSERT(0 != string_stream);
 
-  bool succeeded_p = ov_value_dump(string_stream, value);
+    bool succeeded_p = ov_value_dump(string_stream, value);
 
-  fclose(string_stream);
+    fclose(string_stream);
 
-  string_stream = 0;
+    string_stream = 0;
 
-  if (!succeeded_p) {
-    goto error;
-  }
+    if (!succeeded_p) {
+        goto error;
+    }
 
-  return dumped;
+    return dumped;
 
 error:
 
-  if (0 != dumped) {
-    free(dumped);
-  }
+    if (0 != dumped) {
+        free(dumped);
+    }
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -175,32 +175,32 @@ bool ov_value_for_each(ov_value const *value,
                                     void *userdata),
                        void *userdata) {
 
-  if (0 == value)
-    goto error;
-  if (0 == value->for_each)
-    goto error;
+    if (0 == value)
+        goto error;
+    if (0 == value->for_each)
+        goto error;
 
-  return value->for_each(value, func, userdata);
+    return value->for_each(value, func, userdata);
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_value_match(ov_value const *v1, ov_value const *v2) {
 
-  if (v1 == v2)
-    return true;
+    if (v1 == v2)
+        return true;
 
-  if ((0 == v1) || (0 == v2))
-    return false;
+    if ((0 == v1) || (0 == v2))
+        return false;
 
-  OV_ASSERT(0 != v1);
-  OV_ASSERT(0 != v1->match);
+    OV_ASSERT(0 != v1);
+    OV_ASSERT(0 != v1->match);
 
-  return v1->match(v1, v2);
+    return v1->match(v1, v2);
 }
 
 /*****************************************************************************
@@ -209,55 +209,55 @@ bool ov_value_match(ov_value const *v1, ov_value const *v2) {
 
 static void *vptr_free(void *vptr) {
 
-  if (!is_value(vptr))
-    return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
-  return ov_value_free(vptr);
+    return ov_value_free(vptr);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool vptr_clear(void *vptr) {
 
-  UNUSED(vptr);
+    UNUSED(vptr);
 
-  /* This is a total dummy ...  */
-  return true;
+    /* This is a total dummy ...  */
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *vptr_copy(void **destination, const void *source) {
 
-  if (!is_value(source))
-    goto error;
+    if (!is_value(source))
+        goto error;
 
-  ov_value *copy = ov_value_copy(source);
+    ov_value *copy = ov_value_copy(source);
 
-  if ((0 != destination) && (0 != *destination)) {
+    if ((0 != destination) && (0 != *destination)) {
 
-    *destination = copy;
-  }
+        *destination = copy;
+    }
 
-  return copy;
+    return copy;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool vptr_dump(FILE *stream, void const *vptr) {
 
-  if (!is_value(vptr))
-    goto error;
+    if (!is_value(vptr))
+        goto error;
 
-  return ov_value_dump(stream, vptr);
+    return ov_value_dump(stream, vptr);
 
 error:
 
-  return false;
+    return false;
 }
 
 /*****************************************************************************
@@ -266,24 +266,24 @@ error:
 
 static ov_value *no_free_free(ov_value *value) {
 
-  UNUSED(value);
+    UNUSED(value);
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *no_copy_copy(ov_value const *value) {
-  return (ov_value *)value;
+    return (ov_value *)value;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static size_t count_for_non_composites(ov_value const *value) {
 
-  UNUSED(value);
+    UNUSED(value);
 
-  return 1;
+    return 1;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -294,26 +294,26 @@ static bool for_each_for_non_composites(ov_value const *value,
                                                      void *userdata),
                                         void *userdata) {
 
-  if ((0 == value) || (0 == func)) {
-    goto error;
-  }
+    if ((0 == value) || (0 == func)) {
+        goto error;
+    }
 
-  if (!func(0, value, userdata)) {
-    goto error;
-  }
+    if (!func(0, value, userdata)) {
+        goto error;
+    }
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool match_singletons(ov_value const *v1, ov_value const *v2) {
 
-  return v1 == v2;
+    return v1 == v2;
 }
 
 /*****************************************************************************
@@ -326,14 +326,14 @@ static bool match_singletons(ov_value const *v1, ov_value const *v2) {
 
 static bool null_dump(FILE *stream, ov_value const *value) {
 
-  UNUSED(value);
+    UNUSED(value);
 
-  if (0 == stream)
-    return false;
+    if (0 == stream)
+        return false;
 
-  fprintf(stream, "null");
+    fprintf(stream, "null");
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -365,12 +365,12 @@ bool ov_value_is_null(ov_value const *value) { return &g_null == value; }
 
 static bool true_dump(FILE *stream, ov_value const *value) {
 
-  UNUSED(value);
-  if (0 == stream)
-    return false;
-  fprintf(stream, "true");
+    UNUSED(value);
+    if (0 == stream)
+        return false;
+    fprintf(stream, "true");
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -402,12 +402,12 @@ bool ov_value_is_true(ov_value const *value) { return &g_true == value; }
 
 static bool false_dump(FILE *stream, ov_value const *value) {
 
-  UNUSED(value);
-  if (0 == stream)
-    return false;
-  fprintf(stream, "false");
+    UNUSED(value);
+    if (0 == stream)
+        return false;
+    fprintf(stream, "false");
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -439,8 +439,8 @@ const uint16_t NUMBER_TYPE = 16;
 
 typedef struct {
 
-  ov_value pub;
-  double data;
+    ov_value pub;
+    double data;
 
 } Number;
 
@@ -448,154 +448,154 @@ typedef struct {
 
 static void *number_free_for_good(void *vptr) {
 
-  if (0 != vptr) {
-    free(vptr);
-  }
+    if (0 != vptr) {
+        free(vptr);
+    }
 
-  return 0;
+    return 0;
 }
 
 static ov_value *number_free(ov_value *val) {
 
-  if (0 == val)
-    return val;
+    if (0 == val)
+        return val;
 
-  if (0 != ov_registered_cache_put(g_number_cache, val)) {
+    if (0 != ov_registered_cache_put(g_number_cache, val)) {
 
-    number_free_for_good(val);
-  }
+        number_free_for_good(val);
+    }
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *number_copy(ov_value const *val) {
 
-  if (!ov_value_is_number(val))
-    goto error;
+    if (!ov_value_is_number(val))
+        goto error;
 
-  double data = ov_value_get_number(val);
+    double data = ov_value_get_number(val);
 
-  return ov_value_number(data);
+    return ov_value_number(data);
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static char const *get_format_string(double x) {
 
-  // Prevent decimals being printed if we deal with an 'integer'
+    // Prevent decimals being printed if we deal with an 'integer'
 
-  double integral = 0.0;
-  double decimals = modf(x, &integral);
+    double integral = 0.0;
+    double decimals = modf(x, &integral);
 
-  if (0 == decimals) {
-    return "%.0lf";
-  }
+    if (0 == decimals) {
+        return "%.0lf";
+    }
 
-  return "%.10lf";
+    return "%.10lf";
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool number_dump(FILE *stream, ov_value const *val) {
 
-  if ((0 == stream) || (!ov_value_is_number(val)))
-    return false;
+    if ((0 == stream) || (!ov_value_is_number(val)))
+        return false;
 
-  Number *number = (Number *)val;
+    Number *number = (Number *)val;
 
-  const char *format_string = get_format_string(number->data);
+    const char *format_string = get_format_string(number->data);
 
-  if (0 > fprintf(stream, format_string, number->data)) {
-    goto error;
-  }
+    if (0 > fprintf(stream, format_string, number->data)) {
+        goto error;
+    }
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool match_number(ov_value const *v1, ov_value const *v2) {
 
-  if (!ov_value_is_number(v1))
-    return false;
-  if (!ov_value_is_number(v2))
-    return false;
+    if (!ov_value_is_number(v1))
+        return false;
+    if (!ov_value_is_number(v2))
+        return false;
 
-  double d1 = ov_value_get_number(v1);
-  double d2 = ov_value_get_number(v2);
+    double d1 = ov_value_get_number(v1);
+    double d2 = ov_value_get_number(v2);
 
-  return OV_MAX_FLOAT_DELTA > fabs(d1 - d2);
+    return OV_MAX_FLOAT_DELTA > fabs(d1 - d2);
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_value *ov_value_number(double number) {
 
-  Number *val = ov_registered_cache_get(g_number_cache);
+    Number *val = ov_registered_cache_get(g_number_cache);
 
-  if (0 == val) {
+    if (0 == val) {
 
-    val = calloc(1, sizeof(Number));
+        val = calloc(1, sizeof(Number));
 
-    val->pub = (ov_value){
+        val->pub = (ov_value){
 
-        .magic_bytes = MAGIC_BYTES,
-        .type = NUMBER_TYPE,
-        .free = number_free,
-        .copy = number_copy,
-        .count = count_for_non_composites,
-        .dump = number_dump,
-        .for_each = for_each_for_non_composites,
-        .match = match_number,
-    };
-  }
+            .magic_bytes = MAGIC_BYTES,
+            .type = NUMBER_TYPE,
+            .free = number_free,
+            .copy = number_copy,
+            .count = count_for_non_composites,
+            .dump = number_dump,
+            .for_each = for_each_for_non_composites,
+            .match = match_number,
+        };
+    }
 
-  val->data = number;
+    val->data = number;
 
-  return &(val->pub);
+    return &(val->pub);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_value_is_number(ov_value const *value) {
 
-  if (!is_value(value))
-    goto error;
+    if (!is_value(value))
+        goto error;
 
-  if (NUMBER_TYPE != value->type)
-    goto error;
+    if (NUMBER_TYPE != value->type)
+        goto error;
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 double ov_value_get_number(ov_value const *value) {
 
-  if (!ov_value_is_number(value))
-    goto error;
+    if (!ov_value_is_number(value))
+        goto error;
 
-  Number *number = (Number *)value;
+    Number *number = (Number *)value;
 
-  return number->data;
+    return number->data;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*****************************************************************************
@@ -608,8 +608,8 @@ const uint16_t STRING_TYPE = 16 + 4;
 
 typedef struct {
 
-  ov_value pub;
-  char *data;
+    ov_value pub;
+    char *data;
 
 } String;
 
@@ -617,170 +617,170 @@ typedef struct {
 
 static void *string_free_for_good(void *vptr) {
 
-  if (!is_value(vptr))
-    return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
-  String *s = vptr;
+    String *s = vptr;
 
-  if (STRING_TYPE != s->pub.type)
-    return vptr;
+    if (STRING_TYPE != s->pub.type)
+        return vptr;
 
-  if (0 != s->data)
-    free(s->data);
+    if (0 != s->data)
+        free(s->data);
 
-  free(s);
+    free(s);
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *string_free(ov_value *val) {
 
-  if (0 == val) {
-    goto error;
-  }
+    if (0 == val) {
+        goto error;
+    }
 
-  if (STRING_TYPE != val->type) {
-    goto error;
-  }
+    if (STRING_TYPE != val->type) {
+        goto error;
+    }
 
-  String *s = (String *)val;
+    String *s = (String *)val;
 
-  if (0 != s->data) {
-    free(s->data);
-    s->data = 0;
-  }
+    if (0 != s->data) {
+        free(s->data);
+        s->data = 0;
+    }
 
-  if (0 == ov_registered_cache_put(g_string_cache, val)) {
+    if (0 == ov_registered_cache_put(g_string_cache, val)) {
+
+        return 0;
+    }
+
+    string_free_for_good(val);
 
     return 0;
-  }
-
-  string_free_for_good(val);
-
-  return 0;
 
 error:
 
-  return val;
+    return val;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *string_copy(ov_value const *val) {
 
-  if (0 == val)
-    return 0;
+    if (0 == val)
+        return 0;
 
-  String *s = (String *)val;
+    String *s = (String *)val;
 
-  return ov_value_string(s->data);
+    return ov_value_string(s->data);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool string_dump(FILE *stream, ov_value const *val) {
 
-  if ((0 == stream) || (0 == val) || (STRING_TYPE != val->type)) {
-    goto error;
-  }
-
-  String *string = (String *)val;
-
-  char const *c_str = string->data;
-
-  if (0 == c_str) {
-    c_str = "";
-  }
-
-  fputc('"', stream);
-
-  for (char const *ptr = c_str; 0 != *ptr; ++ptr) {
-
-    if (0 != strchr(TO_ESCAPE, *ptr)) {
-      fputc('\\', stream);
+    if ((0 == stream) || (0 == val) || (STRING_TYPE != val->type)) {
+        goto error;
     }
 
-    fputc(*ptr, stream);
-  }
+    String *string = (String *)val;
 
-  fputc('"', stream);
+    char const *c_str = string->data;
 
-  return true;
+    if (0 == c_str) {
+        c_str = "";
+    }
+
+    fputc('"', stream);
+
+    for (char const *ptr = c_str; 0 != *ptr; ++ptr) {
+
+        if (0 != strchr(TO_ESCAPE, *ptr)) {
+            fputc('\\', stream);
+        }
+
+        fputc(*ptr, stream);
+    }
+
+    fputc('"', stream);
+
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool string_match(ov_value const *v1, ov_value const *v2) {
 
-  char const *s1 = ov_value_get_string(v1);
-  char const *s2 = ov_value_get_string(v2);
+    char const *s1 = ov_value_get_string(v1);
+    char const *s2 = ov_value_get_string(v2);
 
-  if ((0 == s1) || (0 == s2))
-    return false;
+    if ((0 == s1) || (0 == s2))
+        return false;
 
-  return 0 == strcmp(s1, s2);
+    return 0 == strcmp(s1, s2);
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_value *ov_value_string(char const *string) {
 
-  if (0 == string)
-    goto error;
+    if (0 == string)
+        goto error;
 
-  String *val = ov_registered_cache_get(g_string_cache);
+    String *val = ov_registered_cache_get(g_string_cache);
 
-  if (0 == val) {
+    if (0 == val) {
 
-    val = calloc(1, sizeof(String));
+        val = calloc(1, sizeof(String));
 
-    val->pub = (ov_value){
+        val->pub = (ov_value){
 
-        .magic_bytes = MAGIC_BYTES,
-        .type = STRING_TYPE,
-        .free = string_free,
-        .copy = string_copy,
-        .count = count_for_non_composites,
-        .dump = string_dump,
-        .for_each = for_each_for_non_composites,
-        .match = string_match,
-    };
-  }
+            .magic_bytes = MAGIC_BYTES,
+            .type = STRING_TYPE,
+            .free = string_free,
+            .copy = string_copy,
+            .count = count_for_non_composites,
+            .dump = string_dump,
+            .for_each = for_each_for_non_composites,
+            .match = string_match,
+        };
+    }
 
-  if (0 != val->data) {
-    free(val->data);
-  }
+    if (0 != val->data) {
+        free(val->data);
+    }
 
-  val->data = strdup(string);
+    val->data = strdup(string);
 
-  return &(val->pub);
+    return &(val->pub);
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 char const *ov_value_get_string(ov_value const *value) {
 
-  if ((0 == value) || (STRING_TYPE != value->type)) {
-    goto error;
-  }
+    if ((0 == value) || (STRING_TYPE != value->type)) {
+        goto error;
+    }
 
-  String const *string = (String const *)value;
+    String const *string = (String const *)value;
 
-  return string->data;
+    return string->data;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*****************************************************************************
@@ -793,8 +793,8 @@ const uint16_t LIST_TYPE = 32;
 
 typedef struct {
 
-  ov_value pub;
-  ov_list *data;
+    ov_value pub;
+    ov_list *data;
 
 } List;
 
@@ -802,55 +802,55 @@ typedef struct {
 
 static void *list_free_for_good(void *vptr) {
 
-  if (!is_value(vptr))
-    return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
-  List *l = vptr;
+    List *l = vptr;
 
-  if (LIST_TYPE != l->pub.type)
-    return vptr;
+    if (LIST_TYPE != l->pub.type)
+        return vptr;
 
-  OV_ASSERT(0 != l->data);
+    OV_ASSERT(0 != l->data);
 
-  l->data = ov_list_free(l->data);
+    l->data = ov_list_free(l->data);
 
-  OV_ASSERT(0 == l->data);
+    OV_ASSERT(0 == l->data);
 
-  free(l);
+    free(l);
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *list_free(ov_value *value) {
 
-  if (0 == value) {
-    goto error;
-  }
+    if (0 == value) {
+        goto error;
+    }
 
-  if (LIST_TYPE != value->type) {
-    goto error;
-  }
+    if (LIST_TYPE != value->type) {
+        goto error;
+    }
 
-  List *list = (List *)value;
+    List *list = (List *)value;
 
-  OV_ASSERT(0 != list->data);
+    OV_ASSERT(0 != list->data);
 
-  if (!ov_list_clear(list->data)) {
-    goto error;
-  }
+    if (!ov_list_clear(list->data)) {
+        goto error;
+    }
 
-  if (0 != ov_registered_cache_put(g_list_cache, value)) {
+    if (0 != ov_registered_cache_put(g_list_cache, value)) {
 
-    list_free_for_good(value);
-  }
+        list_free_for_good(value);
+    }
 
-  value = 0;
+    value = 0;
 
 error:
 
-  return value;
+    return value;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -858,137 +858,137 @@ error:
 static bool copy_element_to_list(char const *key, ov_value const *value,
                                  void *userdata) {
 
-  UNUSED(key);
+    UNUSED(key);
 
-  if ((0 == value) || (0 == userdata)) {
-    goto error;
-  }
+    if ((0 == value) || (0 == userdata)) {
+        goto error;
+    }
 
-  List *list = userdata;
+    List *list = userdata;
 
-  OV_ASSERT(0 != list->data);
+    OV_ASSERT(0 != list->data);
 
-  ov_value *copy = ov_value_copy(value);
-  if (0 == copy) {
-    goto error;
-  }
+    ov_value *copy = ov_value_copy(value);
+    if (0 == copy) {
+        goto error;
+    }
 
-  return ov_list_push(list->data, copy);
+    return ov_list_push(list->data, copy);
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *list_copy(ov_value const *list) {
 
-  ov_value *copy = 0;
+    ov_value *copy = 0;
 
-  if ((0 == list) || (LIST_TYPE != list->type)) {
-    goto error;
-  }
+    if ((0 == list) || (LIST_TYPE != list->type)) {
+        goto error;
+    }
 
-  copy = ov_value_list(0);
+    copy = ov_value_list(0);
 
-  if (0 == copy) {
-    goto error;
-  }
+    if (0 == copy) {
+        goto error;
+    }
 
-  if (!ov_value_for_each(list, copy_element_to_list, copy)) {
-    goto error;
-  }
+    if (!ov_value_for_each(list, copy_element_to_list, copy)) {
+        goto error;
+    }
 
-  return copy;
+    return copy;
 
 error:
 
-  copy = ov_value_free(copy);
-  OV_ASSERT(0 == copy);
+    copy = ov_value_free(copy);
+    OV_ASSERT(0 == copy);
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static size_t list_count(ov_value const *value) {
 
-  if ((0 == value) || (LIST_TYPE != value->type)) {
-    goto error;
-  }
+    if ((0 == value) || (LIST_TYPE != value->type)) {
+        goto error;
+    }
 
-  List *l = (List *)value;
+    List *l = (List *)value;
 
-  OV_ASSERT(0 != l->data);
+    OV_ASSERT(0 != l->data);
 
-  return ov_list_count(l->data);
+    return ov_list_count(l->data);
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 struct dump_element_arg {
 
-  FILE *stream;
-  bool write_leading_comma;
+    FILE *stream;
+    bool write_leading_comma;
 };
 
 static bool dump_list_element(char const *key, ov_value const *value,
                               void *userdata) {
 
-  UNUSED(key);
+    UNUSED(key);
 
-  if ((0 == value) || (0 == userdata)) {
-    goto error;
-  }
+    if ((0 == value) || (0 == userdata)) {
+        goto error;
+    }
 
-  struct dump_element_arg *arg = userdata;
+    struct dump_element_arg *arg = userdata;
 
-  OV_ASSERT(0 != arg->stream);
+    OV_ASSERT(0 != arg->stream);
 
-  if (arg->write_leading_comma) {
-    fprintf(arg->stream, ",");
-  }
+    if (arg->write_leading_comma) {
+        fprintf(arg->stream, ",");
+    }
 
-  arg->write_leading_comma = true;
+    arg->write_leading_comma = true;
 
-  ov_value_dump(arg->stream, value);
+    ov_value_dump(arg->stream, value);
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool list_dump(FILE *stream, ov_value const *value) {
 
-  if ((0 == stream) || (0 == value) || (LIST_TYPE != value->type)) {
-    goto error;
-  }
+    if ((0 == stream) || (0 == value) || (LIST_TYPE != value->type)) {
+        goto error;
+    }
 
-  fprintf(stream, "[");
+    fprintf(stream, "[");
 
-  struct dump_element_arg arg = {
-      .stream = stream,
-      .write_leading_comma = false,
-  };
+    struct dump_element_arg arg = {
+        .stream = stream,
+        .write_leading_comma = false,
+    };
 
-  bool retval = ov_value_for_each(value, dump_list_element, &arg);
+    bool retval = ov_value_for_each(value, dump_list_element, &arg);
 
-  fprintf(stream, "]");
+    fprintf(stream, "]");
 
-  return retval;
+    return retval;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -998,197 +998,197 @@ static bool list_for_each(ov_value const *value,
                                        void *userdata),
                           void *userdata) {
 
-  if ((0 == value) || (LIST_TYPE != value->type)) {
-    goto error;
-  }
-
-  if (0 == func) {
-    goto error;
-  }
-
-  List *l = (List *)value;
-
-  OV_ASSERT(0 != l->data);
-
-  const size_t len = ov_list_count(l->data);
-
-  for (size_t i = 0; i < len; ++i) {
-
-    if (!func(0, ov_list_get(l->data, 1 + i), userdata)) {
-      goto error;
+    if ((0 == value) || (LIST_TYPE != value->type)) {
+        goto error;
     }
-  }
 
-  return true;
+    if (0 == func) {
+        goto error;
+    }
+
+    List *l = (List *)value;
+
+    OV_ASSERT(0 != l->data);
+
+    const size_t len = ov_list_count(l->data);
+
+    for (size_t i = 0; i < len; ++i) {
+
+        if (!func(0, ov_list_get(l->data, 1 + i), userdata)) {
+            goto error;
+        }
+    }
+
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool list_match(ov_value const *v1, ov_value const *v2) {
 
-  if (0 == v1)
-    return false;
+    if (0 == v1)
+        return false;
 
-  const size_t len = ov_value_count(v1);
+    const size_t len = ov_value_count(v1);
 
-  if (ov_value_count(v2) != len)
-    return false;
+    if (ov_value_count(v2) != len)
+        return false;
 
-  for (size_t i = 0; i < len; ++i) {
+    for (size_t i = 0; i < len; ++i) {
 
-    if (!ov_value_match(ov_value_list_get((ov_value *)v1, i),
-                        ov_value_list_get((ov_value *)v2, i))) {
+        if (!ov_value_match(ov_value_list_get((ov_value *)v1, i),
+                            ov_value_list_get((ov_value *)v2, i))) {
 
-      return false;
+            return false;
+        }
     }
-  }
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_value *internal_ov_value_list(ov_value **values) {
 
-  List *val = ov_registered_cache_get(g_list_cache);
+    List *val = ov_registered_cache_get(g_list_cache);
 
-  if (0 == val) {
+    if (0 == val) {
 
-    val = calloc(1, sizeof(List));
+        val = calloc(1, sizeof(List));
 
-    val->pub = (ov_value){
+        val->pub = (ov_value){
 
-        .magic_bytes = MAGIC_BYTES,
-        .type = LIST_TYPE,
-        .free = list_free,
-        .copy = list_copy,
-        .count = list_count,
-        .dump = list_dump,
-        .for_each = list_for_each,
-        .match = list_match,
+            .magic_bytes = MAGIC_BYTES,
+            .type = LIST_TYPE,
+            .free = list_free,
+            .copy = list_copy,
+            .count = list_count,
+            .dump = list_dump,
+            .for_each = list_for_each,
+            .match = list_match,
 
+        };
+
+        ov_list_config list_cfg = {
+            .item.clear = vptr_clear,
+            .item.free = vptr_free,
+            .item.copy = vptr_copy,
+            .item.dump = vptr_dump,
+        };
+
+        val->data = ov_list_create(list_cfg);
+    }
+
+    if (0 == val->data)
+        goto error;
+
+    if (0 == values) {
+        goto finish;
+    }
+
+    while (0 != *values) {
+
+        ov_list_push(val->data, *values);
+        ++values;
     };
-
-    ov_list_config list_cfg = {
-        .item.clear = vptr_clear,
-        .item.free = vptr_free,
-        .item.copy = vptr_copy,
-        .item.dump = vptr_dump,
-    };
-
-    val->data = ov_list_create(list_cfg);
-  }
-
-  if (0 == val->data)
-    goto error;
-
-  if (0 == values) {
-    goto finish;
-  }
-
-  while (0 != *values) {
-
-    ov_list_push(val->data, *values);
-    ++values;
-  };
 
 finish:
 
-  return &(val->pub);
+    return &(val->pub);
 
 error:
 
-  if (0 != val) {
-    free(val);
-  }
+    if (0 != val) {
+        free(val);
+    }
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_value_is_list(ov_value const *value) {
 
-  if (!is_value(value))
-    goto error;
+    if (!is_value(value))
+        goto error;
 
-  if (LIST_TYPE != value->type)
-    goto error;
+    if (LIST_TYPE != value->type)
+        goto error;
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_value *ov_value_list_get(ov_value *list, size_t i) {
 
-  if ((0 == list) || (LIST_TYPE != list->type)) {
-    goto error;
-  }
+    if ((0 == list) || (LIST_TYPE != list->type)) {
+        goto error;
+    }
 
-  List *l = (List *)list;
+    List *l = (List *)list;
 
-  OV_ASSERT(0 != l->data);
+    OV_ASSERT(0 != l->data);
 
-  /* Unfortunately, ov_vector_list starts off its indices with '1' */
-  return ov_list_get(l->data, 1 + i);
+    /* Unfortunately, ov_vector_list starts off its indices with '1' */
+    return ov_list_get(l->data, 1 + i);
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_value *ov_value_list_set(ov_value *list, size_t i, ov_value *content) {
 
-  if ((0 == list) || (LIST_TYPE != list->type)) {
-    goto error;
-  }
+    if ((0 == list) || (LIST_TYPE != list->type)) {
+        goto error;
+    }
 
-  List *l = (List *)list;
+    List *l = (List *)list;
 
-  OV_ASSERT(0 != l->data);
+    OV_ASSERT(0 != l->data);
 
-  ov_value *replaced = 0;
+    ov_value *replaced = 0;
 
-  /* Unfortunately, ov_vector_list starts off its indices with '1' */
-  if (!ov_list_set(l->data, 1 + i, content, (void **)&replaced)) {
-    goto error;
-  }
+    /* Unfortunately, ov_vector_list starts off its indices with '1' */
+    if (!ov_list_set(l->data, 1 + i, content, (void **)&replaced)) {
+        goto error;
+    }
 
-  return replaced;
+    return replaced;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_value_list_push(ov_value *list, ov_value *content) {
 
-  if ((0 == list) || (0 == content) || (LIST_TYPE != list->type)) {
-    goto error;
-  }
+    if ((0 == list) || (0 == content) || (LIST_TYPE != list->type)) {
+        goto error;
+    }
 
-  List *l = (List *)list;
+    List *l = (List *)list;
 
-  OV_ASSERT(0 != l->data);
+    OV_ASSERT(0 != l->data);
 
-  return ov_list_push(l->data, content);
+    return ov_list_push(l->data, content);
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*****************************************************************************
@@ -1201,8 +1201,8 @@ const uint16_t OBJECT_TYPE = 64;
 
 typedef struct {
 
-  ov_value pub;
-  ov_hashtable *data;
+    ov_value pub;
+    ov_hashtable *data;
 
 } Object;
 
@@ -1210,90 +1210,90 @@ typedef struct {
 
 bool ov_value_is_object(ov_value const *value) {
 
-  if (!is_value(value))
-    goto error;
+    if (!is_value(value))
+        goto error;
 
-  if (OBJECT_TYPE != value->type)
-    goto error;
+    if (OBJECT_TYPE != value->type)
+        goto error;
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool free_hashentry(const void *key, void const *value, void *arg) {
 
-  UNUSED(key);
-  UNUSED(arg);
+    UNUSED(key);
+    UNUSED(arg);
 
-  ov_value_free((void *)value);
+    ov_value_free((void *)value);
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_hashtable *free_hashtable(ov_hashtable *ht) {
 
-  ov_hashtable_for_each(ht, free_hashentry, 0);
+    ov_hashtable_for_each(ht, free_hashentry, 0);
 
-  return ov_hashtable_free(ht);
+    return ov_hashtable_free(ht);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *object_free_for_good(void *vptr) {
 
-  if (!is_value(vptr))
-    return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
-  Object *o = vptr;
+    Object *o = vptr;
 
-  if (OBJECT_TYPE != o->pub.type)
-    return vptr;
+    if (OBJECT_TYPE != o->pub.type)
+        return vptr;
 
-  o->data = free_hashtable(o->data);
-  OV_ASSERT(0 == o->data);
+    o->data = free_hashtable(o->data);
+    OV_ASSERT(0 == o->data);
 
-  free(o);
-  o = 0;
+    free(o);
+    o = 0;
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *object_free(ov_value *value) {
 
-  if ((0 == value) || (OBJECT_TYPE != value->type)) {
+    if ((0 == value) || (OBJECT_TYPE != value->type)) {
 
-    goto error;
-  }
+        goto error;
+    }
 
-  Object *o = (Object *)value;
+    Object *o = (Object *)value;
 
-  if (0 != o->data) {
-    o->data = free_hashtable(o->data);
-  }
+    if (0 != o->data) {
+        o->data = free_hashtable(o->data);
+    }
 
-  OV_ASSERT(0 == o->data);
+    OV_ASSERT(0 == o->data);
 
-  value = ov_registered_cache_put(g_object_cache, value);
+    value = ov_registered_cache_put(g_object_cache, value);
 
-  if (0 != value) {
+    if (0 != value) {
 
-    value = object_free_for_good(value);
-  }
+        value = object_free_for_good(value);
+    }
 
-  value = 0;
+    value = 0;
 
 error:
 
-  return value;
+    return value;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1301,28 +1301,28 @@ error:
 static bool object_entry_copy(char const *key, ov_value const *value,
                               void *varg) {
 
-  ov_value *copy = ov_value_copy(value);
+    ov_value *copy = ov_value_copy(value);
 
-  if (0 == copy)
-    return false;
+    if (0 == copy)
+        return false;
 
-  ov_value_object_set(varg, key, copy);
+    ov_value_object_set(varg, key, copy);
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_value *object_copy(ov_value const *value) {
 
-  ov_value *copy = ov_value_object();
+    ov_value *copy = ov_value_object();
 
-  if (!ov_value_for_each(value, object_entry_copy, copy)) {
+    if (!ov_value_for_each(value, object_entry_copy, copy)) {
 
-    copy = ov_value_free(copy);
-  }
+        copy = ov_value_free(copy);
+    }
 
-  return copy;
+    return copy;
 }
 
 /*****************************************************************************
@@ -1331,27 +1331,27 @@ static ov_value *object_copy(ov_value const *value) {
 
 static bool object_counter(char const *key, ov_value const *value, void *arg) {
 
-  UNUSED(key);
-  UNUSED(value);
+    UNUSED(key);
+    UNUSED(value);
 
-  size_t *counter = arg;
+    size_t *counter = arg;
 
-  OV_ASSERT(0 != counter);
+    OV_ASSERT(0 != counter);
 
-  *counter += 1;
+    *counter += 1;
 
-  return true;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static size_t object_count(ov_value const *value) {
 
-  size_t counter = 0;
+    size_t counter = 0;
 
-  ov_value_for_each(value, object_counter, &counter);
+    ov_value_for_each(value, object_counter, &counter);
 
-  return counter;
+    return counter;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1359,57 +1359,57 @@ static size_t object_count(ov_value const *value) {
 static bool dump_object_element(char const *key, ov_value const *value,
                                 void *userdata) {
 
-  UNUSED(key);
+    UNUSED(key);
 
-  if ((0 == value) || (0 == userdata)) {
-    goto error;
-  }
+    if ((0 == value) || (0 == userdata)) {
+        goto error;
+    }
 
-  struct dump_element_arg *arg = userdata;
+    struct dump_element_arg *arg = userdata;
 
-  OV_ASSERT(0 != arg->stream);
+    OV_ASSERT(0 != arg->stream);
 
-  if (arg->write_leading_comma) {
-    fprintf(arg->stream, ",");
-  }
+    if (arg->write_leading_comma) {
+        fprintf(arg->stream, ",");
+    }
 
-  arg->write_leading_comma = true;
+    arg->write_leading_comma = true;
 
-  fprintf(arg->stream, "\"%s\":", key);
+    fprintf(arg->stream, "\"%s\":", key);
 
-  ov_value_dump(arg->stream, value);
+    ov_value_dump(arg->stream, value);
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool object_dump(FILE *stream, ov_value const *value) {
 
-  if ((0 == value) || (OBJECT_TYPE != value->type) || (0 == stream)) {
-    goto error;
-  }
+    if ((0 == value) || (OBJECT_TYPE != value->type) || (0 == stream)) {
+        goto error;
+    }
 
-  struct dump_element_arg arg = {
-      .stream = stream,
-      .write_leading_comma = false,
-  };
+    struct dump_element_arg arg = {
+        .stream = stream,
+        .write_leading_comma = false,
+    };
 
-  fprintf(stream, "{");
+    fprintf(stream, "{");
 
-  bool retval = ov_value_for_each(value, dump_object_element, &arg);
+    bool retval = ov_value_for_each(value, dump_object_element, &arg);
 
-  fprintf(stream, "}");
+    fprintf(stream, "}");
 
-  return retval;
+    return retval;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1419,20 +1419,21 @@ static bool object_for_each(ov_value const *value,
                                          void *userdata),
                             void *userdata) {
 
-  if ((0 == value) || (OBJECT_TYPE != value->type) || (0 == func)) {
-    goto error;
-  }
+    if ((0 == value) || (OBJECT_TYPE != value->type) || (0 == func)) {
+        goto error;
+    }
 
-  Object const *obj = (Object const *)value;
+    Object const *obj = (Object const *)value;
 
-  ov_hashtable_for_each(
-      obj->data, (bool (*)(void const *, void const *, void *))func, userdata);
+    ov_hashtable_for_each(obj->data,
+                          (bool (*)(void const *, void const *, void *))func,
+                          userdata);
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*****************************************************************************
@@ -1441,8 +1442,8 @@ error:
 
 struct object_entry_match_arg {
 
-  bool matches;
-  ov_value const *other_object;
+    bool matches;
+    ov_value const *other_object;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -1450,123 +1451,123 @@ struct object_entry_match_arg {
 static bool object_entry_match(char const *key, ov_value const *value,
                                void *varg) {
 
-  struct object_entry_match_arg *arg = varg;
+    struct object_entry_match_arg *arg = varg;
 
-  OV_ASSERT(0 != arg);
+    OV_ASSERT(0 != arg);
 
-  ov_value const *other_value =
-      ov_value_object_get((ov_value *)arg->other_object, key);
+    ov_value const *other_value =
+        ov_value_object_get((ov_value *)arg->other_object, key);
 
-  if (!ov_value_match(value, other_value)) {
+    if (!ov_value_match(value, other_value)) {
 
-    arg->matches = false;
-  }
+        arg->matches = false;
+    }
 
-  return arg->matches;
+    return arg->matches;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool object_match(ov_value const *v1, ov_value const *v2) {
 
-  if (0 == v1)
-    return false;
+    if (0 == v1)
+        return false;
 
-  struct object_entry_match_arg arg = {
+    struct object_entry_match_arg arg = {
 
-      .matches = true,
-      .other_object = v2,
+        .matches = true,
+        .other_object = v2,
 
-  };
+    };
 
-  ov_value_for_each(v1, object_entry_match, &arg);
+    ov_value_for_each(v1, object_entry_match, &arg);
 
-  return arg.matches;
+    return arg.matches;
 }
 /*----------------------------------------------------------------------------*/
 
 ov_value *ov_value_object() {
 
-  size_t num_entries = 0;
+    size_t num_entries = 0;
 
-  Object *obj = ov_registered_cache_get(g_object_cache);
+    Object *obj = ov_registered_cache_get(g_object_cache);
 
-  if (0 == obj) {
+    if (0 == obj) {
 
-    obj = calloc(1, sizeof(Object));
-    obj->pub = (ov_value){
-        .magic_bytes = MAGIC_BYTES,
-        .type = OBJECT_TYPE,
-        .free = object_free,
-        .copy = object_copy,
-        .count = object_count,
-        .dump = object_dump,
-        .for_each = object_for_each,
-        .match = object_match,
+        obj = calloc(1, sizeof(Object));
+        obj->pub = (ov_value){
+            .magic_bytes = MAGIC_BYTES,
+            .type = OBJECT_TYPE,
+            .free = object_free,
+            .copy = object_copy,
+            .count = object_count,
+            .dump = object_dump,
+            .for_each = object_for_each,
+            .match = object_match,
 
-    };
-  }
+        };
+    }
 
-  if (0 == num_entries) {
+    if (0 == num_entries) {
 
-    num_entries = 10;
-  }
+        num_entries = 10;
+    }
 
-  obj->data = ov_hashtable_create_c_string(num_entries);
+    obj->data = ov_hashtable_create_c_string(num_entries);
 
-  //    for(size_t i = 0; 0 != pairs[i].key; ++i) {
-  //
-  //        ov_value_object_set(&obj->pub, pairs[i].key, pairs[i].value);
-  //
-  //    }
+    //    for(size_t i = 0; 0 != pairs[i].key; ++i) {
+    //
+    //        ov_value_object_set(&obj->pub, pairs[i].key, pairs[i].value);
+    //
+    //    }
 
-  return &obj->pub;
+    return &obj->pub;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_value const *ov_value_object_get(ov_value const *value, char const *key) {
 
-  ov_buffer *key_copy = 0;
+    ov_buffer *key_copy = 0;
 
-  if ((0 == key) || (0 == value) || (OBJECT_TYPE != value->type)) {
-    goto error;
-  }
+    if ((0 == key) || (0 == value) || (OBJECT_TYPE != value->type)) {
+        goto error;
+    }
 
-  Object *o = (Object *)value;
+    Object *o = (Object *)value;
 
-  char *separator_ptr = strchr(key, OV_KEY_PATH_SEPARATOR);
+    char *separator_ptr = strchr(key, OV_KEY_PATH_SEPARATOR);
 
-  if (0 == separator_ptr) {
+    if (0 == separator_ptr) {
 
-    return ov_hashtable_get(o->data, key);
-  }
+        return ov_hashtable_get(o->data, key);
+    }
 
-  ptrdiff_t prefix_key_len = separator_ptr - key + 1;
+    ptrdiff_t prefix_key_len = separator_ptr - key + 1;
 
-  if (1 < prefix_key_len) {
+    if (1 < prefix_key_len) {
 
-    key_copy = ov_buffer_create(prefix_key_len);
+        key_copy = ov_buffer_create(prefix_key_len);
 
-    memcpy(key_copy->start, key, prefix_key_len);
+        memcpy(key_copy->start, key, prefix_key_len);
 
-    key_copy->start[prefix_key_len - 1] = 0;
+        key_copy->start[prefix_key_len - 1] = 0;
 
-    value = ov_hashtable_get(o->data, key_copy->start);
+        value = ov_hashtable_get(o->data, key_copy->start);
 
-    key_copy = ov_buffer_free(key_copy);
-  }
+        key_copy = ov_buffer_free(key_copy);
+    }
 
-  separator_ptr += 1;
+    separator_ptr += 1;
 
-  return ov_value_object_get(value, separator_ptr);
+    return ov_value_object_get(value, separator_ptr);
 
 error:
 
-  key_copy = ov_buffer_free(key_copy);
-  OV_ASSERT(0 == key_copy);
+    key_copy = ov_buffer_free(key_copy);
+    OV_ASSERT(0 == key_copy);
 
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1574,17 +1575,17 @@ error:
 ov_value *ov_value_object_set(ov_value *value, char const *key,
                               ov_value *content) {
 
-  if ((0 == value) || (OBJECT_TYPE != value->type) || (0 == content)) {
-    goto error;
-  }
+    if ((0 == value) || (OBJECT_TYPE != value->type) || (0 == content)) {
+        goto error;
+    }
 
-  Object *o = (Object *)value;
+    Object *o = (Object *)value;
 
-  return ov_hashtable_set(o->data, key, content);
+    return ov_hashtable_set(o->data, key, content);
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*****************************************************************************
@@ -1594,37 +1595,37 @@ error:
 void ov_value_enable_caching(size_t numbers, size_t strings, size_t lists,
                              size_t objects) {
 
-  // Occasionally, we require a buffer for string manipulations,
-  // thus enable / extend buffer caching
+    // Occasionally, we require a buffer for string manipulations,
+    // thus enable / extend buffer caching
 
-  ov_buffer_enable_caching(2);
+    ov_buffer_enable_caching(2);
 
-  ov_registered_cache_config cfg = {
+    ov_registered_cache_config cfg = {
 
-      .capacity = numbers,
-      .item_free = number_free_for_good,
-      .timeout_usec = 100 * 1000,
+        .capacity = numbers,
+        .item_free = number_free_for_good,
+        .timeout_usec = 100 * 1000,
 
-  };
+    };
 
-  g_number_cache = ov_registered_cache_extend("ov_value_number", cfg);
+    g_number_cache = ov_registered_cache_extend("ov_value_number", cfg);
 
-  cfg.item_free = string_free_for_good;
-  cfg.capacity = strings;
+    cfg.item_free = string_free_for_good;
+    cfg.capacity = strings;
 
-  g_string_cache = ov_registered_cache_extend("ov_value_strings", cfg);
+    g_string_cache = ov_registered_cache_extend("ov_value_strings", cfg);
 
-  cfg.item_free = list_free_for_good;
-  cfg.capacity = lists;
+    cfg.item_free = list_free_for_good;
+    cfg.capacity = lists;
 
-  g_list_cache = ov_registered_cache_extend("ov_value_lists", cfg);
+    g_list_cache = ov_registered_cache_extend("ov_value_lists", cfg);
 
-  // every value list contains a list, but since the value do keep their
-  // lists throughout their lifetime and ideally should be cached,
-  // we do not need to extend the list cache appropriately
+    // every value list contains a list, but since the value do keep their
+    // lists throughout their lifetime and ideally should be cached,
+    // we do not need to extend the list cache appropriately
 
-  cfg.item_free = object_free_for_good;
-  cfg.capacity = objects;
+    cfg.item_free = object_free_for_good;
+    cfg.capacity = objects;
 
-  g_object_cache = ov_registered_cache_extend("ov_value_objects", cfg);
+    g_object_cache = ov_registered_cache_extend("ov_value_objects", cfg);
 }

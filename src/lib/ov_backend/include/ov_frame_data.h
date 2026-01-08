@@ -43,23 +43,23 @@
 
 typedef struct {
 
-  uint16_t magic_bytes;
+    uint16_t magic_bytes;
 
-  ov_buffer *pcm16s_32bit;
+    ov_buffer *pcm16s_32bit;
 
-  uint16_t sequence_number;
-  uint32_t timestamp;
+    uint16_t sequence_number;
+    uint32_t timestamp;
 
-  uint8_t payload_type;
-  uint32_t ssid;
+    uint8_t payload_type;
+    uint32_t ssid;
 
-  size_t num_samples;
+    size_t num_samples;
 
-  ov_vad_parameters vad_params;
+    ov_vad_parameters vad_params;
 
-  int16_t max_amplitude;
+    int16_t max_amplitude;
 
-  bool marked;
+    bool marked;
 
 } ov_frame_data;
 

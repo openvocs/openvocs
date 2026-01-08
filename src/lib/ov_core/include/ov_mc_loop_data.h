@@ -41,9 +41,9 @@
 
 typedef struct ov_mc_loop_data {
 
-  ov_socket_configuration socket;
-  char name[OV_MC_LOOP_NAME_MAX];
-  uint8_t volume;
+    ov_socket_configuration socket;
+    char name[OV_MC_LOOP_NAME_MAX];
+    uint8_t volume;
 
 } ov_mc_loop_data;
 

@@ -91,8 +91,8 @@ static size_t inside_unit_circle = 0;
 static size_t total_number_of_points = 0;
 
 static void reset_circle_counters() {
-  inside_unit_circle = 0;
-  total_number_of_points = 0;
+    inside_unit_circle = 0;
+    total_number_of_points = 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -100,64 +100,64 @@ static void reset_circle_counters() {
 static bool check_in_or_out_of_circle(uint64_t x, uint64_t y,
                                       uint64_t interval_len) {
 
-  OV_ASSERT(0 != interval_len);
+    OV_ASSERT(0 != interval_len);
 
-  /*
-   * Simple check:
-   *
-   * We renorm x and y to [0,1]
-   *
-   * If x*x + y*y < 1, it's inside unit circle, otherwise outside
-   */
+    /*
+     * Simple check:
+     *
+     * We renorm x and y to [0,1]
+     *
+     * If x*x + y*y < 1, it's inside unit circle, otherwise outside
+     */
 
-  double len = interval_len;
-  double x_renorm = x;
-  x_renorm = x_renorm / len;
+    double len = interval_len;
+    double x_renorm = x;
+    x_renorm = x_renorm / len;
 
-  double y_renorm = y;
-  y_renorm = y_renorm / len;
+    double y_renorm = y;
+    y_renorm = y_renorm / len;
 
-  debug_out("%lf   %lf\n", x_renorm, y_renorm);
+    debug_out("%lf   %lf\n", x_renorm, y_renorm);
 
-  double x_renorm_square = x_renorm * x_renorm;
-  double y_renorm_square = y_renorm * y_renorm;
+    double x_renorm_square = x_renorm * x_renorm;
+    double y_renorm_square = y_renorm * y_renorm;
 
-  ++total_number_of_points;
+    ++total_number_of_points;
 
-  if (x_renorm_square + y_renorm_square < 1) {
-    ++inside_unit_circle;
-    return true;
-  }
+    if (x_renorm_square + y_renorm_square < 1) {
+        ++inside_unit_circle;
+        return true;
+    }
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static double calc_pi() {
 
-  double pi_approx = inside_unit_circle;
-  double total_number_of_pairs = total_number_of_points;
+    double pi_approx = inside_unit_circle;
+    double total_number_of_pairs = total_number_of_points;
 
-  debug_out("We got %lf points inside circle, %lf in total\n", pi_approx,
-            total_number_of_pairs);
+    debug_out("We got %lf points inside circle, %lf in total\n", pi_approx,
+              total_number_of_pairs);
 
-  pi_approx = pi_approx / total_number_of_pairs;
+    pi_approx = pi_approx / total_number_of_pairs;
 
-  return pi_approx;
+    return pi_approx;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool pi_is_close_enough(double pi_approx, double max_error) {
 
-  pi_approx *= 4;
-  bool close_enough = fabs(pi_approx - M_PI) < max_error;
+    pi_approx *= 4;
+    bool close_enough = fabs(pi_approx - M_PI) < max_error;
 
-  debug_out("Pi approximated is %lf, close enough: %s\n", pi_approx,
-            close_enough ? "yes" : "no");
+    debug_out("Pi approximated is %lf, close enough: %s\n", pi_approx,
+              close_enough ? "yes" : "no");
 
-  return close_enough;
+    return close_enough;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -172,391 +172,391 @@ static bool pi_is_close_enough(double pi_approx, double max_error) {
 
 int test_ov_random_bytes() {
 
-  size_t size = 1000000;
-  uint8_t buffer[size];
-  memset(buffer, 0, size);
+    size_t size = 1000000;
+    uint8_t buffer[size];
+    memset(buffer, 0, size);
 
-  testrun(!ov_random_bytes(NULL, 0));
+    testrun(!ov_random_bytes(NULL, 0));
 
-  size_t sz = 1;
-  testrun(ov_random_bytes(buffer, sz));
+    size_t sz = 1;
+    testrun(ov_random_bytes(buffer, sz));
 
-  for (size_t i = 0; i < sz; i++) {
-    testrun(buffer[i] != 0);
-  }
-
-  for (size_t i = sz; i < size; i++) {
-    testrun(buffer[i] == 0);
-  }
-
-  sz = 100;
-  testrun(ov_random_bytes(buffer, sz));
-  for (size_t i = 0; i < sz; i++) {
-    testrun(buffer[i] != 0);
-  }
-
-  for (size_t i = sz; i < size; i++) {
-    testrun(buffer[i] == 0);
-  }
-
-  testrun(ov_random_bytes(buffer, size));
-  for (size_t i = 0; i < size; i++) {
-    testrun(buffer[i] != 0);
-  }
-
-  // check randomness
-  uint8_t *array[1000];
-  srandom(ov_time_get_current_time_usecs());
-  size_t bytes = 100;
-
-  for (size_t i = 0; i < 1000; i++) {
-
-    array[i] = calloc(bytes, sizeof(uint8_t));
-    testrun(array[i]);
-    memset(array[i], 0, bytes);
-    testrun(ov_random_bytes(array[i], bytes));
-
-    if (i == 0)
-      continue;
-
-    for (size_t n = 0; n < (i - 1); n++) {
-      testrun(0 != memcmp(array[i], array[n], bytes));
+    for (size_t i = 0; i < sz; i++) {
+        testrun(buffer[i] != 0);
     }
-  }
 
-  for (size_t i = 0; i < 1000; i++) {
+    for (size_t i = sz; i < size; i++) {
+        testrun(buffer[i] == 0);
+    }
 
-    free(array[i]);
-    array[i] = 0;
-  }
+    sz = 100;
+    testrun(ov_random_bytes(buffer, sz));
+    for (size_t i = 0; i < sz; i++) {
+        testrun(buffer[i] != 0);
+    }
 
-  return testrun_log_success();
+    for (size_t i = sz; i < size; i++) {
+        testrun(buffer[i] == 0);
+    }
+
+    testrun(ov_random_bytes(buffer, size));
+    for (size_t i = 0; i < size; i++) {
+        testrun(buffer[i] != 0);
+    }
+
+    // check randomness
+    uint8_t *array[1000];
+    srandom(ov_time_get_current_time_usecs());
+    size_t bytes = 100;
+
+    for (size_t i = 0; i < 1000; i++) {
+
+        array[i] = calloc(bytes, sizeof(uint8_t));
+        testrun(array[i]);
+        memset(array[i], 0, bytes);
+        testrun(ov_random_bytes(array[i], bytes));
+
+        if (i == 0)
+            continue;
+
+        for (size_t n = 0; n < (i - 1); n++) {
+            testrun(0 != memcmp(array[i], array[n], bytes));
+        }
+    }
+
+    for (size_t i = 0; i < 1000; i++) {
+
+        free(array[i]);
+        array[i] = 0;
+    }
+
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_random_bytes_with_zeros() {
 
-  size_t size = 1000000;
-  uint8_t buffer[size];
-  memset(buffer, 0, size);
+    size_t size = 1000000;
+    uint8_t buffer[size];
+    memset(buffer, 0, size);
 
-  testrun(!ov_random_bytes(NULL, 0));
+    testrun(!ov_random_bytes(NULL, 0));
 
-  size_t sz = 1;
-  testrun(ov_random_bytes(buffer, sz));
+    size_t sz = 1;
+    testrun(ov_random_bytes(buffer, sz));
 
-  for (size_t i = sz; i < size; i++) {
-    testrun(buffer[i] == 0);
-  }
+    for (size_t i = sz; i < size; i++) {
+        testrun(buffer[i] == 0);
+    }
 
-  bool found = false;
-  sz = 100;
-  testrun(ov_random_bytes(buffer, sz));
-  for (size_t i = 0; i < sz; i++) {
-    if (buffer[i] != 0)
-      found = true;
-  }
-  testrun(found);
+    bool found = false;
+    sz = 100;
+    testrun(ov_random_bytes(buffer, sz));
+    for (size_t i = 0; i < sz; i++) {
+        if (buffer[i] != 0)
+            found = true;
+    }
+    testrun(found);
 
-  size_t count = 0;
-  testrun(ov_random_bytes(buffer, size));
-  for (size_t i = 0; i < size; i++) {
-    if (buffer[i] != 0)
-      count++;
-  }
-  testrun(count > size / 2);
-  return testrun_log_success();
+    size_t count = 0;
+    testrun(ov_random_bytes(buffer, size));
+    for (size_t i = 0; i < size; i++) {
+        if (buffer[i] != 0)
+            count++;
+    }
+    testrun(count > size / 2);
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_random_string() {
 
-  char *buffer1 = 0;
-  char *buffer2 = 0;
+    char *buffer1 = 0;
+    char *buffer2 = 0;
 
-  int i, k = 0;
-  int testValues = 200;
-  int bufferLength = 10;
+    int i, k = 0;
+    int testValues = 200;
+    int bufferLength = 10;
 
-  char *array[testValues];
-  memset(array, 0, testValues);
+    char *array[testValues];
+    memset(array, 0, testValues);
 
-  // just a pretty basic test of this function
-  // create an amount of testValues
-  // bit check each value against each other
-  // raise error if a value matches another value
+    // just a pretty basic test of this function
+    // create an amount of testValues
+    // bit check each value against each other
+    // raise error if a value matches another value
 
-  for (i = 0; i < testValues; i++) {
+    for (i = 0; i < testValues; i++) {
 
-    buffer1 = calloc(bufferLength, sizeof(uint8_t));
+        buffer1 = calloc(bufferLength, sizeof(uint8_t));
 
-    testrun(ov_random_string(&buffer1, bufferLength, 0));
+        testrun(ov_random_string(&buffer1, bufferLength, 0));
 
-    debug_out("Random String: %s\n", buffer1);
+        debug_out("Random String: %s\n", buffer1);
 
-    array[i] = buffer1;
-  }
-
-  for (i = 0; i < testValues; i++) {
-
-    buffer1 = array[i];
-
-    for (k = 0; k < testValues; k++) {
-
-      if (k == i)
-        continue;
-
-      buffer2 = array[k];
-      testrun(strncmp(buffer1, buffer2, bufferLength) != 0);
+        array[i] = buffer1;
     }
-  }
 
-  for (i = 0; i < testValues; i++) {
-    buffer1 = array[i];
-    free(buffer1);
-  }
+    for (i = 0; i < testValues; i++) {
 
-  /* Check again with custom alphabet */
+        buffer1 = array[i];
 
-  const char test_alphabet[] = "12aCe3";
+        for (k = 0; k < testValues; k++) {
 
-  for (i = 0; i < testValues; i++) {
+            if (k == i)
+                continue;
 
-    buffer1 = calloc(bufferLength, sizeof(uint8_t));
-
-    testrun(ov_random_string(&buffer1, bufferLength, test_alphabet));
-
-    array[i] = buffer1;
-  }
-
-  for (i = 0; i < testValues; i++) {
-
-    buffer1 = array[i];
-
-    char *ptr = buffer1;
-
-    while (0 != *ptr) {
-
-      testrun(0 != strchr(test_alphabet, *ptr));
-      ++ptr;
-    };
-
-    for (k = 0; k < testValues; k++) {
-
-      if (k == i)
-        continue;
-
-      buffer2 = array[k];
-      testrun(strncmp(buffer1, buffer2, bufferLength) != 0);
+            buffer2 = array[k];
+            testrun(strncmp(buffer1, buffer2, bufferLength) != 0);
+        }
     }
-  }
 
-  for (i = 0; i < testValues; i++) {
-    buffer1 = array[i];
-    free(buffer1);
-  }
+    for (i = 0; i < testValues; i++) {
+        buffer1 = array[i];
+        free(buffer1);
+    }
 
-  return testrun_log_success();
+    /* Check again with custom alphabet */
+
+    const char test_alphabet[] = "12aCe3";
+
+    for (i = 0; i < testValues; i++) {
+
+        buffer1 = calloc(bufferLength, sizeof(uint8_t));
+
+        testrun(ov_random_string(&buffer1, bufferLength, test_alphabet));
+
+        array[i] = buffer1;
+    }
+
+    for (i = 0; i < testValues; i++) {
+
+        buffer1 = array[i];
+
+        char *ptr = buffer1;
+
+        while (0 != *ptr) {
+
+            testrun(0 != strchr(test_alphabet, *ptr));
+            ++ptr;
+        };
+
+        for (k = 0; k < testValues; k++) {
+
+            if (k == i)
+                continue;
+
+            buffer2 = array[k];
+            testrun(strncmp(buffer1, buffer2, bufferLength) != 0);
+        }
+    }
+
+    for (i = 0; i < testValues; i++) {
+        buffer1 = array[i];
+        free(buffer1);
+    }
+
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_random_uint32() {
 
-  // check randomness
-  uint32_t array[10000];
+    // check randomness
+    uint32_t array[10000];
 
-  const size_t len = sizeof(array) / sizeof(array[0]);
+    const size_t len = sizeof(array) / sizeof(array[0]);
 
-  size_t doubles = 0;
+    size_t doubles = 0;
 
-  for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
 
-    usleep(1000);
-    array[i] = ov_random_uint32();
+        usleep(1000);
+        array[i] = ov_random_uint32();
 
-    for (size_t n = 0; n < i; n++) {
+        for (size_t n = 0; n < i; n++) {
 
-      if (array[i] == array[n])
-        doubles++;
+            if (array[i] == array[n])
+                doubles++;
+        }
     }
-  }
 
-  testrun(doubles < 10);
+    testrun(doubles < 10);
 
-  for (size_t i = 0; i < 100000; ++i) {
-    check_in_or_out_of_circle(ov_random_uint32(), ov_random_uint32(),
-                              UINT32_MAX);
-  }
+    for (size_t i = 0; i < 100000; ++i) {
+        check_in_or_out_of_circle(ov_random_uint32(), ov_random_uint32(),
+                                  UINT32_MAX);
+    }
 
-  double pi_approx = calc_pi();
+    double pi_approx = calc_pi();
 
-  testrun(pi_is_close_enough(pi_approx, 0.2));
+    testrun(pi_is_close_enough(pi_approx, 0.2));
 
-  reset_circle_counters();
+    reset_circle_counters();
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_random_uint64() {
 
-  // check randomness
-  uint64_t array[10000];
+    // check randomness
+    uint64_t array[10000];
 
-  const size_t len = sizeof(array) / sizeof(array[0]);
+    const size_t len = sizeof(array) / sizeof(array[0]);
 
-  size_t doubles = 0;
+    size_t doubles = 0;
 
-  for (size_t i = 0; i < len; i++) {
+    for (size_t i = 0; i < len; i++) {
 
-    usleep(10);
-    array[i] = ov_random_uint64();
+        usleep(10);
+        array[i] = ov_random_uint64();
 
-    for (size_t n = 0; n < i; n++) {
+        for (size_t n = 0; n < i; n++) {
 
-      if (array[i] == array[n]) {
-        doubles++;
-      }
+            if (array[i] == array[n]) {
+                doubles++;
+            }
+        }
     }
-  }
 
-  testrun_log("doubles %zu\n", doubles);
+    testrun_log("doubles %zu\n", doubles);
 
-  testrun(doubles < 10);
+    testrun(doubles < 10);
 
-  for (size_t i = 0; i < 100000; ++i) {
-    check_in_or_out_of_circle(ov_random_uint64(), ov_random_uint64(),
-                              UINT64_MAX);
-  }
+    for (size_t i = 0; i < 100000; ++i) {
+        check_in_or_out_of_circle(ov_random_uint64(), ov_random_uint64(),
+                                  UINT64_MAX);
+    }
 
-  double pi_approx = calc_pi();
+    double pi_approx = calc_pi();
 
-  testrun(pi_is_close_enough(pi_approx, 0.2));
+    testrun(pi_is_close_enough(pi_approx, 0.2));
 
-  reset_circle_counters();
+    reset_circle_counters();
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_random_range() {
 
-  uint64_t out = ov_random_range(0, 0);
-  testrun(out > 0);
-  out = ov_random_range(1000, 0);
-  testrun(out >= 1000);
-  out = ov_random_range(0, 1000);
-  testrun(out <= 1000);
-  out = ov_random_range(500, 1000);
-  testrun(out <= 1000);
-  testrun(out >= 500);
+    uint64_t out = ov_random_range(0, 0);
+    testrun(out > 0);
+    out = ov_random_range(1000, 0);
+    testrun(out >= 1000);
+    out = ov_random_range(0, 1000);
+    testrun(out <= 1000);
+    out = ov_random_range(500, 1000);
+    testrun(out <= 1000);
+    testrun(out >= 500);
 
-  out = ov_random_range(500, 500);
-  testrun(out <= 500);
-  testrun(out >= 500);
+    out = ov_random_range(500, 500);
+    testrun(out <= 500);
+    testrun(out >= 500);
 
-  out = ov_random_range(500, 501);
-  testrun(out <= 501);
-  testrun(out >= 500);
+    out = ov_random_range(500, 501);
+    testrun(out <= 501);
+    testrun(out >= 500);
 
-  out = ov_random_range(100000, 100001);
-  testrun(out <= 100001);
-  testrun(out >= 100000);
+    out = ov_random_range(100000, 100001);
+    testrun(out <= 100001);
+    testrun(out >= 100000);
 
-  out = ov_random_range(100, 100001);
-  testrun(out <= 100001);
-  testrun(out >= 100);
+    out = ov_random_range(100, 100001);
+    testrun(out <= 100001);
+    testrun(out >= 100);
 
-  for (uint64_t i = 1; i < 10000; i++) {
+    for (uint64_t i = 1; i < 10000; i++) {
 
-    out = ov_random_range(0, i);
-    testrun(out <= i);
-    out = ov_random_range(i, 0);
-    testrun(out >= i);
-    out = ov_random_range(i / 2, i);
-    testrun(out <= i);
-    testrun(out >= i / 2);
-  }
+        out = ov_random_range(0, i);
+        testrun(out <= i);
+        out = ov_random_range(i, 0);
+        testrun(out >= i);
+        out = ov_random_range(i / 2, i);
+        testrun(out <= i);
+        testrun(out >= i / 2);
+    }
 
-  for (size_t i = 0; i < 100000; ++i) {
-    check_in_or_out_of_circle(ov_random_range(14, 829),
-                              ov_random_range(14, 829), 829 - 14);
-  }
+    for (size_t i = 0; i < 100000; ++i) {
+        check_in_or_out_of_circle(ov_random_range(14, 829),
+                                  ov_random_range(14, 829), 829 - 14);
+    }
 
-  double pi_approx = calc_pi();
+    double pi_approx = calc_pi();
 
-  testrun(pi_is_close_enough(pi_approx, 0.2));
+    testrun(pi_is_close_enough(pi_approx, 0.2));
 
-  reset_circle_counters();
+    reset_circle_counters();
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_random_gaussian() {
 
-  testrun(!ov_random_gaussian(0, 0));
+    testrun(!ov_random_gaussian(0, 0));
 
-  double r1 = 0.0;
+    double r1 = 0.0;
 
-  testrun(ov_random_gaussian(&r1, 0));
+    testrun(ov_random_gaussian(&r1, 0));
 
-  fprintf(stderr, "Gaussian: %f\n", r1);
+    fprintf(stderr, "Gaussian: %f\n", r1);
 
-  double r2 = 0;
-
-  testrun(ov_random_gaussian(&r1, &r2));
-  testrun(ov_random_gaussian(0, &r2));
-
-  const double interval = 3.0;
-  const size_t buckets = 100;
-  size_t hist[buckets];
-  memset(hist, 0, buckets * sizeof(size_t));
-
-  const double bucket_size = interval / (double)buckets;
-
-  // Calculate some random numbers and plot the histogram
-  for (size_t n = 0; n < 100000; ++n) {
-
-    double r1 = 0;
     double r2 = 0;
 
     testrun(ov_random_gaussian(&r1, &r2));
+    testrun(ov_random_gaussian(0, &r2));
 
-    r1 = fabs(r1);
-    r2 = fabs(r2);
+    const double interval = 3.0;
+    const size_t buckets = 100;
+    size_t hist[buckets];
+    memset(hist, 0, buckets * sizeof(size_t));
 
-    if (interval > r1) {
-      size_t n = (size_t)(r1 / bucket_size);
-      OV_ASSERT(n < buckets);
-      ++hist[n];
+    const double bucket_size = interval / (double)buckets;
+
+    // Calculate some random numbers and plot the histogram
+    for (size_t n = 0; n < 100000; ++n) {
+
+        double r1 = 0;
+        double r2 = 0;
+
+        testrun(ov_random_gaussian(&r1, &r2));
+
+        r1 = fabs(r1);
+        r2 = fabs(r2);
+
+        if (interval > r1) {
+            size_t n = (size_t)(r1 / bucket_size);
+            OV_ASSERT(n < buckets);
+            ++hist[n];
+        }
+
+        if (interval > fabs(r2)) {
+            size_t n = (size_t)(r2 / bucket_size);
+            OV_ASSERT(n < buckets);
+            ++hist[n];
+        }
     }
 
-    if (interval > fabs(r2)) {
-      size_t n = (size_t)(r2 / bucket_size);
-      OV_ASSERT(n < buckets);
-      ++hist[n];
+    double bucket_val = 0.0;
+
+    fprintf(stderr, "Buckets\n");
+
+    for (size_t n = 0; n < buckets; ++n, bucket_val += bucket_size) {
+
+        fprintf(stderr, "%f   %zu\n", bucket_val, hist[n]);
     }
-  }
 
-  double bucket_val = 0.0;
+    fprintf(stderr, "\n");
 
-  fprintf(stderr, "Buckets\n");
-
-  for (size_t n = 0; n < buckets; ++n, bucket_val += bucket_size) {
-
-    fprintf(stderr, "%f   %zu\n", bucket_val, hist[n]);
-  }
-
-  fprintf(stderr, "\n");
-
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/

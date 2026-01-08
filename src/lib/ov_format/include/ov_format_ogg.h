@@ -47,10 +47,10 @@ extern char const *OV_FORMAT_OGG_TYPE_STRING;
 
 typedef struct {
 
-  uint64_t chunk_length_ms;
-  uint64_t samplerate_hz;
+    uint64_t chunk_length_ms;
+    uint64_t samplerate_hz;
 
-  uint32_t stream_serial;
+    uint32_t stream_serial;
 
 } ov_format_ogg_options;
 

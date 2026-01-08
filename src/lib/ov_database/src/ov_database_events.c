@@ -187,15 +187,16 @@ static QueryResult query_select(ov_database *self, uint32_t max_num_results,
 #define STR(x) STR_HELPER(x)
 
 bool ov_db_prepare(ov_database *self) {
-    return query(
-             self,
-             "CREATE TABLE IF NOT EXISTS " RECORDINGS_TABLE
-             " (id CHAR(" STR(ID_LEN) "), uri VARCHAR(" STR(
-                 URI_LEN) "), loop VARCHAR(" STR(LOOP_LEN) "), starttime "
-                                                           "TIMESTAMP, endtime "
-                                                           "TIMESTAMP);",
-             0, "Could not prepare recordings database") &&
-         query(self,
+    return query(self,
+                 "CREATE TABLE IF NOT EXISTS " RECORDINGS_TABLE
+                 " (id CHAR(" STR(ID_LEN) "), uri VARCHAR(" STR(
+                     URI_LEN) "), loop VARCHAR(" STR(LOOP_LEN) "), starttime "
+                                                               "TIMESTAMP, "
+                                                               "endtime "
+                                                               "TIMESTAMP);",
+                 0, "Could not prepare recordings database") &&
+           query(
+               self,
                "CREATE TABLE IF NOT EXISTS " PARTICIPATION_EVENTS_TABLE
                " (usr VARCHAR(" STR(USER_LEN) "), role VARCHAR(" STR(ROLE_LEN) "), loop VARCHAR(" STR(
                    LOOP_LEN) "), evstate VARCHAR(" STR(PARTICIPATION_STATE_LEN) "), evtime TIMESTAMP);",
@@ -274,9 +275,9 @@ bool ov_db_events_add_participation_state(ov_database *self, const char *user,
 
 /*----------------------------------------------------------------------------*/
 
-static bool pstate_params_to_sql_query(
-    char *target, size_t target_capacity,
-    ov_db_events_get_participation_state_params params) {
+static bool
+pstate_params_to_sql_query(char *target, size_t target_capacity,
+                           ov_db_events_get_participation_state_params params) {
     char *write_ptr = target;
 
     stradd(&write_ptr, &target_capacity,
@@ -381,19 +382,19 @@ ov_json_value *ov_db_events_get_participation_state_struct(
     }
 
     switch (result) {
-        case TOO_MANY_RESULTS:
-            jtarget = ov_json_value_free(jtarget);
-            return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
+    case TOO_MANY_RESULTS:
+        jtarget = ov_json_value_free(jtarget);
+        return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
 
-        case ERROR:
-            jtarget = ov_json_value_free(jtarget);
-            return jtarget;
+    case ERROR:
+        jtarget = ov_json_value_free(jtarget);
+        return jtarget;
 
-        case OK:
-            return jtarget;
+    case OK:
+        return jtarget;
 
-        default:
-            return jtarget;
+    default:
+        return jtarget;
     };
 
     return 0;
@@ -451,9 +452,9 @@ bool ov_db_recordings_add(ov_database *self, char const *id, char const *loop,
 
 /*----------------------------------------------------------------------------*/
 
-static bool params_to_sql_query_without_user(
-    char *target, size_t target_capacity,
-    const ov_db_recordings_get_params params) {
+static bool
+params_to_sql_query_without_user(char *target, size_t target_capacity,
+                                 const ov_db_recordings_get_params params) {
     char *write_ptr = target;
 
     stradd(&write_ptr, &target_capacity,
@@ -522,9 +523,9 @@ static bool params_to_sql_query_without_user(
 
 /*----------------------------------------------------------------------------*/
 
-static bool params_to_sql_query_with_user(
-    char *target, size_t target_capacity,
-    const ov_db_recordings_get_params params) {
+static bool
+params_to_sql_query_with_user(char *target, size_t target_capacity,
+                              const ov_db_recordings_get_params params) {
     char timestamp[30] = {0};
     char *write_ptr = target;
 
@@ -643,19 +644,19 @@ ov_json_value *ov_db_recordings_get_struct(ov_database *self,
     }
 
     switch (result) {
-        case TOO_MANY_RESULTS:
-            jtarget = ov_json_value_free(jtarget);
-            return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
+    case TOO_MANY_RESULTS:
+        jtarget = ov_json_value_free(jtarget);
+        return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
 
-        case ERROR:
-            jtarget = ov_json_value_free(jtarget);
-            return jtarget;
+    case ERROR:
+        jtarget = ov_json_value_free(jtarget);
+        return jtarget;
 
-        case OK:
-            return jtarget;
+    case OK:
+        return jtarget;
 
-        default:
-            return jtarget;
+    default:
+        return jtarget;
     };
 }
 

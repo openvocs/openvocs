@@ -32,36 +32,36 @@
 
 bool ov_response_state_from_message(ov_json_value const *response,
                                     ov_response_state *state) {
-  bool result = false;
+    bool result = false;
 
-  if ((0 == response) || (0 == state)) {
+    if ((0 == response) || (0 == state)) {
 
-    ov_log_error("Got 0 pointer");
-    goto error;
-  }
+        ov_log_error("Got 0 pointer");
+        goto error;
+    }
 
-  if (0 == ov_event_api_get_request(response)) {
+    if (0 == ov_event_api_get_request(response)) {
 
-    ov_log_error("Message is not a response");
-    goto error;
-  }
+        ov_log_error("Message is not a response");
+        goto error;
+    }
 
-  ov_json_value *error = ov_event_api_get_error(response);
+    ov_json_value *error = ov_event_api_get_error(response);
 
-  char const *message = (char *)ov_json_string_get(
-      ov_json_get(error, "/" OV_EVENT_API_KEY_DESCRIPTION));
+    char const *message = (char *)ov_json_string_get(
+        ov_json_get(error, "/" OV_EVENT_API_KEY_DESCRIPTION));
 
-  *state = (ov_response_state){
-      .id = ov_event_api_get_uuid(response),
-      .result.error_code = ov_event_api_get_error_code(response),
-      .result.message = message,
-  };
+    *state = (ov_response_state){
+        .id = ov_event_api_get_uuid(response),
+        .result.error_code = ov_event_api_get_error_code(response),
+        .result.message = message,
+    };
 
-  result = true;
+    result = true;
 
 error:
 
-  return result;
+    return result;
 }
 
 /*----------------------------------------------------------------------------*/

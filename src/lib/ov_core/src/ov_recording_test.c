@@ -30,63 +30,63 @@
 
 static int test_ov_recording_to_json() {
 
-  ov_recording record = {0};
-  testrun(0 == ov_recording_to_json(record));
+    ov_recording record = {0};
+    testrun(0 == ov_recording_to_json(record));
 
-  record.end_epoch_secs = 12;
-  record.start_epoch_secs = 4;
+    record.end_epoch_secs = 12;
+    record.start_epoch_secs = 4;
 
-  record.id = "opladioplada";
-  testrun(0 == ov_recording_to_json(record));
+    record.id = "opladioplada";
+    testrun(0 == ov_recording_to_json(record));
 
-  record.loop = "dadada";
-  testrun(0 == ov_recording_to_json(record));
+    record.loop = "dadada";
+    testrun(0 == ov_recording_to_json(record));
 
-  record.uri = "aha";
-  ov_json_value *jval = ov_recording_to_json(record);
+    record.uri = "aha";
+    ov_json_value *jval = ov_recording_to_json(record);
 
-  testrun(0 != jval);
+    testrun(0 != jval);
 
-  jval = ov_json_value_free(jval);
+    jval = ov_json_value_free(jval);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_recording_from_json() {
 
-  ov_recording rec = ov_recording_from_json(0);
-  testrun(rec.id == 0);
-  testrun(rec.loop == 0);
-  testrun(rec.uri == 0);
+    ov_recording rec = ov_recording_from_json(0);
+    testrun(rec.id == 0);
+    testrun(rec.loop == 0);
+    testrun(rec.uri == 0);
 
-  ov_recording record = {
-      .end_epoch_secs = 12,
-      .start_epoch_secs = 4,
-      .id = "opladioplada",
-      .loop = "dadada",
-      .uri = "aha",
+    ov_recording record = {
+        .end_epoch_secs = 12,
+        .start_epoch_secs = 4,
+        .id = "opladioplada",
+        .loop = "dadada",
+        .uri = "aha",
 
-  };
+    };
 
-  ov_json_value *jval = ov_recording_to_json(record);
-  testrun(0 != jval);
+    ov_json_value *jval = ov_recording_to_json(record);
+    testrun(0 != jval);
 
-  rec = ov_recording_from_json(jval);
-  jval = ov_json_value_free(jval);
+    rec = ov_recording_from_json(jval);
+    jval = ov_json_value_free(jval);
 
-  testrun(rec.id != 0);
-  testrun(rec.loop != 0);
-  testrun(rec.uri != 0);
+    testrun(rec.id != 0);
+    testrun(rec.loop != 0);
+    testrun(rec.uri != 0);
 
-  testrun(0 == strcmp(rec.id, record.id));
-  testrun(0 == strcmp(rec.loop, record.loop));
-  testrun(0 == strcmp(rec.uri, record.uri));
-  testrun(record.end_epoch_secs == rec.end_epoch_secs);
-  testrun(record.start_epoch_secs == rec.start_epoch_secs);
+    testrun(0 == strcmp(rec.id, record.id));
+    testrun(0 == strcmp(rec.loop, record.loop));
+    testrun(0 == strcmp(rec.uri, record.uri));
+    testrun(record.end_epoch_secs == rec.end_epoch_secs);
+    testrun(record.start_epoch_secs == rec.start_epoch_secs);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/

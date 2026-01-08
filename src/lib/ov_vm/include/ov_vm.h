@@ -228,18 +228,18 @@ typedef struct ov_vm_struct ov_vm;
 
 typedef struct {
 
-  size_t max_requests;
+    size_t max_requests;
 
-  uint64_t default_program_timeout_msecs;
+    uint64_t default_program_timeout_msecs;
 
-  /**
-   * Callback to call on `data` after a program has finished
-   */
-  void (*release_data)(ov_vm *, void *);
+    /**
+     * Callback to call on `data` after a program has finished
+     */
+    void (*release_data)(ov_vm *, void *);
 
-  void (*notify_program_failed_to_abort)(ov_vm *, char const *id);
-  void (*notify_program_aborted)(ov_vm *, char const *id);
-  void (*notify_program_done)(ov_vm *, char const *id);
+    void (*notify_program_failed_to_abort)(ov_vm *, char const *id);
+    void (*notify_program_aborted)(ov_vm *, char const *id);
+    void (*notify_program_done)(ov_vm *, char const *id);
 
 } ov_vm_config;
 
@@ -275,11 +275,11 @@ bool ov_vm_register(ov_vm *self, uint8_t opcode, char const *symbol,
 
 typedef enum {
 
-  OV_EXEC_OK /* Program succeeded */,
-  OV_EXEC_TRIGGER_FAIL /* Triggering a program did not succeed */,
-  OV_EXEC_ERROR /* Program failed (but was successfully triggered) */,
-  OV_EXEC_WAIT /* Program requires external action and continuing via
-                  ov_vm_continue */
+    OV_EXEC_OK /* Program succeeded */,
+    OV_EXEC_TRIGGER_FAIL /* Triggering a program did not succeed */,
+    OV_EXEC_ERROR /* Program failed (but was successfully triggered) */,
+    OV_EXEC_WAIT /* Program requires external action and continuing via
+                    ov_vm_continue */
 
 } ov_vm_exec_result;
 
@@ -310,13 +310,13 @@ ov_vm_exec_result ov_vm_continue(ov_vm *self, char const *id);
  * For optional parameters, see ov_vm_abort_opts.
  */
 #define ov_vm_abort(self, id, ...)                                             \
-  ov_vm_abort_with(self, id, (ov_vm_abort_opts){__VA_ARGS__})
+    ov_vm_abort_with(self, id, (ov_vm_abort_opts){__VA_ARGS__})
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-  bool finish_current_step : 1;
+    bool finish_current_step : 1;
 
 } ov_vm_abort_opts;
 

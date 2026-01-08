@@ -36,7 +36,7 @@
  * Therefore, abstract it here and provide surrogate if necessary.
  */
 #define OV_ARCH_PTHREAD_MUTEX_TIMEDLOCK(m, t)                                  \
-  INTERNAL_OV_ARCH_PTHREAD_MUTEX_TIMEDLOCK(m, t)
+    INTERNAL_OV_ARCH_PTHREAD_MUTEX_TIMEDLOCK(m, t)
 
 /******************************************************************************
  *                                 INTERNALS
@@ -45,7 +45,7 @@
 #if OV_ARCH == OV_LINUX
 
 #define INTERNAL_OV_ARCH_PTHREAD_MUTEX_TIMEDLOCK(m, t)                         \
-  pthread_mutex_timedlock(m, t)
+    pthread_mutex_timedlock(m, t)
 
 #endif
 
@@ -57,7 +57,7 @@ int ov_arch_pthread_mutex_timedlock(pthread_mutex_t *restrict mutex,
                                     const struct timespec *restrict abstime);
 
 #define INTERNAL_OV_ARCH_PTHREAD_MUTEX_TIMEDLOCK(m, t)                         \
-  ov_arch_pthread_mutex_timedlock(m, t)
+    ov_arch_pthread_mutex_timedlock(m, t)
 
 #endif
 

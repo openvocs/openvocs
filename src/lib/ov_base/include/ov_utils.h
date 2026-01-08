@@ -73,7 +73,7 @@
  */
 
 #define OV_UTILS_AS_TYPE(vptr, magic_bytes_32bit)                              \
-  (0 != vptr) && (magic_bytes_32bit == *((uint32_t *)vptr)) ? vptr : 0;
+    (0 != vptr) && (magic_bytes_32bit == *((uint32_t *)vptr)) ? vptr : 0;
 
 /*----------------------------------------------------------------------------*/
 
@@ -100,9 +100,9 @@
         to prevent compiler to complain
  */
 #define UNUSED(x)                                                              \
-  do {                                                                         \
-    (void)(x);                                                                 \
-  } while (0)
+    do {                                                                       \
+        (void)(x);                                                             \
+    } while (0)
 
 /*----------------------------------------------------------------------------*/
 
@@ -116,14 +116,14 @@
  * Helper mainly for development.
  */
 #define NOP                                                                    \
-  while (0) {                                                                  \
-  }
+    while (0) {                                                                \
+    }
 
 #define OV_PANIC(msg)                                                          \
-  do {                                                                         \
-    fprintf(stderr, msg);                                                      \
-    abort();                                                                   \
-  } while (0)
+    do {                                                                       \
+        fprintf(stderr, msg);                                                  \
+        abort();                                                               \
+    } while (0)
 
 /*----------------------------------------------------------------------------*/
 
@@ -206,8 +206,8 @@ void *ov_free(void *vptr);
  * Returns cond
  */
 #define ov_cond_valid(cond, msg)                                               \
-  ov_cond_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, 0,      \
-                         cond, 0, msg)
+    ov_cond_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, 0,    \
+                           cond, 0, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -215,8 +215,8 @@ void *ov_free(void *vptr);
  * If ptr is null, prints appropriate error message
  */
 #define ov_ptr_valid(ptr, msg)                                                 \
-  ov_ptr_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, 0, ptr,  \
-                        0, msg)
+    ov_ptr_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, 0,     \
+                          ptr, 0, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -225,8 +225,8 @@ void *ov_free(void *vptr);
  * Returns cond
  */
 #define ov_cond_valid_warn(cond, msg)                                          \
-  ov_cond_valid_internal(__FILE__, OV_LOG_WARNING, __FUNCTION__, __LINE__, 0,  \
-                         cond, 0, msg)
+    ov_cond_valid_internal(__FILE__, OV_LOG_WARNING, __FUNCTION__, __LINE__,   \
+                           0, cond, 0, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -234,8 +234,8 @@ void *ov_free(void *vptr);
  * If ptr is null, prints appropriate warn message
  */
 #define ov_ptr_valid_warn(ptr, msg)                                            \
-  ov_ptr_valid_internal(__FILE__, OV_LOG_WARNING, __FUNCTION__, __LINE__, 0,   \
-                        ptr, 0, msg)
+    ov_ptr_valid_internal(__FILE__, OV_LOG_WARNING, __FUNCTION__, __LINE__, 0, \
+                          ptr, 0, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -244,8 +244,8 @@ void *ov_free(void *vptr);
  * Returns cond
  */
 #define ov_cond_valid_debug(cond, msg)                                         \
-  ov_cond_valid_internal(__FILE__, OV_LOG_DEBUG, __FUNCTION__, __LINE__, 0,    \
-                         cond, 0, msg)
+    ov_cond_valid_internal(__FILE__, OV_LOG_DEBUG, __FUNCTION__, __LINE__, 0,  \
+                           cond, 0, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -253,8 +253,8 @@ void *ov_free(void *vptr);
  * If ptr is null, prints appropriate debug message
  */
 #define ov_ptr_valid_debug(ptr, msg)                                           \
-  ov_ptr_valid_internal(__FILE__, OV_LOG_DEBUG, __FUNCTION__, __LINE__, 0,     \
-                        ptr, 0, msg)
+    ov_ptr_valid_internal(__FILE__, OV_LOG_DEBUG, __FUNCTION__, __LINE__, 0,   \
+                          ptr, 0, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -262,8 +262,8 @@ void *ov_free(void *vptr);
  * Like ov_cond_valid, but sets result in case of error.
  */
 #define ov_cond_valid_result(cond, res, code, msg)                             \
-  ov_cond_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, res,    \
-                         cond, code, msg)
+    ov_cond_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, res,  \
+                           cond, code, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -271,8 +271,8 @@ void *ov_free(void *vptr);
  * Like ov_cond_valid, but sets result in case of error.
  */
 #define ov_ptr_valid_result(ptr, res, code, msg)                               \
-  ov_ptr_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, res,     \
-                        ptr, code, msg)
+    ov_ptr_valid_internal(__FILE__, OV_LOG_ERR, __FUNCTION__, __LINE__, res,   \
+                          ptr, code, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -398,7 +398,7 @@ bool ov_ptr_valid_internal(char const *file, ov_log_level loglevel,
 #define PARANOID
 
 #define TODO_INTERNAL(message)                                                 \
-  fprintf(stderr, "%s:%i   TODO: %s\n", __FILE__, __LINE__, message)
+    fprintf(stderr, "%s:%i   TODO: %s\n", __FILE__, __LINE__, message)
 
 #else
 
@@ -411,7 +411,7 @@ bool ov_ptr_valid_internal(char const *file, ov_log_level loglevel,
 #define WARNING_INTERNAL(message)
 
 #define NOT_IN_RELEASE_INTERNAL(msg)                                           \
-  fprintf(stderr, "%s:%i  %s\n", __FILE__, __LINE__, msg)
+    fprintf(stderr, "%s:%i  %s\n", __FILE__, __LINE__, msg)
 
 #define TODO_INTERNAL(message)
 
@@ -456,22 +456,22 @@ bool ov_ptr_valid_internal(char const *file, ov_log_level loglevel,
 /*----------------------------------------------------------------------------*/
 
 #define OV_ASSERT_INTERNAL(cond)                                               \
-  do {                                                                         \
-    bool _our_internal_condition = cond;                                       \
-    if (!_our_internal_condition) {                                            \
-      ov_log_error("Condition " TO_STR(cond) " does not hold");                \
-      char *_our_internal_backtrace =                                          \
-          ov_arch_compile_backtrace(OV_MAX_BACKTRACE_DEPTH);                   \
-      if (0 != _our_internal_backtrace) {                                      \
-        ov_log_error("Backtrace: %s", _our_internal_backtrace);                \
-        free(_our_internal_backtrace);                                         \
-        _our_internal_backtrace = 0;                                           \
-      } else {                                                                 \
-        ov_log_error("Backtrace disabled");                                    \
-      }                                                                        \
-      EXIT_ON_DEBUG_INTERNAL;                                                  \
-    }                                                                          \
-  } while (0)
+    do {                                                                       \
+        bool _our_internal_condition = cond;                                   \
+        if (!_our_internal_condition) {                                        \
+            ov_log_error("Condition " TO_STR(cond) " does not hold");          \
+            char *_our_internal_backtrace =                                    \
+                ov_arch_compile_backtrace(OV_MAX_BACKTRACE_DEPTH);             \
+            if (0 != _our_internal_backtrace) {                                \
+                ov_log_error("Backtrace: %s", _our_internal_backtrace);        \
+                free(_our_internal_backtrace);                                 \
+                _our_internal_backtrace = 0;                                   \
+            } else {                                                           \
+                ov_log_error("Backtrace disabled");                            \
+            }                                                                  \
+            EXIT_ON_DEBUG_INTERNAL;                                            \
+        }                                                                      \
+    } while (0)
 
 #define __TO_STR_HELPER(x) #x
 

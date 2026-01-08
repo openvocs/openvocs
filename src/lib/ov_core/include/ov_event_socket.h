@@ -43,24 +43,24 @@ typedef struct ov_event_socket ov_event_socket;
 
 typedef struct ov_event_socket_config {
 
-  ov_event_loop *loop;
-  ov_event_engine *engine;
+    ov_event_loop *loop;
+    ov_event_engine *engine;
 
-  struct {
+    struct {
 
-    uint64_t io_timeout_usec;
-    uint64_t accept_to_io_timeout_usec;
-    uint64_t reconnect_interval_usec;
+        uint64_t io_timeout_usec;
+        uint64_t accept_to_io_timeout_usec;
+        uint64_t reconnect_interval_usec;
 
-  } timer;
+    } timer;
 
-  struct {
+    struct {
 
-    void *userdata;
-    void (*close)(void *userdata, int socket);
-    void (*connected)(void *userdata, int socket, bool result);
+        void *userdata;
+        void (*close)(void *userdata, int socket);
+        void (*connected)(void *userdata, int socket, bool result);
 
-  } callback;
+    } callback;
 
 } ov_event_socket_config;
 
@@ -68,7 +68,7 @@ typedef struct ov_event_socket_config {
 
 typedef struct ov_event_socket_server_config {
 
-  ov_socket_configuration socket;
+    ov_socket_configuration socket;
 
 } ov_event_socket_server_config;
 
@@ -76,26 +76,26 @@ typedef struct ov_event_socket_server_config {
 
 typedef struct ov_event_socket_client_config {
 
-  ov_socket_configuration socket;
+    ov_socket_configuration socket;
 
-  uint64_t client_connect_trigger_usec;
-
-  struct {
-
-    /* SSL client data */
-
-    char domain[PATH_MAX]; // hostname to use in handshake
+    uint64_t client_connect_trigger_usec;
 
     struct {
 
-      char file[PATH_MAX]; // path to CA verify file
-      char path[PATH_MAX]; // path to CAs to use
+        /* SSL client data */
 
-    } ca;
+        char domain[PATH_MAX]; // hostname to use in handshake
 
-  } ssl;
+        struct {
 
-  bool auto_reconnect;
+            char file[PATH_MAX]; // path to CA verify file
+            char path[PATH_MAX]; // path to CAs to use
+
+        } ca;
+
+    } ssl;
+
+    bool auto_reconnect;
 
 } ov_event_socket_client_config;
 

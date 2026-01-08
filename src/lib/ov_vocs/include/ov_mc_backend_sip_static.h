@@ -44,16 +44,16 @@ typedef struct ov_mc_backend_sip_static ov_mc_backend_sip_static;
 
 typedef struct ov_mc_backend_sip_static_config {
 
-  ov_event_loop *loop;
-  ov_vocs_db *db;
-  ov_io *io;
-  ov_mc_backend *backend;
+    ov_event_loop *loop;
+    ov_vocs_db *db;
+    ov_io *io;
+    ov_mc_backend *backend;
 
-  struct {
+    struct {
 
-    ov_socket_configuration manager; // manager liege socket
+        ov_socket_configuration manager; // manager liege socket
 
-  } socket;
+    } socket;
 
 } ov_mc_backend_sip_static_config;
 

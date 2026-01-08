@@ -35,11 +35,11 @@
 
 typedef struct {
 
-  char const *id;
-  struct {
-    uint64_t error_code;
-    char const *message;
-  } result;
+    char const *id;
+    struct {
+        uint64_t error_code;
+        char const *message;
+    } result;
 
 } ov_response_state;
 

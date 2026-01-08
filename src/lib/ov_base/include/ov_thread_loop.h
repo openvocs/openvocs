@@ -43,9 +43,9 @@
 
 typedef enum {
 
-  RESERVED_OV_RECEIVER_ENSURE_SIGNED_INT = INT_MIN,
-  OV_RECEIVER_EVENT_LOOP = 0,
-  OV_RECEIVER_THREAD
+    RESERVED_OV_RECEIVER_ENSURE_SIGNED_INT = INT_MIN,
+    OV_RECEIVER_EVENT_LOOP = 0,
+    OV_RECEIVER_THREAD
 
 } ov_thread_receiver;
 
@@ -59,26 +59,26 @@ typedef struct ov_thread_loop ov_thread_loop;
  */
 typedef struct {
 
-  /**
-   * If true, no queue will be used to send messages (from the threads) to
-   * the event loop.
-   * Using a queue incurs some performance penalty, (using the queue,
-   * having to lock down on mutex in EL -> 2 additional context
-   * switches).
-   * On the other hand, if no queue is used, messages that are lost cause
-   * mem leaks.
-   * Thus if there is no chance that the EL might be too slow to process
-   * all the messages from the threads, it might be useful to switch
-   * using the queue off.
-   * If in doubt, use the queue.
-   */
-  bool disable_to_loop_queue;
+    /**
+     * If true, no queue will be used to send messages (from the threads) to
+     * the event loop.
+     * Using a queue incurs some performance penalty, (using the queue,
+     * having to lock down on mutex in EL -> 2 additional context
+     * switches).
+     * On the other hand, if no queue is used, messages that are lost cause
+     * mem leaks.
+     * Thus if there is no chance that the EL might be too slow to process
+     * all the messages from the threads, it might be useful to switch
+     * using the queue off.
+     * If in doubt, use the queue.
+     */
+    bool disable_to_loop_queue;
 
-  uint64_t message_queue_capacity;
+    uint64_t message_queue_capacity;
 
-  uint64_t lock_timeout_usecs;
+    uint64_t lock_timeout_usecs;
 
-  size_t num_threads;
+    size_t num_threads;
 
 } ov_thread_loop_config;
 
@@ -91,18 +91,18 @@ typedef struct {
  */
 typedef struct {
 
-  /**
-   * Executed in the threads.
-   * Do the processing.
-   * Avoid I/O here.
-   */
-  bool (*handle_message_in_thread)(ov_thread_loop *, ov_thread_message *);
+    /**
+     * Executed in the threads.
+     * Do the processing.
+     * Avoid I/O here.
+     */
+    bool (*handle_message_in_thread)(ov_thread_loop *, ov_thread_message *);
 
-  /** Executed in the loop thread - called by the loop.
-   * Avoid processing.
-   * Do I/O here.
-   */
-  bool (*handle_message_in_loop)(ov_thread_loop *, ov_thread_message *);
+    /** Executed in the loop thread - called by the loop.
+     * Avoid processing.
+     * Do I/O here.
+     */
+    bool (*handle_message_in_loop)(ov_thread_loop *, ov_thread_message *);
 
 } ov_thread_loop_callbacks;
 

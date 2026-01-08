@@ -98,8 +98,8 @@ struct ov_alsa_struct;
 typedef struct ov_alsa_struct ov_alsa;
 
 typedef enum {
-  CAPTURE,
-  PLAYBACK,
+    CAPTURE,
+    PLAYBACK,
 } ov_alsa_mode;
 
 /*----------------------------------------------------------------------------*/
@@ -191,11 +191,11 @@ char const *ov_alsa_state_to_string(ov_alsa const *self);
 
 typedef struct {
 
-  ov_counter underruns;
-  ov_counter other_error;
-  ov_counter periods_played;
-  ov_counter periods_read;
-  ov_counter periods_written;
+    ov_counter underruns;
+    ov_counter other_error;
+    ov_counter periods_played;
+    ov_counter periods_read;
+    ov_counter periods_written;
 
 } ov_alsa_counters;
 

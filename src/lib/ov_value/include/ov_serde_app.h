@@ -37,18 +37,18 @@
 
 typedef struct {
 
-  ov_serde *serde;
+    ov_serde *serde;
 
-  // If true, all i/o is logged to file /tmp/APP_NAME-PID_serde_in.log
-  bool log_io;
-  uint32_t reconnect_interval_secs;
-  uint64_t accept_to_io_timeout_secs;
+    // If true, all i/o is logged to file /tmp/APP_NAME-PID_serde_in.log
+    bool log_io;
+    uint32_t reconnect_interval_secs;
+    uint64_t accept_to_io_timeout_secs;
 
-  void (*cb_closed)(int sckt, void *additional);
-  void (*cb_reconnected)(int sckt, void *additional);
-  void (*cb_accepted)(int sckt, void *additional);
+    void (*cb_closed)(int sckt, void *additional);
+    void (*cb_reconnected)(int sckt, void *additional);
+    void (*cb_accepted)(int sckt, void *additional);
 
-  void *additional;
+    void *additional;
 
 } ov_serde_app_configuration;
 

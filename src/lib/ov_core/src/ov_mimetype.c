@@ -66,33 +66,33 @@ static char *mime[] = {
 
 const char *ov_mimetype_from_file_extension(const char *ext, size_t size) {
 
-  char *out = NULL;
+    char *out = NULL;
 
-  if (!ext || size < 1)
-    goto done;
+    if (!ext || size < 1)
+        goto done;
 
-  size_t ext_size = sizeof(extensions) / sizeof(extensions[0]);
-  size_t mime_size = sizeof(mime) / sizeof(mime[0]);
+    size_t ext_size = sizeof(extensions) / sizeof(extensions[0]);
+    size_t mime_size = sizeof(mime) / sizeof(mime[0]);
 
-  // ov_log_debug("%i | %i", ext_size, mime_size);
+    // ov_log_debug("%i | %i", ext_size, mime_size);
 
-  OV_ASSERT(ext_size == mime_size);
+    OV_ASSERT(ext_size == mime_size);
 
-  size_t len = 0;
+    size_t len = 0;
 
-  for (size_t i = 0; i < ext_size; i++) {
+    for (size_t i = 0; i < ext_size; i++) {
 
-    len = strlen(extensions[i]);
-    if (len != size)
-      continue;
+        len = strlen(extensions[i]);
+        if (len != size)
+            continue;
 
-    if (0 != strncmp(extensions[i], ext, size))
-      continue;
+        if (0 != strncmp(extensions[i], ext, size))
+            continue;
 
-    out = mime[i];
-    break;
-  }
+        out = mime[i];
+        break;
+    }
 
 done:
-  return out;
+    return out;
 }

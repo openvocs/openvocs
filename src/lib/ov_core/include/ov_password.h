@@ -41,9 +41,9 @@
 
 typedef struct ov_password_hash_parameter {
 
-  uint16_t workfactor;
-  uint16_t blocksize;
-  uint16_t parallel;
+    uint16_t workfactor;
+    uint16_t blocksize;
+    uint16_t parallel;
 
 } ov_password_hash_parameter;
 

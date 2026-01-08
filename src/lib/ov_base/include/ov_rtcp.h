@@ -34,11 +34,11 @@
 
 typedef enum {
 
-  OV_RTCP_INVALID = -1,
-  OV_RTCP_SENDER_REPORT = 200,
-  OV_RTCP_RECEIVER_REPORT = 201,
-  OV_RTCP_SOURCE_DESC = 202,
-  OV_RTCP_BYE = 203,
+    OV_RTCP_INVALID = -1,
+    OV_RTCP_SENDER_REPORT = 200,
+    OV_RTCP_RECEIVER_REPORT = 201,
+    OV_RTCP_SOURCE_DESC = 202,
+    OV_RTCP_BYE = 203,
 
 } ov_rtcp_type;
 
@@ -58,7 +58,7 @@ ov_rtcp_message *ov_rtcp_message_free(ov_rtcp_message *self);
 ov_rtcp_message *ov_rtcp_message_decode(uint8_t const **buf, size_t *lenoctets);
 
 #define ov_rtcp_message_encode(...)                                            \
-  ov_rtcp_messages_encode((ov_rtcp_message const *[]){__VA_ARGS__, 0})
+    ov_rtcp_messages_encode((ov_rtcp_message const *[]){__VA_ARGS__, 0})
 
 ov_buffer *ov_rtcp_messages_encode(ov_rtcp_message const *msgs[]);
 

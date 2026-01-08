@@ -198,11 +198,11 @@
 
 typedef enum {
 
-  OV_HTTP_PARSER_ABSENT = -3,  // not present e.g. when searching a key
-  OV_HTTP_PARSER_OOB = -2,     // Out of Bound e.g. for array
-  OV_HTTP_PARSER_ERROR = -1,   // processing error or mismatch
-  OV_HTTP_PARSER_PROGRESS = 0, // still matching, need more input data
-  OV_HTTP_PARSER_SUCCESS = 1   // content match
+    OV_HTTP_PARSER_ABSENT = -3,  // not present e.g. when searching a key
+    OV_HTTP_PARSER_OOB = -2,     // Out of Bound e.g. for array
+    OV_HTTP_PARSER_ERROR = -1,   // processing error or mismatch
+    OV_HTTP_PARSER_PROGRESS = 0, // still matching, need more input data
+    OV_HTTP_PARSER_SUCCESS = 1   // content match
 
 } ov_http_parser_state;
 
@@ -210,8 +210,8 @@ typedef enum {
 
 typedef struct {
 
-  uint8_t major;
-  uint8_t minor;
+    uint8_t major;
+    uint8_t minor;
 
 } ov_http_version;
 
@@ -219,9 +219,9 @@ typedef struct {
 
 typedef struct {
 
-  uint32_t code;
+    uint32_t code;
 
-  ov_memory_pointer phrase;
+    ov_memory_pointer phrase;
 
 } ov_http_status;
 
@@ -229,8 +229,8 @@ typedef struct {
 
 typedef struct {
 
-  ov_memory_pointer method;
-  ov_memory_pointer uri;
+    ov_memory_pointer method;
+    ov_memory_pointer uri;
 
 } ov_http_request;
 
@@ -238,8 +238,8 @@ typedef struct {
 
 typedef struct {
 
-  ov_memory_pointer name;
-  ov_memory_pointer value;
+    ov_memory_pointer name;
+    ov_memory_pointer value;
 
 } ov_http_header;
 
@@ -247,32 +247,32 @@ typedef struct {
 
 typedef struct ov_http_message_config {
 
-  struct {
+    struct {
 
-    size_t capacity;              // amount of headers supported
-    size_t max_bytes_method_name; // max bytes of a method name
-    size_t max_bytes_line;        // max bytes of a header line
+        size_t capacity;              // amount of headers supported
+        size_t max_bytes_method_name; // max bytes of a method name
+        size_t max_bytes_line;        // max bytes of a header line
 
-  } header;
+    } header;
 
-  struct {
+    struct {
 
-    size_t default_size;      // default buffer size
-    size_t max_bytes_recache; // max buffer size to recache
+        size_t default_size;      // default buffer size
+        size_t max_bytes_recache; // max buffer size to recache
 
-  } buffer;
+    } buffer;
 
-  struct {
+    struct {
 
-    size_t max; // max transfer encodings allowed
+        size_t max; // max transfer encodings allowed
 
-  } transfer;
+    } transfer;
 
-  struct {
+    struct {
 
-    size_t max_bytes; // max chunk size allowed
+        size_t max_bytes; // max chunk size allowed
 
-  } chunk;
+    } chunk;
 
 } ov_http_message_config;
 
@@ -280,29 +280,29 @@ typedef struct ov_http_message_config {
 
 typedef struct {
 
-  uint16_t magic_byte;
-  ov_http_message_config config;
+    uint16_t magic_byte;
+    ov_http_message_config config;
 
-  ov_buffer *buffer;
+    ov_buffer *buffer;
 
-  ov_memory_pointer body;
+    ov_memory_pointer body;
 
-  /* Chunk will be set in case chunked transfer is used. */
-  ov_memory_pointer chunk;
+    /* Chunk will be set in case chunked transfer is used. */
+    ov_memory_pointer chunk;
 
-  /*  Startline entires.
-   *
-   *      quick request/status check will be
-   *      if (0 == msg.status.code) -> request
-   */
+    /*  Startline entires.
+     *
+     *      quick request/status check will be
+     *      if (0 == msg.status.code) -> request
+     */
 
-  ov_http_version version;
-  ov_http_request request;
-  ov_http_status status;
+    ov_http_version version;
+    ov_http_request request;
+    ov_http_status status;
 
-  /*  Array of header field pointers in order of reception of configred size
-   */
-  ov_http_header header[];
+    /*  Array of header field pointers in order of reception of configred size
+     */
+    ov_http_header header[];
 
 } ov_http_message;
 

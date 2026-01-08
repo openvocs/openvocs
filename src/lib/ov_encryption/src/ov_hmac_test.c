@@ -63,11 +63,11 @@ int test_ov_hmac(){
 
 int all_tests() {
 
-  testrun_init();
-  // testrun_test(test_ov_hmac);
+    testrun_init();
+    // testrun_test(test_ov_hmac);
 
-  testrun(0 == result);
-  return testrun_counter;
+    testrun(0 == result);
+    return testrun_counter;
 }
 
 /*

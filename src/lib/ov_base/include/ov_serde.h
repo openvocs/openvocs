@@ -95,8 +95,8 @@
 typedef enum { OV_SERDE_ERROR, OV_SERDE_PROGRESS, OV_SERDE_END } ov_serde_state;
 
 typedef struct {
-  uint64_t data_type;
-  void *data;
+    uint64_t data_type;
+    void *data;
 } ov_serde_data;
 
 /*----------------------------------------------------------------------------*/
@@ -105,24 +105,25 @@ typedef struct ov_serde ov_serde;
 
 struct ov_serde {
 
-  uint64_t magic_bytes;
+    uint64_t magic_bytes;
 
-  /**
-   * @param res optional - if there, might be filled with result
-   */
-  ov_serde_state (*add_raw)(ov_serde *self, ov_buffer const *raw,
-                            ov_result *res);
+    /**
+     * @param res optional - if there, might be filled with result
+     */
+    ov_serde_state (*add_raw)(ov_serde *self, ov_buffer const *raw,
+                              ov_result *res);
 
-  ov_serde_data (*pop_datum)(ov_serde *self, ov_result *res);
+    ov_serde_data (*pop_datum)(ov_serde *self, ov_result *res);
 
-  bool (*clear_buffer)(ov_serde *self);
+    bool (*clear_buffer)(ov_serde *self);
 
-  /**
-   * @param res optional - if there, might be filled with result
-   */
-  bool (*serialize)(ov_serde *self, int fh, ov_serde_data data, ov_result *res);
+    /**
+     * @param res optional - if there, might be filled with result
+     */
+    bool (*serialize)(ov_serde *self, int fh, ov_serde_data data,
+                      ov_result *res);
 
-  ov_serde *(*free)(ov_serde *self);
+    ov_serde *(*free)(ov_serde *self);
 };
 
 /*****************************************************************************

@@ -31,55 +31,55 @@
 
 int test_ov_stream_parameters_to_json() {
 
-  /* Pretty much a dummy tes to check for error handling.
-  Actual functionality is checked in ...from_json test */
-  ov_stream_parameters sparams = {0};
-  testrun(!ov_stream_parameters_to_json(sparams, 0));
-  ov_json_value *recpt = ov_json_object();
-  testrun(ov_stream_parameters_to_json(sparams, recpt));
+    /* Pretty much a dummy tes to check for error handling.
+    Actual functionality is checked in ...from_json test */
+    ov_stream_parameters sparams = {0};
+    testrun(!ov_stream_parameters_to_json(sparams, 0));
+    ov_json_value *recpt = ov_json_object();
+    testrun(ov_stream_parameters_to_json(sparams, recpt));
 
-  recpt = recpt->free(recpt);
-  testrun(0 == recpt);
+    recpt = recpt->free(recpt);
+    testrun(0 == recpt);
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_stream_parameters_from_json() {
 
-  testrun(!ov_stream_parameters_from_json(0, 0));
+    testrun(!ov_stream_parameters_from_json(0, 0));
 
-  ov_stream_parameters sparams = {0};
+    ov_stream_parameters sparams = {0};
 
-  testrun(!ov_stream_parameters_from_json(0, &sparams));
+    testrun(!ov_stream_parameters_from_json(0, &sparams));
 
-  ov_json_value *jv = ov_json_object();
+    ov_json_value *jv = ov_json_object();
 
-  char const *dummy_codec = "Eat me";
+    char const *dummy_codec = "Eat me";
 
-  ov_stream_parameters ref_params = {
-      .codec_parameters = ov_json_string(dummy_codec),
-  };
+    ov_stream_parameters ref_params = {
+        .codec_parameters = ov_json_string(dummy_codec),
+    };
 
-  testrun(ov_stream_parameters_to_json(ref_params, jv));
+    testrun(ov_stream_parameters_to_json(ref_params, jv));
 
-  testrun(ov_stream_parameters_from_json(jv, &sparams));
+    testrun(ov_stream_parameters_from_json(jv, &sparams));
 
-  char const *read_dummy_codec = ov_json_string_get(sparams.codec_parameters);
+    char const *read_dummy_codec = ov_json_string_get(sparams.codec_parameters);
 
-  testrun(0 != read_dummy_codec);
-  testrun(0 == strcmp(dummy_codec, read_dummy_codec));
+    testrun(0 != read_dummy_codec);
+    testrun(0 == strcmp(dummy_codec, read_dummy_codec));
 
-  jv = jv->free(jv);
-  testrun(0 == jv);
+    jv = jv->free(jv);
+    testrun(0 == jv);
 
-  ov_json_value *helper = (ov_json_value *)ref_params.codec_parameters;
-  ref_params.codec_parameters = 0;
+    ov_json_value *helper = (ov_json_value *)ref_params.codec_parameters;
+    ref_params.codec_parameters = 0;
 
-  testrun(0 == helper->free(helper));
+    testrun(0 == helper->free(helper));
 
-  return testrun_log_success();
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/

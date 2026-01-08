@@ -94,8 +94,8 @@
 
 typedef struct ov_event_parameter_send {
 
-  void *instance;
-  bool (*send)(void *instance, int socket, const ov_json_value *response);
+    void *instance;
+    bool (*send)(void *instance, int socket, const ov_json_value *response);
 
 } ov_event_parameter_send;
 
@@ -103,35 +103,35 @@ typedef struct ov_event_parameter_send {
 
 typedef struct ov_event_parameter {
 
-  /*  Event parameter will be set by the caller of callback->process
-   *  it is NOT guaranted all parameter are set within callback->process
-   *
-   *  There parameter set defines which parameter MAY be handover to the
-   *  event processing engine.
-   *
-   *  Due to the handover and to guarantee no changes during processing
-   *  a copy based handover is implemented. */
+    /*  Event parameter will be set by the caller of callback->process
+     *  it is NOT guaranted all parameter are set within callback->process
+     *
+     *  There parameter set defines which parameter MAY be handover to the
+     *  event processing engine.
+     *
+     *  Due to the handover and to guarantee no changes during processing
+     *  a copy based handover is implemented. */
 
-  struct {
+    struct {
 
-    /* included as param to provide the actual request DOMAIN
-     * use of uint8_t due to unicode domain names */
+        /* included as param to provide the actual request DOMAIN
+         * use of uint8_t due to unicode domain names */
 
-    uint8_t name[PATH_MAX];
+        uint8_t name[PATH_MAX];
 
-  } domain;
+    } domain;
 
-  struct {
+    struct {
 
-    /* included as param to provide the actual request URI
-     * use of uint8_t due to unicode uri names */
+        /* included as param to provide the actual request URI
+         * use of uint8_t due to unicode uri names */
 
-    uint8_t name[PATH_MAX];
+        uint8_t name[PATH_MAX];
 
-  } uri;
+    } uri;
 
-  /* SOME VALID SEND MUST BE SET FROM IO ENGINE */
-  ov_event_parameter_send send;
+    /* SOME VALID SEND MUST BE SET FROM IO ENGINE */
+    ov_event_parameter_send send;
 
 } ov_event_parameter;
 
@@ -139,29 +139,30 @@ typedef struct ov_event_parameter {
 
 typedef struct ov_event_io_config {
 
-  /* Each event handler MUST have some name,
-   * which MUST be unique within some instance using this config */
+    /* Each event handler MUST have some name,
+     * which MUST be unique within some instance using this config */
 
-  char name[OV_EVENT_IO_NAME_MAX];
+    char name[OV_EVENT_IO_NAME_MAX];
 
-  /* Custom userdata of the actual event processing handler implementation */
+    /* Custom userdata of the actual event processing handler implementation */
 
-  void *userdata;
+    void *userdata;
 
-  struct {
+    struct {
 
-    void (*close)(void *userdata, int socket);
+        void (*close)(void *userdata, int socket);
 
-    /*  NOTE The process function may run within threads,
-     *  depending on the server type used.
-     *
-     *  NOTE input is a full pointer handover and MUST be freed
-     *  using ov_json_value_free, when no longer required
-     */
-    bool (*process)(void *userdata, const int socket,
-                    const ov_event_parameter *parameter, ov_json_value *input);
+        /*  NOTE The process function may run within threads,
+         *  depending on the server type used.
+         *
+         *  NOTE input is a full pointer handover and MUST be freed
+         *  using ov_json_value_free, when no longer required
+         */
+        bool (*process)(void *userdata, const int socket,
+                        const ov_event_parameter *parameter,
+                        ov_json_value *input);
 
-  } callback;
+    } callback;
 
 } ov_event_io_config;
 
@@ -187,10 +188,10 @@ typedef struct ov_event_io_config {
 static inline bool ov_event_io_send(const ov_event_parameter *params,
                                     int socket, const ov_json_value *val) {
 
-  if (!params || !params->send.instance || !params->send.send)
-    return false;
+    if (!params || !params->send.instance || !params->send.send)
+        return false;
 
-  return params->send.send(params->send.instance, socket, val);
+    return params->send.send(params->send.instance, socket, val);
 }
 
 #endif /* ov_event_io_h */

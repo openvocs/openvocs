@@ -31,14 +31,14 @@
 
 int main(int argc, char const **argv) {
 
-  UNUSED(argc);
-  UNUSED(argv);
+    UNUSED(argc);
+    UNUSED(argv);
 
-  int a[1] = {0};
+    int a[1] = {0};
 
-  for (int i = 0; 1; ++i) {
-    fprintf(stderr, "Try to read content of %i: %i\n", i, a[i]);
-  }
+    for (int i = 0; 1; ++i) {
+        fprintf(stderr, "Try to read content of %i: %i\n", i, a[i]);
+    }
 
-  return 1;
+    return 1;
 }

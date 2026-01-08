@@ -53,31 +53,31 @@ typedef struct ov_ice ov_ice;
 
 typedef struct ov_ice_callbacks {
 
-  void *userdata;
+    void *userdata;
 
-  struct {
+    struct {
 
-    void (*drop)(void *userdata, const char *uuid);
-    void (*state)(void *userdata, const char *uuid, ov_ice_state state);
+        void (*drop)(void *userdata, const char *uuid);
+        void (*state)(void *userdata, const char *uuid, ov_ice_state state);
 
-  } session;
+    } session;
 
-  struct {
+    struct {
 
-    void (*io)(void *userdata, const char *session_uuid, int stream_id,
-               uint8_t *buffer, size_t size);
+        void (*io)(void *userdata, const char *session_uuid, int stream_id,
+                   uint8_t *buffer, size_t size);
 
-  } stream;
+    } stream;
 
-  struct {
+    struct {
 
-    bool (*new)(void *userdata, const char *session_uuid, const char *ufrag,
-                int stream_id, ov_ice_candidate candidate);
+        bool (*new)(void *userdata, const char *session_uuid, const char *ufrag,
+                    int stream_id, ov_ice_candidate candidate);
 
-    bool (*end_of_candidates)(void *userdata, const char *session_uuid,
-                              int stream_id);
+        bool (*end_of_candidates)(void *userdata, const char *session_uuid,
+                                  int stream_id);
 
-  } candidates;
+    } candidates;
 
 } ov_ice_callbacks;
 
@@ -85,25 +85,25 @@ typedef struct ov_ice_callbacks {
 
 typedef struct ov_ice_config {
 
-  ov_event_loop *loop;
+    ov_event_loop *loop;
 
-  ov_ice_dtls_config dtls;
-
-  struct {
-
-    uint64_t transaction_lifetime_usecs;
+    ov_ice_dtls_config dtls;
 
     struct {
 
-      uint64_t connectivity_pace_usecs;
-      uint64_t session_timeout_usecs;
-      uint64_t keepalive_usecs;
+        uint64_t transaction_lifetime_usecs;
 
-    } stun;
+        struct {
 
-  } limits;
+            uint64_t connectivity_pace_usecs;
+            uint64_t session_timeout_usecs;
+            uint64_t keepalive_usecs;
 
-  ov_ice_callbacks callbacks;
+        } stun;
+
+    } limits;
+
+    ov_ice_callbacks callbacks;
 
 } ov_ice_config;
 

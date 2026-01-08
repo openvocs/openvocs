@@ -50,8 +50,8 @@ static ov_ice_proxy_generic_dtls_cookie_store *global_dtls_ice_cookie_store;
 
 typedef struct ov_ice_proxy_generic_dtls_cookie {
 
-  ov_node node;
-  char secret[DTLS1_COOKIE_LENGTH];
+    ov_node node;
+    char secret[DTLS1_COOKIE_LENGTH];
 
 } ov_ice_proxy_generic_dtls_cookie;
 
@@ -59,11 +59,11 @@ typedef struct ov_ice_proxy_generic_dtls_cookie {
 
 struct ov_ice_proxy_generic_dtls_cookie_store {
 
-  uint16_t magic_bytes;
-  ov_thread_lock lock;
+    uint16_t magic_bytes;
+    ov_thread_lock lock;
 
-  int cookie_counter;
-  ov_ice_proxy_generic_dtls_cookie *cookie;
+    int cookie_counter;
+    ov_ice_proxy_generic_dtls_cookie *cookie;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -71,22 +71,22 @@ struct ov_ice_proxy_generic_dtls_cookie_store {
 ov_ice_proxy_generic_dtls_cookie_store *
 ov_ice_proxy_generic_dtls_cookie_store_create() {
 
-  ov_ice_proxy_generic_dtls_cookie_store *store =
-      calloc(1, sizeof(ov_ice_proxy_generic_dtls_cookie_store));
+    ov_ice_proxy_generic_dtls_cookie_store *store =
+        calloc(1, sizeof(ov_ice_proxy_generic_dtls_cookie_store));
 
-  if (!store)
-    goto error;
-  store->magic_bytes = ov_ice_proxy_generic_dtls_COOKIE_STORE_MAGIC_BYTES;
-  global_dtls_ice_cookie_store = store;
+    if (!store)
+        goto error;
+    store->magic_bytes = ov_ice_proxy_generic_dtls_COOKIE_STORE_MAGIC_BYTES;
+    global_dtls_ice_cookie_store = store;
 
-  if (!ov_thread_lock_init(
-          &global_dtls_ice_cookie_store->lock,
-          ov_ice_proxy_generic_dtls_COOKIE_STORE_THREAD_LOCK_TIMEOUT_USEC))
-    goto error;
+    if (!ov_thread_lock_init(
+            &global_dtls_ice_cookie_store->lock,
+            ov_ice_proxy_generic_dtls_COOKIE_STORE_THREAD_LOCK_TIMEOUT_USEC))
+        goto error;
 
-  return store;
+    return store;
 error:
-  return NULL;
+    return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -95,57 +95,57 @@ ov_ice_proxy_generic_dtls_cookie_store *
 ov_ice_proxy_generic_dtls_cookie_store_free(
     ov_ice_proxy_generic_dtls_cookie_store *self) {
 
-  if (!self)
-    goto error;
+    if (!self)
+        goto error;
 
-  /* Delete all cookies */
-  ov_ice_proxy_generic_dtls_cookie *cookie = NULL;
+    /* Delete all cookies */
+    ov_ice_proxy_generic_dtls_cookie *cookie = NULL;
 
-  while (global_dtls_ice_cookie_store->cookie) {
+    while (global_dtls_ice_cookie_store->cookie) {
 
-    cookie = ov_node_pop((void **)&global_dtls_ice_cookie_store->cookie);
-    cookie = ov_data_pointer_free(cookie);
-  }
+        cookie = ov_node_pop((void **)&global_dtls_ice_cookie_store->cookie);
+        cookie = ov_data_pointer_free(cookie);
+    }
 
-  ov_thread_lock_clear(&global_dtls_ice_cookie_store->lock);
+    ov_thread_lock_clear(&global_dtls_ice_cookie_store->lock);
 
-  global_dtls_ice_cookie_store = NULL;
-  self = ov_data_pointer_free(self);
-  return NULL;
+    global_dtls_ice_cookie_store = NULL;
+    self = ov_data_pointer_free(self);
+    return NULL;
 error:
-  return self;
+    return self;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool create_cookie(size_t length) {
 
-  ov_ice_proxy_generic_dtls_cookie *cookie = NULL;
+    ov_ice_proxy_generic_dtls_cookie *cookie = NULL;
 
-  if (NULL == global_dtls_ice_cookie_store)
-    goto error;
+    if (NULL == global_dtls_ice_cookie_store)
+        goto error;
 
-  if (length >= DTLS1_COOKIE_LENGTH)
-    length = DTLS1_COOKIE_LENGTH - 1;
+    if (length >= DTLS1_COOKIE_LENGTH)
+        length = DTLS1_COOKIE_LENGTH - 1;
 
-  cookie = calloc(1, sizeof(ov_ice_proxy_generic_dtls_cookie));
-  if (!cookie)
-    goto error;
+    cookie = calloc(1, sizeof(ov_ice_proxy_generic_dtls_cookie));
+    if (!cookie)
+        goto error;
 
-  char *ptr = cookie->secret;
-  if (!ov_random_string((char **)&ptr, length, NULL))
-    goto error;
+    char *ptr = cookie->secret;
+    if (!ov_random_string((char **)&ptr, length, NULL))
+        goto error;
 
-  bool result =
-      ov_node_push((void **)&global_dtls_ice_cookie_store->cookie, cookie);
+    bool result =
+        ov_node_push((void **)&global_dtls_ice_cookie_store->cookie, cookie);
 
-  if (!result)
-    goto error;
+    if (!result)
+        goto error;
 
-  return true;
+    return true;
 error:
-  ov_data_pointer_free(cookie);
-  return false;
+    ov_data_pointer_free(cookie);
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -154,37 +154,37 @@ bool ov_ice_proxy_generic_dtls_cookie_store_initialize(
     ov_ice_proxy_generic_dtls_cookie_store *self, size_t quantity,
     size_t length) {
 
-  if (!self || quantity < 1 || length < 2)
-    goto error;
+    if (!self || quantity < 1 || length < 2)
+        goto error;
 
-  if (NULL == global_dtls_ice_cookie_store)
-    goto error;
+    if (NULL == global_dtls_ice_cookie_store)
+        goto error;
 
-  /* Delete all cookies */
-  ov_ice_proxy_generic_dtls_cookie *cookie = NULL;
+    /* Delete all cookies */
+    ov_ice_proxy_generic_dtls_cookie *cookie = NULL;
 
-  if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
-    goto error;
+    if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
+        goto error;
 
-  while (global_dtls_ice_cookie_store->cookie) {
+    while (global_dtls_ice_cookie_store->cookie) {
 
-    cookie = ov_node_pop((void **)&global_dtls_ice_cookie_store->cookie);
-    cookie = ov_data_pointer_free(cookie);
-  }
+        cookie = ov_node_pop((void **)&global_dtls_ice_cookie_store->cookie);
+        cookie = ov_data_pointer_free(cookie);
+    }
 
-  for (uint8_t i = 0; i < quantity; i++) {
+    for (uint8_t i = 0; i < quantity; i++) {
 
-    if (!create_cookie(length))
-      goto error;
-  }
+        if (!create_cookie(length))
+            goto error;
+    }
 
-  self->cookie_counter = ov_node_count(self->cookie);
+    self->cookie_counter = ov_node_count(self->cookie);
 
-  ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
+    ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
 
-  return true;
+    return true;
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -193,32 +193,32 @@ int ov_ice_proxy_generic_dtls_cookie_verify(SSL *ssl,
                                             const unsigned char *cookie,
                                             unsigned int cookie_len) {
 
-  if (!ssl || !cookie || !cookie_len)
-    goto error;
+    if (!ssl || !cookie || !cookie_len)
+        goto error;
 
-  if (!global_dtls_ice_cookie_store)
-    goto error;
+    if (!global_dtls_ice_cookie_store)
+        goto error;
 
-  if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
-    goto error;
+    if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
+        goto error;
 
-  ov_ice_proxy_generic_dtls_cookie *ice_cookie =
-      global_dtls_ice_cookie_store->cookie;
-  while (ice_cookie) {
+    ov_ice_proxy_generic_dtls_cookie *ice_cookie =
+        global_dtls_ice_cookie_store->cookie;
+    while (ice_cookie) {
 
-    if (0 == memcmp(ice_cookie->secret, cookie, cookie_len)) {
+        if (0 == memcmp(ice_cookie->secret, cookie, cookie_len)) {
 
-      ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
-      return 1;
+            ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
+            return 1;
+        }
+
+        ice_cookie = ov_node_next(ice_cookie);
     }
 
-    ice_cookie = ov_node_next(ice_cookie);
-  }
-
-  ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
+    ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
 
 error:
-  return 0;
+    return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -226,33 +226,33 @@ error:
 int ov_ice_proxy_generic_dtls_cookie_generate(SSL *ssl, unsigned char *cookie,
                                               unsigned int *cookie_len) {
 
-  if (!ssl || !cookie || !cookie_len)
-    goto error;
+    if (!ssl || !cookie || !cookie_len)
+        goto error;
 
-  if (!global_dtls_ice_cookie_store)
-    goto error;
+    if (!global_dtls_ice_cookie_store)
+        goto error;
 
-  if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
-    goto error;
+    if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
+        goto error;
 
-  uint64_t number =
-      ov_random_range(1, global_dtls_ice_cookie_store->cookie_counter);
+    uint64_t number =
+        ov_random_range(1, global_dtls_ice_cookie_store->cookie_counter);
 
-  ov_ice_proxy_generic_dtls_cookie *selected =
-      ov_node_get(global_dtls_ice_cookie_store->cookie, number);
+    ov_ice_proxy_generic_dtls_cookie *selected =
+        ov_node_get(global_dtls_ice_cookie_store->cookie, number);
 
-  OV_ASSERT(selected);
+    OV_ASSERT(selected);
 
-  if (!selected)
-    goto done;
+    if (!selected)
+        goto done;
 
-  memcpy(cookie, selected->secret, strlen((char *)selected->secret));
-  *cookie_len = strlen((char *)selected->secret);
+    memcpy(cookie, selected->secret, strlen((char *)selected->secret));
+    *cookie_len = strlen((char *)selected->secret);
 
 done:
-  ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
+    ov_thread_lock_unlock(&global_dtls_ice_cookie_store->lock);
 
-  return 1;
+    return 1;
 error:
-  return 0;
+    return 0;
 }

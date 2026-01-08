@@ -31,25 +31,25 @@
 
 bool ov_stun_attr_is_password_algorithms(const uint8_t *buffer, size_t length) {
 
-  if (!buffer || length < 8)
-    goto error;
+    if (!buffer || length < 8)
+        goto error;
 
-  uint16_t type = ov_stun_attribute_get_type(buffer, length);
-  // int64_t size = ov_stun_attribute_get_length(buffer, length);
+    uint16_t type = ov_stun_attribute_get_type(buffer, length);
+    // int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-  if (type != STUN_ATTR_PASSWORD_ALGORITHMS)
-    goto error;
+    if (type != STUN_ATTR_PASSWORD_ALGORITHMS)
+        goto error;
 
-  return true;
+    return true;
 
 error:
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 size_t ov_stun_attr_encode_password_algorithms_rfc8489_length() {
-  return 4 + 8;
+    return 4 + 8;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -58,18 +58,18 @@ bool ov_stun_attr_encode_password_algorithms_rfc8489(uint8_t *buffer,
                                                      size_t length,
                                                      uint8_t **next) {
 
-  /* we set sha256 as preference and MD5 as fallback */
+    /* we set sha256 as preference and MD5 as fallback */
 
-  uint8_t buf[8] = {0};
-  buf[0] = 0x00;
-  buf[1] = 0x02;
-  buf[2] = 0x00;
-  buf[3] = 0x00;
-  buf[4] = 0x00;
-  buf[5] = 0x01;
-  buf[6] = 0x00;
-  buf[7] = 0x00;
+    uint8_t buf[8] = {0};
+    buf[0] = 0x00;
+    buf[1] = 0x02;
+    buf[2] = 0x00;
+    buf[3] = 0x00;
+    buf[4] = 0x00;
+    buf[5] = 0x01;
+    buf[6] = 0x00;
+    buf[7] = 0x00;
 
-  return ov_stun_attribute_encode(buffer, length, next,
-                                  STUN_ATTR_PASSWORD_ALGORITHMS, buf, 8);
+    return ov_stun_attribute_encode(buffer, length, next,
+                                    STUN_ATTR_PASSWORD_ALGORITHMS, buf, 8);
 }

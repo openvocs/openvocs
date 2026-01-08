@@ -55,10 +55,10 @@ char const *const GATEWAY_PULSE_DEFAULT_APP_NAME = "gateway_pulse";
 
 typedef struct {
 
-  ov_gateway public;
+    ov_gateway public;
 
-  char *name;
-  ov_pulse_context *pulse_context;
+    char *name;
+    ov_pulse_context *pulse_context;
 
 } gateway_pulse;
 
@@ -84,36 +84,36 @@ static ov_json_value *impl_get_state(ov_gateway *self);
 
 ov_gateway *ov_gateway_pulse_create(ov_gateway_pulse_configuration config) {
 
-  gateway_pulse *pap = calloc(1, sizeof(gateway_pulse));
+    gateway_pulse *pap = calloc(1, sizeof(gateway_pulse));
 
-  ov_gateway *gateway = (ov_gateway *)pap;
-  gateway->magic_number = GATEWAY_PULSE_TYPE;
+    ov_gateway *gateway = (ov_gateway *)pap;
+    gateway->magic_number = GATEWAY_PULSE_TYPE;
 
-  gateway->get_state = impl_get_state;
+    gateway->get_state = impl_get_state;
 
-  gateway->free = impl_free;
+    gateway->free = impl_free;
 
-  gateway->get_pcm_s16 = impl_get_pcm_s16;
-  gateway->put_pcm_s16 = impl_put_pcm_s16;
+    gateway->get_pcm_s16 = impl_get_pcm_s16;
+    gateway->put_pcm_s16 = impl_put_pcm_s16;
 
-  pap->pulse_context = 0;
+    pap->pulse_context = 0;
 
-  pap->name = strdup(GATEWAY_PULSE_DEFAULT_APP_NAME);
+    pap->name = strdup(GATEWAY_PULSE_DEFAULT_APP_NAME);
 
-  if (!setup(pap, config)) {
+    if (!setup(pap, config)) {
 
-    goto error;
-  }
+        goto error;
+    }
 
-  return (ov_gateway *)pap;
+    return (ov_gateway *)pap;
 
 error:
 
-  pap = (gateway_pulse *)pap->public.free((ov_gateway *)pap);
+    pap = (gateway_pulse *)pap->public.free((ov_gateway *)pap);
 
-  OV_ASSERT(0 == pap);
+    OV_ASSERT(0 == pap);
 
-  return gateway;
+    return gateway;
 }
 
 /******************************************************************************
@@ -122,216 +122,217 @@ error:
 
 static gateway_pulse *as_gateway_pulse(void *self) {
 
-  if (0 == self)
-    return 0;
+    if (0 == self)
+        return 0;
 
-  gateway_pulse const *gwp = (gateway_pulse const *)self;
+    gateway_pulse const *gwp = (gateway_pulse const *)self;
 
-  if (GATEWAY_PULSE_TYPE != gwp->public.magic_number) {
-    return 0;
-  }
+    if (GATEWAY_PULSE_TYPE != gwp->public.magic_number) {
+        return 0;
+    }
 
-  return self;
+    return self;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static bool setup(gateway_pulse *self, ov_gateway_pulse_configuration config) {
 
-  uint64_t usecs_to_buffer = USECS_TO_BUFFER_DEFAULT;
+    uint64_t usecs_to_buffer = USECS_TO_BUFFER_DEFAULT;
 
-  gateway_pulse *pap = as_gateway_pulse(self);
+    gateway_pulse *pap = as_gateway_pulse(self);
 
-  if (0 == pap) {
+    if (0 == pap) {
 
-    ov_log_error("No or wrong gateway given");
-    goto error;
-  }
+        ov_log_error("No or wrong gateway given");
+        goto error;
+    }
 
-  if (0 != config.usecs_to_buffer) {
+    if (0 != config.usecs_to_buffer) {
 
-    usecs_to_buffer = config.usecs_to_buffer;
-  }
+        usecs_to_buffer = config.usecs_to_buffer;
+    }
 
-  ov_pulse_context *context = pap->pulse_context;
+    ov_pulse_context *context = pap->pulse_context;
 
-  if (0 != context) {
+    if (0 != context) {
 
-    context = ov_pulse_disconnect(context);
-  }
+        context = ov_pulse_disconnect(context);
+    }
 
-  if (0 != context) {
+    if (0 != context) {
 
-    ov_log_error("Could not disconnect pulse context");
-    goto error;
-  }
+        ov_log_error("Could not disconnect pulse context");
+        goto error;
+    }
 
-  pap->pulse_context = 0;
+    pap->pulse_context = 0;
 
-  ov_pulse_parameters params = (ov_pulse_parameters){
+    ov_pulse_parameters params = (ov_pulse_parameters){
 
-      .name = pap->name,
-      .sample_rate_hertz = config.sample_rate_hertz,
-      .usecs_to_buffer = usecs_to_buffer,
-      .frame_length_usecs = config.frame_length_usecs,
-      .server = config.server,
-      .playback_device = config.playback_device,
-      .record_device = config.record_device,
+        .name = pap->name,
+        .sample_rate_hertz = config.sample_rate_hertz,
+        .usecs_to_buffer = usecs_to_buffer,
+        .frame_length_usecs = config.frame_length_usecs,
+        .server = config.server,
+        .playback_device = config.playback_device,
+        .record_device = config.record_device,
 
-  };
+    };
 
-  pap->pulse_context = ov_pulse_connect(params);
+    pap->pulse_context = ov_pulse_connect(params);
 
-  if (!pap->pulse_context) {
+    if (!pap->pulse_context) {
 
-    ov_log_error("Could not connect to PA server");
-    goto error;
-  }
+        ov_log_error("Could not connect to PA server");
+        goto error;
+    }
 
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static ov_json_value *impl_get_state(ov_gateway *self) {
 
-  gateway_pulse *pap = as_gateway_pulse(self);
+    gateway_pulse *pap = as_gateway_pulse(self);
 
-  if (0 == pap) {
+    if (0 == pap) {
 
-    ov_log_error("No or wrong gateway given");
-    goto error;
-  }
+        ov_log_error("No or wrong gateway given");
+        goto error;
+    }
 
-  ov_json_value *pulse = 0;
+    ov_json_value *pulse = 0;
 
-  ov_pulse_context *context = pap->pulse_context;
+    ov_pulse_context *context = pap->pulse_context;
 
-  if (0 != context) {
+    if (0 != context) {
 
-    pulse = ov_pulse_get_state(context);
-  }
+        pulse = ov_pulse_get_state(context);
+    }
 
-  if (0 == pulse) {
+    if (0 == pulse) {
 
-    pulse = ov_json_object();
-  }
+        pulse = ov_json_object();
+    }
 
-  return pulse;
+    return pulse;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static ov_gateway *impl_free(ov_gateway *self) {
 
-  gateway_pulse *pap = as_gateway_pulse(self);
+    gateway_pulse *pap = as_gateway_pulse(self);
 
-  if (0 == pap) {
+    if (0 == pap) {
 
-    ov_log_error("No or wrong gateway given");
-    goto error;
-  }
+        ov_log_error("No or wrong gateway given");
+        goto error;
+    }
 
-  if (0 != pap->pulse_context) {
+    if (0 != pap->pulse_context) {
 
-    pap->pulse_context = ov_pulse_disconnect(pap->pulse_context);
-  }
+        pap->pulse_context = ov_pulse_disconnect(pap->pulse_context);
+    }
 
-  if (0 != pap->name) {
+    if (0 != pap->name) {
 
-    free(pap->name);
-  }
+        free(pap->name);
+    }
 
-  pap->name = 0;
+    pap->name = 0;
 
-  free(pap);
+    free(pap);
 
-  self = 0;
+    self = 0;
 
 error:
 
-  return self;
+    return self;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static ov_buffer *impl_get_pcm_s16(ov_gateway *self, size_t requested_samples) {
 
-  gateway_pulse *gwp = as_gateway_pulse(self);
+    gateway_pulse *gwp = as_gateway_pulse(self);
 
-  if (0 == gwp) {
+    if (0 == gwp) {
 
-    ov_log_error("No or wrong gateway given");
-    goto error;
-  }
+        ov_log_error("No or wrong gateway given");
+        goto error;
+    }
 
-  ov_pulse_context *context = gwp->pulse_context;
+    ov_pulse_context *context = gwp->pulse_context;
 
-  if (0 == context) {
+    if (0 == context) {
 
-    ov_log_error("Not connected to PA");
-    goto error;
-  }
+        ov_log_error("Not connected to PA");
+        goto error;
+    }
 
-  ov_buffer *receiver = ov_buffer_create(requested_samples * sizeof(uint16_t));
+    ov_buffer *receiver =
+        ov_buffer_create(requested_samples * sizeof(uint16_t));
 
-  if (0 == receiver) {
+    if (0 == receiver) {
 
-    ov_log_error("Could not create buffer for write PCM to");
-    goto error;
-  }
+        ov_log_error("Could not create buffer for write PCM to");
+        goto error;
+    }
 
-  OV_ASSERT(requested_samples * sizeof(uint16_t) <= receiver->capacity);
+    OV_ASSERT(requested_samples * sizeof(uint16_t) <= receiver->capacity);
 
-  receiver->length = ov_pulse_read(context, receiver->start,
-                                   requested_samples * sizeof(uint16_t));
+    receiver->length = ov_pulse_read(context, receiver->start,
+                                     requested_samples * sizeof(uint16_t));
 
-  return receiver;
+    return receiver;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static bool impl_put_pcm_s16(ov_gateway *self, const ov_buffer *data) {
 
-  if (0 == data) {
+    if (0 == data) {
 
-    ov_log_error("No data given (0 pointer)");
-    goto error;
-  }
+        ov_log_error("No data given (0 pointer)");
+        goto error;
+    }
 
-  gateway_pulse *gwp = as_gateway_pulse(self);
+    gateway_pulse *gwp = as_gateway_pulse(self);
 
-  if (0 == gwp) {
+    if (0 == gwp) {
 
-    ov_log_error("No or wrong gateway given");
-    goto error;
-  }
+        ov_log_error("No or wrong gateway given");
+        goto error;
+    }
 
-  ov_pulse_context *context = gwp->pulse_context;
+    ov_pulse_context *context = gwp->pulse_context;
 
-  if (0 == context) {
+    if (0 == context) {
 
-    ov_log_error("Not connected to PA");
-    goto error;
-  }
+        ov_log_error("Not connected to PA");
+        goto error;
+    }
 
-  return ov_pulse_write(context, data);
+    return ov_pulse_write(context, data);
 
 error:
 
-  return false;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/

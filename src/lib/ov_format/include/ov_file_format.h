@@ -143,45 +143,45 @@ typedef struct ov_file_format_desc ov_file_format_desc;
 
 struct ov_file_format_parameter {
 
-  /* Mandatory unique name */
+    /* Mandatory unique name */
 
-  char name[OV_FILE_FORMAT_PARAMETER_NAME_MAX];
+    char name[OV_FILE_FORMAT_PARAMETER_NAME_MAX];
 
-  /* Optional (recommended) parameter input for MIME type */
-  char mime[OV_FILE_FORMAT_MIME_MAX];
+    /* Optional (recommended) parameter input for MIME type */
+    char mime[OV_FILE_FORMAT_MIME_MAX];
 
-  /* Optional (recommended) format handler */
-  ov_format_handler handler;
+    /* Optional (recommended) format handler */
+    ov_format_handler handler;
 };
 
 /*----------------------------------------------------------------------------*/
 
 struct ov_file_desc {
 
-  /*  content length of the file in bytes */
+    /*  content length of the file in bytes */
 
-  ssize_t bytes;
+    ssize_t bytes;
 
-  /*  array of file extensions (byte) strings with last to first order
-   *
-   *  e.g.    path/file.data.gzip.1
-   *
-   *      ext[0] = "1"
-   *      ext[1] = "gzip"
-   *      ext[2] = "data"
-   *      ext[3] = 0
-   */
-  char ext[OV_FILE_EXT_MAX][OV_FILE_EXT_STRING_MAX];
+    /*  array of file extensions (byte) strings with last to first order
+     *
+     *  e.g.    path/file.data.gzip.1
+     *
+     *      ext[0] = "1"
+     *      ext[1] = "gzip"
+     *      ext[2] = "data"
+     *      ext[3] = 0
+     */
+    char ext[OV_FILE_EXT_MAX][OV_FILE_EXT_STRING_MAX];
 };
 
 /*----------------------------------------------------------------------------*/
 
 struct ov_file_format_desc {
 
-  ov_file_desc desc;
+    ov_file_desc desc;
 
-  /* MIME type/subtype e.g. audio/opus video/ogg text/html */
-  char mime[OV_FILE_FORMAT_MIME_MAX];
+    /* MIME type/subtype e.g. audio/opus video/ogg text/html */
+    char mime[OV_FILE_FORMAT_MIME_MAX];
 };
 
 /*

@@ -34,38 +34,38 @@
 #include <stdlib.h>
 
 #define CONFIG_PATH                                                            \
-  OPENVOCS_ROOT                                                                \
-  "/src/tools/ov_json_test/config.json"
+    OPENVOCS_ROOT                                                              \
+    "/src/tools/ov_json_test/config.json"
 
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
-  int retval = EXIT_FAILURE;
+    int retval = EXIT_FAILURE;
 
-  const char *path = ov_config_path_from_command_line(argc, argv);
-  if (!path)
-    path = CONFIG_PATH;
+    const char *path = ov_config_path_from_command_line(argc, argv);
+    if (!path)
+        path = CONFIG_PATH;
 
-  if (path == VERSION_REQUEST_ONLY)
-    goto error;
+    if (path == VERSION_REQUEST_ONLY)
+        goto error;
 
-  uint8_t *buffer = NULL;
-  size_t size = 0;
-  uint8_t *last_of_first = NULL;
+    uint8_t *buffer = NULL;
+    size_t size = 0;
+    uint8_t *last_of_first = NULL;
 
-  if (OV_FILE_SUCCESS != ov_file_read(path, &buffer, &size)) {
-    ov_log_error("Failed to read file %s", path);
-    goto error;
-  }
+    if (OV_FILE_SUCCESS != ov_file_read(path, &buffer, &size)) {
+        ov_log_error("Failed to read file %s", path);
+        goto error;
+    }
 
-  if (!ov_json_match(buffer, size, true, &last_of_first)) {
-    ov_log_error("File content not JSON");
-    goto error;
-  }
+    if (!ov_json_match(buffer, size, true, &last_of_first)) {
+        ov_log_error("File content not JSON");
+        goto error;
+    }
 
-  retval = EXIT_SUCCESS;
+    retval = EXIT_SUCCESS;
 
 error:
-  return retval;
+    return retval;
 }

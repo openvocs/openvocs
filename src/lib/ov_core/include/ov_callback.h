@@ -54,9 +54,9 @@ typedef struct ov_callback_registry ov_callback_registry;
 
 typedef struct ov_callback_registry_config {
 
-  ov_event_loop *loop;
-  uint64_t timeout_usec;
-  size_t cache_size;
+    ov_event_loop *loop;
+    uint64_t timeout_usec;
+    size_t cache_size;
 
 } ov_callback_registry_config;
 
@@ -68,8 +68,8 @@ typedef struct ov_callback_registry_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_callback_registry *ov_callback_registry_create(
-    ov_callback_registry_config config);
+ov_callback_registry *
+ov_callback_registry_create(ov_callback_registry_config config);
 ov_callback_registry *ov_callback_registry_free(ov_callback_registry *self);
 ov_callback_registry *ov_callback_registry_cast(const void *data);
 

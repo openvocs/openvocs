@@ -61,29 +61,30 @@
 
 typedef struct {
 
-  char uri[PATH_MAX];
+    char uri[PATH_MAX];
 
-  void *userdata;
+    void *userdata;
 
-  /* max_frames may be used to limit the amount of allowed frames
-   * in defragmented (buffered) delivery mode */
+    /* max_frames may be used to limit the amount of allowed frames
+     * in defragmented (buffered) delivery mode */
 
-  uint32_t max_frames;
+    uint32_t max_frames;
 
-  /* This callback may be used to deliver the content of websocket frames,
-   * independent of the fragmentation mode used. It will callback, once
-   * some frame is completed. */
+    /* This callback may be used to deliver the content of websocket frames,
+     * independent of the fragmentation mode used. It will callback, once
+     * some frame is completed. */
 
-  bool (*callback)(void *userdata, int socket, const ov_memory_pointer domain,
-                   const char *uri, ov_memory_pointer content, bool text);
+    bool (*callback)(void *userdata, int socket, const ov_memory_pointer domain,
+                     const char *uri, ov_memory_pointer content, bool text);
 
-  /* This callback may be used to deliver any non control frame as received */
+    /* This callback may be used to deliver any non control frame as received */
 
-  bool (*fragmented)(void *userdata, int socket, const ov_memory_pointer domain,
-                     const char *uri, ov_websocket_frame *frame);
+    bool (*fragmented)(void *userdata, int socket,
+                       const ov_memory_pointer domain, const char *uri,
+                       ov_websocket_frame *frame);
 
-  /* This callback will forward the close calls to userdata */
-  void (*close)(void *userdata, int socket);
+    /* This callback will forward the close calls to userdata */
+    void (*close)(void *userdata, int socket);
 
 } ov_websocket_message_config;
 

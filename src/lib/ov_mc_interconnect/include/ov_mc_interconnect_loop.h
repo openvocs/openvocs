@@ -45,10 +45,10 @@ typedef struct ov_mc_interconnect_loop ov_mc_interconnect_loop;
 
 typedef struct ov_mc_interconnect_loop_config {
 
-  ov_event_loop *loop;
-  ov_mc_interconnect *base;
-  char name[OV_HOST_NAME_MAX];
-  ov_socket_configuration socket;
+    ov_event_loop *loop;
+    ov_mc_interconnect *base;
+    char name[OV_HOST_NAME_MAX];
+    ov_socket_configuration socket;
 
 } ov_mc_interconnect_loop_config;
 

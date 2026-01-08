@@ -46,10 +46,10 @@ static const uint8_t TYPE_ID_CHARS[] = {'h', 'A', 's', 1};
 
 typedef struct {
 
-  void (*key_free)(void *key);
-  void *(*key_copy)(const void *key);
-  int (*key_cmp)(const void *key, const void *value);
-  uint64_t (*hash)(const void *);
+    void (*key_free)(void *key);
+    void *(*key_copy)(const void *key);
+    int (*key_cmp)(const void *key, const void *value);
+    uint64_t (*hash)(const void *);
 
 } log_hashtable_funcs;
 
@@ -61,23 +61,23 @@ typedef struct {
 
 struct table_entry {
 
-  void *key;
-  void *value;
+    void *key;
+    void *value;
 
-  struct table_entry *next;
+    struct table_entry *next;
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct log_hashtable_struct {
 
-  /* 'Magic number to prevent casting errors */
-  uint32_t type;
+    /* 'Magic number to prevent casting errors */
+    uint32_t type;
 
-  log_hashtable_funcs funcs;
+    log_hashtable_funcs funcs;
 
-  unsigned number_of_buckets;
-  struct table_entry *entries;
+    unsigned number_of_buckets;
+    struct table_entry *entries;
 };
 
 /******************************************************************************
@@ -95,49 +95,49 @@ static bool hashtable_clear(log_hashtable *table);
 
 static int string_compare(void const *s1, void const *s2) {
 
-  if (s1 == s2)
-    return 0;
+    if (s1 == s2)
+        return 0;
 
-  if (0 == s1)
-    return -1;
-  if (0 == s2)
-    return 1;
+    if (0 == s1)
+        return -1;
+    if (0 == s2)
+        return 1;
 
-  return strcmp(s1, s2);
+    return strcmp(s1, s2);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *string_copy(void const *s) {
 
-  if (0 == s)
-    return 0;
+    if (0 == s)
+        return 0;
 
-  return strdup(s);
+    return strdup(s);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static uint64_t hash_c_string(const void *c_string) {
 
-  if (0 == c_string)
-    return 0;
+    if (0 == c_string)
+        return 0;
 
-  const char *s = c_string;
+    const char *s = c_string;
 
-  uint8_t hash = 0;
+    uint8_t hash = 0;
 
-  uint8_t c = (uint8_t)*s;
+    uint8_t c = (uint8_t)*s;
 
-  while (0 != c) {
+    while (0 != c) {
 
-    /* Use a prime as factor to prevent short cycles  -
-     * if you dont understand, leave it as it is ... */
-    hash += 13 * c;
-    c = (uint8_t) * (++s);
-  }
+        /* Use a prime as factor to prevent short cycles  -
+         * if you dont understand, leave it as it is ... */
+        hash += 13 * c;
+        c = (uint8_t) * (++s);
+    }
 
-  return hash;
+    return hash;
 }
 
 /******************************************************************************
@@ -148,103 +148,103 @@ static uint64_t hash_c_string(const void *c_string) {
 
 log_hashtable *log_hashtable_create(size_t num_buckets) {
 
-  if (0 == num_buckets) {
-    goto error;
-  }
+    if (0 == num_buckets) {
+        goto error;
+    }
 
-  log_hashtable *table = calloc(1, sizeof(log_hashtable));
+    log_hashtable *table = calloc(1, sizeof(log_hashtable));
 
-  table->type = TYPE_ID;
+    table->type = TYPE_ID;
 
-  table->number_of_buckets = num_buckets;
-  table->entries = calloc(num_buckets, sizeof(struct table_entry));
+    table->number_of_buckets = num_buckets;
+    table->entries = calloc(num_buckets, sizeof(struct table_entry));
 
-  table->funcs = (log_hashtable_funcs){.key_free = free,
-                                       .key_copy = string_copy,
-                                       .key_cmp = string_compare,
-                                       .hash = hash_c_string};
+    table->funcs = (log_hashtable_funcs){.key_free = free,
+                                         .key_copy = string_copy,
+                                         .key_cmp = string_compare,
+                                         .hash = hash_c_string};
 
-  return table;
+    return table;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void *log_hashtable_get(const log_hashtable *table, const void *key) {
 
-  struct table_entry *entry = get_entry_for(table, key);
+    struct table_entry *entry = get_entry_for(table, key);
 
-  if (0 == entry)
-    goto error;
-  if (0 == entry->next)
-    goto error;
+    if (0 == entry)
+        goto error;
+    if (0 == entry->next)
+        goto error;
 
-  return entry->next->value;
+    return entry->next->value;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void *log_hashtable_set(log_hashtable *table, const void *key, void *value) {
 
-  struct table_entry *entry = get_entry_for(table, key);
+    struct table_entry *entry = get_entry_for(table, key);
 
-  if (0 == entry)
-    goto error;
+    if (0 == entry)
+        goto error;
 
-  void *old_value = 0;
+    void *old_value = 0;
 
-  if (0 == entry->next) {
+    if (0 == entry->next) {
 
-    entry->next = calloc(1, sizeof(struct table_entry));
-    entry = entry->next;
+        entry->next = calloc(1, sizeof(struct table_entry));
+        entry = entry->next;
 
-    entry->key = table->funcs.key_copy(key);
+        entry->key = table->funcs.key_copy(key);
 
-  } else {
+    } else {
 
-    entry = entry->next;
-  }
+        entry = entry->next;
+    }
 
-  old_value = entry->value;
-  entry->value = value;
+    old_value = entry->value;
+    entry->value = value;
 
-  return old_value;
+    return old_value;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 log_hashtable *log_hashtable_free(log_hashtable *table) {
 
-  if (!table)
-    goto error;
+    if (!table)
+        goto error;
 
-  LOG_ASSERT(TYPE_ID == table->type);
+    LOG_ASSERT(TYPE_ID == table->type);
 
-  if (!hashtable_clear(table))
-    goto error;
+    if (!hashtable_clear(table))
+        goto error;
 
-  if (0 == table->entries)
-    goto error;
+    if (0 == table->entries)
+        goto error;
 
-  free(table->entries);
-  free(table);
+    free(table->entries);
+    free(table);
 
-  return 0;
+    return 0;
 
 error:
 
-  return table;
+    return table;
 }
 
 /******************************************************************************
@@ -254,82 +254,82 @@ error:
 static struct table_entry *get_entry_for(const log_hashtable *table,
                                          const void *key) {
 
-  if (0 == table)
-    goto error;
+    if (0 == table)
+        goto error;
 
-  LOG_ASSERT(TYPE_ID == table->type);
+    LOG_ASSERT(TYPE_ID == table->type);
 
-  LOG_ASSERT(table->funcs.hash);
-  LOG_ASSERT(table->funcs.key_cmp);
+    LOG_ASSERT(table->funcs.hash);
+    LOG_ASSERT(table->funcs.key_cmp);
 
-  if (0 == table->entries)
-    goto error;
-  if (0 == key)
-    goto error;
+    if (0 == table->entries)
+        goto error;
+    if (0 == key)
+        goto error;
 
-  unsigned hash = table->funcs.hash(key) % table->number_of_buckets;
+    unsigned hash = table->funcs.hash(key) % table->number_of_buckets;
 
-  int (*compare)(const void *, const void *) = table->funcs.key_cmp;
+    int (*compare)(const void *, const void *) = table->funcs.key_cmp;
 
-  struct table_entry *entry = &table->entries[hash];
-  struct table_entry *c = entry;
+    struct table_entry *entry = &table->entries[hash];
+    struct table_entry *c = entry;
 
-  while (entry->next != 0) {
+    while (entry->next != 0) {
 
-    c = entry;
+        c = entry;
 
-    entry = entry->next;
+        entry = entry->next;
 
-    if (0 == compare(entry->key, key))
-      return c;
-  };
+        if (0 == compare(entry->key, key))
+            return c;
+    };
 
-  return entry;
+    return entry;
 
 error:
 
-  return 0;
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static bool hashtable_clear(log_hashtable *table) {
 
-  if (!table)
-    goto error;
+    if (!table)
+        goto error;
 
-  LOG_ASSERT(TYPE_ID == table->type);
+    LOG_ASSERT(TYPE_ID == table->type);
 
-  LOG_ASSERT(table->funcs.key_free);
+    LOG_ASSERT(table->funcs.key_free);
 
-  struct table_entry *entry = 0;
+    struct table_entry *entry = 0;
 
-  for (size_t i = 0; i < table->number_of_buckets; ++i) {
+    for (size_t i = 0; i < table->number_of_buckets; ++i) {
 
-    entry = &table->entries[i];
+        entry = &table->entries[i];
 
-    if (0 == entry->next)
-      continue;
+        if (0 == entry->next)
+            continue;
 
-    entry = entry->next;
+        entry = entry->next;
 
-    while (0 != entry) {
+        while (0 != entry) {
 
-      struct table_entry *current = entry;
-      entry = entry->next;
+            struct table_entry *current = entry;
+            entry = entry->next;
 
-      table->funcs.key_free(current->key);
-      free(current);
+            table->funcs.key_free(current->key);
+            free(current);
+        }
+
+        table->entries[i].next = 0;
     }
 
-    table->entries[i].next = 0;
-  }
-
-  return true;
+    return true;
 
 error:
 
-  return false;
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -340,47 +340,47 @@ size_t log_hashtable_for_each(const log_hashtable *table,
                                                    void *arg),
                               void *arg) {
 
-  if (0 == table)
-    goto error;
+    if (0 == table)
+        goto error;
 
-  LOG_ASSERT(TYPE_ID == table->type);
+    LOG_ASSERT(TYPE_ID == table->type);
 
-  if (0 == table->entries)
-    goto error;
-  if (0 == table->number_of_buckets)
-    goto error;
-  if (0 == process_func)
-    goto error;
+    if (0 == table->entries)
+        goto error;
+    if (0 == table->number_of_buckets)
+        goto error;
+    if (0 == process_func)
+        goto error;
 
-  size_t count = 0;
+    size_t count = 0;
 
-  struct table_entry *entry = 0;
+    struct table_entry *entry = 0;
 
-  for (size_t i = 0; i < table->number_of_buckets; ++i) {
+    for (size_t i = 0; i < table->number_of_buckets; ++i) {
 
-    entry = &table->entries[i];
+        entry = &table->entries[i];
 
-    if (0 == entry->next)
-      continue;
+        if (0 == entry->next)
+            continue;
 
-    entry = entry->next;
+        entry = entry->next;
 
-    while (0 != entry) {
+        while (0 != entry) {
 
-      ++count;
+            ++count;
 
-      if (!process_func(entry->key, entry->value, arg))
-        goto finish;
+            if (!process_func(entry->key, entry->value, arg))
+                goto finish;
 
-      entry = entry->next;
+            entry = entry->next;
+        }
     }
-  }
 
 finish:
 
-  return count;
+    return count;
 
 error:
 
-  return 0;
+    return 0;
 }

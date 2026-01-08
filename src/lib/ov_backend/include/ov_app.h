@@ -83,24 +83,24 @@ typedef enum { OV_IN = 1, OV_OUT = 2 } ov_direction;
 
 typedef struct {
 
-  char name[OV_APP_NAME_MAX];
+    char name[OV_APP_NAME_MAX];
 
-  ov_event_loop *loop;
-  void *userdata;
+    ov_event_loop *loop;
+    void *userdata;
 
-  struct {
+    struct {
 
-    bool precache;   // precache up to capacity at init
-    size_t capacity; // default cache capacity to use
+        bool precache;   // precache up to capacity at init
+        size_t capacity; // default cache capacity to use
 
-  } cache;
+    } cache;
 
-  struct {
+    struct {
 
-    size_t interval_secs;
-    size_t max_connections;
+        size_t interval_secs;
+        size_t max_connections;
 
-  } reconnect;
+    } reconnect;
 
 } ov_app_config;
 
@@ -108,73 +108,74 @@ typedef struct {
 
 typedef struct {
 
-  ov_socket_configuration socket_config;
+    ov_socket_configuration socket_config;
 
-  bool as_client; // if true -> connect socket to remote
+    bool as_client; // if true -> connect socket to remote
 
-  struct {
+    struct {
 
-    ov_parser_config config;
-    ov_parser *(*create)(ov_parser_config config);
+        ov_parser_config config;
+        ov_parser *(*create)(ov_parser_config config);
 
-  } parser;
+    } parser;
 
-  struct {
+    struct {
 
-    void *userdata;
+        void *userdata;
 
-    /**
-     * Will be called if socket was closed
-     */
-    void (*close)(ov_app *app, int socket, const char *uuid, void *userdata);
+        /**
+         * Will be called if socket was closed
+         */
+        void (*close)(ov_app *app, int socket, const char *uuid,
+                      void *userdata);
 
-    /*
-     *      If a parser was set for the socket,
-     *      parser_io_data is the output of the
-     *      parser. This value may be consumend (set to NULL)
-     *      If is is not consumed, it will be cleared within
-     *      the APP.
-     *
-     *      The callback will receive:
-     *
-     *              app     always
-     *              uuid    connection uuid set, NULL on UDP sockets
-     *              local   parsed local connection socket (always)
-     *              remote  parsed remote connection data (always)
-     *              io_data parsed IO data delivered by parser,
-     *                      defaults to ov_buffer with RAW socket
-     data
+        /*
+         *      If a parser was set for the socket,
+         *      parser_io_data is the output of the
+         *      parser. This value may be consumend (set to NULL)
+         *      If is is not consumed, it will be cleared within
+         *      the APP.
+         *
+         *      The callback will receive:
+         *
+         *              app     always
+         *              uuid    connection uuid set, NULL on UDP sockets
+         *              local   parsed local connection socket (always)
+         *              remote  parsed remote connection data (always)
+         *              io_data parsed IO data delivered by parser,
+         *                      defaults to ov_buffer with RAW socket
+         data
 
-     *      By default, if no parser is configured,
-     *      ANY RAW socket input is delivered as ov_buffer.
-     *      use ov_buffer_cast(*parsed_io_data)
-     *
-     */
-    bool (*io)(ov_app *app, int socket, const char *uuid,
-               const ov_socket_data *remote, void **parsed_io_data);
+         *      By default, if no parser is configured,
+         *      ANY RAW socket input is delivered as ov_buffer.
+         *      use ov_buffer_cast(*parsed_io_data)
+         *
+         */
+        bool (*io)(ov_app *app, int socket, const char *uuid,
+                   const ov_socket_data *remote, void **parsed_io_data);
 
-    /**
-     * Only used if as_client == false .
-     * Callback to be called if a new connection was
-     * accepted on a (TCP) server socket.
-     */
-    bool (*accepted)(ov_app *app, int server_socket, int accepted_socket,
-                     void *userdata);
+        /**
+         * Only used if as_client == false .
+         * Callback to be called if a new connection was
+         * accepted on a (TCP) server socket.
+         */
+        bool (*accepted)(ov_app *app, int server_socket, int accepted_socket,
+                         void *userdata);
 
-    /**
-     * Only used if as_client == true .
-     * If set, the socket will be reconnected
-     * if closed.
-     * On successful reconnect,
-     * this callback will be called.
-     *
-     * Currently supported only with TCP sockets!
-     * @param fd the new client socket.
-     * @param app the app this socket is handled by
-     */
-    bool (*reconnected)(ov_app *app, int fd, void *userdata);
+        /**
+         * Only used if as_client == true .
+         * If set, the socket will be reconnected
+         * if closed.
+         * On successful reconnect,
+         * this callback will be called.
+         *
+         * Currently supported only with TCP sockets!
+         * @param fd the new client socket.
+         * @param app the app this socket is handled by
+         */
+        bool (*reconnected)(ov_app *app, int fd, void *userdata);
 
-  } callback;
+    } callback;
 
 } ov_app_socket_config;
 
@@ -182,65 +183,65 @@ typedef struct {
 
 struct ov_app {
 
-  uint16_t magic_byte;
-  uint16_t type;
+    uint16_t magic_byte;
+    uint16_t type;
 
-  ov_app_config config;
+    ov_app_config config;
 
-  ov_app *(*free)(ov_app *self);
+    ov_app *(*free)(ov_app *self);
 
-  struct {
+    struct {
+
+        /*
+         *      Socket open is acync and will deliver the
+         *      opened socket fd over a success callback.
+         *
+         *      @returns true   if opening is triggered
+         *      @returns false  if opening failed
+         *
+         *      @NOTE in case of a server socket, true means the
+         *      socket is opened.
+         */
+
+        bool (*open)(ov_app *self, ov_app_socket_config config,
+                     void (*optional_success_callback)(int socket, void *self),
+                     void (*optional_failure_callback)(int socket, void *self));
+
+        bool (*close)(ov_app *self, int socket);
+
+        bool (*add)(ov_app *self, ov_app_socket_config config, int socket);
+
+    } socket;
+
+    struct {
+
+        bool (*close)(ov_app *self, const char *uuid);
+
+        /*
+         *      @NOTE This function is expected to use
+         *      some async behaviour and close
+         *      all loops within some next eventloop run.
+         *      It MUST be implemented to allow the caller
+         *      to call it and let the calling function finish,
+         *      before the connections are closed.
+         *
+         *      @returns true if the close was scheduled
+         */
+        bool (*close_all)(ov_app *self);
+
+        int (*get_socket)(ov_app *self, const char *uuid);
+
+    } connection;
 
     /*
-     *      Socket open is acync and will deliver the
-     *      opened socket fd over a success callback.
+     *      Custom send function
      *
-     *      @returns true   if opening is triggered
-     *      @returns false  if opening failed
-     *
-     *      @NOTE in case of a server socket, true means the
-     *      socket is opened.
+     *      data MUST fit with the parser of the socket,
+     *      OR be of type ov_buffer.
      */
 
-    bool (*open)(ov_app *self, ov_app_socket_config config,
-                 void (*optional_success_callback)(int socket, void *self),
-                 void (*optional_failure_callback)(int socket, void *self));
-
-    bool (*close)(ov_app *self, int socket);
-
-    bool (*add)(ov_app *self, ov_app_socket_config config, int socket);
-
-  } socket;
-
-  struct {
-
-    bool (*close)(ov_app *self, const char *uuid);
-
-    /*
-     *      @NOTE This function is expected to use
-     *      some async behaviour and close
-     *      all loops within some next eventloop run.
-     *      It MUST be implemented to allow the caller
-     *      to call it and let the calling function finish,
-     *      before the connections are closed.
-     *
-     *      @returns true if the close was scheduled
-     */
-    bool (*close_all)(ov_app *self);
-
-    int (*get_socket)(ov_app *self, const char *uuid);
-
-  } connection;
-
-  /*
-   *      Custom send function
-   *
-   *      data MUST fit with the parser of the socket,
-   *      OR be of type ov_buffer.
-   */
-
-  bool (*send)(ov_app *self, int socket, const ov_socket_data *remote,
-               void *data);
+    bool (*send)(ov_app *self, int socket, const ov_socket_data *remote,
+                 void *data);
 };
 
 /*----------------------------------------------------------------------------*/
@@ -287,8 +288,8 @@ bool ov_app_stop(ov_app *app);
 
 typedef struct {
 
-  const char *config_file;
-  bool version_request;
+    const char *config_file;
+    bool version_request;
 
 } ov_app_parameters;
 

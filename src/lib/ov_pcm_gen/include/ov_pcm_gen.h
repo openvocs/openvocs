@@ -63,8 +63,8 @@ Copyright   2018, 2020        German Aerospace Center DLR e.V.,
 
 typedef struct {
 
-  double sample_rate_hertz;
-  uint64_t frame_length_usecs;
+    double sample_rate_hertz;
+    uint64_t frame_length_usecs;
 
 } ov_pcm_gen_config;
 
@@ -72,35 +72,35 @@ typedef struct {
 
 typedef struct ov_pcm_gen {
 
-  /**
-   * Produces a new PCM chunk of length defined by ov_pcm_gen_config.
-   */
-  ov_buffer *(*generate_frame)(struct ov_pcm_gen *self);
-  void *(*free)(void *self);
+    /**
+     * Produces a new PCM chunk of length defined by ov_pcm_gen_config.
+     */
+    ov_buffer *(*generate_frame)(struct ov_pcm_gen *self);
+    void *(*free)(void *self);
 
 } ov_pcm_gen;
 
 /*----------------------------------------------------------------------------*/
 
 typedef enum {
-  OV_SINUSOIDS = -1, /// specifc arg must be a pointer to ov_pcm_gen_sinusoids
-  OV_WHITE_NOISE, /// specific arg must be a pointer to ov_pcm_gen_white_noise
-  OV_FROM_FILE,   /// specific arg must be a c-string(the file name)
-  OV_PCM_GEN_TYPE_LAST,
+    OV_SINUSOIDS = -1, /// specifc arg must be a pointer to ov_pcm_gen_sinusoids
+    OV_WHITE_NOISE, /// specific arg must be a pointer to ov_pcm_gen_white_noise
+    OV_FROM_FILE,   /// specific arg must be a c-string(the file name)
+    OV_PCM_GEN_TYPE_LAST,
 } ov_pcm_gen_type;
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-  double frequency_hertz;
+    double frequency_hertz;
 
-  struct {
+    struct {
 
-    /* if 0, wobbling is disabled */
-    double period_secs;
-    double frequency_disp_hertz;
-  } wobble;
+        /* if 0, wobbling is disabled */
+        double period_secs;
+        double frequency_disp_hertz;
+    } wobble;
 
 } ov_pcm_gen_sinusoids;
 
@@ -108,8 +108,8 @@ typedef struct {
 
 typedef struct {
 
-  char *file_name;
-  ov_json_value *codec_config;
+    char *file_name;
+    ov_json_value *codec_config;
 
 } ov_pcm_gen_from_file;
 
@@ -117,7 +117,7 @@ typedef struct {
 
 typedef struct {
 
-  uint16_t max_amplitude;
+    uint16_t max_amplitude;
 
 } ov_pcm_gen_white_noise;
 
