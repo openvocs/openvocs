@@ -53,9 +53,13 @@ ov_event_engine *ov_event_engine_cast(const void *data);
 /*----------------------------------------------------------------------------*/
 
 bool ov_event_engine_register(
-    ov_event_engine *self, const char *name,
-    bool (*process)(void *userdata, const int socket,
-                    const ov_event_parameter *parameter, ov_json_value *input));
+    ov_event_engine *self,
+    const char *name,
+    void *userdata,
+    bool (*process)(void *userdata,
+                    const int socket,
+                    const ov_event_parameter *parameter,
+                    ov_json_value *input));
 
 /*----------------------------------------------------------------------------*/
 
@@ -63,7 +67,9 @@ bool ov_event_engine_unregister(ov_event_engine *self, const char *name);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_engine_push(ov_event_engine *self, void *userdata, int socket,
-                          ov_event_parameter parameter, ov_json_value *input);
+bool ov_event_engine_push(ov_event_engine *self,
+                          int socket,
+                          ov_event_parameter parameter,
+                          ov_json_value *input);
 
 #endif /* ov_event_engine_h */

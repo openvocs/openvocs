@@ -668,19 +668,21 @@ static bool register_events(ov_mc_interconnect *self) {
   if (!self)
     goto error;
 
-  if (!ov_event_engine_register(self->event.engine, OV_MC_INTERCONNECT_REGISTER,
-                                event_register))
-    goto error;
+    if (!ov_event_engine_register(
+            self->event.engine, OV_MC_INTERCONNECT_REGISTER, self, event_register))
+        goto error;
 
-  if (!ov_event_engine_register(self->event.engine,
-                                OV_MC_INTERCONNECT_CONNECT_MEDIA,
-                                event_connect_media))
-    goto error;
+    if (!ov_event_engine_register(self->event.engine,
+                                  OV_MC_INTERCONNECT_CONNECT_MEDIA,
+                                  self,
+                                  event_connect_media))
+        goto error;
 
-  if (!ov_event_engine_register(self->event.engine,
-                                OV_MC_INTERCONNECT_CONNECT_LOOPS,
-                                event_connect_loops))
-    goto error;
+    if (!ov_event_engine_register(self->event.engine,
+                                  OV_MC_INTERCONNECT_CONNECT_LOOPS,
+                                  self,
+                                  event_connect_loops))
+        goto error;
 
   return true;
 error:

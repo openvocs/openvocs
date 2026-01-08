@@ -80,7 +80,7 @@
                 }
 
                 if (await prime_login) {
-                    let session = ov_Web_Storage.get_session(ov_Websockets.prime_websocket.websocket_url);
+                    let session = ov_Web_Storage.get_session(APP, ov_Websockets.prime_websocket.websocket_url);
                     if (session.domain) {
                         ov_Websockets.user().domain = session.domain;
                         ov_Websockets.user().project = session.project;
@@ -95,7 +95,6 @@
                             console.log("switch to domain view", session.section_domain);
                             await Config_View.render_domain(view_container, ov_Websockets.user(), session.page);
                         }
-
                     } else
                         await Overview.render(view_container);
 

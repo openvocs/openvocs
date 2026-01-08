@@ -70,7 +70,13 @@ typedef struct ov_vocs_recorder_config {
 
   struct {
 
-    void *userdata;
+        uint64_t response_usec;
+
+    } timeout;
+
+    struct {
+
+        void *userdata;
 
     void (*start_record)(void *userdata, const char *uuid, ov_result error);
     void (*stop_record)(void *userdata, const char *uuid, ov_result error);
@@ -143,5 +149,19 @@ void ov_vocs_recorder_ptt(ov_vocs_recorder *self, const char *user,
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_vocs_recorder_get_recorded_loops(ov_vocs_recorder *self);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_recorder_start_loop_recording(ov_vocs_recorder *self, 
+    const char *uuid, const char *loop,
+    void *userdata, int socket, 
+    void (*callback)(void*, int, const char*, const char*, ov_result));
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_recorder_stop_loop_recording(ov_vocs_recorder *self, 
+    const char *uuid, const char *loop,
+    void *userdata, int socket, 
+    void (*callback)(void*, int, const char*, const char*, ov_result));
 
 #endif /* ov_vocs_recorder_h */

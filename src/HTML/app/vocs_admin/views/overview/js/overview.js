@@ -28,6 +28,7 @@
     ---------------------------------------------------------------------------
 */
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
 import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_DB from "/lib/ov_db.js";
 import * as View from "./view.js";
@@ -47,6 +48,10 @@ export async function render(container) {
     }
 
     View.draw(ov_Websockets.user());
+
+    for (let ws of ov_Websockets.list) {
+        ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, undefined, undefined, "overview");
+    }
 
     console.log("(overview) View rendered");
 
@@ -81,5 +86,6 @@ async function on_disconnect(ws) {
     View.display_loading_screen(true, "Disconnected from one or several servers. Trying to reconnect...");
     await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, ws);
     if (await ov_Auth.relogin(ws) && ov_Websockets.disconnected_websockets.size === 0)
-        View.display_loading_screen(false);
+        if (await ov_DB.domains() && await ov_DB.projects())
+            View.display_loading_screen(false);
 }

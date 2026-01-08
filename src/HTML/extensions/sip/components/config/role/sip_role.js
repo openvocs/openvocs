@@ -34,6 +34,7 @@ export default class ov_SIP_Role extends HTMLElement {
     #id;
     #name;
     #value;
+    #disabled = false;
 
     constructor() {
         super();
@@ -89,11 +90,27 @@ export default class ov_SIP_Role extends HTMLElement {
         return this.#value;
     }
 
+    #update_disabled() {
+        let select = this.shadowRoot.querySelector("select");
+        if (select)
+            select.disabled = this.#disabled;
+    }
+
+    set disabled(value) {
+        this.#disabled = value;
+        this.#update_disabled();
+    }
+
+    get disabled() {
+        return this.#disabled;
+    }
+
     async connectedCallback() {
         await this.#render();
 
         this.#update_name();
         this.#update_value();
+        this.#update_disabled();
     }
 
     async #render() {

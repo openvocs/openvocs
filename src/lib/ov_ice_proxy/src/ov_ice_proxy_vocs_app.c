@@ -582,32 +582,37 @@ static bool register_event_callbacks(ov_ice_proxy_vocs_app *app) {
   if (!app)
     goto error;
 
-  if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_CREATE,
-                                cb_event_ice_session_create))
-    goto error;
+    if (!ov_event_engine_register(app->engine,
+                                  OV_KEY_ICE_SESSION_CREATE,
+                                  app,
+                                  cb_event_ice_session_create))
+        goto error;
 
-  if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_DROP,
-                                cb_event_ice_session_drop))
-    goto error;
+    if (!ov_event_engine_register(
+            app->engine,  OV_KEY_ICE_SESSION_DROP, app,cb_event_ice_session_drop))
+        goto error;
 
-  if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_UPDATE,
-                                cb_event_ice_session_update))
-    goto error;
+    if (!ov_event_engine_register(app->engine, 
+                                  OV_KEY_ICE_SESSION_UPDATE,
+                                   app,cb_event_ice_session_update))
+        goto error;
 
-  if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_STATE,
-                                cb_event_ice_session_state))
-    goto error;
+    if (!ov_event_engine_register(
+            app->engine,  OV_KEY_ICE_SESSION_STATE, app,cb_event_ice_session_state))
+        goto error;
 
-  if (!ov_event_engine_register(app->engine, OV_ICE_STRING_CANDIDATE,
-                                cb_event_ice_candidate))
-    goto error;
+    if (!ov_event_engine_register(
+            app->engine,   OV_ICE_STRING_CANDIDATE,app, cb_event_ice_candidate))
+        goto error;
 
-  if (!ov_event_engine_register(app->engine, OV_ICE_STRING_END_OF_CANDIDATES,
-                                cb_event_ice_end_of_candidates))
-    goto error;
+    if (!ov_event_engine_register(app->engine,
+                                  OV_ICE_STRING_END_OF_CANDIDATES,
+                                   app,
+                                  cb_event_ice_end_of_candidates))
+        goto error;
 
-  if (!ov_event_engine_register(app->engine, OV_KEY_TALK, cb_event_talk))
-    goto error;
+    if (!ov_event_engine_register(app->engine,  OV_KEY_TALK, app,cb_event_talk))
+        goto error;
 
   return true;
 error:
@@ -860,8 +865,8 @@ static bool cb_client_process(void *userdata, const int socket,
   if (!self || socket < 0 || !params || !input)
     goto error;
 
-  ov_event_engine_push(self->engine, self, socket, *params, input);
-  return true;
+    ov_event_engine_push(self->engine, socket, *params, input);
+    return true;
 
 error:
   input = ov_json_value_free(input);

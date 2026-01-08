@@ -437,14 +437,33 @@ static bool client_get(ov_vocs *vocs,
 
     /* all users are allowed to get anything */
 
-    val = ov_vocs_db_get_entity(vocs->config.db, entity, id);
-    if (!val) {
-        val = ov_json_null();
+    ov_json_value *result_obj = NULL;
+
+    if (0 == strcmp(type, OV_KEY_USER)) {
+
+
+        result_obj = ov_vocs_db_get_entity(vocs->config.db, OV_VOCS_DB_USER, user);
+
+        val = ov_vocs_db_get_entity_domain(
+            vocs->config.db, OV_VOCS_DB_USER, user);
+
+        if (val) ov_json_object_set(result_obj, OV_KEY_DOMAIN, val);
+
+        val = NULL;
+
+    } else  {
+
+        val = ov_vocs_db_get_entity(vocs->config.db, entity, id);
+        if (!val) {
+            val = ov_json_null();
+        }
+
+        result_obj = val;
     }
 
     out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
-    if (!ov_json_object_set(res, OV_KEY_RESULT, val)) goto error;
+    if (!ov_json_object_set(res, OV_KEY_RESULT, result_obj)) goto error;
 
     val = ov_json_string(type);
     if (!ov_json_object_set(res, OV_KEY_TYPE, val)) goto error;

@@ -77,7 +77,7 @@ export function init() {
         if (event.target.tagName === "INPUT") {
             await Loop_View.talk(false);
             for (let ws of ov_Websockets.list)
-                ov_Web_Storage.add_role_to_session(ws.websocket_url, event.target.id);
+                ov_Web_Storage.add_role_to_session(APP, ws.websocket_url, event.target.id);
             ov_Websockets.reload_page(); // reload page to auto-login in new role
         }
     });

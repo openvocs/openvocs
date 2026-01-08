@@ -180,12 +180,10 @@ export async function init(view_id, container, type) {
         await save(config, type, true);
     });
 
-    view_container.addEventListener("delete_project", async () => {
+    DOM.sub_view.addEventListener("delete_project", async (event) => {
         DOM.loading_screen.show("Deleting project on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db")
-                continue;
             let project = Project_Settings.collect();
             if (!await ov_DB.delete_project(project.domain, project.id, websocket)) {
                 errors.push(websocket);
@@ -210,12 +208,10 @@ export async function init(view_id, container, type) {
         }
     });
 
-    view_container.addEventListener("delete_domain", async () => {
+    DOM.sub_view.addEventListener("delete_domain", async () => {
         DOM.loading_screen.show("Deleting domain on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db")
-                continue;
             let domain = Domain_Settings.collect();
             if (!await ov_DB.delete_domain(domain.id, websocket)) {
                 errors.push(websocket);
@@ -239,17 +235,15 @@ export async function init(view_id, container, type) {
         }
     });
 
-    view_container.addEventListener("changed_name", (event) => {
+    DOM.sub_view.addEventListener("changed_name", (event) => {
         DOM.config_name.innerText = event.detail;
     });
 
-    view_container.addEventListener("import_ldap_user", async (event) => {
+    DOM.sub_view.addEventListener("import_ldap_user", async (event) => {
         DOM.loading_screen.show("Importing users from LDAP...");
         let settings = Config_Settings.collect();
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db")
-                continue;
             if (!await ov_DB.user_ldap_import(event.detail.host, event.detail.base,
                 settings.id, event.detail.user, event.detail.password, websocket)) {
                 errors.push(websocket);
@@ -322,7 +316,7 @@ async function save(new_config, type, persist) {
         DOM.loading_screen.show("Saving " + type + " " + new_config.id + " on server(s)...");
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (websocket.port !== "db" || websocket.server_name !== ov_Websockets.prime_websocket.server_name)
+            if (websocket.server_name !== ov_Websockets.prime_websocket.server_name)
                 continue;
 
             //save layout
@@ -391,13 +385,13 @@ export async function render_project(project, domain, id, domain_id, page) {
 
     DOM.sub_view_nav.addEventListener("change", () => {
         for (let ws of ov_Websockets.list) {
-            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
+            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
         }
         DOM.sub_view.className = DOM.sub_view_nav.value;
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();
         else if (DOM.sub_view_nav.value === "layout") {
-            if(!first_load){
+            if (!first_load) {
                 let proj_config = collect_config();
                 let dom_config = collect_config({ id: proj_config.domain });
                 let loops = { ...proj_config.loops, ...dom_config.loops };
@@ -407,7 +401,10 @@ export async function render_project(project, domain, id, domain_id, page) {
             let proj_config = collect_config();
             let dom_config = collect_config({ id: proj_config.domain });
             let roles = { ...proj_config.roles, ...dom_config.roles };
-            Config_SIP.render(proj_config.loops, roles);
+            for (let loop_id of Object.keys(dom_config.loops)) 
+                dom_config.loops[loop_id].global = true;
+            let loops = { ...proj_config.loops, ...dom_config.loops };
+            Config_SIP.render(loops, roles, true);
         } else if (DOM.sub_view_nav.value === "recorder" && RECORDER) {
             let proj_config = collect_config();
             Config_Recorder.render(proj_config.loops);
@@ -421,7 +418,7 @@ export async function render_project(project, domain, id, domain_id, page) {
     Config_Layout.disable_settings(false);
     let roles = { ...project.roles, ...domain.roles };
     if (SIP)
-        Config_SIP.render(project.loops, roles);
+        Config_SIP.render(loops, roles, true);
     if (RECORDER)
         Config_Recorder.render(project.loops);
 
@@ -431,7 +428,7 @@ export async function render_project(project, domain, id, domain_id, page) {
         DOM.sub_view_nav.value = "settings";
 
     first_load = false;
-    
+
 }
 
 export async function render_domain(domain, id, page) {
@@ -444,7 +441,7 @@ export async function render_domain(domain, id, page) {
     DOM.sub_view_nav.addEventListener("change", () => {
         DOM.sub_view.className = DOM.sub_view_nav.value;
         for (let ws of ov_Websockets.list) {
-            ov_Web_Storage.add_anchor_to_session(ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
+            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
         }
         if (DOM.sub_view_nav.value === "rbac")
             Config_RBAC.refresh();

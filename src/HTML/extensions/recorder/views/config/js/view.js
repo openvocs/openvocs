@@ -53,7 +53,7 @@ export function init(view_id) {
     DOM.start_recording.addEventListener("click", async () => {
         if (DOM.start_recording.classList.contains("recording")) {
             for (let ws of ov_Websockets.list) {
-                if (ws.port === "admin" && ws.record === true) {
+                if (ws.record === true) {
                     let loop = get_current_loop();
                     if (await ov_Recorder.stop_record(loop.id, ws)) {
                         loop.active = false;
@@ -68,7 +68,7 @@ export function init(view_id) {
             }
         } else {
             for (let ws of ov_Websockets.list) {
-                if (ws.port === "admin" && ws.record === true) {
+                if (ws.record === true) {
                     let loop = get_current_loop();
                     if (await ov_Recorder.start_record(loop.id, ws)) {
                         loop.active = true;
@@ -86,7 +86,7 @@ export function init(view_id) {
 
     // DOM.stop_recording.addEventListener("click", () => {
     //     for (let ws of ov_Websockets.list) {
-    //         if (ws.port === "admin" && ws.record === true) {
+    //         if (ws.record === true) {
     //             let loop = get_current_loop();
     //             ov_Recorder.stop_record(loop.id, ws);
     //             loop.active = false;
@@ -106,7 +106,7 @@ export function init(view_id) {
         let start = Math.floor(new Date(DOM.playback_search_start.value).getTime() / 1000);
         let finish = Math.floor(new Date(DOM.playback_search_stop.value).getTime() / 1000);
         for (let ws of ov_Websockets.list) {
-            if (ws.port === "vocs" && ws.record === true) {
+            if (ws.record === true) {
                 let loop = get_current_loop();
                 let recorded_loops = await ov_Recorder.get_recordings(loop.id, start, finish, ws);
                 DOM.playback_list.draw_recordings(recorded_loops, ws.server_url + "audio/");

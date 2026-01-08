@@ -45,7 +45,6 @@
 #include <ov_core/ov_socket_json.h>
 
 #include "../include/ov_mc_sip_msg.h"
-#include "../include/ov_vocs_events.h"
 #include "../include/ov_vocs_loop.h"
 #include <ov_base/ov_error_codes.h>
 

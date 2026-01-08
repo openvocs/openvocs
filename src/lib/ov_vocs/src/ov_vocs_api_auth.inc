@@ -347,6 +347,35 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool check_ldap_enabled(ov_vocs *vocs,
+                                int socket,
+                                const ov_event_parameter *params,
+                                ov_json_value *input) {
+
+    bool result = false;
+    ov_json_value *val = NULL;
+
+    UNUSED(params);
+
+    if (!vocs || !input || socket < 0) goto error;
+
+    if (vocs->config.ldap.enable) {
+        val = ov_json_true();
+    } else {
+        val = ov_json_false();
+    }
+
+    result = send_success_response(vocs, input, socket, &val);
+    return true;
+
+error:
+    ov_json_value_free(val);
+    ov_json_value_free(input);
+    return result;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool enable_api_auth(ov_vocs *vocs){
 
 	if (!set_function(vocs->io, OV_EVENT_API_LOGOUT, client_logout)) goto error;
@@ -357,6 +386,9 @@ static bool enable_api_auth(ov_vocs *vocs){
         goto error;
 
     if (!set_function(vocs->io, OV_EVENT_API_UPDATE_LOGIN, update_client_login))
+        goto error;
+
+    if (!set_function(vocs->io, "is_ldap_enabled", check_ldap_enabled))
         goto error;
 
     return true;
