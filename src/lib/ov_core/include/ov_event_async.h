@@ -37,12 +37,12 @@ typedef struct ov_event_async_store ov_event_async_store;
 
 typedef struct {
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    uint64_t threadlock_timeout_usec;
-    uint64_t invalidate_check_interval_usec;
+  uint64_t threadlock_timeout_usec;
+  uint64_t invalidate_check_interval_usec;
 
-    size_t cache;
+  size_t cache;
 
 } ov_event_async_store_config;
 
@@ -52,36 +52,34 @@ typedef struct ov_event_async_data ov_event_async_data;
 
 struct ov_event_async_data {
 
-    /* connection socket of the EVENT in value */
-    int socket;
+  /* connection socket of the EVENT in value */
+  int socket;
 
-    /* event message */
-    ov_json_value *value;
+  /* event message */
+  ov_json_value *value;
 
-    /* optional send parameter */
-    ov_event_parameter params;
+  /* optional send parameter */
+  ov_event_parameter params;
 
-    /* optional timedout callback data */
+  /* optional timedout callback data */
 
-    struct {
+  struct {
 
-        void *userdata;
-        void (*callback)(void *userdata, ov_event_async_data data);
+    void *userdata;
+    void (*callback)(void *userdata, ov_event_async_data data);
 
-    } timedout;
+  } timedout;
 
-    /* optional callback data */
+  /* optional callback data */
 
-    struct {
+  struct {
 
-        void *userdata;
-        void (*callback)(void *userdata,
-                         int socket,
-                         const ov_event_parameter *params,
-                         ov_json_value *input,
-                         ov_json_value *result);
+    void *userdata;
+    void (*callback)(void *userdata, int socket,
+                     const ov_event_parameter *params, ov_json_value *input,
+                     ov_json_value *result);
 
-    } callback;
+  } callback;
 };
 
 /*
@@ -92,8 +90,8 @@ struct ov_event_async_data {
  *      ------------------------------------------------------------------------
  */
 
-ov_event_async_store *ov_event_async_store_create(
-    ov_event_async_store_config config);
+ov_event_async_store *
+ov_event_async_store_create(ov_event_async_store_config config);
 
 ov_event_async_store *ov_event_async_store_free(ov_event_async_store *self);
 
@@ -123,10 +121,8 @@ void ov_event_async_data_clear(ov_event_async_data *data);
  *  NOTE transfer of the json value to the store, do NOT free a stored JSON
  *  pointer!!!
  */
-bool ov_event_async_set(ov_event_async_store *store,
-                        const char *id,
-                        ov_event_async_data data,
-                        uint64_t max_lifetime_usec);
+bool ov_event_async_set(ov_event_async_store *store, const char *id,
+                        ov_event_async_data data, uint64_t max_lifetime_usec);
 
 /*---------------------------------------------------------------------------*/
 

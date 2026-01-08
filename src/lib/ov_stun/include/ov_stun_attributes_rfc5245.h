@@ -81,47 +81,36 @@ size_t ov_stun_ice_controlling_encoding_length();
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_ice_priority_encode(uint8_t *buffer,
-                                 size_t length,
-                                 uint8_t **next,
+bool ov_stun_ice_priority_encode(uint8_t *buffer, size_t length, uint8_t **next,
                                  uint32_t priority);
 
-bool ov_stun_ice_priority_decode(const uint8_t *buffer,
-                                 size_t length,
+bool ov_stun_ice_priority_decode(const uint8_t *buffer, size_t length,
                                  uint32_t *priority);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_ice_use_candidate_encode(uint8_t *buffer,
-                                      size_t length,
+bool ov_stun_ice_use_candidate_encode(uint8_t *buffer, size_t length,
                                       uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_ice_controlled_encode(uint8_t *buffer,
-                                   size_t length,
-                                   uint8_t **next,
-                                   uint64_t number);
+bool ov_stun_ice_controlled_encode(uint8_t *buffer, size_t length,
+                                   uint8_t **next, uint64_t number);
 
-bool ov_stun_ice_controlled_decode(const uint8_t *buffer,
-                                   size_t length,
+bool ov_stun_ice_controlled_decode(const uint8_t *buffer, size_t length,
                                    uint64_t *number);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_ice_controlling_encode(uint8_t *buffer,
-                                    size_t length,
-                                    uint8_t **next,
-                                    uint64_t number);
+bool ov_stun_ice_controlling_encode(uint8_t *buffer, size_t length,
+                                    uint8_t **next, uint64_t number);
 
-bool ov_stun_ice_controlling_decode(const uint8_t *buffer,
-                                    size_t length,
+bool ov_stun_ice_controlling_decode(const uint8_t *buffer, size_t length,
                                     uint64_t *number);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_error_code_set_ice_role_conflict(uint8_t *buffer,
-                                              size_t length,
+bool ov_stun_error_code_set_ice_role_conflict(uint8_t *buffer, size_t length,
                                               uint8_t **next);
 
 #endif /* ov_stun_attributes_rfc5245_h */

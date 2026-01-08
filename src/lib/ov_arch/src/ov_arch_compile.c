@@ -40,73 +40,66 @@
 
 #include <execinfo.h>
 
-static char *frame_to_string(char *target,
-                             const size_t max_bytes,
-                             void const *address,
-                             char const *symbol) {
+static char *frame_to_string(char *target, const size_t max_bytes,
+                             void const *address, char const *symbol) {
 
-    if (0 == target) {
-        abort();
-    }
+  if (0 == target) {
+    abort();
+  }
 
-    if (0 == symbol) {
-        symbol = "UNKNOWN";
-    }
+  if (0 == symbol) {
+    symbol = "UNKNOWN";
+  }
 
-    snprintf(target, max_bytes, "%s (%p)", symbol, address);
-    // just to be sure...
-    target[max_bytes - 1] = 0;
+  snprintf(target, max_bytes, "%s (%p)", symbol, address);
+  // just to be sure...
+  target[max_bytes - 1] = 0;
 
-    return target;
+  return target;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static char *backtrace_to_string(void const **addresses,
-                                 char const *const *symbols,
-                                 size_t num) {
+                                 char const *const *symbols, size_t num) {
 
-    char *bt = calloc(num + 1, MAX_FRAME_LENGTH);
-    char *bt_copy = calloc(num + 1, MAX_FRAME_LENGTH);
+  char *bt = calloc(num + 1, MAX_FRAME_LENGTH);
+  char *bt_copy = calloc(num + 1, MAX_FRAME_LENGTH);
 
-    char frame[MAX_FRAME_LENGTH] = {0};
+  char frame[MAX_FRAME_LENGTH] = {0};
 
-    const size_t max_len_bytes = (num + 1) * MAX_FRAME_LENGTH;
+  const size_t max_len_bytes = (num + 1) * MAX_FRAME_LENGTH;
 
-    for (size_t i = 0; i < num; ++i) {
+  for (size_t i = 0; i < num; ++i) {
 
-        snprintf(
-            bt,
-            max_len_bytes,
-            "%s\n%s",
-            bt_copy,
-            frame_to_string(frame, MAX_FRAME_LENGTH, addresses[i], symbols[i]));
+    snprintf(
+        bt, max_len_bytes, "%s\n%s", bt_copy,
+        frame_to_string(frame, MAX_FRAME_LENGTH, addresses[i], symbols[i]));
 
-        strcpy(bt_copy, bt);
-    }
+    strcpy(bt_copy, bt);
+  }
 
-    free(bt_copy);
+  free(bt_copy);
 
-    return bt;
+  return bt;
 }
 
 /*----------------------------------------------------------------------------*/
 
 char *ov_arch_compile_backtrace(size_t max_frames) {
 
-    void **addresses = calloc(1, sizeof(void *) * max_frames);
+  void **addresses = calloc(1, sizeof(void *) * max_frames);
 
-    size_t actual_no_frames = backtrace(addresses, max_frames);
-    char **symbols = backtrace_symbols(addresses, actual_no_frames);
+  size_t actual_no_frames = backtrace(addresses, max_frames);
+  char **symbols = backtrace_symbols(addresses, actual_no_frames);
 
-    char *backtrace = backtrace_to_string((void const **)addresses,
-                                          (char const *const *)symbols,
-                                          actual_no_frames);
+  char *backtrace = backtrace_to_string(
+      (void const **)addresses, (char const *const *)symbols, actual_no_frames);
 
-    free(symbols);
-    free(addresses);
+  free(symbols);
+  free(addresses);
 
-    return backtrace;
+  return backtrace;
 }
 
 /*****************************************************************************
@@ -117,7 +110,7 @@ char *ov_arch_compile_backtrace(size_t max_frames) {
 
 char *ov_arch_compile_backtrace() {
 
-    return strdup("=== Backtrace not supported ===");
+  return strdup("=== Backtrace not supported ===");
 }
 
 #endif

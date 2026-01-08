@@ -42,9 +42,9 @@
 
 typedef struct {
 
-    uint8_t opcode;
-    uint8_t args[3];
-    // char desc[255];
+  uint8_t opcode;
+  uint8_t args[3];
+  // char desc[255];
 
 } ov_vm_instr;
 
@@ -52,19 +52,19 @@ typedef struct {
 
 typedef enum {
 
-    OP_END = 0,
-    OP_NOP = 0xfd,
-    OP_INVALID = 0xfe,
+  OP_END = 0,
+  OP_NOP = 0xfd,
+  OP_INVALID = 0xfe,
 
 } ov_vm_reserved_opcodes;
 
 /*----------------------------------------------------------------------------*/
 
 typedef enum {
-    OV_VM_PROG_OK = 0,
-    OV_VM_PROG_ABORTING,
-    OV_VM_PROG_FAILED_TO_ABORT,
-    OV_VM_PROG_INVALID,
+  OV_VM_PROG_OK = 0,
+  OV_VM_PROG_ABORTING,
+  OV_VM_PROG_FAILED_TO_ABORT,
+  OV_VM_PROG_INVALID,
 } ov_vm_prog_status;
 
 /*----------------------------------------------------------------------------*/
@@ -121,12 +121,12 @@ void ov_vm_prog_propagate_program_counter(ov_vm_prog *prog);
 
 typedef enum {
 
-    OC_ERROR = -1,
-    OC_NEXT,
-    OC_FINISHED,
-    OC_WAIT_AND_NEXT,
-    OC_WAIT_AND_REPEAT, // Wait, then repeat step (NOT allowed in reversed
-                        // order)
+  OC_ERROR = -1,
+  OC_NEXT,
+  OC_FINISHED,
+  OC_WAIT_AND_NEXT,
+  OC_WAIT_AND_REPEAT, // Wait, then repeat step (NOT allowed in reversed
+                      // order)
 } ov_vm_retval;
 
 bool ov_vm_prog_set_last_instr_retval(ov_vm_prog *prog, ov_vm_retval retval);

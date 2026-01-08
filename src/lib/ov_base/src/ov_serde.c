@@ -33,27 +33,26 @@
 
 static bool is_valid(ov_serde *self) {
 
-    if (0 == self) {
-        ov_log_error("No serde object (0 pointer)");
-        return false;
-    } else {
-        return true;
-    }
+  if (0 == self) {
+    ov_log_error("No serde object (0 pointer)");
+    return false;
+  } else {
+    return true;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_serde_state ov_serde_add_raw(ov_serde *self,
-                                ov_buffer const *raw,
+ov_serde_state ov_serde_add_raw(ov_serde *self, ov_buffer const *raw,
                                 ov_result *res) {
 
-    if (!is_valid(self)) {
-        ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "No serde object");
-        return OV_SERDE_ERROR;
-    } else {
-        OV_ASSERT(0 != self->add_raw);
-        return self->add_raw(self, raw, res);
-    }
+  if (!is_valid(self)) {
+    ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "No serde object");
+    return OV_SERDE_ERROR;
+  } else {
+    OV_ASSERT(0 != self->add_raw);
+    return self->add_raw(self, raw, res);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -62,69 +61,67 @@ ov_serde_data OV_SERDE_DATA_NO_MORE = {0};
 
 ov_serde_data ov_serde_pop_datum(ov_serde *self, ov_result *res) {
 
-    if (!is_valid(self)) {
-        ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "No Serde instance");
-        return (ov_serde_data){0};
-    } else {
-        OV_ASSERT(0 != self->pop_datum);
-        return self->pop_datum(self, res);
-    }
+  if (!is_valid(self)) {
+    ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "No Serde instance");
+    return (ov_serde_data){0};
+  } else {
+    OV_ASSERT(0 != self->pop_datum);
+    return self->pop_datum(self, res);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_serde_clear_buffer(ov_serde *self) {
 
-    if (!is_valid(self)) {
-        return false;
-    } else if (0 == self->clear_buffer) {
-        ov_log_warning("serde object does not provide 'clear_buffer'");
-        return true;
-    } else {
-        return self->clear_buffer(self);
-    }
+  if (!is_valid(self)) {
+    return false;
+  } else if (0 == self->clear_buffer) {
+    ov_log_warning("serde object does not provide 'clear_buffer'");
+    return true;
+  } else {
+    return self->clear_buffer(self);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool is_fh_valid(int fh) {
 
-    if (0 > fh) {
-        ov_log_error("File handle invalid");
-        return false;
-    } else {
-        return true;
-    }
+  if (0 > fh) {
+    ov_log_error("File handle invalid");
+    return false;
+  } else {
+    return true;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_serde_serialize(ov_serde *self,
-                        int fh,
-                        ov_serde_data data,
+bool ov_serde_serialize(ov_serde *self, int fh, ov_serde_data data,
                         ov_result *res) {
 
-    if ((!is_valid(self)) || (!is_fh_valid(fh))) {
-        ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "No serde object");
-        return false;
-    } else if (0 == self->serialize) {
-        ov_log_error("serde object does not provide 'serialize'");
-        return false;
-    } else {
-        return self->serialize(self, fh, data, res);
-    }
+  if ((!is_valid(self)) || (!is_fh_valid(fh))) {
+    ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "No serde object");
+    return false;
+  } else if (0 == self->serialize) {
+    ov_log_error("serde object does not provide 'serialize'");
+    return false;
+  } else {
+    return self->serialize(self, fh, data, res);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_serde *ov_serde_free(ov_serde *self) {
 
-    if (!is_valid(self)) {
-        return false;
-    } else {
-        OV_ASSERT(0 != self->free);
-        return self->free(self);
-    }
+  if (!is_valid(self)) {
+    return false;
+  } else {
+    OV_ASSERT(0 != self->free);
+    return self->free(self);
+  }
 }
 
 /*****************************************************************************
@@ -133,142 +130,140 @@ ov_serde *ov_serde_free(ov_serde *self) {
 
 static size_t fsize(FILE *s) {
 
-    if (0 == s) {
+  if (0 == s) {
 
-        ov_log_error("Invalid stream: 0 pointer");
-        return 0;
+    ov_log_error("Invalid stream: 0 pointer");
+    return 0;
 
-    } else if (0 == fseek(s, 0, SEEK_END)) {
+  } else if (0 == fseek(s, 0, SEEK_END)) {
 
-        int len = ftell(s);
-        rewind(s);
+    int len = ftell(s);
+    rewind(s);
 
-        if (0 > len) {
+    if (0 > len) {
 
-            ov_log_error("ftell failed: %s", strerror(errno));
-            return 0;
-
-        } else {
-
-            ov_log_info("File is %il bytes long", len);
-            return (size_t)len;
-        }
+      ov_log_error("ftell failed: %s", strerror(errno));
+      return 0;
 
     } else {
 
-        ov_log_error("Seek failed");
-        return 0;
+      ov_log_info("File is %il bytes long", len);
+      return (size_t)len;
     }
+
+  } else {
+
+    ov_log_error("Seek failed");
+    return 0;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static char *alloc_for_string_of_length(size_t bytes) {
 
-    if (0 == bytes) {
-        return 0;
-    } else {
-        return malloc(bytes + 1);
-    }
+  if (0 == bytes) {
+    return 0;
+  } else {
+    return malloc(bytes + 1);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool file_to_buffer(FILE *s, char *buf, size_t buflen_bytes) {
 
-    if ((0 == s) || (0 == buf) || (0 == buflen_bytes)) {
-        ov_log_error("Invalid argument");
-        return false;
+  if ((0 == s) || (0 == buf) || (0 == buflen_bytes)) {
+    ov_log_error("Invalid argument");
+    return false;
 
-    } else if (0 == fread(buf, buflen_bytes, 1, s)) {
+  } else if (0 == fread(buf, buflen_bytes, 1, s)) {
 
-        ov_log_error("Could not read from file");
-        return false;
+    ov_log_error("Could not read from file");
+    return false;
 
-    } else {
+  } else {
 
-        return true;
-    }
+    return true;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static char *string_from_file(FILE *in) {
 
-    size_t nbytes = fsize(in);
-    char *buffer = alloc_for_string_of_length(nbytes);
+  size_t nbytes = fsize(in);
+  char *buffer = alloc_for_string_of_length(nbytes);
 
-    if (!file_to_buffer(in, buffer, nbytes)) {
+  if (!file_to_buffer(in, buffer, nbytes)) {
 
-        ov_free(buffer);
-        return 0;
+    ov_free(buffer);
+    return 0;
 
-    } else {
+  } else {
 
-        buffer[nbytes] = 0;
-        return buffer;
-    }
+    buffer[nbytes] = 0;
+    return buffer;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int fh_from_stream(FILE *out) {
 
-    if (0 == out) {
+  if (0 == out) {
 
-        return -1;
+    return -1;
 
-    } else {
+  } else {
 
-        return fileno(out);
-    }
+    return fileno(out);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static char *to_string_via_tmpfile(ov_serde *self,
-                                   FILE *out,
-                                   ov_serde_data data,
-                                   ov_result *res) {
-    int fh = fh_from_stream(out);
+static char *to_string_via_tmpfile(ov_serde *self, FILE *out,
+                                   ov_serde_data data, ov_result *res) {
+  int fh = fh_from_stream(out);
 
-    if (0 > fh) {
+  if (0 > fh) {
 
-        ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "Invalid stream");
-        return 0;
+    ov_result_set(res, OV_ERROR_INTERNAL_SERVER, "Invalid stream");
+    return 0;
 
-    } else if (!ov_serde_serialize(self, fh, data, res)) {
+  } else if (!ov_serde_serialize(self, fh, data, res)) {
 
-        return 0;
+    return 0;
 
-    } else {
+  } else {
 
-        return string_from_file(out);
-    }
+    return string_from_file(out);
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 char *ov_serde_to_string(ov_serde *self, ov_serde_data data, ov_result *res) {
-    // A really crude hack - but everything else -
-    // using memfd_create(2) (does not work),
-    // serializing via FILE* instead of a file handle (renders the problem that
-    // when serializing to a socket - which is the most important usecase of
-    // this function - required first dumping the serialized string to a memory
-    // area, then writing the memory area to the socket)
-    // has serious flaws.
-    FILE *tfile = tmpfile();
+  // A really crude hack - but everything else -
+  // using memfd_create(2) (does not work),
+  // serializing via FILE* instead of a file handle (renders the problem that
+  // when serializing to a socket - which is the most important usecase of
+  // this function - required first dumping the serialized string to a memory
+  // area, then writing the memory area to the socket)
+  // has serious flaws.
+  FILE *tfile = tmpfile();
 
-    if (0 != tfile) {
+  if (0 != tfile) {
 
-        char *result = to_string_via_tmpfile(self, tfile, data, res);
-        fclose(tfile);
-        return result;
+    char *result = to_string_via_tmpfile(self, tfile, data, res);
+    fclose(tfile);
+    return result;
 
-    } else {
+  } else {
 
-        return 0;
-    }
+    return 0;
+  }
 }
 
 /*----------------------------------------------------------------------------*/

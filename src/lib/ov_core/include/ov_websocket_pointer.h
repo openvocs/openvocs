@@ -130,11 +130,11 @@
 
 typedef enum {
 
-    OV_WEBSOCKET_PARSER_ABSENT = -3,  // not present e.g. when searching a key
-    OV_WEBSOCKET_PARSER_OOB = -2,     // Out of Bound e.g. for array
-    OV_WEBSOCKET_PARSER_ERROR = -1,   // processing error or mismatch
-    OV_WEBSOCKET_PARSER_PROGRESS = 0, // still matching, need more input data
-    OV_WEBSOCKET_PARSER_SUCCESS = 1   // content match
+  OV_WEBSOCKET_PARSER_ABSENT = -3,  // not present e.g. when searching a key
+  OV_WEBSOCKET_PARSER_OOB = -2,     // Out of Bound e.g. for array
+  OV_WEBSOCKET_PARSER_ERROR = -1,   // processing error or mismatch
+  OV_WEBSOCKET_PARSER_PROGRESS = 0, // still matching, need more input data
+  OV_WEBSOCKET_PARSER_SUCCESS = 1   // content match
 
 } ov_websocket_parser_state;
 
@@ -142,11 +142,11 @@ typedef enum {
 
 typedef enum {
 
-    OV_WEBSOCKET_FRAGMENTATION_ERROR = -1,   // input error
-    OV_WEBSOCKET_FRAGMENTATION_NONE = 0,     // not fragmented
-    OV_WEBSOCKET_FRAGMENTATION_START = 1,    // start frame
-    OV_WEBSOCKET_FRAGMENTATION_CONTINUE = 2, // continue frame
-    OV_WEBSOCKET_FRAGMENTATION_LAST = 3      // last frame
+  OV_WEBSOCKET_FRAGMENTATION_ERROR = -1,   // input error
+  OV_WEBSOCKET_FRAGMENTATION_NONE = 0,     // not fragmented
+  OV_WEBSOCKET_FRAGMENTATION_START = 1,    // start frame
+  OV_WEBSOCKET_FRAGMENTATION_CONTINUE = 2, // continue frame
+  OV_WEBSOCKET_FRAGMENTATION_LAST = 3      // last frame
 
 } ov_websocket_fragmentation_state;
 
@@ -154,12 +154,12 @@ typedef enum {
 
 typedef enum {
 
-    OV_WEBSOCKET_OPCODE_CONTINUATION = 0x00,
-    OV_WEBSOCKET_OPCODE_TEXT = 0x01,
-    OV_WEBSOCKET_OPCODE_BINARY = 0x02,
-    OV_WEBSOCKET_OPCODE_CLOSE = 0x08,
-    OV_WEBSOCKET_OPCODE_PING = 0x09,
-    OV_WEBSOCKET_OPCODE_PONG = 0x0A
+  OV_WEBSOCKET_OPCODE_CONTINUATION = 0x00,
+  OV_WEBSOCKET_OPCODE_TEXT = 0x01,
+  OV_WEBSOCKET_OPCODE_BINARY = 0x02,
+  OV_WEBSOCKET_OPCODE_CLOSE = 0x08,
+  OV_WEBSOCKET_OPCODE_PING = 0x09,
+  OV_WEBSOCKET_OPCODE_PONG = 0x0A
 
 } ov_websocket_opcode;
 
@@ -167,12 +167,12 @@ typedef enum {
 
 typedef struct ov_websocket_frame_config {
 
-    struct {
+  struct {
 
-        size_t default_size;      // default buffer size
-        size_t max_bytes_recache; // max buffer size to recache
+    size_t default_size;      // default buffer size
+    size_t max_bytes_recache; // max buffer size to recache
 
-    } buffer;
+  } buffer;
 
 } ov_websocket_frame_config;
 
@@ -180,17 +180,17 @@ typedef struct ov_websocket_frame_config {
 
 typedef struct {
 
-    uint16_t magic_byte;
-    ov_websocket_frame_config config;
+  uint16_t magic_byte;
+  ov_websocket_frame_config config;
 
-    ov_websocket_opcode opcode;
-    ov_websocket_fragmentation_state state;
+  ov_websocket_opcode opcode;
+  ov_websocket_fragmentation_state state;
 
-    const uint8_t *mask;
+  const uint8_t *mask;
 
-    ov_memory_pointer content;
+  ov_memory_pointer content;
 
-    ov_buffer *buffer;
+  ov_buffer *buffer;
 
 } ov_websocket_frame;
 
@@ -288,10 +288,8 @@ bool ov_websocket_process_handshake_request(const ov_http_message *msg,
 
     @returns true if the data was set to the frame (frame will be reparsed)
 */
-bool ov_websocket_set_data(ov_websocket_frame *frame,
-                           const uint8_t *data,
-                           size_t length,
-                           bool mask);
+bool ov_websocket_set_data(ov_websocket_frame *frame, const uint8_t *data,
+                           size_t length, bool mask);
 
 /*----------------------------------------------------------------------------*/
 
@@ -348,23 +346,21 @@ bool ov_websocket_generate_secure_websocket_key(uint8_t *buffer, size_t size);
 
     NOTE *result will be some allocated string and MUST be freed by the caller
 */
-bool ov_websocket_generate_secure_accept_key(const uint8_t *key,
-                                             size_t length,
-                                             uint8_t **result,
-                                             size_t *size);
+bool ov_websocket_generate_secure_accept_key(const uint8_t *key, size_t length,
+                                             uint8_t **result, size_t *size);
 
 /*----------------------------------------------------------------------------*/
 
-ov_websocket_frame_config ov_websocket_frame_config_from_json(
-    const ov_json_value *value);
-ov_json_value *ov_websocket_frame_config_to_json(
-    ov_websocket_frame_config config);
+ov_websocket_frame_config
+ov_websocket_frame_config_from_json(const ov_json_value *value);
+ov_json_value *
+ov_websocket_frame_config_to_json(ov_websocket_frame_config config);
 
 /*----------------------------------------------------------------------------*/
 
-ov_websocket_frame *ov_websocket_frame_pop(
-    ov_buffer **buffer,
-    const ov_websocket_frame_config *config,
-    ov_websocket_parser_state *state);
+ov_websocket_frame *
+ov_websocket_frame_pop(ov_buffer **buffer,
+                       const ov_websocket_frame_config *config,
+                       ov_websocket_parser_state *state);
 
 #endif /* ov_websocket_pointer_h */

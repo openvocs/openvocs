@@ -32,106 +32,106 @@
 
 static int test_OV_MIN() {
 
-    testrun(3 == OV_MIN(3, 4));
-    testrun(3 == OV_MIN(4, 3));
+  testrun(3 == OV_MIN(3, 4));
+  testrun(3 == OV_MIN(4, 3));
 
-    int x = 12;
-    int y = 43;
+  int x = 12;
+  int y = 43;
 
-    testrun(x == OV_MIN(x, y));
-    testrun(x == OV_MIN(y, x));
+  testrun(x == OV_MIN(x, y));
+  testrun(x == OV_MIN(y, x));
 
-    testrun(-4 == OV_MIN(-3, -4));
-    testrun(-4 == OV_MIN(-4, -3));
+  testrun(-4 == OV_MIN(-3, -4));
+  testrun(-4 == OV_MIN(-4, -3));
 
-    x = -12;
-    y = -43;
+  x = -12;
+  y = -43;
 
-    testrun(y == OV_MIN(x, y));
-    testrun(y == OV_MIN(y, x));
+  testrun(y == OV_MIN(x, y));
+  testrun(y == OV_MIN(y, x));
 
-    testrun(-4 == OV_MIN(3, -4));
-    testrun(-4 == OV_MIN(-4, 3));
+  testrun(-4 == OV_MIN(3, -4));
+  testrun(-4 == OV_MIN(-4, 3));
 
-    x = -12;
-    y = 43;
+  x = -12;
+  y = 43;
 
-    testrun(x == OV_MIN(x, y));
-    testrun(x == OV_MIN(y, x));
+  testrun(x == OV_MIN(x, y));
+  testrun(x == OV_MIN(y, x));
 
-    size_t x_st = 12;
-    size_t y_st = 43;
+  size_t x_st = 12;
+  size_t y_st = 43;
 
-    testrun(x_st == OV_MIN(x_st, y_st));
-    testrun(x_st == OV_MIN(y_st, x_st));
+  testrun(x_st == OV_MIN(x_st, y_st));
+  testrun(x_st == OV_MIN(y_st, x_st));
 
-    size_t x_st_saved = x_st;
+  size_t x_st_saved = x_st;
 
-    /* Result should be x_st incremented ONCE */
-    testrun(++x_st_saved == OV_MIN(++x_st, y_st));
+  /* Result should be x_st incremented ONCE */
+  testrun(++x_st_saved == OV_MIN(++x_st, y_st));
 
-    int x_saved = x;
+  int x_saved = x;
 
-    /* Result should be x_st incremented ONCE */
-    testrun(++x_saved == OV_MIN(y, ++x));
+  /* Result should be x_st incremented ONCE */
+  testrun(++x_saved == OV_MIN(y, ++x));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_OV_MAX() {
 
-    testrun(4 == OV_MAX(3, 4));
-    testrun(4 == OV_MAX(4, 3));
+  testrun(4 == OV_MAX(3, 4));
+  testrun(4 == OV_MAX(4, 3));
 
-    int x = 12;
-    int y = 43;
+  int x = 12;
+  int y = 43;
 
-    testrun(y == OV_MAX(x, y));
-    testrun(y == OV_MAX(y, x));
+  testrun(y == OV_MAX(x, y));
+  testrun(y == OV_MAX(y, x));
 
-    testrun(-3 == OV_MAX(-3, -4));
-    testrun(-3 == OV_MAX(-4, -3));
+  testrun(-3 == OV_MAX(-3, -4));
+  testrun(-3 == OV_MAX(-4, -3));
 
-    x = -12;
-    y = -43;
+  x = -12;
+  y = -43;
 
-    testrun(x == OV_MAX(x, y));
-    testrun(x == OV_MAX(y, x));
+  testrun(x == OV_MAX(x, y));
+  testrun(x == OV_MAX(y, x));
 
-    testrun(3 == OV_MAX(3, -4));
-    testrun(3 == OV_MAX(-4, 3));
+  testrun(3 == OV_MAX(3, -4));
+  testrun(3 == OV_MAX(-4, 3));
 
-    x = -12;
-    y = 43;
+  x = -12;
+  y = 43;
 
-    testrun(y == OV_MAX(x, y));
-    testrun(y == OV_MAX(y, x));
+  testrun(y == OV_MAX(x, y));
+  testrun(y == OV_MAX(y, x));
 
-    size_t x_st = 12;
-    size_t y_st = 43;
+  size_t x_st = 12;
+  size_t y_st = 43;
 
-    testrun(y_st == OV_MAX(x_st, y_st));
-    testrun(y_st == OV_MAX(y_st, x_st));
+  testrun(y_st == OV_MAX(x_st, y_st));
+  testrun(y_st == OV_MAX(y_st, x_st));
 
-    size_t y_st_saved = y_st;
+  size_t y_st_saved = y_st;
 
-    /* Result should be x_st incremented ONCE */
-    testrun(++y_st_saved == OV_MAX(++x_st, ++y_st));
+  /* Result should be x_st incremented ONCE */
+  testrun(++y_st_saved == OV_MAX(++x_st, ++y_st));
 
-    int y_saved = y;
+  int y_saved = y;
 
-    /* Result should be x_st incremented ONCE */
-    testrun(++y_saved == OV_MAX(++y, ++x));
+  /* Result should be x_st incremented ONCE */
+  testrun(++y_saved == OV_MAX(++y, ++x));
 
-    // Check with char type
-    signed char sc1 = 1;
-    signed char sc2 = 2;
+  // Check with char type
+  signed char sc1 = 1;
+  signed char sc2 = 2;
 
-    testrun(sc2 == OV_MAX(sc1, sc2));
+  testrun(sc2 == OV_MAX(sc1, sc2));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/

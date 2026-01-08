@@ -154,15 +154,14 @@ ov_json_value *ov_event_api_get_request(const ov_json_value *val);
 ov_json_value *ov_event_api_get_response(const ov_json_value *val);
 ov_json_value *ov_event_api_get_parameter(const ov_json_value *val);
 
-bool ov_event_api_add_error(ov_json_value *msg,
-                            uint64_t code,
+bool ov_event_api_add_error(ov_json_value *msg, uint64_t code,
                             const char *desc);
 
-bool ov_event_api_get_error_parameter(const ov_json_value *val,
-                                      uint64_t *code,
+bool ov_event_api_get_error_parameter(const ov_json_value *val, uint64_t *code,
                                       const char **desc);
 
 uint64_t ov_event_api_get_error_code(const ov_json_value *val);
+const char *ov_event_api_get_error_desc(const ov_json_value *val);
 
 bool ov_event_api_set_event(ov_json_value *val, const char *str);
 bool ov_event_api_set_uuid(ov_json_value *val, const char *str);
@@ -190,8 +189,7 @@ bool ov_event_api_set_current_timestamp(ov_json_value *val);
         @param version  (optional) version to be set
 
 */
-ov_json_value *ov_event_api_message_create(const char *name,
-                                           const char *uuid,
+ov_json_value *ov_event_api_message_create(const char *name, const char *uuid,
                                            double version);
 
 /*----------------------------------------------------------------------------*/

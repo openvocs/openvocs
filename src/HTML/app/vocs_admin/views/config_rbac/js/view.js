@@ -66,6 +66,8 @@ export function init(view_id) {
     });
 
     VIEW_ID = view_id;
+
+    DOM.graph.allow_highlighted_loops = ALLOW_HIGHLIGHTED_LOOPS;
 }
 
 export function render(domain_data, project_data) {

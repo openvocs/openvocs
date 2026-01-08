@@ -137,19 +137,19 @@ ov_json_value *ov_ice_proxy_vocs_msg_forward_stream(
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_ice_proxy_vocs_msg_candidate(
-    const char *session_uuid, const ov_ice_candidate_info *info);
+ov_json_value *
+ov_ice_proxy_vocs_msg_candidate(const char *session_uuid,
+                                const ov_ice_candidate_info *info);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_ice_proxy_vocs_msg_end_of_candidates(
-    const char *session_uuid);
+ov_json_value *
+ov_ice_proxy_vocs_msg_end_of_candidates(const char *session_uuid);
 
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_ice_proxy_vocs_msg_media(const char *session_id,
-                                           ov_media_type type,
-                                           const char *sdp);
+                                           ov_media_type type, const char *sdp);
 
 ov_json_value *ov_ice_proxy_vocs_msg_update_session(const char *uuid,
                                                     const char *session_uuid,
@@ -190,14 +190,13 @@ const char *ov_ice_proxy_vocs_msg_get_session_id(const ov_json_value *msg);
 
 /*----------------------------------------------------------------------------*/
 
-const char *ov_ice_proxy_vocs_msg_get_response_session_id(
-    const ov_json_value *msg);
+const char *
+ov_ice_proxy_vocs_msg_get_response_session_id(const ov_json_value *msg);
 
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_ice_proxy_vocs_msg_talk(const char *uuid,
-                                          const char *session_uuid,
-                                          bool on,
+                                          const char *session_uuid, bool on,
                                           ov_mc_loop_data data);
 
 /*----------------------------------------------------------------------------*/

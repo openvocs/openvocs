@@ -51,14 +51,14 @@ typedef struct ov_json_value ov_json_value;
 /*----------------------------------------------------------------------------*/
 
 typedef enum ov_json_types {
-    NOT_JSON = 0,
-    OV_JSON_OBJECT = 1,
-    OV_JSON_ARRAY = 2,
-    OV_JSON_STRING = 3,
-    OV_JSON_NUMBER = 4,
-    OV_JSON_NULL = 5,
-    OV_JSON_TRUE = 6,
-    OV_JSON_FALSE = 7
+  NOT_JSON = 0,
+  OV_JSON_OBJECT = 1,
+  OV_JSON_ARRAY = 2,
+  OV_JSON_STRING = 3,
+  OV_JSON_NUMBER = 4,
+  OV_JSON_NULL = 5,
+  OV_JSON_TRUE = 6,
+  OV_JSON_FALSE = 7
 
 } ov_json_t;
 
@@ -76,12 +76,12 @@ typedef enum ov_json_types {
 
 struct ov_json_value {
 
-    uint16_t magic_byte;
-    ov_json_t type;
-    ov_json_value *parent;
+  uint16_t magic_byte;
+  ov_json_t type;
+  ov_json_value *parent;
 
-    bool (*clear)(void *self);
-    void *(*free)(void *self);
+  bool (*clear)(void *self);
+  void *(*free)(void *self);
 };
 
 /*

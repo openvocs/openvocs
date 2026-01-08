@@ -90,9 +90,9 @@ typedef struct ov_sdp_description ov_sdp_description;
 
 typedef struct {
 
-    ov_node node;
-    const char *value; // standard value pointer
-    const char *key;   // only used in attributes
+  ov_node node;
+  const char *value; // standard value pointer
+  const char *key;   // only used in attributes
 
 } ov_sdp_list;
 
@@ -100,13 +100,13 @@ typedef struct {
 
 typedef struct {
 
-    ov_node node;
+  ov_node node;
 
-    uint64_t start;
-    uint64_t stop;
+  uint64_t start;
+  uint64_t stop;
 
-    ov_sdp_list *repeat;
-    ov_sdp_list *zone;
+  ov_sdp_list *repeat;
+  ov_sdp_list *zone;
 
 } ov_sdp_time;
 
@@ -114,11 +114,11 @@ typedef struct {
 
 typedef struct {
 
-    ov_node node;
+  ov_node node;
 
-    const char *nettype;
-    const char *addrtype;
-    const char *address;
+  const char *nettype;
+  const char *addrtype;
+  const char *address;
 
 } ov_sdp_connection;
 
@@ -126,83 +126,83 @@ typedef struct {
 
 struct ov_sdp_session {
 
-    /*
-     *      Implementation switches
-     */
+  /*
+   *      Implementation switches
+   */
 
-    uint16_t magic_byte;
-    uint16_t type;
+  uint16_t magic_byte;
+  uint16_t type;
 
-    /*
-     *      Mandatory elements
-     */
+  /*
+   *      Mandatory elements
+   */
 
-    uint8_t version;
+  uint8_t version;
+  const char *name;
+
+  struct {
+
     const char *name;
+    uint64_t id;
+    uint64_t version;
+    ov_sdp_connection connection;
 
-    struct {
+  } origin;
 
-        const char *name;
-        uint64_t id;
-        uint64_t version;
-        ov_sdp_connection connection;
+  ov_sdp_time *time;
 
-    } origin;
+  /*
+   *      Optional elements
+   */
 
-    ov_sdp_time *time;
+  const char *info;
+  const char *uri;
+  const char *key;
 
-    /*
-     *      Optional elements
-     */
+  ov_sdp_connection *connection;
 
-    const char *info;
-    const char *uri;
-    const char *key;
+  ov_sdp_list *email;
+  ov_sdp_list *phone;
 
-    ov_sdp_connection *connection;
+  ov_dict *bandwidth; // dict of char*:intptr_t
 
-    ov_sdp_list *email;
-    ov_sdp_list *phone;
-
-    ov_dict *bandwidth; // dict of char*:intptr_t
-
-    ov_sdp_list *attributes;
-    ov_sdp_description *description;
+  ov_sdp_list *attributes;
+  ov_sdp_description *description;
 };
 
 /*----------------------------------------------------------------------------*/
 
 struct ov_sdp_description {
 
-    ov_node node;
+  ov_node node;
 
-    /*
-     *      Mandatory elements
-     */
+  /*
+   *      Mandatory elements
+   */
 
-    struct {
+  struct {
 
-        const char *name;
-        const char *protocol;
+    const char *name;
+    const char *protocol;
 
-        uint16_t port;
-        uint16_t port2;
+    uint16_t port;
+    uint16_t port2;
 
-        ov_sdp_list *formats;
+    ov_sdp_list *formats;
 
-    } media;
+  } media;
 
-    /*
-     *      Optional elements
-     */
+  /*
+   *      Optional elements
+   */
 
-    const char *info;
-    const char *key;
+  const char *info;
+  const char *key;
 
-    ov_sdp_connection *connection;
+  ov_sdp_connection *connection;
 
-    ov_dict *bandwidth; // dict of char*:intptr_t
-    ov_sdp_list *attributes;
+  ov_dict *bandwidth; // dict of char*:intptr_t
+  ov_sdp_list *attributes;
 };
 
 /*

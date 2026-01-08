@@ -62,24 +62,24 @@ typedef struct ov_io_base_config ov_io_base_config;
 
 typedef struct ov_io_base_statistics {
 
-    uint64_t created_usec;
+  uint64_t created_usec;
 
-    ov_socket_transport type;
-    ov_socket_data remote;
+  ov_socket_transport type;
+  ov_socket_data remote;
 
-    struct {
+  struct {
 
-        uint64_t bytes;
-        uint64_t last_usec;
+    uint64_t bytes;
+    uint64_t last_usec;
 
-    } recv;
+  } recv;
 
-    struct {
+  struct {
 
-        uint64_t bytes;
-        uint64_t last_usec;
+    uint64_t bytes;
+    uint64_t last_usec;
 
-    } send;
+  } send;
 
 } ov_io_base_statistics;
 
@@ -87,25 +87,23 @@ typedef struct ov_io_base_statistics {
 
 typedef struct ov_io_base_listener_config {
 
-    ov_socket_configuration socket;
+  ov_socket_configuration socket;
 
-    struct {
+  struct {
 
-        void *userdata;
+    void *userdata;
 
-        bool (*accept)(void *userdata, int listener, int connection);
+    bool (*accept)(void *userdata, int listener, int connection);
 
-        /**
-         * @return true if data data in buffer was consumed, false if callback
-         * should be called again with same data
-         */
-        bool (*io)(void *userdata,
-                   int connection,
-                   const ov_memory_pointer buffer);
+    /**
+     * @return true if data data in buffer was consumed, false if callback
+     * should be called again with same data
+     */
+    bool (*io)(void *userdata, int connection, const ov_memory_pointer buffer);
 
-        void (*close)(void *userdata, int connection);
+    void (*close)(void *userdata, int connection);
 
-    } callback;
+  } callback;
 
 } ov_io_base_listener_config;
 
@@ -113,27 +111,27 @@ typedef struct ov_io_base_listener_config {
 
 typedef struct ov_io_base_connection_config {
 
-    ov_io_base_listener_config connection;
+  ov_io_base_listener_config connection;
 
-    uint64_t client_connect_trigger_usec;
+  uint64_t client_connect_trigger_usec;
+
+  struct {
+
+    /* SSL client data */
+
+    char domain[PATH_MAX]; // hostname to use in handshake
 
     struct {
 
-        /* SSL client data */
+      char file[PATH_MAX]; // path to CA verify file
+      char path[PATH_MAX]; // path to CAs to use
 
-        char domain[PATH_MAX]; // hostname to use in handshake
+    } ca;
 
-        struct {
+  } ssl;
 
-            char file[PATH_MAX]; // path to CA verify file
-            char path[PATH_MAX]; // path to CAs to use
-
-        } ca;
-
-    } ssl;
-
-    bool auto_reconnect;
-    void (*connected)(void *userdata, int socket, bool result);
+  bool auto_reconnect;
+  void (*connected)(void *userdata, int socket, bool result);
 
 } ov_io_base_connection_config;
 
@@ -141,62 +139,62 @@ typedef struct ov_io_base_connection_config {
 
 struct ov_io_base_config {
 
-    bool debug;
+  bool debug;
 
-    /* Switch off IO buffering and prevent double copies
-       Unfortunately, for compatibility, this flag needs to be off by default,
-       hence the weird semantics */
-    bool dont_buffer;
+  /* Switch off IO buffering and prevent double copies
+     Unfortunately, for compatibility, this flag needs to be off by default,
+     hence the weird semantics */
+  bool dont_buffer;
 
-    char name[OV_IO_BASE_NAME_MAX];
+  char name[OV_IO_BASE_NAME_MAX];
 
-    /* !!! LEVEL TRIGGERED EVENTLOOP ONLY !!! */
-    ov_event_loop *loop;
+  /* !!! LEVEL TRIGGERED EVENTLOOP ONLY !!! */
+  ov_event_loop *loop;
 
-    struct {
+  struct {
 
-        uint32_t max_sockets;
-        uint64_t max_send; // may be used to limit max send size
-        uint64_t thread_lock_timeout_usec;
+    uint32_t max_sockets;
+    uint64_t max_send; // may be used to limit max send size
+    uint64_t thread_lock_timeout_usec;
 
-    } limit;
+  } limit;
 
-    struct {
+  struct {
 
-        /*  Timeout checks will be done at ANY accept_to_io_timeout_usec
-         *  and timeout all connection with io_timeout_usec without input.
-         *
-         *  NOTE io_timeout_usec of 0 will NOT timeout ANY IDLE connection,
-         *  ONCE some initial data was received after accept_to_io_timeout_usec.
-         *
-         *  NOTE timeout resolution is implemented dependent on
-         *  accept_to_io_timeout_usec to use exactly ONE timer_fd for all
-         *  timeout checks.
-         *  (Exception: TLS client handshakes, which will run faster and use
-         *   some custom timer per connection during the handshake phase) */
+    /*  Timeout checks will be done at ANY accept_to_io_timeout_usec
+     *  and timeout all connection with io_timeout_usec without input.
+     *
+     *  NOTE io_timeout_usec of 0 will NOT timeout ANY IDLE connection,
+     *  ONCE some initial data was received after accept_to_io_timeout_usec.
+     *
+     *  NOTE timeout resolution is implemented dependent on
+     *  accept_to_io_timeout_usec to use exactly ONE timer_fd for all
+     *  timeout checks.
+     *  (Exception: TLS client handshakes, which will run faster and use
+     *   some custom timer per connection during the handshake phase) */
 
-        /*  Default IO timeout between IO messages
-         *  (may be 0 for no timeout) */
-        uint64_t io_timeout_usec;
+    /*  Default IO timeout between IO messages
+     *  (may be 0 for no timeout) */
+    uint64_t io_timeout_usec;
 
-        /*  Default IO timeout between ACCEPT and FIRST IO message
-         *  (0 => default timeout, NO timeout is not supported for accept) */
-        uint64_t accept_to_io_timeout_usec;
+    /*  Default IO timeout between ACCEPT and FIRST IO message
+     *  (0 => default timeout, NO timeout is not supported for accept) */
+    uint64_t accept_to_io_timeout_usec;
 
-        /*  Default reconnect interval, which will be executed in each
-         *  accept_to_io_timeout_usec interval, so the min resolution is
-         *  accept_to_io_timeout_usec! May run slower, but will be checked
-         *  ANY accept_to_io_timeout_usec. So it SHOULD be some multiple of
-         *  the accept timeout. */
-        uint64_t reconnect_interval_usec;
+    /*  Default reconnect interval, which will be executed in each
+     *  accept_to_io_timeout_usec interval, so the min resolution is
+     *  accept_to_io_timeout_usec! May run slower, but will be checked
+     *  ANY accept_to_io_timeout_usec. So it SHOULD be some multiple of
+     *  the accept timeout. */
+    uint64_t reconnect_interval_usec;
 
-    } timer;
+  } timer;
 
-    struct {
+  struct {
 
-        size_t capacity;
+    size_t capacity;
 
-    } cache;
+  } cache;
 };
 
 /*
@@ -345,8 +343,7 @@ ov_io_base_statistics ov_io_base_get_statistics(ov_io_base *self, int socket);
 
     @returns true, if some buffer was added to the send queue
 */
-bool ov_io_base_send(ov_io_base *self,
-                     int socket,
+bool ov_io_base_send(ov_io_base *self, int socket,
                      const ov_memory_pointer buffer);
 
 #endif /* ov_io_base_h */

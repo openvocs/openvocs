@@ -38,7 +38,7 @@ OV_FLAGS       =
 OV_LIBS        = $(OV_STATIC_LIBS)
 
 OV_LIBS       += -L$(OV_LIBDIR)
-OV_LIBS       += -l ov_base2
+OV_LIBS       += -l ov_base$(OV_EDITION)
 
 
 #-----------------------------------------------------------------------------

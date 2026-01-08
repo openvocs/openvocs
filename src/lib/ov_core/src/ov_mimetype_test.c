@@ -44,39 +44,39 @@
 
 int test_ov_mimetype_from_file_extension() {
 
-    char *request = "css";
-    char *expect = "text/css";
+  char *request = "css";
+  char *expect = "text/css";
 
-    const char *result =
-        ov_mimetype_from_file_extension(request, strlen(request));
-    testrun(result);
-    testrun(0 == strncmp(result, expect, strlen(expect)));
+  const char *result =
+      ov_mimetype_from_file_extension(request, strlen(request));
+  testrun(result);
+  testrun(0 == strncmp(result, expect, strlen(expect)));
 
-    request = "gif";
-    expect = "image/gif";
-    result = ov_mimetype_from_file_extension(request, strlen(request));
-    testrun(result);
-    testrun(0 == strncmp(result, expect, strlen(expect)));
+  request = "gif";
+  expect = "image/gif";
+  result = ov_mimetype_from_file_extension(request, strlen(request));
+  testrun(result);
+  testrun(0 == strncmp(result, expect, strlen(expect)));
 
-    request = "png";
-    expect = "image/png";
-    result = ov_mimetype_from_file_extension(request, strlen(request));
-    testrun(result);
-    testrun(0 == strncmp(result, expect, strlen(expect)));
+  request = "png";
+  expect = "image/png";
+  result = ov_mimetype_from_file_extension(request, strlen(request));
+  testrun(result);
+  testrun(0 == strncmp(result, expect, strlen(expect)));
 
-    request = "webm";
-    expect = "video/webm";
-    result = ov_mimetype_from_file_extension(request, strlen(request));
-    testrun(result);
-    testrun(0 == strncmp(result, expect, strlen(expect)));
+  request = "webm";
+  expect = "video/webm";
+  result = ov_mimetype_from_file_extension(request, strlen(request));
+  testrun(result);
+  testrun(0 == strncmp(result, expect, strlen(expect)));
 
-    request = "7z";
-    expect = "application/x-7z-compressed";
-    result = ov_mimetype_from_file_extension(request, strlen(request));
-    testrun(result);
-    testrun(0 == strncmp(result, expect, strlen(expect)));
+  request = "7z";
+  expect = "application/x-7z-compressed";
+  result = ov_mimetype_from_file_extension(request, strlen(request));
+  testrun(result);
+  testrun(0 == strncmp(result, expect, strlen(expect)));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -91,10 +91,10 @@ int test_ov_mimetype_from_file_extension() {
 
 int all_tests() {
 
-    testrun_init();
-    testrun_test(test_ov_mimetype_from_file_extension);
+  testrun_init();
+  testrun_test(test_ov_mimetype_from_file_extension);
 
-    return testrun_counter;
+  return testrun_counter;
 }
 
 /*

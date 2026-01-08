@@ -32,10 +32,10 @@
 
 #include <ov_base/ov_event_loop.h>
 
-#include "ov_io.h"
-#include "ov_http_pointer.h"
-#include "ov_websocket_pointer.h"
 #include "ov_event_io.h"
+#include "ov_http_pointer.h"
+#include "ov_io.h"
+#include "ov_websocket_pointer.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -45,34 +45,33 @@ typedef struct ov_io_web ov_io_web;
 
 typedef struct ov_io_web_config {
 
-    ov_event_loop *loop;
-    ov_io *io;
+  ov_event_loop *loop;
+  ov_io *io;
 
-    char name[PATH_MAX];
+  char name[PATH_MAX];
 
-    ov_http_message_config http_config;
-    ov_websocket_frame_config frame_config;
+  ov_http_message_config http_config;
+  ov_websocket_frame_config frame_config;
 
-    ov_socket_configuration socket;
+  ov_socket_configuration socket;
 
-    struct {
+  struct {
 
-        int sockets;
+    int sockets;
 
-    } limits;
+  } limits;
 
-    struct {
+  struct {
 
-        void *userdata;
-        bool (*accept)(void *userdata, int listener, int socket);
-        void (*close)(void *userdata, int socket);
+    void *userdata;
+    bool (*accept)(void *userdata, int listener, int socket);
+    void (*close)(void *userdata, int socket);
 
-        bool (*https)(void *userdata, int socket, ov_http_message *msg);
+    bool (*https)(void *userdata, int socket, ov_http_message *msg);
 
-    } callbacks;
+  } callbacks;
 
 } ov_io_web_config;
-
 
 /*
  *      ------------------------------------------------------------------------
@@ -122,8 +121,7 @@ bool ov_io_web_configure_websocket_callback(ov_io_web *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_io_web_configure_uri_event_io(ov_io_web *self,
-                                      const char *hostname,
+bool ov_io_web_configure_uri_event_io(ov_io_web *self, const char *hostname,
                                       const ov_event_io_config config);
 
 /*
@@ -134,11 +132,8 @@ bool ov_io_web_configure_uri_event_io(ov_io_web *self,
  *      ------------------------------------------------------------------------
  */
 
-bool ov_io_web_uri_file_path(ov_io_web *self,
-                             int socket,
-                             const ov_http_message *request,
-                             size_t length,
+bool ov_io_web_uri_file_path(ov_io_web *self, int socket,
+                             const ov_http_message *request, size_t length,
                              char *path);
-
 
 #endif /* ov_io_web_h */

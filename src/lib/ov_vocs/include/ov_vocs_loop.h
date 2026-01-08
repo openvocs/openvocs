@@ -59,10 +59,8 @@ ov_json_value *ov_vocs_loop_get_participants(ov_vocs_loop *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_loop_add_participant(ov_vocs_loop *self,
-                                  int socket,
-                                  const char *client,
-                                  const char *user,
+bool ov_vocs_loop_add_participant(ov_vocs_loop *self, int socket,
+                                  const char *client, const char *user,
                                   const char *role);
 
 /*----------------------------------------------------------------------------*/

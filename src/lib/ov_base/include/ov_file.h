@@ -51,12 +51,12 @@
 
 typedef enum {
 
-    OV_FILE_ERROR,        // general error (unspecific, no log)
-    OV_FILE_FAILURE,      // failure during processing (err log)
-    OV_FILE_NOT_FOUND,    // not found
-    OV_FILE_NO_ACCESS,    // no access
-    OV_FILE_MEMORY_ERROR, // (e.g. input to small, out of memory)
-    OV_FILE_SUCCESS
+  OV_FILE_ERROR,        // general error (unspecific, no log)
+  OV_FILE_FAILURE,      // failure during processing (err log)
+  OV_FILE_NOT_FOUND,    // not found
+  OV_FILE_NO_ACCESS,    // no access
+  OV_FILE_MEMORY_ERROR, // (e.g. input to small, out of memory)
+  OV_FILE_SUCCESS
 
 } ov_file_handle_state;
 
@@ -113,8 +113,7 @@ ssize_t ov_file_read_check_get_bytes(const char *restrict path);
 
         @return OV_FILE_SUCCESS if the full file was read.
 */
-ov_file_handle_state ov_file_read(const char *path,
-                                  uint8_t **buffer,
+ov_file_handle_state ov_file_read(const char *path, uint8_t **buffer,
                                   size_t *size);
 
 /*----------------------------------------------------------------------------*/
@@ -138,11 +137,8 @@ ov_file_handle_state ov_file_read(const char *path,
 
         @return OV_FILE_SUCCESS if the full file was read.
 */
-ov_file_handle_state ov_file_read_partial(const char *path,
-                                          uint8_t **buffer,
-                                          size_t *size,
-                                          size_t from,
-                                          size_t to,
+ov_file_handle_state ov_file_read_partial(const char *path, uint8_t **buffer,
+                                          size_t *size, size_t from, size_t to,
                                           size_t *all);
 
 /*----------------------------------------------------------------------------*/
@@ -157,10 +153,8 @@ ov_file_handle_state ov_file_read_partial(const char *path,
 
         @return OV_FILE_SUCCESS if the full file was written.
 */
-ov_file_handle_state ov_file_write(const char *path,
-                                   const uint8_t *buffer,
-                                   size_t size,
-                                   const char *mode);
+ov_file_handle_state ov_file_write(const char *path, const uint8_t *buffer,
+                                   size_t size, const char *mode);
 
 /******************************************************************************
  *                                Low-Level IO
@@ -168,10 +162,10 @@ ov_file_handle_state ov_file_write(const char *path,
 
 typedef enum {
 
-    OV_FILE_RAW,
-    OV_FILE_LITTLE_ENDIAN,
-    OV_FILE_BIG_ENDIAN,
-    OV_FILE_SWAP_BYTES
+  OV_FILE_RAW,
+  OV_FILE_LITTLE_ENDIAN,
+  OV_FILE_BIG_ENDIAN,
+  OV_FILE_SWAP_BYTES
 
 } ov_file_byteorder;
 
@@ -184,9 +178,7 @@ typedef enum {
  * number of read bytes.
  * @param byte_order
  */
-bool ov_file_get_16(uint16_t *out,
-                    uint8_t **rd_ptr,
-                    size_t *length,
+bool ov_file_get_16(uint16_t *out, uint8_t **rd_ptr, size_t *length,
                     ov_file_byteorder byte_order);
 
 /*----------------------------------------------------------------------------*/
@@ -200,9 +192,7 @@ bool ov_file_get_16(uint16_t *out,
  * number of read bytes.
  * @param byte_order
  */
-bool ov_file_get_32(uint32_t *out,
-                    uint8_t **rd_ptr,
-                    size_t *length,
+bool ov_file_get_32(uint32_t *out, uint8_t **rd_ptr, size_t *length,
                     ov_file_byteorder byte_order);
 
 /*----------------------------------------------------------------------------*/

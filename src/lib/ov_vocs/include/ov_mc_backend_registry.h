@@ -42,7 +42,7 @@ typedef struct ov_mc_backend_registry ov_mc_backend_registry;
 
 typedef struct ov_mc_backend_registry_config {
 
-    bool debug;
+  bool debug;
 
 } ov_mc_backend_registry_config;
 
@@ -50,8 +50,8 @@ typedef struct ov_mc_backend_registry_config {
 
 typedef struct ov_mc_backend_registry_count {
 
-    size_t mixers;
-    size_t used;
+  size_t mixers;
+  size_t used;
 
 } ov_mc_backend_registry_count;
 
@@ -63,10 +63,10 @@ typedef struct ov_mc_backend_registry_count {
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_backend_registry *ov_mc_backend_registry_create(
-    ov_mc_backend_registry_config config);
-ov_mc_backend_registry *ov_mc_backend_registry_free(
-    ov_mc_backend_registry *self);
+ov_mc_backend_registry *
+ov_mc_backend_registry_create(ov_mc_backend_registry_config config);
+ov_mc_backend_registry *
+ov_mc_backend_registry_free(ov_mc_backend_registry *self);
 ov_mc_backend_registry *ov_mc_backend_registry_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
@@ -81,8 +81,9 @@ bool ov_mc_backend_registry_unregister_mixer(ov_mc_backend_registry *self,
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_mixer_data ov_mc_backend_registry_acquire_user(
-    ov_mc_backend_registry *self, const char *uuid);
+ov_mc_mixer_data
+ov_mc_backend_registry_acquire_user(ov_mc_backend_registry *self,
+                                    const char *uuid);
 /*----------------------------------------------------------------------------*/
 
 ov_mc_mixer_data ov_mc_backend_registry_get_user(ov_mc_backend_registry *self,
@@ -100,7 +101,7 @@ bool ov_mc_backend_registry_release_user(ov_mc_backend_registry *self,
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_registry_count ov_mc_backend_registry_count_mixers(
-    ov_mc_backend_registry *self);
+ov_mc_backend_registry_count
+ov_mc_backend_registry_count_mixers(ov_mc_backend_registry *self);
 
 #endif /* ov_mc_backend_registry_h */

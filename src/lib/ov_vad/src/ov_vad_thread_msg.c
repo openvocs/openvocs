@@ -35,32 +35,34 @@
 
 static ov_thread_message *thread_msg_free(ov_thread_message *msg) {
 
-    if (msg->type != OV_VAD_THREAD_MSG_TYPE) return msg;
+  if (msg->type != OV_VAD_THREAD_MSG_TYPE)
+    return msg;
 
-    ov_vad_thread_msg *m = (ov_vad_thread_msg *)msg;
+  ov_vad_thread_msg *m = (ov_vad_thread_msg *)msg;
 
-    m->buffer = ov_buffer_free(m->buffer);
-    m = ov_data_pointer_free(m);
-    return NULL;
+  m->buffer = ov_buffer_free(m->buffer);
+  m = ov_data_pointer_free(m);
+  return NULL;
 }
 
 /*---------------------------------------------------------------------------*/
 
 ov_vad_thread_msg *ov_vad_thread_msg_create() {
 
-    ov_vad_thread_msg *self = NULL;
+  ov_vad_thread_msg *self = NULL;
 
-    self = calloc(1, sizeof(ov_vad_thread_msg));
-    if (!self) goto error;
+  self = calloc(1, sizeof(ov_vad_thread_msg));
+  if (!self)
+    goto error;
 
-    self->public.magic_bytes = OV_THREAD_MESSAGE_MAGIC_BYTES;
-    self->public.type = OV_VAD_THREAD_MSG_TYPE;
-    self->public.free = thread_msg_free;
+  self->public.magic_bytes = OV_THREAD_MESSAGE_MAGIC_BYTES;
+  self->public.type = OV_VAD_THREAD_MSG_TYPE;
+  self->public.free = thread_msg_free;
 
-    self->buffer = ov_buffer_create(OV_UDP_PAYLOAD_OCTETS);
+  self->buffer = ov_buffer_create(OV_UDP_PAYLOAD_OCTETS);
 
-    return self;
+  return self;
 error:
-    ov_thread_message_free(ov_thread_message_cast(self));
-    return NULL;
+  ov_thread_message_free(ov_thread_message_cast(self));
+  return NULL;
 }

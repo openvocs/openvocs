@@ -40,68 +40,68 @@ typedef struct ov_ice_pair ov_ice_pair;
 
 struct ov_ice_pair {
 
-    ov_node node;
+  ov_node node;
 
-    ov_ice_pair_state state;
-    ov_ice_stream *stream;
+  ov_ice_pair_state state;
+  ov_ice_stream *stream;
 
-    uint8_t transaction_id[13];
+  uint8_t transaction_id[13];
 
-    uint64_t priority;
+  uint64_t priority;
 
-    bool nominated;
+  bool nominated;
 
-    const ov_ice_candidate *local;
-    const ov_ice_candidate *remote;
+  const ov_ice_candidate *local;
+  const ov_ice_candidate *remote;
 
-    uint16_t success_count;
-    uint16_t progress_count;
+  uint16_t success_count;
+  uint16_t progress_count;
 
-    struct {
+  struct {
 
-        bool handshaked;
-        ov_ice_dtls_type type;
+    bool handshaked;
+    ov_ice_dtls_type type;
 
-        SSL *ssl;
-        SSL_CTX *ctx;
+    SSL *ssl;
+    SSL_CTX *ctx;
 
-        BIO *read;
-        BIO *write;
+    BIO *read;
+    BIO *write;
 
-    } dtls;
+  } dtls;
 
-    struct {
+  struct {
 
-        bool ready;
-        bool selected_callback_done;
-        char *profile;
+    bool ready;
+    bool selected_callback_done;
+    char *profile;
 
-        uint32_t key_len;
-        uint32_t salt_len;
-
-        struct {
-
-            uint8_t key[OV_ICE_SRTP_KEY_MAX];
-            uint8_t salt[OV_ICE_SRTP_SALT_MAX];
-
-        } server;
-
-        struct {
-
-            uint8_t key[OV_ICE_SRTP_KEY_MAX];
-            uint8_t salt[OV_ICE_SRTP_SALT_MAX];
-
-        } client;
-
-    } srtp;
+    uint32_t key_len;
+    uint32_t salt_len;
 
     struct {
 
-        uint32_t permission_renew;
-        uint32_t handshake;
-        uint32_t keepalive;
+      uint8_t key[OV_ICE_SRTP_KEY_MAX];
+      uint8_t salt[OV_ICE_SRTP_SALT_MAX];
 
-    } timer;
+    } server;
+
+    struct {
+
+      uint8_t key[OV_ICE_SRTP_KEY_MAX];
+      uint8_t salt[OV_ICE_SRTP_SALT_MAX];
+
+    } client;
+
+  } srtp;
+
+  struct {
+
+    uint32_t permission_renew;
+    uint32_t handshake;
+    uint32_t keepalive;
+
+  } timer;
 };
 
 /*
@@ -122,8 +122,7 @@ ssize_t ov_ice_pair_send(ov_ice_pair *self, const uint8_t *buffer, size_t size);
 
 const char *ov_ice_pair_state_to_string(ov_ice_pair_state state);
 
-bool ov_ice_pair_handshake_passive(ov_ice_pair *pair,
-                                   const uint8_t *buffer,
+bool ov_ice_pair_handshake_passive(ov_ice_pair *pair, const uint8_t *buffer,
                                    size_t size);
 
 bool ov_ice_pair_handshake_active(ov_ice_pair *pair);

@@ -35,62 +35,60 @@
 
 struct dummy_userdata {
 
-    int id;
+  int id;
 };
 
 /*----------------------------------------------------------------------------*/
 
-static void dummy_callback(void *userdata,
-                           const char *uuid,
+static void dummy_callback(void *userdata, const char *uuid,
                            ov_ldap_auth_result res) {
 
-    UNUSED(userdata);
+  UNUSED(userdata);
 
-    const char *str = "rejected";
-    if (OV_LDAP_AUTH_GRANTED == res) str = "granted";
+  const char *str = "rejected";
+  if (OV_LDAP_AUTH_GRANTED == res)
+    str = "granted";
 
-    fprintf(stderr, "AUTH %s %s", uuid, str);
-    return;
+  fprintf(stderr, "AUTH %s %s", uuid, str);
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
-    UNUSED(argc);
-    UNUSED(argv);
+  UNUSED(argc);
+  UNUSED(argv);
 
-    struct dummy_userdata userdata = {0};
+  struct dummy_userdata userdata = {0};
 
-    ov_event_loop *loop = ov_event_loop_default(
-        (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
+  ov_event_loop *loop = ov_event_loop_default(
+      (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
 
-    ov_ldap_config config = (ov_ldap_config){
+  ov_ldap_config config = (ov_ldap_config){
 
-        .loop = loop,
-        .host = "192.168.1.47",
-        .user_dn_tree = "ou=people,dc=openvocs,dc=org"
+      .loop = loop,
+      .host = "192.168.1.47",
+      .user_dn_tree = "ou=people,dc=openvocs,dc=org"
 
-    };
+  };
 
-    ov_ldap *ldap = ov_ldap_create(config);
-    if (!ldap) goto error;
+  ov_ldap *ldap = ov_ldap_create(config);
+  if (!ldap)
+    goto error;
 
-    char *dn = "johndoe";
-    char *pw = "2simple!";
+  char *dn = "johndoe";
+  char *pw = "2simple!";
 
-    ov_ldap_authenticate_password(
-        ldap,
-        dn,
-        pw,
-        "1-2-3-4",
-        (ov_ldap_auth_callback){
-            .userdata = &userdata, .callback = dummy_callback});
+  ov_ldap_authenticate_password(
+      ldap, dn, pw, "1-2-3-4",
+      (ov_ldap_auth_callback){.userdata = &userdata,
+                              .callback = dummy_callback});
 
-    loop->run(loop, OV_RUN_MAX);
+  loop->run(loop, OV_RUN_MAX);
 
-    loop = ov_event_loop_free(loop);
-    return EXIT_SUCCESS;
+  loop = ov_event_loop_free(loop);
+  return EXIT_SUCCESS;
 error:
-    return EXIT_FAILURE;
+  return EXIT_FAILURE;
 }

@@ -46,9 +46,9 @@
 typedef struct ov_sip_message ov_sip_message;
 
 typedef enum {
-    OV_SIP_REQUEST,
-    OV_SIP_RESPONSE,
-    OV_SIP_INVALID
+  OV_SIP_REQUEST,
+  OV_SIP_RESPONSE,
+  OV_SIP_INVALID
 } ov_sip_message_type;
 
 char const *ov_sip_message_type_to_string(ov_sip_message_type type);
@@ -73,8 +73,7 @@ ov_sip_message_type ov_sip_message_type_get(ov_sip_message const *self);
 
 uint32_t ov_sip_message_cseq(ov_sip_message const *self, char const **method);
 
-bool ov_sip_message_cseq_set(ov_sip_message *self,
-                             char const *method,
+bool ov_sip_message_cseq_set(ov_sip_message *self, char const *method,
                              uint32_t seq);
 
 /*****************************************************************************
@@ -95,8 +94,7 @@ char const *ov_sip_message_response_reason(ov_sip_message const *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sip_message_header_set(ov_sip_message *self,
-                               char const *name,
+bool ov_sip_message_header_set(ov_sip_message *self, char const *name,
                                char const *value);
 
 char const *ov_sip_message_header(ov_sip_message const *self, char const *name);
@@ -111,8 +109,7 @@ bool ov_sip_message_header_for_each(ov_sip_message const *self,
 
 ov_buffer const *ov_sip_message_body(ov_sip_message const *self);
 
-bool ov_sip_message_body_set(ov_sip_message *self,
-                             ov_buffer *body,
+bool ov_sip_message_body_set(ov_sip_message *self, ov_buffer *body,
                              char const *content_type);
 
 /*****************************************************************************

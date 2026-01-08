@@ -40,7 +40,7 @@ typedef struct ov_mc_backend_sip_registry ov_mc_backend_sip_registry;
 
 typedef struct ov_mc_backend_sip_registry_config {
 
-    bool debug;
+  bool debug;
 
 } ov_mc_backend_sip_registry_config;
 
@@ -52,17 +52,16 @@ typedef struct ov_mc_backend_sip_registry_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_backend_sip_registry *ov_mc_backend_sip_registry_create(
-    ov_mc_backend_sip_registry_config config);
-ov_mc_backend_sip_registry *ov_mc_backend_sip_registry_free(
-    ov_mc_backend_sip_registry *self);
+ov_mc_backend_sip_registry *
+ov_mc_backend_sip_registry_create(ov_mc_backend_sip_registry_config config);
+ov_mc_backend_sip_registry *
+ov_mc_backend_sip_registry_free(ov_mc_backend_sip_registry *self);
 ov_mc_backend_sip_registry *ov_mc_backend_sip_registry_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_backend_sip_registry_register_proxy(ov_mc_backend_sip_registry *self,
-                                               int socket,
-                                               const char *uuid);
+                                               int socket, const char *uuid);
 
 /*----------------------------------------------------------------------------*/
 
@@ -77,8 +76,7 @@ int ov_mc_backend_sip_registry_get_proxy_socket(
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_backend_sip_registry_register_call(ov_mc_backend_sip_registry *self,
-                                              int socket,
-                                              const char *call_id,
+                                              int socket, const char *call_id,
                                               const char *loop_id,
                                               const char *peer_id);
 
@@ -94,7 +92,8 @@ int ov_mc_backend_sip_registry_get_call_proxy(ov_mc_backend_sip_registry *self,
 
 /*----------------------------------------------------------------------------*/
 
-const char *ov_mc_backend_sip_registry_get_call_loop(
-    ov_mc_backend_sip_registry *self, const char *call_id);
+const char *
+ov_mc_backend_sip_registry_get_call_loop(ov_mc_backend_sip_registry *self,
+                                         const char *call_id);
 
 #endif /* ov_mc_backend_sip_registry_h */

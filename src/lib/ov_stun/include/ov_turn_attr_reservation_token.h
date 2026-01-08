@@ -72,8 +72,7 @@ size_t ov_turn_attr_reservaton_token_encoding_length();
         @param len      length of reservaton_token
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_reservaton_token_encode(uint8_t *buffer,
-                                          size_t length,
+bool ov_turn_attr_reservaton_token_encode(uint8_t *buffer, size_t length,
                                           uint8_t **next,
                                           const uint8_t *reservaton_token,
                                           size_t len);
@@ -88,8 +87,7 @@ bool ov_turn_attr_reservaton_token_encode(uint8_t *buffer,
         @param reservaton_token     pointer to reservaton_token within buffer
         @param len      pointer to be set to length of reservaton_token
 */
-bool ov_turn_attr_reservaton_token_decode(const uint8_t *buffer,
-                                          size_t length,
+bool ov_turn_attr_reservaton_token_decode(const uint8_t *buffer, size_t length,
                                           const uint8_t **reservaton_token,
                                           size_t *len);
 

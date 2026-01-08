@@ -35,7 +35,7 @@
 
 typedef struct {
 
-    char const *server;
+  char const *server;
 
 } ov_pcm_gen_pulse;
 

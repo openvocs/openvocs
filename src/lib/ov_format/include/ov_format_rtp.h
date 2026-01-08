@@ -40,16 +40,16 @@ extern ov_buffer const *OV_FORMAT_RTP_NO_PADDING;
 
 typedef struct {
 
-    struct {
+  struct {
 
-        unsigned version : 2;
-        unsigned marker : 1;
-        unsigned payload_type : 7;
-    };
+    unsigned version : 2;
+    unsigned marker : 1;
+    unsigned payload_type : 7;
+  };
 
-    uint16_t sequence_number;
-    uint32_t timestamp;
-    uint32_t ssrc;
+  uint16_t sequence_number;
+  uint32_t timestamp;
+  uint32_t ssrc;
 
 } ov_format_rtp_header;
 
@@ -57,12 +57,12 @@ typedef struct {
 
 typedef struct {
 
-    struct {
+  struct {
 
-        unsigned num : 4;
-    };
+    unsigned num : 4;
+  };
 
-    uint32_t ids[15];
+  uint32_t ids[15];
 
 } ov_format_rtp_contributing_sources;
 
@@ -70,11 +70,11 @@ typedef struct {
 
 typedef struct {
 
-    uint16_t id;
+  uint16_t id;
 
-    uint16_t length_4_octets;
+  uint16_t length_4_octets;
 
-    uint32_t *payload;
+  uint32_t *payload;
 
 } ov_format_rtp_extension_header;
 

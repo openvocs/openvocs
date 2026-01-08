@@ -75,23 +75,23 @@ typedef struct ov_webserver_minimal ov_webserver_minimal;
 
 typedef struct ov_webserver_minimal_config {
 
-    ov_webserver_base_config base;
+  ov_webserver_base_config base;
 
-    struct {
+  struct {
 
-        char path[PATH_MAX];
-        char ext[PATH_MAX];
+    char path[PATH_MAX];
+    char ext[PATH_MAX];
 
-    } mime;
+  } mime;
 
-    struct {
+  struct {
 
-        void *userdata;
+    void *userdata;
 
-        bool (*accept)(void *userdata, int server_socket, int accepted_socket);
-        void (*close)(void *userdata, int connection_socket);
+    bool (*accept)(void *userdata, int server_socket, int accepted_socket);
+    void (*close)(void *userdata, int connection_socket);
 
-    } callback;
+  } callback;
 
 } ov_webserver_minimal_config;
 
@@ -103,8 +103,8 @@ typedef struct ov_webserver_minimal_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_webserver_minimal *ov_webserver_minimal_create(
-    ov_webserver_minimal_config config);
+ov_webserver_minimal *
+ov_webserver_minimal_create(ov_webserver_minimal_config config);
 
 ov_webserver_minimal *ov_webserver_minimal_cast(const void *self);
 
@@ -133,8 +133,7 @@ bool ov_webserver_minimal_close(ov_webserver_minimal *self, int socket);
  *  NOTE this is some serial implementation (not parallel, not threaded)
  */
 bool ov_webserver_minimal_configure_uri_event_io(
-    ov_webserver_minimal *self,
-    const ov_memory_pointer hostname,
+    ov_webserver_minimal *self, const ov_memory_pointer hostname,
     const ov_event_io_config handler);
 
 /*
@@ -145,8 +144,8 @@ bool ov_webserver_minimal_configure_uri_event_io(
  *      ------------------------------------------------------------------------
  */
 
-ov_webserver_minimal_config ov_webserver_minimal_config_from_json(
-    const ov_json_value *value);
+ov_webserver_minimal_config
+ov_webserver_minimal_config_from_json(const ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/
 
@@ -157,7 +156,6 @@ ov_webserver_minimal_config ov_webserver_minimal_config_from_json(
     @param socket   connection socket
     @param data     json message to send
 */
-bool ov_webserver_minimal_send_json(ov_webserver_minimal *self,
-                                    int socket,
+bool ov_webserver_minimal_send_json(ov_webserver_minimal *self, int socket,
                                     ov_json_value const *const data);
 #endif /* ov_webserver_minimal_h */

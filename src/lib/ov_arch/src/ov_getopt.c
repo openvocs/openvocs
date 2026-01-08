@@ -34,12 +34,12 @@
 void ov_reset_getopt(void) {
 
 #if OV_ARCH == OV_LINUX
-    optind = 0;
+  optind = 0;
 #elif OV_ARCH == OV_MACOS
-    optind = 1;
+  optind = 1;
 #endif
 
 #ifdef HAVE_OPTRESET
-    optreset = 1;
+  optreset = 1;
 #endif
 }

@@ -35,157 +35,171 @@
 
 typedef struct {
 
-    ov_json_value head;
-    double data;
+  ov_json_value head;
+  double data;
 
 } JsonNumber;
 
 #define AS_JSON_NUMBER(x)                                                      \
-    (((ov_json_value_cast(x) != 0) &&                                          \
-      (OV_JSON_NUMBER == ((ov_json_value *)x)->type))                          \
-         ? (JsonNumber *)(x)                                                   \
-         : 0)
+  (((ov_json_value_cast(x) != 0) &&                                            \
+    (OV_JSON_NUMBER == ((ov_json_value *)x)->type))                            \
+       ? (JsonNumber *)(x)                                                     \
+       : 0)
 
 /*----------------------------------------------------------------------------*/
 
 bool json_number_init(JsonNumber *self, double content) {
 
-    if (!self) goto error;
+  if (!self)
+    goto error;
 
-    self->head.magic_byte = OV_JSON_VALUE_MAGIC_BYTE;
-    self->head.type = OV_JSON_NUMBER;
-    self->head.parent = NULL;
+  self->head.magic_byte = OV_JSON_VALUE_MAGIC_BYTE;
+  self->head.type = OV_JSON_NUMBER;
+  self->head.parent = NULL;
 
-    self->data = content;
+  self->data = content;
 
-    self->head.clear = ov_json_number_clear;
-    self->head.free = ov_json_number_free;
+  self->head.clear = ov_json_number_clear;
+  self->head.free = ov_json_number_free;
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_json_number(double content) {
 
-    JsonNumber *number = calloc(1, sizeof(JsonNumber));
-    if (!number) goto error;
+  JsonNumber *number = calloc(1, sizeof(JsonNumber));
+  if (!number)
+    goto error;
 
-    if (json_number_init(number, content)) return (ov_json_value *)number;
+  if (json_number_init(number, content))
+    return (ov_json_value *)number;
 
-    free(number);
+  free(number);
 error:
-    return NULL;
+  return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_json_is_number(const ov_json_value *value) {
 
-    return AS_JSON_NUMBER(value);
+  return AS_JSON_NUMBER(value);
 }
 
 /*----------------------------------------------------------------------------*/
 
 double ov_json_number_get(const ov_json_value *self) {
 
-    JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) return 0;
+  JsonNumber *number = AS_JSON_NUMBER(self);
+  if (!number)
+    return 0;
 
-    return number->data;
+  return number->data;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_json_number_set(ov_json_value *self, double content) {
 
-    JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) return false;
+  JsonNumber *number = AS_JSON_NUMBER(self);
+  if (!number)
+    return false;
 
-    number->data = content;
-    return true;
+  number->data = content;
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_json_number_clear(void *self) {
 
-    JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) goto error;
+  JsonNumber *number = AS_JSON_NUMBER(self);
+  if (!number)
+    goto error;
 
-    number->data = 0;
+  number->data = 0;
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_json_number_free(void *self) {
 
-    JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) return self;
+  JsonNumber *number = AS_JSON_NUMBER(self);
+  if (!number)
+    return self;
 
-    // in case of parent loop over ov_json_value_free
-    if (number->head.parent) return ov_json_value_free(self);
+  // in case of parent loop over ov_json_value_free
+  if (number->head.parent)
+    return ov_json_value_free(self);
 
-    free(number);
-    return NULL;
+  free(number);
+  return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_json_number_copy(void **dest, const void *self) {
 
-    if (!dest || !self) goto error;
+  if (!dest || !self)
+    goto error;
 
-    JsonNumber *copy = NULL;
-    JsonNumber *orig = AS_JSON_NUMBER(self);
-    if (!orig) goto error;
+  JsonNumber *copy = NULL;
+  JsonNumber *orig = AS_JSON_NUMBER(self);
+  if (!orig)
+    goto error;
 
-    if (!*dest) {
+  if (!*dest) {
 
-        *dest = ov_json_number(orig->data);
-        if (*dest) return *dest;
-    }
+    *dest = ov_json_number(orig->data);
+    if (*dest)
+      return *dest;
+  }
 
-    copy = AS_JSON_NUMBER(*dest);
-    if (!copy) goto error;
+  copy = AS_JSON_NUMBER(*dest);
+  if (!copy)
+    goto error;
 
-    copy->data = orig->data;
-    return copy;
+  copy->data = orig->data;
+  return copy;
 error:
-    return NULL;
+  return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_json_number_dump(FILE *stream, const void *self) {
 
-    JsonNumber *orig = AS_JSON_NUMBER(self);
-    if (!stream || !orig) goto error;
+  JsonNumber *orig = AS_JSON_NUMBER(self);
+  if (!stream || !orig)
+    goto error;
 
-    if (!fprintf(stream, " %f ", orig->data)) goto error;
+  if (!fprintf(stream, " %f ", orig->data))
+    goto error;
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_data_function ov_json_number_functions() {
 
-    ov_data_function f = {
+  ov_data_function f = {
 
-        .clear = ov_json_number_clear,
-        .free = ov_json_number_free,
-        .dump = ov_json_number_dump,
-        .copy = ov_json_number_copy};
+      .clear = ov_json_number_clear,
+      .free = ov_json_number_free,
+      .dump = ov_json_number_dump,
+      .copy = ov_json_number_copy};
 
-    return f;
+  return f;
 }

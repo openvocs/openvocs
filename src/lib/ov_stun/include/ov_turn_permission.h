@@ -40,11 +40,11 @@
 
 typedef struct ov_turn_permission {
 
-    ov_node node;
-    uint64_t updated;
-    uint64_t lifetime_usec;
+  ov_node node;
+  uint64_t updated;
+  uint64_t lifetime_usec;
 
-    char host[OV_HOST_NAME_MAX];
+  char host[OV_HOST_NAME_MAX];
 
 } ov_turn_permission;
 

@@ -77,9 +77,7 @@ ov_json_value *ov_json_read(const char *buffer, size_t size);
         @param size     size of the buffer to parse
         @param next     next pointer after write
 */
-bool ov_json_write(ov_json_value *value,
-                   char *buffer,
-                   size_t size,
+bool ov_json_write(ov_json_value *value, char *buffer, size_t size,
                    char **next);
 
 /*----------------------------------------------------------------------------*/

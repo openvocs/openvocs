@@ -40,10 +40,10 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 #include "ov_base/ov_error_codes.h"
 #include <dlfcn.h>
 #include <ftw.h>
-#include <ov_base/ov_string.h>
-#include <ov_base/ov_utils.h>
 #include <ov_base/ov_plugin_system.h>
+#include <ov_base/ov_string.h>
 #include <ov_base/ov_teardown.h>
+#include <ov_base/ov_utils.h>
 
 /*****************************************************************************
                                  Global Factory
@@ -52,20 +52,20 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 static ov_codec_factory *g_factory = 0;
 
 static void free_global_codec_factory(void) {
-    g_factory = ov_codec_factory_free(g_factory);
+  g_factory = ov_codec_factory_free(g_factory);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static ov_codec_factory *get_global_factory() {
-    if (0 != g_factory) {
-        return g_factory;
-    }
-
-    g_factory = ov_codec_factory_create_standard();
-    ov_teardown_register(free_global_codec_factory, "CODEC Factory");
-
+  if (0 != g_factory) {
     return g_factory;
+  }
+
+  g_factory = ov_codec_factory_create_standard();
+  ov_teardown_register(free_global_codec_factory, "CODEC Factory");
+
+  return g_factory;
 }
 
 /******************************************************************************
@@ -73,17 +73,17 @@ static ov_codec_factory *get_global_factory() {
  ******************************************************************************/
 
 struct ov_codec_factory_struct {
-    /* Ok, the factory is basically a dictionary comprised of a linked list.
-     * The last element is empty for the sake of simple implementation, thus
-     * The linked list ALWAYS contains at least one entry.
-     * This entry must be all-zeroed out.
-     * This entry denotes the head of the list.
-     * Therefore, a new element will be added as head->next always.
-     */
-    struct ov_codec_factory_struct *next;
-    char *codec_name;
-    ov_codec_generator get_codec_for;
-    void *shared_object_handle;
+  /* Ok, the factory is basically a dictionary comprised of a linked list.
+   * The last element is empty for the sake of simple implementation, thus
+   * The linked list ALWAYS contains at least one entry.
+   * This entry must be all-zeroed out.
+   * This entry denotes the head of the list.
+   * Therefore, a new element will be added as head->next always.
+   */
+  struct ov_codec_factory_struct *next;
+  char *codec_name;
+  ov_codec_generator get_codec_for;
+  void *shared_object_handle;
 };
 
 typedef struct ov_codec_factory_struct codec_entry;
@@ -103,40 +103,40 @@ static codec_entry *find_entry(const codec_entry *list, const char *codec_name);
  ******************************************************************************/
 
 ov_codec_factory *ov_codec_factory_create() {
-    ov_codec_factory *factory =
-        calloc(1, sizeof(struct ov_codec_factory_struct));
+  ov_codec_factory *factory = calloc(1, sizeof(struct ov_codec_factory_struct));
 
-    return factory;
+  return factory;
 }
 
 /*---------------------------------------------------------------------------*/
 
 ov_codec_factory *ov_codec_factory_create_standard() {
-    ov_codec_factory *factory = ov_codec_factory_create();
+  ov_codec_factory *factory = ov_codec_factory_create();
 
-    if (0 != ov_codec_raw_install(factory)) {
-        goto error;
-    }
+  if (0 != ov_codec_raw_install(factory)) {
+    goto error;
+  }
 
-    if (0 != ov_codec_pcm16_signed_install(factory)) {
-        goto error;
-    }
+  if (0 != ov_codec_pcm16_signed_install(factory)) {
+    goto error;
+  }
 
-    if (0 != ov_codec_opus_install(factory)) {
-        goto error;
-    }
+  if (0 != ov_codec_opus_install(factory)) {
+    goto error;
+  }
 
-    if (0 != ov_codec_g711_install(factory)) {
-        goto error;
-    }
+  if (0 != ov_codec_g711_install(factory)) {
+    goto error;
+  }
 
-    return factory;
+  return factory;
 
 error:
 
-    if (0 == factory) factory = ov_codec_factory_free(factory);
+  if (0 == factory)
+    factory = ov_codec_factory_free(factory);
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -144,79 +144,78 @@ error:
 static size_t open_dls = 0;
 
 static void *open_dl_handle(char const *path) {
-    void *handle = 0;
+  void *handle = 0;
 
-    if (ov_ptr_valid(path, "Cannot open SO: No path")) {
-        handle = dlopen(path, RTLD_NOW);
+  if (ov_ptr_valid(path, "Cannot open SO: No path")) {
+    handle = dlopen(path, RTLD_NOW);
 
-        char *so_error = dlerror();
+    char *so_error = dlerror();
 
-        if (0 != so_error) {
-            ov_log_error("Error during loading SO: %s", so_error);
-        }
+    if (0 != so_error) {
+      ov_log_error("Error during loading SO: %s", so_error);
     }
+  }
 
-    if (0 != handle) {
-        ++open_dls;
-    }
+  if (0 != handle) {
+    ++open_dls;
+  }
 
-    return handle;
+  return handle;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *close_dl_handle(void *handle) {
-    if ((0 != handle) && (0 == dlclose(handle))) {
-        --open_dls;
+  if ((0 != handle) && (0 == dlclose(handle))) {
+    --open_dls;
 
-        char *so_error = dlerror();
+    char *so_error = dlerror();
 
-        if (0 != so_error) {
-            ov_log_error("Error closing SO: %s", so_error);
-        }
+    if (0 != so_error) {
+      ov_log_error("Error closing SO: %s", so_error);
     }
+  }
 
-    return handle;
+  return handle;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_codec_factory *ov_codec_factory_free(ov_codec_factory *factory) {
-    if (0 == factory) {
-        factory = get_global_factory();
-        g_factory = 0;
-    }
+  if (0 == factory) {
+    factory = get_global_factory();
+    g_factory = 0;
+  }
 
-    OV_ASSERT(0 != factory);
+  OV_ASSERT(0 != factory);
 
-    codec_entry *head = factory;
+  codec_entry *head = factory;
 
-    while (0 != head->next) {
-        head = head->next;
-        free(factory);
-        factory = head;
+  while (0 != head->next) {
+    head = head->next;
+    free(factory);
+    factory = head;
 
-        head->codec_name = ov_free(head->codec_name);
-        head->shared_object_handle =
-            close_dl_handle(head->shared_object_handle);
-    }
+    head->codec_name = ov_free(head->codec_name);
+    head->shared_object_handle = close_dl_handle(head->shared_object_handle);
+  }
 
-    free(head);
+  free(head);
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static codec_entry *new_entry(ov_codec_factory *factory,
                               char const *codec_name) {
-    codec_entry *entry = calloc(1, sizeof(codec_entry));
-    entry->codec_name = ov_string_dup(codec_name);
-    entry->next = factory->next;
-    factory->next = entry;
-    entry = factory;
+  codec_entry *entry = calloc(1, sizeof(codec_entry));
+  entry->codec_name = ov_string_dup(codec_name);
+  entry->next = factory->next;
+  factory->next = entry;
+  entry = factory;
 
-    return entry;
+  return entry;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -226,41 +225,41 @@ static bool codec_factory_install_codec(ov_codec_factory *factory,
                                         ov_codec_generator generate_codec,
                                         void *dlhandle,
                                         ov_codec_generator *old_generator) {
-    factory = OV_OR_DEFAULT(factory, get_global_factory());
+  factory = OV_OR_DEFAULT(factory, get_global_factory());
 
-    if ((0 == codec_name) || (0 == generate_codec)) {
-        return false;
+  if ((0 == codec_name) || (0 == generate_codec)) {
+    return false;
 
-    } else {
-        codec_entry *entry = find_entry(factory, codec_name);
+  } else {
+    codec_entry *entry = find_entry(factory, codec_name);
 
-        entry = OV_OR_DEFAULT(entry, new_entry(factory, codec_name));
+    entry = OV_OR_DEFAULT(entry, new_entry(factory, codec_name));
 
-        entry->next->shared_object_handle =
-            close_dl_handle(entry->next->shared_object_handle);
+    entry->next->shared_object_handle =
+        close_dl_handle(entry->next->shared_object_handle);
 
-        ov_codec_generator old = entry->next->get_codec_for;
+    ov_codec_generator old = entry->next->get_codec_for;
 
-        entry->next->get_codec_for = generate_codec;
-        entry->next->shared_object_handle = dlhandle;
+    entry->next->get_codec_for = generate_codec;
+    entry->next->shared_object_handle = dlhandle;
 
-        if (0 != old_generator) {
-            *old_generator = old;
-        }
-
-        return true;
+    if (0 != old_generator) {
+      *old_generator = old;
     }
+
+    return true;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_codec_generator ov_codec_factory_install_codec(
-    ov_codec_factory *factory, const char *codec_name,
-    ov_codec_generator generate_codec) {
-    ov_codec_generator old_gen = 0;
-    codec_factory_install_codec(factory, codec_name, generate_codec, 0,
-                                &old_gen);
-    return old_gen;
+ov_codec_generator
+ov_codec_factory_install_codec(ov_codec_factory *factory,
+                               const char *codec_name,
+                               ov_codec_generator generate_codec) {
+  ov_codec_generator old_gen = 0;
+  codec_factory_install_codec(factory, codec_name, generate_codec, 0, &old_gen);
+  return old_gen;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -268,33 +267,34 @@ ov_codec_generator ov_codec_factory_install_codec(
 ov_codec *ov_codec_factory_get_codec(ov_codec_factory *factory,
                                      const char *codec_name, uint32_t ssid,
                                      const ov_json_value *parameters) {
-    if (0 == factory) {
-        factory = get_global_factory();
-    }
+  if (0 == factory) {
+    factory = get_global_factory();
+  }
 
-    OV_ASSERT(0 != factory);
+  OV_ASSERT(0 != factory);
 
-    if (0 == codec_name) goto error;
+  if (0 == codec_name)
+    goto error;
 
-    codec_entry *entry = find_entry(factory, codec_name);
+  codec_entry *entry = find_entry(factory, codec_name);
 
-    ov_codec *codec = 0;
+  ov_codec *codec = 0;
 
-    if ((0 != entry) && (0 != entry->next)) {
-        OV_ASSERT(0 != entry->next->get_codec_for);
+  if ((0 != entry) && (0 != entry->next)) {
+    OV_ASSERT(0 != entry->next->get_codec_for);
 
-        codec = entry->next->get_codec_for(ssid, parameters);
-    }
+    codec = entry->next->get_codec_for(ssid, parameters);
+  }
 
-    if (0 != codec) {
-        ov_codec_enable_resampling(codec);
-    }
+  if (0 != codec) {
+    ov_codec_enable_resampling(codec);
+  }
 
-    return codec;
+  return codec;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /******************************************************************************
@@ -303,29 +303,30 @@ error:
 
 static codec_entry *find_entry(const codec_entry *list,
                                const char *codec_name) {
-    if (0 == list) goto error;
+  if (0 == list)
+    goto error;
 
-    codec_entry *c = (codec_entry *)list;
+  codec_entry *c = (codec_entry *)list;
 
-    OV_ASSERT(0 != c);
+  OV_ASSERT(0 != c);
 
-    while (0 != c->next) {
-        OV_ASSERT(0 != c->next);
+  while (0 != c->next) {
+    OV_ASSERT(0 != c->next);
 
-        if (0 == strcmp(codec_name, c->next->codec_name)) {
-            OV_ASSERT(0 != c->next);
+    if (0 == strcmp(codec_name, c->next->codec_name)) {
+      OV_ASSERT(0 != c->next);
 
-            return c;
-        }
-
-        c = c->next;
+      return c;
     }
 
-    OV_ASSERT(0 == c->next);
+    c = c->next;
+  }
+
+  OV_ASSERT(0 == c->next);
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -333,25 +334,26 @@ error:
 ov_codec *ov_codec_factory_get_codec_from_json(ov_codec_factory *factory,
                                                const ov_json_value *json,
                                                uint32_t ssid) {
-    if (0 == factory) {
-        factory = get_global_factory();
-    }
+  if (0 == factory) {
+    factory = get_global_factory();
+  }
 
-    if (0 == json) goto error;
+  if (0 == json)
+    goto error;
 
-    char const *codec_type;
-    codec_type = ov_json_string_get(ov_json_get(json, "/" OV_KEY_CODEC));
+  char const *codec_type;
+  codec_type = ov_json_string_get(ov_json_get(json, "/" OV_KEY_CODEC));
 
-    if (0 == codec_type) {
-        ov_log_error("Invalid codec configuration: %s missing", OV_KEY_CODEC);
-        goto error;
-    }
+  if (0 == codec_type) {
+    ov_log_error("Invalid codec configuration: %s missing", OV_KEY_CODEC);
+    goto error;
+  }
 
-    return ov_codec_factory_get_codec(factory, codec_type, ssid, json);
+  return ov_codec_factory_get_codec(factory, codec_type, ssid, json);
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*****************************************************************************
@@ -359,8 +361,8 @@ error:
  ****************************************************************************/
 
 bool ov_codec_factory_export_symbols_for_plugins() {
-    return ov_plugin_system_export_symbol_for_plugin(
-        "ov_codec_factory_install_codec_1", ov_codec_factory_install_codec);
+  return ov_plugin_system_export_symbol_for_plugin(
+      "ov_codec_factory_install_codec_1", ov_codec_factory_install_codec);
 }
 
 /*****************************************************************************
@@ -374,41 +376,40 @@ static bool install_codec(
     ov_codec_factory *self, void *dlhandle, char const *(*id_func)(void),
     ov_codec *(*create_func)(uint32_t ssid, const ov_json_value *parameters),
     ov_result *res) {
-    if (0 == id_func) {
-        ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
-                      "Shared object does not provide a " OV_CODEC_ID_FUNCNAME);
-        return false;
+  if (0 == id_func) {
+    ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
+                  "Shared object does not provide a " OV_CODEC_ID_FUNCNAME);
+    return false;
 
-    } else if (0 == create_func) {
-        ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
-                      "Shared object does not provide "
-                      "a " OV_CODEC_CREATE_FUNCNAME);
-        return false;
+  } else if (0 == create_func) {
+    ov_result_set(res, OV_ERROR_CODE_NOT_IMPLEMENTED,
+                  "Shared object does not provide "
+                  "a " OV_CODEC_CREATE_FUNCNAME);
+    return false;
 
-    } else if (codec_factory_install_codec(self, id_func(), create_func,
-                                           dlhandle, 0)) {
-        ov_result_set(res, OV_ERROR_NOERROR, 0);
-        return true;
-    } else {
-        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
-                      "Could not install codec from SO");
-        return false;
-    }
+  } else if (codec_factory_install_codec(self, id_func(), create_func, dlhandle,
+                                         0)) {
+    ov_result_set(res, OV_ERROR_NOERROR, 0);
+    return true;
+  } else {
+    ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
+                  "Could not install codec from SO");
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool install_codec_from_handle(ov_codec_factory *self, void *handle,
                                       ov_result *res) {
-    if (0 != handle) {
-        return install_codec(self, handle, dlsym(handle, OV_CODEC_ID_FUNCNAME),
-                             dlsym(handle, OV_CODEC_CREATE_FUNCNAME), res);
+  if (0 != handle) {
+    return install_codec(self, handle, dlsym(handle, OV_CODEC_ID_FUNCNAME),
+                         dlsym(handle, OV_CODEC_CREATE_FUNCNAME), res);
 
-    } else {
-        ov_result_set(res, OV_ERROR_BAD_ARG,
-                      "Shared object could not be opened");
-        return false;
-    }
+  } else {
+    ov_result_set(res, OV_ERROR_BAD_ARG, "Shared object could not be opened");
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -416,47 +417,47 @@ static bool install_codec_from_handle(ov_codec_factory *self, void *handle,
 bool ov_codec_factory_install_codec_from_so(ov_codec_factory *self,
                                             char const *so_path,
                                             ov_result *res) {
-    void *handle = open_dl_handle(so_path);
+  void *handle = open_dl_handle(so_path);
 
-    if (install_codec_from_handle(self, handle, res)) {
-        return true;
+  if (install_codec_from_handle(self, handle, res)) {
+    return true;
 
-    } else {
-        handle = close_dl_handle(handle);
-        return false;
-    }
+  } else {
+    handle = close_dl_handle(handle);
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 struct so_dir_loader_args_struct {
-    size_t so_counter;
-    ov_codec_factory *factory;
+  size_t so_counter;
+  ov_codec_factory *factory;
 
 } so_dir_loader_args;
 
 static int so_dir_loader(const char *fpath, const struct stat *sb, int typeflag,
                          struct FTW *ftwbuf) {
-    UNUSED(sb);
-    UNUSED(ftwbuf);
+  UNUSED(sb);
+  UNUSED(ftwbuf);
 
-    ov_result res = {0};
+  ov_result res = {0};
 
-    if (FTW_F == typeflag) {
-        if (ov_codec_factory_install_codec_from_so(so_dir_loader_args.factory,
-                                                   fpath, &res)) {
-            ++so_dir_loader_args.so_counter;
-            ov_log_info("Loaded codec from %s", fpath);
+  if (FTW_F == typeflag) {
+    if (ov_codec_factory_install_codec_from_so(so_dir_loader_args.factory,
+                                               fpath, &res)) {
+      ++so_dir_loader_args.so_counter;
+      ov_log_info("Loaded codec from %s", fpath);
 
-        } else {
-            ov_log_info("Could not load codec from %s: %s",
-                        ov_string_sanitize(fpath), ov_result_get_message(res));
-        }
-
-        ov_result_clear(&res);
+    } else {
+      ov_log_info("Could not load codec from %s: %s", ov_string_sanitize(fpath),
+                  ov_result_get_message(res));
     }
 
-    return 0;
+    ov_result_clear(&res);
+  }
+
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -464,19 +465,19 @@ static int so_dir_loader(const char *fpath, const struct stat *sb, int typeflag,
 ssize_t ov_codec_factory_install_codec_from_so_dir(ov_codec_factory *self,
                                                    char const *so_path,
                                                    ov_result *res) {
-    so_dir_loader_args = (struct so_dir_loader_args_struct){
-        .so_counter = 0,
-        .factory = self,
-    };
+  so_dir_loader_args = (struct so_dir_loader_args_struct){
+      .so_counter = 0,
+      .factory = self,
+  };
 
-    if (ov_ptr_valid(so_path, "Cannot load from dir: Not a valid path") &&
-        (0 == nftw(so_path, so_dir_loader, 10, 0))) {
-        return so_dir_loader_args.so_counter;
-    } else {
-        ov_result_set(res, OV_ERROR_BAD_ARG,
-                      "Cannot load from dir: Not a valid path");
-        return -1;
-    }
+  if (ov_ptr_valid(so_path, "Cannot load from dir: Not a valid path") &&
+      (0 == nftw(so_path, so_dir_loader, 10, 0))) {
+    return so_dir_loader_args.so_counter;
+  } else {
+    ov_result_set(res, OV_ERROR_BAD_ARG,
+                  "Cannot load from dir: Not a valid path");
+    return -1;
+  }
 }
 
 /*----------------------------------------------------------------------------*/

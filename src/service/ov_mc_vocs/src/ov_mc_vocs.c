@@ -46,32 +46,31 @@
 #include <ov_vocs/ov_vocs.h>
 
 #define CONFIG_PATH                                                            \
-    OPENVOCS_ROOT                                                              \
-    "/src/service/ov_mc_vocs/config/default_config.json"
+  OPENVOCS_ROOT                                                                \
+  "/src/service/ov_mc_vocs/config/default_config.json"
 
 /*----------------------------------------------------------------------------*/
 
 static bool env_close_socket(void *userdata, int socket) {
 
-    ov_webserver_minimal *srv = ov_webserver_minimal_cast(userdata);
-    return ov_webserver_minimal_close(srv, socket);
+  ov_webserver_minimal *srv = ov_webserver_minimal_cast(userdata);
+  return ov_webserver_minimal_close(srv, socket);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool env_send_socket(void *userdata,
-                            int socket,
+static bool env_send_socket(void *userdata, int socket,
                             const ov_json_value *msg) {
 
-    ov_webserver_minimal *srv = ov_webserver_minimal_cast(userdata);
-    return ov_webserver_minimal_send_json(srv, socket, msg);
+  ov_webserver_minimal *srv = ov_webserver_minimal_cast(userdata);
+  return ov_webserver_minimal_send_json(srv, socket, msg);
 }
 
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
 
-    int retval = EXIT_FAILURE;
+  int retval = EXIT_FAILURE;
 
     ov_event_loop *loop = NULL;
     ov_webserver_minimal *server = NULL;
@@ -216,14 +215,14 @@ int main(int argc, char **argv) {
 
 error:
 
-    json_config = ov_json_value_free(json_config);
-    vocs = ov_vocs_free(vocs);
-    db_persistance = ov_vocs_db_persistance_free(db_persistance);
-    db = ov_vocs_db_free(db);
-    db_app = ov_vocs_db_app_free(db_app);
-    server = ov_webserver_minimal_free(server);
-    loop = ov_event_loop_free(loop);
-    trigger = ov_event_trigger_free(trigger);
-    io = ov_io_free(io);
-    return retval;
+  json_config = ov_json_value_free(json_config);
+  vocs = ov_vocs_free(vocs);
+  db_persistance = ov_vocs_db_persistance_free(db_persistance);
+  db = ov_vocs_db_free(db);
+  db_app = ov_vocs_db_app_free(db_app);
+  server = ov_webserver_minimal_free(server);
+  loop = ov_event_loop_free(loop);
+  trigger = ov_event_trigger_free(trigger);
+  io = ov_io_free(io);
+  return retval;
 }

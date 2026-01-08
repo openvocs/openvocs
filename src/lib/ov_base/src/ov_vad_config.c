@@ -35,40 +35,39 @@
 
 ov_vad_config ov_vad_config_from_json(ov_json_value const *json) {
 
-    ov_vad_config cfg = {
-        .powerlevel_density_threshold_db = 0,
-        .zero_crossings_rate_threshold_hertz = 0,
-    };
+  ov_vad_config cfg = {
+      .powerlevel_density_threshold_db = 0,
+      .zero_crossings_rate_threshold_hertz = 0,
+  };
 
-    json = ov_json_get(json, "/" OV_KEY_VAD);
+  json = ov_json_get(json, "/" OV_KEY_VAD);
 
-    if (0 == json) {
-        goto error;
-    }
+  if (0 == json) {
+    goto error;
+  }
 
-    ov_json_value const *xcross =
-        ov_json_get(json, "/" OV_KEY_ZERO_CROSSINGS_RATE_HERTZ);
+  ov_json_value const *xcross =
+      ov_json_get(json, "/" OV_KEY_ZERO_CROSSINGS_RATE_HERTZ);
 
-    if (!ov_json_is_number(xcross)) {
-        ov_log_error("/" OV_KEY_ZERO_CROSSINGS_RATE_HERTZ
-                     " in config is not a number");
-    } else {
-        cfg.zero_crossings_rate_threshold_hertz = ov_json_number_get(xcross);
-    }
+  if (!ov_json_is_number(xcross)) {
+    ov_log_error("/" OV_KEY_ZERO_CROSSINGS_RATE_HERTZ
+                 " in config is not a number");
+  } else {
+    cfg.zero_crossings_rate_threshold_hertz = ov_json_number_get(xcross);
+  }
 
-    ov_json_value const *power_density =
-        ov_json_get(json, "/" OV_KEY_POWERLEVEL_DENSITY_DB);
+  ov_json_value const *power_density =
+      ov_json_get(json, "/" OV_KEY_POWERLEVEL_DENSITY_DB);
 
-    if (!ov_json_is_number(power_density)) {
-        ov_log_error("/" OV_KEY_POWERLEVEL_DENSITY_DB
-                     " in config is not a number");
-    } else {
-        cfg.powerlevel_density_threshold_db = ov_json_number_get(power_density);
-    }
+  if (!ov_json_is_number(power_density)) {
+    ov_log_error("/" OV_KEY_POWERLEVEL_DENSITY_DB " in config is not a number");
+  } else {
+    cfg.powerlevel_density_threshold_db = ov_json_number_get(power_density);
+  }
 
 error:
 
-    return cfg;
+  return cfg;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -76,32 +75,32 @@ error:
 ov_json_value *ov_vad_config_to_json(ov_vad_config vad_cfg,
                                      ov_json_value *target) {
 
-    ov_json_value *jval = target;
+  ov_json_value *jval = target;
 
-    if (0 == jval) {
-        jval = ov_json_object();
-    }
+  if (0 == jval) {
+    jval = ov_json_object();
+  }
 
-    double zcr = vad_cfg.zero_crossings_rate_threshold_hertz;
-    double pwr = vad_cfg.powerlevel_density_threshold_db;
+  double zcr = vad_cfg.zero_crossings_rate_threshold_hertz;
+  double pwr = vad_cfg.powerlevel_density_threshold_db;
 
-    if (0 == zcr) {
-        zcr = OV_DEFAULT_ZERO_CROSSINGS_RATE_THRESHOLD_HZ;
-    }
+  if (0 == zcr) {
+    zcr = OV_DEFAULT_ZERO_CROSSINGS_RATE_THRESHOLD_HZ;
+  }
 
-    if (0 == pwr) {
-        pwr = OV_DEFAULT_POWERLEVEL_DENSITY_THRESHOLD_DB;
-    }
+  if (0 == pwr) {
+    pwr = OV_DEFAULT_POWERLEVEL_DENSITY_THRESHOLD_DB;
+  }
 
-    ov_json_value *vad = ov_json_object();
-    ov_json_object_set(jval, OV_KEY_VAD, vad);
+  ov_json_value *vad = ov_json_object();
+  ov_json_object_set(jval, OV_KEY_VAD, vad);
 
-    ov_json_object_set(
-        vad, OV_KEY_ZERO_CROSSINGS_RATE_HERTZ, ov_json_number(zcr));
+  ov_json_object_set(vad, OV_KEY_ZERO_CROSSINGS_RATE_HERTZ,
+                     ov_json_number(zcr));
 
-    ov_json_object_set(vad, OV_KEY_POWERLEVEL_DENSITY_DB, ov_json_number(pwr));
+  ov_json_object_set(vad, OV_KEY_POWERLEVEL_DENSITY_DB, ov_json_number(pwr));
 
-    return jval;
+  return jval;
 }
 
 /*----------------------------------------------------------------------------*/

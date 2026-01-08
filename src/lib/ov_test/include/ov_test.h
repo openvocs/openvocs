@@ -77,54 +77,53 @@ void ov_test_set_exit_hook(void (*hook)());
  */
 
 #define ov_test_disabled(test_func)                                            \
-    OV_ARCH_COMPILE_ATTRIBUTE_WARNING("Test " #test_func " disabled")          \
-    int test_func() {                                                          \
-        testrun_log_function_info("Test " #test_func " Disabled");             \
-        return testrun_log_success();                                          \
-    }                                                                          \
-    static int test_func##_disabled()
+  OV_ARCH_COMPILE_ATTRIBUTE_WARNING("Test " #test_func " disabled")            \
+  int test_func() {                                                            \
+    testrun_log_function_info("Test " #test_func " Disabled");                 \
+    return testrun_log_success();                                              \
+  }                                                                            \
+  static int test_func##_disabled()
 
 /*----------------------------------------------------------------------------*/
 
 #define OV_TEST_RUN(test_name, ...)                                            \
-    int main(int argc, char *argv[]) {                                         \
-        srandom(time(0));                                                      \
-        SET_SIGNAL_HANDLING_METHOD();                                          \
-        size_t tests_run = 0; /** counter for successful tests **/             \
-        size_t tests_failed = 0;                                               \
-        int result = EXIT_SUCCESS;                                             \
-        ov_test_set_test_directory(argv[0]);                                   \
-        argc = argc;                                                           \
-        argc = 1;                                                              \
-        clock_t start_t, end_t;                                                \
-        start_t = clock();                                                     \
-        testrun_log("............................................");           \
-        testrun_log("RUNNING\t%s", argv[0]);                                   \
-        int (**tests)() = (int (*[])()){__VA_ARGS__, 0};                       \
-        for (; 0 != *tests; ++tests) {                                         \
-            int test_result = (*tests)();                                      \
-            tests_run++;                                                       \
-            if (0 >= test_result) {                                            \
-                result = EXIT_FAILURE;                                         \
-                ++tests_failed;                                                \
-                break;                                                         \
-            };                                                                 \
-        }                                                                      \
-        end_t = clock();                                                       \
-        fprintf(stderr,                                                        \
-                "ALL TESTS RUN - %zu/%zu succeeded\n",                         \
-                tests_run - tests_failed,                                      \
-                tests_run);                                                    \
-        testrun_log_clock(start_t, end_t);                                     \
-        void (*exit_hook)(void) = ov_test_get_exit_hook();                     \
-        if (0 != exit_hook) {                                                  \
-            exit_hook();                                                       \
-        }                                                                      \
-        if (tests_failed != 0) exit(EXIT_FAILURE);                             \
-        ov_test_clear_test_directory();                                        \
-        result = result >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;                    \
-        exit(result);                                                          \
-    }
+  int main(int argc, char *argv[]) {                                           \
+    srandom(time(0));                                                          \
+    SET_SIGNAL_HANDLING_METHOD();                                              \
+    size_t tests_run = 0; /** counter for successful tests **/                 \
+    size_t tests_failed = 0;                                                   \
+    int result = EXIT_SUCCESS;                                                 \
+    ov_test_set_test_directory(argv[0]);                                       \
+    argc = argc;                                                               \
+    argc = 1;                                                                  \
+    clock_t start_t, end_t;                                                    \
+    start_t = clock();                                                         \
+    testrun_log("............................................");               \
+    testrun_log("RUNNING\t%s", argv[0]);                                       \
+    int (**tests)() = (int (*[])()){__VA_ARGS__, 0};                           \
+    for (; 0 != *tests; ++tests) {                                             \
+      int test_result = (*tests)();                                            \
+      tests_run++;                                                             \
+      if (0 >= test_result) {                                                  \
+        result = EXIT_FAILURE;                                                 \
+        ++tests_failed;                                                        \
+        break;                                                                 \
+      };                                                                       \
+    }                                                                          \
+    end_t = clock();                                                           \
+    fprintf(stderr, "ALL TESTS RUN - %zu/%zu succeeded\n",                     \
+            tests_run - tests_failed, tests_run);                              \
+    testrun_log_clock(start_t, end_t);                                         \
+    void (*exit_hook)(void) = ov_test_get_exit_hook();                         \
+    if (0 != exit_hook) {                                                      \
+      exit_hook();                                                             \
+    }                                                                          \
+    if (tests_failed != 0)                                                     \
+      exit(EXIT_FAILURE);                                                      \
+    ov_test_clear_test_directory();                                            \
+    result = result >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;                        \
+    exit(result);                                                              \
+  }
 
 /**
  * Alternative to OV_RUN_TESTS for global initialization / tear down.
@@ -147,47 +146,46 @@ void ov_test_set_exit_hook(void (*hook)());
  *
  */
 #define OV_TEST_EXECUTE_TESTS(test_name, ...)                                  \
-    do {                                                                       \
-        SET_SIGNAL_HANDLING_METHOD();                                          \
-        size_t tests_run = 0; /** counter for successful tests **/             \
-        size_t tests_failed = 0;                                               \
-        int result = EXIT_SUCCESS;                                             \
-        bool testing = true;                                                   \
-        ov_test_set_test_directory(argv[0]);                                   \
-        argc = argc;                                                           \
-        argc = 1;                                                              \
-        clock_t start_t, end_t;                                                \
-        start_t = clock();                                                     \
-        testrun_log("............................................");           \
-        testrun_log("RUNNING\t%s", argv[0]);                                   \
-        if (!testing) {                                                        \
-            fprintf(stdout, "TESTING SWITCHED OFF for " test_name);            \
-            exit(EXIT_SUCCESS);                                                \
-        }                                                                      \
-        int (**tests)() = (int (*[])()){__VA_ARGS__, 0};                       \
-        for (; 0 != *tests; ++tests) {                                         \
-            tests_run++;                                                       \
-            if (0 >= (*tests)()) {                                             \
-                result = EXIT_FAILURE;                                         \
-                ++tests_failed;                                                \
-                break;                                                         \
-            };                                                                 \
-        }                                                                      \
-        end_t = clock();                                                       \
-        fprintf(stderr,                                                        \
-                "ALL TESTS RUN - %zu/%zu succeeded\n",                         \
-                tests_run - tests_failed,                                      \
-                tests_run);                                                    \
-        testrun_log_clock(start_t, end_t);                                     \
-        if (tests_failed != 0) exit(EXIT_FAILURE);                             \
-        ov_test_clear_test_directory();                                        \
-        void (*exit_hook)(void) = ov_test_get_exit_hook();                     \
-        if (0 != exit_hook) {                                                  \
-            exit_hook();                                                       \
-        }                                                                      \
-        result = result >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;                    \
-        exit(result);                                                          \
-    } while (0)
+  do {                                                                         \
+    SET_SIGNAL_HANDLING_METHOD();                                              \
+    size_t tests_run = 0; /** counter for successful tests **/                 \
+    size_t tests_failed = 0;                                                   \
+    int result = EXIT_SUCCESS;                                                 \
+    bool testing = true;                                                       \
+    ov_test_set_test_directory(argv[0]);                                       \
+    argc = argc;                                                               \
+    argc = 1;                                                                  \
+    clock_t start_t, end_t;                                                    \
+    start_t = clock();                                                         \
+    testrun_log("............................................");               \
+    testrun_log("RUNNING\t%s", argv[0]);                                       \
+    if (!testing) {                                                            \
+      fprintf(stdout, "TESTING SWITCHED OFF for " test_name);                  \
+      exit(EXIT_SUCCESS);                                                      \
+    }                                                                          \
+    int (**tests)() = (int (*[])()){__VA_ARGS__, 0};                           \
+    for (; 0 != *tests; ++tests) {                                             \
+      tests_run++;                                                             \
+      if (0 >= (*tests)()) {                                                   \
+        result = EXIT_FAILURE;                                                 \
+        ++tests_failed;                                                        \
+        break;                                                                 \
+      };                                                                       \
+    }                                                                          \
+    end_t = clock();                                                           \
+    fprintf(stderr, "ALL TESTS RUN - %zu/%zu succeeded\n",                     \
+            tests_run - tests_failed, tests_run);                              \
+    testrun_log_clock(start_t, end_t);                                         \
+    if (tests_failed != 0)                                                     \
+      exit(EXIT_FAILURE);                                                      \
+    ov_test_clear_test_directory();                                            \
+    void (*exit_hook)(void) = ov_test_get_exit_hook();                         \
+    if (0 != exit_hook) {                                                      \
+      exit_hook();                                                             \
+    }                                                                          \
+    result = result >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;                        \
+    exit(result);                                                              \
+  } while (0)
 
 /*****************************************************************************
                             FOR INTERNAL USAGE ONLY
@@ -212,18 +210,14 @@ void ov_test_ignore_signals();
 
 // Only reproduce the behaviour of `assert`
 #define TEST_ASSERT_INTERNAL(x)                                                \
-    do {                                                                       \
-        bool cond = (x);                                                       \
-        if (!cond) {                                                           \
-            fprintf(stderr,                                                    \
-                    "assertion failed: %s:%i (%s): %s\n",                      \
-                    __FILE__,                                                  \
-                    __LINE__,                                                  \
-                    __FUNCTION__,                                              \
-                    TEST_ASSERT_TO_STR_INTERNAL(x));                           \
-            abort();                                                           \
-        }                                                                      \
-    } while (0)
+  do {                                                                         \
+    bool cond = (x);                                                           \
+    if (!cond) {                                                               \
+      fprintf(stderr, "assertion failed: %s:%i (%s): %s\n", __FILE__,          \
+              __LINE__, __FUNCTION__, TEST_ASSERT_TO_STR_INTERNAL(x));         \
+      abort();                                                                 \
+    }                                                                          \
+  } while (0)
 
 #else
 

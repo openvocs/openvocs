@@ -32,135 +32,133 @@
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_file.h>
 
-ov_ice_proxy_generic_dtls_config ov_ice_proxy_generic_dtls_config_from_json(
-    const ov_json_value *input) {
+ov_ice_proxy_generic_dtls_config
+ov_ice_proxy_generic_dtls_config_from_json(const ov_json_value *input) {
 
-    ov_ice_proxy_generic_dtls_config out = {0};
+  ov_ice_proxy_generic_dtls_config out = {0};
 
-    const ov_json_value *conf = ov_json_object_get(input, OV_ICE_PROXY_SSL_KEY);
-    if (!conf) conf = input;
+  const ov_json_value *conf = ov_json_object_get(input, OV_ICE_PROXY_SSL_KEY);
+  if (!conf)
+    conf = input;
 
-    /*
-     *      We perform a read access on the cert and key,
-     *      to ensure the config is valid.
-     */
+  /*
+   *      We perform a read access on the cert and key,
+   *      to ensure the config is valid.
+   */
 
-    const char *cert = ov_json_string_get(
-        ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CERTIFICATE_FILE));
+  const char *cert = ov_json_string_get(
+      ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CERTIFICATE_FILE));
 
-    const char *key = ov_json_string_get(
-        ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CERTIFICATE_KEY));
+  const char *key = ov_json_string_get(
+      ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CERTIFICATE_KEY));
 
-    if (!cert || !key) {
-        ov_log_error("SSL JSON config without cert or key");
-        goto error;
-    }
+  if (!cert || !key) {
+    ov_log_error("SSL JSON config without cert or key");
+    goto error;
+  }
 
-    size_t bytes = 0;
+  size_t bytes = 0;
 
-    const char *error = ov_file_read_check(cert);
+  const char *error = ov_file_read_check(cert);
+
+  if (error) {
+    ov_log_error("SSL config cannot read certificate "
+                 "at %s error %s",
+                 cert, error);
+    goto error;
+  }
+
+  error = ov_file_read_check(key);
+
+  if (error) {
+    ov_log_error("SSL config cannot read key "
+                 "at %s error %s",
+                 key, error);
+    goto error;
+  }
+
+  bytes = snprintf(out.cert, PATH_MAX, "%s", cert);
+  if (bytes != strlen(cert))
+    goto error;
+
+  bytes = snprintf(out.key, PATH_MAX, "%s", key);
+  if (bytes != strlen(key))
+    goto error;
+
+  const char *string = ov_json_string_get(
+      ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CA_FILE));
+
+  if (string) {
+
+    error = ov_file_read_check(string);
 
     if (error) {
-        ov_log_error(
-            "SSL config cannot read certificate "
-            "at %s error %s",
-            cert,
-            error);
-        goto error;
+      ov_log_error("SSL config cannot read CA FILE "
+                   "at %s error %s",
+                   string, error);
+      goto error;
     }
 
-    error = ov_file_read_check(key);
+    bytes = snprintf(out.ca.file, PATH_MAX, "%s", string);
+    if (bytes != strlen(string))
+      goto error;
+  }
 
-    if (error) {
-        ov_log_error(
-            "SSL config cannot read key "
-            "at %s error %s",
-            key,
-            error);
-        goto error;
+  string = ov_json_string_get(
+      ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CA_PATH));
+
+  if (string) {
+
+    error = ov_file_read_check(string);
+
+    if (!error) {
+
+      ov_log_error("SSL config wrong path for CA PATH "
+                   "at %s error %s",
+                   string, error);
+      goto error;
+
+    } else if (0 != strcmp(error, OV_FILE_IS_DIR)) {
+
+      ov_log_error("SSL config wrong path for CA PATH "
+                   "at %s error %s",
+                   string, error);
+      goto error;
     }
 
-    bytes = snprintf(out.cert, PATH_MAX, "%s", cert);
-    if (bytes != strlen(cert)) goto error;
+    bytes = snprintf(out.ca.path, PATH_MAX, "%s", string);
+    if (bytes != strlen(string))
+      goto error;
+  }
 
-    bytes = snprintf(out.key, PATH_MAX, "%s", key);
-    if (bytes != strlen(key)) goto error;
+  string = ov_json_string_get(
+      ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_DTLS_STRP));
+  if (!string)
+    string = ov_ice_proxy_generic_dtls_SRTP_PROFILES;
 
-    const char *string = ov_json_string_get(
-        ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CA_FILE));
+  if (string) {
+    bytes =
+        snprintf(out.srtp.profile, OV_ICE_PROXY_SRTP_PROFILE_MAX, "%s", string);
+    if (bytes != strlen(string))
+      goto error;
+  }
 
-    if (string) {
+  ov_json_value *dtls = ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_DTLS);
+  if (!dtls)
+    goto done;
 
-        error = ov_file_read_check(string);
+  out.dtls.keys.quantity = ov_json_number_get(
+      ov_json_object_get(dtls, OV_ICE_PROXY_SSL_KEY_DTLS_KEY_QUANTITY));
 
-        if (error) {
-            ov_log_error(
-                "SSL config cannot read CA FILE "
-                "at %s error %s",
-                string,
-                error);
-            goto error;
-        }
+  out.dtls.keys.length = ov_json_number_get(
+      ov_json_object_get(dtls, OV_ICE_PROXY_SSL_KEY_DTLS_KEY_LENGTH));
 
-        bytes = snprintf(out.ca.file, PATH_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
-    }
-
-    string = ov_json_string_get(
-        ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_CA_PATH));
-
-    if (string) {
-
-        error = ov_file_read_check(string);
-
-        if (!error) {
-
-            ov_log_error(
-                "SSL config wrong path for CA PATH "
-                "at %s error %s",
-                string,
-                error);
-            goto error;
-
-        } else if (0 != strcmp(error, OV_FILE_IS_DIR)) {
-
-            ov_log_error(
-                "SSL config wrong path for CA PATH "
-                "at %s error %s",
-                string,
-                error);
-            goto error;
-        }
-
-        bytes = snprintf(out.ca.path, PATH_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
-    }
-
-    string = ov_json_string_get(
-        ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_DTLS_STRP));
-    if (!string) string = ov_ice_proxy_generic_dtls_SRTP_PROFILES;
-
-    if (string) {
-        bytes = snprintf(
-            out.srtp.profile, OV_ICE_PROXY_SRTP_PROFILE_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
-    }
-
-    ov_json_value *dtls = ov_json_object_get(conf, OV_ICE_PROXY_SSL_KEY_DTLS);
-    if (!dtls) goto done;
-
-    out.dtls.keys.quantity = ov_json_number_get(
-        ov_json_object_get(dtls, OV_ICE_PROXY_SSL_KEY_DTLS_KEY_QUANTITY));
-
-    out.dtls.keys.length = ov_json_number_get(
-        ov_json_object_get(dtls, OV_ICE_PROXY_SSL_KEY_DTLS_KEY_LENGTH));
-
-    out.dtls.keys.lifetime_usec = ov_json_number_get(
-        ov_json_object_get(dtls, OV_ICE_PROXY_SSL_KEY_DTLS_KEY_LIFETIME_USEC));
+  out.dtls.keys.lifetime_usec = ov_json_number_get(
+      ov_json_object_get(dtls, OV_ICE_PROXY_SSL_KEY_DTLS_KEY_LIFETIME_USEC));
 
 done:
-    return out;
+  return out;
 
 error:
-    return (ov_ice_proxy_generic_dtls_config){0};
+  return (ov_ice_proxy_generic_dtls_config){0};
 }

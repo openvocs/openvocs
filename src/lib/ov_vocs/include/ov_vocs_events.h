@@ -41,13 +41,13 @@ typedef struct ov_vocs_events ov_vocs_events;
 
 typedef struct ov_vocs_event_config {
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    struct {
+  struct {
 
-        ov_socket_configuration manager; // manager liege socket
+    ov_socket_configuration manager; // manager liege socket
 
-    } socket;
+  } socket;
 
 } ov_vocs_events_config;
 
@@ -125,36 +125,26 @@ void ov_vocs_events_emit_user_session_closed(ov_vocs_events *self,
 
 /*----------------------------------------------------------------------------*/
 
-void ov_vocs_events_emit_participation_state(ov_vocs_events *self,
-                                             const char *session_id,
-                                             const char *client_id,
-                                             const char *user_id,
-                                             const char *role_id,
-                                             const char *loop_id,
-                                             ov_socket_configuration multicast,
-                                             ov_participation_state state);
+void ov_vocs_events_emit_participation_state(
+    ov_vocs_events *self, const char *session_id, const char *client_id,
+    const char *user_id, const char *role_id, const char *loop_id,
+    ov_socket_configuration multicast, ov_participation_state state);
 
 /*----------------------------------------------------------------------------*/
 
 void ov_vocs_events_emit_loop_volume(ov_vocs_events *self,
                                      const char *session_id,
-                                     const char *client_id,
-                                     const char *user_id,
-                                     const char *role_id,
-                                     const char *loop_id,
+                                     const char *client_id, const char *user_id,
+                                     const char *role_id, const char *loop_id,
                                      ov_socket_configuration multicast,
                                      uint8_t volume);
 
 /*----------------------------------------------------------------------------*/
 
-void ov_vocs_events_emit_ptt(ov_vocs_events *self,
-                             const char *session_id,
-                             const char *client_id,
-                             const char *user_id,
-                             const char *role_id,
-                             const char *loop_id,
-                             ov_socket_configuration multicast,
-                             bool off);
+void ov_vocs_events_emit_ptt(ov_vocs_events *self, const char *session_id,
+                             const char *client_id, const char *user_id,
+                             const char *role_id, const char *loop_id,
+                             ov_socket_configuration multicast, bool off);
 
 /*----------------------------------------------------------------------------*/
 

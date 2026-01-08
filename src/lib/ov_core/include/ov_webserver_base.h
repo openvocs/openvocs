@@ -93,7 +93,7 @@
 #define OV_WEBSERVER_BASE_MAX_STUN_LISTENER 10
 
 #define OV_WEBSERVER_BASE_DOMAIN_CONFIG_PATH_DEFAULT                           \
-    "/etc/openvocs/ov_webserver/domains"
+  "/etc/openvocs/ov_webserver/domains"
 
 typedef struct ov_webserver_base ov_webserver_base;
 typedef struct ov_webserver_base_config ov_webserver_base_config;
@@ -102,90 +102,88 @@ typedef struct ov_webserver_base_config ov_webserver_base_config;
 
 struct ov_webserver_base_config {
 
-    bool debug;
-    bool ip4_only;
+  bool debug;
+  bool ip4_only;
 
-    char name[OV_WEBSERVER_BASE_NAME_MAX];
-    char domain_config_path[PATH_MAX];
+  char name[OV_WEBSERVER_BASE_NAME_MAX];
+  char domain_config_path[PATH_MAX];
 
-    struct {
+  struct {
 
-        uint32_t max_sockets;
-        uint32_t max_content_bytes_per_websocket_frame;
+    uint32_t max_sockets;
+    uint32_t max_content_bytes_per_websocket_frame;
 
-    } limit;
+  } limit;
 
-    ov_http_message_config http_message;
-    ov_websocket_frame_config websocket_frame;
+  ov_http_message_config http_message;
+  ov_websocket_frame_config websocket_frame;
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    struct {
+  struct {
 
-        ov_socket_configuration redirect; // default 80 HTTP redirect only
-        ov_socket_configuration secure;   // default 443 HTTPS
+    ov_socket_configuration redirect; // default 80 HTTP redirect only
+    ov_socket_configuration secure;   // default 443 HTTPS
 
-    } http;
+  } http;
 
-    struct {
+  struct {
 
-        ov_socket_configuration socket[OV_WEBSERVER_BASE_MAX_STUN_LISTENER];
+    ov_socket_configuration socket[OV_WEBSERVER_BASE_MAX_STUN_LISTENER];
 
-    } stun;
+  } stun;
 
-    struct {
+  struct {
 
-        void *userdata;
+    void *userdata;
 
-        bool (*accept)(void *userdata, int server_socket, int accepted_socket);
+    bool (*accept)(void *userdata, int server_socket, int accepted_socket);
 
-        /*
-         *  This callback SHOULD be set to process incoming HTTPs messages.
-         *
-         *  NOTE msg MUST be freed by the callback handler.
-         *  NOTE an error return will close the connection socket
-         *  NOTE websocket upgrades are already processed within
-         * ov_webserver_base NOTE this function will get the buffer as read from
-         * the wire and validated as some valid HTTP content with all pointer of
-         * the msg pointing to the data read. Nothing is copied, but data is
-         * preparsed.
-         */
-        bool (*https)(void *userdata,
-                      int connection_socket,
-                      ov_http_message *msg);
+    /*
+     *  This callback SHOULD be set to process incoming HTTPs messages.
+     *
+     *  NOTE msg MUST be freed by the callback handler.
+     *  NOTE an error return will close the connection socket
+     *  NOTE websocket upgrades are already processed within
+     * ov_webserver_base NOTE this function will get the buffer as read from
+     * the wire and validated as some valid HTTP content with all pointer of
+     * the msg pointing to the data read. Nothing is copied, but data is
+     * preparsed.
+     */
+    bool (*https)(void *userdata, int connection_socket, ov_http_message *msg);
 
-        /*
-         * Close callback for connection_sockets to
-         * cleanup connection based settings in userdata.
-         */
-        void (*close)(void *userdata, int connection_socket);
+    /*
+     * Close callback for connection_sockets to
+     * cleanup connection based settings in userdata.
+     */
+    void (*close)(void *userdata, int connection_socket);
 
-    } callback;
+  } callback;
 
-    struct {
+  struct {
 
-        /*
-         *  Timeout checks will be done at ANY accept_to_io_timeout_usec
-         *  and timeout all connection with io_timeout_usec without input.
-         *
-         *  NOTE io_timeout_usec of 0 will NOT timeout ANY IDLE connection,
-         *  ONCE some initial data was received after accept_to_io_timeout_usec.
-         *
-         *  NOTE timeout resolution MAY be implemented dependent of
-         *  accept_to_io_timeout_usec
-         */
+    /*
+     *  Timeout checks will be done at ANY accept_to_io_timeout_usec
+     *  and timeout all connection with io_timeout_usec without input.
+     *
+     *  NOTE io_timeout_usec of 0 will NOT timeout ANY IDLE connection,
+     *  ONCE some initial data was received after accept_to_io_timeout_usec.
+     *
+     *  NOTE timeout resolution MAY be implemented dependent of
+     *  accept_to_io_timeout_usec
+     */
 
-        /*  Default IO timeout
-         *  between IO messages
-         *  (may be 0 for no timeout) */
-        uint64_t io_timeout_usec;
+    /*  Default IO timeout
+     *  between IO messages
+     *  (may be 0 for no timeout) */
+    uint64_t io_timeout_usec;
 
-        /*  Default IO timeout
-         *  between ACCEPT and ANY IO message
-         *  (may be 0 for default of implementation e.g. 1 sec) */
-        uint64_t accept_to_io_timeout_usec;
+    /*  Default IO timeout
+     *  between ACCEPT and ANY IO message
+     *  (may be 0 for default of implementation e.g. 1 sec) */
+    uint64_t accept_to_io_timeout_usec;
 
-    } timer;
+  } timer;
 };
 
 /*
@@ -246,8 +244,7 @@ bool ov_webserver_base_close(ov_webserver_base *self, int socket);
 
     NOTE it is ensured all data of the buffer will be send up to buffer->length
 */
-bool ov_webserver_base_send_secure(ov_webserver_base *self,
-                                   int socket,
+bool ov_webserver_base_send_secure(ov_webserver_base *self, int socket,
                                    ov_buffer const *const data);
 
 /*----------------------------------------------------------------------------*/
@@ -259,8 +256,7 @@ bool ov_webserver_base_send_secure(ov_webserver_base *self,
     @param socket   connection socket
     @param data     json message to send
 */
-bool ov_webserver_base_send_json(ov_webserver_base *self,
-                                 int socket,
+bool ov_webserver_base_send_json(ov_webserver_base *self, int socket,
                                  ov_json_value const *const data);
 
 /*
@@ -281,8 +277,7 @@ bool ov_webserver_base_send_json(ov_webserver_base *self,
 
     @returns true if the send process was started.
 */
-bool ov_webserver_base_answer_get(ov_webserver_base *self,
-                                  int socket,
+bool ov_webserver_base_answer_get(ov_webserver_base *self, int socket,
                                   ov_file_format_desc fmt,
                                   const ov_http_message *request);
 
@@ -298,8 +293,7 @@ bool ov_webserver_base_answer_get(ov_webserver_base *self,
 
     @returns true if the send process was started.
 */
-bool ov_webserver_base_answer_head(ov_webserver_base *srv,
-                                   int socket,
+bool ov_webserver_base_answer_head(ov_webserver_base *srv, int socket,
                                    ov_file_format_desc fmt,
                                    const ov_http_message *request);
 
@@ -323,11 +317,9 @@ bool ov_webserver_base_answer_head(ov_webserver_base *srv,
     @returns true, if the request is within the limits of the document root
     and the path for the file was writen.
 */
-bool ov_webserver_base_uri_file_path(ov_webserver_base *self,
-                                     int socket,
+bool ov_webserver_base_uri_file_path(ov_webserver_base *self, int socket,
                                      const ov_http_message *request,
-                                     size_t length,
-                                     char *path);
+                                     size_t length, char *path);
 
 /*----------------------------------------------------------------------------*/
 
@@ -360,8 +352,7 @@ ov_domain *ov_webserver_base_find_domain(const ov_webserver_base *srv,
     @returns false if no domain with hostname is configured.
 */
 bool ov_webserver_base_configure_websocket_callback(
-    ov_webserver_base *self,
-    const ov_memory_pointer hostname,
+    ov_webserver_base *self, const ov_memory_pointer hostname,
     ov_websocket_message_config config);
 
 /*----------------------------------------------------------------------------*/
@@ -381,20 +372,18 @@ bool ov_webserver_base_configure_websocket_callback(
     the event for the name (URI) will be disabled.
 */
 bool ov_webserver_base_configure_uri_event_io(
-    ov_webserver_base *self,
-    const ov_memory_pointer hostname,
-    const ov_event_io_config config,
-    const ov_websocket_message_config *wss_io);
+    ov_webserver_base *self, const ov_memory_pointer hostname,
+    const ov_event_io_config config, const ov_websocket_message_config *wss_io);
 
 /*----------------------------------------------------------------------------*/
 
-ov_webserver_base_config ov_webserver_base_config_from_json(
-    const ov_json_value *value);
+ov_webserver_base_config
+ov_webserver_base_config_from_json(const ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_webserver_base_config_to_json(
-    ov_webserver_base_config config);
+ov_json_value *
+ov_webserver_base_config_to_json(ov_webserver_base_config config);
 
 /*----------------------------------------------------------------------------*/
 

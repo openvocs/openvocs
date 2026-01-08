@@ -47,80 +47,62 @@ typedef struct ov_mc_backend_sip ov_mc_backend_sip;
 
 typedef struct ov_mc_backend_sip_config {
 
-    ov_event_loop *loop;
-    ov_vocs_db *db;
-    ov_io *io;
-    ov_mc_backend *backend;
+  ov_event_loop *loop;
+  ov_vocs_db *db;
+  ov_io *io;
+  ov_mc_backend *backend;
+
+  struct {
+
+    ov_socket_configuration manager; // manager liege socket
+
+  } socket;
+
+  struct {
+
+    uint64_t response_usec;
+
+  } timeout;
+
+  struct {
+
+    void *userdata;
 
     struct {
 
-        ov_socket_configuration manager; // manager liege socket
+      void (*init)(void *userdata, const char *uuid, const char *loopname,
+                   const char *call_id, const char *caller, const char *callee,
+                   uint8_t error_code, const char *error_desc);
 
-    } socket;
+      void (*new)(void *userdata, const char *loopname, const char *call_id,
+                  const char *peer);
 
-    struct {
+      void (*terminated)(void *userdata, const char *call_id,
+                         const char *loopname);
 
-        uint64_t response_usec;
+      void (*permit)(void *userdata, const ov_sip_permission permission,
+                     uint64_t error_code, const char *error_desc);
 
-    } timeout;
+      void (*revoke)(void *userdata, const ov_sip_permission permission,
+                     uint64_t error_code, const char *error_desc);
 
-    struct {
+    } call;
 
-        void *userdata;
+    void (*list_calls)(void *userdata, const char *uuid,
+                       const ov_json_value *calls, uint64_t error_code,
+                       const char *error_desc);
 
-        struct {
+    void (*list_permissions)(void *userdata, const char *uuid,
+                             const ov_json_value *permissions,
+                             uint64_t error_code, const char *error_desc);
 
-            void (*init)(void *userdata,
-                         const char *uuid,
-                         const char *loopname,
-                         const char *call_id,
-                         const char *caller,
-                         const char *callee,
-                         uint8_t error_code,
-                         const char *error_desc);
+    void (*get_status)(void *userdata, const char *uuid,
+                       const ov_json_value *status, uint64_t error_code,
+                       const char *error_desc);
 
-            void (*new)(void *userdata,
-                        const char *loopname,
-                        const char *call_id,
-                        const char *peer);
+    void (*connected)(void *userdata, bool status);
 
-            void (*terminated)(void *userdata,
-                               const char *call_id,
-                               const char *loopname);
-
-            void (*permit)(void *userdata,
-                           const ov_sip_permission permission,
-                           uint64_t error_code,
-                           const char *error_desc);
-
-            void (*revoke)(void *userdata,
-                           const ov_sip_permission permission,
-                           uint64_t error_code,
-                           const char *error_desc);
-
-        } call;
-
-        void (*list_calls)(void *userdata,
-                           const char *uuid,
-                           const ov_json_value *calls,
-                           uint64_t error_code,
-                           const char *error_desc);
-
-        void (*list_permissions)(void *userdata,
-                                 const char *uuid,
-                                 const ov_json_value *permissions,
-                                 uint64_t error_code,
-                                 const char *error_desc);
-
-        void (*get_status)(void *userdata,
-                           const char *uuid,
-                           const ov_json_value *status,
-                           uint64_t error_code,
-                           const char *error_desc);
-
-        void (*connected)(void *userdata, bool status);
-
-    } callback;
+  } callback;
 
 } ov_mc_backend_sip_config;
 
@@ -138,13 +120,12 @@ ov_mc_backend_sip *ov_mc_backend_sip_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_sip_config ov_mc_backend_sip_config_from_json(
-    const ov_json_value *val);
+ov_mc_backend_sip_config
+ov_mc_backend_sip_config_from_json(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_mc_backend_sip_create_call(ov_mc_backend_sip *self,
-                                    const char *loop,
+char *ov_mc_backend_sip_create_call(ov_mc_backend_sip *self, const char *loop,
                                     const char *destination_number,
                                     const char *from_number);
 

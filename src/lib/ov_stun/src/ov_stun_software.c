@@ -43,21 +43,25 @@
 
 bool ov_stun_attribute_frame_is_software(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 8) goto error;
+  if (!buffer || length < 8)
+    goto error;
 
-    uint16_t type = ov_stun_attribute_get_type(buffer, length);
-    int64_t size = ov_stun_attribute_get_length(buffer, length);
+  uint16_t type = ov_stun_attribute_get_type(buffer, length);
+  int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != STUN_SOFTWARE) goto error;
+  if (type != STUN_SOFTWARE)
+    goto error;
 
-    if (size < 1 || size > 763) goto error;
+  if (size < 1 || size > 763)
+    goto error;
 
-    if (length < (size_t)size + 4) goto error;
+  if (length < (size_t)size + 4)
+    goto error;
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*      ------------------------------------------------------------------------
@@ -69,9 +73,10 @@ error:
 
 bool ov_stun_software_validate(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 1 || length > 763) return false;
+  if (!buffer || length < 1 || length > 763)
+    return false;
 
-    return ov_utf8_validate_sequence(buffer, length);
+  return ov_utf8_validate_sequence(buffer, length);
 }
 
 /*
@@ -85,61 +90,67 @@ bool ov_stun_software_validate(const uint8_t *buffer, size_t length) {
 size_t ov_stun_software_encoding_length(const uint8_t *software,
                                         size_t length) {
 
-    if (!software || length == 0 || length > 763) goto error;
+  if (!software || length == 0 || length > 763)
+    goto error;
 
-    size_t pad = 0;
-    pad = length % 4;
-    if (pad != 0) pad = 4 - pad;
+  size_t pad = 0;
+  pad = length % 4;
+  if (pad != 0)
+    pad = 4 - pad;
 
-    return length + 4 + pad;
+  return length + 4 + pad;
 error:
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_software_encode(uint8_t *buffer,
-                             size_t length,
-                             uint8_t **next,
-                             const uint8_t *software,
-                             size_t size) {
+bool ov_stun_software_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                             const uint8_t *software, size_t size) {
 
-    if (!buffer || !software || size > 763 || size == 0) goto error;
+  if (!buffer || !software || size > 763 || size == 0)
+    goto error;
 
-    size_t len = ov_stun_software_encoding_length(software, size);
+  size_t len = ov_stun_software_encoding_length(software, size);
 
-    if (length < len) goto error;
+  if (length < len)
+    goto error;
 
-    if (!ov_stun_software_validate(software, size)) goto error;
+  if (!ov_stun_software_validate(software, size))
+    goto error;
 
-    return ov_stun_attribute_encode(
-        buffer, length, next, STUN_SOFTWARE, software, size);
+  return ov_stun_attribute_encode(buffer, length, next, STUN_SOFTWARE, software,
+                                  size);
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_software_decode(const uint8_t *buffer,
-                             size_t length,
-                             uint8_t **software,
-                             size_t *size) {
+bool ov_stun_software_decode(const uint8_t *buffer, size_t length,
+                             uint8_t **software, size_t *size) {
 
-    if (!buffer || length < 5 || !software || !size) goto error;
+  if (!buffer || length < 5 || !software || !size)
+    goto error;
 
-    if (!ov_stun_attribute_frame_is_software(buffer, length)) goto error;
+  if (!ov_stun_attribute_frame_is_software(buffer, length))
+    goto error;
 
-    *size = ov_stun_attribute_get_length(buffer, length);
-    *software = (uint8_t *)buffer + 4;
+  *size = ov_stun_attribute_get_length(buffer, length);
+  *software = (uint8_t *)buffer + 4;
 
-    if (*size == 0) goto error;
+  if (*size == 0)
+    goto error;
 
-    if (!ov_stun_software_validate(*software, *size)) goto error;
+  if (!ov_stun_software_validate(*software, *size))
+    goto error;
 
-    return true;
+  return true;
 
 error:
-    if (software) *software = NULL;
-    if (size) *size = 0;
-    return false;
+  if (software)
+    *software = NULL;
+  if (size)
+    *size = 0;
+  return false;
 }

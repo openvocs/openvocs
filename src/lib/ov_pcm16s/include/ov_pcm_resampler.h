@@ -36,10 +36,8 @@
 typedef struct ov_pcm_16_resampler ov_pcm_16_resampler;
 
 ov_pcm_16_resampler *ov_pcm_16_resampler_create(
-    size_t max_number_of_in_samples,
-    size_t max_number_of_out_samples,
-    double sample_rate_in_hertz,
-    double sample_rate_out_hertz);
+    size_t max_number_of_in_samples, size_t max_number_of_out_samples,
+    double sample_rate_in_hertz, double sample_rate_out_hertz);
 
 ov_pcm_16_resampler *ov_pcm_16_resampler_free(ov_pcm_16_resampler *self);
 
@@ -57,10 +55,8 @@ ov_pcm_16_resampler *ov_pcm_16_resampler_free(ov_pcm_16_resampler *self);
  * hence nothing done. `out` was not altered.
  *
  */
-ssize_t ov_pcm_16_resample(ov_pcm_16_resampler *self,
-                           int16_t const *in,
-                           size_t number_of_samples,
-                           int16_t *out,
+ssize_t ov_pcm_16_resample(ov_pcm_16_resampler *self, int16_t const *in,
+                           size_t number_of_samples, int16_t *out,
                            size_t out_samples_capacity);
 
 /*----------------------------------------------------------------------------*/
@@ -71,8 +67,7 @@ ssize_t ov_pcm_16_resample(ov_pcm_16_resampler *self,
  */
 ssize_t ov_pcm_16_resample_uncached(ov_pcm_16_resampler const *self,
                                     int16_t const *in,
-                                    const size_t num_in_samples,
-                                    int16_t *out,
+                                    const size_t num_in_samples, int16_t *out,
                                     const size_t out_samples_capacity);
 
 /*----------------------------------------------------------------------------*/

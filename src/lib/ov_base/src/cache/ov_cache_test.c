@@ -48,22 +48,23 @@
 /* To be used to concurrently modify a cache */
 void *cache_worker(void *arg) {
 
-    OV_ASSERT(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0));
-    OV_ASSERT(0 == pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0));
+  OV_ASSERT(0 == pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, 0));
+  OV_ASSERT(0 == pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0));
 
-    ov_cache *cache = arg;
+  ov_cache *cache = arg;
 
-    struct timespec time_to_wait = {.tv_sec = 0, .tv_nsec = 1000};
+  struct timespec time_to_wait = {.tv_sec = 0, .tv_nsec = 1000};
 
-    while (true) {
+  while (true) {
 
-        size_t *value = ov_cache_get(cache);
-        if (0 != value) ov_cache_put(cache, value);
+    size_t *value = ov_cache_get(cache);
+    if (0 != value)
+      ov_cache_put(cache, value);
 
-        nanosleep(&time_to_wait, 0);
-    }
+    nanosleep(&time_to_wait, 0);
+  }
 
-    return 0;
+  return 0;
 }
 
 /*
@@ -78,258 +79,259 @@ void *cache_worker(void *arg) {
 
 int test_ov_cache_extend() {
 
-    /* Should create a cache with default cache size */
-    ov_cache *cache = ov_cache_extend(0, 0);
-    testrun(0 != cache);
+  /* Should create a cache with default cache size */
+  ov_cache *cache = ov_cache_extend(0, 0);
+  testrun(0 != cache);
 
-    cache = ov_cache_free(cache, 0, 0);
-    testrun(0 == cache);
+  cache = ov_cache_free(cache, 0, 0);
+  testrun(0 == cache);
 
-    cache = ov_cache_extend(0, 1);
-    testrun(0 != cache);
+  cache = ov_cache_extend(0, 1);
+  testrun(0 != cache);
 
-    int testvals[] = {9, 8, 7, 6, 5, 4, 3, 2, 1};
+  int testvals[] = {9, 8, 7, 6, 5, 4, 3, 2, 1};
 
-    const size_t num_testvals = sizeof(testvals) / sizeof(testvals[0]);
+  const size_t num_testvals = sizeof(testvals) / sizeof(testvals[0]);
 
-    testrun(0 == ov_cache_put(cache, testvals + 0));
-    for (size_t i = 1; i < num_testvals; ++i) {
-        testrun(testvals + i == ov_cache_put(cache, testvals + i));
-    }
+  testrun(0 == ov_cache_put(cache, testvals + 0));
+  for (size_t i = 1; i < num_testvals; ++i) {
+    testrun(testvals + i == ov_cache_put(cache, testvals + i));
+  }
 
-    cache = ov_cache_extend(cache, 1);
-    testrun(0 != cache);
+  cache = ov_cache_extend(cache, 1);
+  testrun(0 != cache);
 
-    /* Total capacity: 2 */
+  /* Total capacity: 2 */
 
-    testrun(0 == ov_cache_put(cache, testvals + 1));
+  testrun(0 == ov_cache_put(cache, testvals + 1));
 
-    for (size_t i = 0; i < num_testvals; ++i) {
-        testrun(testvals + i == ov_cache_put(cache, testvals + i));
-    }
+  for (size_t i = 0; i < num_testvals; ++i) {
+    testrun(testvals + i == ov_cache_put(cache, testvals + i));
+  }
 
+  testrun(0 != ov_cache_get(cache));
+  testrun(0 != ov_cache_get(cache));
+
+  testrun(0 == ov_cache_get(cache));
+
+  cache = ov_cache_extend(cache, num_testvals);
+  testrun(0 != cache);
+
+  for (size_t i = 0; i < num_testvals; ++i) {
+    testrun(0 == ov_cache_put(cache, testvals + i));
+  }
+
+  for (size_t i = 0; i < num_testvals; ++i) {
     testrun(0 != ov_cache_get(cache));
+  }
+
+  testrun(0 == ov_cache_get(cache));
+
+  /* Lastly: Check whether elements are moved into new cache upon extension */
+
+  for (size_t i = 0; i < num_testvals; ++i) {
+    testrun(0 == ov_cache_put(cache, testvals + i));
+  }
+
+  cache = ov_cache_extend(cache, 12);
+
+  for (size_t i = 0; i < num_testvals; ++i) {
     testrun(0 != ov_cache_get(cache));
+  }
 
-    testrun(0 == ov_cache_get(cache));
+  testrun(0 == ov_cache_get(cache));
 
-    cache = ov_cache_extend(cache, num_testvals);
-    testrun(0 != cache);
+  cache = ov_cache_free(cache, 0, 0);
 
-    for (size_t i = 0; i < num_testvals; ++i) {
-        testrun(0 == ov_cache_put(cache, testvals + i));
-    }
+  testrun(0 == cache);
 
-    for (size_t i = 0; i < num_testvals; ++i) {
-        testrun(0 != ov_cache_get(cache));
-    }
-
-    testrun(0 == ov_cache_get(cache));
-
-    /* Lastly: Check whether elements are moved into new cache upon extension */
-
-    for (size_t i = 0; i < num_testvals; ++i) {
-        testrun(0 == ov_cache_put(cache, testvals + i));
-    }
-
-    cache = ov_cache_extend(cache, 12);
-
-    for (size_t i = 0; i < num_testvals; ++i) {
-        testrun(0 != ov_cache_get(cache));
-    }
-
-    testrun(0 == ov_cache_get(cache));
-
-    cache = ov_cache_free(cache, 0, 0);
-
-    testrun(0 == cache);
-
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*---------------------------------------------------------------------------*/
 
 static void *dummy_free(void *item) {
 
-    if (item) free(item);
-    return NULL;
+  if (item)
+    free(item);
+  return NULL;
 }
 
 /*---------------------------------------------------------------------------*/
 
 int test_ov_cache_free() {
 
-    testrun(0 == ov_cache_free(0, 0, NULL));
+  testrun(0 == ov_cache_free(0, 0, NULL));
 
-    ov_cache *cache = ov_cache_extend(0, 0);
-    cache = ov_cache_free(cache, 0, NULL);
-    testrun(0 == cache);
+  ov_cache *cache = ov_cache_extend(0, 0);
+  cache = ov_cache_free(cache, 0, NULL);
+  testrun(0 == cache);
 
-    cache = ov_cache_extend(0, 11);
+  cache = ov_cache_extend(0, 11);
 
-    cache = ov_cache_free(cache, 0, NULL);
-    testrun(0 == cache);
+  cache = ov_cache_free(cache, 0, NULL);
+  testrun(0 == cache);
 
-    cache = ov_cache_extend(0, 0);
+  cache = ov_cache_extend(0, 0);
 
-    /* Forcibly mark the cache as in use */
+  /* Forcibly mark the cache as in use */
 
-    atomic_flag_test_and_set(&cache->in_use);
+  atomic_flag_test_and_set(&cache->in_use);
 
-    /* Should fail after 1 sec because in use */
-    cache = ov_cache_free(cache, 1, NULL);
-    testrun(0 != cache);
+  /* Should fail after 1 sec because in use */
+  cache = ov_cache_free(cache, 1, NULL);
+  testrun(0 != cache);
 
-    atomic_flag_clear(&cache->in_use);
-    /* Should fail after 1 sec because in use */
-    cache = ov_cache_free(cache, 1, NULL);
-    testrun(0 == cache);
+  atomic_flag_clear(&cache->in_use);
+  /* Should fail after 1 sec because in use */
+  cache = ov_cache_free(cache, 1, NULL);
+  testrun(0 == cache);
 
-    // use item free
+  // use item free
 
-    cache = ov_cache_extend(0, 11);
+  cache = ov_cache_extend(0, 11);
 
-    char *item = NULL;
+  char *item = NULL;
 
-    for (size_t i = 0; i < 10; i++) {
+  for (size_t i = 0; i < 10; i++) {
 
-        item = calloc(10, sizeof(char));
-        testrun(NULL == ov_cache_put(cache, item));
-    }
+    item = calloc(10, sizeof(char));
+    testrun(NULL == ov_cache_put(cache, item));
+  }
 
-    cache = ov_cache_free(cache, 0, dummy_free);
-    testrun(0 == cache);
+  cache = ov_cache_free(cache, 0, dummy_free);
+  testrun(0 == cache);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_cache_get() {
 
-    /* Content does not matter - all we want is addresses */
-    size_t testvalues[10] = {0};
+  /* Content does not matter - all we want is addresses */
+  size_t testvalues[10] = {0};
 
-    const size_t num_testvalues = sizeof(testvalues) / sizeof(testvalues[0]);
+  const size_t num_testvalues = sizeof(testvalues) / sizeof(testvalues[0]);
 
-    testrun(0 == ov_cache_get(0));
+  testrun(0 == ov_cache_get(0));
 
-    ov_cache *cache = ov_cache_extend(0, 0);
+  ov_cache *cache = ov_cache_extend(0, 0);
 
-    testrun(0 == ov_cache_get(cache));
+  testrun(0 == ov_cache_get(cache));
 
-    testrun(0 == ov_cache_put(cache, &testvalues[0]));
-    testrun(&testvalues[0] == ov_cache_get(cache));
+  testrun(0 == ov_cache_put(cache, &testvalues[0]));
+  testrun(&testvalues[0] == ov_cache_get(cache));
 
-    for (size_t i = 0; num_testvalues > i; ++i) {
+  for (size_t i = 0; num_testvalues > i; ++i) {
 
-        testrun(0 == ov_cache_put(cache, testvalues + i));
-    }
+    testrun(0 == ov_cache_put(cache, testvalues + i));
+  }
 
-    for (size_t i = 0; num_testvalues > i; ++i) {
+  for (size_t i = 0; num_testvalues > i; ++i) {
 
-        void *object = ov_cache_get(cache);
-        testrun((void *)testvalues <= object);
-        testrun((void *)(testvalues + num_testvalues) > object);
-    }
+    void *object = ov_cache_get(cache);
+    testrun((void *)testvalues <= object);
+    testrun((void *)(testvalues + num_testvalues) > object);
+  }
 
-    testrun(0 == ov_cache_get(cache));
+  testrun(0 == ov_cache_get(cache));
 
-    cache = ov_cache_free(cache, 0, NULL);
-    testrun(0 == cache);
+  cache = ov_cache_free(cache, 0, NULL);
+  testrun(0 == cache);
 
-    /**********************************************************************
-                The same gain, but with finite capacity
-     **********************************************************************/
+  /**********************************************************************
+              The same gain, but with finite capacity
+   **********************************************************************/
 
-    cache = ov_cache_extend(0, num_testvalues - 1);
+  cache = ov_cache_extend(0, num_testvalues - 1);
 
-    testrun(0 == ov_cache_get(cache));
+  testrun(0 == ov_cache_get(cache));
 
-    testrun(0 == ov_cache_put(cache, &testvalues[0]));
-    testrun(&testvalues[0] == ov_cache_get(cache));
+  testrun(0 == ov_cache_put(cache, &testvalues[0]));
+  testrun(&testvalues[0] == ov_cache_get(cache));
 
-    for (size_t i = 0; num_testvalues - 1 > i; ++i) {
+  for (size_t i = 0; num_testvalues - 1 > i; ++i) {
 
-        testrun(0 == ov_cache_put(cache, testvalues + i));
-    }
+    testrun(0 == ov_cache_put(cache, testvalues + i));
+  }
 
-    for (size_t i = 0; num_testvalues - 1 > i; ++i) {
+  for (size_t i = 0; num_testvalues - 1 > i; ++i) {
 
-        void *object = ov_cache_get(cache);
-        testrun((void *)testvalues <= object);
-        testrun((void *)(testvalues + num_testvalues - 1) > object);
-    }
+    void *object = ov_cache_get(cache);
+    testrun((void *)testvalues <= object);
+    testrun((void *)(testvalues + num_testvalues - 1) > object);
+  }
 
-    testrun(0 == ov_cache_get(cache));
+  testrun(0 == ov_cache_get(cache));
 
-    for (size_t i = 0; num_testvalues - 1 > i; ++i) {
+  for (size_t i = 0; num_testvalues - 1 > i; ++i) {
 
-        testrun(0 == ov_cache_put(cache, testvalues + i));
-    }
+    testrun(0 == ov_cache_put(cache, testvalues + i));
+  }
 
-    cache = ov_cache_free(cache, 0, NULL);
-    testrun(0 == cache);
+  cache = ov_cache_free(cache, 0, NULL);
+  testrun(0 == cache);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_cache_put() {
 
-    /* Tests done by test_ov_cache_get */
-    return testrun_log_success();
+  /* Tests done by test_ov_cache_get */
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int check_concurrent_access() {
 
-    /* Content does not matter - all we want is addresses */
-    size_t testvalues[10] = {0};
+  /* Content does not matter - all we want is addresses */
+  size_t testvalues[10] = {0};
 
-    const size_t num_testvalues = sizeof(testvalues) / sizeof(testvalues[0]);
+  const size_t num_testvalues = sizeof(testvalues) / sizeof(testvalues[0]);
 
-    testrun(0 == ov_cache_get(0));
+  testrun(0 == ov_cache_get(0));
 
-    ov_cache *cache = ov_cache_extend(0, 0);
+  ov_cache *cache = ov_cache_extend(0, 0);
 
-    for (size_t i = 0; num_testvalues > i; ++i) {
+  for (size_t i = 0; num_testvalues > i; ++i) {
 
-        testrun(0 == ov_cache_put(cache, testvalues + i));
-    }
+    testrun(0 == ov_cache_put(cache, testvalues + i));
+  }
 
-    pthread_t threads[5] = {0};
+  pthread_t threads[5] = {0};
 
-    const size_t num_threads = sizeof(threads) / sizeof(threads[0]);
+  const size_t num_threads = sizeof(threads) / sizeof(threads[0]);
 
-    for (size_t i = 0; num_threads > i; ++i) {
-        testrun(0 == pthread_create(threads + i, 0, cache_worker, cache));
-    }
+  for (size_t i = 0; num_threads > i; ++i) {
+    testrun(0 == pthread_create(threads + i, 0, cache_worker, cache));
+  }
 
-    struct timespec time_to_wait = {
-        .tv_sec = 1,
-    };
+  struct timespec time_to_wait = {
+      .tv_sec = 1,
+  };
 
-    testrun(0 == nanosleep(&time_to_wait, 0));
+  testrun(0 == nanosleep(&time_to_wait, 0));
 
-    for (size_t i = 0; num_threads > i; ++i) {
+  for (size_t i = 0; num_threads > i; ++i) {
 
-        testrun(0 == pthread_cancel(threads[i]));
-    }
+    testrun(0 == pthread_cancel(threads[i]));
+  }
 
-    void *thread_retval;
+  void *thread_retval;
 
-    for (size_t i = 0; num_threads > i; ++i) {
+  for (size_t i = 0; num_threads > i; ++i) {
 
-        testrun(0 == pthread_join(threads[i], &thread_retval));
-    }
+    testrun(0 == pthread_join(threads[i], &thread_retval));
+  }
 
-    testrun(0 == ov_cache_free(cache, 0, NULL));
-    cache = 0;
+  testrun(0 == ov_cache_free(cache, 0, NULL));
+  cache = 0;
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /******************************************************************************
@@ -338,44 +340,44 @@ int check_concurrent_access() {
 
 bool is_23(void *element) {
 
-    OV_ASSERT(0 != element);
+  OV_ASSERT(0 != element);
 
-    int *ipointer = element;
+  int *ipointer = element;
 
-    return 23 == *ipointer;
+  return 23 == *ipointer;
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_cache_set_element_checker() {
 
-    ov_cache *cache = ov_cache_extend(0, 0);
-    testrun(0 != cache);
+  ov_cache *cache = ov_cache_extend(0, 0);
+  testrun(0 != cache);
 
-    /* Verify it works without element checker */
-    int not_correct = 17;
-    int correct = 23;
+  /* Verify it works without element checker */
+  int not_correct = 17;
+  int correct = 23;
 
-    testrun(0 == ov_cache_put(cache, &not_correct));
-    testrun(0 == ov_cache_put(cache, &correct));
+  testrun(0 == ov_cache_put(cache, &not_correct));
+  testrun(0 == ov_cache_put(cache, &correct));
 
-    cache = ov_cache_free(cache, 0, 0);
-    testrun(0 == cache);
+  cache = ov_cache_free(cache, 0, 0);
+  testrun(0 == cache);
 
-    cache = ov_cache_extend(0, 0);
-    testrun(0 != cache);
+  cache = ov_cache_extend(0, 0);
+  testrun(0 != cache);
 
-    ov_cache_set_element_checker(cache, is_23);
+  ov_cache_set_element_checker(cache, is_23);
 
-    testrun(&not_correct == ov_cache_put(cache, &not_correct));
-    testrun(0 == ov_cache_put(cache, &correct));
+  testrun(&not_correct == ov_cache_put(cache, &not_correct));
+  testrun(0 == ov_cache_put(cache, &correct));
 
-    testrun(ov_cache_put(cache, &not_correct));
+  testrun(ov_cache_put(cache, &not_correct));
 
-    cache = ov_cache_free(cache, 0, 0);
-    testrun(0 == cache);
+  cache = ov_cache_free(cache, 0, 0);
+  testrun(0 == cache);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 #endif
@@ -384,16 +386,16 @@ int test_ov_cache_set_element_checker() {
 
 int check_cache_disabled() {
 
-    ov_cache cache = {0};
+  ov_cache cache = {0};
 
-    char *test = "string";
+  char *test = "string";
 
-    testrun(!ov_cache_extend(0, 0));
-    testrun(!ov_cache_free(&cache, 0, NULL));
-    testrun(!ov_cache_get(&cache));
-    testrun(!ov_cache_put(&cache, test));
+  testrun(!ov_cache_extend(0, 0));
+  testrun(!ov_cache_free(&cache, 0, NULL));
+  testrun(!ov_cache_get(&cache));
+  testrun(!ov_cache_put(&cache, test));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*
@@ -406,23 +408,23 @@ int check_cache_disabled() {
 
 int all_tests() {
 
-    testrun_init();
+  testrun_init();
 
 #ifndef OV_DISABLE_CACHING
 
-    testrun_test(test_ov_cache_extend);
-    testrun_test(test_ov_cache_free);
-    testrun_test(test_ov_cache_get);
-    testrun_test(test_ov_cache_put);
-    testrun_test(test_ov_cache_set_element_checker);
+  testrun_test(test_ov_cache_extend);
+  testrun_test(test_ov_cache_free);
+  testrun_test(test_ov_cache_get);
+  testrun_test(test_ov_cache_put);
+  testrun_test(test_ov_cache_set_element_checker);
 
-    testrun_test(check_concurrent_access);
+  testrun_test(check_concurrent_access);
 
 #else
-    testrun_test(check_cache_disabled);
+  testrun_test(check_cache_disabled);
 #endif
 
-    return testrun_counter;
+  return testrun_counter;
 }
 
 /*

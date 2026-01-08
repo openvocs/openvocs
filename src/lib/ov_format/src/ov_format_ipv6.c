@@ -45,8 +45,8 @@ static const size_t INT_HEADER_MIN_LENGTH = 40;
 
 typedef struct {
 
-    uint32_t magic_bytes;
-    ov_format_ipv6_header header;
+  uint32_t magic_bytes;
+  ov_format_ipv6_header header;
 
 } ipv6_data;
 
@@ -54,256 +54,251 @@ typedef struct {
 
 static ipv6_data *as_ipv6_data(void *data) {
 
-    if (0 == data) return 0;
+  if (0 == data)
+    return 0;
 
-    ipv6_data *ipv6_data = data;
+  ipv6_data *ipv6_data = data;
 
-    if (IPV6_MAGIC_BYTES != ipv6_data->magic_bytes) return 0;
+  if (IPV6_MAGIC_BYTES != ipv6_data->magic_bytes)
+    return 0;
 
-    return ipv6_data;
+  return ipv6_data;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static size_t get_next_header_length(uint8_t type) {
 
-    switch (type) {
+  switch (type) {
 
-        case 6:
-            return 0; // TCP
+  case 6:
+    return 0; // TCP
 
-        case 17:
-            return 0; // UDP
+  case 17:
+    return 0; // UDP
 
-        case 58:
-            return 0; // ICMPv6
-    };
+  case 58:
+    return 0; // ICMPv6
+  };
 
-    /* We do not support any other types right now ... */
-    return 1;
+  /* We do not support any other types right now ... */
+  return 1;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool skip_extension_headers(uint8_t **rd_ptr,
-                                   size_t *length,
+static bool skip_extension_headers(uint8_t **rd_ptr, size_t *length,
                                    uint8_t next_header_type,
                                    uint8_t *payload_type_out) {
 
-    UNUSED(rd_ptr);
-    UNUSED(length);
+  UNUSED(rd_ptr);
+  UNUSED(length);
 
-    size_t next_header_length = get_next_header_length(next_header_type);
+  size_t next_header_length = get_next_header_length(next_header_type);
 
-    /* We just discard any packet carrying one or more  extension header -
-     * too complex to handle right now */
-    if (0 != next_header_length) goto error;
+  /* We just discard any packet carrying one or more  extension header -
+   * too complex to handle right now */
+  if (0 != next_header_length)
+    goto error;
 
-    *payload_type_out = next_header_type;
+  *payload_type_out = next_header_type;
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool get_ipv6_header_unsafe(ov_format_ipv6_header *out,
-                                   uint8_t **rd_ptr,
+static bool get_ipv6_header_unsafe(ov_format_ipv6_header *out, uint8_t **rd_ptr,
                                    size_t *length) {
 
-    OV_ASSERT(0 != out);
-    OV_ASSERT(0 != rd_ptr);
-    OV_ASSERT(0 != *rd_ptr);
-    OV_ASSERT(0 != length);
-    OV_ASSERT(0 != length);
+  OV_ASSERT(0 != out);
+  OV_ASSERT(0 != rd_ptr);
+  OV_ASSERT(0 != *rd_ptr);
+  OV_ASSERT(0 != length);
+  OV_ASSERT(0 != length);
 
-    ov_format_ipv6_header hdr = {0};
+  ov_format_ipv6_header hdr = {0};
 
-    if (*length < INT_HEADER_MIN_LENGTH) {
+  if (*length < INT_HEADER_MIN_LENGTH) {
 
-        ov_log_error("IPV6 header too small");
-        goto error;
-    }
+    ov_log_error("IPV6 header too small");
+    goto error;
+  }
 
-    uint8_t *ptr = *rd_ptr;
-    OV_ASSERT(0 != ptr);
+  uint8_t *ptr = *rd_ptr;
+  OV_ASSERT(0 != ptr);
 
-    size_t read_octets = 0;
+  size_t read_octets = 0;
 
-    uint8_t byte = *ptr;
-    ptr += 1;
+  uint8_t byte = *ptr;
+  ptr += 1;
 
-    /* Right shift portable because we deal with unsigned type here */
-    if ((byte >> 4) != 6) {
+  /* Right shift portable because we deal with unsigned type here */
+  if ((byte >> 4) != 6) {
 
-        ov_log_error(
-            "Wrong version in IPv6 header. Expected 6, got %" PRIu8, byte >> 4);
-        goto error;
-    }
+    ov_log_error("Wrong version in IPv6 header. Expected 6, got %" PRIu8,
+                 byte >> 4);
+    goto error;
+  }
 
-    hdr.traffic_class = byte & 0x0f;
-    hdr.traffic_class <<= 4;
+  hdr.traffic_class = byte & 0x0f;
+  hdr.traffic_class <<= 4;
 
-    byte = *ptr;
-    ptr += 1;
+  byte = *ptr;
+  ptr += 1;
 
-    hdr.traffic_class += (byte & 0xf0) >> 4;
+  hdr.traffic_class += (byte & 0xf0) >> 4;
 
-    hdr.flow_label = (byte & 0x0f);
-    hdr.flow_label <<= 16;
+  hdr.flow_label = (byte & 0x0f);
+  hdr.flow_label <<= 16;
 
-    hdr.flow_label += ntohs(*(uint16_t *)ptr);
-    ptr += 2;
+  hdr.flow_label += ntohs(*(uint16_t *)ptr);
+  ptr += 2;
 
-    hdr.payload_length = ntohs(*(uint16_t *)ptr);
-    ptr += 2;
+  hdr.payload_length = ntohs(*(uint16_t *)ptr);
+  ptr += 2;
 
-    uint8_t next_header = *ptr;
+  uint8_t next_header = *ptr;
 
-    ptr += 1;
+  ptr += 1;
 
-    hdr.hop_limit = *ptr;
-    ptr += 1;
+  hdr.hop_limit = *ptr;
+  ptr += 1;
 
-    memcpy(hdr.src_ip, ptr, 16);
+  memcpy(hdr.src_ip, ptr, 16);
 
-    ptr += 16;
+  ptr += 16;
 
-    memcpy(hdr.dst_ip, ptr, 16);
+  memcpy(hdr.dst_ip, ptr, 16);
 
-    ptr += 16;
+  ptr += 16;
 
-    OV_ASSERT(*rd_ptr + 40 == ptr);
+  OV_ASSERT(*rd_ptr + 40 == ptr);
 
-    /* Just skip any options etc. */
+  /* Just skip any options etc. */
 
-    read_octets = 40;
+  read_octets = 40;
 
-    /*************************************************************************
-                             Update out parameters
-     ************************************************************************/
+  /*************************************************************************
+                           Update out parameters
+   ************************************************************************/
 
-    *length -= read_octets;
-    *rd_ptr = ptr;
+  *length -= read_octets;
+  *rd_ptr = ptr;
 
-    if (!skip_extension_headers(
-            rd_ptr, length, next_header, &hdr.next_header)) {
+  if (!skip_extension_headers(rd_ptr, length, next_header, &hdr.next_header)) {
 
-        goto error;
-    }
+    goto error;
+  }
 
-    memcpy(out, &hdr, sizeof(hdr));
+  memcpy(out, &hdr, sizeof(hdr));
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*****************************************************************************
                                    Interface
  ****************************************************************************/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
-    UNUSED(requested_bytes);
+  UNUSED(requested_bytes);
 
-    ov_buffer payload = {0};
+  ov_buffer payload = {0};
 
-    ipv6_data *rdata = as_ipv6_data(data);
+  ipv6_data *rdata = as_ipv6_data(data);
 
-    if (0 == rdata) {
+  if (0 == rdata) {
 
-        ov_log_error("Expected format ipv6, but got something different");
-        goto error;
-    }
+    ov_log_error("Expected format ipv6, but got something different");
+    goto error;
+  }
 
-    ov_buffer buf = ov_format_payload_read_chunk_nocopy(f, 0);
+  ov_buffer buf = ov_format_payload_read_chunk_nocopy(f, 0);
 
-    if (0 == buf.start) {
+  if (0 == buf.start) {
 
-        goto error;
-    }
+    goto error;
+  }
 
-    if (!get_ipv6_header_unsafe(&rdata->header, &buf.start, &buf.length)) {
+  if (!get_ipv6_header_unsafe(&rdata->header, &buf.start, &buf.length)) {
 
-        goto error;
-    }
+    goto error;
+  }
 
-    /* With the absence of extension headers, the buf must be the payload length
-     * of the ipv6 header */
-    if (buf.length != rdata->header.payload_length) {
+  /* With the absence of extension headers, the buf must be the payload length
+   * of the ipv6 header */
+  if (buf.length != rdata->header.payload_length) {
 
-        ov_log_error(
-            "IPv6 paket corrupt - header payload length "
-            "(%zu) do not match actual paylaod length (%" PRIu16,
-            rdata->header.payload_length,
-            buf.length);
+    ov_log_error("IPv6 paket corrupt - header payload length "
+                 "(%zu) do not match actual paylaod length (%" PRIu16,
+                 rdata->header.payload_length, buf.length);
 
-        goto error;
-    }
+    goto error;
+  }
 
-    payload = buf;
+  payload = buf;
 
 error:
 
-    return payload;
+  return payload;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
-    UNUSED(f);
-    UNUSED(chunk);
-    UNUSED(data);
+  UNUSED(f);
+  UNUSED(chunk);
+  UNUSED(data);
 
-    TODO("Implement");
+  TODO("Implement");
 
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *impl_create_data(ov_format *f, void *options) {
 
-    UNUSED(f);
-    UNUSED(options);
+  UNUSED(f);
+  UNUSED(options);
 
-    ipv6_data *rdata = calloc(1, sizeof(ipv6_data));
-    OV_ASSERT(0 != rdata);
+  ipv6_data *rdata = calloc(1, sizeof(ipv6_data));
+  OV_ASSERT(0 != rdata);
 
-    rdata->magic_bytes = IPV6_MAGIC_BYTES;
+  rdata->magic_bytes = IPV6_MAGIC_BYTES;
 
-    return rdata;
+  return rdata;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *impl_free_data(void *data) {
 
-    if (0 == as_ipv6_data(data)) {
+  if (0 == as_ipv6_data(data)) {
 
-        ov_log_error(
-            "Internal error: Expected to be called with format "
-            "ipv6");
-        goto error;
-    }
+    ov_log_error("Internal error: Expected to be called with format "
+                 "ipv6");
+    goto error;
+  }
 
-    free(data);
-    data = 0;
+  free(data);
+  data = 0;
 
 error:
 
-    return data;
+  return data;
 }
 
 /*****************************************************************************
@@ -312,94 +307,78 @@ error:
 
 bool ov_format_ipv6_install(ov_format_registry *registry) {
 
-    ov_format_handler handler = {
-        .next_chunk = impl_next_chunk,
-        .write_chunk = impl_write_chunk,
-        .create_data = impl_create_data,
-        .free_data = impl_free_data,
-    };
+  ov_format_handler handler = {
+      .next_chunk = impl_next_chunk,
+      .write_chunk = impl_write_chunk,
+      .create_data = impl_create_data,
+      .free_data = impl_free_data,
+  };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_IPV6_TYPE_STRING, handler, registry);
+  return ov_format_registry_register_type(OV_FORMAT_IPV6_TYPE_STRING, handler,
+                                          registry);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_format_ipv6_get_header(ov_format const *f, ov_format_ipv6_header *hdr) {
 
-    if (0 == hdr) {
+  if (0 == hdr) {
 
-        ov_log_error("No receiving header given");
-        goto error;
-    }
+    ov_log_error("No receiving header given");
+    goto error;
+  }
 
-    ipv6_data *rdata = as_ipv6_data(ov_format_get_custom_data(f));
+  ipv6_data *rdata = as_ipv6_data(ov_format_get_custom_data(f));
 
-    if (0 == rdata) {
+  if (0 == rdata) {
 
-        ov_log_error("Expected IPV6 format");
-        goto error;
-    }
+    ov_log_error("Expected IPV6 format");
+    goto error;
+  }
 
-    memcpy(hdr, &rdata->header, sizeof(ov_format_ipv6_header));
+  memcpy(hdr, &rdata->header, sizeof(ov_format_ipv6_header));
 
-    return true;
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_format_ipv6_ip_to_string(uint8_t *ip,
-                                  char *out_buf,
+char *ov_format_ipv6_ip_to_string(uint8_t *ip, char *out_buf,
                                   size_t out_buf_len) {
 
-    static char ip_string[2 * 16 + 7 + 1] = {0};
+  static char ip_string[2 * 16 + 7 + 1] = {0};
 
-    if (0 == ip) goto error;
+  if (0 == ip)
+    goto error;
 
-    if (0 == out_buf) {
+  if (0 == out_buf) {
 
-        out_buf = ip_string;
-        out_buf_len = sizeof(ip_string);
-    }
+    out_buf = ip_string;
+    out_buf_len = sizeof(ip_string);
+  }
 
-    if (sizeof(ip_string) > out_buf_len) {
+  if (sizeof(ip_string) > out_buf_len) {
 
-        ov_log_warning(
-            "out buffer too small to keep entire ipv6 address - "
-            "could be cut off");
-    }
+    ov_log_warning("out buffer too small to keep entire ipv6 address - "
+                   "could be cut off");
+  }
 
-    snprintf(out_buf,
-             out_buf_len,
-             "%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8
-             ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8
-             ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8,
-             ip[0],
-             ip[1],
-             ip[2],
-             ip[3],
-             ip[4],
-             ip[5],
-             ip[6],
-             ip[7],
-             ip[8],
-             ip[9],
-             ip[10],
-             ip[11],
-             ip[12],
-             ip[13],
-             ip[14],
-             ip[15]);
+  snprintf(out_buf, out_buf_len,
+           "%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8
+           ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8
+           ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8,
+           ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8], ip[9],
+           ip[10], ip[11], ip[12], ip[13], ip[14], ip[15]);
 
-    return out_buf;
+  return out_buf;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/

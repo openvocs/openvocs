@@ -32,32 +32,32 @@
 
 int test_ov_turn_permisson_create() {
 
-    char *host = "192.168.1.1";
+  char *host = "192.168.1.1";
 
-    uint64_t now = ov_time_get_current_time_usecs();
+  uint64_t now = ov_time_get_current_time_usecs();
 
-    testrun(!ov_turn_permission_create(NULL, 0));
-    ov_turn_permission *perm = ov_turn_permission_create(host, 0);
-    testrun(perm);
-    testrun(now <= perm->updated);
-    testrun(0 == perm->lifetime_usec);
-    testrun(0 == strcmp(host, perm->host))
-        testrun(NULL == ov_turn_permission_free(perm));
+  testrun(!ov_turn_permission_create(NULL, 0));
+  ov_turn_permission *perm = ov_turn_permission_create(host, 0);
+  testrun(perm);
+  testrun(now <= perm->updated);
+  testrun(0 == perm->lifetime_usec);
+  testrun(0 == strcmp(host, perm->host))
+      testrun(NULL == ov_turn_permission_free(perm));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_turn_permission_free() {
 
-    char *host = "192.168.1.1";
+  char *host = "192.168.1.1";
 
-    ov_turn_permission *perm = ov_turn_permission_create(host, 0);
-    testrun(NULL == ov_turn_permission_free(perm));
-    testrun(NULL == ov_turn_permission_free(NULL));
+  ov_turn_permission *perm = ov_turn_permission_create(host, 0);
+  testrun(NULL == ov_turn_permission_free(perm));
+  testrun(NULL == ov_turn_permission_free(NULL));
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*
@@ -70,11 +70,11 @@ int test_ov_turn_permission_free() {
 
 int all_tests() {
 
-    testrun_init();
-    testrun_test(test_ov_turn_permisson_create);
-    testrun_test(test_ov_turn_permission_free);
+  testrun_init();
+  testrun_test(test_ov_turn_permisson_create);
+  testrun_test(test_ov_turn_permission_free);
 
-    return testrun_counter;
+  return testrun_counter;
 }
 
 testrun_run(all_tests);

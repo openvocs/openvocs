@@ -82,8 +82,7 @@ bool ov_stun_attribute_frame_is_valid(const uint8_t *buffer, size_t length);
    frame
         @NOTE if content_length == 0 content_start will be set to NULL
 */
-bool ov_stun_attribute_frame_content(const uint8_t *buffer,
-                                     size_t length,
+bool ov_stun_attribute_frame_content(const uint8_t *buffer, size_t length,
                                      uint8_t **content_start,
                                      size_t *content_length);
 
@@ -122,8 +121,7 @@ int64_t ov_stun_attribute_get_length(const uint8_t *buffer, size_t length);
 /**
         Set the length of an attribute (in network byte order)
 */
-bool ov_stun_attribute_set_length(uint8_t *buffer,
-                                  size_t length,
+bool ov_stun_attribute_set_length(uint8_t *buffer, size_t length,
                                   uint16_t length_to_set);
 
 /*----------------------------------------------------------------------------*/
@@ -143,9 +141,7 @@ bool ov_stun_attribute_set_length(uint8_t *buffer,
         @param content_length   length of a content string
         @returns true           if content was written to buffer
 */
-bool ov_stun_attribute_encode(uint8_t *buffer,
-                              size_t length,
-                              uint8_t **next,
+bool ov_stun_attribute_encode(uint8_t *buffer, size_t length, uint8_t **next,
                               uint16_t attribute_type,
                               const uint8_t *content_start,
                               size_t content_length);
@@ -164,10 +160,8 @@ bool ov_stun_attribute_encode(uint8_t *buffer,
         @NOTE                   *content will be an allocated string
                                 on success.
 */
-bool ov_stun_attribute_decode(const uint8_t *buffer,
-                              size_t length,
-                              uint16_t *type,
-                              uint8_t **content);
+bool ov_stun_attribute_decode(const uint8_t *buffer, size_t length,
+                              uint16_t *type, uint8_t **content);
 
 /*----------------------------------------------------------------------------*/
 
@@ -179,8 +173,7 @@ bool ov_stun_attribute_decode(const uint8_t *buffer,
         @param type             type to search
         @returns                pointer to attribute frame if included.
 */
-uint8_t *ov_stun_attributes_get_type(uint8_t *attr[],
-                                     size_t attr_size,
+uint8_t *ov_stun_attributes_get_type(uint8_t *attr[], size_t attr_size,
                                      uint16_t type);
 
 /*----------------------------------------------------------------------------*/
@@ -195,9 +188,7 @@ uint8_t *ov_stun_attributes_get_type(uint8_t *attr[],
         @param next             pointer to next byte after write
         @returns                true if the frame was copied
 */
-bool ov_stun_attribute_frame_copy(const uint8_t *orig,
-                                  uint8_t *dest,
-                                  size_t dest_size,
-                                  uint8_t **next);
+bool ov_stun_attribute_frame_copy(const uint8_t *orig, uint8_t *dest,
+                                  size_t dest_size, uint8_t **next);
 
 #endif /* ov_stun_attribute_h */

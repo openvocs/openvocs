@@ -64,9 +64,9 @@ extern const size_t RTP_HEADER_MIN_LENGTH;
 #define OV_RTP_PAYLOAD_TYPE_DEFAULT 0
 
 enum ov_rtp_version_enum {
-    RTP_VERSION_2 = 2,
-    RTP_VERSION_1 = 1,
-    RTP_VERSION_INVALID = 0
+  RTP_VERSION_2 = 2,
+  RTP_VERSION_1 = 1,
+  RTP_VERSION_INVALID = 0
 };
 
 typedef enum ov_rtp_version_enum ov_rtp_version;
@@ -100,79 +100,79 @@ typedef uint8_t ov_rtp_payload_type;
  */
 struct ov_rtp_frame_expansion_struct {
 
-    ov_rtp_version version;
+  ov_rtp_version version;
 
-    /**
-     * It might seem as if padding/extension bits were redundand
-     * since there is the padding length etc as well.
-     * But: There might be ONE SINGLE padding byte which is then
-     * determined to contain exactly 0x01.
-     * This case is tricky and might be reflected by including
-     * the length encoding last byte into the padding data array
-     * (Which is nasty - if you want to pad with 2 zeroes, you dont
-     * want to hand in an array containing {0, 0, 3}, and,
-     * we would have to handle the case of {0, 0, 2} etc.).
-     * When padding, you either want to
-     * (1) increase the frame size to a certain size -> you dont care about
-     *     the padding data.
-     * (2) You want to store additional data in the padding area ->
-     *     You dont want to fiddle with the last, length encoding byte
-     *
-     * Padding is tricky in any ways, we deal with it this way:
-     * 1. If you want certain data being appended to the payload as padding,
-     *    hand it over in padding.data / padding.length and set the
-     *    padding bit. The actual padding will be 1 more byte (the
-     *    length encoding byte).
-     * 2. If you want pad EXACTLY one single byte, this byte will be the
-     *    length encoding byte. No need to hand over additional padding
-     * data.
-     *    Just set the padding bit and set the padding length to zero.
-     *
-     * Again, padding is tricky. Sorry!
-     */
-    bool padding_bit;
-    /**
-     * For reasons similar to the ones stated for the padding bit,
-     * this bit is necessary as well...
-     * (hint: The extension might consist of the header only,
-     *  and the 0 is a valid value for 'type'...)
-     */
-    bool extension_bit;
+  /**
+   * It might seem as if padding/extension bits were redundand
+   * since there is the padding length etc as well.
+   * But: There might be ONE SINGLE padding byte which is then
+   * determined to contain exactly 0x01.
+   * This case is tricky and might be reflected by including
+   * the length encoding last byte into the padding data array
+   * (Which is nasty - if you want to pad with 2 zeroes, you dont
+   * want to hand in an array containing {0, 0, 3}, and,
+   * we would have to handle the case of {0, 0, 2} etc.).
+   * When padding, you either want to
+   * (1) increase the frame size to a certain size -> you dont care about
+   *     the padding data.
+   * (2) You want to store additional data in the padding area ->
+   *     You dont want to fiddle with the last, length encoding byte
+   *
+   * Padding is tricky in any ways, we deal with it this way:
+   * 1. If you want certain data being appended to the payload as padding,
+   *    hand it over in padding.data / padding.length and set the
+   *    padding bit. The actual padding will be 1 more byte (the
+   *    length encoding byte).
+   * 2. If you want pad EXACTLY one single byte, this byte will be the
+   *    length encoding byte. No need to hand over additional padding
+   * data.
+   *    Just set the padding bit and set the padding length to zero.
+   *
+   * Again, padding is tricky. Sorry!
+   */
+  bool padding_bit;
+  /**
+   * For reasons similar to the ones stated for the padding bit,
+   * this bit is necessary as well...
+   * (hint: The extension might consist of the header only,
+   *  and the 0 is a valid value for 'type'...)
+   */
+  bool extension_bit;
 
-    bool marker_bit;
+  bool marker_bit;
 
-    uint8_t payload_type;
+  uint8_t payload_type;
 
-    uint16_t sequence_number;
+  uint16_t sequence_number;
 
-    uint32_t timestamp;
-    uint32_t ssrc;
+  uint32_t timestamp;
+  uint32_t ssrc;
 
-    uint8_t csrc_count;
-    uint32_t *csrc_ids;
+  uint8_t csrc_count;
+  uint32_t *csrc_ids;
 
-    struct rtp_payload_t {
-        size_t length;
-        uint8_t *data;
-    } payload;
+  struct rtp_payload_t {
+    size_t length;
+    uint8_t *data;
+  } payload;
 
-    struct rtp_padding_t {
-        size_t length;
-        uint8_t *data;
-    } padding;
+  struct rtp_padding_t {
+    size_t length;
+    uint8_t *data;
+  } padding;
 
-    struct rtp_extension_t {
-        uint16_t type;
-        size_t length;
-        size_t allocated_bytes; /* Max. capacity of data. If 0, data is
-                                   not suitable to be written to. If
-                                   required, data would have to be
-                                   allocated.
-                                   On the other hand, if != 0,
-                                   data is assumed to must be freed
-                                   eventually */
-        uint8_t *data;
-    } extension;
+  struct rtp_extension_t {
+    uint16_t type;
+    size_t length;
+    size_t allocated_bytes; /* Max. capacity of data. If 0, data is
+                               not suitable to be written to. If
+                               required, data would have to be
+                               allocated.
+                               On the other hand, if != 0,
+                               data is assumed to must be freed
+                               eventually */
+    uint8_t *data;
+  } extension;
 };
 
 /*---------------------------------------------------------------------------*/
@@ -205,22 +205,22 @@ struct ov_rtp_frame_expansion_struct {
  */
 struct ov_rtp_frame_struct {
 
-    ov_rtp_frame_expansion expanded;
+  ov_rtp_frame_expansion expanded;
 
-    /**
-     * Contains the byte encoding of the RTP data ready to be sent over the
-     * net e.g.
-     */
-    struct {
+  /**
+   * Contains the byte encoding of the RTP data ready to be sent over the
+   * net e.g.
+   */
+  struct {
 
-        size_t allocated_bytes;
-        size_t length;
-        uint8_t *data;
+    size_t allocated_bytes;
+    size_t length;
+    uint8_t *data;
 
-    } bytes;
+  } bytes;
 
-    ov_rtp_frame *(*copy)(ov_rtp_frame const *self);
-    ov_rtp_frame *(*free)(ov_rtp_frame *self);
+  ov_rtp_frame *(*copy)(ov_rtp_frame const *self);
+  ov_rtp_frame *(*free)(ov_rtp_frame *self);
 };
 
 /******************************************************************************

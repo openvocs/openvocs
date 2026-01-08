@@ -45,28 +45,27 @@ typedef struct ov_ice_proxy_vocs ov_ice_proxy_vocs;
 
 typedef struct ov_ice_proxy_vocs_config {
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    bool multiplexing;
+  bool multiplexing;
 
-    struct {
+  struct {
 
-        ov_socket_configuration internal;
+    ov_socket_configuration internal;
 
-    } socket;
+  } socket;
 
-    ov_ice_proxy_generic_config proxy;
+  ov_ice_proxy_generic_config proxy;
 
-    struct {
+  struct {
 
-        void *userdata;
-        bool (*send_candidate)(void *userdata, ov_json_value *out);
-        bool (*send_end_of_candidates)(void *userdata, const char *session_id);
-        bool (*session_completed)(void *userdata,
-                                  const char *uuid,
-                                  ov_ice_state state);
+    void *userdata;
+    bool (*send_candidate)(void *userdata, ov_json_value *out);
+    bool (*send_end_of_candidates)(void *userdata, const char *session_id);
+    bool (*session_completed)(void *userdata, const char *uuid,
+                              ov_ice_state state);
 
-    } callback;
+  } callback;
 
 } ov_ice_proxy_vocs_config;
 
@@ -84,8 +83,8 @@ ov_ice_proxy_vocs *ov_ice_proxy_vocs_cast(const void *data);
 
 /*----------------------------------------------------------------------------*/
 
-ov_ice_proxy_vocs_config ov_ice_proxy_vocs_config_from_json(
-    const ov_json_value *input);
+ov_ice_proxy_vocs_config
+ov_ice_proxy_vocs_config_from_json(const ov_json_value *input);
 
 /*
  *      ------------------------------------------------------------------------
@@ -95,8 +94,8 @@ ov_ice_proxy_vocs_config ov_ice_proxy_vocs_config_from_json(
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_vocs_session_data ov_ice_proxy_vocs_create_session(
-    ov_ice_proxy_vocs *self);
+ov_ice_proxy_vocs_session_data
+ov_ice_proxy_vocs_create_session(ov_ice_proxy_vocs *self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -111,8 +110,7 @@ bool ov_ice_proxy_vocs_update_answer(ov_ice_proxy_vocs *self,
 /*----------------------------------------------------------------------------*/
 
 bool ov_ice_proxy_vocs_candidate_in(ov_ice_proxy_vocs *self,
-                                    const char *session_id,
-                                    uint32_t stream_id,
+                                    const char *session_id, uint32_t stream_id,
                                     const ov_ice_candidate *candidate);
 
 /*----------------------------------------------------------------------------*/
@@ -123,9 +121,7 @@ bool ov_ice_proxy_vocs_end_of_candidates_in(ov_ice_proxy_vocs *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_ice_proxy_vocs_talk(ov_ice_proxy_vocs *self,
-                            const char *session_id,
-                            bool on,
-                            ov_mc_loop_data data);
+bool ov_ice_proxy_vocs_talk(ov_ice_proxy_vocs *self, const char *session_id,
+                            bool on, ov_mc_loop_data data);
 
 #endif /* ov_ice_proxy_vocs_h */

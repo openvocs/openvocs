@@ -42,63 +42,67 @@
 
 int ov_mc_socket(ov_socket_configuration config) {
 
-    int socket = -1;
+  int socket = -1;
 
-    if (!config.host[0]) goto error;
-    config.type = UDP;
+  if (!config.host[0])
+    goto error;
+  config.type = UDP;
 
-    int loop = 1;
-    static struct ip_mreq command = {0};
+  int loop = 1;
+  static struct ip_mreq command = {0};
 
-    socket = ov_socket_create(config, false, NULL);
-    if (-1 == socket) goto error;
+  socket = ov_socket_create(config, false, NULL);
+  if (-1 == socket)
+    goto error;
 
-    if (!ov_socket_ensure_nonblocking(socket)) goto error;
-    if (!ov_socket_set_reuseaddress(socket)) goto error;
+  if (!ov_socket_ensure_nonblocking(socket))
+    goto error;
+  if (!ov_socket_set_reuseaddress(socket))
+    goto error;
 
-    /* allow broadcast on the machine */
+  /* allow broadcast on the machine */
 
-    if (setsockopt(socket, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)) <
-        0) {
-        goto error;
-    }
+  if (setsockopt(socket, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop)) <
+      0) {
+    goto error;
+  }
 
-    /* join the broadcast group */
+  /* join the broadcast group */
 
-    command.imr_multiaddr.s_addr = inet_addr(config.host);
-    command.imr_interface.s_addr = htonl(INADDR_ANY);
+  command.imr_multiaddr.s_addr = inet_addr(config.host);
+  command.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    if (setsockopt(
-            socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &command, sizeof(command)) <
-        0) {
-        goto error;
-    }
+  if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &command,
+                 sizeof(command)) < 0) {
+    goto error;
+  }
 
-    return socket;
+  return socket;
 
 error:
-    if (-1 != socket) close(socket);
-    return -1;
+  if (-1 != socket)
+    close(socket);
+  return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_socket_drop_membership(int socket) {
 
-    ov_socket_data data = {0};
-    if (!ov_socket_get_data(socket, &data, NULL)) goto error;
+  ov_socket_data data = {0};
+  if (!ov_socket_get_data(socket, &data, NULL))
+    goto error;
 
-    static struct ip_mreq command = {0};
-    command.imr_multiaddr.s_addr = inet_addr(data.host);
-    command.imr_interface.s_addr = htonl(INADDR_ANY);
+  static struct ip_mreq command = {0};
+  command.imr_multiaddr.s_addr = inet_addr(data.host);
+  command.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    if (setsockopt(
-            socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, &command, sizeof(command)) <
-        0) {
-        goto error;
-    }
+  if (setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, &command,
+                 sizeof(command)) < 0) {
+    goto error;
+  }
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }

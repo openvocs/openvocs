@@ -38,308 +38,305 @@
 
 static bool list_is_empty(ov_frame_data_list const *list) {
 
-    if (0 == list->frames) {
-        return false;
+  if (0 == list->frames) {
+    return false;
+  }
+
+  for (size_t i = 0; i < list->capacity; ++i) {
+
+    if (0 != list->frames[i]) {
+      return false;
     }
+  }
 
-    for (size_t i = 0; i < list->capacity; ++i) {
-
-        if (0 != list->frames[i]) {
-            return false;
-        }
-    }
-
-    return true;
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_frame_data_list_enable_caching() {
 
-    // Get clean
-    ov_registered_cache_free_all();
+  // Get clean
+  ov_registered_cache_free_all();
 
-    // No real caching probably - however, we should be able to create & free
-    ov_frame_data_list_enable_caching(0);
+  // No real caching probably - however, we should be able to create & free
+  ov_frame_data_list_enable_caching(0);
 
-    ov_frame_data_list *list = ov_frame_data_list_create(12);
+  ov_frame_data_list *list = ov_frame_data_list_create(12);
 
+  testrun(0 != list);
+
+  list = ov_frame_data_list_free(list);
+  testrun(0 == list);
+
+  // Empty cache if there
+  for (size_t i = 0; i < 10; ++i) {
+    ov_frame_data_list *list = ov_frame_data_list_create(1);
+    free_frame_data_list(list);
+  }
+
+  // Real caching
+  ov_frame_data_list_enable_caching(3);
+
+  list = ov_frame_data_list_create(12);
+  testrun(0 != list);
+
+  ov_frame_data_list *cached = list;
+
+  list = ov_frame_data_list_free(list);
+  testrun(0 == list);
+
+  // should have been cached
+  list = ov_frame_data_list_create(12);
+  testrun(list == cached);
+  cached = 0;
+
+  list = ov_frame_data_list_free(list);
+
+  // Dealing with more lists than cache buckets available
+
+  const size_t CACHE_SIZE = 20;
+
+  for (size_t i = 0; i < CACHE_SIZE; ++i) {
+    list = ov_frame_data_list_create(1 + i);
     testrun(0 != list);
 
-    list = ov_frame_data_list_free(list);
-    testrun(0 == list);
-
-    // Empty cache if there
-    for (size_t i = 0; i < 10; ++i) {
-        ov_frame_data_list *list = ov_frame_data_list_create(1);
-        free_frame_data_list(list);
-    }
-
-    // Real caching
-    ov_frame_data_list_enable_caching(3);
-
-    list = ov_frame_data_list_create(12);
-    testrun(0 != list);
-
-    ov_frame_data_list *cached = list;
-
-    list = ov_frame_data_list_free(list);
-    testrun(0 == list);
-
-    // should have been cached
-    list = ov_frame_data_list_create(12);
-    testrun(list == cached);
-    cached = 0;
-
-    list = ov_frame_data_list_free(list);
-
-    // Dealing with more lists than cache buckets available
-
-    const size_t CACHE_SIZE = 20;
-
-    for (size_t i = 0; i < CACHE_SIZE; ++i) {
-        list = ov_frame_data_list_create(1 + i);
-        testrun(0 != list);
-
-        testrun(i <= list->capacity);
-        testrun(list_is_empty(list));
-
-        list = ov_frame_data_list_free(list);
-        testrun(0 == list);
-    }
-
-    // Put non-empty lists into cache
-
-    list = ov_frame_data_list_create(3);
-    testrun(0 != list);
-
-    testrun(3 <= list->capacity);
+    testrun(i <= list->capacity);
     testrun(list_is_empty(list));
 
-    for (size_t i = 0; i < list->capacity; ++i) {
-
-        ov_frame_data *data = ov_frame_data_create();
-        testrun(0 != data);
-        data->ssid = i;
-        data = ov_frame_data_list_push_data(list, data);
-        testrun(0 == data);
-    }
-
     list = ov_frame_data_list_free(list);
     testrun(0 == list);
+  }
 
-    ov_frame_data_list **lists =
-        calloc(CACHE_SIZE + 1, sizeof(ov_frame_data_list *));
+  // Put non-empty lists into cache
 
-    // Check that there are really only empty frames in cache
-    // We need to buffer all the lists, otherwise they are put back into the
-    // cache and we will not see all cached lists
-    for (size_t i = 0; i < CACHE_SIZE + 1; ++i) {
+  list = ov_frame_data_list_create(3);
+  testrun(0 != list);
 
-        list = ov_frame_data_list_create(1);
+  testrun(3 <= list->capacity);
+  testrun(list_is_empty(list));
 
-        testrun(1 <= list->capacity);
-        testrun(list_is_empty(list));
-        lists[i] = list;
+  for (size_t i = 0; i < list->capacity; ++i) {
 
-        list = 0;
-    }
+    ov_frame_data *data = ov_frame_data_create();
+    testrun(0 != data);
+    data->ssid = i;
+    data = ov_frame_data_list_push_data(list, data);
+    testrun(0 == data);
+  }
 
-    // and free the lists
-    for (size_t i = 0; i < CACHE_SIZE + 1; ++i) {
+  list = ov_frame_data_list_free(list);
+  testrun(0 == list);
 
-        lists[i] = ov_frame_data_list_free(lists[i]);
-        testrun(0 == lists[i]);
-    }
+  ov_frame_data_list **lists =
+      calloc(CACHE_SIZE + 1, sizeof(ov_frame_data_list *));
 
-    free(lists);
-    lists = 0;
+  // Check that there are really only empty frames in cache
+  // We need to buffer all the lists, otherwise they are put back into the
+  // cache and we will not see all cached lists
+  for (size_t i = 0; i < CACHE_SIZE + 1; ++i) {
 
-    return testrun_log_success();
+    list = ov_frame_data_list_create(1);
+
+    testrun(1 <= list->capacity);
+    testrun(list_is_empty(list));
+    lists[i] = list;
+
+    list = 0;
+  }
+
+  // and free the lists
+  for (size_t i = 0; i < CACHE_SIZE + 1; ++i) {
+
+    lists[i] = ov_frame_data_list_free(lists[i]);
+    testrun(0 == lists[i]);
+  }
+
+  free(lists);
+  lists = 0;
+
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_frame_data_list_create() {
 
-    testrun(0 == ov_frame_data_list_create(0));
+  testrun(0 == ov_frame_data_list_create(0));
 
-    ov_frame_data_list *list = ov_frame_data_list_create(12);
+  ov_frame_data_list *list = ov_frame_data_list_create(12);
 
-    testrun(0 != list);
-    testrun(FRAME_DATA_LIST_MAGIC_BYTES == list->magic_bytes);
-    testrun(12 <= list->capacity);
-    testrun(0 != list->frames);
+  testrun(0 != list);
+  testrun(FRAME_DATA_LIST_MAGIC_BYTES == list->magic_bytes);
+  testrun(12 <= list->capacity);
+  testrun(0 != list->frames);
 
-    list = ov_frame_data_list_free(list);
-    testrun(0 == list);
+  list = ov_frame_data_list_free(list);
+  testrun(0 == list);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_frame_data_list_free() {
 
-    testrun(0 == ov_frame_data_list_free(0));
+  testrun(0 == ov_frame_data_list_free(0));
 
-    ov_frame_data_list *list = ov_frame_data_list_create(18);
-    testrun(0 != list);
+  ov_frame_data_list *list = ov_frame_data_list_create(18);
+  testrun(0 != list);
 
-    list = ov_frame_data_list_free(list);
-    testrun(0 == list);
+  list = ov_frame_data_list_free(list);
+  testrun(0 == list);
 
-    list = ov_frame_data_list_create(18);
-    testrun(0 != list);
+  list = ov_frame_data_list_create(18);
+  testrun(0 != list);
 
-    ov_frame_data *data = ov_frame_data_create();
-    testrun(0 != data);
-    data->ssid = 11;
+  ov_frame_data *data = ov_frame_data_create();
+  testrun(0 != data);
+  data->ssid = 11;
 
-    testrun(0 == ov_frame_data_list_push_data(list, data));
+  testrun(0 == ov_frame_data_list_push_data(list, data));
 
-    data = ov_frame_data_create();
-    testrun(0 != data);
-    data->ssid = 8;
+  data = ov_frame_data_create();
+  testrun(0 != data);
+  data->ssid = 8;
 
-    testrun(0 == ov_frame_data_list_push_data(list, data));
+  testrun(0 == ov_frame_data_list_push_data(list, data));
 
-    list = ov_frame_data_list_free(list);
-    testrun(0 == list);
+  list = ov_frame_data_list_free(list);
+  testrun(0 == list);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_frame_data_list *get_frame_data_list_with_exactly_num_entries(
-    size_t n) {
+static ov_frame_data_list *
+get_frame_data_list_with_exactly_num_entries(size_t n) {
 
-    ov_frame_data_list *list = ov_frame_data_list_create(n);
+  ov_frame_data_list *list = ov_frame_data_list_create(n);
 
-    while (n != list->capacity) {
+  while (n != list->capacity) {
 
-        free_frame_data_list(list);
-        list = ov_frame_data_list_create(n);
-    };
+    free_frame_data_list(list);
+    list = ov_frame_data_list_create(n);
+  };
 
-    return list;
+  return list;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_frame_data_list_push_data() {
 
-    testrun(0 == ov_frame_data_list_push_data(0, 0));
+  testrun(0 == ov_frame_data_list_push_data(0, 0));
 
-    ov_frame_data *data = ov_frame_data_create();
-    data->ssid = 13;
+  ov_frame_data *data = ov_frame_data_create();
+  data->ssid = 13;
 
-    testrun(data == ov_frame_data_list_push_data(0, data));
+  testrun(data == ov_frame_data_list_push_data(0, data));
 
-    ov_frame_data_list *list = get_frame_data_list_with_exactly_num_entries(3);
-    testrun(3 == list->capacity);
+  ov_frame_data_list *list = get_frame_data_list_with_exactly_num_entries(3);
+  testrun(3 == list->capacity);
 
-    testrun(0 == ov_frame_data_list_push_data(list, data));
+  testrun(0 == ov_frame_data_list_push_data(list, data));
 
-    data = ov_frame_data_create();
-    testrun(0 != data);
+  data = ov_frame_data_create();
+  testrun(0 != data);
 
-    data->ssid = 13;
+  data->ssid = 13;
 
-    ov_frame_data *old = ov_frame_data_list_push_data(list, data);
+  ov_frame_data *old = ov_frame_data_list_push_data(list, data);
 
-    testrun(0 != old);
-    testrun(13 == old->ssid);
-    testrun(old != data);
-    data = 0;
+  testrun(0 != old);
+  testrun(13 == old->ssid);
+  testrun(old != data);
+  data = 0;
 
-    old->ssid = 14;
-    testrun(0 == ov_frame_data_list_push_data(list, old));
+  old->ssid = 14;
+  testrun(0 == ov_frame_data_list_push_data(list, old));
 
-    old = 0;
+  old = 0;
 
-    data = ov_frame_data_create();
-    data->ssid = 15;
-    testrun(0 == ov_frame_data_list_push_data(list, data));
+  data = ov_frame_data_create();
+  data->ssid = 15;
+  testrun(0 == ov_frame_data_list_push_data(list, data));
 
-    // List exhausted
-    data = ov_frame_data_create();
-    data->ssid = 16;
-    testrun(data == ov_frame_data_list_push_data(list, data));
+  // List exhausted
+  data = ov_frame_data_create();
+  data->ssid = 16;
+  testrun(data == ov_frame_data_list_push_data(list, data));
 
-    // Overwrite another entry
-    data->ssid = 14;
+  // Overwrite another entry
+  data->ssid = 14;
 
-    old = ov_frame_data_list_push_data(list, data);
+  old = ov_frame_data_list_push_data(list, data);
 
-    testrun(0 != old);
-    testrun(14 == old->ssid);
-    old = ov_frame_data_free(old);
-    testrun(0 == old);
+  testrun(0 != old);
+  testrun(14 == old->ssid);
+  old = ov_frame_data_free(old);
+  testrun(0 == old);
 
-    list = ov_frame_data_list_free(list);
-    testrun(0 == list);
+  list = ov_frame_data_list_free(list);
+  testrun(0 == list);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_frame_data_list_pop_data() {
 
-    testrun(0 == ov_frame_data_list_pop_data(0, 0));
+  testrun(0 == ov_frame_data_list_pop_data(0, 0));
 
-    ov_frame_data_list *list = ov_frame_data_list_create(2);
-    testrun(0 != list);
+  ov_frame_data_list *list = ov_frame_data_list_create(2);
+  testrun(0 != list);
 
-    testrun(0 == ov_frame_data_list_pop_data(list, 0));
-    testrun(0 == ov_frame_data_list_pop_data(list, 1));
+  testrun(0 == ov_frame_data_list_pop_data(list, 0));
+  testrun(0 == ov_frame_data_list_pop_data(list, 1));
 
-    ov_frame_data *data_1 = ov_frame_data_create();
-    data_1->ssid = 1;
+  ov_frame_data *data_1 = ov_frame_data_create();
+  data_1->ssid = 1;
 
-    testrun(0 == ov_frame_data_list_push_data(list, data_1));
+  testrun(0 == ov_frame_data_list_push_data(list, data_1));
 
-    ov_frame_data *data_2 = ov_frame_data_create();
-    data_2->ssid = 2;
+  ov_frame_data *data_2 = ov_frame_data_create();
+  data_2->ssid = 2;
 
-    testrun(0 == ov_frame_data_list_push_data(list, data_2));
+  testrun(0 == ov_frame_data_list_push_data(list, data_2));
 
-    testrun(0 == ov_frame_data_list_pop_data(list, 3));
-    testrun(data_2 == ov_frame_data_list_pop_data(list, 2));
-    testrun(data_1 == ov_frame_data_list_pop_data(list, 1));
+  testrun(0 == ov_frame_data_list_pop_data(list, 3));
+  testrun(data_2 == ov_frame_data_list_pop_data(list, 2));
+  testrun(data_1 == ov_frame_data_list_pop_data(list, 1));
 
-    testrun(0 == ov_frame_data_list_push_data(list, data_2));
-    testrun(0 == ov_frame_data_list_push_data(list, data_1));
+  testrun(0 == ov_frame_data_list_push_data(list, data_2));
+  testrun(0 == ov_frame_data_list_push_data(list, data_1));
 
-    data_2 = 0;
-    data_1 = 0;
+  data_2 = 0;
+  data_1 = 0;
 
-    list = ov_frame_data_list_free(list);
+  list = ov_frame_data_list_free(list);
 
-    testrun(0 == list);
+  testrun(0 == list);
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int tear_down() {
 
-    ov_registered_cache_free_all();
+  ov_registered_cache_free_all();
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_frame_data_list",
-            test_ov_frame_data_list_enable_caching,
-            test_ov_frame_data_list_create,
-            test_ov_frame_data_list_free,
-            test_ov_frame_data_list_push_data,
-            test_ov_frame_data_list_pop_data,
+OV_TEST_RUN("ov_frame_data_list", test_ov_frame_data_list_enable_caching,
+            test_ov_frame_data_list_create, test_ov_frame_data_list_free,
+            test_ov_frame_data_list_push_data, test_ov_frame_data_list_pop_data,
             tear_down);
 
 /*----------------------------------------------------------------------------*/

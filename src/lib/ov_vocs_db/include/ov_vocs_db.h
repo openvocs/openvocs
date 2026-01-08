@@ -85,15 +85,14 @@
 #include "ov_vocs_json.h"
 #include "ov_vocs_permission.h"
 
-
 #define OV_VOCS_DB_KEY_LDAP_UPDATE "ldap_update"
 
 /*----------------------------------------------------------------------------*/
 
 typedef enum ov_vocs_db_scope {
 
-    OV_VOCS_DB_SCOPE_DOMAIN = 0,
-    OV_VOCS_DB_SCOPE_PROJECT = 1
+  OV_VOCS_DB_SCOPE_DOMAIN = 0,
+  OV_VOCS_DB_SCOPE_PROJECT = 1
 
 } ov_vocs_db_scope;
 
@@ -101,8 +100,8 @@ typedef enum ov_vocs_db_scope {
 
 typedef struct ov_vocs_db_parent {
 
-    ov_vocs_db_scope scope;
-    char *id;
+  ov_vocs_db_scope scope;
+  char *id;
 
 } ov_vocs_db_parent;
 
@@ -110,8 +109,8 @@ typedef struct ov_vocs_db_parent {
 
 typedef enum ov_vocs_db_type {
 
-    OV_VOCS_DB_TYPE_AUTH = 0,
-    OV_VOCS_DB_TYPE_STATE = 1
+  OV_VOCS_DB_TYPE_AUTH = 0,
+  OV_VOCS_DB_TYPE_STATE = 1
 
 } ov_vocs_db_type;
 
@@ -119,12 +118,12 @@ typedef enum ov_vocs_db_type {
 
 typedef enum ov_vocs_db_entity {
 
-    OV_VOCS_DB_ENTITY_ERROR = -1,
-    OV_VOCS_DB_DOMAIN = 0,
-    OV_VOCS_DB_PROJECT = 1,
-    OV_VOCS_DB_LOOP = 2,
-    OV_VOCS_DB_ROLE = 3,
-    OV_VOCS_DB_USER = 4
+  OV_VOCS_DB_ENTITY_ERROR = -1,
+  OV_VOCS_DB_DOMAIN = 0,
+  OV_VOCS_DB_PROJECT = 1,
+  OV_VOCS_DB_LOOP = 2,
+  OV_VOCS_DB_ROLE = 3,
+  OV_VOCS_DB_USER = 4
 
 } ov_vocs_db_entity;
 
@@ -136,20 +135,20 @@ typedef struct ov_vocs_db ov_vocs_db;
 
 typedef struct ov_vocs_db_config {
 
-    struct {
+  struct {
 
-        uint64_t thread_lock_usec;
+    uint64_t thread_lock_usec;
 
-    } timeout;
+  } timeout;
 
-    struct {
+  struct {
 
-        ov_password_hash_parameter params;
-        size_t length;
+    ov_password_hash_parameter params;
+    size_t length;
 
-    } password;
+  } password;
 
-    ov_event_trigger *trigger;
+  ov_event_trigger *trigger;
 
 } ov_vocs_db_config;
 
@@ -177,7 +176,8 @@ ov_vocs_db_config ov_vocs_db_config_from_json(const ov_json_value *value);
 
 ov_vocs_db_entity ov_vocs_db_entity_from_string(const char *string);
 
-bool ov_vocs_db_set_persistance(ov_vocs_db *self, ov_vocs_db_persistance *persistance);
+bool ov_vocs_db_set_persistance(ov_vocs_db *self,
+                                ov_vocs_db_persistance *persistance);
 
 /*
  *      ------------------------------------------------------------------------
@@ -217,8 +217,7 @@ bool ov_vocs_db_parent_clear(ov_vocs_db_parent *parent);
  *      @param entity   entity type
  *      @param id       entity id
  */
-ov_json_value *ov_vocs_db_get_entity(ov_vocs_db *self,
-                                     ov_vocs_db_entity entity,
+ov_json_value *ov_vocs_db_get_entity(ov_vocs_db *self, ov_vocs_db_entity entity,
                                      const char *id);
 
 /*----------------------------------------------------------------------------*/
@@ -246,8 +245,7 @@ ov_json_value *ov_vocs_db_get_entity_domain(ov_vocs_db *self,
  */
 ov_json_value *ov_vocs_db_get_entity_key(ov_vocs_db *self,
                                          ov_vocs_db_entity entity,
-                                         const char *id,
-                                         const char *key);
+                                         const char *id, const char *key);
 
 /*----------------------------------------------------------------------------*/
 
@@ -258,8 +256,7 @@ ov_json_value *ov_vocs_db_get_entity_key(ov_vocs_db *self,
  *      @param entity   entity type
  *      @param id       entity id
  */
-bool ov_vocs_db_delete_entity(ov_vocs_db *self,
-                              ov_vocs_db_entity entity,
+bool ov_vocs_db_delete_entity(ov_vocs_db *self, ov_vocs_db_entity entity,
                               const char *id);
 
 /*----------------------------------------------------------------------------*/
@@ -274,10 +271,8 @@ bool ov_vocs_db_delete_entity(ov_vocs_db *self,
  *                      MUST be OV_VOCS_DB_SCOPE_DOMAIN for domain and projects
  *      @param scope_id domain or project id
  */
-bool ov_vocs_db_create_entity(ov_vocs_db *self,
-                              ov_vocs_db_entity entity,
-                              const char *id,
-                              ov_vocs_db_scope scope,
+bool ov_vocs_db_create_entity(ov_vocs_db *self, ov_vocs_db_entity entity,
+                              const char *id, ov_vocs_db_scope scope,
                               const char *scope_id);
 
 /*----------------------------------------------------------------------------*/
@@ -291,10 +286,8 @@ bool ov_vocs_db_create_entity(ov_vocs_db *self,
  *      @param key      key to set
  *      @param val      value to set
  */
-bool ov_vocs_db_update_entity_key(ov_vocs_db *self,
-                                  ov_vocs_db_entity entity,
-                                  const char *id,
-                                  const char *key,
+bool ov_vocs_db_update_entity_key(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                  const char *id, const char *key,
                                   const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
@@ -307,10 +300,8 @@ bool ov_vocs_db_update_entity_key(ov_vocs_db *self,
  *      @param id       id to create
  *      @param key      key to set
  */
-bool ov_vocs_db_delete_entity_key(ov_vocs_db *self,
-                                  ov_vocs_db_entity entity,
-                                  const char *id,
-                                  const char *key);
+bool ov_vocs_db_delete_entity_key(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                  const char *id, const char *key);
 
 /*----------------------------------------------------------------------------*/
 
@@ -326,10 +317,8 @@ bool ov_vocs_db_delete_entity_key(ov_vocs_db *self,
  *      @param val      value to set
  *      @param errors   pointer to JSON object for error return
  */
-bool ov_vocs_db_verify_entity_item(ov_vocs_db *self,
-                                   ov_vocs_db_entity entity,
-                                   const char *id,
-                                   const ov_json_value *val,
+bool ov_vocs_db_verify_entity_item(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                   const char *id, const ov_json_value *val,
                                    ov_json_value **errors);
 
 /*----------------------------------------------------------------------------*/
@@ -347,10 +336,8 @@ bool ov_vocs_db_verify_entity_item(ov_vocs_db *self,
  *      @param id       id to update
  *      @param val      value to set
  */
-bool ov_vocs_db_update_entity_item(ov_vocs_db *self,
-                                   ov_vocs_db_entity entity,
-                                   const char *id,
-                                   const ov_json_value *val,
+bool ov_vocs_db_update_entity_item(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                   const char *id, const ov_json_value *val,
                                    ov_json_value **errors);
 
 /*
@@ -368,8 +355,7 @@ bool ov_vocs_db_update_entity_item(ov_vocs_db *self,
  *      @param type     type of data
  *      @param data     dataset to inject
  */
-bool ov_vocs_db_inject(ov_vocs_db *self,
-                       ov_vocs_db_type type,
+bool ov_vocs_db_inject(ov_vocs_db *self, ov_vocs_db_type type,
                        ov_json_value *data);
 
 /*----------------------------------------------------------------------------*/
@@ -397,8 +383,7 @@ ov_json_value *ov_vocs_db_eject(ov_vocs_db *self, ov_vocs_db_type type);
  *      @params user    user id
  *      @params pass    clear text password
  */
-bool ov_vocs_db_set_password(ov_vocs_db *self,
-                             const char *user,
+bool ov_vocs_db_set_password(ov_vocs_db *self, const char *user,
                              const char *pass);
 
 /*----------------------------------------------------------------------------*/
@@ -410,8 +395,7 @@ bool ov_vocs_db_set_password(ov_vocs_db *self,
  *      @params user    user id
  *      @params pass    clear text password
  */
-bool ov_vocs_db_authenticate(ov_vocs_db *self,
-                             const char *user,
+bool ov_vocs_db_authenticate(ov_vocs_db *self, const char *user,
                              const char *pass);
 
 /*----------------------------------------------------------------------------*/
@@ -434,8 +418,7 @@ bool ov_vocs_db_authorize(ov_vocs_db *self, const char *user, const char *role);
  *      @params role    role id
  *      @params loop    loop id
  */
-ov_vocs_permission ov_vocs_db_get_permission(ov_vocs_db *self,
-                                             const char *role,
+ov_vocs_permission ov_vocs_db_get_permission(ov_vocs_db *self, const char *role,
                                              const char *loop);
 
 /*
@@ -446,14 +429,12 @@ ov_vocs_permission ov_vocs_db_get_permission(ov_vocs_db *self,
  *      ------------------------------------------------------------------------
  */
 
-bool ov_vocs_db_add_domain_admin(ov_vocs_db *self,
-                                 const char *domain,
+bool ov_vocs_db_add_domain_admin(ov_vocs_db *self, const char *domain,
                                  const char *admin_id);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_add_project_admin(ov_vocs_db *self,
-                                  const char *project,
+bool ov_vocs_db_add_project_admin(ov_vocs_db *self, const char *project,
                                   const char *admin_id);
 
 /*----------------------------------------------------------------------------*/
@@ -468,8 +449,7 @@ bool ov_vocs_db_add_project_admin(ov_vocs_db *self,
  *      @param user     user id to check
  *      @param project  project id to check
  */
-bool ov_vocs_db_authorize_project_admin(ov_vocs_db *self,
-                                        const char *user,
+bool ov_vocs_db_authorize_project_admin(ov_vocs_db *self, const char *user,
                                         const char *project);
 
 /*----------------------------------------------------------------------------*/
@@ -483,8 +463,7 @@ bool ov_vocs_db_authorize_project_admin(ov_vocs_db *self,
  *      @param user     user id to check
  *      @param project  project id to check
  */
-bool ov_vocs_db_authorize_domain_admin(ov_vocs_db *self,
-                                       const char *user,
+bool ov_vocs_db_authorize_domain_admin(ov_vocs_db *self, const char *user,
                                        const char *domain);
 
 /*----------------------------------------------------------------------------*/
@@ -587,14 +566,12 @@ ov_json_value *ov_vocs_db_get_layout(ov_vocs_db *self, const char *role);
  *      @params role    role id
  *      @params layout  layout of the role in form { "loopid" : pos }
  */
-bool ov_vocs_db_set_layout(ov_vocs_db *self,
-                           const char *role,
+bool ov_vocs_db_set_layout(ov_vocs_db *self, const char *role,
                            const ov_json_value *layout);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_keyset_layout(ov_vocs_db *self,
-                                  const char *domain,
+bool ov_vocs_db_set_keyset_layout(ov_vocs_db *self, const char *domain,
                                   const char *name,
                                   const ov_json_value *layout);
 
@@ -610,8 +587,7 @@ ov_json_value *ov_vocs_db_get_user_data(ov_vocs_db *self, const char *user);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_user_data(ov_vocs_db *self,
-                              const char *user,
+bool ov_vocs_db_set_user_data(ov_vocs_db *self, const char *user,
                               const ov_json_value *data);
 
 /*
@@ -622,18 +598,13 @@ bool ov_vocs_db_set_user_data(ov_vocs_db *self,
  *      ------------------------------------------------------------------------
  */
 
-bool ov_vocs_db_set_state(ov_vocs_db *self,
-                          const char *user,
-                          const char *role,
-                          const char *loop,
-                          ov_vocs_permission state);
+bool ov_vocs_db_set_state(ov_vocs_db *self, const char *user, const char *role,
+                          const char *loop, ov_vocs_permission state);
 
 /*----------------------------------------------------------------------------*/
 
-ov_vocs_permission ov_vocs_db_get_state(ov_vocs_db *self,
-                                        const char *user,
-                                        const char *role,
-                                        const char *loop);
+ov_vocs_permission ov_vocs_db_get_state(ov_vocs_db *self, const char *user,
+                                        const char *role, const char *loop);
 
 /*----------------------------------------------------------------------------*/
 
@@ -642,18 +613,13 @@ ov_socket_configuration ov_vocs_db_get_multicast_group(ov_vocs_db *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_volume(ov_vocs_db *self,
-                           const char *user,
-                           const char *role,
-                           const char *loop,
-                           uint8_t volume);
+bool ov_vocs_db_set_volume(ov_vocs_db *self, const char *user, const char *role,
+                           const char *loop, uint8_t volume);
 
 /*----------------------------------------------------------------------------*/
 
-uint8_t ov_vocs_db_get_volume(ov_vocs_db *self,
-                              const char *user,
-                              const char *role,
-                              const char *loop);
+uint8_t ov_vocs_db_get_volume(ov_vocs_db *self, const char *user,
+                              const char *role, const char *loop);
 
 /*----------------------------------------------------------------------------*/
 
@@ -669,14 +635,12 @@ ov_json_value *ov_vocs_db_get_sip(ov_vocs_db *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_sip_allow_callout(ov_vocs_db *self,
-                                  const char *loop,
+bool ov_vocs_db_sip_allow_callout(ov_vocs_db *self, const char *loop,
                                   const char *role);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_sip_allow_callend(ov_vocs_db *self,
-                                  const char *loop,
+bool ov_vocs_db_sip_allow_callend(ov_vocs_db *self, const char *loop,
                                   const char *role);
 
 /*----------------------------------------------------------------------------*/
@@ -685,13 +649,12 @@ ov_json_value *ov_vocs_db_get_all_loops(ov_vocs_db *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_remove_permission(ov_vocs_db *self, 
-    ov_sip_permission permission);
+bool ov_vocs_db_remove_permission(ov_vocs_db *self,
+                                  ov_sip_permission permission);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_add_permission(ov_vocs_db *self, 
-    ov_sip_permission permission);
+bool ov_vocs_db_add_permission(ov_vocs_db *self, ov_sip_permission permission);
 
 /*----------------------------------------------------------------------------*/
 

@@ -104,8 +104,7 @@ bool ov_chunker_add(ov_chunker *self, ov_buffer const *data);
 uint8_t const *ov_chunker_next_chunk_preview(ov_chunker *self,
                                              size_t num_octets);
 
-bool ov_chunker_next_chunk_raw(ov_chunker *self,
-                               size_t num_octets,
+bool ov_chunker_next_chunk_raw(ov_chunker *self, size_t num_octets,
                                uint8_t *dest);
 
 ov_buffer *ov_chunker_next_chunk(ov_chunker *self, size_t num_octets);

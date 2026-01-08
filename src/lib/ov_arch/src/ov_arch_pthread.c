@@ -36,36 +36,38 @@
 int ov_arch_pthread_mutex_timedlock(pthread_mutex_t *restrict mutex,
                                     const struct timespec *restrict abstime) {
 
-    int retval = -1;
+  int retval = -1;
 
-    if ((0 == mutex) || (0 == abstime)) {
+  if ((0 == mutex) || (0 == abstime)) {
 
-        return -1;
-    }
-    /*
-     *
-     *      pthread_mutex_try_lock is POSIX 1 ISO/IEC 9945-1:1996
-     *
-     */
+    return -1;
+  }
+  /*
+   *
+   *      pthread_mutex_try_lock is POSIX 1 ISO/IEC 9945-1:1996
+   *
+   */
 
-    struct timespec now = {0};
+  struct timespec now = {0};
 
-    do {
+  do {
 
-        memset(&now, 0, sizeof(struct timespec));
-        clock_gettime(CLOCK_REALTIME, &now);
+    memset(&now, 0, sizeof(struct timespec));
+    clock_gettime(CLOCK_REALTIME, &now);
 
-        retval = pthread_mutex_trylock(mutex);
-        if (0 == retval) break;
+    retval = pthread_mutex_trylock(mutex);
+    if (0 == retval)
+      break;
 
-        usleep(1000); // 1 millisecond
+    usleep(1000); // 1 millisecond
 
-        if (now.tv_sec == abstime->tv_sec)
-            if (now.tv_nsec >= abstime->tv_nsec) return retval;
+    if (now.tv_sec == abstime->tv_sec)
+      if (now.tv_nsec >= abstime->tv_nsec)
+        return retval;
 
-    } while (now.tv_sec <= abstime->tv_sec);
+  } while (now.tv_sec <= abstime->tv_sec);
 
-    return retval;
+  return retval;
 }
 
 /*----------------------------------------------------------------------------*/

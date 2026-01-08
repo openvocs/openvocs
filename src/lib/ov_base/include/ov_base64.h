@@ -65,10 +65,8 @@
 
         @returns true if the source was encoded and written to destination.
 */
-bool ov_base64_encode(const uint8_t *source,
-                      size_t src_length,
-                      uint8_t **destination,
-                      size_t *dest_length);
+bool ov_base64_encode(const uint8_t *source, size_t src_length,
+                      uint8_t **destination, size_t *dest_length);
 
 /*----------------------------------------------------------------------------*/
 
@@ -76,10 +74,8 @@ bool ov_base64_encode(const uint8_t *source,
         URL encode a source buffer of length to a destination buffer.
         For @mode and @param @see ov_base64_encode
 */
-bool ov_base64_url_encode(const uint8_t *buffer,
-                          size_t length,
-                          uint8_t **result,
-                          size_t *result_length);
+bool ov_base64_url_encode(const uint8_t *buffer, size_t length,
+                          uint8_t **result, size_t *result_length);
 
 /*
  *      ------------------------------------------------------------------------
@@ -94,9 +90,7 @@ bool ov_base64_url_encode(const uint8_t *buffer,
         Decode a source buffer of length to a destination buffer.
         For @mode and @param @see ov_base64_encode
 */
-bool ov_base64_decode(const uint8_t *buffer,
-                      size_t length,
-                      uint8_t **result,
+bool ov_base64_decode(const uint8_t *buffer, size_t length, uint8_t **result,
                       size_t *result_length);
 
 /*----------------------------------------------------------------------------*/
@@ -105,9 +99,7 @@ bool ov_base64_decode(const uint8_t *buffer,
         URL decode a source buffer of length to a destination buffer.
         For @mode and @param @see ov_base64_encode
 */
-bool ov_base64_url_decode(const uint8_t *buffer,
-                          size_t length,
-                          uint8_t **result,
-                          size_t *result_length);
+bool ov_base64_url_decode(const uint8_t *buffer, size_t length,
+                          uint8_t **result, size_t *result_length);
 
 #endif /* ov_base64_h */

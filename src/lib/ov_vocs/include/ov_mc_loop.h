@@ -44,19 +44,17 @@ typedef struct ov_mc_loop ov_mc_loop;
 
 typedef struct ov_mc_loop_config {
 
-    ov_event_loop *loop;
-    ov_mc_loop_data data;
+  ov_event_loop *loop;
+  ov_mc_loop_data data;
 
-    struct {
+  struct {
 
-        void *userdata;
-        void (*io)(void *userdata,
-                   const ov_mc_loop_data *data,
-                   const uint8_t *buffer,
-                   size_t bytes,
-                   const ov_socket_data *remote);
+    void *userdata;
+    void (*io)(void *userdata, const ov_mc_loop_data *data,
+               const uint8_t *buffer, size_t bytes,
+               const ov_socket_data *remote);
 
-    } callback;
+  } callback;
 
 } ov_mc_loop_config;
 

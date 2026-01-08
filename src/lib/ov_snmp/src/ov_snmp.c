@@ -49,42 +49,42 @@
 
 bool ov_snmp_agent_running() {
 
-    bool (*agent_running)(void) = ov_plugin_system_get_symbol(
-        ov_plugin_system_get_plugin(OV_PLUGIN_SNMP_ID),
-        "ov_plugin_snmp_agent_running");
+  bool (*agent_running)(void) = ov_plugin_system_get_symbol(
+      ov_plugin_system_get_plugin(OV_PLUGIN_SNMP_ID),
+      "ov_plugin_snmp_agent_running");
 
-    if (agent_running) {
-        return agent_running();
-    } else {
-        return false;
-    }
+  if (agent_running) {
+    return agent_running();
+  } else {
+    return false;
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 void ov_snmp_agent_start() {
 
-    void (*agent_start)(void) = ov_plugin_system_get_symbol(
-        ov_plugin_system_get_plugin(OV_PLUGIN_SNMP_ID),
-        "ov_plugin_snmp_agent_start");
+  void (*agent_start)(void) = ov_plugin_system_get_symbol(
+      ov_plugin_system_get_plugin(OV_PLUGIN_SNMP_ID),
+      "ov_plugin_snmp_agent_start");
 
-    if (agent_start) {
-        agent_start();
-        ov_log_info("Started SNMP Agent");
-    } else {
-        ov_log_warning("Could not start SNMP Agent");
-    }
+  if (agent_start) {
+    agent_start();
+    ov_log_info("Started SNMP Agent");
+  } else {
+    ov_log_warning("Could not start SNMP Agent");
+  }
 }
 
 /*----------------------------------------------------------------------------*/
 
 void ov_snmp_agent_stop() {
 
-    void (*agent_stop)(void) = ov_plugin_system_get_symbol(
-        ov_plugin_system_get_plugin(OV_PLUGIN_SNMP_ID),
-        "ov_plugin_snmp_agent_stop");
+  void (*agent_stop)(void) = ov_plugin_system_get_symbol(
+      ov_plugin_system_get_plugin(OV_PLUGIN_SNMP_ID),
+      "ov_plugin_snmp_agent_stop");
 
-    if (agent_stop) {
-        agent_stop();
-    }
+  if (agent_stop) {
+    agent_stop();
+  }
 }

@@ -81,12 +81,9 @@ size_t ov_stun_message_integrity_sha256_encoding_length();
         @param keylen   length of the key
         @returns true   if integrity was written to position
 */
-bool ov_stun_add_message_integrity_sha256(uint8_t *head,
-                                          size_t length,
-                                          uint8_t *start,
-                                          uint8_t **next,
-                                          const uint8_t *key,
-                                          size_t keylen);
+bool ov_stun_add_message_integrity_sha256(uint8_t *head, size_t length,
+                                          uint8_t *start, uint8_t **next,
+                                          const uint8_t *key, size_t keylen);
 
 /*----------------------------------------------------------------------------*/
 
@@ -109,12 +106,9 @@ bool ov_stun_add_message_integrity_sha256(uint8_t *head,
                                 @NOTE all invalid attribute pointers
                                 will be removed from the list
 */
-bool ov_stun_check_message_integrity_sha256(uint8_t *head,
-                                            size_t length,
-                                            uint8_t *attr[],
-                                            size_t attr_size,
-                                            uint8_t *key,
-                                            size_t keylen,
+bool ov_stun_check_message_integrity_sha256(uint8_t *head, size_t length,
+                                            uint8_t *attr[], size_t attr_size,
+                                            uint8_t *key, size_t keylen,
                                             bool must_be_set);
 
 #endif /* ov_stun_attr_message_integrity_sha256_h */

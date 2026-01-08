@@ -41,9 +41,9 @@ extern const uint16_t OV_OGG_OPUS_PRESKIP_SAMPLES;
 
 typedef struct {
 
-    uint16_t preskip_samples;
-    float output_gain_db;
-    uint32_t samplerate_hz;
+  uint16_t preskip_samples;
+  float output_gain_db;
+  uint32_t samplerate_hz;
 
 } ov_format_ogg_opus_options;
 
@@ -67,8 +67,7 @@ char const *ov_format_ogg_opus_comment(ov_format *self, char const *key);
  * This is due to the fact that the comment section must go first into the ogg
  * data and inserting data in the middle of a large file is expensive.
  */
-bool ov_format_ogg_opus_comment_set(ov_format *self,
-                                    char const *key,
+bool ov_format_ogg_opus_comment_set(ov_format *self, char const *key,
                                     char const *value);
 
 /*----------------------------------------------------------------------------*/

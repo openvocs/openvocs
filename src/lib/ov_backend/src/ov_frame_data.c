@@ -42,82 +42,85 @@ static ov_registered_cache *g_cache = 0;
 
 static ov_frame_data *as_frame_data(void *vptr) {
 
-    if (0 == vptr) return 0;
+  if (0 == vptr)
+    return 0;
 
-    ov_frame_data *data = vptr;
+  ov_frame_data *data = vptr;
 
-    if (FRAME_DATA_MAGIC_BYTES != data->magic_bytes) return 0;
+  if (FRAME_DATA_MAGIC_BYTES != data->magic_bytes)
+    return 0;
 
-    return data;
+  return data;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *free_frame_data(void *vptr) {
 
-    if (0 == vptr) return vptr;
+  if (0 == vptr)
+    return vptr;
 
-    ov_frame_data *data = as_frame_data(vptr);
+  ov_frame_data *data = as_frame_data(vptr);
 
-    if (0 == data) {
-        return data;
-    }
+  if (0 == data) {
+    return data;
+  }
 
-    data->pcm16s_32bit = ov_buffer_free(data->pcm16s_32bit);
+  data->pcm16s_32bit = ov_buffer_free(data->pcm16s_32bit);
 
-    free(data);
+  free(data);
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void ov_frame_data_enable_caching(size_t capacity) {
 
-    ov_registered_cache_config cfg = {
+  ov_registered_cache_config cfg = {
 
-        .capacity = capacity,
-        .item_free = free_frame_data,
+      .capacity = capacity,
+      .item_free = free_frame_data,
 
-    };
+  };
 
-    g_cache = ov_registered_cache_extend("frame_data", cfg);
+  g_cache = ov_registered_cache_extend("frame_data", cfg);
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_frame_data *ov_frame_data_create() {
 
-    ov_frame_data *data = ov_registered_cache_get(g_cache);
+  ov_frame_data *data = ov_registered_cache_get(g_cache);
 
-    if (0 == data) {
-        data = calloc(1, sizeof(ov_frame_data));
-        data->magic_bytes = FRAME_DATA_MAGIC_BYTES;
-    }
+  if (0 == data) {
+    data = calloc(1, sizeof(ov_frame_data));
+    data->magic_bytes = FRAME_DATA_MAGIC_BYTES;
+  }
 
-    OV_ASSERT(0 == data->pcm16s_32bit);
+  OV_ASSERT(0 == data->pcm16s_32bit);
 
-    return data;
+  return data;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_frame_data *ov_frame_data_free(ov_frame_data *data) {
 
-    if (0 == data) {
-        return 0;
-    }
+  if (0 == data) {
+    return 0;
+  }
 
-    data->pcm16s_32bit = ov_buffer_free(data->pcm16s_32bit);
-    OV_ASSERT(0 == data->pcm16s_32bit);
+  data->pcm16s_32bit = ov_buffer_free(data->pcm16s_32bit);
+  OV_ASSERT(0 == data->pcm16s_32bit);
 
-    data = ov_registered_cache_put(g_cache, data);
+  data = ov_registered_cache_put(g_cache, data);
 
-    if (0 != data) {
-        data = free_frame_data(data);
-    }
+  if (0 != data) {
+    data = free_frame_data(data);
+  }
 
-    return data;
+  return data;
 }
 
 /*****************************************************************************
@@ -338,79 +341,76 @@ ov_frame_data *ov_frame_data_free(ov_frame_data *data) {
 /*----------------------------------------------------------------------------*/
 
 static ov_rtp_frame *encode_frame(ov_frame_data const *frame_data,
-                                  ov_codec *codec,
-                                  bool mark) {
+                                  ov_codec *codec, bool mark) {
 
-    if ((!ov_ptr_valid(codec, "Cannot encode frame data: No codec")) ||
-        (!ov_ptr_valid(frame_data, "Cannot encode frame data: No data")) ||
-        (!ov_ptr_valid(
-            frame_data->pcm16s_32bit, "Cannot encode frame data: No data"))) {
-        return 0;
-    }
+  if ((!ov_ptr_valid(codec, "Cannot encode frame data: No codec")) ||
+      (!ov_ptr_valid(frame_data, "Cannot encode frame data: No data")) ||
+      (!ov_ptr_valid(frame_data->pcm16s_32bit,
+                     "Cannot encode frame data: No data"))) {
+    return 0;
+  }
 
-    OV_ASSERT(0 != codec->encode);
+  OV_ASSERT(0 != codec->encode);
 
-    ov_buffer *out = 0;
+  ov_buffer *out = 0;
 
-    const size_t num_samples =
-        frame_data->pcm16s_32bit->length / sizeof(int32_t);
+  const size_t num_samples = frame_data->pcm16s_32bit->length / sizeof(int32_t);
 
-    // First step: 32bit -> 16bit
-    ov_buffer *reduced = ov_buffer_create(num_samples * sizeof(int16_t));
-    OV_ASSERT(num_samples * sizeof(int16_t) <= reduced->capacity);
+  // First step: 32bit -> 16bit
+  ov_buffer *reduced = ov_buffer_create(num_samples * sizeof(int16_t));
+  OV_ASSERT(num_samples * sizeof(int16_t) <= reduced->capacity);
 
-    reduced->length = num_samples * sizeof(int16_t);
+  reduced->length = num_samples * sizeof(int16_t);
 
-    ov_pcm_32_clip_to_16(num_samples,
-                         (int32_t *)frame_data->pcm16s_32bit->start,
-                         (int16_t *)reduced->start);
+  ov_pcm_32_clip_to_16(num_samples, (int32_t *)frame_data->pcm16s_32bit->start,
+                       (int16_t *)reduced->start);
 
-    /* The codec will never encode to more bytes than the input, or will it ?*/
-    out = ov_buffer_create(frame_data->pcm16s_32bit->length);
+  /* The codec will never encode to more bytes than the input, or will it ?*/
+  out = ov_buffer_create(frame_data->pcm16s_32bit->length);
 
-    int32_t encoded_bytes = ov_codec_encode(
-        codec, reduced->start, reduced->length, out->start, out->capacity);
+  int32_t encoded_bytes = ov_codec_encode(
+      codec, reduced->start, reduced->length, out->start, out->capacity);
 
-    reduced = ov_buffer_free(reduced);
-    OV_ASSERT(0 == reduced);
+  reduced = ov_buffer_free(reduced);
+  OV_ASSERT(0 == reduced);
 
-    if (0 > encoded_bytes) {
-        ov_log_error("Could not encode payload");
-        goto error;
-    }
+  if (0 > encoded_bytes) {
+    ov_log_error("Could not encode payload");
+    goto error;
+  }
 
-    OV_ASSERT(-1 < encoded_bytes);
+  OV_ASSERT(-1 < encoded_bytes);
 
-    ov_rtp_frame_expansion exp = {
+  ov_rtp_frame_expansion exp = {
 
-        .version = RTP_VERSION_2,
-        /* This stuff needs to come from mixed_data  in the end*/
-        .payload_type = frame_data->payload_type,
-        .sequence_number = frame_data->sequence_number,
-        .timestamp = frame_data->timestamp,
-        .ssrc = frame_data->ssid,
+      .version = RTP_VERSION_2,
+      /* This stuff needs to come from mixed_data  in the end*/
+      .payload_type = frame_data->payload_type,
+      .sequence_number = frame_data->sequence_number,
+      .timestamp = frame_data->timestamp,
+      .ssrc = frame_data->ssid,
 
-        .marker_bit = mark,
+      .marker_bit = mark,
 
-        .payload.length = (size_t)encoded_bytes,
-        .payload.data = out->start,
+      .payload.length = (size_t)encoded_bytes,
+      .payload.data = out->start,
 
-    };
+  };
 
-    ov_rtp_frame *frame = ov_rtp_frame_encode(&exp);
+  ov_rtp_frame *frame = ov_rtp_frame_encode(&exp);
 
-    out = ov_buffer_free(out);
-    OV_ASSERT(0 == out);
+  out = ov_buffer_free(out);
+  OV_ASSERT(0 == out);
 
-    return frame;
+  return frame;
 
 error:
 
-    out = ov_buffer_free(out);
+  out = ov_buffer_free(out);
 
-    OV_ASSERT(0 == out);
+  OV_ASSERT(0 == out);
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -418,19 +418,19 @@ error:
 ov_rtp_frame *ov_frame_data_encode_with_codec(ov_frame_data *frame_data,
                                               ov_codec *out_codec) {
 
-    if (0 == frame_data) {
+  if (0 == frame_data) {
 
-        ov_log_error("Not frame data to encode (0 pointer)");
-        return 0;
-    }
+    ov_log_error("Not frame data to encode (0 pointer)");
+    return 0;
+  }
 
-    if (0 == out_codec) {
+  if (0 == out_codec) {
 
-        ov_log_error("No Codec to encode audio (0 -pointer)");
-        return 0;
-    }
+    ov_log_error("No Codec to encode audio (0 -pointer)");
+    return 0;
+  }
 
-    return encode_frame(frame_data, out_codec, false);
+  return encode_frame(frame_data, out_codec, false);
 }
 
 /*----------------------------------------------------------------------------*/

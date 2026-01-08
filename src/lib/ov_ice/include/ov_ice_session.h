@@ -33,8 +33,8 @@
 typedef struct ov_ice_session ov_ice_session;
 
 #include "ov_ice.h"
-#include "ov_ice_state.h"
 #include "ov_ice_candidate.h"
+#include "ov_ice_state.h"
 #include "ov_ice_stream.h"
 
 #include <ov_base/ov_id.h>
@@ -44,34 +44,34 @@ typedef struct ov_ice_session ov_ice_session;
 
 struct ov_ice_session {
 
-    ov_node node;
-    ov_id uuid;
+  ov_node node;
+  ov_id uuid;
 
-    ov_ice_state state;
-    bool controlling;
-    bool nominate_started;
-    bool trickling_started;
+  ov_ice_state state;
+  bool controlling;
+  bool nominate_started;
+  bool trickling_started;
 
-    uint64_t tiebreaker;
+  uint64_t tiebreaker;
 
-    ov_ice *ice;
+  ov_ice *ice;
 
-    struct {
+  struct {
 
-        srtp_t session;
+    srtp_t session;
 
-    } srtp;
+  } srtp;
 
-    struct {
+  struct {
 
-        uint32_t session_timeout;
-        uint32_t nominate_timeout;
-        uint32_t trickling;
-        uint32_t connectivity;
+    uint32_t session_timeout;
+    uint32_t nominate_timeout;
+    uint32_t trickling;
+    uint32_t connectivity;
 
-    } timer;
+  } timer;
 
-    ov_ice_stream *streams;
+  ov_ice_stream *streams;
 };
 
 /*
@@ -90,16 +90,13 @@ void *ov_ice_session_free(void *self);
 bool ov_ice_session_process_answer_in(ov_ice_session *self,
                                       const ov_sdp_session *sdp);
 
-bool ov_ice_session_candidate(ov_ice_session *session,
-                              int stream_id,
+bool ov_ice_session_candidate(ov_ice_session *session, int stream_id,
                               const ov_ice_candidate *candidate);
 bool ov_ice_session_end_of_candidates(ov_ice_session *session, int stream_id);
 
 uint32_t ov_ice_session_get_stream_ssrc(ov_ice_session *session, int stream_id);
-ssize_t ov_ice_session_stream_send(ov_ice_session *session,
-                                   int stream_id,
-                                   const uint8_t *buffer,
-                                   size_t size);
+ssize_t ov_ice_session_stream_send(ov_ice_session *session, int stream_id,
+                                   const uint8_t *buffer, size_t size);
 
 bool ov_ice_session_set_foundation(ov_ice_session *session,
                                    ov_ice_candidate *candidate);

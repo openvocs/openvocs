@@ -43,15 +43,15 @@
 
 typedef struct ov_uri {
 
-    char *scheme;
-    char *path;
+  char *scheme;
+  char *path;
 
-    char *user;
-    char *host;
-    uint32_t port;
+  char *user;
+  char *host;
+  uint32_t port;
 
-    char *query;
-    char *fragment;
+  char *query;
+  char *fragment;
 
 } ov_uri;
 

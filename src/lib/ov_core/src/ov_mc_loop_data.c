@@ -31,55 +31,63 @@
 
 ov_mc_loop_data ov_mc_loop_data_from_json(const ov_json_value *value) {
 
-    ov_mc_loop_data out = {0};
+  ov_mc_loop_data out = {0};
 
-    if (!value) goto error;
+  if (!value)
+    goto error;
 
-    const ov_json_value *socket = ov_json_get(value, "/" OV_KEY_SOCKET);
-    const char *name = ov_json_string_get(ov_json_get(value, "/" OV_KEY_NAME));
+  const ov_json_value *socket = ov_json_get(value, "/" OV_KEY_SOCKET);
+  const char *name = ov_json_string_get(ov_json_get(value, "/" OV_KEY_NAME));
 
-    uint64_t vol = ov_json_number_get(ov_json_get(value, "/" OV_KEY_VOLUME));
+  uint64_t vol = ov_json_number_get(ov_json_get(value, "/" OV_KEY_VOLUME));
 
-    out.socket =
-        ov_socket_configuration_from_json(socket, (ov_socket_configuration){0});
-    out.socket.type = UDP;
+  out.socket =
+      ov_socket_configuration_from_json(socket, (ov_socket_configuration){0});
+  out.socket.type = UDP;
 
-    if (name) strncpy(out.name, name, OV_MC_LOOP_NAME_MAX);
+  if (name)
+    strncpy(out.name, name, OV_MC_LOOP_NAME_MAX);
 
-    if (vol > 100) vol = 100;
+  if (vol > 100)
+    vol = 100;
 
-    out.volume = vol;
+  out.volume = vol;
 
-    return out;
+  return out;
 error:
-    return (ov_mc_loop_data){0};
+  return (ov_mc_loop_data){0};
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_mc_loop_data_to_json(ov_mc_loop_data data) {
 
-    ov_json_value *out = NULL;
-    ov_json_value *val = NULL;
+  ov_json_value *out = NULL;
+  ov_json_value *val = NULL;
 
-    if (0 == data.socket.host[0]) goto error;
-    if (0 == data.name[0]) goto error;
+  if (0 == data.socket.host[0])
+    goto error;
+  if (0 == data.name[0])
+    goto error;
 
-    out = ov_json_object();
+  out = ov_json_object();
 
-    val = NULL;
-    ov_socket_configuration_to_json(data.socket, &val);
-    if (!ov_json_object_set(out, OV_KEY_SOCKET, val)) goto error;
+  val = NULL;
+  ov_socket_configuration_to_json(data.socket, &val);
+  if (!ov_json_object_set(out, OV_KEY_SOCKET, val))
+    goto error;
 
-    val = ov_json_string(data.name);
-    if (!ov_json_object_set(out, OV_KEY_NAME, val)) goto error;
+  val = ov_json_string(data.name);
+  if (!ov_json_object_set(out, OV_KEY_NAME, val))
+    goto error;
 
-    val = ov_json_number(data.volume);
-    if (!ov_json_object_set(out, OV_KEY_VOLUME, val)) goto error;
+  val = ov_json_number(data.volume);
+  if (!ov_json_object_set(out, OV_KEY_VOLUME, val))
+    goto error;
 
-    return out;
+  return out;
 error:
-    ov_json_value_free(out);
-    ov_json_value_free(val);
-    return NULL;
+  ov_json_value_free(out);
+  ov_json_value_free(val);
+  return NULL;
 }

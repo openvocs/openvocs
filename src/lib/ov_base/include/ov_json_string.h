@@ -63,8 +63,7 @@ const char *ov_json_string_get(const ov_json_value *self);
 
 bool ov_json_string_set(ov_json_value *self, const char *content);
 
-bool ov_json_string_set_length(ov_json_value *self,
-                               const char *content,
+bool ov_json_string_set_length(ov_json_value *self, const char *content,
                                size_t length);
 
 /*

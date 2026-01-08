@@ -111,134 +111,128 @@ typedef struct ov_event_loop_event ov_event_loop_event;
 
 struct ov_event_loop_config {
 
-    struct {
+  struct {
 
-        uint32_t sockets;
-        uint32_t timers;
+    uint32_t sockets;
+    uint32_t timers;
 
-    } max;
+  } max;
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct ov_event_loop {
 
-    uint16_t magic_byte; // identify an event loop structure
-    uint16_t type;       // identify a custom implementation type
+  uint16_t magic_byte; // identify an event loop structure
+  uint16_t type;       // identify a custom implementation type
 
-    /*------------------------------------------------------------------*/
+  /*------------------------------------------------------------------*/
 
-    /** Don't call that method directly */
-    ov_event_loop *(*free)(ov_event_loop *self);
-    bool (*is_running)(const ov_event_loop *self);
+  /** Don't call that method directly */
+  ov_event_loop *(*free)(ov_event_loop *self);
+  bool (*is_running)(const ov_event_loop *self);
+
+  /*
+   *      Stop self from running.
+   */
+  bool (*stop)(ov_event_loop *self);
+
+  /*
+   *      Run the loop and handle events until
+   *      (A) the loop is stopped,
+   *      (B) or max_runtime exceeded.
+   *
+   *      @NOTE   a max_runtime of OV_RUN_ONCE
+   *              MUST run the loop exactely ONCE on all sockets
+   *
+   *      @NOTE   maximum supported runtime is UINT64_MAX usec
+   *
+   *      @param self             eventloop to run
+   *      @param max_runtime      max loop runtime
+   */
+  bool (*run)(ov_event_loop *self, uint64_t max_runtime_usec);
+
+  /*------------------------------------------------------------------*/
+
+  struct {
 
     /*
-     *      Stop self from running.
+     *      Set a callback to a socket_fd
+     *
+     *      @param self     eventloop to use
+     *      @param socket   socket fd to use
+     *      @param events   events to listen to (OR of ov_events)
+     *      @param userdata optional data for callback
+     *      @param callback mandatory callback for fd
+     *
+     *      BEWARE: the callback *must* check for EOF (`read` /
+     *      `write` returns 0) and return `false` in that case!
+     *
+     *      @NOTE           access over socket_fd number
+     *
      */
-    bool (*stop)(ov_event_loop *self);
+    bool (*set)(ov_event_loop *self, int socket, uint8_t events, void *userdata,
+                bool (*callback)(int socket_fd, uint8_t events,
+                                 void *userdata));
 
     /*
-     *      Run the loop and handle events until
-     *      (A) the loop is stopped,
-     *      (B) or max_runtime exceeded.
+     *      Unset a callback of a socket_fd
      *
-     *      @NOTE   a max_runtime of OV_RUN_ONCE
-     *              MUST run the loop exactely ONCE on all sockets
-     *
-     *      @NOTE   maximum supported runtime is UINT64_MAX usec
-     *
-     *      @param self             eventloop to run
-     *      @param max_runtime      max loop runtime
+     *      @param self     eventloop to use
+     *      @param socket   socket fd to use
+     *      @param userdata optional pointer to get out some
+     *                      userdata set during callback.set
      */
-    bool (*run)(ov_event_loop *self, uint64_t max_runtime_usec);
+    bool (*unset)(ov_event_loop *self, int socket, void **userdata);
 
-    /*------------------------------------------------------------------*/
+  } callback;
 
-    struct {
+  /*------------------------------------------------------------------*/
 
-        /*
-         *      Set a callback to a socket_fd
-         *
-         *      @param self     eventloop to use
-         *      @param socket   socket fd to use
-         *      @param events   events to listen to (OR of ov_events)
-         *      @param userdata optional data for callback
-         *      @param callback mandatory callback for fd
-         *
-         *      BEWARE: the callback *must* check for EOF (`read` /
-         *      `write` returns 0) and return `false` in that case!
-         *
-         *      @NOTE           access over socket_fd number
-         *
-         */
-        bool (*set)(ov_event_loop *self,
-                    int socket,
-                    uint8_t events,
-                    void *userdata,
-                    bool (*callback)(int socket_fd,
-                                     uint8_t events,
-                                     void *userdata));
+  struct {
 
-        /*
-         *      Unset a callback of a socket_fd
-         *
-         *      @param self     eventloop to use
-         *      @param socket   socket fd to use
-         *      @param userdata optional pointer to get out some
-         *                      userdata set during callback.set
-         */
-        bool (*unset)(ov_event_loop *self, int socket, void **userdata);
+    /*
+     *      Set a timer callback at target_usec. ONE SHOT ONLY
+     *
+     *      The timer is invalid after call. Any data pointer
+     *      MAY be reused in a next timer->set to create intervall
+     *      style timers.
+     *
+     *      Time accuracy MAY be dependent on the implementation and
+     *      load.
+     *
+     *      @param self     eventloop to use
+     *      @param relative relative target callback time in usecs
+     *      @param data     optional user data for callback
+     *      @param callback mandatory callback at target time
+     *
+     *      @returns        uint32_t id for timer
+     *                      OV_TIMER_INVALID on error
+     *
+     *      @NOTE           There is no guarantee whatsoever about
+     *                      the way the timer ids are acquired,
+     *                      they might start off with 0 and
+     *                      increase, but that is in no way
+     *                     guaranteed!
+     *
+     */
 
-    } callback;
+    uint32_t (*set)(ov_event_loop *self, uint64_t relative_usec, void *data,
+                    bool (*callback)(uint32_t id, void *data));
 
-    /*------------------------------------------------------------------*/
+    /*
+     *      Unset a timer with timer_id
+     *
+     *      @param self     eventloop to use
+     *      @param id       timer id to use
+     *      @param dfree    optional free function for data
+     *                      handover with set
+     */
+    bool (*unset)(ov_event_loop *self, uint32_t id, void **userdata);
 
-    struct {
+  } timer;
 
-        /*
-         *      Set a timer callback at target_usec. ONE SHOT ONLY
-         *
-         *      The timer is invalid after call. Any data pointer
-         *      MAY be reused in a next timer->set to create intervall
-         *      style timers.
-         *
-         *      Time accuracy MAY be dependent on the implementation and
-         *      load.
-         *
-         *      @param self     eventloop to use
-         *      @param relative relative target callback time in usecs
-         *      @param data     optional user data for callback
-         *      @param callback mandatory callback at target time
-         *
-         *      @returns        uint32_t id for timer
-         *                      OV_TIMER_INVALID on error
-         *
-         *      @NOTE           There is no guarantee whatsoever about
-         *                      the way the timer ids are acquired,
-         *                      they might start off with 0 and
-         *                      increase, but that is in no way
-         *                     guaranteed!
-         *
-         */
-
-        uint32_t (*set)(ov_event_loop *self,
-                        uint64_t relative_usec,
-                        void *data,
-                        bool (*callback)(uint32_t id, void *data));
-
-        /*
-         *      Unset a timer with timer_id
-         *
-         *      @param self     eventloop to use
-         *      @param id       timer id to use
-         *      @param dfree    optional free function for data
-         *                      handover with set
-         */
-        bool (*unset)(ov_event_loop *self, uint32_t id, void **userdata);
-
-    } timer;
-
-    int log_fd;
+  int log_fd;
 };
 
 /*
@@ -275,23 +269,18 @@ void *ov_event_loop_free(void *eventloop);
 
 /*----------------------------------------------------------------------------*/
 
-uint32_t ov_event_loop_timer_set(ov_event_loop *self,
-                                 uint64_t relative_usec,
+uint32_t ov_event_loop_timer_set(ov_event_loop *self, uint64_t relative_usec,
                                  void *data,
                                  bool (*callback)(uint32_t id, void *data));
 
-bool ov_event_loop_timer_unset(ov_event_loop *self,
-                               uint32_t id,
+bool ov_event_loop_timer_unset(ov_event_loop *self, uint32_t id,
                                void **userdata);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_loop_set(ov_event_loop *self,
-                       int socket,
-                       uint8_t events,
+bool ov_event_loop_set(ov_event_loop *self, int socket, uint8_t events,
                        void *userdata,
-                       bool (*callback)(int socket_fd,
-                                        uint8_t events,
+                       bool (*callback)(int socket_fd, uint8_t events,
                                         void *userdata));
 
 bool ov_event_loop_unset(ov_event_loop *self, int socket, void **userdata);
@@ -339,8 +328,8 @@ bool ov_event_loop_set_type(ov_event_loop *self, uint16_t type);
 /**
         Adapt the eventloop config to the runtime environment.
 */
-ov_event_loop_config ov_event_loop_config_adapt_to_runtime(
-    ov_event_loop_config config);
+ov_event_loop_config
+ov_event_loop_config_adapt_to_runtime(ov_event_loop_config config);
 
 /*---------------------------------------------------------------------------*/
 
@@ -371,12 +360,8 @@ ov_event_loop_config ov_event_loop_config_adapt_to_runtime(
         @returns true if the accept callback was set at the listener socket.
 */
 bool ov_event_add_default_connection_accept(
-    ov_event_loop *loop,
-    int socket,
-    uint8_t events,
-    void *data,
-    bool (*callback)(int connection_socket,
-                     uint8_t connection_events,
+    ov_event_loop *loop, int socket, uint8_t events, void *data,
+    bool (*callback)(int connection_socket, uint8_t connection_events,
                      void *data));
 
 /*---------------------------------------------------------------------------*/

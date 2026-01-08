@@ -33,62 +33,60 @@
 
 int main(int argc, char **argv) {
 
-    UNUSED(argc);
-    UNUSED(argv);
+  UNUSED(argc);
+  UNUSED(argv);
 
-    /*
+  /*
 
-    */
+  */
 
-    char const *json_string =
-        "{"
-        "   \"l1key1\" : {"
-        "      \"l2key1\" : 2"
-        "    },"
-        "    \"l1key2\" : \"ratatoskr\""
-        "}";
+  char const *json_string = "{"
+                            "   \"l1key1\" : {"
+                            "      \"l2key1\" : 2"
+                            "    },"
+                            "    \"l1key2\" : \"ratatoskr\""
+                            "}";
 
-    // Parse JSON from string
-    ov_json_value *main_value =
-        ov_json_value_from_string(json_string, strlen(json_string));
+  // Parse JSON from string
+  ov_json_value *main_value =
+      ov_json_value_from_string(json_string, strlen(json_string));
 
-    // get a json value wrapping the double 2.0d
-    ov_json_value const *json_number =
-        ov_json_get(main_value, "/l1key1/l2key1");
+  // get a json value wrapping the double 2.0d
+  ov_json_value const *json_number = ov_json_get(main_value, "/l1key1/l2key1");
 
-    // get the actual double value
-    double number = ov_json_number_get(json_number);
+  // get the actual double value
+  double number = ov_json_number_get(json_number);
 
-    // Comparing double values with exact value is not recommended ...
-    OV_ASSERT(fabs(number - 2.0) < 0.001);
+  // Comparing double values with exact value is not recommended ...
+  OV_ASSERT(fabs(number - 2.0) < 0.001);
 
-    printf("Got %f\n", number);
+  printf("Got %f\n", number);
 
-    // JSON in C erzeugen
+  // JSON in C erzeugen
 
-    ov_json_value *object = ov_json_object();
+  ov_json_value *object = ov_json_object();
 
-    ov_json_object_set(object, "killed_by", ov_json_string("hoedur"));
-    ov_json_object_set(object, "using", ov_json_string("mistle arrow"));
-    ov_json_object_set(object, "times", ov_json_number(1));
+  ov_json_object_set(object, "killed_by", ov_json_string("hoedur"));
+  ov_json_object_set(object, "using", ov_json_string("mistle arrow"));
+  ov_json_object_set(object, "times", ov_json_number(1));
 
-    // Add object as value to our main json
-    ov_json_object_set(main_value, "baldr", object);
+  // Add object as value to our main json
+  ov_json_object_set(main_value, "baldr", object);
 
-    // `object` was consumed by main_value
-    object = 0;
+  // `object` was consumed by main_value
+  object = 0;
 
-    // turn JSON into string
+  // turn JSON into string
 
-    char *new_json_string = ov_json_value_to_string(main_value);
-    OV_ASSERT(0 != new_json_string);
+  char *new_json_string = ov_json_value_to_string(main_value);
+  OV_ASSERT(0 != new_json_string);
 
-    printf("Our json now looks like: %s\n", new_json_string);
-    free(new_json_string);
+  printf("Our json now looks like: %s\n", new_json_string);
+  free(new_json_string);
 
-    // Get rid of json value
-    main_value = ov_json_value_free(main_value);
-    OV_ASSERT(0 == main_value);
+  // Get rid of json value
+  main_value = ov_json_value_free(main_value);
+  OV_ASSERT(0 == main_value);
 
-    return EXIT_SUCCESS;
+  return EXIT_SUCCESS;
 }

@@ -40,99 +40,97 @@ static void counter_inc() { ++counter; }
 
 int test_ov_plugin_system_load() {
 
-    testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
+  testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
 
-    char const *invalid_so = OPENVOCS_ROOT "/build/lib/ov_test2.so";
+  char const *invalid_so = OPENVOCS_ROOT "/build/lib/ov_test2.so";
 
-    testrun(0 == ov_plugin_system_load(0, (ov_plugin_load_flags){0}));
-    testrun(0 == ov_plugin_system_load(invalid_so, (ov_plugin_load_flags){0}));
+  testrun(0 == ov_plugin_system_load(0, (ov_plugin_load_flags){0}));
+  testrun(0 == ov_plugin_system_load(invalid_so, (ov_plugin_load_flags){0}));
 
-    // Now try with proper SO
-    // the base library provides the ov_plugin hooks ...
-    char const *valid_so = OPENVOCS_ROOT "/build/lib/libov_base2.so";
+  // Now try with proper SO
+  // the base library provides the ov_plugin hooks ...
+  char const *valid_so = OPENVOCS_ROOT "/build/lib/libov_base2.so";
 
-    void *handle = ov_plugin_system_load(valid_so, (ov_plugin_load_flags){0});
-    testrun(0 != handle);
+  void *handle = ov_plugin_system_load(valid_so, (ov_plugin_load_flags){0});
+  testrun(0 != handle);
 
-    // Handle should have been registered...
-    handle = ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID);
-    testrun(0 != handle);
+  // Handle should have been registered...
+  handle = ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID);
+  testrun(0 != handle);
 
-    bool (*plugin_was_loaded)(void) =
-        ov_plugin_system_get_symbol(handle, "plugin_state");
-    testrun(0 != plugin_was_loaded);
+  bool (*plugin_was_loaded)(void) =
+      ov_plugin_system_get_symbol(handle, "plugin_state");
+  testrun(0 != plugin_was_loaded);
 
-    testrun(plugin_was_loaded());
+  testrun(plugin_was_loaded());
 
-    testrun(ov_plugin_system_close());
+  testrun(ov_plugin_system_close());
 
-    /*************************************************************************
-                         Same again without registering
-     ************************************************************************/
+  /*************************************************************************
+                       Same again without registering
+   ************************************************************************/
 
-    handle =
-        ov_plugin_system_load(valid_so, (ov_plugin_load_flags){.simple = true});
-    testrun(0 != handle);
+  handle =
+      ov_plugin_system_load(valid_so, (ov_plugin_load_flags){.simple = true});
+  testrun(0 != handle);
 
-    // Handle should have not been registered...
-    testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
+  // Handle should have not been registered...
+  testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
 
-    plugin_was_loaded = ov_plugin_system_get_symbol(handle, "plugin_state");
-    testrun(0 != plugin_was_loaded);
+  plugin_was_loaded = ov_plugin_system_get_symbol(handle, "plugin_state");
+  testrun(0 != plugin_was_loaded);
 
-    testrun(plugin_was_loaded());
+  testrun(plugin_was_loaded());
 
-    testrun(ov_plugin_system_close());
+  testrun(ov_plugin_system_close());
 
-    /*************************************************************************
-                         Test symbol export to plugins
-     ************************************************************************/
+  /*************************************************************************
+                       Test symbol export to plugins
+   ************************************************************************/
 
-    testrun(
-        ov_plugin_system_export_symbol_for_plugin("counter_1", counter_inc));
+  testrun(ov_plugin_system_export_symbol_for_plugin("counter_1", counter_inc));
 
-    handle = ov_plugin_system_load(valid_so, (ov_plugin_load_flags){0});
-    testrun(0 != handle);
+  handle = ov_plugin_system_load(valid_so, (ov_plugin_load_flags){0});
+  testrun(0 != handle);
 
-    plugin_was_loaded = ov_plugin_system_get_symbol(handle, "plugin_state");
-    testrun(0 != plugin_was_loaded);
+  plugin_was_loaded = ov_plugin_system_get_symbol(handle, "plugin_state");
+  testrun(0 != plugin_was_loaded);
 
-    testrun(plugin_was_loaded());
+  testrun(plugin_was_loaded());
 
-    testrun(ov_plugin_system_close());
+  testrun(ov_plugin_system_close());
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
 int test_ov_plugin_system_load_dir() {
 
-    testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
+  testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
 
-    // Result depends on wether there are plugins under
-    // /usr/lib/openvocs/plugins
-    ov_plugin_system_load_dir(0);
-    testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
+  // Result depends on wether there are plugins under
+  // /usr/lib/openvocs/plugins
+  ov_plugin_system_load_dir(0);
+  testrun(0 == ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID));
 
-    testrun(0 < ov_plugin_system_load_dir(OPENVOCS_ROOT "/build/lib"));
+  testrun(0 < ov_plugin_system_load_dir(OPENVOCS_ROOT "/build/lib"));
 
-    void *handle = ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID);
-    testrun(0 != handle);
+  void *handle = ov_plugin_system_get_plugin(OV_PLUGIN_SYSTEM_TEST_ID);
+  testrun(0 != handle);
 
-    bool (*plugin_was_loaded)(void) =
-        ov_plugin_system_get_symbol(handle, "plugin_state");
-    testrun(0 != plugin_was_loaded);
+  bool (*plugin_was_loaded)(void) =
+      ov_plugin_system_get_symbol(handle, "plugin_state");
+  testrun(0 != plugin_was_loaded);
 
-    // testrun(plugin_was_loaded());
+  // testrun(plugin_was_loaded());
 
-    testrun(ov_plugin_system_close());
+  testrun(ov_plugin_system_close());
 
-    return testrun_log_success();
+  return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_plugin_system",
-            test_ov_plugin_system_load,
+OV_TEST_RUN("ov_plugin_system", test_ov_plugin_system_load,
             test_ov_plugin_system_load_dir);

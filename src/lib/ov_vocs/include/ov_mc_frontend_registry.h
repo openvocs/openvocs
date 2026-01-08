@@ -40,19 +40,19 @@ typedef struct ov_mc_frontend_registry ov_mc_frontend_registry;
 
 typedef struct ov_mc_frontend_registry_config {
 
-    bool debug;
+  bool debug;
+
+  struct {
+
+    void *userdata;
 
     struct {
 
-        void *userdata;
+      void (*drop)(void *userdata, const char *uuid);
 
-        struct {
+    } session;
 
-            void (*drop)(void *userdata, const char *uuid);
-
-        } session;
-
-    } callback;
+  } callback;
 
 } ov_mc_frontend_registry_config;
 
@@ -64,17 +64,16 @@ typedef struct ov_mc_frontend_registry_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_frontend_registry *ov_mc_frontend_registry_create(
-    ov_mc_frontend_registry_config config);
-ov_mc_frontend_registry *ov_mc_frontend_registry_free(
-    ov_mc_frontend_registry *self);
+ov_mc_frontend_registry *
+ov_mc_frontend_registry_create(ov_mc_frontend_registry_config config);
+ov_mc_frontend_registry *
+ov_mc_frontend_registry_free(ov_mc_frontend_registry *self);
 ov_mc_frontend_registry *ov_mc_frontend_registry_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_frontend_registry_register_proxy(ov_mc_frontend_registry *self,
-                                            int socket,
-                                            const char *uuid);
+                                            int socket, const char *uuid);
 
 /*----------------------------------------------------------------------------*/
 

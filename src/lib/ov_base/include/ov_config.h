@@ -95,27 +95,22 @@ ov_json_value *ov_config_from_command_line(size_t argc, char *argv[]);
 
 /*----------------------------------------------------------------------------*/
 
-double ov_config_double_or_default(ov_json_value const *jval,
-                                   char const *key,
+double ov_config_double_or_default(ov_json_value const *jval, char const *key,
                                    double default_val);
 
-uint32_t ov_config_u32_or_default(ov_json_value const *jval,
-                                  char const *key,
+uint32_t ov_config_u32_or_default(ov_json_value const *jval, char const *key,
                                   uint32_t default_val);
 
-uint64_t ov_config_u64_or_default(ov_json_value const *jval,
-                                  char const *key,
+uint64_t ov_config_u64_or_default(ov_json_value const *jval, char const *key,
                                   uint64_t default_val);
 
-bool ov_config_bool_or_default(ov_json_value const *jval,
-                               char const *key,
+bool ov_config_bool_or_default(ov_json_value const *jval, char const *key,
                                bool default_val);
 
 /*----------------------------------------------------------------------------*/
 
 ov_socket_configuration ov_config_socket_configuration_or_default(
-    ov_json_value const *jcfg,
-    char const *key,
+    ov_json_value const *jcfg, char const *key,
     ov_socket_configuration default_socket);
 
 /*----------------------------------------------------------------------------*/

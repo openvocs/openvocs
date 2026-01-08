@@ -60,10 +60,10 @@ typedef struct ov_data ov_data;
 
 struct ov_data {
 
-    const uint16_t magic_byte; /* generic magic byte */
-    uint16_t type;             /* custom data type */
+  const uint16_t magic_byte; /* generic magic byte */
+  uint16_t type;             /* custom data type */
 
-    ov_data *(*free)(ov_data *self); /* custom free method */
+  ov_data *(*free)(ov_data *self); /* custom free method */
 };
 
 /*----------------------------------------------------------------------------*/

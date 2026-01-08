@@ -33,6 +33,7 @@ import * as CSS from "/css/css.js";
 export default class ov_RBAC_Graph extends HTMLElement {
 
     #dom = {};
+    #allow_highlighted_loops;
 
     constructor() {
         super();
@@ -193,6 +194,14 @@ export default class ov_RBAC_Graph extends HTMLElement {
         return Graph.nodes.users;
     }
 
+    set allow_highlighted_loops(value) {
+        this.#allow_highlighted_loops = value;
+    }
+
+    get allow_highlighted_loops() {
+        return this.#allow_highlighted_loops;
+    }
+
     filter_unused_users(value) {
         for (let user of Graph.nodes.users.values()) {
             if (user.linked_nodes.size === 0) {
@@ -337,6 +346,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     #render_node(node, type, subset_id, prepend) {
         let element = Graph.create_node(type, node, subset_id);
+        element.allow_highlighting = this.#allow_highlighted_loops;
         let container;
         if (type === "user")
             container = this.#dom.node_layer_1;

@@ -41,27 +41,27 @@ typedef struct ov_vad_core ov_vad_core;
 
 typedef struct ov_vad_core_config {
 
-    ov_event_loop *loop;
-    ov_vad_config vad;
+  ov_event_loop *loop;
+  ov_vad_config vad;
 
-    struct {
+  struct {
 
-        uint32_t frames_activate;
-        uint32_t frames_deactivate;
+    uint32_t frames_activate;
+    uint32_t frames_deactivate;
 
-        uint32_t threads;
-        uint64_t threadlock_timeout_usec;
-        uint64_t message_queue_capacity;
+    uint32_t threads;
+    uint64_t threadlock_timeout_usec;
+    uint64_t message_queue_capacity;
 
-    } limits;
+  } limits;
 
-    struct {
+  struct {
 
-        void *userdata;
+    void *userdata;
 
-        void (*vad)(void *userdata, const char *loop, bool on);
+    void (*vad)(void *userdata, const char *loop, bool on);
 
-    } callbacks;
+  } callbacks;
 
 } ov_vad_core_config;
 
@@ -79,8 +79,7 @@ ov_vad_core *ov_vad_core_cast(const void *data);
 
 ov_vad_core_config ov_vad_core_config_from_json(const ov_json_value *in);
 
-bool ov_vad_core_add_loop(ov_vad_core *self,
-                          const char *loop,
+bool ov_vad_core_add_loop(ov_vad_core *self, const char *loop,
                           ov_socket_configuration socket);
 
 bool ov_vad_core_set_vad(ov_vad_core *self, ov_vad_config config);

@@ -198,11 +198,11 @@
 
 typedef enum {
 
-    OV_HTTP_PARSER_ABSENT = -3,  // not present e.g. when searching a key
-    OV_HTTP_PARSER_OOB = -2,     // Out of Bound e.g. for array
-    OV_HTTP_PARSER_ERROR = -1,   // processing error or mismatch
-    OV_HTTP_PARSER_PROGRESS = 0, // still matching, need more input data
-    OV_HTTP_PARSER_SUCCESS = 1   // content match
+  OV_HTTP_PARSER_ABSENT = -3,  // not present e.g. when searching a key
+  OV_HTTP_PARSER_OOB = -2,     // Out of Bound e.g. for array
+  OV_HTTP_PARSER_ERROR = -1,   // processing error or mismatch
+  OV_HTTP_PARSER_PROGRESS = 0, // still matching, need more input data
+  OV_HTTP_PARSER_SUCCESS = 1   // content match
 
 } ov_http_parser_state;
 
@@ -210,8 +210,8 @@ typedef enum {
 
 typedef struct {
 
-    uint8_t major;
-    uint8_t minor;
+  uint8_t major;
+  uint8_t minor;
 
 } ov_http_version;
 
@@ -219,9 +219,9 @@ typedef struct {
 
 typedef struct {
 
-    uint32_t code;
+  uint32_t code;
 
-    ov_memory_pointer phrase;
+  ov_memory_pointer phrase;
 
 } ov_http_status;
 
@@ -229,8 +229,8 @@ typedef struct {
 
 typedef struct {
 
-    ov_memory_pointer method;
-    ov_memory_pointer uri;
+  ov_memory_pointer method;
+  ov_memory_pointer uri;
 
 } ov_http_request;
 
@@ -238,8 +238,8 @@ typedef struct {
 
 typedef struct {
 
-    ov_memory_pointer name;
-    ov_memory_pointer value;
+  ov_memory_pointer name;
+  ov_memory_pointer value;
 
 } ov_http_header;
 
@@ -247,32 +247,32 @@ typedef struct {
 
 typedef struct ov_http_message_config {
 
-    struct {
+  struct {
 
-        size_t capacity;              // amount of headers supported
-        size_t max_bytes_method_name; // max bytes of a method name
-        size_t max_bytes_line;        // max bytes of a header line
+    size_t capacity;              // amount of headers supported
+    size_t max_bytes_method_name; // max bytes of a method name
+    size_t max_bytes_line;        // max bytes of a header line
 
-    } header;
+  } header;
 
-    struct {
+  struct {
 
-        size_t default_size;      // default buffer size
-        size_t max_bytes_recache; // max buffer size to recache
+    size_t default_size;      // default buffer size
+    size_t max_bytes_recache; // max buffer size to recache
 
-    } buffer;
+  } buffer;
 
-    struct {
+  struct {
 
-        size_t max; // max transfer encodings allowed
+    size_t max; // max transfer encodings allowed
 
-    } transfer;
+  } transfer;
 
-    struct {
+  struct {
 
-        size_t max_bytes; // max chunk size allowed
+    size_t max_bytes; // max chunk size allowed
 
-    } chunk;
+  } chunk;
 
 } ov_http_message_config;
 
@@ -280,29 +280,29 @@ typedef struct ov_http_message_config {
 
 typedef struct {
 
-    uint16_t magic_byte;
-    ov_http_message_config config;
+  uint16_t magic_byte;
+  ov_http_message_config config;
 
-    ov_buffer *buffer;
+  ov_buffer *buffer;
 
-    ov_memory_pointer body;
+  ov_memory_pointer body;
 
-    /* Chunk will be set in case chunked transfer is used. */
-    ov_memory_pointer chunk;
+  /* Chunk will be set in case chunked transfer is used. */
+  ov_memory_pointer chunk;
 
-    /*  Startline entires.
-     *
-     *      quick request/status check will be
-     *      if (0 == msg.status.code) -> request
-     */
+  /*  Startline entires.
+   *
+   *      quick request/status check will be
+   *      if (0 == msg.status.code) -> request
+   */
 
-    ov_http_version version;
-    ov_http_request request;
-    ov_http_status status;
+  ov_http_version version;
+  ov_http_request request;
+  ov_http_status status;
 
-    /*  Array of header field pointers in order of reception of configred size
-     */
-    ov_http_header header[];
+  /*  Array of header field pointers in order of reception of configred size
+   */
+  ov_http_header header[];
 
 } ov_http_message;
 
@@ -329,8 +329,8 @@ void ov_http_message_enable_caching(size_t capacity);
 /**
     Set default parameter, if config parameter is 0
 */
-ov_http_message_config ov_http_message_config_init(
-    ov_http_message_config config);
+ov_http_message_config
+ov_http_message_config_init(ov_http_message_config config);
 
 /*
  *      ------------------------------------------------------------------------
@@ -479,8 +479,7 @@ bool ov_http_message_add_header(ov_http_message *msg, ov_http_header header);
 
     @NOTE MUST be used before ov_http_message_close_header
 */
-bool ov_http_message_add_header_string(ov_http_message *msg,
-                                       const char *key,
+bool ov_http_message_add_header_string(ov_http_message *msg, const char *key,
                                        const char *val);
 
 /*----------------------------------------------------------------------------*/
@@ -492,8 +491,7 @@ bool ov_http_message_add_header_string(ov_http_message *msg,
     @param mime     mime to be set
     @param charset  (optional) charset to be used
 */
-bool ov_http_message_add_content_type(ov_http_message *msg,
-                                      const char *mine,
+bool ov_http_message_add_content_type(ov_http_message *msg, const char *mine,
                                       const char *charset);
 
 /*----------------------------------------------------------------------------*/
@@ -517,10 +515,8 @@ bool ov_http_message_add_transfer_encodings(ov_http_message *msg,
 
 bool ov_http_message_set_date(ov_http_message *msg);
 bool ov_http_message_set_content_length(ov_http_message *msg, size_t length);
-bool ov_http_message_set_content_range(ov_http_message *msg,
-                                       size_t length,
-                                       size_t start,
-                                       size_t end);
+bool ov_http_message_set_content_range(ov_http_message *msg, size_t length,
+                                       size_t start, size_t end);
 
 /*----------------------------------------------------------------------------*/
 
@@ -646,12 +642,8 @@ ov_http_parser_state ov_http_pointer_parse_status_line(const uint8_t *buffer,
     @NOTE will parse with AND without lineend
 */
 ov_http_parser_state ov_http_pointer_parse_request_line(
-    const uint8_t *buffer,
-    size_t length,
-    ov_http_request *request,
-    ov_http_version *version,
-    uint32_t max_req,
-    uint8_t **next);
+    const uint8_t *buffer, size_t length, ov_http_request *request,
+    ov_http_version *version, uint32_t max_req, uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
 
@@ -692,13 +684,10 @@ ov_http_parser_state ov_http_pointer_parse_header_line(const uint8_t *buffer,
 
     @NOTE will parse success ONLY on \r\n\r\n
 */
-ov_http_parser_state ov_http_pointer_parse_header(
-    const uint8_t *buffer,
-    size_t length,
-    ov_http_header *array,
-    size_t size,
-    uint32_t max_header_line_length,
-    uint8_t **next);
+ov_http_parser_state
+ov_http_pointer_parse_header(const uint8_t *buffer, size_t length,
+                             ov_http_header *array, size_t size,
+                             uint32_t max_header_line_length, uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
 
@@ -724,10 +713,8 @@ ov_http_parser_state ov_http_pointer_parse_header(
     @returns true if some item with some (non whitespace) content was parsed.
     if no comma is contained, next will become NULL
 */
-bool ov_http_pointer_parse_comma_list_item(const uint8_t *start,
-                                           size_t length,
-                                           uint8_t **item,
-                                           size_t *item_len,
+bool ov_http_pointer_parse_comma_list_item(const uint8_t *start, size_t length,
+                                           uint8_t **item, size_t *item_len,
                                            uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -771,8 +758,7 @@ const uint8_t *ov_http_pointer_find_item_in_comma_list(const uint8_t *start,
     @returns first occurance of the name within the array
 */
 const ov_http_header *ov_http_header_get(const ov_http_header *array,
-                                         size_t size,
-                                         const char *name);
+                                         size_t size, const char *name);
 
 /*----------------------------------------------------------------------------*/
 
@@ -788,8 +774,7 @@ const ov_http_header *ov_http_header_get(const ov_http_header *array,
     @returns first occurance of the name within the array
 */
 const ov_http_header *ov_http_header_get_unique(const ov_http_header *array,
-                                                size_t size,
-                                                const char *name);
+                                                size_t size, const char *name);
 
 /*----------------------------------------------------------------------------*/
 
@@ -805,8 +790,7 @@ const ov_http_header *ov_http_header_get_unique(const ov_http_header *array,
     will forward index to the the returned header if found
 */
 const ov_http_header *ov_http_header_get_next(const ov_http_header *array,
-                                              size_t size,
-                                              size_t *index,
+                                              size_t size, size_t *index,
                                               const char *name);
 
 /*----------------------------------------------------------------------------*/
@@ -830,8 +814,9 @@ const ov_http_header *ov_http_header_get_next(const ov_http_header *array,
     OV_HTTP_PARSER_ERROR on any other error
     OV_HTTP_PARSER_SUCCESS on success
 */
-ov_http_parser_state ov_http_pointer_parse_transfer_encodings(
-    const ov_http_message *message, ov_memory_pointer *array, size_t size);
+ov_http_parser_state
+ov_http_pointer_parse_transfer_encodings(const ov_http_message *message,
+                                         ov_memory_pointer *array, size_t size);
 
 /*----------------------------------------------------------------------------*/
 
@@ -865,8 +850,8 @@ ov_http_parser_state ov_http_pointer_parse_transfer_encodings(
     }
     @param value    JSON value to parse
 */
-ov_http_message_config ov_http_message_config_from_json(
-    const ov_json_value *value);
+ov_http_message_config
+ov_http_message_config_from_json(const ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/
 

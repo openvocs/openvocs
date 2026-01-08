@@ -44,223 +44,221 @@
 
 static void print_usage() {
 
-    fprintf(stdout, "\n");
-    fprintf(stdout, "Listen to events of VOCS per commandline.\n");
-    fprintf(stdout, "\n");
-    fprintf(stdout, "USAGE              [OPTIONS]... [PASSWORD]\n");
-    fprintf(stdout, "\n");
-    fprintf(stdout, "               -i,     --interface host to connect to\n");
-    fprintf(stdout, "               -p,     --port      port to connect to\n");
+  fprintf(stdout, "\n");
+  fprintf(stdout, "Listen to events of VOCS per commandline.\n");
+  fprintf(stdout, "\n");
+  fprintf(stdout, "USAGE              [OPTIONS]... [PASSWORD]\n");
+  fprintf(stdout, "\n");
+  fprintf(stdout, "               -i,     --interface host to connect to\n");
+  fprintf(stdout, "               -p,     --port      port to connect to\n");
 
-    fprintf(stdout, "               -h,     --help      print this help\n");
-    fprintf(stdout, "\n");
-    fprintf(stdout, "\n");
-    fprintf(stdout,
-            "This tool connects to a VOCS instance and prints the events "
-            "happening.\n");
+  fprintf(stdout, "               -h,     --help      print this help\n");
+  fprintf(stdout, "\n");
+  fprintf(stdout, "\n");
+  fprintf(stdout, "This tool connects to a VOCS instance and prints the events "
+                  "happening.\n");
 
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool read_user_input(int argc, char *argv[], ov_socket_configuration *config) {
 
-    int c = 0;
-    int option_index = 0;
+  int c = 0;
+  int option_index = 0;
 
-    while (1) {
+  while (1) {
 
-        static struct option long_options[] = {
+    static struct option long_options[] = {
 
-            /* These options don’t set a flag.
-               We distinguish them by their indices. */
-            {"interface", required_argument, 0, 'i'},
-            {"port", required_argument, 0, 'p'},
-            {"help", optional_argument, 0, 'h'},
-            {0, 0, 0, 0}};
+        /* These options don’t set a flag.
+           We distinguish them by their indices. */
+        {"interface", required_argument, 0, 'i'},
+        {"port", required_argument, 0, 'p'},
+        {"help", optional_argument, 0, 'h'},
+        {0, 0, 0, 0}};
 
-        /* getopt_long stores the option index here. */
+    /* getopt_long stores the option index here. */
 
-        c = getopt_long(argc, argv, "p:i:h", long_options, &option_index);
+    c = getopt_long(argc, argv, "p:i:h", long_options, &option_index);
 
-        /* Detect the end of the options. */
-        if (c == -1) break;
+    /* Detect the end of the options. */
+    if (c == -1)
+      break;
 
-        switch (c) {
+    switch (c) {
 
-            case 0:
+    case 0:
 
-                printf("option %s", long_options[option_index].name);
-                if (optarg) printf(" with arg %s", optarg);
-                printf("\n");
-                break;
+      printf("option %s", long_options[option_index].name);
+      if (optarg)
+        printf(" with arg %s", optarg);
+      printf("\n");
+      break;
 
-            case 'h':
-                print_usage();
-                goto error;
-                break;
+    case 'h':
+      print_usage();
+      goto error;
+      break;
 
-            case 'p':
-                ov_convert_string_to_uint16(
-                    optarg, strlen(optarg), &config->port);
-                break;
+    case 'p':
+      ov_convert_string_to_uint16(optarg, strlen(optarg), &config->port);
+      break;
 
-            case 'i':
-                strncpy(config->host, optarg, OV_HOST_NAME_MAX);
-                break;
+    case 'i':
+      strncpy(config->host, optarg, OV_HOST_NAME_MAX);
+      break;
 
-            default:
-                print_usage();
-                goto error;
-        }
+    default:
+      print_usage();
+      goto error;
     }
+  }
 
-    if (optind < argc) {
-        strncpy(config->host, argv[optind++], OV_HOST_NAME_MAX);
-    }
+  if (optind < argc) {
+    strncpy(config->host, argv[optind++], OV_HOST_NAME_MAX);
+  }
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 struct userdata {
 
-    ov_event_loop *loop;
-    ov_io_base *base;
+  ov_event_loop *loop;
+  ov_io_base *base;
 
-    int socket;
-    ov_id uuid;
+  int socket;
+  ov_id uuid;
 };
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_connected(void *userdata, int socket, bool result) {
 
-    struct userdata *self = (struct userdata *)userdata;
+  struct userdata *self = (struct userdata *)userdata;
 
-    if (!result) {
+  if (!result) {
 
-        ov_log_error("failed to connect socket");
+    ov_log_error("failed to connect socket");
 
-    } else {
+  } else {
 
-        ov_log_debug("connected socket");
+    ov_log_debug("connected socket");
 
-        ov_json_value *out =
-            ov_event_api_message_create(OV_KEY_REGISTER, NULL, 0);
-        ov_json_value *par = ov_event_api_set_parameter(out);
-        ov_json_object_set(par, OV_KEY_UUID, ov_json_string(self->uuid));
-        ov_json_object_set(
-            par, OV_KEY_TYPE, ov_json_string("commandline logger"));
+    ov_json_value *out = ov_event_api_message_create(OV_KEY_REGISTER, NULL, 0);
+    ov_json_value *par = ov_event_api_set_parameter(out);
+    ov_json_object_set(par, OV_KEY_UUID, ov_json_string(self->uuid));
+    ov_json_object_set(par, OV_KEY_TYPE, ov_json_string("commandline logger"));
 
-        char *str = ov_json_value_to_string(out);
-        out = ov_json_value_free(out);
+    char *str = ov_json_value_to_string(out);
+    out = ov_json_value_free(out);
 
-        ov_io_base_send(self->base,
-                        socket,
-                        (ov_memory_pointer){
-                            .start = (uint8_t *)str, .length = strlen(str)});
+    ov_io_base_send(
+        self->base, socket,
+        (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)});
 
-        str = ov_data_pointer_free(str);
-    }
+    str = ov_data_pointer_free(str);
+  }
 
-    self->socket = socket;
+  self->socket = socket;
 
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_close(void *userdata, int connection) {
 
-    struct userdata *self = (struct userdata *)userdata;
-    UNUSED(self);
+  struct userdata *self = (struct userdata *)userdata;
+  UNUSED(self);
 
-    ov_log_error("closing connection socket %i", connection);
+  ov_log_error("closing connection socket %i", connection);
 
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_io(void *userdata,
-                  int connection,
+static bool cb_io(void *userdata, int connection,
                   const ov_memory_pointer buffer) {
 
-    struct userdata *self = (struct userdata *)userdata;
-    UNUSED(self);
-    UNUSED(connection);
+  struct userdata *self = (struct userdata *)userdata;
+  UNUSED(self);
+  UNUSED(connection);
 
-    fprintf(stdout, "EVENT <- %s\n", (char *)buffer.start);
-    return true;
+  fprintf(stdout, "EVENT <- %s\n", (char *)buffer.start);
+  return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
 
-    int retval = EXIT_FAILURE;
+  int retval = EXIT_FAILURE;
 
-    struct userdata self = {0};
+  struct userdata self = {0};
 
-    ov_socket_configuration config = {.type = TCP};
-    ov_event_loop *loop = NULL;
-    ov_io_base *base = NULL;
+  ov_socket_configuration config = {.type = TCP};
+  ov_event_loop *loop = NULL;
+  ov_io_base *base = NULL;
 
-    ov_event_loop_config loop_config = (ov_event_loop_config){
-        .max.sockets = ov_socket_get_max_supported_runtime_sockets(0),
-        .max.timers = ov_socket_get_max_supported_runtime_sockets(0)};
+  ov_event_loop_config loop_config = (ov_event_loop_config){
+      .max.sockets = ov_socket_get_max_supported_runtime_sockets(0),
+      .max.timers = ov_socket_get_max_supported_runtime_sockets(0)};
 
-    loop = ov_os_event_loop(loop_config);
+  loop = ov_os_event_loop(loop_config);
 
-    if (!loop) {
-        ov_log_error("Failed to create eventloop");
-        goto error;
-    }
+  if (!loop) {
+    ov_log_error("Failed to create eventloop");
+    goto error;
+  }
 
-    base = ov_io_base_create(
-        (ov_io_base_config){.loop = loop, .name = "ov_event_listener_cmdline"});
+  base = ov_io_base_create(
+      (ov_io_base_config){.loop = loop, .name = "ov_event_listener_cmdline"});
 
-    if (!base) {
-        ov_log_error("Failed to create IO base.");
-        goto error;
-    }
+  if (!base) {
+    ov_log_error("Failed to create IO base.");
+    goto error;
+  }
 
-    self.base = base;
-    self.loop = loop;
-    ov_id_fill_with_uuid(self.uuid);
+  self.base = base;
+  self.loop = loop;
+  ov_id_fill_with_uuid(self.uuid);
 
-    if (!read_user_input(argc, argv, &config)) goto error;
+  if (!read_user_input(argc, argv, &config))
+    goto error;
 
-    if (0 == config.port) config.port = 44444;
+  if (0 == config.port)
+    config.port = 44444;
 
-    if (0 == config.host[0]) strcat(config.host, "127.0.0.1");
+  if (0 == config.host[0])
+    strcat(config.host, "127.0.0.1");
 
-    fprintf(
-        stdout, "connecting to host:port %s:%i\n", config.host, config.port);
+  fprintf(stdout, "connecting to host:port %s:%i\n", config.host, config.port);
 
-    self.socket = ov_io_base_create_connection(
-        base,
-        (ov_io_base_connection_config){.connection.socket = config,
-                                       .connection.callback.userdata = &self,
-                                       .connection.callback.io = cb_io,
-                                       .connection.callback.close = cb_close,
-                                       .client_connect_trigger_usec = 1,
-                                       .auto_reconnect = true,
-                                       .connected = cb_connected});
+  self.socket = ov_io_base_create_connection(
+      base,
+      (ov_io_base_connection_config){.connection.socket = config,
+                                     .connection.callback.userdata = &self,
+                                     .connection.callback.io = cb_io,
+                                     .connection.callback.close = cb_close,
+                                     .client_connect_trigger_usec = 1,
+                                     .auto_reconnect = true,
+                                     .connected = cb_connected});
 
-    if (-1 == self.socket) {
-        ov_log_error("failed to connect to %s:%i\n", config.host, config.port);
-    }
+  if (-1 == self.socket) {
+    ov_log_error("failed to connect to %s:%i\n", config.host, config.port);
+  }
 
-    loop->run(loop, OV_RUN_MAX);
+  loop->run(loop, OV_RUN_MAX);
 
-    retval = EXIT_SUCCESS;
+  retval = EXIT_SUCCESS;
 error:
-    ov_event_loop_free(loop);
-    return retval;
+  ov_event_loop_free(loop);
+  return retval;
 }

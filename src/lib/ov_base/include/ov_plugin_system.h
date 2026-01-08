@@ -39,8 +39,8 @@ bool ov_plugin_system_close();
 
 typedef struct {
 
-    /** Only perform load and do not any automatic registering etc. */
-    bool simple : 1;
+  /** Only perform load and do not any automatic registering etc. */
+  bool simple : 1;
 
 } ov_plugin_load_flags;
 

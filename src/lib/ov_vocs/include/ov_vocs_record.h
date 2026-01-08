@@ -40,15 +40,15 @@ typedef struct ov_vocs_record ov_vocs_record;
 
 typedef struct ov_vocs_record_config {
 
-    char loopname[OV_MC_LOOP_NAME_MAX];
+  char loopname[OV_MC_LOOP_NAME_MAX];
 
-    struct {
+  struct {
 
-        void *userdata;
+    void *userdata;
 
-        void (*stop)(void *userdata, ov_vocs_record *const self);
+    void (*stop)(void *userdata, ov_vocs_record *const self);
 
-    } callback;
+  } callback;
 
 } ov_vocs_record_config;
 
@@ -56,19 +56,19 @@ typedef struct ov_vocs_record_config {
 
 struct ov_vocs_record {
 
-    ov_vocs_record_config config;
+  ov_vocs_record_config config;
 
-    struct {
+  struct {
 
-        bool running;
-        ov_id id;          // id of current recording
-        intptr_t recorder; // socket id of recorder
-        time_t started_at_epoch_secs;
-        char *uri;
+    bool running;
+    ov_id id;          // id of current recording
+    intptr_t recorder; // socket id of recorder
+    time_t started_at_epoch_secs;
+    char *uri;
 
-    } active;
+  } active;
 
-    ov_json_value *data;
+  ov_json_value *data;
 };
 
 /*
@@ -82,10 +82,8 @@ struct ov_vocs_record {
 ov_vocs_record *ov_vocs_record_create(ov_vocs_record_config config);
 void *ov_vocs_record_free_void(void *self);
 
-bool ov_vocs_record_set_active(ov_vocs_record *self,
-                               char const *id,
-                               char const *loop,
-                               char const *uri,
+bool ov_vocs_record_set_active(ov_vocs_record *self, char const *id,
+                               char const *loop, char const *uri,
                                int recorder_fh);
 
 bool ov_vocs_record_reset_active(ov_vocs_record *self);

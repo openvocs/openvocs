@@ -66,8 +66,7 @@ ov_ice_proxy_generic_dtls_cookie_store_free(
  *  @length     length of the cookies to be created.
  */
 bool ov_ice_proxy_generic_dtls_cookie_store_initialize(
-    ov_ice_proxy_generic_dtls_cookie_store *self,
-    size_t quantity,
+    ov_ice_proxy_generic_dtls_cookie_store *self, size_t quantity,
     size_t length);
 
 /*----------------------------------------------------------------------------*/
@@ -84,8 +83,7 @@ int ov_ice_proxy_generic_dtls_cookie_verify(SSL *ssl,
 /**
  *  Function to be used in @SSL_CTX_set_cookie_generate_cb
  */
-int ov_ice_proxy_generic_dtls_cookie_generate(SSL *ssl,
-                                              unsigned char *cookie,
+int ov_ice_proxy_generic_dtls_cookie_generate(SSL *ssl, unsigned char *cookie,
                                               unsigned int *cookie_len);
 
 #endif /* ov_ice_proxy_generic_dtls_cookie_h */

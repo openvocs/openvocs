@@ -41,100 +41,100 @@ static BIO_METHOD *ov_mc_interconnect_dtls_filter_methods = NULL;
 
 static long dtls_bio_ctrl(BIO *bio, int cmd, long num, void *ptr) {
 
-    UNUSED(bio);
-    UNUSED(num);
-    UNUSED(ptr);
+  UNUSED(bio);
+  UNUSED(num);
+  UNUSED(ptr);
 
-    switch (cmd) {
-        case BIO_CTRL_FLUSH:
-            return 1;
-        case BIO_CTRL_WPENDING:
-        case BIO_CTRL_PENDING:
-            return 0L;
-        default:
-            break;
-    }
+  switch (cmd) {
+  case BIO_CTRL_FLUSH:
+    return 1;
+  case BIO_CTRL_WPENDING:
+  case BIO_CTRL_PENDING:
+    return 0L;
+  default:
+    break;
+  }
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int dtls_bio_write(BIO *bio, const char *in, int size) {
 
-    if (size <= 0) goto error;
+  if (size <= 0)
+    goto error;
 
-    ov_mc_interconnect_session *session =
-        (ov_mc_interconnect_session *)BIO_get_data(bio);
+  ov_mc_interconnect_session *session =
+      (ov_mc_interconnect_session *)BIO_get_data(bio);
 
-    return ov_mc_interconnect_session_send(session, (uint8_t *)in, size);
+  return ov_mc_interconnect_session_send(session, (uint8_t *)in, size);
 error:
-    return -1;
+  return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int dtls_bio_create(BIO *bio) {
 
-    BIO_set_init(bio, 1);
-    BIO_set_data(bio, NULL);
-    BIO_set_shutdown(bio, 0);
-    return 1;
+  BIO_set_init(bio, 1);
+  BIO_set_data(bio, NULL);
+  BIO_set_shutdown(bio, 0);
+  return 1;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int dtls_bio_free(BIO *bio) {
 
-    if (bio == NULL) {
-        return 0;
-    }
+  if (bio == NULL) {
+    return 0;
+  }
 
-    BIO_set_data(bio, NULL);
-    return 1;
+  BIO_set_data(bio, NULL);
+  return 1;
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_interconnect_dtls_filter_init() {
 
-    ov_mc_interconnect_dtls_filter_methods =
-        BIO_meth_new(BIO_TYPE_BIO, "DTLS writer");
-    if (!ov_mc_interconnect_dtls_filter_methods) {
-        goto error;
-    }
-    BIO_meth_set_write(ov_mc_interconnect_dtls_filter_methods, dtls_bio_write);
-    BIO_meth_set_ctrl(ov_mc_interconnect_dtls_filter_methods, dtls_bio_ctrl);
-    BIO_meth_set_create(
-        ov_mc_interconnect_dtls_filter_methods, dtls_bio_create);
-    BIO_meth_set_destroy(ov_mc_interconnect_dtls_filter_methods, dtls_bio_free);
+  ov_mc_interconnect_dtls_filter_methods =
+      BIO_meth_new(BIO_TYPE_BIO, "DTLS writer");
+  if (!ov_mc_interconnect_dtls_filter_methods) {
+    goto error;
+  }
+  BIO_meth_set_write(ov_mc_interconnect_dtls_filter_methods, dtls_bio_write);
+  BIO_meth_set_ctrl(ov_mc_interconnect_dtls_filter_methods, dtls_bio_ctrl);
+  BIO_meth_set_create(ov_mc_interconnect_dtls_filter_methods, dtls_bio_create);
+  BIO_meth_set_destroy(ov_mc_interconnect_dtls_filter_methods, dtls_bio_free);
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void ov_mc_interconnect_dtls_filter_deinit() {
 
-    if (ov_mc_interconnect_dtls_filter_methods) {
-        BIO_meth_free(ov_mc_interconnect_dtls_filter_methods);
-        ov_mc_interconnect_dtls_filter_methods = NULL;
-    }
+  if (ov_mc_interconnect_dtls_filter_methods) {
+    BIO_meth_free(ov_mc_interconnect_dtls_filter_methods);
+    ov_mc_interconnect_dtls_filter_methods = NULL;
+  }
 
-    return;
+  return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 BIO *ov_mc_interconnect_dtls_bio_create(ov_mc_interconnect_session *session) {
 
-    BIO *bio = BIO_new(ov_mc_interconnect_dtls_filter_methods);
-    if (bio == NULL) {
-        return NULL;
-    }
+  BIO *bio = BIO_new(ov_mc_interconnect_dtls_filter_methods);
+  if (bio == NULL) {
+    return NULL;
+  }
 
-    BIO_set_data(bio, session);
-    return bio;
+  BIO_set_data(bio, session);
+  return bio;
 }

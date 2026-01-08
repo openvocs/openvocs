@@ -139,8 +139,11 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
 
     clear_number() {
         this.#dom.phoneNumberField.value = "";
-        if (this.#keyboard)
+        this.#current_pointer_pos = 0;
+        if (this.#keyboard){
             this.#keyboard.clearInput();
+            this.#keyboard.setCaretPosition(this.#current_pointer_pos);
+        }
     }
 
     async #render() {

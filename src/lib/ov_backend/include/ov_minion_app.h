@@ -72,18 +72,18 @@
 
 #include <ov_base/ov_registered_cache.h>
 
-#include <ov_base/ov_socket.h>
 #include <ov_base/ov_rtcp.h>
 #include <ov_base/ov_rtp_frame.h>
+#include <ov_base/ov_socket.h>
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
 
-    ov_socket_configuration liege;
-    uint32_t reconnect_interval_secs;
-    uint64_t lock_timeout_usecs;
-    ov_json_value const *startup_config_json;
+  ov_socket_configuration liege;
+  uint32_t reconnect_interval_secs;
+  uint64_t lock_timeout_usecs;
+  ov_json_value const *startup_config_json;
 } ov_minion_app_configuration;
 
 bool ov_minion_app_configuration_from_json(ov_json_value const *jval,
@@ -93,24 +93,22 @@ bool ov_minion_app_configuration_from_json(ov_json_value const *jval,
 
 typedef enum {
 
-    EXIT_OK = -1,
-    CONTINUE = 0,
-    EXIT_FAIL,
+  EXIT_OK = -1,
+  CONTINUE = 0,
+  EXIT_FAIL,
 
 } ProcessResult;
 
 /*----------------------------------------------------------------------------*/
 
-ProcessResult ov_minion_app_process_cmdline_optargs(int argc,
-                                            char **argv,
-                                            char const *app_name,
-                                            ov_json_value **loaded_json,
-                                            char const *optargs);
+ProcessResult ov_minion_app_process_cmdline_optargs(int argc, char **argv,
+                                                    char const *app_name,
+                                                    ov_json_value **loaded_json,
+                                                    char const *optargs);
 
 /*----------------------------------------------------------------------------*/
 
-ProcessResult ov_minion_app_process_cmdline(int argc,
-                                            char **argv,
+ProcessResult ov_minion_app_process_cmdline(int argc, char **argv,
                                             char const *app_name,
                                             ov_json_value **loaded_json);
 

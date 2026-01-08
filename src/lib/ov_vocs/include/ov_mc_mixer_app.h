@@ -47,15 +47,15 @@ typedef struct ov_mc_mixer_app ov_mc_mixer_app;
 
 typedef struct ov_mc_mixer_app_config {
 
-    ov_event_loop *loop;
-    ov_io *io;
-    ov_socket_configuration manager; // manager liege socket
+  ov_event_loop *loop;
+  ov_io *io;
+  ov_socket_configuration manager; // manager liege socket
 
-    struct {
+  struct {
 
-        uint64_t client_connect_sec;
+    uint64_t client_connect_sec;
 
-    } limit;
+  } limit;
 
 } ov_mc_mixer_app_config;
 

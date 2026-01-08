@@ -25,9 +25,16 @@
         <script src="/plugin/simple-keyboard-3.8.0/index.modern.js"></script>
     </body>
 
+    <script>
+        SCREEN_KEYBOARD = true;
+    </script>
+
     <script type="module">
         let number_pad = document.querySelector("ov-sip-number-pad");
-        number_pad.addEventListener("trigger_call", (event) => console.log("Number: " + event.detail));
+        number_pad.addEventListener("trigger_call", (event) => {
+            console.log("Number: " + event.detail);
+            number_pad.clear_number();
+        });
         number_pad.addEventListener("show_calls", () => console.log("Show calls"));
     </script>
 </html>

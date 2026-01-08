@@ -24,8 +24,8 @@
         ------------------------------------------------------------------------
 */
 
-#include<stdbool.h>
 #include "ov_signaling_app.h"
+#include <stdbool.h>
 
 bool ov_signal_monitor_set_signaling_app(ov_app *new_sapp);
 

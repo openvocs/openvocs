@@ -47,7 +47,7 @@ extern char const *OV_FORMAT_ETHERNET_TYPE_STRING;
  */
 typedef struct {
 
-    bool crc_present : 1;
+  bool crc_present : 1;
 
 } ov_format_option_ethernet;
 
@@ -57,16 +57,16 @@ typedef struct {
 
 typedef struct {
 
-    uint8_t src_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS];
-    uint8_t dst_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS];
+  uint8_t src_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS];
+  uint8_t dst_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS];
 
-    uint16_t type;
-    uint16_t length;
+  uint16_t type;
+  uint16_t length;
 
-    struct {
+  struct {
 
-        bool type_set : 1;
-    };
+    bool type_set : 1;
+  };
 
 } ov_format_ethernet_header;
 
@@ -93,8 +93,7 @@ uint32_t ov_format_ethernet_calculate_crc32(ov_format const *f);
                                  OTHER HELPERS
  ****************************************************************************/
 
-char *ov_format_ethernet_mac_to_string(uint8_t *mac,
-                                       char *out_string,
+char *ov_format_ethernet_mac_to_string(uint8_t *mac, char *out_string,
                                        size_t out_len);
 
 /*****************************************************************************

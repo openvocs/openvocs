@@ -142,10 +142,10 @@ typedef struct ov_hashtable_struct ov_hashtable;
 
 typedef struct {
 
-    void (*key_free)(void *key);
-    void *(*key_copy)(const void *key);
-    int (*key_cmp)(const void *key, const void *value);
-    uint64_t (*hash)(const void *);
+  void (*key_free)(void *key);
+  void *(*key_copy)(const void *key);
+  int (*key_cmp)(const void *key, const void *value);
+  uint64_t (*hash)(const void *);
 
 } ov_hashtable_funcs;
 
@@ -205,8 +205,7 @@ void *ov_hashtable_remove(ov_hashtable *table, const void *key);
         @return number of processed entries.
  */
 size_t ov_hashtable_for_each(const ov_hashtable *table,
-                             bool (*process)(void const *key,
-                                             void const *value,
+                             bool (*process)(void const *key, void const *value,
                                              void *arg),
                              void *arg);
 

@@ -31,19 +31,22 @@
 
 bool ov_turn_attr_is_reservaton_token(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 12) goto error;
+  if (!buffer || length < 12)
+    goto error;
 
-    uint16_t type = ov_stun_attribute_get_type(buffer, length);
-    int64_t size = ov_stun_attribute_get_length(buffer, length);
+  uint16_t type = ov_stun_attribute_get_type(buffer, length);
+  int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != TURN_RESERVATION_TOKEN) goto error;
+  if (type != TURN_RESERVATION_TOKEN)
+    goto error;
 
-    if (size != 8) goto error;
+  if (size != 8)
+    goto error;
 
-    return true;
+  return true;
 
 error:
-    return false;
+  return false;
 }
 
 /*
@@ -58,42 +61,45 @@ size_t ov_turn_attr_reservaton_token_encoding_length() { return 12; }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_attr_reservaton_token_encode(uint8_t *buffer,
-                                          size_t length,
+bool ov_turn_attr_reservaton_token_encode(uint8_t *buffer, size_t length,
                                           uint8_t **next,
                                           const uint8_t *reservaton_token,
                                           size_t size) {
 
-    if (!buffer || !reservaton_token || (size != 8)) goto error;
+  if (!buffer || !reservaton_token || (size != 8))
+    goto error;
 
-    size_t len = ov_turn_attr_reservaton_token_encoding_length();
+  size_t len = ov_turn_attr_reservaton_token_encoding_length();
 
-    if (length < len) goto error;
+  if (length < len)
+    goto error;
 
-    return ov_stun_attribute_encode(
-        buffer, length, next, TURN_RESERVATION_TOKEN, reservaton_token, size);
+  return ov_stun_attribute_encode(buffer, length, next, TURN_RESERVATION_TOKEN,
+                                  reservaton_token, size);
 error:
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_attr_reservaton_token_decode(const uint8_t *buffer,
-                                          size_t length,
+bool ov_turn_attr_reservaton_token_decode(const uint8_t *buffer, size_t length,
                                           const uint8_t **reservaton_token,
                                           size_t *size) {
 
-    if (!buffer || length < 8 || !reservaton_token || !size) goto error;
+  if (!buffer || length < 8 || !reservaton_token || !size)
+    goto error;
 
-    if (!ov_turn_attr_is_reservaton_token(buffer, length)) goto error;
+  if (!ov_turn_attr_is_reservaton_token(buffer, length))
+    goto error;
 
-    int64_t len = ov_stun_attribute_get_length(buffer, length);
-    if (len <= 0) goto error;
+  int64_t len = ov_stun_attribute_get_length(buffer, length);
+  if (len <= 0)
+    goto error;
 
-    *size = (size_t)len;
-    *reservaton_token = (uint8_t *)buffer + 4;
+  *size = (size_t)len;
+  *reservaton_token = (uint8_t *)buffer + 4;
 
-    return true;
+  return true;
 error:
-    return false;
+  return false;
 }

@@ -80,15 +80,15 @@ extern const int OV_THREADPOOL_NOTIFY_SIGNAL;
  */
 typedef struct {
 
-    struct {
-        uint64_t incoming;
-    } lock_blocked;
+  struct {
+    uint64_t incoming;
+  } lock_blocked;
 
-    struct {
-        uint64_t received;
-        uint64_t processed;
-        uint64_t lost;
-    } elements;
+  struct {
+    uint64_t received;
+    uint64_t processed;
+    uint64_t lost;
+  } elements;
 
 } ov_thread_pool_statistics;
 
@@ -96,12 +96,12 @@ typedef struct {
 
 typedef struct {
 
-    /**
-     * 0 denotes: Choose at will. Might be cut down to a max number of
-     * threads
-     */
-    size_t num_threads;
-    void *userdata;
+  /**
+   * 0 denotes: Choose at will. Might be cut down to a max number of
+   * threads
+   */
+  size_t num_threads;
+  void *userdata;
 
 } ov_thread_pool_config;
 
@@ -111,23 +111,23 @@ typedef struct ov_thread_pool_struct ov_thread_pool;
 
 struct ov_thread_pool_struct {
 
-    uint32_t magic_bytes;
+  uint32_t magic_bytes;
 
-    bool (*start)(ov_thread_pool *self);
-    bool (*stop)(ov_thread_pool *self);
-    ov_thread_pool *(*free)(ov_thread_pool *self);
+  bool (*start)(ov_thread_pool *self);
+  bool (*stop)(ov_thread_pool *self);
+  ov_thread_pool *(*free)(ov_thread_pool *self);
 
-    ov_thread_pool_statistics (*get_statistics)(ov_thread_pool *self);
+  ov_thread_pool_statistics (*get_statistics)(ov_thread_pool *self);
 
-    void *user_data; /* User might add whatever he wants */
+  void *user_data; /* User might add whatever he wants */
 };
 
 /*---------------------------------------------------------------------------*/
 
 typedef struct {
 
-    ov_thread_lock *lock;
-    ov_ringbuffer *queue;
+  ov_thread_lock *lock;
+  ov_ringbuffer *queue;
 
 } ov_thread_queue;
 

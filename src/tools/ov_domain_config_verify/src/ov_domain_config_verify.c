@@ -32,41 +32,41 @@
 
 int main(int argc, char **argv) {
 
-    ov_json_value *config = NULL;
+  ov_json_value *config = NULL;
 
-    const char *path = ov_config_path_from_command_line(argc, argv);
-    if (!path) {
+  const char *path = ov_config_path_from_command_line(argc, argv);
+  if (!path) {
 
-        fprintf(stdout, "NO path given with -c %s\n", path);
-        goto error;
-    }
+    fprintf(stdout, "NO path given with -c %s\n", path);
+    goto error;
+  }
 
-    config = ov_config_load(path);
-    if (!config) {
+  config = ov_config_load(path);
+  if (!config) {
 
-        fprintf(stdout, "Failed to load JSON from %s\n", path);
-        goto error;
-    }
+    fprintf(stdout, "Failed to load JSON from %s\n", path);
+    goto error;
+  }
 
-    char *str = ov_json_value_to_string(config);
-    fprintf(stdout, "Checking config %s\n", str);
-    str = ov_data_pointer_free(str);
+  char *str = ov_json_value_to_string(config);
+  fprintf(stdout, "Checking config %s\n", str);
+  str = ov_data_pointer_free(str);
 
-    ov_domain_config domain_config = ov_domain_config_from_json(config);
+  ov_domain_config domain_config = ov_domain_config_from_json(config);
 
-    if (!ov_domain_config_verify(&domain_config)) {
+  if (!ov_domain_config_verify(&domain_config)) {
 
-        fprintf(stdout, "NOK domain config invalid at %s\n", path);
-        goto error;
+    fprintf(stdout, "NOK domain config invalid at %s\n", path);
+    goto error;
 
-    } else {
+  } else {
 
-        fprintf(stdout, "OK domain config valid at %s\n", path);
-    }
+    fprintf(stdout, "OK domain config valid at %s\n", path);
+  }
 
-    config = ov_json_value_free(config);
-    return EXIT_SUCCESS;
+  config = ov_json_value_free(config);
+  return EXIT_SUCCESS;
 error:
-    config = ov_json_value_free(config);
-    return EXIT_FAILURE;
+  config = ov_json_value_free(config);
+  return EXIT_FAILURE;
 }

@@ -53,38 +53,31 @@ typedef struct ov_ice ov_ice;
 
 typedef struct ov_ice_callbacks {
 
-    void *userdata;
+  void *userdata;
 
-    struct {
+  struct {
 
-        void (*drop)(void *userdata, const char *uuid);
-        void (*state)(void *userdata, const char *uuid, ov_ice_state state);
+    void (*drop)(void *userdata, const char *uuid);
+    void (*state)(void *userdata, const char *uuid, ov_ice_state state);
 
-    } session;
+  } session;
 
-    struct {
+  struct {
 
-        void (*io)(void *userdata,
-                   const char *session_uuid,
-                   int stream_id,
-                   uint8_t *buffer,
-                   size_t size);
+    void (*io)(void *userdata, const char *session_uuid, int stream_id,
+               uint8_t *buffer, size_t size);
 
-    } stream;
+  } stream;
 
-    struct {
+  struct {
 
-        bool (*new)(void *userdata,
-                    const char *session_uuid,
-                    const char *ufrag,
-                    int stream_id,
-                    ov_ice_candidate candidate);
+    bool (*new)(void *userdata, const char *session_uuid, const char *ufrag,
+                int stream_id, ov_ice_candidate candidate);
 
-        bool (*end_of_candidates)(void *userdata,
-                                  const char *session_uuid,
-                                  int stream_id);
+    bool (*end_of_candidates)(void *userdata, const char *session_uuid,
+                              int stream_id);
 
-    } candidates;
+  } candidates;
 
 } ov_ice_callbacks;
 
@@ -92,25 +85,25 @@ typedef struct ov_ice_callbacks {
 
 typedef struct ov_ice_config {
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    ov_ice_dtls_config dtls;
+  ov_ice_dtls_config dtls;
+
+  struct {
+
+    uint64_t transaction_lifetime_usecs;
 
     struct {
 
-        uint64_t transaction_lifetime_usecs;
+      uint64_t connectivity_pace_usecs;
+      uint64_t session_timeout_usecs;
+      uint64_t keepalive_usecs;
 
-        struct {
+    } stun;
 
-            uint64_t connectivity_pace_usecs;
-            uint64_t session_timeout_usecs;
-            uint64_t keepalive_usecs;
+  } limits;
 
-        } stun;
-
-    } limits;
-
-    ov_ice_callbacks callbacks;
+  ov_ice_callbacks callbacks;
 
 } ov_ice_config;
 
@@ -184,30 +177,23 @@ const char *ov_ice_create_session_offer(ov_ice *self, ov_sdp_session *sdp);
  */
 const char *ov_ice_create_session_answer(ov_ice *self, ov_sdp_session *sdp);
 
-bool ov_ice_session_process_answer(ov_ice *self,
-                                   const char *session_id,
+bool ov_ice_session_process_answer(ov_ice *self, const char *session_id,
                                    const ov_sdp_session *sdp);
 
 bool ov_ice_drop_session(ov_ice *self, const char *uuid);
 
-bool ov_ice_add_candidate(ov_ice *self,
-                          const char *session_uuid,
+bool ov_ice_add_candidate(ov_ice *self, const char *session_uuid,
                           const int stream_id,
                           const ov_ice_candidate *candidate);
 
-bool ov_ice_add_end_of_candidates(ov_ice *self,
-                                  const char *session_uuid,
+bool ov_ice_add_end_of_candidates(ov_ice *self, const char *session_uuid,
                                   const int stream_id);
 
-uint32_t ov_ice_get_stream_ssrc(ov_ice *self,
-                                const char *session_uuid,
+uint32_t ov_ice_get_stream_ssrc(ov_ice *self, const char *session_uuid,
                                 const int stream_id);
 
-ssize_t ov_ice_stream_send(ov_ice *self,
-                           const char *session_uuid,
-                           const int stream_id,
-                           uint8_t *buffer,
-                           size_t size);
+ssize_t ov_ice_stream_send(ov_ice *self, const char *session_uuid,
+                           const int stream_id, uint8_t *buffer, size_t size);
 
 /*
  *      ------------------------------------------------------------------------
@@ -233,23 +219,18 @@ bool ov_ice_debug_dtls(const ov_ice *self);
 
 bool ov_ice_transaction_unset(ov_ice *self, const uint8_t *transaction_id);
 
-bool ov_ice_transaction_create(ov_ice *self,
-                               uint8_t *buffer,
-                               size_t size,
+bool ov_ice_transaction_create(ov_ice *self, uint8_t *buffer, size_t size,
                                void *userdata);
 
 void *ov_ice_transaction_get(ov_ice *self, const uint8_t *transaction_id);
 
 bool ov_ice_session_drop_callback(ov_ice *self, const char *session_uuid);
 
-bool ov_ice_trickle_candidate(ov_ice *self,
-                              const char *session_uuid,
-                              const char *ufrag,
-                              int stream_id,
+bool ov_ice_trickle_candidate(ov_ice *self, const char *session_uuid,
+                              const char *ufrag, int stream_id,
                               const ov_ice_candidate *candidate);
 
-bool ov_ice_trickle_end_of_candidates(ov_ice *self,
-                                      const char *session_uuid,
+bool ov_ice_trickle_end_of_candidates(ov_ice *self, const char *session_uuid,
                                       int stream_id);
 
 #endif /* ov_ice_h */

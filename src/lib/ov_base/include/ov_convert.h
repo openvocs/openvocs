@@ -51,7 +51,7 @@
  * Requires a samplerate obviously.
  */
 #define ov_convert_msecs_to_samples(msecs, samplerate_hz)                      \
-    ((msecs * samplerate_hz) / 1000)
+  ((msecs * samplerate_hz) / 1000)
 
 /**
  * Give time span in msecs formed by a number of samples.
@@ -59,7 +59,7 @@
  * Returns 0 in case of the samplerate being 0.
  */
 #define ov_convert_samples_to_msecs(samples, samplerate_hz)                    \
-    (0 == samplerate_hz ? 0 : ((samples * 1000) / samplerate_hz))
+  (0 == samplerate_hz ? 0 : ((samples * 1000) / samplerate_hz))
 
 /*
  *      ------------------------------------------------------------------------
@@ -74,29 +74,22 @@
  *      ------------------------------------------------------------------------
  */
 
-bool ov_convert_string_to_uint(const char *string,
-                               uint64_t size,
-                               uint64_t *number,
-                               uint64_t max);
+bool ov_convert_string_to_uint(const char *string, uint64_t size,
+                               uint64_t *number, uint64_t max);
 
-bool ov_convert_string_to_uint64(const char *string,
-                                 uint64_t size,
+bool ov_convert_string_to_uint64(const char *string, uint64_t size,
                                  uint64_t *number);
 
-bool ov_convert_string_to_uint32(const char *string,
-                                 uint64_t size,
+bool ov_convert_string_to_uint32(const char *string, uint64_t size,
                                  uint32_t *number);
 
-bool ov_convert_string_to_uint16(const char *string,
-                                 uint64_t size,
+bool ov_convert_string_to_uint16(const char *string, uint64_t size,
                                  uint16_t *number);
 
-bool ov_convert_string_to_int64(const char *string,
-                                uint64_t size,
+bool ov_convert_string_to_int64(const char *string, uint64_t size,
                                 int64_t *number);
 
-bool ov_convert_string_to_double(const char *string,
-                                 uint64_t size,
+bool ov_convert_string_to_double(const char *string, uint64_t size,
                                  double *number);
 
 /*
@@ -154,8 +147,7 @@ bool ov_convert_uint32_to_string(uint32_t number, char **string, size_t *size);
         Convert the first (upto 20 byte) of the input string to an UINT64
         value.
 */
-bool ov_convert_hex_string_to_uint64(const char *string,
-                                     size_t size,
+bool ov_convert_hex_string_to_uint64(const char *string, size_t size,
                                      uint64_t *number);
 
 /*
@@ -176,15 +168,11 @@ bool ov_convert_hex_string_to_uint64(const char *string,
  *      ------------------------------------------------------------------------
  */
 
-bool ov_convert_binary_to_hex(const uint8_t *binary,
-                              size_t binary_length,
-                              uint8_t **out,
-                              size_t *out_length);
+bool ov_convert_binary_to_hex(const uint8_t *binary, size_t binary_length,
+                              uint8_t **out, size_t *out_length);
 
-bool ov_convert_hex_to_binary(const uint8_t *hex,
-                              size_t hex_length,
-                              uint8_t **out,
-                              size_t *out_length);
+bool ov_convert_hex_to_binary(const uint8_t *hex, size_t hex_length,
+                              uint8_t **out, size_t *out_length);
 
 double ov_convert_from_db(double db);
 

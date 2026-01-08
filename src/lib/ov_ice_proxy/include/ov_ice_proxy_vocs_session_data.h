@@ -39,10 +39,10 @@
 
 typedef struct ov_ice_proxy_vocs_session_data {
 
-    ov_id uuid;
-    uint32_t ssrc;
-    ov_sdp_session *desc;
-    ov_socket_data proxy;
+  ov_id uuid;
+  uint32_t ssrc;
+  ov_sdp_session *desc;
+  ov_socket_data proxy;
 
 } ov_ice_proxy_vocs_session_data;
 
@@ -54,8 +54,8 @@ typedef struct ov_ice_proxy_vocs_session_data {
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_vocs_session_data ov_ice_proxy_vocs_session_data_clear(
-    ov_ice_proxy_vocs_session_data *self);
+ov_ice_proxy_vocs_session_data
+ov_ice_proxy_vocs_session_data_clear(ov_ice_proxy_vocs_session_data *self);
 
 /*---------------------------------------------------------------------------*/
 

@@ -48,23 +48,23 @@ static const uint8_t TYPE_ID_CHARS[] = {'h', 'A', 's', 1};
 
 struct table_entry {
 
-    void *key;
-    void *value;
+  void *key;
+  void *value;
 
-    struct table_entry *next;
+  struct table_entry *next;
 };
 
 /*---------------------------------------------------------------------------*/
 
 struct ov_hashtable_struct {
 
-    /* 'Magic number to prevent casting errors */
-    uint32_t type;
+  /* 'Magic number to prevent casting errors */
+  uint32_t type;
 
-    ov_hashtable_funcs funcs;
+  ov_hashtable_funcs funcs;
 
-    unsigned number_of_buckets;
-    struct table_entry *entries;
+  unsigned number_of_buckets;
+  struct table_entry *entries;
 };
 
 /******************************************************************************
@@ -92,188 +92,206 @@ static uint64_t hash_func_default(const void *key);
 ov_hashtable *ov_hashtable_create(size_t num_buckets,
                                   ov_hashtable_funcs funcs) {
 
-    if (0 == num_buckets) goto error;
+  if (0 == num_buckets)
+    goto error;
 
-    ov_hashtable *table = calloc(1, sizeof(ov_hashtable));
+  ov_hashtable *table = calloc(1, sizeof(ov_hashtable));
 
-    table->type = TYPE_ID;
+  table->type = TYPE_ID;
 
-    table->number_of_buckets = num_buckets;
-    table->entries = calloc(num_buckets, sizeof(struct table_entry));
+  table->number_of_buckets = num_buckets;
+  table->entries = calloc(num_buckets, sizeof(struct table_entry));
 
-    if (!funcs.key_free) funcs.key_free = key_free_func_default;
-    if (!funcs.key_copy) funcs.key_copy = key_copy_func_default;
-    if (!funcs.key_cmp) funcs.key_cmp = key_cmp_func_default;
-    if (!funcs.hash) funcs.hash = hash_func_default;
+  if (!funcs.key_free)
+    funcs.key_free = key_free_func_default;
+  if (!funcs.key_copy)
+    funcs.key_copy = key_copy_func_default;
+  if (!funcs.key_cmp)
+    funcs.key_cmp = key_cmp_func_default;
+  if (!funcs.hash)
+    funcs.hash = hash_func_default;
 
-    table->funcs = funcs;
+  table->funcs = funcs;
 
-    return table;
+  return table;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_hashtable_contains(const ov_hashtable *table, const void *key) {
 
-    struct table_entry *entry = get_entry_for(table, key);
+  struct table_entry *entry = get_entry_for(table, key);
 
-    if (0 == entry) {
-        return false;
-    }
+  if (0 == entry) {
+    return false;
+  }
 
-    return 0 != entry->next;
+  return 0 != entry->next;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void *ov_hashtable_get(const ov_hashtable *table, const void *key) {
 
-    struct table_entry *entry = get_entry_for(table, key);
+  struct table_entry *entry = get_entry_for(table, key);
 
-    if (0 == entry) goto error;
-    if (0 == entry->next) goto error;
+  if (0 == entry)
+    goto error;
+  if (0 == entry->next)
+    goto error;
 
-    return entry->next->value;
+  return entry->next->value;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_hashtable_set(ov_hashtable *table, const void *key, void *value) {
 
-    struct table_entry *entry = get_entry_for(table, key);
+  struct table_entry *entry = get_entry_for(table, key);
 
-    if (0 == entry) goto error;
+  if (0 == entry)
+    goto error;
 
-    /* entry always is a valid pointer with entry->next being the entry to
-     * use.
-     * Its either 0 or already used ( depending whether key was set before
-     */
+  /* entry always is a valid pointer with entry->next being the entry to
+   * use.
+   * Its either 0 or already used ( depending whether key was set before
+   */
 
-    void *old_value = 0;
+  void *old_value = 0;
 
-    if (0 == entry->next) {
+  if (0 == entry->next) {
 
-        /* TODO: CACHE ? */
-        entry->next = calloc(1, sizeof(struct table_entry));
-        entry = entry->next;
+    /* TODO: CACHE ? */
+    entry->next = calloc(1, sizeof(struct table_entry));
+    entry = entry->next;
 
-        entry->key = table->funcs.key_copy(key);
+    entry->key = table->funcs.key_copy(key);
 
-    } else {
+  } else {
 
-        entry = entry->next;
-    }
+    entry = entry->next;
+  }
 
-    old_value = entry->value;
-    entry->value = value;
+  old_value = entry->value;
+  entry->value = value;
 
-    return old_value;
+  return old_value;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void *ov_hashtable_remove(ov_hashtable *table, const void *key) {
 
-    struct table_entry *entry = get_entry_for(table, key);
+  struct table_entry *entry = get_entry_for(table, key);
 
-    if (0 == entry) goto error;
-    if (0 == entry->next) goto error;
+  if (0 == entry)
+    goto error;
+  if (0 == entry->next)
+    goto error;
 
-    struct table_entry *to_del = entry->next;
+  struct table_entry *to_del = entry->next;
 
-    table->funcs.key_free(to_del->key);
-    void *original_value = to_del->value;
-    entry->next = to_del->next;
+  table->funcs.key_free(to_del->key);
+  void *original_value = to_del->value;
+  entry->next = to_del->next;
 
-    /* TODO: Cache? */
-    free(to_del);
+  /* TODO: Cache? */
+  free(to_del);
 
-    return original_value;
+  return original_value;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 size_t ov_hashtable_for_each(const ov_hashtable *table,
                              bool (*process_func)(void const *key,
-                                                  void const *value,
-                                                  void *arg),
+                                                  void const *value, void *arg),
                              void *arg) {
 
-    if (0 == table) goto error;
+  if (0 == table)
+    goto error;
 
-    OV_ASSERT(TYPE_ID == table->type);
+  OV_ASSERT(TYPE_ID == table->type);
 
-    if (0 == table->entries) goto error;
-    if (0 == table->number_of_buckets) goto error;
-    if (0 == process_func) goto error;
+  if (0 == table->entries)
+    goto error;
+  if (0 == table->number_of_buckets)
+    goto error;
+  if (0 == process_func)
+    goto error;
 
-    size_t count = 0;
+  size_t count = 0;
 
-    struct table_entry *entry = 0;
+  struct table_entry *entry = 0;
 
-    for (size_t i = 0; i < table->number_of_buckets; ++i) {
+  for (size_t i = 0; i < table->number_of_buckets; ++i) {
 
-        entry = &table->entries[i];
+    entry = &table->entries[i];
 
-        if (0 == entry->next) continue;
+    if (0 == entry->next)
+      continue;
 
-        entry = entry->next;
+    entry = entry->next;
 
-        while (0 != entry) {
+    while (0 != entry) {
 
-            ++count;
+      ++count;
 
-            if (!process_func(entry->key, entry->value, arg)) goto finish;
+      if (!process_func(entry->key, entry->value, arg))
+        goto finish;
 
-            entry = entry->next;
-        }
+      entry = entry->next;
     }
+  }
 
 finish:
 
-    return count;
+  return count;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 ov_hashtable *ov_hashtable_free(ov_hashtable *table) {
 
-    if (!table) goto error;
+  if (!table)
+    goto error;
 
-    OV_ASSERT(TYPE_ID == table->type);
+  OV_ASSERT(TYPE_ID == table->type);
 
-    if (!hashtable_clear(table)) goto error;
+  if (!hashtable_clear(table))
+    goto error;
 
-    if (!table->entries) goto error;
+  if (!table->entries)
+    goto error;
 
-    free(table->entries);
-    free(table);
+  free(table->entries);
+  free(table);
 
-    return 0;
+  return 0;
 
 error:
 
-    return table;
+  return table;
 }
 
 /******************************************************************************
@@ -283,83 +301,89 @@ error:
 static struct table_entry *get_entry_for(const ov_hashtable *table,
                                          const void *key) {
 
-    if (0 == table) goto error;
+  if (0 == table)
+    goto error;
 
-    OV_ASSERT(TYPE_ID == table->type);
+  OV_ASSERT(TYPE_ID == table->type);
 
-    OV_ASSERT(table->funcs.hash);
-    OV_ASSERT(table->funcs.key_cmp);
+  OV_ASSERT(table->funcs.hash);
+  OV_ASSERT(table->funcs.key_cmp);
 
-    if (0 == table->entries) goto error;
-    if (0 == key) goto error;
+  if (0 == table->entries)
+    goto error;
+  if (0 == key)
+    goto error;
 
-    unsigned hash = table->funcs.hash(key) % table->number_of_buckets;
+  unsigned hash = table->funcs.hash(key) % table->number_of_buckets;
 
-    int (*compare)(const void *, const void *) = table->funcs.key_cmp;
+  int (*compare)(const void *, const void *) = table->funcs.key_cmp;
 
-    struct table_entry *entry = &table->entries[hash];
-    struct table_entry *c = entry;
+  struct table_entry *entry = &table->entries[hash];
+  struct table_entry *c = entry;
 
-    while (entry->next != 0) {
+  while (entry->next != 0) {
 
-        c = entry;
+    c = entry;
 
-        entry = entry->next;
+    entry = entry->next;
 
-        if (0 == compare(entry->key, key)) return c;
-    };
+    if (0 == compare(entry->key, key))
+      return c;
+  };
 
-    return entry;
+  return entry;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static bool hashtable_clear(ov_hashtable *table) {
 
-    if (!table) goto error;
+  if (!table)
+    goto error;
 
-    OV_ASSERT(TYPE_ID == table->type);
+  OV_ASSERT(TYPE_ID == table->type);
 
-    OV_ASSERT(table->funcs.key_free);
+  OV_ASSERT(table->funcs.key_free);
 
-    struct table_entry *entry = 0;
+  struct table_entry *entry = 0;
 
-    for (size_t i = 0; i < table->number_of_buckets; ++i) {
+  for (size_t i = 0; i < table->number_of_buckets; ++i) {
 
-        entry = &table->entries[i];
+    entry = &table->entries[i];
 
-        if (0 == entry->next) continue;
+    if (0 == entry->next)
+      continue;
 
-        entry = entry->next;
+    entry = entry->next;
 
-        while (0 != entry) {
+    while (0 != entry) {
 
-            struct table_entry *current = entry;
-            entry = entry->next;
+      struct table_entry *current = entry;
+      entry = entry->next;
 
-            table->funcs.key_free(current->key);
-            free(current);
-        }
-
-        table->entries[i].next = 0;
+      table->funcs.key_free(current->key);
+      free(current);
     }
 
-    return true;
+    table->entries[i].next = 0;
+  }
+
+  return true;
 
 error:
 
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void ov_hashtable_enable_caching(size_t capacity) {
-    UNUSED(capacity);
-    TODO("IMPLEMENT CACHING");
+  UNUSED(capacity);
+  TODO("IMPLEMENT CACHING");
 }
 
 /******************************************************************************
@@ -372,25 +396,25 @@ static void key_free_func_default(void *key) { UNUSED(key); }
 
 static void *key_copy_func_default(const void *key) {
 
-    /* Default: We 'copy' only the pointer itself */
-    return (void *)key;
+  /* Default: We 'copy' only the pointer itself */
+  return (void *)key;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static int key_cmp_func_default(const void *key1, const void *key2) {
 
-    return key1 - key2;
+  return key1 - key2;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static uint64_t hash_func_default(const void *key) {
 
-    uintptr_t key_ptr = (uintptr_t)key;
-    /* Really simple hash function ;) */
-    unsigned int key_int = (unsigned int)key_ptr;
-    return (uint64_t)key_int;
+  uintptr_t key_ptr = (uintptr_t)key;
+  /* Really simple hash function ;) */
+  unsigned int key_int = (unsigned int)key_ptr;
+  return (uint64_t)key_int;
 }
 
 /******************************************************************************
@@ -407,35 +431,38 @@ static uint64_t hash_func_default(const void *key) {
 
 static int string_compare(void const *s1, void const *s2) {
 
-    if (s1 == s2) return 0;
+  if (s1 == s2)
+    return 0;
 
-    if (0 == s1) return -1;
-    if (0 == s2) return 1;
+  if (0 == s1)
+    return -1;
+  if (0 == s2)
+    return 1;
 
-    return strcmp(s1, s2);
+  return strcmp(s1, s2);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void *string_copy(void const *s) {
 
-    if (0 == s) return 0;
+  if (0 == s)
+    return 0;
 
-    return strdup(s);
+  return strdup(s);
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_hashtable *ov_hashtable_create_c_string(uint8_t num_buckets) {
 
-    /* since the hash function only allows for 256 distinct values,
-     * more than 256 buckets dont make sens ... */
+  /* since the hash function only allows for 256 distinct values,
+   * more than 256 buckets dont make sens ... */
 
-    return ov_hashtable_create(
-        num_buckets,
-        (ov_hashtable_funcs){.key_free = free,
-                             .key_copy = string_copy,
-                             .key_cmp = string_compare,
-                             .hash = ov_hash_simple_c_string});
+  return ov_hashtable_create(
+      num_buckets, (ov_hashtable_funcs){.key_free = free,
+                                        .key_copy = string_copy,
+                                        .key_cmp = string_compare,
+                                        .hash = ov_hash_simple_c_string});
 }
 /*---------------------------------------------------------------------------*/

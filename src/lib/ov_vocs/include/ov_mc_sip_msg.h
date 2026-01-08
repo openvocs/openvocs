@@ -46,8 +46,8 @@
 
 typedef struct ov_sip_socket {
 
-    ov_socket_configuration config;
-    uint8_t payload_type;
+  ov_socket_configuration config;
+  uint8_t payload_type;
 
 } ov_sip_socket;
 
@@ -104,13 +104,15 @@ ov_json_value *ov_mc_sip_msg_get_multicast(const char *uuid, const char *loop);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_mc_sip_msg_get_multicast_response(
-    const ov_json_value *msg, ov_socket_configuration loop_socket);
+ov_json_value *
+ov_mc_sip_msg_get_multicast_response(const ov_json_value *msg,
+                                     ov_socket_configuration loop_socket);
 
 /*----------------------------------------------------------------------------*/
 
-ov_response_state ov_mc_sip_msg_get_response(
-    ov_json_value const *message, ov_socket_configuration *loop_socket);
+ov_response_state
+ov_mc_sip_msg_get_response(ov_json_value const *message,
+                           ov_socket_configuration *loop_socket);
 
 /*----------------------------------------------------------------------------*/
 
@@ -130,8 +132,7 @@ ov_response_state ov_mc_sip_msg_get_response(
         "uuid":"22ef7f13-3548-4b3a-b2f7-bd9d9a6ca48f"
 }
 */
-ov_json_value *ov_mc_sip_msg_set_sc(const char *uuid,
-                                    const char *user,
+ov_json_value *ov_mc_sip_msg_set_sc(const char *uuid, const char *user,
                                     const char *loop,
                                     ov_mc_mixer_core_forward socket);
 
@@ -153,8 +154,8 @@ ov_json_value *ov_mc_sip_msg_set_sc(const char *uuid,
         "uuid":"22ef7f13-3548-4b3a-b2f7-bd9d9a6ca48f"
 }
 */
-ov_mc_mixer_core_forward ov_mc_sip_msg_get_loop_socket(
-    const ov_json_value *val);
+ov_mc_mixer_core_forward
+ov_mc_sip_msg_get_loop_socket(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 

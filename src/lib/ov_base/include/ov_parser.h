@@ -72,12 +72,12 @@ typedef struct ov_parser ov_parser;
 
 typedef struct {
 
-    bool buffering; // enable buffering mode
-    bool debug;     // (optional) debug
+  bool buffering; // enable buffering mode
+  bool debug;     // (optional) debug
 
-    char name[OV_PARSER_NAME_MAX]; // (optional) custom name
-    uint8_t flags;                 // (optional) custom flags
-    void *custom;                  // (optional) custom data
+  char name[OV_PARSER_NAME_MAX]; // (optional) custom name
+  uint8_t flags;                 // (optional) custom flags
+  void *custom;                  // (optional) custom data
 
 } ov_parser_config;
 
@@ -85,14 +85,14 @@ typedef struct {
 
 typedef enum {
 
-    OV_PARSER_ERROR = -2,       // processing error
-    OV_PARSER_MISMATCH = -1,    // content mismatch
-    OV_PARSER_PROGRESS = 0,     // still matching, need more input data
-    OV_PARSER_SUCCESS = 1,      // content match
-    OV_PARSER_ANSWER = 2,       // use to request more information
-    OV_PARSER_ANSWER_CLOSE = 3, // send some (error) answer before close
-    OV_PARSER_CLOSE = 4,        // parser close (e.g. websocket close)
-    OV_PARSER_DONE = 5,         // done with processing
+  OV_PARSER_ERROR = -2,       // processing error
+  OV_PARSER_MISMATCH = -1,    // content mismatch
+  OV_PARSER_PROGRESS = 0,     // still matching, need more input data
+  OV_PARSER_SUCCESS = 1,      // content match
+  OV_PARSER_ANSWER = 2,       // use to request more information
+  OV_PARSER_ANSWER_CLOSE = 3, // send some (error) answer before close
+  OV_PARSER_CLOSE = 4,        // parser close (e.g. websocket close)
+  OV_PARSER_DONE = 5,         // done with processing
 
 } ov_parser_state;
 
@@ -105,19 +105,19 @@ ov_parser_state ov_parser_state_from_string(const char *string, size_t length);
 
 typedef struct {
 
-    struct {
+  struct {
 
-        void *data;
-        void *(*free)(void *input_data);
+    void *data;
+    void *(*free)(void *input_data);
 
-    } in;
+  } in;
 
-    struct {
+  struct {
 
-        void *data;
-        void *(*free)(void *output_data);
+    void *data;
+    void *(*free)(void *output_data);
 
-    } out;
+  } out;
 
 } ov_parser_data;
 
@@ -144,33 +144,31 @@ void ov_parser_data_clear_out(ov_parser_data *const data);
 
 struct ov_parser {
 
-    uint16_t magic_byte;
-    uint16_t type;
+  uint16_t magic_byte;
+  uint16_t type;
 
-    char name[OV_PARSER_NAME_MAX];
+  char name[OV_PARSER_NAME_MAX];
 
-    ov_parser *(*free)(ov_parser *self);
+  ov_parser *(*free)(ov_parser *self);
 
-    ov_parser_state (*decode)(ov_parser *self, ov_parser_data *const data);
+  ov_parser_state (*decode)(ov_parser *self, ov_parser_data *const data);
 
-    ov_parser_state (*encode)(ov_parser *self, ov_parser_data *const data);
+  ov_parser_state (*encode)(ov_parser *self, ov_parser_data *const data);
 
-    // data buffering (if enabled)
-    struct {
+  // data buffering (if enabled)
+  struct {
 
-        bool (*is_enabled)(const ov_parser *self);
+    bool (*is_enabled)(const ov_parser *self);
 
-        // check if the parser has some (more) bufferd data
-        bool (*has_data)(const ov_parser *self);
+    // check if the parser has some (more) bufferd data
+    bool (*has_data)(const ov_parser *self);
 
-        // get whatever raw data the parser buffer has set
-        bool (*empty_out)(ov_parser *self,
-                          void **raw,
-                          void *(**free_raw)(void *));
-    } buffer;
+    // get whatever raw data the parser buffer has set
+    bool (*empty_out)(ov_parser *self, void **raw, void *(**free_raw)(void *));
+  } buffer;
 
-    // pointer to next if chained (MAY be set or NOT)
-    ov_parser *next;
+  // pointer to next if chained (MAY be set or NOT)
+  ov_parser *next;
 };
 
 /*

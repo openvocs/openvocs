@@ -60,9 +60,9 @@ typedef struct ov_rtp_buffering_io ov_rtp_buffering_io;
 
 typedef struct {
 
-    ov_event_loop *loop;
+  ov_event_loop *loop;
 
-    size_t num_frames_to_buffer_per_stream;
+  size_t num_frames_to_buffer_per_stream;
 
 } ov_rtp_buffering_io_config;
 
@@ -72,16 +72,16 @@ typedef struct {
  * Creates a new rtp_io instance.
  * @param config event loop is required
  */
-ov_rtp_buffering_io *ov_rtp_buffering_io_create(
-    ov_rtp_buffering_io_config config);
+ov_rtp_buffering_io *
+ov_rtp_buffering_io_create(ov_rtp_buffering_io_config config);
 
 /**
  * Frees an rtp_io instance.
  * Underlying resources passed in on creation (like the event loop) are
  * *not* released/freed!
  */
-ov_rtp_buffering_io *ov_rtp_buffering_io_free(
-    ov_rtp_buffering_io *rtp_buffering_io);
+ov_rtp_buffering_io *
+ov_rtp_buffering_io_free(ov_rtp_buffering_io *rtp_buffering_io);
 
 /**
  * register socket with an ov_rtp_buffering_io instance.

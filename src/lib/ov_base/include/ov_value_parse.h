@@ -60,11 +60,9 @@ ov_value *ov_value_parse(ov_buffer const *in, char const **remainder);
  * @param userdata additional pointer to pass to `value_consumer` (optional)
  * @param remainder will be pointed behind last parsed character (optional)
  */
-bool ov_value_parse_stream(char const *in,
-                           size_t in_len_bytes,
+bool ov_value_parse_stream(char const *in, size_t in_len_bytes,
                            void (*value_consumer)(ov_value *, void *),
-                           void *userdata,
-                           char const **remainder);
+                           void *userdata, char const **remainder);
 
 /*----------------------------------------------------------------------------*/
 #endif

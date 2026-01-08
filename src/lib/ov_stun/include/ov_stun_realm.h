@@ -102,11 +102,8 @@ size_t ov_stun_realm_encoding_length(const uint8_t *realm, size_t length);
         @param size     size of the realm to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_realm_encode(uint8_t *buffer,
-                          size_t length,
-                          uint8_t **next,
-                          const uint8_t *realm,
-                          size_t size);
+bool ov_stun_realm_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                          const uint8_t *realm, size_t size);
 
 /*----------------------------------------------------------------------------*/
 
@@ -118,9 +115,7 @@ bool ov_stun_realm_encode(uint8_t *buffer,
         @param realm    pointer to encoded realm
         @param size     size of the realm to encode
 */
-bool ov_stun_realm_decode(const uint8_t *buffer,
-                          size_t length,
-                          uint8_t **realm,
+bool ov_stun_realm_decode(const uint8_t *buffer, size_t length, uint8_t **realm,
                           size_t *size);
 
 #endif /* ov_stun_realm_h */

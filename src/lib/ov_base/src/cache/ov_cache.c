@@ -51,120 +51,124 @@
 
 struct ov_cache_struct {
 
-    size_t capacity;
-    size_t next_free;
-    void **elements;
-    atomic_flag in_use;
+  size_t capacity;
+  size_t next_free;
+  void **elements;
+  atomic_flag in_use;
 
-    bool (*element_checker)(void *);
+  bool (*element_checker)(void *);
 };
 
 static ov_cache *cache_create(size_t capacity) {
 
-    ov_cache *cache = 0;
+  ov_cache *cache = 0;
 
-    cache = calloc(1, sizeof(ov_cache));
-    cache->elements = calloc(capacity, sizeof(void *));
-    cache->capacity = capacity;
-    cache->next_free = 0;
+  cache = calloc(1, sizeof(ov_cache));
+  cache->elements = calloc(capacity, sizeof(void *));
+  cache->capacity = capacity;
+  cache->next_free = 0;
 
-    atomic_flag_clear(&cache->in_use);
+  atomic_flag_clear(&cache->in_use);
 
-    return cache;
+  return cache;
 }
 
 /*----------------------------------------------------------------------------*/
 
 ov_cache *ov_cache_extend(ov_cache *cache, size_t capacity) {
 
-    if (0 == capacity) {
+  if (0 == capacity) {
 
-        capacity = OV_DEFAULT_CACHE_SIZE;
-    }
+    capacity = OV_DEFAULT_CACHE_SIZE;
+  }
 
-    if (0 == cache) {
+  if (0 == cache) {
 
-        return cache_create(capacity);
-    }
+    return cache_create(capacity);
+  }
 
-    capacity += cache->capacity;
+  capacity += cache->capacity;
 
-    cache->elements = realloc(cache->elements, sizeof(void *) * capacity);
+  cache->elements = realloc(cache->elements, sizeof(void *) * capacity);
 
-    cache->capacity = capacity;
+  cache->capacity = capacity;
 
-    return cache;
+  return cache;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_cache *ov_cache_free(ov_cache *restrict self,
-                        uint64_t timeout_usec,
+ov_cache *ov_cache_free(ov_cache *restrict self, uint64_t timeout_usec,
                         void *(*item_free)(void *)) {
 
-    if (0 == self) goto error;
+  if (0 == self)
+    goto error;
 
-    uint64_t start = ov_time_get_current_time_usecs();
-    uint64_t current = 0;
+  uint64_t start = ov_time_get_current_time_usecs();
+  uint64_t current = 0;
 
-    while (atomic_flag_test_and_set(&self->in_use)) {
+  while (atomic_flag_test_and_set(&self->in_use)) {
 
-        current = ov_time_get_current_time_usecs();
+    current = ov_time_get_current_time_usecs();
 
-        if (0 == timeout_usec) continue;
+    if (0 == timeout_usec)
+      continue;
 
-        if (current > timeout_usec + start) goto error;
+    if (current > timeout_usec + start)
+      goto error;
+  }
+
+  if ((0 != self->elements) && (item_free != 0)) {
+
+    for (size_t i = 0; i < self->next_free; i++) {
+      item_free(self->elements[i]);
     }
+  }
 
-    if ((0 != self->elements) && (item_free != 0)) {
+  if (0 != self->elements) {
 
-        for (size_t i = 0; i < self->next_free; i++) {
-            item_free(self->elements[i]);
-        }
-    }
+    free(self->elements);
+    self->elements = 0;
+  }
 
-    if (0 != self->elements) {
-
-        free(self->elements);
-        self->elements = 0;
-    }
-
-    free(self);
-    self = 0;
+  free(self);
+  self = 0;
 
 error:
 
-    return self;
+  return self;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void *ov_cache_get(ov_cache *restrict self) {
 
-    if (0 == self) goto error;
+  if (0 == self)
+    goto error;
 
-    if (atomic_flag_test_and_set(&self->in_use)) {
+  if (atomic_flag_test_and_set(&self->in_use)) {
 
-        /* Cache is in use - cannot get object */
-        goto error;
-    }
+    /* Cache is in use - cannot get object */
+    goto error;
+  }
 
-    if (0 == self->elements) goto error;
+  if (0 == self->elements)
+    goto error;
 
-    void *object = 0;
+  void *object = 0;
 
-    if (0 != self->next_free) {
-        --self->next_free;
-        object = self->elements[self->next_free];
-    }
+  if (0 != self->next_free) {
+    --self->next_free;
+    object = self->elements[self->next_free];
+  }
 
-    atomic_flag_clear(&self->in_use);
+  atomic_flag_clear(&self->in_use);
 
-    return object;
+  return object;
 
 error:
 
-    return 0;
+  return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -172,49 +176,51 @@ error:
 static bool element_type_correct_nocheck(ov_cache *restrict self,
                                          void *object) {
 
-    if (0 == self->element_checker) {
+  if (0 == self->element_checker) {
 
-        return true;
-    }
+    return true;
+  }
 
-    return self->element_checker(object);
+  return self->element_checker(object);
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_cache_put(ov_cache *restrict self, void *object) {
 
-    if (0 == self) goto error;
+  if (0 == self)
+    goto error;
 
-    if (!element_type_correct_nocheck(self, object)) {
+  if (!element_type_correct_nocheck(self, object)) {
 
-        goto error;
-    }
+    goto error;
+  }
 
-    if (atomic_flag_test_and_set(&self->in_use)) {
+  if (atomic_flag_test_and_set(&self->in_use)) {
 
-        /* Cache is in use - cannot get object */
-        goto error;
-    }
+    /* Cache is in use - cannot get object */
+    goto error;
+  }
 
-    if (0 == self->elements) goto error;
+  if (0 == self->elements)
+    goto error;
 
-    if (self->capacity == self->next_free) {
-        goto set_unused_and_return;
-    }
+  if (self->capacity == self->next_free) {
+    goto set_unused_and_return;
+  }
 
-    self->elements[self->next_free] = object;
-    ++self->next_free;
+  self->elements[self->next_free] = object;
+  ++self->next_free;
 
-    object = 0;
+  object = 0;
 
 set_unused_and_return:
 
-    atomic_flag_clear(&self->in_use);
+  atomic_flag_clear(&self->in_use);
 
 error:
 
-    return object;
+  return object;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -222,12 +228,12 @@ error:
 void ov_cache_set_element_checker(ov_cache *self,
                                   bool (*element_checker)(void *)) {
 
-    if (0 == self) {
+  if (0 == self) {
 
-        return;
-    }
+    return;
+  }
 
-    self->element_checker = element_checker;
+  self->element_checker = element_checker;
 }
 
 /******************************************************************************
@@ -237,44 +243,43 @@ void ov_cache_set_element_checker(ov_cache *self,
 #else /* OV_DISABLE_CACHING */
 
 struct ov_cache_struct {
-    bool dummy : 1;
+  bool dummy : 1;
 };
 
 ov_cache *ov_cache_extend(ov_cache *cache, size_t capacity) {
 
-    UNUSED(cache);
-    UNUSED(capacity);
+  UNUSED(cache);
+  UNUSED(capacity);
 
-    return 0;
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_cache *ov_cache_free(ov_cache *restrict self,
-                        uint64_t timeout_usec,
+ov_cache *ov_cache_free(ov_cache *restrict self, uint64_t timeout_usec,
                         void *(*item_free)(void *)) {
 
-    UNUSED(self);
-    UNUSED(timeout_usec);
-    UNUSED(item_free);
-    return 0;
+  UNUSED(self);
+  UNUSED(timeout_usec);
+  UNUSED(item_free);
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_cache_get(ov_cache *restrict self) {
 
-    UNUSED(self);
-    return 0;
+  UNUSED(self);
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
 void *ov_cache_put(ov_cache *restrict self, void *object) {
 
-    UNUSED(self);
-    UNUSED(object);
-    return 0;
+  UNUSED(self);
+  UNUSED(object);
+  return 0;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -282,8 +287,8 @@ void *ov_cache_put(ov_cache *restrict self, void *object) {
 void ov_cache_set_element_checker(ov_cache *self,
                                   bool (*element_checker)(void *)) {
 
-    UNUSED(self);
-    UNUSED(element_checker);
+  UNUSED(self);
+  UNUSED(element_checker);
 }
 
 /*----------------------------------------------------------------------------*/

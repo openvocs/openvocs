@@ -45,67 +45,67 @@ typedef struct ov_ice_stream ov_ice_stream;
 
 struct ov_ice_stream {
 
-    ov_node node;
-    ov_id uuid;
+  ov_node node;
+  ov_id uuid;
 
-    ov_ice_dtls_type type;
-    ov_ice_state state;
+  ov_ice_dtls_type type;
+  ov_ice_state state;
 
-    ov_ice_state stun;
-    ov_ice_state dtls;
-    ov_ice_state srtp;
+  ov_ice_state stun;
+  ov_ice_state dtls;
+  ov_ice_state srtp;
 
-    int index;
+  int index;
 
-    ov_ice_session *session;
+  ov_ice_session *session;
 
-    struct {
+  struct {
 
-        uint32_t ssrc;
-        bool gathered;
+    uint32_t ssrc;
+    bool gathered;
 
-        char pass[OV_ICE_STUN_PASS_MAX];
+    char pass[OV_ICE_STUN_PASS_MAX];
 
-        srtp_policy_t policy;
-        uint8_t key[OV_ICE_SRTP_KEY_MAX];
+    srtp_policy_t policy;
+    uint8_t key[OV_ICE_SRTP_KEY_MAX];
 
-    } local;
+  } local;
 
-    struct {
+  struct {
 
-        uint32_t ssrc;
-        bool gathered;
+    uint32_t ssrc;
+    bool gathered;
 
-        char user[OV_ICE_STUN_USER_MAX];
-        char pass[OV_ICE_STUN_PASS_MAX];
+    char user[OV_ICE_STUN_USER_MAX];
+    char pass[OV_ICE_STUN_PASS_MAX];
 
-        char fingerprint[OV_ICE_DTLS_FINGERPRINT_MAX];
+    char fingerprint[OV_ICE_DTLS_FINGERPRINT_MAX];
 
-        srtp_policy_t policy;
-        uint8_t key[OV_ICE_SRTP_KEY_MAX];
+    srtp_policy_t policy;
+    uint8_t key[OV_ICE_SRTP_KEY_MAX];
 
-    } remote;
+  } remote;
 
-    struct {
+  struct {
 
-        uint32_t nominate;
+    uint32_t nominate;
 
-    } timer;
+  } timer;
 
-    ov_list *valid;
-    ov_list *trigger;
+  ov_list *valid;
+  ov_list *trigger;
 
-    ov_ice_pair *pairs;
-    ov_ice_pair *selected;
+  ov_ice_pair *pairs;
+  ov_ice_pair *selected;
 
-    struct {
+  struct {
 
-        ov_ice_candidate *local;
-        ov_ice_candidate *remote;
+    ov_ice_candidate *local;
+    ov_ice_candidate *remote;
 
-    } candidates;
+  } candidates;
 
-    ov_ice_base *bases;
+  ov_ice_base *bases;
 };
 
 /*
@@ -126,8 +126,7 @@ ov_sdp_connection ov_ice_stream_get_connection(ov_ice_stream *stream,
 bool ov_ice_stream_candidate(ov_ice_stream *stream, const ov_ice_candidate *c);
 bool ov_ice_stream_end_of_candidates(ov_ice_stream *stream);
 uint32_t ov_ice_stream_get_stream_ssrc(ov_ice_stream *stream);
-ssize_t ov_ice_stream_send_stream(ov_ice_stream *stream,
-                                  const uint8_t *buffer,
+ssize_t ov_ice_stream_send_stream(ov_ice_stream *stream, const uint8_t *buffer,
                                   size_t size);
 
 bool ov_ice_stream_set_active(ov_ice_stream *stream, const char *fingerprint);

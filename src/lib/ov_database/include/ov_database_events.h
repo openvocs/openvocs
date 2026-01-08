@@ -43,54 +43,46 @@ bool ov_db_prepare(ov_database *self);
  *
  * DateTime | user ID | Role ID | Loop | state |
  */
-bool ov_db_events_add_participation_state(ov_database *self,
-                                          const char *user_id,
-                                          const char *role_id,
-                                          const char *loop_id,
-                                          ov_participation_state state,
-                                          time_t time_epoch);
+bool ov_db_events_add_participation_state(
+    ov_database *self, const char *user_id, const char *role_id,
+    const char *loop_id, ov_participation_state state, time_t time_epoch);
 
 typedef struct {
 
-    ov_participation_state state;
-    char const *user;
-    char const *role;
-    char const *loop;
-    time_t from_epoch_secs;
-    time_t until_epoch_secs;
+  ov_participation_state state;
+  char const *user;
+  char const *role;
+  char const *loop;
+  time_t from_epoch_secs;
+  time_t until_epoch_secs;
 
 } ov_db_events_get_participation_state_params;
 
 ov_json_value *ov_db_events_get_participation_state_struct(
-    ov_database *self,
-    uint32_t max_num_results,
+    ov_database *self, uint32_t max_num_results,
     ov_db_events_get_participation_state_params params);
 
 #define ov_db_events_get_participation_state(self, max_num_results, ...)       \
-    ov_db_events_get_participation_state_struct(                               \
-        self,                                                                  \
-        max_num_results,                                                       \
-        (ov_db_events_get_participation_state_params){__VA_ARGS__})
+  ov_db_events_get_participation_state_struct(                                 \
+      self, max_num_results,                                                   \
+      (ov_db_events_get_participation_state_params){__VA_ARGS__})
 
 /*****************************************************************************
                                    Recordings
  ****************************************************************************/
 
-bool ov_db_recordings_add(ov_database *self,
-                          const char *id,
-                          const char *uri,
-                          char const *loop,
-                          time_t start_epoch_secs,
+bool ov_db_recordings_add(ov_database *self, const char *id, const char *uri,
+                          char const *loop, time_t start_epoch_secs,
                           time_t end_epoch_secs);
 
 typedef struct {
 
-    char const *id;
-    char const *loop;
-    char const *user;
-    ov_participation_state user_state;
-    time_t from_epoch_secs;
-    time_t until_epoch_secs;
+  char const *id;
+  char const *loop;
+  char const *user;
+  ov_participation_state user_state;
+  time_t from_epoch_secs;
+  time_t until_epoch_secs;
 
 } ov_db_recordings_get_params;
 
@@ -110,8 +102,8 @@ ov_json_value *ov_db_recordings_get_struct(ov_database *self,
  * .until_epoch_secs Recording was still running at that point in time
  */
 #define ov_db_recordings_get(self, max_results, ...)                           \
-    ov_db_recordings_get_struct(                                               \
-        self, max_results, (ov_db_recordings_get_params){__VA_ARGS__})
+  ov_db_recordings_get_struct(self, max_results,                               \
+                              (ov_db_recordings_get_params){__VA_ARGS__})
 
 /*----------------------------------------------------------------------------*/
 #endif
