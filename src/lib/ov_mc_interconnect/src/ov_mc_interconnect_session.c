@@ -1456,8 +1456,10 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
         goto error;
 
     frame = ov_rtp_frame_decode(buffer, size);
-    if (!frame)
+    if (!frame){
+        ov_log_error("Not a RTP frame.");
         goto ignore;
+    }
 
     switch (buffer[1]) {
 
@@ -1489,8 +1491,10 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
 
     srtp_t srtp_session = self->srtp.local.session;
 
-    if (!srtp_session)
+    if (!srtp_session){
+        ov_log_error("Could not get SRTP session.");
         goto error;
+    }
     /*
     if (!remove_and_readd_srtp_stream(self))
       goto error;
@@ -1510,20 +1514,22 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
         break;
       }
     */
-    if (frame->expanded.payload_type != 100)
-        goto ignore;
 
     char *loop_name =
         ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
 
-    if (!loop_name)
+    if (!loop_name){
+        ov_log_error("Could not find loopname.");
         goto ignore;
+    }
 
     ov_mc_interconnect_loop *loop =
         ov_mc_interconnect_get_loop(self->config.base, loop_name);
 
-    if (!loop)
+    if (!loop){
+        ov_log_error("Could not find loop");
         goto ignore;
+    }
 
     uint32_t ssrc_to_set = ov_mc_interconnect_loop_get_ssrc(loop);
 
@@ -1531,8 +1537,10 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     uint32_t u32 = htonl(ssrc_to_set);
     memcpy(buffer + 8, &u32, 4);
 
-    if (!ov_mc_interconnect_loop_send(loop, buffer, l))
+    if (!ov_mc_interconnect_loop_send(loop, buffer, l)){
+        ov_log_error("Could not send at loop %s", loop_name);
         goto ignore;
+    }
 /*
     ov_log_debug("%s to internal RTP send %zi bytes for %s",
         self->id,
