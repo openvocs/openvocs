@@ -81,11 +81,15 @@ static bool io_multicast(int socket, uint8_t events, void *userdata) {
         goto error;
 
     frame = ov_rtp_frame_decode(buffer, bytes);
-    if (!frame)
+    if (!frame){
+        ov_log_debug("Not a RTP frame.");
         goto error;
+    }
 
-    if (frame->expanded.ssrc == self->ssrc)
+    if (frame->expanded.ssrc == self->ssrc){
+        ov_log_debug("self->ssrc found %i",self->ssrc);
         goto error;
+    }
     /*
         ov_log_debug("--> recv %zi bytes at %s %"PRIu32,
             bytes, self->config.name, frame->expanded.ssrc);
