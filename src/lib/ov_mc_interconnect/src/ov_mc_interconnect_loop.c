@@ -83,12 +83,10 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
 
     frame = ov_rtp_frame_decode(buffer, bytes);
     if (!frame){
-        ov_log_debug("Not a RTP frame.");
         goto error;
     }
 
     if (frame->expanded.ssrc == self->ssrc){
-        ov_log_debug("self->ssrc found %i",self->ssrc);
         goto error;
     }
     /*
