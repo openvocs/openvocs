@@ -268,7 +268,7 @@ bool ov_mc_interconnect_loop_assign_mixer(
 
     if (!self) goto error;
 
-    if (self->mixer->socket > 0)
+    if (self->mixer.socket > 0)
         return true;
 
     ov_mixer_data data = ov_mc_interconnect_assign_mixer(
