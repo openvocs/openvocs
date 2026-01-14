@@ -268,6 +268,9 @@ bool ov_mc_interconnect_loop_assign_mixer(
 
     if (!self) goto error;
 
+    if (self->mixer->socket > 0)
+        return true;
+
     ov_mixer_data data = ov_mc_interconnect_assign_mixer(
         self->config.base,
         self->config.name);
@@ -287,6 +290,8 @@ bool ov_mc_interconnect_loop_assign_mixer(
         .ssrc = self->ssrc,
         .payload_type = 100
     };
+
+    ov_log_debug("assgined mixer to loop %s", self->config.name);
     
     return ov_mc_interconnect_send_aquire_mixer(
         self->config.base,
