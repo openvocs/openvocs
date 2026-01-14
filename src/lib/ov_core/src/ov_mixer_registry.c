@@ -97,6 +97,7 @@ bool ov_mixer_registry_register_mixer(ov_mixer_registry *self,
     ov_mixer_data *val = calloc(1, sizeof(ov_mixer_data));
     val->socket = socket;
     val->remote = *remote;
+    memset(val->user, 0, OV_HOST_NAME_MAX);
 
     bool result = ov_dict_set(self->sockets, (void*)(intptr_t)socket, val, NULL);
 
@@ -153,7 +154,7 @@ static bool find_unused_mixer(const void *key, void *val, void *data){
 
     ov_mixer_data *mixer = (ov_mixer_data*) val;
 
-    if (0 == mixer->user[0]){
+    if (0 == strlen(mixer->user)){
 
         container->slot = (intptr_t) key;
 

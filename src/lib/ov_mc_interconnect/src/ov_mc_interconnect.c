@@ -716,6 +716,8 @@ static bool io_external_rtp(ov_mc_interconnect *self, uint8_t *buffer,
 
     ov_mc_interconnect_session *session = NULL;
 
+    ov_log_debug("IO RTP");
+
     if (!self || !buffer || !bytes || !remote)
         goto error;
 
@@ -740,6 +742,8 @@ static bool io_external_ssl(ov_mc_interconnect *self, uint8_t *buffer,
                             size_t bytes, ov_socket_data *remote) {
 
     ov_mc_interconnect_session *session = NULL;
+
+    ov_log_debug("IO SSL");
 
     if (!self || !buffer || !bytes || !remote)
         goto error;
@@ -916,8 +920,10 @@ static bool assign_mixer(const void *key, void *val, void *data){
 
     if (!ov_mc_interconnect_loop_has_mixer(loop)){
 
-        if (ov_mc_interconnect_loop_assign_mixer(loop))
+        if (ov_mc_interconnect_loop_assign_mixer(loop)){
+            ov_log_info("assigned mixer to loop %s", (char*)key);
             container->assigned = true;
+        }
     }
 
     return true;
@@ -931,7 +937,8 @@ static bool assign_mixer_to_loops(ov_mc_interconnect *self, int socket){
 
     struct container2 container = (struct container2){
         .self = self,
-        .mixer_socket = socket
+        .mixer_socket = socket,
+        .assigned = false
     };
 
     return ov_dict_for_each(

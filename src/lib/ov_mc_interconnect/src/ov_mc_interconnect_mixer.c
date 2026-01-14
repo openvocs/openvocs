@@ -78,11 +78,15 @@ static bool event_register(void *userdata, const int socket,
     if (!ov_mixer_registry_register_mixer(
         self->registry, socket, &remote)) goto error;
 
-    ov_log_debug("registred mixer %s:%i", remote.host, remote.port);
+    ov_log_debug("registered mixer %s:%i", remote.host, remote.port);
 
     ov_json_value *out = ov_mixer_msg_configure(self->config.mixer);
     ov_event_io_send(parameter, socket, out);
     out = ov_json_value_free(out);
+
+    if (self->config.callbacks.mixer_available)
+        self->config.callbacks.mixer_available(
+            self->config.callbacks.userdata, socket);
 
     input = ov_json_value_free(input);
     return true;

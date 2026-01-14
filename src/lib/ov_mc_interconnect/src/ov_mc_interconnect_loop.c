@@ -149,6 +149,8 @@ ov_mc_interconnect_loop_create(ov_mc_interconnect_loop_config config) {
                            self, io_from_mixer))
         goto error;
 
+    ov_mc_interconnect_loop_assign_mixer(self);
+
     return self;
 error:
     ov_mc_interconnect_loop_free(self);
@@ -278,7 +280,7 @@ bool ov_mc_interconnect_loop_assign_mixer(
         .port = self->local.port,
         .type = UDP
     };
-     strncpy(config.host, self->local.host, OV_HOST_NAME_MAX);
+    strncpy(config.host, self->local.host, OV_HOST_NAME_MAX);
 
     ov_mixer_forward forward = (ov_mixer_forward){
         .socket = config,
