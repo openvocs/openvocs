@@ -1,6 +1,6 @@
 [Unit]
 Description=ov_mc_interconnect
-# PartOf=ov_mc.target
+PartOf=ov_mc_interconnect.target
 Wants=network-online.target
 After=network-online.target
 
