@@ -1,0 +1,9 @@
+[Unit]
+Description=OV MC Interconnect Mixers
+PartOf=ov_mc_interconnect.target
+Wants=network-online.target
+After=network-online.target
+
+Requires=ov_mc_mixer_interconnect@1.service ov_mc_mixer_interconnect@2.service ov_mc_mixer_interconnect@3.service ov_mc_mixer_interconnect@4.service ov_mc_mixer_interconnect@5.service ov_mc_mixer_interconnect@6.service ov_mc_mixer_interconnect@7.service ov_mc_mixer_interconnect@8.service ov_mc_mixer_interconnect@9.service ov_mc_mixer_interconnect@10.service 
+[Install]
+WantedBy=multi-user.target
