@@ -134,7 +134,7 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_session_forward_multicast_to_external(
+bool ov_mc_interconnect_session_forward_loop_io_to_external(
     ov_mc_interconnect_session *self, ov_mc_interconnect_loop *loop,
     uint8_t *buffer, size_t size);
 

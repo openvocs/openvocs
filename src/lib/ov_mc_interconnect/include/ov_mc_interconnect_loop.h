@@ -88,4 +88,31 @@ ov_mc_interconnect_loop_get_name(const ov_mc_interconnect_loop *self);
 bool ov_mc_interconnect_loop_send(ov_mc_interconnect_loop *self,
                                   uint8_t *buffer, size_t bytes);
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_loop_has_mixer(const ov_mc_interconnect_loop *self);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_loop_assign_mixer(
+        ov_mc_interconnect_loop *self);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_loop_drop_mixer(
+        ov_mc_interconnect_loop *self, int socket);
+
+/*----------------------------------------------------------------------------*/
+
+int ov_mc_interconnect_loop_get_mixer(ov_mc_interconnect_loop *self);
+
+/*----------------------------------------------------------------------------*/
+
+ov_mixer_forward ov_mc_interconnect_loop_get_forward(ov_mc_interconnect_loop *self);
+
+/*----------------------------------------------------------------------------*/
+
+ov_mc_loop_data ov_mc_interconnect_loop_get_loop_data(
+    ov_mc_interconnect_loop *self);
+
 #endif /* ov_mc_interconnect_loop_h */

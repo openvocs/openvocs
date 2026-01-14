@@ -47,12 +47,13 @@ struct ov_mc_interconnect_loop {
     int socket;
     int sender;
 
+    ov_mixer_data mixer;
     ov_socket_data local;
 };
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_multicast(int socket, uint8_t events, void *userdata) {
+static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
 
     uint8_t buffer[OV_UDP_PAYLOAD_OCTETS] = {0};
     ov_socket_data remote = {};
@@ -96,7 +97,7 @@ static bool io_multicast(int socket, uint8_t events, void *userdata) {
     */
 
     bool result =
-        ov_mc_interconnect_multicast_io(self->config.base, self, buffer, bytes);
+        ov_mc_interconnect_loop_io(self->config.base, self, buffer, bytes);
 
     frame = ov_rtp_frame_free(frame);
     return result;
@@ -140,12 +141,15 @@ ov_mc_interconnect_loop_create(ov_mc_interconnect_loop_config config) {
 
     self->sender = ov_socket_open_server(&socket_config);
 
+    if (!ov_socket_ensure_nonblocking(self->sender))
+        goto error;
+
     ov_log_debug("opened LOOP %s | %s:%i", self->config.name, self->local.host,
                  self->local.port);
 
     if (!ov_event_loop_set(self->config.loop, self->socket,
                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-                           self, io_multicast))
+                           self, io_from_mixer))
         goto error;
 
     return self;
@@ -246,4 +250,108 @@ bool ov_mc_interconnect_loop_send(ov_mc_interconnect_loop *self,
     return true;
 error:
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_loop_has_mixer(const ov_mc_interconnect_loop *self){
+
+    if (!self) goto error;
+
+    if (self->mixer.socket != 0)
+        return true;
+
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_loop_assign_mixer(
+    ov_mc_interconnect_loop *self){
+
+    if (!self) goto error;
+
+    ov_mixer_data data = ov_mc_interconnect_assign_mixer(
+        self->config.base,
+        self->config.name);
+
+    if (0 == data.socket) goto error;
+
+    self->mixer = data;
+
+    ov_mixer_forward forward = (ov_mixer_forward){
+        .socket = self->config.socket,
+        .ssrc = self->ssrc,
+        .payload_type = 100
+    };
+    
+    return ov_mc_interconnect_send_aquire_mixer(
+        self->config.base,
+        data,
+        forward);
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_loop_drop_mixer(
+        ov_mc_interconnect_loop *self, int socket){
+
+    if (!self) goto error;
+
+    if (socket != self->mixer.socket) return true;
+
+    if (!ov_mc_interconnect_loop_assign_mixer(self)){
+        ov_log_error("Could not reassign a mixer after drop");
+    }
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+int ov_mc_interconnect_loop_get_mixer(ov_mc_interconnect_loop *self){
+
+    if (!self) return -1;
+
+    return self->mixer.socket;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_mixer_forward ov_mc_interconnect_loop_get_forward(ov_mc_interconnect_loop *self){
+
+    if (!self) goto error;
+
+    ov_mixer_forward forward = (ov_mixer_forward){
+        .socket = self->config.socket,
+        .ssrc = self->ssrc,
+        .payload_type = 100
+    };
+
+    return forward;
+error:
+    return (ov_mixer_forward){0};
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_mc_loop_data ov_mc_interconnect_loop_get_loop_data(
+    ov_mc_interconnect_loop *self){
+
+    if (!self)
+        return (ov_mc_loop_data){0};
+
+    ov_mc_loop_data data = (ov_mc_loop_data){
+        .socket = self->config.socket,
+        .volume = 50
+    };
+
+    strncpy(data.name, self->config.name, OV_HOST_NAME_MAX);
+
+    return data;
 }

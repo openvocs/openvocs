@@ -1557,7 +1557,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_session_forward_multicast_to_external(
+bool ov_mc_interconnect_session_forward_loop_io_to_external(
     ov_mc_interconnect_session *self, ov_mc_interconnect_loop *loop,
     uint8_t *buffer, size_t size) {
 
@@ -1568,8 +1568,10 @@ bool ov_mc_interconnect_session_forward_multicast_to_external(
 
     /* (1) check if the session is interessted in the loop */
     uintptr_t ssrc_remote = (uintptr_t)ov_dict_get(self->loops, name);
-    if (ssrc_remote < 1)
+    if (ssrc_remote < 1){
+        ov_log_debug("Could not get SSRC_REMOTE");
         goto done;
+    }
 
     /* (2) Get remote data to be used */
 

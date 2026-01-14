@@ -29,6 +29,7 @@
 */
 #include "../include/ov_mc_interconnect.h"
 #include "../include/ov_mc_interconnect_dtls_filter.h"
+#include "../include/ov_mc_interconnect_mixer.h"
 
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_dict.h>
@@ -77,6 +78,8 @@ struct ov_mc_interconnect {
 
     ov_dict *loops;
     ov_dict *registered;
+
+    ov_mc_interconnect_mixer *mixer;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -717,8 +720,10 @@ static bool io_external_rtp(ov_mc_interconnect *self, uint8_t *buffer,
         goto error;
 
     session = get_session_by_media_remote(self, remote);
-    if (!session)
+    if (!session){
+        ov_log_debug("Could not get session");
         goto done;
+    }
 
     ov_mc_interconnect_session_forward_rtp_external_to_internal(session, buffer,
                                                                 bytes, remote);
@@ -880,6 +885,216 @@ static bool io_external(int socket, uint8_t events, void *userdata) {
     return true;
 error:
     return false;
+}
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      MIXER FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+struct container2 {
+
+    ov_mc_interconnect *self;
+    int mixer_socket;
+    bool assigned;
+
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool assign_mixer(const void *key, void *val, void *data){
+
+    if (!key) return true;
+    struct container2 *container = (struct container2*)data;
+
+    if (container->assigned) return true;
+
+    ov_mc_interconnect_loop *loop = (ov_mc_interconnect_loop*) val;
+
+    if (!ov_mc_interconnect_loop_has_mixer(loop)){
+
+        if (ov_mc_interconnect_loop_assign_mixer(loop))
+            container->assigned = true;
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool assign_mixer_to_loops(ov_mc_interconnect *self, int socket){
+
+    if (!self) goto error;
+
+    struct container2 container = (struct container2){
+        .self = self,
+        .mixer_socket = socket
+    };
+
+    return ov_dict_for_each(
+        self->loops,
+        &container,
+        assign_mixer);
+
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+
+static void cb_mixer_available(void *userdata, int socket){
+
+    ov_mc_interconnect *self = ov_mc_interconnect_cast(userdata);
+    if (!self) goto error;
+
+    assign_mixer_to_loops(self, socket);
+
+error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_mixer(const void *key, void *val, void *data){
+
+    if (!key) return true;
+
+    int *socket = (int*)data;
+
+    ov_mc_interconnect_loop *loop = (ov_mc_interconnect_loop*) val;
+    return ov_mc_interconnect_loop_drop_mixer(loop, *socket);
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_mixer_dropped(void *userdata, int socket){
+
+    ov_mc_interconnect *self = ov_mc_interconnect_cast(userdata);
+    if (!self) goto error;
+
+    ov_dict_for_each(
+        self->loops,
+        &socket,
+        drop_mixer);
+
+error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+struct container3 {
+
+    int socket;
+    ov_mc_interconnect_loop *loop;
+
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool find_loop_by_mixer(const void *key, void *val, void *data){
+
+    if (!key) return true;
+
+    struct container3 *container = (struct container3*) data; 
+
+    if (container->loop) return true;
+
+    ov_mc_interconnect_loop *loop = (ov_mc_interconnect_loop*) val;
+    int socket = ov_mc_interconnect_loop_get_mixer(loop);
+    if (socket == container->socket)
+        container->loop = loop;
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_aquire(void *userdata, int socket, bool success){
+
+    ov_mc_interconnect *self = ov_mc_interconnect_cast(userdata);
+    if (!self) goto error;
+
+    struct container3 container = (struct container3){
+        .loop = NULL,
+        .socket = socket
+    };
+
+    ov_dict_for_each(self->loops, &container, find_loop_by_mixer);
+
+    if (success && container.loop){
+
+        ov_mixer_forward forward = ov_mc_interconnect_loop_get_forward(container.loop);
+
+        ov_mc_interconnect_mixer_send_forward(
+            self->mixer, 
+            socket, 
+            ov_mc_interconnect_loop_get_name(container.loop),
+            forward);
+    }
+
+error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_forward(void *userdata, int socket, bool success){
+
+    ov_mc_interconnect *self = ov_mc_interconnect_cast(userdata);
+    if (!self) goto error;
+
+    struct container3 container = (struct container3){
+        .loop = NULL,
+        .socket = socket
+    };
+
+    ov_dict_for_each(self->loops, &container, find_loop_by_mixer);
+
+    if (success && container.loop){
+
+        ov_log_debug("MIXER for loop %s - forward set", 
+            ov_mc_interconnect_loop_get_name(container.loop));
+
+        ov_mc_loop_data data = ov_mc_interconnect_loop_get_loop_data(container.loop);
+
+        ov_mc_interconnect_mixer_send_switch(
+            self->mixer, 
+            socket, 
+            data);
+    }
+
+error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_join(void *userdata, int socket, bool success){
+
+    ov_mc_interconnect *self = ov_mc_interconnect_cast(userdata);
+    if (!self) goto error;
+
+    struct container3 container = (struct container3){
+        .loop = NULL,
+        .socket = socket
+    };
+
+    ov_dict_for_each(self->loops, &container, find_loop_by_mixer);
+
+    if (success && container.loop){
+
+        ov_log_info("MIXER for loop %s - joined", 
+            ov_mc_interconnect_loop_get_name(container.loop));
+
+    }
+
+error:
+    return;
 }
 
 /*
@@ -1065,6 +1280,21 @@ ov_mc_interconnect_create(ov_mc_interconnect_config config) {
     ov_mc_interconnect_dtls_filter_init();
     srtp_init();
 
+    self->mixer = ov_mc_interconnect_mixer_create((ov_mc_interconnect_mixer_config){
+        .loop = self->config.loop,
+        .socket = self->config.socket.mixer,
+        .mixer = self->config.mixer,
+        .callbacks.userdata = self,
+        .callbacks.mixer_available = cb_mixer_available,
+        .callbacks.mixer_dropped = cb_mixer_dropped,
+        .callbacks.aquire = cb_aquire,
+        .callbacks.forward = cb_forward,
+        .callbacks.join = cb_join
+    });
+
+    if (!self->mixer)
+        goto error;
+
     return self;
 error:
     ov_mc_interconnect_free(self);
@@ -1089,6 +1319,8 @@ ov_mc_interconnect *ov_mc_interconnect_free(ov_mc_interconnect *self) {
         close(self->socket.media);
         self->socket.media = -1;
     }
+
+    self->mixer = ov_mc_interconnect_mixer_free(self->mixer);
 
     self->loops = ov_dict_free(self->loops);
     self->session.by_signaling_remote =
@@ -1372,6 +1604,11 @@ ov_mc_interconnect_config_from_json(const ov_json_value *val) {
         (ov_socket_configuration){
             .type = TLS, .host = "localhost", .port = 12345});
 
+    config.socket.mixer = ov_socket_configuration_from_json(
+        ov_json_get(conf, "/" OV_KEY_SOCKET "/mixer"),
+        (ov_socket_configuration){
+            .type = TLS, .host = "localhost", .port = 12345});
+
     config.socket.media = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET "/" OV_KEY_MEDIA),
         (ov_socket_configuration){
@@ -1430,6 +1667,8 @@ ov_mc_interconnect_config_from_json(const ov_json_value *val) {
 
     config.dtls = ov_dtls_config_from_json(val);
 
+    config.mixer = ov_mixer_config_from_json(conf);
+
     return config;
 
 error:
@@ -1471,7 +1710,7 @@ struct container1 {
 
 /*----------------------------------------------------------------------------*/
 
-static bool forward_multicast_to_session(const void *key, void *val,
+static bool forward_loop_io_to_session(const void *key, void *val,
                                          void *data) {
 
     if (!key)
@@ -1479,13 +1718,13 @@ static bool forward_multicast_to_session(const void *key, void *val,
     ov_mc_interconnect_session *session = ov_mc_interconnect_session_cast(val);
     struct container1 *container = (struct container1 *)data;
 
-    return ov_mc_interconnect_session_forward_multicast_to_external(
+    return ov_mc_interconnect_session_forward_loop_io_to_external(
         session, container->loop, container->buffer, container->size);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_multicast_io(ov_mc_interconnect *self,
+bool ov_mc_interconnect_loop_io(ov_mc_interconnect *self,
                                      ov_mc_interconnect_loop *loop,
                                      uint8_t *buffer, size_t size) {
 
@@ -1496,7 +1735,7 @@ bool ov_mc_interconnect_multicast_io(ov_mc_interconnect *self,
         .self = self, .loop = loop, .buffer = buffer, .size = size};
 
     return ov_dict_for_each(self->session.by_media_remote, &container,
-                            forward_multicast_to_session);
+                            forward_loop_io_to_session);
 
 error:
     return false;
@@ -1509,4 +1748,32 @@ ov_dtls *ov_mc_interconnect_get_dtls(ov_mc_interconnect *self) {
     if (!self)
         return NULL;
     return self->dtls;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_mixer_data ov_mc_interconnect_assign_mixer(ov_mc_interconnect *self,
+    const char *name){
+
+    if (!self || !name) goto error;
+
+    return ov_mc_interconnect_mixer_assign_mixer(
+        self->mixer, name);
+error:
+    return (ov_mixer_data){0};
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_send_aquire_mixer(ov_mc_interconnect *self,
+    ov_mixer_data data,
+    ov_mixer_forward forward){
+
+    if (!self) goto error;
+
+    return ov_mc_interconnect_mixer_send_aquire(
+        self->mixer, data, forward);
+
+error:
+    return false;
 }

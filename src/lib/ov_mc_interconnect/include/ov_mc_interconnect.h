@@ -35,6 +35,9 @@
 #include <ov_base/ov_id.h>
 #include <ov_base/ov_socket.h>
 
+#include <ov_core/ov_mixer_registry.h>
+#include <ov_core/ov_mixer_msg.h>
+
 #include <ov_encryption/ov_dtls.h>
 
 #include <srtp2/srtp.h>
@@ -70,6 +73,7 @@ typedef struct ov_mc_interconnect_config {
         ov_socket_configuration signaling;
         ov_socket_configuration media;
         ov_socket_configuration internal;
+        ov_socket_configuration mixer;
 
     } socket;
 
@@ -101,6 +105,8 @@ typedef struct ov_mc_interconnect_config {
 
     ov_dtls_config dtls;
 
+    ov_mixer_config mixer;
+
 } ov_mc_interconnect_config;
 
 /*
@@ -130,7 +136,7 @@ bool ov_mc_interconnect_load_loops(ov_mc_interconnect *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_multicast_io(ov_mc_interconnect *self,
+bool ov_mc_interconnect_loop_io(ov_mc_interconnect *self,
                                      ov_mc_interconnect_loop *loop,
                                      uint8_t *buffer, size_t bytes);
 
@@ -170,5 +176,16 @@ ov_mc_interconnect_loop *ov_mc_interconnect_get_loop(ov_mc_interconnect *self,
 /*----------------------------------------------------------------------------*/
 
 ov_dtls *ov_mc_interconnect_get_dtls(ov_mc_interconnect *self);
+
+/*----------------------------------------------------------------------------*/
+
+ov_mixer_data ov_mc_interconnect_assign_mixer(ov_mc_interconnect *self,
+    const char *name);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_interconnect_send_aquire_mixer(ov_mc_interconnect *self,
+    ov_mixer_data data,
+    ov_mixer_forward forward);
 
 #endif /* ov_mc_interconnect_h */

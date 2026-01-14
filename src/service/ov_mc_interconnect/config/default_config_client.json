@@ -23,12 +23,18 @@
 			{
 					"host" : "127.0.0.1",
 					"type" : "UDP",
-					"port" : 42002
+					"port" : 42001
 			},
 			"internal" :
 			{
 					"host" : "127.0.0.1",
 					"type" : "UDP",
+					"port" : 42002
+			},
+			"mixer" :
+			{
+					"host" : "127.0.0.1",
+					"type" : "TCP",
 					"port" : 42003
 			}
 		},
@@ -63,6 +69,23 @@
 			"loop1" : "225.0.0.1",
 			"loop2" : "225.0.0.2",
 			"loop3" : "225.0.0.3"
+		},
+
+		"mixer" :
+		{
+			"vad":
+			{
+				"zero_crossings_rate_hertz" : 50000,
+				"powerlevel_density_dbfs" : -500,
+				"enabled" : true
+			},
+			"sample_rate_hz" : 48000,
+			"noise" : -70,
+			"max_num_frames" : 100,
+			"frame_buffer": 1024,
+			"normalize_input" : false,
+			"rtp_keepalive" : true,
+			"normalize_mixed_by_root" : false
 		}
 	}
 }
