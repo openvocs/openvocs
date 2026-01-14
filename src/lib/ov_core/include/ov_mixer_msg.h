@@ -35,8 +35,8 @@
 #include <ov_base/ov_json.h>
 #include <ov_base/ov_vad_config.h>
 
-#include <ov_core/ov_event_api.h>
-#include <ov_core/ov_mc_loop_data.h>
+#include "ov_event_api.h"
+#include "ov_mc_loop_data.h"
 
 typedef struct ov_mixer_forward {
 
