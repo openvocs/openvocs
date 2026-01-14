@@ -1315,6 +1315,9 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
     if (!loop)
         goto done;
 
+    if (!ov_mc_interconnect_loop_has_mixer(loop))
+        ov_mc_interconnect_loop_assign_mixer(loop);
+
     uint32_t local_ssrc = ov_mc_interconnect_loop_get_ssrc(loop);
     if (0 == local_ssrc)
         goto done;

@@ -1,6 +1,6 @@
 [Unit]
 Description="Mixer Interconnect #%i"
-PartOf=ov_mc_mixer_interconnect.target
+PartOf=ov_mc_interconnect_mixer.target
 Wants=network-online.target
 After=network-online.target
 
