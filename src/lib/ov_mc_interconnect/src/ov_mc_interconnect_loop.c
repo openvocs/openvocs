@@ -236,6 +236,10 @@ bool ov_mc_interconnect_loop_send(ov_mc_interconnect_loop *self,
     ssize_t out =
         sendto(self->sender, buffer, bytes, 0, (struct sockaddr *)&dest, len);
 
+    ov_log_debug("Send %zu bytes to %s:%i", bytes, 
+        self->config.socket.host,self->config.socket.port);
+    
+
     UNUSED(out);
     return true;
 error:
