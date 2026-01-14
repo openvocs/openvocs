@@ -1,9 +1,9 @@
 [Unit]
-Description=OV MC Mixers
-PartOf=ov_mc.target
+Description=OV MC Interconnect Mixers
+PartOf=ov_mc_interconnect.target
 Wants=network-online.target
 After=network-online.target
 
-Requires=ov_mc_mixer@1.service ov_mc_mixer@2.service ov_mc_mixer@3.service ov_mc_mixer@4.service ov_mc_mixer@5.service ov_mc_mixer@6.service ov_mc_mixer@7.service ov_mc_mixer@8.service ov_mc_mixer@9.service ov_mc_mixer@10.service ov_mc_mixer@11.service ov_mc_mixer@12.service ov_mc_mixer@13.service ov_mc_mixer@14.service ov_mc_mixer@15.service ov_mc_mixer@16.service ov_mc_mixer@17.service ov_mc_mixer@18.service ov_mc_mixer@19.service ov_mc_mixer@20.service ov_mc_mixer@21.service ov_mc_mixer@22.service ov_mc_mixer@23.service ov_mc_mixer@24.service ov_mc_mixer@25.service ov_mc_mixer@26.service ov_mc_mixer@27.service ov_mc_mixer@28.service ov_mc_mixer@29.service ov_mc_mixer@30.service ov_mc_mixer@31.service ov_mc_mixer@32.service ov_mc_mixer@33.service ov_mc_mixer@34.service ov_mc_mixer@35.service ov_mc_mixer@36.service ov_mc_mixer@37.service ov_mc_mixer@38.service ov_mc_mixer@39.service ov_mc_mixer@40.service ov_mc_mixer@41.service ov_mc_mixer@42.service ov_mc_mixer@43.service ov_mc_mixer@44.service ov_mc_mixer@45.service ov_mc_mixer@46.service ov_mc_mixer@47.service ov_mc_mixer@48.service ov_mc_mixer@49.service ov_mc_mixer@50.service
+Requires=ov_mc_mixer_interconnect@1.service ov_mc_mixer_interconnect@2.service ov_mc_mixer_interconnect@3.service ov_mc_mixer_interconnect@4.service ov_mc_mixer_interconnect@5.service ov_mc_mixer_interconnect@6.service ov_mc_mixer_interconnect@7.service ov_mc_mixer_interconnect@8.service ov_mc_mixer_interconnect@9.service ov_mc_mixer_interconnect@10.service 
 [Install]
 WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+[Unit]
+Description="Mixer Interconnect #%i"
+PartOf=ov_mc_mixer_interconnect.target
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+LimitNOFILE=1024
+Type=simple
+ExecStart=/usr/bin/ov_mc_mixer -c /etc/openvocs/ov_mc_interconnect/mixer_config.json
+Restart=on-failure
