@@ -44,7 +44,7 @@ struct ov_mc_interconnect_loop {
     ov_mc_interconnect_loop_config config;
 
     uint32_t ssrc;
-    int socket;
+    
     int sender;
 
     ov_mixer_data mixer;
@@ -130,12 +130,6 @@ ov_mc_interconnect_loop_create(ov_mc_interconnect_loop_config config) {
     self->config = config;
     self->ssrc = ov_random_uint32();
 
-    self->socket = ov_mc_socket(config.socket);
-    if (!ov_socket_get_data(self->socket, &self->local, NULL))
-        goto error;
-    if (-1 == self->socket)
-        goto error;
-
     ov_socket_configuration socket_config =
         (ov_socket_configuration){.type = UDP, .host = "0.0.0.0"};
 
@@ -144,10 +138,13 @@ ov_mc_interconnect_loop_create(ov_mc_interconnect_loop_config config) {
     if (!ov_socket_ensure_nonblocking(self->sender))
         goto error;
 
+    if (!ov_socket_get_data(self->sender, &self->local, NULL))
+        goto error;
+
     ov_log_debug("opened LOOP %s | %s:%i", self->config.name, self->local.host,
                  self->local.port);
 
-    if (!ov_event_loop_set(self->config.loop, self->socket,
+    if (!ov_event_loop_set(self->config.loop, self->sender,
                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
                            self, io_from_mixer))
         goto error;
@@ -165,13 +162,6 @@ ov_mc_interconnect_loop_free(ov_mc_interconnect_loop *self) {
 
     if (!ov_mc_interconnect_loop_cast(self))
         goto error;
-
-    if (-1 != self->socket) {
-        ov_mc_socket_drop_membership(self->socket);
-        ov_event_loop_unset(self->config.loop, self->socket, NULL);
-        close(self->socket);
-        self->socket = -1;
-    }
 
     if (-1 != self->sender) {
         ov_event_loop_unset(self->config.loop, self->sender, NULL);
@@ -280,8 +270,14 @@ bool ov_mc_interconnect_loop_assign_mixer(
 
     self->mixer = data;
 
+    ov_socket_configuration config = (ov_socket_configuration){
+        .port = self->local.port,
+        .type = UDP
+    };
+     strncpy(config.host, self->local.host, OV_HOST_NAME_MAX);
+
     ov_mixer_forward forward = (ov_mixer_forward){
-        .socket = self->config.socket,
+        .socket = config,
         .ssrc = self->ssrc,
         .payload_type = 100
     };
@@ -327,8 +323,14 @@ ov_mixer_forward ov_mc_interconnect_loop_get_forward(ov_mc_interconnect_loop *se
 
     if (!self) goto error;
 
+    ov_socket_configuration config = (ov_socket_configuration){
+        .port = self->local.port,
+        .type = UDP
+    };
+    strncpy(config.host, self->local.host, OV_HOST_NAME_MAX);
+
     ov_mixer_forward forward = (ov_mixer_forward){
-        .socket = self->config.socket,
+        .socket = config,
         .ssrc = self->ssrc,
         .payload_type = 100
     };
