@@ -1445,11 +1445,8 @@ bool ov_interconnect_session_forward_loop_io(
     const char *name = ov_interconnect_loop_get_name(loop);
 
     /* (1) check if the session is interessted in the loop */
-    uintptr_t ssrc_remote = (uintptr_t)ov_dict_get(self->loops, name);
-    if (ssrc_remote < 1){
-        ov_log_debug("Could not get SSRC_REMOTE");
-        goto done;
-    }
+
+    if (!ov_dict_is_set(self->loops, name)) goto done;
 
     /* (2) Get remote data to be used */
 

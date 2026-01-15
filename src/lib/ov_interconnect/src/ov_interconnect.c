@@ -107,6 +107,24 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool drop_session_by_signaling_socket(
+    ov_interconnect *self, int socket) {
+
+    char buf[OV_HOST_NAME_MAX + 20] = {0};
+
+    if (!self)
+        goto error;
+
+    ov_socket_data remote = (ov_socket_data){0};
+    ov_socket_get_data(socket, NULL, &remote);
+    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote.host, remote.port);
+    return ov_dict_del(self->session.by_signaling_remote, buf);
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static ov_interconnect_session *get_session_by_media_remote(
     ov_interconnect *self, ov_socket_data *remote) {
 
@@ -117,6 +135,22 @@ static ov_interconnect_session *get_session_by_media_remote(
 
     snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
     return ov_dict_get(self->session.by_media_remote, buf);
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_session_by_media_remote(
+    ov_interconnect *self, ov_socket_data *remote) {
+
+    char buf[OV_HOST_NAME_MAX + 20] = {0};
+
+    if (!self || !remote)
+        goto error;
+
+    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
+    return ov_dict_del(self->session.by_media_remote, buf);
 error:
     return NULL;
 }
@@ -395,19 +429,26 @@ static void event_register_response(
 
     ov_log_debug("REGISTER SUCCESS at %i remote |%s|", socket, name);
 
-    out = ov_interconnect_msg_connect_media(
+    ov_interconnect_session *session = get_session_by_signaling_socket(
+        self, socket);
+
+    if (!session){
+
+        out = ov_interconnect_msg_connect_media(
         self->config.name, 
         OV_INTERCONNECT_DEFAULT_CODEC,
         self->config.socket.media.host, 
         self->config.socket.media.port);
 
-    bool result = ov_event_app_send(self->app.signaling, socket, out);
-    
-    ov_json_value_free(out);
-    ov_json_value_free(input);
+        bool result = ov_event_app_send(self->app.signaling, socket, out);
+        
+        if (result)
+            ov_log_debug("SEND msg connect.");
 
-    if (result)
-        ov_log_debug("SEND msg connect.");
+        ov_json_value_free(out);
+    }
+   
+    ov_json_value_free(input);
 
     return;
 error:
@@ -792,11 +833,11 @@ static bool add_loops(void *value, void *data) {
     const char *name =
         ov_json_string_get(ov_json_object_get(item, OV_KEY_NAME));
 
-    ov_log_debug("adding loop %s", name);
-
     uint32_t ssrc = ov_json_number_get(ov_json_object_get(item, OV_KEY_SSRC));
 
     if (!name || !ssrc) goto error;
+
+    ov_log_debug("adding loop %s - %lu", name, ssrc);
 
     ov_interconnect_loop *loop = ov_dict_get(c->self->loops, name);
     if (!loop) goto done;
@@ -1104,13 +1145,11 @@ static void cb_signaling_close(void *userdata, int socket){
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
 
-    UNUSED(self);
-    UNUSED(socket);
+    ov_socket_data remote = (ov_socket_data){0};
+    ov_socket_get_data(socket, NULL, &remote);
 
-    TODO("... signaling socket closed.");
-
-
-
+    drop_session_by_signaling_socket(self, socket);
+    drop_session_by_media_remote(self, &remote);
     return;
 }
 
