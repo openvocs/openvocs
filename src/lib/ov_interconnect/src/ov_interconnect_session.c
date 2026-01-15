@@ -576,6 +576,8 @@ static bool perform_ssl_client_handshake(ov_interconnect_session *self) {
 
     bool shutdown = true;
 
+    ov_log_debug("DTLS active handshaking.");
+
     OV_ASSERT(self);
     if (!self)
         goto error;
@@ -676,6 +678,8 @@ call_again_later:
         goto error;
 
 success:
+    ov_log_debug("DTLS active handshaking - success");
+    self->dtls.handshaked = true;
     return true;
 
 close:
@@ -780,6 +784,8 @@ bool ov_interconnect_session_handshake_active(
 
     if (OV_TIMER_INVALID == self->timer.handshake)
         goto error;
+
+    ov_log_debug("started DTLS handshake");
 
     return true;
 error:
@@ -1105,6 +1111,8 @@ static bool handshake_passive(
 
     int r = 0, n = 0;
 
+    ov_log_debug("DTLS passive handshaking.");
+
     if (!self)
       goto error;
 
@@ -1153,6 +1161,7 @@ static bool handshake_passive(
     if (r >= 1) {
 
       self->dtls.handshaked = true;
+      ov_log_debug("DTLS passive handshaking - success");
       goto done;
 
     } else if (r == 0) {
