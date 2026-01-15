@@ -1563,13 +1563,25 @@ bool ov_interconnect_session_forward_loop_io(
     uint8_t *buffer, 
     size_t size) {
 
+    ov_rtp_frame *frame = NULL;
+
     if (!self || !loop || !buffer || !size) goto error;
 
     const char *name = ov_interconnect_loop_get_name(loop);
 
     /* (1) check if the session is interessted in the loop */
 
-    if (!ov_dict_is_set(self->loops, name)) goto done;
+    uint32_t ssrc_remote = (uintptr_t) ov_dict_get(self->loops, name);
+    if (0 == ssrc_remote) goto done;
+
+    frame = ov_rtp_frame_decode(buffer, size);
+    if (!frame){
+        ov_log_error("Not a RTP frame.");
+        goto done;
+    }
+
+    /* Don't send the mixed frame back to the other side */
+    if (frame->expanded.ssrc == ssrc_remote) goto done;
 
     /* (2) Get remote data to be used */
 
@@ -1610,8 +1622,10 @@ bool ov_interconnect_session_forward_loop_io(
         self->config.remote.media.port);
 */
 done:
+    frame = ov_rtp_frame_free(frame);
     return true;
 error:
+    frame = ov_rtp_frame_free(frame);
     return false;
 }
 
