@@ -136,4 +136,7 @@ int ov_interconnect_session_get_signaling_socket(
 bool ov_interconnect_session_loops_added(
     const ov_interconnect_session *self);
 
+bool ov_interconnect_session_added_loops(
+    ov_interconnect_session *self);
+
 #endif /* ov_interconnect_session_h */

@@ -1640,7 +1640,7 @@ bool ov_interconnect_session_loops_added(
 /*----------------------------------------------------------------------------*/
 
 bool ov_interconnect_session_added_loops(
-    const ov_interconnect_session *self){
+    ov_interconnect_session *self){
 
     if (!self) return false;
 
