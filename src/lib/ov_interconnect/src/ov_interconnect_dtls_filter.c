@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2023 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_mc_interconnect_dtls_filer.c
-        @author         Markus Töpfer
+        @file           ov_interconnect_dtls_filter.c
+        @author         Töpfer, Markus
 
-        @date           2023-12-12
+        @date           2026-01-15
 
 
         ------------------------------------------------------------------------
 */
-#include "../include/ov_mc_interconnect_dtls_filter.h"
+#include "../include/ov_interconnect_dtls_filter.h"
 
 #include <ov_base/ov_utils.h>
 
@@ -35,7 +35,7 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-static BIO_METHOD *ov_mc_interconnect_dtls_filter_methods = NULL;
+static BIO_METHOD *ov_interconnect_dtls_filter_methods = NULL;
 
 /*----------------------------------------------------------------------------*/
 
@@ -65,10 +65,10 @@ static int dtls_bio_write(BIO *bio, const char *in, int size) {
     if (size <= 0)
         goto error;
 
-    ov_mc_interconnect_session *session =
-        (ov_mc_interconnect_session *)BIO_get_data(bio);
+    ov_interconnect_session *session =
+        (ov_interconnect_session *)BIO_get_data(bio);
 
-    return ov_mc_interconnect_session_send(session, (uint8_t *)in, size);
+    return ov_interconnect_session_send(session, (uint8_t *)in, size);
 error:
     return -1;
 }
@@ -97,18 +97,18 @@ static int dtls_bio_free(BIO *bio) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_dtls_filter_init() {
+bool ov_interconnect_dtls_filter_init() {
 
-    ov_mc_interconnect_dtls_filter_methods =
+    ov_interconnect_dtls_filter_methods =
         BIO_meth_new(BIO_TYPE_BIO, "DTLS writer");
-    if (!ov_mc_interconnect_dtls_filter_methods) {
+    if (!ov_interconnect_dtls_filter_methods) {
         goto error;
     }
-    BIO_meth_set_write(ov_mc_interconnect_dtls_filter_methods, dtls_bio_write);
-    BIO_meth_set_ctrl(ov_mc_interconnect_dtls_filter_methods, dtls_bio_ctrl);
-    BIO_meth_set_create(ov_mc_interconnect_dtls_filter_methods,
+    BIO_meth_set_write(ov_interconnect_dtls_filter_methods, dtls_bio_write);
+    BIO_meth_set_ctrl(ov_interconnect_dtls_filter_methods, dtls_bio_ctrl);
+    BIO_meth_set_create(ov_interconnect_dtls_filter_methods,
                         dtls_bio_create);
-    BIO_meth_set_destroy(ov_mc_interconnect_dtls_filter_methods, dtls_bio_free);
+    BIO_meth_set_destroy(ov_interconnect_dtls_filter_methods, dtls_bio_free);
 
     return true;
 error:
@@ -117,11 +117,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-void ov_mc_interconnect_dtls_filter_deinit() {
+void ov_interconnect_dtls_filter_deinit() {
 
-    if (ov_mc_interconnect_dtls_filter_methods) {
-        BIO_meth_free(ov_mc_interconnect_dtls_filter_methods);
-        ov_mc_interconnect_dtls_filter_methods = NULL;
+    if (ov_interconnect_dtls_filter_methods) {
+        BIO_meth_free(ov_interconnect_dtls_filter_methods);
+        ov_interconnect_dtls_filter_methods = NULL;
     }
 
     return;
@@ -129,9 +129,9 @@ void ov_mc_interconnect_dtls_filter_deinit() {
 
 /*----------------------------------------------------------------------------*/
 
-BIO *ov_mc_interconnect_dtls_bio_create(ov_mc_interconnect_session *session) {
+BIO *ov_interconnect_dtls_bio_create(ov_interconnect_session *session) {
 
-    BIO *bio = BIO_new(ov_mc_interconnect_dtls_filter_methods);
+    BIO *bio = BIO_new(ov_interconnect_dtls_filter_methods);
     if (bio == NULL) {
         return NULL;
     }

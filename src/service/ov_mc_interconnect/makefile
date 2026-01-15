@@ -63,7 +63,7 @@ OV_LIBS       += -l ov_codec$(OV_EDITION)
 OV_LIBS       += -l ov_test$(OV_EDITION)
 OV_LIBS       += -l ov_os$(OV_EDITION)
 OV_LIBS 	  += -l ov_ice$(OV_EDITION)
-OV_LIBS       += -l ov_mc_interconnect$(OV_EDITION)
+OV_LIBS       += -l ov_interconnect$(OV_EDITION)
 
 OV_LIBS       += -l m
 

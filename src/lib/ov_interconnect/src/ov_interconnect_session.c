@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2023 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,16 +19,17 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_mc_interconnect_session.c
-        @author         Markus
+        @file           ov_interconnect_session.c
+        @author         Töpfer, Markus
 
-        @date           2023-12-13
+        @date           2026-01-15
 
 
         ------------------------------------------------------------------------
 */
-#include "../include/ov_mc_interconnect_session.h"
-#include "../include/ov_mc_interconnect_dtls_filter.h"
+#include "../include/ov_interconnect_session.h"
+
+#include "../include/ov_interconnect_dtls_filter.h"
 
 #include <limits.h>
 #include <netinet/in.h>
@@ -49,16 +50,13 @@
 #include <ov_stun/ov_stun_binding.h>
 #include <ov_stun/ov_stun_frame.h>
 
-#define OV_MC_INTERCONNECT_SESSION_MAGIC_BYTES 0x5e55
-
 static const char *label_extractor_srtp = "EXTRACTOR-dtls_srtp";
 
 /*----------------------------------------------------------------------------*/
 
-struct ov_mc_interconnect_session {
+struct ov_interconnect_session {
 
-    uint16_t magic_bytes;
-    ov_mc_interconnect_session_config config;
+    ov_interconnect_session_config config;
 
     ov_id id;
 
@@ -134,7 +132,7 @@ struct ov_mc_interconnect_session {
 
 /*----------------------------------------------------------------------------*/
 
-static bool send_stun_binding_request(ov_mc_interconnect_session *session) {
+static bool send_stun_binding_request(ov_interconnect_session *session) {
 
     size_t size = OV_UDP_PAYLOAD_OCTETS;
     uint8_t buffer[size];
@@ -145,10 +143,9 @@ static bool send_stun_binding_request(ov_mc_interconnect_session *session) {
 
     uint8_t transaction_id[14] = {0};
 
-    if (!session)
-        goto error;
+    if (!session) goto error;
 
-    int socket = ov_mc_interconnect_get_media_socket(session->config.base);
+    int socket = ov_interconnect_get_media_socket(session->config.base);
     ov_socket_data local = {0};
     ov_socket_get_data(socket, &local, NULL);
 
@@ -157,7 +154,7 @@ static bool send_stun_binding_request(ov_mc_interconnect_session *session) {
 
     if (!ov_stun_generate_binding_request_plain(
             ptr, OV_UDP_PAYLOAD_OCTETS, &nxt, transaction_id,
-            (uint8_t *)"ov_mc_interconnect", strlen("ov_mc_interconnect"),
+            (uint8_t *)"ov_interconnect", strlen("ov_interconnect"),
             false)) {
 
         goto error;
@@ -188,7 +185,7 @@ error:
 static bool send_keepalive(uint32_t timer, void *data) {
 
     UNUSED(timer);
-    ov_mc_interconnect_session *self = ov_mc_interconnect_session_cast(data);
+    ov_interconnect_session *self = (ov_interconnect_session*)(data);
     if (!self)
         goto error;
 
@@ -213,15 +210,13 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_interconnect_session *
-ov_mc_interconnect_session_create(ov_mc_interconnect_session_config config) {
+ov_interconnect_session *ov_interconnect_session_create(
+        ov_interconnect_session_config config) {
 
-    ov_mc_interconnect_session *self = NULL;
+    ov_interconnect_session *self = NULL;
 
-    if (!config.loop)
-        goto error;
-    if (!config.base)
-        goto error;
+    if (!config.loop) goto error;
+    if (!config.base) goto error;
 
     if (0 == config.reconnect_interval_usecs)
         config.reconnect_interval_usecs = 100000;
@@ -229,11 +224,10 @@ ov_mc_interconnect_session_create(ov_mc_interconnect_session_config config) {
     if (0 == config.keepalive_trigger_usec)
         config.keepalive_trigger_usec = 300000000;
 
-    self = calloc(1, sizeof(ov_mc_interconnect_session));
+    self = calloc(1, sizeof(ov_interconnect_session));
     if (!self)
         goto error;
 
-    self->magic_bytes = OV_MC_INTERCONNECT_SESSION_MAGIC_BYTES;
     self->config = config;
 
     ov_id_fill_with_uuid(self->id);
@@ -242,22 +236,15 @@ ov_mc_interconnect_session_create(ov_mc_interconnect_session_config config) {
     d_config.value.data_function.free = ov_data_pointer_free;
 
     self->ssrcs = ov_dict_create(d_config);
-    if (!self->ssrcs)
-        goto error;
+    if (!self->ssrcs) goto error;
 
     d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = NULL;
 
     self->loops = ov_dict_create(d_config);
-    if (!self->loops)
-        goto error;
+    if (!self->loops) goto error;
 
     ov_log_debug("created session %s", self->id);
-
-    if (!ov_mc_interconnect_register_session(self->config.base, self->id,
-                                             self->config.remote.signaling,
-                                             self->config.remote.media, self))
-        goto error;
 
     self->timer.keepalive = ov_event_loop_timer_set(
         self->config.loop, self->config.keepalive_trigger_usec, self,
@@ -265,23 +252,17 @@ ov_mc_interconnect_session_create(ov_mc_interconnect_session_config config) {
 
     return self;
 error:
-    ov_mc_interconnect_session_free(self);
+    ov_interconnect_session_free(self);
     return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_interconnect_session *
-ov_mc_interconnect_session_free(ov_mc_interconnect_session *self) {
+void *ov_interconnect_session_free(void *data) {
 
-    if (!ov_mc_interconnect_session_cast(self))
-        goto error;
+    if (!data) return NULL;
 
-    ov_log_debug("freeing session %s", self->id);
-
-    ov_mc_interconnect_unregister_session(self->config.base,
-                                          self->config.remote.signaling,
-                                          self->config.remote.media);
+    ov_interconnect_session *self = (ov_interconnect_session*)data;
 
     if (OV_TIMER_INVALID != self->timer.handshake) {
         ov_event_loop_timer_unset(self->config.loop, self->timer.handshake,
@@ -310,29 +291,7 @@ ov_mc_interconnect_session_free(ov_mc_interconnect_session *self) {
 
     self->srtp.profile = ov_data_pointer_free(self->srtp.profile);
     self = ov_data_pointer_free(self);
-error:
     return self;
-}
-
-/*----------------------------------------------------------------------------*/
-
-void *ov_mc_interconnect_session_free_void(void *self) {
-
-    return ov_mc_interconnect_session_free(
-        ov_mc_interconnect_session_cast(self));
-}
-
-/*----------------------------------------------------------------------------*/
-
-ov_mc_interconnect_session *ov_mc_interconnect_session_cast(const void *data) {
-
-    if (!data)
-        return NULL;
-
-    if (*(uint16_t *)data != OV_MC_INTERCONNECT_SESSION_MAGIC_BYTES)
-        return NULL;
-
-    return (ov_mc_interconnect_session *)data;
 }
 
 /*
@@ -342,9 +301,9 @@ ov_mc_interconnect_session *ov_mc_interconnect_session_cast(const void *data) {
  *
  *      ------------------------------------------------------------------------
  */
-
-bool ov_mc_interconnect_session_handshake_passive(
-    ov_mc_interconnect_session *self, const uint8_t *buffer, size_t size) {
+/*
+static bool session_handshake_passive(
+    ov_interconnect_session *self, const uint8_t *buffer, size_t size) {
 
     int r = 0, n = 0;
 
@@ -373,7 +332,7 @@ bool ov_mc_interconnect_session_handshake_passive(
         goto error;
 
     self->dtls.read = BIO_new(BIO_s_mem());
-    self->dtls.write = ov_mc_interconnect_dtls_bio_create(self);
+    self->dtls.write = ov_interconnect_dtls_bio_create(self);
     BIO_set_mem_eof_return(self->dtls.read, -1);
     BIO_set_mem_eof_return(self->dtls.write, -1);
 
@@ -399,11 +358,6 @@ bool ov_mc_interconnect_session_handshake_passive(
         goto done;
 
     } else if (r == 0) {
-
-        /*
-         *      Non Fatal error, usercode is expected to
-         *      retry operation. (man DTLSv1_listen)
-         */
 
         self->dtls.dtls = NULL;
 
@@ -452,6 +406,7 @@ done:
 error:
     return false;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -549,7 +504,7 @@ static char *X509_fingerprint_create(const X509 *cert, ov_hash_function type) {
 
 /*----------------------------------------------------------------------------*/
 
-static int check_cert(ov_mc_interconnect_session *self) {
+static int check_cert(ov_interconnect_session *self) {
 
     char hash_finger[OV_DTLS_FINGERPRINT_MAX] = {0};
 
@@ -615,7 +570,7 @@ static bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata);
 
 /*----------------------------------------------------------------------------*/
 
-static bool perform_ssl_client_handshake(ov_mc_interconnect_session *self) {
+static bool perform_ssl_client_handshake(ov_interconnect_session *self) {
 
     int r = 0, n = 0;
 
@@ -739,8 +694,7 @@ bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata) {
     if (!userdata)
         return false;
 
-    ov_mc_interconnect_session *session =
-        (ov_mc_interconnect_session *)(userdata);
+    ov_interconnect_session *session =(ov_interconnect_session *)(userdata);
     session->timer.handshake = OV_TIMER_INVALID;
     UNUSED(id);
     // handshake function MUST reset any timer if required
@@ -749,13 +703,13 @@ bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_session_handshake_active(
-    ov_mc_interconnect_session *self, const char *fingerprint) {
+bool ov_interconnect_session_handshake_active(
+    ov_interconnect_session *self, const char *fingerprint) {
 
     int r = 0;
 
-    if (!self || !fingerprint)
-        goto error;
+    if (!self || !fingerprint) goto error;
+
     ov_dtls *dtls = self->config.dtls;
 
     memcpy(self->remote.fingerprint, fingerprint, OV_DTLS_FINGERPRINT_MAX);
@@ -809,7 +763,7 @@ bool ov_mc_interconnect_session_handshake_active(
         goto error;
 
     self->dtls.read = BIO_new(BIO_s_mem());
-    self->dtls.write = ov_mc_interconnect_dtls_bio_create(self);
+    self->dtls.write = ov_interconnect_dtls_bio_create(self);
     BIO_set_mem_eof_return(self->dtls.read, -1);
     BIO_set_mem_eof_return(self->dtls.write, -1);
 
@@ -834,8 +788,7 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static bool
-srtp_get_key_length_of_profile(const SRTP_PROTECTION_PROFILE *profile,
+static bool srtp_get_key_length_of_profile(const SRTP_PROTECTION_PROFILE *profile,
                                uint32_t *keylen, uint32_t *saltlen) {
 
     if (!profile || !keylen || !saltlen)
@@ -877,8 +830,8 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static const char *ov_mc_interconnect_session_get_srtp_keys(
-    ov_mc_interconnect_session *self, uint32_t *key_len, uint32_t *salt_len,
+static const char *session_get_srtp_keys(ov_interconnect_session *self, 
+    uint32_t *key_len, uint32_t *salt_len,
     uint8_t *server_key, uint8_t *server_salt, uint8_t *client_key,
     uint8_t *client_salt) {
 
@@ -948,7 +901,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool srtp_unset_data(ov_mc_interconnect_session *self) {
+static bool srtp_unset_data(ov_interconnect_session *self) {
 
     if (!self)
         return false;
@@ -974,20 +927,17 @@ static bool add_srtp_stream(const void *key, void *val, void *data) {
         return true;
     uint32_t remote_ssrc = (uint32_t)(intptr_t)key;
     const char *name = (const char *)val;
-    ov_mc_interconnect_session *self = ov_mc_interconnect_session_cast(data);
+    ov_interconnect_session *self = (ov_interconnect_session*)(data);
 
     if (!self || !name)
         goto error;
 
-    ov_mc_interconnect_loop *loop =
-        ov_mc_interconnect_get_loop(self->config.base, name);
+    const ov_interconnect_loop *loop = ov_interconnect_get_loop(self->config.base, name);
 
-    if (!loop)
-        goto done;
+    if (!loop) goto done;
 
-    uint32_t local_ssrc = ov_mc_interconnect_loop_get_ssrc(loop);
-    if (0 == local_ssrc)
-        goto done;
+    uint32_t local_ssrc = ov_interconnect_loop_get_ssrc(loop);
+    if (0 == local_ssrc) goto done;
 
     srtp_t srtp_session = self->srtp.local.session;
 
@@ -1033,7 +983,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool prepare_streams(ov_mc_interconnect_session *session) {
+static bool prepare_streams(ov_interconnect_session *session) {
 
     if (!session)
         goto error;
@@ -1044,8 +994,7 @@ static bool prepare_streams(ov_mc_interconnect_session *session) {
 
     /* Step 1 - prepare policy */
 
-    if (!session->srtp.profile)
-        goto error;
+    if (!session->srtp.profile) goto error;
 
     srtp_crypto_policy_set_rtp_default(&session->srtp.local.policy.rtp);
     srtp_crypto_policy_set_rtcp_default(&session->srtp.local.policy.rtcp);
@@ -1151,8 +1100,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_session_dtls_io(ov_mc_interconnect_session *self,
-                                        const uint8_t *buffer, size_t size) {
+bool ov_interconnect_session_media_io_ssl_external(
+    ov_interconnect_session *self,
+    uint8_t *buffer, 
+    size_t size,
+    const ov_socket_data *remote) {
+
+    UNUSED(remote);
 
     char buf[OV_DTLS_SSL_BUFFER_SIZE] = {0};
 
@@ -1187,7 +1141,7 @@ bool ov_mc_interconnect_session_dtls_io(ov_mc_interconnect_session *self,
 
         srtp_unset_data(self);
 
-        const char *profile = ov_mc_interconnect_session_get_srtp_keys(
+        const char *profile = session_get_srtp_keys(
             self, &self->srtp.key_len, &self->srtp.salt_len,
             self->srtp.server.key, self->srtp.server.salt,
             self->srtp.client.key, self->srtp.client.salt);
@@ -1208,7 +1162,7 @@ bool ov_mc_interconnect_session_dtls_io(ov_mc_interconnect_session *self,
                 case srtp_err_status_ok:
                     ov_log_debug("Session %s SRTP READY", self->id);
                     prepare_streams(self);
-                    ov_mc_interconnect_srtp_ready(self->config.base, self);
+                    ov_interconnect_srtp_ready(self->config.base, self);
                     break;
 
                 default:
@@ -1232,25 +1186,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-int ov_mc_interconnect_session_get_signaling_socket(
-    ov_mc_interconnect_session *self) {
-
-    if (!self)
-        return -1;
-    return self->config.signaling;
-}
-
-/*----------------------------------------------------------------------------*/
-
-int ov_mc_interconnect_session_send(ov_mc_interconnect_session *self,
+int ov_interconnect_session_send(ov_interconnect_session *self,
                                     const uint8_t *buffer, size_t size) {
 
     if (!self || !buffer || !size)
         goto error;
 
-    int socket = ov_mc_interconnect_get_media_socket(self->config.base);
-    if (-1 == socket)
-        goto error;
+    int socket = ov_interconnect_get_media_socket(self->config.base);
+    if (-1 == socket) goto error;
 
     int type = AF_INET;
     if (!ov_socket_destination_address_type(self->config.remote.media.host,
@@ -1277,16 +1220,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_dtls *ov_mc_interconnect_session_get_dtls(ov_mc_interconnect_session *self) {
-
-    if (!self)
-        return NULL;
-    return self->dtls.dtls;
-}
-
-/*----------------------------------------------------------------------------*/
-
-bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
+bool ov_interconnect_session_add(ov_interconnect_session *self,
                                     const char *loop_name,
                                     uint32_t remote_ssrc) {
 
@@ -1309,19 +1243,17 @@ bool ov_mc_interconnect_session_add(ov_mc_interconnect_session *self,
 
     /* ADD SSRC STREAM FOR LOOP */
 
-    ov_mc_interconnect_loop *loop =
-        ov_mc_interconnect_get_loop(self->config.base, loop_name);
+    const ov_interconnect_loop *loop = ov_interconnect_get_loop(self->config.base, loop_name);
 
-    if (!loop)
-        goto done;
+    if (!loop) goto done;
 
-    if (!ov_mc_interconnect_loop_has_mixer(loop)){
-        if (!ov_mc_interconnect_loop_assign_mixer(loop)){
+    if (!ov_interconnect_loop_has_mixer(loop)){
+        if (!ov_interconnect_loop_assign_mixer((ov_interconnect_loop*)loop)){
             ov_log_debug("failed to assign mixer to loop.");
         }
     }
 
-    uint32_t local_ssrc = ov_mc_interconnect_loop_get_ssrc(loop);
+    uint32_t local_ssrc = ov_interconnect_loop_get_ssrc(loop);
     if (0 == local_ssrc)
         goto done;
 
@@ -1373,7 +1305,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_session_remove(ov_mc_interconnect_session *self,
+/*
+bool ov_interconnect_session_remove(ov_interconnect_session *self,
                                        const char *loop) {
 
     if (!self || !loop)
@@ -1388,70 +1321,14 @@ bool ov_mc_interconnect_session_remove(ov_mc_interconnect_session *self,
 error:
     return false;
 }
-
-/*----------------------------------------------------------------------------*/
-/*
-static bool remove_and_readd_srtp_stream(ov_mc_interconnect_session *self) {
-
-  if (!self)
-    goto error;
-
-  srtp_err_status_t r = srtp_remove_stream(self->srtp.local.session,
-                                           self->srtp.local.policy.ssrc.value);
-
-  switch (r) {
-
-  case srtp_err_status_ok:
-    break;
-
-  default:
-    break;
-  }
-
-  r = srtp_remove_stream(self->srtp.local.session,
-                         self->srtp.remote.policy.ssrc.value);
-
-  switch (r) {
-
-  case srtp_err_status_ok:
-    break;
-
-  default:
-    break;
-  }
-
-  r = srtp_add_stream(self->srtp.local.session, &self->srtp.local.policy);
-
-  switch (r) {
-
-  case srtp_err_status_ok:
-    break;
-
-  default:
-    break;
-  }
-
-  r = srtp_add_stream(self->srtp.local.session, &self->srtp.remote.policy);
-
-  switch (r) {
-
-  case srtp_err_status_ok:
-    break;
-
-  default:
-    break;
-  }
-
-  return true;
-error:
-  return false;
-}
 */
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
-    ov_mc_interconnect_session *self, uint8_t *buffer, size_t size,
+bool ov_interconnect_session_media_io_external(
+    ov_interconnect_session *self, 
+    uint8_t *buffer, 
+    size_t size,
     const ov_socket_data *remote) {
 
     /* Remote is external media remote */
@@ -1501,49 +1378,43 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
         ov_log_error("Could not get SRTP session.");
         goto error;
     }
-    /*
-    if (!remove_and_readd_srtp_stream(self))
-      goto error;
-    */
     
-      srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
+    srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
-      switch (r) {
+    switch (r) {
 
-      case srtp_err_status_ok:
-        // ov_log_debug("SRTP unprotect success");
-        break;
+        case srtp_err_status_ok:
+            // ov_log_debug("SRTP unprotect success");
+            break;
 
-      default:
-        // ov_log_error("SRTP unprotect error");
-        goto ignore;
-        break;
+        default:
+            // ov_log_error("SRTP unprotect error");
+            goto ignore;
+            break;
       }
     
 
-    char *loop_name =
-        ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
+    char *loop_name = ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
 
     if (!loop_name){
         ov_log_error("Could not find loopname.");
         goto ignore;
     }
 
-    ov_mc_interconnect_loop *loop =
-        ov_mc_interconnect_get_loop(self->config.base, loop_name);
+    const ov_interconnect_loop *loop = ov_interconnect_get_loop(self->config.base, loop_name);
 
     if (!loop){
         ov_log_error("Could not find loop");
         goto ignore;
     }
 
-    uint32_t ssrc_to_set = ov_mc_interconnect_loop_get_ssrc(loop);
+    uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
 
     /* set SSRC to internal SSRC */
     uint32_t u32 = htonl(ssrc_to_set);
     memcpy(buffer + 8, &u32, 4);
 
-    if (!ov_mc_interconnect_loop_send(loop, buffer, l)){
+    if (!ov_interconnect_loop_send(loop, buffer, l)){
         ov_log_error("Could not send at loop %s", loop_name);
         goto ignore;
     }
@@ -1563,14 +1434,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_interconnect_session_forward_loop_io_to_external(
-    ov_mc_interconnect_session *self, ov_mc_interconnect_loop *loop,
-    uint8_t *buffer, size_t size) {
+bool ov_interconnect_session_forward_loop_io(
+    ov_interconnect_session *self, 
+    const ov_interconnect_loop *loop,
+    uint8_t *buffer, 
+    size_t size) {
 
-    if (!self || !loop || !buffer || !size)
-        goto error;
+    if (!self || !loop || !buffer || !size) goto error;
 
-    const char *name = ov_mc_interconnect_loop_get_name(loop);
+    const char *name = ov_interconnect_loop_get_name(loop);
 
     /* (1) check if the session is interessted in the loop */
     uintptr_t ssrc_remote = (uintptr_t)ov_dict_get(self->loops, name);
@@ -1581,7 +1453,7 @@ bool ov_mc_interconnect_session_forward_loop_io_to_external(
 
     /* (2) Get remote data to be used */
 
-    uint32_t ssrc_to_set = ov_mc_interconnect_loop_get_ssrc(loop);
+    uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
 
     /* (3) set ssrc and payload type*/
     uint32_t u32 = htonl(ssrc_to_set);
@@ -1592,11 +1464,6 @@ bool ov_mc_interconnect_session_forward_loop_io_to_external(
     buffer[1] |= 0X64;
 
     int out = size;
-    /*
-    if (!remove_and_readd_srtp_stream(self))
-      goto error;
-    */
-
     
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
@@ -1610,9 +1477,8 @@ bool ov_mc_interconnect_session_forward_loop_io_to_external(
       goto done;
       break;
     }
-    
 
-    ssize_t bytes = ov_mc_interconnect_session_send(self, buffer, out);
+    ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
 
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
@@ -1627,4 +1493,14 @@ done:
     return true;
 error:
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+int ov_interconnect_session_get_signaling_socket(
+    const ov_interconnect_session *self){
+
+    if (!self) return -1;
+
+    return self->config.signaling;
 }

@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2023 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,32 +19,28 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_mc_interconnect_test_common.h
-        @author         Markus Töpfer
+        @file           ov_interconnect_dtls_filter.h
+        @author         Töpfer, Markus
 
-        @date           2023-12-18
+        @date           2026-01-15
 
 
         ------------------------------------------------------------------------
 */
-#ifndef ov_mc_interconnect_test_common_h
-#define ov_mc_interconnect_test_common_h
+#ifndef ov_interconnect_dtls_filter_h
+#define ov_interconnect_dtls_filter_h
 
-#include <ov_base/ov_json.h>
+#include "ov_interconnect_session.h"
+#include <openssl/bio.h>
+#include <stdbool.h>
 
-/*
- *      ------------------------------------------------------------------------
- *
- *      GENERIC FUNCTIONS
- *
- *      ------------------------------------------------------------------------
- */
+bool ov_interconnect_dtls_filter_init();
+void ov_interconnect_dtls_filter_deinit();
 
-int ov_mc_interconnect_common_domains_init();
-int ov_mc_interconnect_common_domains_deinit();
+/**
+        Create a write bio for the session.
+*/
+BIO *ov_interconnect_dtls_bio_create(ov_interconnect_session *session);
 
-const char *ov_mc_interconnect_test_common_get_test_resource_dir();
 
-ov_json_value *ov_mc_interconnect_test_common_get_loops();
-
-#endif /* ov_mc_interconnect_test_common_h */
+#endif /* ov_interconnect_dtls_filter_h */

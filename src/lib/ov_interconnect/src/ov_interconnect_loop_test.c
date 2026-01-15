@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2023 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_mc_interconnect_dtls_filer_test.c
-        @author         Markus Töpfer
+        @file           ov_interconnect_loop_test.c
+        @author         Töpfer, Markus
 
-        @date           2023-12-12
+        @date           2026-01-15
 
 
         ------------------------------------------------------------------------
 */
-#include "ov_mc_interconnect_dtls_filter.c"
 #include <ov_test/testrun.h>
+#include "ov_interconnect_loop.c"
 
 /*
  *      ------------------------------------------------------------------------
@@ -38,10 +38,10 @@
  *      ------------------------------------------------------------------------
  */
 
-int test_case() {
-    testrun(1 == 1);
+int test_case(){
+        testrun(1 == 1);
 
-    return testrun_log_success();
+        return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -56,10 +56,10 @@ int test_case() {
 
 int all_tests() {
 
-    testrun_init();
-    testrun_test(test_case);
+        testrun_init();
+        testrun_test(test_case);
 
-    return testrun_counter;
+        return testrun_counter;
 }
 
 /*

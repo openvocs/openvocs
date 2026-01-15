@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2023 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,45 +19,33 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_mc_interconnect_msg.h
-        @author         Markus Töpfer
+        @file           ov_interconnect_msg.h
+        @author         Töpfer, Markus
 
-        @date           2023-12-11
+        @date           2026-01-15
 
 
         ------------------------------------------------------------------------
 */
-#ifndef ov_mc_interconnect_msg_h
-#define ov_mc_interconnect_msg_h
+#ifndef ov_interconnect_msg_h
+#define ov_interconnect_msg_h
 
 #include <ov_base/ov_json.h>
 
-#define OV_MC_INTERCONNECT_VERSION 1
 
-#define OV_MC_INTERCONNECT_REGISTER "register"
-#define OV_MC_INTERCONNECT_CONNECT_MEDIA "connect_media"
-#define OV_MC_INTERCONNECT_CONNECT_LOOPS "connect_loops"
-
-/*
- *      ------------------------------------------------------------------------
- *
- *      GENERIC FUNCTIONS
- *
- *      ------------------------------------------------------------------------
- */
-
-ov_json_value *ov_mc_interconnect_msg_register(const char *name,
+ov_json_value *ov_interconnect_msg_register(const char *name,
                                                const char *pass);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_mc_interconnect_msg_connect_media(const char *name,
+ov_json_value *ov_interconnect_msg_connect_media(const char *name,
                                                     const char *codec,
                                                     const char *host,
                                                     uint32_t port);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_mc_interconnect_msg_connect_loops();
+ov_json_value *ov_interconnect_msg_connect_loops();
 
-#endif /* ov_mc_interconnect_msg_h */
+
+#endif /* ov_interconnect_msg_h */

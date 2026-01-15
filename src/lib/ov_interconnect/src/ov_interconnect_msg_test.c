@@ -19,16 +19,16 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_mc_interconnect_mixer_test.c
+        @file           ov_interconnect_msg_test.c
         @author         Töpfer, Markus
 
-        @date           2026-01-13
+        @date           2026-01-15
 
 
         ------------------------------------------------------------------------
 */
 #include <ov_test/testrun.h>
-#include "ov_mc_interconnect_mixer.c"
+#include "ov_interconnect_msg.c"
 
 /*
  *      ------------------------------------------------------------------------

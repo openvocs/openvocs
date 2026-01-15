@@ -34,7 +34,7 @@
 #include <ov_base/ov_json.h>
 #include <ov_os/ov_os_event_loop.h>
 
-#include <ov_mc_interconnect/ov_mc_interconnect.h>
+#include <ov_interconnect/ov_interconnect.h>
 
 #define CONFIG_PATH                                                            \
     OPENVOCS_ROOT                                                              \
@@ -47,8 +47,9 @@ int main(int argc, char **argv) {
     int retval = EXIT_FAILURE;
 
     ov_event_loop *loop = NULL;
+    ov_io *io = NULL;
     ov_json_value *json_config = NULL;
-    ov_mc_interconnect *app = NULL;
+    ov_interconnect *app = NULL;
 
     ov_event_loop_config loop_config = (ov_event_loop_config){
         .max.sockets = ov_socket_get_max_supported_runtime_sockets(0),
@@ -82,16 +83,21 @@ int main(int argc, char **argv) {
     if (!ov_event_loop_setup_signals(loop))
         goto error;
 
-    ov_mc_interconnect_config config =
-        ov_mc_interconnect_config_from_json(json_config);
+    io = ov_io_create((ov_io_config){.loop = loop});
+
+    if (!io) goto error;
+
+    ov_interconnect_config config =
+        ov_interconnect_config_from_json(json_config);
 
     config.loop = loop;
+    config.io = io;
 
-    app = ov_mc_interconnect_create(config);
+    app = ov_interconnect_create(config);
     if (!app)
         goto error;
 
-    if (!ov_mc_interconnect_load_loops(app, json_config))
+    if (!ov_interconnect_load_loops(app, json_config))
         goto error;
 
     /*  Run event loop */
@@ -101,8 +107,8 @@ int main(int argc, char **argv) {
 
 error:
     json_config = ov_json_value_free(json_config);
-    app = ov_mc_interconnect_free(app);
-
+    app = ov_interconnect_free(app);
+    io = ov_io_free(io);
     loop = ov_event_loop_free(loop);
     return retval;
 }

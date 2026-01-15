@@ -65,3 +65,4 @@ OV_LIBS       +=-llber
 #-----------------------------------------------------------------------------
 
 include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk
+
