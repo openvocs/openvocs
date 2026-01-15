@@ -1533,11 +1533,11 @@ bool ov_interconnect_session_media_io_external(
         goto ignore;
     }
 
-    uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
+    //uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
 
     /* set SSRC to internal SSRC */
-    uint32_t u32 = htonl(ssrc_to_set);
-    memcpy(buffer + 8, &u32, 4);
+    //uint32_t u32 = htonl(ssrc_to_set);
+    //memcpy(buffer + 8, &u32, 4);
 
     if (!ov_interconnect_loop_send(loop, buffer, l)){
         ov_log_error("Could not send at loop %s", loop_name);
@@ -1575,15 +1575,15 @@ bool ov_interconnect_session_forward_loop_io(
 
     /* (2) Get remote data to be used */
 
-    uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
+    //uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
 
     /* (3) set ssrc and payload type*/
-    uint32_t u32 = htonl(ssrc_to_set);
-    memcpy(buffer + 8, &u32, 4);
+    //uint32_t u32 = htonl(ssrc_to_set);
+    //memcpy(buffer + 8, &u32, 4);
 
     // we set payload type to 100
-    buffer[1] = 0x80 & buffer[1];
-    buffer[1] |= 0X64;
+    //buffer[1] = 0x80 & buffer[1];
+    //buffer[1] |= 0X64;
 
     int out = size;
 /*
