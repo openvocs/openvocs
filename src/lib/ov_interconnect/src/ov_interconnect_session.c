@@ -576,8 +576,6 @@ static bool perform_ssl_client_handshake(ov_interconnect_session *self) {
 
     bool shutdown = true;
 
-    ov_log_debug("DTLS active handshaking.");
-
     OV_ASSERT(self);
     if (!self)
         goto error;
@@ -1495,6 +1493,7 @@ bool ov_interconnect_session_media_io_external(
 
     int l = size;
 
+/*
     srtp_t srtp_session = self->srtp.local.session;
 
     if (!srtp_session){
@@ -1516,7 +1515,7 @@ bool ov_interconnect_session_media_io_external(
             break;
       }
     
-
+*/
     char *loop_name = ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
 
     if (!loop_name){
@@ -1584,7 +1583,7 @@ bool ov_interconnect_session_forward_loop_io(
     buffer[1] |= 0X64;
 
     int out = size;
-    
+/*
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
     switch (r) {
@@ -1597,7 +1596,7 @@ bool ov_interconnect_session_forward_loop_io(
       goto done;
       break;
     }
-
+*/
     ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
 
