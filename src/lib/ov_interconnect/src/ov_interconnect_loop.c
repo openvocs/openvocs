@@ -66,6 +66,10 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
         return true;
     }
 
+    if (!ov_socket_parse_sockaddr_storage(
+        &remote.sa, remote.host, OV_HOST_NAME_MAX, &remote.port))
+        goto error;
+
     ssize_t bytes = recvfrom(socket, (char *)buffer, OV_UDP_PAYLOAD_OCTETS, 0,
                              (struct sockaddr *)&remote.sa, &src_addr_len);
 
@@ -75,7 +79,9 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     bool result =
         ov_interconnect_loop_io(self->config.base, self, buffer, bytes);
 
-    ov_log_debug("IO mixer");
+    ov_log_debug("recv %zi bytes from %s:%i", bytes, 
+       remote.host,
+       remote.port);
 
     return result;
 error:
@@ -299,7 +305,12 @@ bool ov_interconnect_loop_send(
     ssize_t out =
         sendto(self->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
 
-    UNUSED(out);
+    ov_log_debug("send %zi bytes to %s:%i", out, 
+        self->config.multicast.host,
+        self->config.multicast.port);
+
+    if (out != (ssize_t) size) goto error;
+
     return true;
 error:
     return false;
