@@ -1505,7 +1505,7 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
     if (!remove_and_readd_srtp_stream(self))
       goto error;
     */
-    /*
+    
       srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
       switch (r) {
@@ -1519,7 +1519,7 @@ bool ov_mc_interconnect_session_forward_rtp_external_to_internal(
         goto ignore;
         break;
       }
-    */
+    
 
     char *loop_name =
         ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
@@ -1597,7 +1597,7 @@ bool ov_mc_interconnect_session_forward_loop_io_to_external(
       goto error;
     */
 
-    /*
+    
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
     switch (r) {
@@ -1610,7 +1610,7 @@ bool ov_mc_interconnect_session_forward_loop_io_to_external(
       goto done;
       break;
     }
-    */
+    
 
     ssize_t bytes = ov_mc_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
