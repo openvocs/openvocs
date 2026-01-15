@@ -39,6 +39,7 @@ export var logout_triggered;
 
 export function init(view_id) {
 
+    DOM.loading_screen = document.getElementById("loading_screen");
     DOM.loops = document.getElementById("recorder_loops");
     DOM.start_recording = document.getElementById("start_stop_recorder");
     // DOM.stop_recording = document.getElementById("stop_recorder");
@@ -145,6 +146,7 @@ function get_current_loop() {
 }
 
 export function select_loop(loop) {
+    DOM.loading_screen.show("Load loop " + loop.id + "...");
     let prev_loop = get_current_loop();
     if (prev_loop)
         prev_loop.disabled = false;
@@ -154,4 +156,5 @@ export function select_loop(loop) {
     // DOM.start_recording.disabled = loop.active;
     // DOM.stop_recording.disabled = !loop.active;
     DOM.playback_search.click();
+    DOM.loading_screen.hide();
 }
