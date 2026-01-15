@@ -1444,13 +1444,13 @@ ov_interconnect *ov_interconnect_create(ov_interconnect_config config){
     self->loops = ov_dict_create(d_config);
 
     d_config = ov_dict_string_key_config(255);
-    d_config.value.data_function.free = ov_interconnect_session_free;
+    d_config.value.data_function.free = NULL;
 
     self->session.by_media_remote = ov_dict_create(d_config);
     if (!self->session.by_media_remote) goto error;
 
     d_config = ov_dict_string_key_config(255);
-    d_config.value.data_function.free = NULL;
+    d_config.value.data_function.free = ov_interconnect_session_free;
 
     self->session.by_signaling_remote = ov_dict_create(d_config);
     if (!self->session.by_signaling_remote) goto error;

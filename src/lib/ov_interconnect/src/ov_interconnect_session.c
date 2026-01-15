@@ -60,6 +60,8 @@ struct ov_interconnect_session {
 
     ov_id id;
 
+    bool loops_added;
+
     ov_dict *ssrcs;
     ov_dict *loops;
 
@@ -1284,6 +1286,7 @@ bool ov_interconnect_session_media_io_ssl_external(
                     ov_log_debug("Session %s SRTP READY", self->id);
                     prepare_streams(self);
                     ov_interconnect_srtp_ready(self->config.base, self);
+                    
                     break;
 
                 default:
