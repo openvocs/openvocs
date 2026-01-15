@@ -1569,8 +1569,7 @@ bool ov_interconnect_session_forward_loop_io(
 
     /* (1) check if the session is interessted in the loop */
 
-    uint32_t ssrc_remote = (uintptr_t) ov_dict_get(self->loops, name);
-    if (0 == ssrc_remote) goto done;
+    if (!ov_dict_is_set(self->loops, name)) goto done;
 
     /* (2) Get remote data to be used */
 
@@ -1600,7 +1599,7 @@ bool ov_interconnect_session_forward_loop_io(
     }
 */
     ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
-    UNUSED(bytes);
+    if (bytes < out) goto error;
 /*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
