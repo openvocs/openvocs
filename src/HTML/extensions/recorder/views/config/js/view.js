@@ -99,7 +99,7 @@ export function init(view_id) {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     DOM.playback_search_stop.value = now.toISOString().slice(0, 16);
-    now.setTime(now.getTime() - 24 * 60 * 60 * 1000);
+    now.setTime(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     DOM.playback_search_start.value = now.toISOString().slice(0, 16);
 
     DOM.playback_search.addEventListener("click", async () => {
