@@ -285,7 +285,7 @@ bool ov_mc_interconnect_loop_assign_mixer(
 
     ov_mixer_forward forward = (ov_mixer_forward){
         .socket = config,
-        .ssrc = self->ssrc,
+        .ssrc = 0,
         .payload_type = 100
     };
 
