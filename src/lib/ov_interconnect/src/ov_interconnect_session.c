@@ -1531,8 +1531,7 @@ bool ov_interconnect_session_media_io_external(
         goto ignore;
     }
 
-    // uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
-    uint32_t ssrc_to_set = (uintptr_t)ov_dict_get(self->loops, loop_name);
+    uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
 
     /* set SSRC to internal SSRC */
     uint32_t u32 = htonl(ssrc_to_set);

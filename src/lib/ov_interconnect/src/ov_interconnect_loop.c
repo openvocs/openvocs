@@ -75,7 +75,6 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     bool result =
         ov_interconnect_loop_io(self->config.base, self, buffer, bytes);
 
-    ov_log_debug("IO from mixer");
     return result;
 error:
     return false;
