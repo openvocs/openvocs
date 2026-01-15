@@ -297,9 +297,8 @@ static void event_mixer_acquire(
 
     if (success && container.loop){
 
-        ov_json_value *out = ov_mixer_msg_forward(
-            ov_interconnect_loop_get_name(container.loop),
-            ov_interconnect_loop_get_forward(container.loop));
+        ov_json_value *out = ov_mixer_msg_join(
+            ov_interconnect_loop_get_loop_data(container.loop));
 
         ov_event_app_send(self->app.mixer, socket, out);
         out = ov_json_value_free(out);
@@ -317,7 +316,7 @@ error:
 }
 
 /*----------------------------------------------------------------------------*/
-
+/*
 static void event_mixer_forward(
     void *userdata, const char *event_name, int socket, ov_json_value *input){
 
@@ -359,6 +358,7 @@ error:
     ov_json_value_free(input);
     return;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -1358,13 +1358,13 @@ static bool register_events(ov_interconnect *self){
         "acquire",
         self,
         event_mixer_acquire)) goto error;
-
+/*
     if (!ov_event_app_register(
         self->app.mixer,
         "forward",
         self,
         event_mixer_forward)) goto error;
-
+*/
     if (!ov_event_app_register(
         self->app.mixer,
         "join",

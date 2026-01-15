@@ -205,6 +205,7 @@ bool ov_interconnect_loop_assign_mixer(ov_interconnect_loop *self){
         .port = self->local.port,
         .type = UDP
     };
+
     strncpy(config.host, self->local.host, OV_HOST_NAME_MAX);
 
     ov_mixer_forward forward = (ov_mixer_forward){
@@ -263,9 +264,11 @@ ov_mc_loop_data ov_interconnect_loop_get_loop_data(
     if (!self)
         return (ov_mc_loop_data){0};
 
+    uint8_t volume_scale = ov_convert_from_vol_percent(50, 3);
+
     ov_mc_loop_data data = (ov_mc_loop_data){
         .socket = self->config.multicast,
-        .volume = 50
+        .volume = volume_scale
     };
 
     strncpy(data.name, self->config.name, OV_HOST_NAME_MAX);
