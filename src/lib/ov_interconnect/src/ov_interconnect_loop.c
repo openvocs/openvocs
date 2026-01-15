@@ -190,7 +190,7 @@ ov_interconnect_loop *ov_interconnect_loop_create(
     self->multicast = ov_mc_socket(config.multicast);
     if (!ov_socket_ensure_nonblocking(self->multicast)) goto error;
 
-    if (!ov_socket_get_data(self->socket, &self->local, NULL)) goto error;
+    if (!ov_socket_get_data(self->multicast, &self->local, NULL)) goto error;
 
     ov_log_debug("opened MC receiver %s | %s:%i", 
         self->config.name, 
