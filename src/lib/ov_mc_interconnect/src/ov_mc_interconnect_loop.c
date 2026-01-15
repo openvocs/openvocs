@@ -89,10 +89,10 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     if (frame->expanded.ssrc == self->ssrc){
         goto error;
     }
-    /*
+
         ov_log_debug("--> recv %zi bytes at %s %"PRIu32,
             bytes, self->config.name, frame->expanded.ssrc);
-    */
+
 
     bool result =
         ov_mc_interconnect_loop_io(self->config.base, self, buffer, bytes);
@@ -285,7 +285,7 @@ bool ov_mc_interconnect_loop_assign_mixer(
 
     ov_mixer_forward forward = (ov_mixer_forward){
         .socket = config,
-        .ssrc = 0,
+        .ssrc = self->ssrc,
         .payload_type = 100
     };
 

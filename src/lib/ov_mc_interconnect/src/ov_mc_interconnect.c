@@ -715,9 +715,7 @@ static bool io_external_rtp(ov_mc_interconnect *self, uint8_t *buffer,
                             size_t bytes, ov_socket_data *remote) {
 
     ov_mc_interconnect_session *session = NULL;
-
-    ov_log_debug("IO RTP");
-
+    
     if (!self || !buffer || !bytes || !remote)
         goto error;
 
@@ -742,8 +740,6 @@ static bool io_external_ssl(ov_mc_interconnect *self, uint8_t *buffer,
                             size_t bytes, ov_socket_data *remote) {
 
     ov_mc_interconnect_session *session = NULL;
-
-    ov_log_debug("IO SSL");
 
     if (!self || !buffer || !bytes || !remote)
         goto error;
