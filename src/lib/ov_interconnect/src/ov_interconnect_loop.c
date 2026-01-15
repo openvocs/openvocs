@@ -32,6 +32,7 @@
 #include <ov_base/ov_random.h>
 #include <ov_base/ov_rtp_frame.h>
 #include <ov_base/ov_mc_socket.h>
+#include <ov_base/ov_convert.h>
 
 /*----------------------------------------------------------------------------*/
 
