@@ -76,11 +76,11 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
 
     bool result =
         ov_interconnect_loop_io(self->config.base, self, buffer, bytes);
-
+/*
     ov_log_debug("recv %zi bytes from %s:%i", bytes, 
        remote.host,
        remote.port);
-
+*/
     return result;
 error:
     return false;
@@ -302,11 +302,11 @@ bool ov_interconnect_loop_send(
 
     ssize_t out =
         sendto(self->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
-
+/*
     ov_log_debug("send %zi bytes to %s:%i", out, 
         self->config.multicast.host,
         self->config.multicast.port);
-
+*/
     if (out != (ssize_t) size) goto error;
 
     return true;
