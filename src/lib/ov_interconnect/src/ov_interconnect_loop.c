@@ -66,9 +66,7 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
         return true;
     }
 
-    if (!ov_socket_parse_sockaddr_storage(
-        &remote.sa, remote.host, OV_HOST_NAME_MAX, &remote.port))
-        goto error;
+    remote = ov_socket_data_from_sockaddr_storage(&remote.sa);
 
     ssize_t bytes = recvfrom(socket, (char *)buffer, OV_UDP_PAYLOAD_OCTETS, 0,
                              (struct sockaddr *)&remote.sa, &src_addr_len);
