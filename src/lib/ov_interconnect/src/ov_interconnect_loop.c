@@ -45,8 +45,6 @@ struct ov_interconnect_loop{
     ov_socket_data local;
     int socket;
 
-    int multicast;
-
     ov_mixer_data mixer;
 
 };
@@ -74,10 +72,6 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     if (bytes < 1)
         goto error;
 
-    if (!ov_socket_parse_sockaddr_storage(&remote.sa, remote.host,
-                                          OV_HOST_NAME_MAX, &remote.port))
-        goto error;
-
     bool result =
         ov_interconnect_loop_io(self->config.base, self, buffer, bytes);
 
@@ -98,6 +92,8 @@ ov_interconnect_loop *ov_interconnect_loop_create(
     if (0 == config.multicast.host[0]) goto error;
     if (0 == config.internal.host[0]) goto error;
     if (0 == config.multicast.port) goto error;
+
+    config.multicast.type = UDP;
 
     self = calloc(1, sizeof(ov_interconnect_loop));
     if (!self) goto error;
@@ -262,8 +258,7 @@ error:
 ov_mc_loop_data ov_interconnect_loop_get_loop_data(
     const ov_interconnect_loop *self){
 
-    if (!self)
-        return (ov_mc_loop_data){0};
+    if (!self) return (ov_mc_loop_data){0};
 
     uint8_t volume_scale = ov_convert_from_vol_percent(50, 3);
 
@@ -296,7 +291,7 @@ bool ov_interconnect_loop_send(
     }
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (dest.ss_family == AF_INET6)
+    if (self->local.sa.ss_family == AF_INET6)
         len = sizeof(struct sockaddr_in6);
 
     ssize_t out =
