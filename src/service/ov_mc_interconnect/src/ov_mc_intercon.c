@@ -83,7 +83,10 @@ int main(int argc, char **argv) {
     if (!ov_event_loop_setup_signals(loop))
         goto error;
 
-    io = ov_io_create((ov_io_config){.loop = loop});
+    ov_io_config io_config = ov_io_config_from_json(json_config);
+    io_config.loop = loop;
+
+    io = ov_io_create(io_config);
 
     if (!io) goto error;
 
