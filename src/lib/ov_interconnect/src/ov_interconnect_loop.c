@@ -58,8 +58,6 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     ov_socket_data remote = {};
     socklen_t src_addr_len = sizeof(remote.sa);
 
-    ov_rtp_frame *frame = NULL;
-
     ov_interconnect_loop *self = (ov_interconnect_loop*)userdata;
     if (!self || !socket) goto error;
 
@@ -79,20 +77,11 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
                                           OV_HOST_NAME_MAX, &remote.port))
         goto error;
 
-    frame = ov_rtp_frame_decode(buffer, bytes);
-    if (!frame)
-        goto error;
-
-    if (frame->expanded.ssrc == self->ssrc)
-        goto error;
-
     bool result =
         ov_interconnect_loop_io(self->config.base, self, buffer, bytes);
 
-    frame = ov_rtp_frame_free(frame);
     return result;
 error:
-    frame = ov_rtp_frame_free(frame);
     return false;
 }
 

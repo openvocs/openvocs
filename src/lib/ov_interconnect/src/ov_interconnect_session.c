@@ -1582,8 +1582,8 @@ bool ov_interconnect_session_forward_loop_io(
     memcpy(buffer + 8, &u32, 4);
 
     // we set payload type to 100
-   // buffer[1] = 0x80 & buffer[1];
-   // buffer[1] |= 0X64;
+    buffer[1] = 0x80 & buffer[1];
+    buffer[1] |= 0X64;
 
     int out = size;
 /*
