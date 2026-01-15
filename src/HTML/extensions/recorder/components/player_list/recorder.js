@@ -56,11 +56,11 @@ export default class ov_Player_List extends HTMLElement {
         if (recordings && recordings.length !== 0) {
             this.#recordings = recordings;
             this.#uri = uri;
-            
-            let players = this.shadowRoot.querySelector("#players");
+        }
+        let players = this.shadowRoot.querySelector("#players");
+        if (players) {
             players.replaceChildren();
-
-            if (players && recordings) {
+            if (recordings) {
                 for (let recording of recordings) {
                     let recording_src = uri + recording.uri;
                     console.log(recording_src);

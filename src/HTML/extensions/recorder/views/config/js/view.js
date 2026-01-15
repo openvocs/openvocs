@@ -39,16 +39,14 @@ export var logout_triggered;
 
 export function init(view_id) {
 
+    DOM.loading_screen = document.getElementById("loading_screen");
     DOM.loops = document.getElementById("recorder_loops");
     DOM.start_recording = document.getElementById("start_stop_recorder");
-    // DOM.stop_recording = document.getElementById("stop_recorder");
     DOM.playback_search_start = document.getElementById("start_time");
     DOM.playback_search_stop = document.getElementById("stop_time");
     DOM.playback_search = document.getElementById("search_records");
     DOM.playback_list = document.querySelector('ov-player-list');
-    DOM.error_message = document.getElementById("error_message");
-    // DOM.start_recording.disabled = true;
-    // DOM.stop_recording.disabled = true;
+    DOM.message = document.getElementById("message");
 
     DOM.start_recording.addEventListener("click", async () => {
         if (DOM.start_recording.classList.contains("recording")) {
@@ -57,12 +55,16 @@ export function init(view_id) {
                     let loop = get_current_loop();
                     if (await ov_Recorder.stop_record(loop.id, ws)) {
                         loop.active = false;
-                        // DOM.start_recording.disabled = false;
-                        // DOM.stop_recording.disabled = true;
                         DOM.start_recording.classList.toggle("recording", false);
-                        DOM.error_message.innerText = "";
+                        DOM.message.innerText = "Recording was stopped";
+                        DOM.message.className = "success";
+                        setTimeout(() => {
+                            DOM.message.innerText = "";
+                            DOM.message.className = "";
+                        }, 30000);
                     } else {
-                        DOM.error_message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
+                        DOM.message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
+                        DOM.message.className = "error";
                     }
                 }
             }
@@ -72,34 +74,26 @@ export function init(view_id) {
                     let loop = get_current_loop();
                     if (await ov_Recorder.start_record(loop.id, ws)) {
                         loop.active = true;
-                        // DOM.start_recording.disabled = true;
-                        // DOM.stop_recording.disabled = false;
                         DOM.start_recording.classList.toggle("recording", true);
-                        DOM.error_message.innerText = "";
+                        DOM.message.innerText = "Recording was started";
+                        DOM.message.className = "success";
+                        setTimeout(() => {
+                            DOM.message.innerText = "";
+                            DOM.message.className = "";
+                        }, 30000);
                     } else {
-                        DOM.error_message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
+                        DOM.message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
+                        DOM.message.className = "error";
                     }
                 }
             }
         }
     });
 
-    // DOM.stop_recording.addEventListener("click", () => {
-    //     for (let ws of ov_Websockets.list) {
-    //         if (ws.record === true) {
-    //             let loop = get_current_loop();
-    //             ov_Recorder.stop_record(loop.id, ws);
-    //             loop.active = false;
-    //             DOM.start_recording.disabled = false;
-    //             DOM.stop_recording.disabled = true;
-    //         }
-    //     }
-    // });
-
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     DOM.playback_search_stop.value = now.toISOString().slice(0, 16);
-    now.setTime(now.getTime() - 24 * 60 * 60 * 1000);
+    now.setTime(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     DOM.playback_search_start.value = now.toISOString().slice(0, 16);
 
     DOM.playback_search.addEventListener("click", async () => {
@@ -132,8 +126,6 @@ export function add_loop(id, data, active) {
 
 export function clear_loops() {
     DOM.loops.replaceChildren();
-    // DOM.start_recording.disabled = true;
-    // DOM.stop_recording.disabled = true;
 }
 
 function get_current_loop() {
@@ -145,6 +137,7 @@ function get_current_loop() {
 }
 
 export function select_loop(loop) {
+    DOM.loading_screen.show("Load loop " + loop.id + "...");
     let prev_loop = get_current_loop();
     if (prev_loop)
         prev_loop.disabled = false;
@@ -154,4 +147,5 @@ export function select_loop(loop) {
     // DOM.start_recording.disabled = loop.active;
     // DOM.stop_recording.disabled = !loop.active;
     DOM.playback_search.click();
+    DOM.loading_screen.hide();
 }
