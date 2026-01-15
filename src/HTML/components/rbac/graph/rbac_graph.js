@@ -34,6 +34,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     #dom = {};
     #allow_highlighted_loops;
+    #no_new_users;
 
     constructor() {
         super();
@@ -42,6 +43,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
+        return ["no_new_users"]
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -200,6 +202,17 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     get allow_highlighted_loops() {
         return this.#allow_highlighted_loops;
+    }
+
+    set no_new_users(value) {
+        if (value)
+            this.setAttribute("no_new_users", "");
+        else
+            this.removeAttribute("no_new_users");
+    }
+
+    get no_new_users() {
+        return this.no_new_users;
     }
 
     filter_unused_users(value) {

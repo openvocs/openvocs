@@ -66,6 +66,10 @@ button,
     margin: 0.3rem 0.2rem 0.2rem -3rem;
 }
 
+:host([no_new_users]) #user_header .add_entry {
+    display: none;
+}
+
 ov-rbac-node {
     padding: 0 0.15rem;
 }

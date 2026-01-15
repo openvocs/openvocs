@@ -405,10 +405,13 @@ export default class ov_Websocket {
     // implementation of ov signaling protocol
     //-----------------------------------------------------------------------------
     #process_incoming_event(event, error) {
-        let message = !!event.response ? event.response : event.parameter;
+        let message = !!event.response || event.response === false ? event.response : event.parameter;
 
-        if (event.type !== ov_Websocket.MESSAGE_TYPE.LOOP_BROADCAST)
+        if (event.type !== ov_Websocket.MESSAGE_TYPE.LOOP_BROADCAST) {
+            if (typeof message !== "object")
+                message = { response: message };
             message["client"] = event.client;
+        }
 
         switch (event.event) {
             case ov_Websocket.EVENT.LOGIN:
