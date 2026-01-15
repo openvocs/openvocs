@@ -306,9 +306,10 @@ bool ov_interconnect_loop_send(
     ssize_t out =
         sendto(self->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
 
+/*
     ov_log_debug("Send %zu bytes to %s:%i", size, 
         self->config.multicast.host,self->config.multicast.port);
-    
+*/    
 
     UNUSED(out);
     return true;
