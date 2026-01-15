@@ -1626,3 +1626,24 @@ int ov_interconnect_session_get_signaling_socket(
 
     return self->config.signaling;
 }
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_interconnect_session_loops_added(
+    const ov_interconnect_session *self){
+
+    if (!self) return false;
+
+    return self->loops_added;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_interconnect_session_added_loops(
+    const ov_interconnect_session *self){
+
+    if (!self) return false;
+
+    self->loops_added = true;
+    return true;
+}

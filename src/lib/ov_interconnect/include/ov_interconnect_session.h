@@ -133,6 +133,7 @@ bool ov_interconnect_session_add(
 int ov_interconnect_session_get_signaling_socket(
     const ov_interconnect_session *self);
 
-
+bool ov_interconnect_session_loops_added(
+    const ov_interconnect_session *self);
 
 #endif /* ov_interconnect_session_h */

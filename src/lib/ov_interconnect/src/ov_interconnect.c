@@ -1871,6 +1871,9 @@ bool ov_interconnect_srtp_ready(ov_interconnect *self,
     if (!self->config.socket.client)
         goto error;
 
+    if (ov_interconnect_session_loops_added(session))
+        goto done;
+
     // connect all loops from client to server
 
     ov_json_value *loops = ov_interconnect_get_loop_definitions(self);
@@ -1889,6 +1892,8 @@ bool ov_interconnect_srtp_ready(ov_interconnect *self,
         out);
 
     ov_json_value_free(out);
+    ov_interconnect_session_added_loops(session);
+done:
     return true;
 error:
     ov_json_value_free(out);
