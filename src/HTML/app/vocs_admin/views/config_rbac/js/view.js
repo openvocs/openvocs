@@ -38,7 +38,7 @@ var VIEW_ID;
 
 var domain_id;
 
-export function init(view_id) {
+export function init(view_id, ldap_auth) {
     DOM.graph = document.querySelector("ov-rbac-graph");
     DOM.menu_button = document.getElementById("open_graph_menu");
     DOM.menu = document.getElementById("graph_menu");
@@ -68,6 +68,7 @@ export function init(view_id) {
     VIEW_ID = view_id;
 
     DOM.graph.allow_highlighted_loops = ALLOW_HIGHLIGHTED_LOOPS;
+    DOM.graph.no_new_users = ldap_auth;
 }
 
 export function render(domain_data, project_data) {

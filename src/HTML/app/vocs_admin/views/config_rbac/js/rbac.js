@@ -32,10 +32,10 @@ import * as View from "./view.js";
 export const VIEW_ID = "vocs_admin_config_rbac";
 var view_container;
 
-export async function init(container) {
+export async function init(container, ldap_auth) {
     view_container = container;
     view_container.replaceChildren(await loadCSS(), await loadHtml());
-    View.init(VIEW_ID);
+    View.init(VIEW_ID, ldap_auth);
 }
 
 export { collect, render, refresh, users } from "./view.js";

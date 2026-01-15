@@ -161,7 +161,8 @@ export async function init(view_id, container, type) {
     };
 
     await Config_Settings.init(document.getElementById("settings_page"));
-    await Config_RBAC.init(document.getElementById("rbac_page"));
+    let auth_ldap = await ov_DB.check_ldap();
+    await Config_RBAC.init(document.getElementById("rbac_page"), auth_ldap);
     await Config_Layout.init(document.getElementById("layout_page"));
     if (SIP)
         await Config_SIP.init(document.getElementById("sip_page"));

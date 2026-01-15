@@ -42,7 +42,8 @@ const EVENT = {
     LDAP_IMPORT: "ldap_import",
     UPDATE_PASSWORD: "update_password",
     SET_KEYSET_LAYOUT: "set_keyset_layout",
-    PERSIST: "save"
+    PERSIST: "save",
+    LDAP_CHECK: "is_ldap_enabled"
 }
 
 // retrieve admin domains of single server - specified or lead
@@ -120,6 +121,7 @@ export async function get_config(type, id, ws) {
             }
         }
     }
+
     if (type === "domain")
         return result.result;
     return result;
@@ -474,6 +476,29 @@ export async function user_ldap_import(host, base, domain, user, passwd, ws) {
         }
     }
     return result;
+}
+
+export async function check_ldap(ws) {
+    ws = ws ? ws : ov_Websockets.prime_websocket;
+    let result = false;
+    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
+        try {
+            console.log(log_prefix(ws) + "check if auth against ldap...");
+            result = await ws.send_event(EVENT.LDAP_CHECK);
+            console.log(log_prefix(ws) + "auth against ldap: ", result.response);
+            break;
+        } catch (error) {
+            if (ws.is_connecting && error.temp_error) {
+                console.log(log_prefix(ws) +
+                    "temp error - try to check if auth against ldap again after timeout");
+                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
+            } else {
+                console.warn(log_prefix(ws) + "check if auth against ldap failed", error);
+                return false;
+            }
+        }
+    }
+    return result.response;
 }
 
 export async function set_keyset_layout(id, domain, layout, ws) {
