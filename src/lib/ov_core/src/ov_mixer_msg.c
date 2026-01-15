@@ -144,7 +144,7 @@ ov_mixer_config ov_mixer_config_from_json(const ov_json_value *json) {
 
     ov_mixer_config config = (ov_mixer_config){0};
 
-    const ov_json_value *par = ov_json_object_get(json, "/mixer");
+    const ov_json_value *par = ov_json_get(json, "/mixer");
     if (!par) par = json;
 
     config.vad.zero_crossings_rate_threshold_hertz = ov_json_number_get(
