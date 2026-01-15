@@ -1372,9 +1372,7 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     if (!loop) goto done;
 
     if (!ov_interconnect_loop_has_mixer(loop)){
-        if (!ov_interconnect_loop_assign_mixer((ov_interconnect_loop*)loop)){
-            ov_log_debug("failed to assign mixer to loop.");
-        }
+        ov_interconnect_loop_assign_mixer((ov_interconnect_loop*)loop);
     }
 
     uint32_t local_ssrc = ov_interconnect_loop_get_ssrc(loop);
@@ -1543,12 +1541,12 @@ bool ov_interconnect_session_media_io_external(
         ov_log_error("Could not send at loop %s", loop_name);
         goto ignore;
     }
-
+/*
     ov_log_debug("%s to internal RTP send %zi bytes for %s",
         self->id,
         l,
         loop_name);
-
+*/
 ignore:
     frame = ov_rtp_frame_free(frame);
     return true;
@@ -1602,7 +1600,7 @@ bool ov_interconnect_session_forward_loop_io(
 */
     ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
-
+/*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
         name,
@@ -1610,7 +1608,7 @@ bool ov_interconnect_session_forward_loop_io(
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-
+*/
 done:
     return true;
 error:
