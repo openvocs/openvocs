@@ -1543,12 +1543,12 @@ bool ov_interconnect_session_media_io_external(
         ov_log_error("Could not send at loop %s", loop_name);
         goto ignore;
     }
-
+/*
     ov_log_debug("%s to internal RTP send %zi bytes for %s",
         self->id,
         l,
         loop_name);
-
+*/
 ignore:
     frame = ov_rtp_frame_free(frame);
     return true;
@@ -1582,8 +1582,8 @@ bool ov_interconnect_session_forward_loop_io(
     memcpy(buffer + 8, &u32, 4);
 
     // we set payload type to 100
-    buffer[1] = 0x80 & buffer[1];
-    buffer[1] |= 0X64;
+   // buffer[1] = 0x80 & buffer[1];
+   // buffer[1] |= 0X64;
 
     int out = size;
 /*
@@ -1602,7 +1602,7 @@ bool ov_interconnect_session_forward_loop_io(
 */
     ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
     UNUSED(bytes);
-
+/*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
         name,
@@ -1610,7 +1610,7 @@ bool ov_interconnect_session_forward_loop_io(
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-
+*/
 done:
     return true;
 error:
