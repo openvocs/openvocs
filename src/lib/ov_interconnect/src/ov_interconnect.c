@@ -1211,8 +1211,9 @@ static bool open_sockets(ov_interconnect *self){
             .accept = NULL,
             .io = NULL, // done in app
             .close = cb_signaling_close,
-            .connected = cb_signaling_connected
-        }
+            .connected = cb_signaling_connected,
+        },
+        .ssl = (ov_io_ssl_config){0}
     };
 
     if (self->config.tls.client.domain[0] != 0)
@@ -1264,7 +1265,8 @@ static bool open_sockets(ov_interconnect *self){
             .io = NULL, // done in app
             .close = cb_mixer_close,
             .connected = NULL
-        }
+        },
+        .ssl = (ov_io_ssl_config){0}
     };
 
     self->socket.mixer = ov_event_app_open_listener(
