@@ -89,5 +89,8 @@ rm -rf $RPM_BUILD_ROOT
 /etc/systemd/system/ov_mc.target
 /etc/systemd/system/ov_mc_vocs.service
 /etc/systemd/system/ov_mc_vad.service
+/etc/systemd/system/ov_mc_interconnect.target
+/etc/systemd/system/ov_mc_interconnect_mixer.target
+/etc/systemd/system/ov_mc_interconnect_mixer@.service
 
 %changelog
