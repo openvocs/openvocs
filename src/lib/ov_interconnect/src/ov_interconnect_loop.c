@@ -60,7 +60,6 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     socklen_t src_addr_len = sizeof(remote.sa);
 
     ov_rtp_frame *frame = NULL;
-    ov_rtp_frame *out = NULL;
 
     ov_interconnect_loop *self = (ov_interconnect_loop*)userdata;
     if (!self || !socket) goto error;
@@ -90,17 +89,15 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     ov_rtp_frame_expansion exp = frame->expanded;
     exp.sequence_number = self->sequence_number;
 
-    out = ov_rtp_frame_encode(&exp);
+    frame = ov_rtp_frame_encode(&exp);
 
     bool result =
         ov_interconnect_loop_io(self->config.base, self, 
-            out->bytes.data, out->bytes.length);
+            frame->bytes.data, frame->bytes.length);
 
-    out = ov_rtp_frame_free(frame);
     frame = ov_rtp_frame_free(frame);
     return result;
 error:
-    out = ov_rtp_frame_free(frame);
     frame = ov_rtp_frame_free(frame);
     return false;
 }
