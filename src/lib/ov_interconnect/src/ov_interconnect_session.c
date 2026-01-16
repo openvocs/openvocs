@@ -1582,14 +1582,14 @@ bool ov_interconnect_session_forward_loop_io(
 
     switch (r) {
 
-    case srtp_err_status_ok:
-        ov_log_debug("SRTP protect success.");
-        break;
+        case srtp_err_status_ok:
+            ov_log_debug("SRTP protect success.");
+            break;
 
-    default:
-        ov_log_error("SRTP protect error %i for %s cannot send.", r , name);
-        goto done;
-        break;
+        default:
+            ov_log_error("SRTP protect error %i for %s cannot send.", r , name);
+            goto done;
+            break;
     }
 
     ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
