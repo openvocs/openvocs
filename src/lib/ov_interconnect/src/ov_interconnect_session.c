@@ -1493,7 +1493,7 @@ bool ov_interconnect_session_media_io_external(
     }
 
     int l = size;
-/*
+
     srtp_t srtp_session = self->srtp.local.session;
 
     if (!srtp_session){
@@ -1506,16 +1506,15 @@ bool ov_interconnect_session_media_io_external(
     switch (r) {
 
         case srtp_err_status_ok:
-            // ov_log_debug("SRTP unprotect success");
+            ov_log_debug("SRTP unprotect success");
             break;
 
         default:
             ov_log_error("SRTP unprotect error");
             goto ignore;
             break;
-      }
+    }
     
-*/
     char *loop_name = ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
 
     if (!loop_name){
@@ -1578,12 +1577,13 @@ bool ov_interconnect_session_forward_loop_io(
     buffer[1] |= 0X64;
 
     int out = size;
-/*
+
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
 
     switch (r) {
 
     case srtp_err_status_ok:
+        ov_log_debug("SRTP protect success.");
         break;
 
     default:
@@ -1591,7 +1591,7 @@ bool ov_interconnect_session_forward_loop_io(
         goto done;
         break;
     }
-*/
+
     ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
     if (bytes < out) goto error;
 /*
