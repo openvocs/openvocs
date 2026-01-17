@@ -1506,7 +1506,7 @@ bool ov_interconnect_session_media_io_external(
     switch (r) {
 
         case srtp_err_status_ok:
-            ov_log_debug("SRTP unprotect success");
+            //ov_log_debug("SRTP unprotect success");
             break;
 
         default:
@@ -1586,7 +1586,7 @@ bool ov_interconnect_session_forward_loop_io(
     switch (r) {
 
         case srtp_err_status_ok:
-            ov_log_debug("SRTP protect success.");
+            //ov_log_debug("SRTP protect success.");
             break;
 
         default:
