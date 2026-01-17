@@ -34,6 +34,7 @@
 #include <ov_base/ov_linked_list.h>
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_thread_lock.h>
+#include <ov_base/ov_thread_loop.h>
 #include <ov_base/ov_time.h>
 
 #include <openssl/conf.h>
@@ -103,6 +104,8 @@ struct ov_io {
     uint16_t magic_bytes;
     ov_io_config config;
 
+    ov_thread_loop *tloop;
+
     struct {
 
         ssize_t default_domain;
@@ -118,7 +121,14 @@ struct ov_io {
 
     } timer;
 
-    ov_list *reconnects;
+    struct {
+
+        ov_thread_lock lock;
+        ov_list *list;
+
+    } reconnects;
+
+    
     ov_dict *connections;
 };
 
@@ -167,7 +177,7 @@ static void *connection_free(void *self) {
         ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
 
         *conf = conn->config;
-        if (!ov_list_queue_push(conn->io->reconnects, conf)) {
+        if (!ov_list_queue_push(conn->io->reconnects.list, conf)) {
 
             conf = ov_data_pointer_free(conf);
             ov_log_error("failed to enable auto reconnect");
@@ -178,6 +188,13 @@ static void *connection_free(void *self) {
 
     conn = ov_data_pointer_free(conn);
     return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_thread_message *thread_message_reconnect(){
+
+    return ov_thread_message_standard_create(123, NULL);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -437,25 +454,9 @@ static bool run_reconnect(uint32_t timer, void *data) {
     OV_ASSERT(timer == self->timer.reconnects);
     self->timer.reconnects = OV_TIMER_INVALID;
 
-    ov_list *reconnects = self->reconnects;
-    self->reconnects = ov_linked_list_create(
-        (ov_list_config){.item.free = ov_data_pointer_free});
+    ov_thread_message *msg = thread_message_reconnect();
 
-    ov_io_socket_config *config = ov_list_queue_pop(reconnects);
-
-    int socket = -1;
-    while (config) {
-
-        socket = ov_io_open_connection(self, *config);
-        if (socket < 0)
-            ov_log_error("reconnect attempt to %s:%i failed",
-                         config->socket.host, config->socket.port);
-
-        config = ov_data_pointer_free(config);
-        config = ov_list_queue_pop(reconnects);
-    }
-
-    reconnects = ov_list_free(reconnects);
+    ov_thread_loop_send_message(self->tloop, msg, OV_RECEIVER_THREAD);
 
     self->timer.reconnects = ov_event_loop_timer_set(
         self->config.loop, self->config.limits.reconnect_interval_usec, self,
@@ -480,6 +481,66 @@ static bool init_config(ov_io_config *config) {
     return true;
 error:
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static int open_connection(ov_io *self, ov_io_socket_config config);
+
+/*----------------------------------------------------------------------------*/
+
+static bool handle_in_thread(ov_thread_loop *self, ov_thread_message *msg) {
+    msg = ov_thread_message_cast(msg);
+
+    if (!self || !msg) goto error;
+    if (msg->type != 123) goto error;
+
+    ov_io *io = ov_thread_loop_get_data(self);
+    if (!io) goto error;
+
+    if (!ov_thread_lock_try_lock(&io->reconnects.lock)) goto error;
+
+    ov_list *reconnects = io->reconnects.list;
+    io->reconnects.list = ov_linked_list_create(
+        (ov_list_config){.item.free = ov_data_pointer_free});
+
+    ov_io_socket_config *config = ov_list_queue_pop(reconnects);
+
+    int socket = -1;
+    while (config) {
+
+        socket = open_connection(io, *config);
+        if (socket < 0){
+            ov_log_error("reconnect attempt to %s:%i failed",
+                         config->socket.host, config->socket.port);
+        } else {
+            ov_log_debug("reconnected to %s:%i", config->socket.host, config->socket.port);
+        }
+
+        config = ov_data_pointer_free(config);
+        config = ov_list_queue_pop(reconnects);
+    }
+
+    reconnects = ov_list_free(reconnects);
+
+    ov_thread_lock_unlock(&io->reconnects.lock);
+
+error:
+    msg = ov_thread_message_free(msg);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_thread_loop *start_connect_thread(ov_event_loop *loop,
+                                            ov_io *manager) {
+    return ov_thread_loop_create(
+        loop,
+        (ov_thread_loop_callbacks){
+            .handle_message_in_thread = handle_in_thread,
+            .handle_message_in_loop = NULL,
+        },
+        manager);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -510,7 +571,7 @@ ov_io *ov_io_create(ov_io_config config) {
 
     self->connections = ov_dict_create(d_config);
 
-    self->reconnects = ov_linked_list_create(
+    self->reconnects.list = ov_linked_list_create(
         (ov_list_config){.item.free = ov_data_pointer_free});
 
     self->timer.reconnects = ov_event_loop_timer_set(
@@ -520,6 +581,14 @@ ov_io *ov_io_create(ov_io_config config) {
     self->timer.timeouts = ov_event_loop_timer_set(
         self->config.loop, self->config.limits.timeout_usec, self,
         run_timeout_check);
+
+    self->tloop = start_connect_thread(config.loop, self);
+    if ((0 == self->tloop) || (!ov_thread_loop_start_threads(self->tloop))) {
+        ov_log_error("Could not start connect thread");
+        goto error;
+    }
+
+    if (!ov_thread_lock_init(&self->reconnects.lock, 100000)) goto error;
 
     /* Initialize OpenSSL */
     SSL_load_error_strings();
@@ -538,6 +607,9 @@ ov_io *ov_io_free(ov_io *self) {
     if (!ov_io_cast(self))
         return self;
 
+    ov_thread_lock_clear(&self->reconnects.lock);
+    self->tloop = ov_thread_loop_free(self->tloop);
+
     if (OV_TIMER_INVALID != self->timer.reconnects) {
         ov_event_loop_timer_unset(self->config.loop, self->timer.reconnects,
                                   NULL);
@@ -555,7 +627,7 @@ ov_io *ov_io_free(ov_io *self) {
     self->domain.array =
         ov_domain_array_free(self->domain.size, self->domain.array);
 
-    self->reconnects = ov_list_free(self->reconnects);
+    self->reconnects.list = ov_list_free(self->reconnects.list);
 
     self = ov_data_pointer_free(self);
     return NULL;
@@ -633,15 +705,29 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
             if (conn->config.auto_reconnect) {
 
-                ov_io_socket_config *conf =
-                    calloc(1, sizeof(ov_io_socket_config));
+                if (ov_thread_lock_try_lock(&self->reconnects.lock)){
 
-                *conf = conn->config;
-                if (!ov_list_queue_push(self->reconnects, conf)) {
+                    ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
 
-                    conf = ov_data_pointer_free(conf);
-                    ov_log_error("failed to enable auto reconnect");
+                    *conf = conn->config;
+
+                    if (!ov_list_queue_push(self->reconnects.list, conf)) {
+
+                        conf = ov_data_pointer_free(conf);
+                        ov_log_error("failed to enable auto reconnect");
+                    }
+
+                    ov_thread_lock_unlock(&self->reconnects.lock);
+
+                    ov_log_debug("enabled reconnect to %s:%i",
+                        conf->socket.host, conf->socket.port);
+                } else {
+
+                    ov_log_debug("failed to enable reconnect to %s:%i",
+                        conn->config.socket.host, conn->config.socket.port);
+
                 }
+                
             }
         }
 
@@ -744,15 +830,27 @@ static bool io_stream(int socket, uint8_t events, void *data) {
 
             if (conn->config.auto_reconnect) {
 
-                ov_io_socket_config *conf =
-                    calloc(1, sizeof(ov_io_socket_config));
+                if (ov_thread_lock_try_lock(&self->reconnects.lock)){
 
-                *conf = conn->config;
-                if (!ov_list_queue_push(self->reconnects, conf)) {
+                    ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
 
-                    conf = ov_data_pointer_free(conf);
-                    ov_log_error("failed to enable auto reconnect");
-                    goto error;
+                    *conf = conn->config;
+
+                    if (!ov_list_queue_push(self->reconnects.list, conf)) {
+
+                        conf = ov_data_pointer_free(conf);
+                        ov_log_error("failed to enable auto reconnect");
+                    }
+
+                    ov_thread_lock_unlock(&self->reconnects.lock);
+
+                    ov_log_debug("enabled reconnect to %s:%i",
+                        conf->socket.host, conf->socket.port);
+                } else {
+
+                    ov_log_debug("failed to enable reconnect to %s:%i",
+                        conn->config.socket.host, conn->config.socket.port);
+
                 }
             }
         }
@@ -1793,7 +1891,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
                     calloc(1, sizeof(ov_io_socket_config));
 
                 *conf = conn->config;
-                if (!ov_list_queue_push(self->reconnects, conf)) {
+                if (!ov_list_queue_push(self->reconnects.list, conf)) {
 
                     conf = ov_data_pointer_free(conf);
                     ov_log_error("failed to enable auto reconnect");
@@ -1954,9 +2052,10 @@ error:
     return false;
 }
 
+
 /*----------------------------------------------------------------------------*/
 
-int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
+static int open_connection(ov_io *self, ov_io_socket_config config) {
 
     if (!self)
         goto error;
@@ -1987,7 +2086,7 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
             ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
 
             *conf = config;
-            if (!ov_list_queue_push(self->reconnects, conf)) {
+            if (!ov_list_queue_push(self->reconnects.list, conf)) {
 
                 conf = ov_data_pointer_free(conf);
                 ov_log_error("failed to enable auto reconnect");
@@ -2051,6 +2150,42 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
         config.callbacks.connected(config.callbacks.userdata, socket);
 
     return socket;
+
+error:
+    return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+
+int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
+
+    if (!self)
+        goto error;
+    if (!config.callbacks.io)
+        goto error;
+
+    if (ov_thread_lock_try_lock(&self->reconnects.lock)){
+
+        ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+        *conf = config;
+
+        if (!ov_list_queue_push(self->reconnects.list, conf)) {
+
+            conf = ov_data_pointer_free(conf);
+            ov_log_error("failed to enable auto reconnect");
+        
+        }
+
+        ov_thread_lock_unlock(&self->reconnects.lock);
+
+        ov_log_debug("enabled reconnect to %s:%i",
+                        config.socket.host, config.socket.port);
+    } else {
+        
+        ov_log_debug("failed to enable reconnect to %s:%i",
+                       config.socket.host, config.socket.port);
+
+    }
 
 error:
     return -1;
@@ -2168,6 +2303,12 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
     if (!ov_list_queue_push(conn->io_data.out.queue, buf)) {
         buf = ov_buffer_free(buf);
         goto error;
+    }
+
+    if (conn->tls.ssl) {
+        io_stream_ssl_send(self, conn);
+    } else {
+        stream_send(self, conn);
     }
 
     return true;
