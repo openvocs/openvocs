@@ -315,51 +315,6 @@ error:
 }
 
 /*----------------------------------------------------------------------------*/
-/*
-static void event_mixer_forward(
-    void *userdata, const char *event_name, int socket, ov_json_value *input){
-
-    ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self || !event_name || !input) goto error;
-
-    ov_json_value *res = ov_event_api_get_response(input);
-    if (!res) goto error;
-
-    bool success = false;
-
-    if (0 == ov_event_api_get_error_code(input))
-        success = true;
-
-    struct container3 container = (struct container3){
-        .loop = NULL,
-        .socket = socket
-    };
-
-    ov_dict_for_each(self->loops, &container, find_loop_by_mixer);
-
-    if (success && container.loop){
-
-        ov_json_value *out = ov_mixer_msg_join(
-            ov_interconnect_loop_get_loop_data(container.loop));
-
-        ov_event_app_send(self->app.mixer, socket, out);
-        out = ov_json_value_free(out);
-   
-    } else {
-
-        ov_log_error("forward not successfull - TBD");
-
-    }
-
-    ov_json_value_free(input);
-    return;
-error:
-    ov_json_value_free(input);
-    return;
-}
-*/
-
-/*----------------------------------------------------------------------------*/
 
 static void event_mixer_join(
     void *userdata, const char *event_name, int socket, ov_json_value *input){
@@ -722,7 +677,7 @@ static void event_signaling_connect_media(
     if (!ov_json_object_set(res, OV_KEY_NAME, val)) goto error;
     val = NULL;
 
-    ov_log_debug("GOT MEDIA INVITE |%s| %s:%i ", name, host, port);
+    ov_log_info("GOT MEDIA INVITE |%s| %s:%i ", name, host, port);
 
 send_response:
 
@@ -771,8 +726,6 @@ static bool add_loops_response(void *value, void *data) {
     if (!loop) goto done;
 
     if (!ov_interconnect_session_add(c->session, name, ssrc)) goto done;
-
-    ov_log_debug("adding Loop %s to session.", name);
 
 done:
     return true;
@@ -835,8 +788,6 @@ static bool add_loops(void *value, void *data) {
     uint32_t ssrc = ov_json_number_get(ov_json_object_get(item, OV_KEY_SSRC));
 
     if (!name || !ssrc) goto error;
-
-    ov_log_debug("adding loop %s - %lu", name, ssrc);
 
     ov_interconnect_loop *loop = ov_dict_get(c->self->loops, name);
     if (!loop) goto done;
@@ -1882,7 +1833,7 @@ bool ov_interconnect_srtp_ready(ov_interconnect *self,
     if (!loops)
         goto error;
 
-    ov_log_debug("Connecting all loops from client to server.");
+    ov_log_info("Connecting all loops from client to server.");
 
     out = ov_interconnect_msg_connect_loops();
     par = ov_event_api_set_parameter(out);

@@ -1286,7 +1286,7 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     switch (r) {
 
     case srtp_err_status_ok:
-        ov_log_debug("add srtp_stream local policy %s", loop_name);
+        //ov_log_debug("add srtp_stream local policy %s", loop_name);
         break;
 
     default:
@@ -1299,7 +1299,7 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     switch (r) {
 
     case srtp_err_status_ok:
-        ov_log_debug("add srtp_stream remote policy %s", loop_name);
+        //ov_log_debug("add srtp_stream remote policy %s", loop_name);
         break;
 
     default:
@@ -1309,31 +1309,11 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
 
 done:
 
-    ov_log_debug("%s added loop %s|%" PRIu32, self->id, loop_name, remote_ssrc);
+    ov_log_info("%s added loop %s|%"PRIu32, self->id, loop_name, remote_ssrc);
     return true;
 error:
     return false;
 }
-
-/*----------------------------------------------------------------------------*/
-
-/*
-bool ov_interconnect_session_remove(ov_interconnect_session *self,
-                                       const char *loop) {
-
-    if (!self || !loop)
-        goto error;
-
-    intptr_t key_ssrc = (intptr_t)ov_dict_get(self->loops, loop);
-    ov_dict_del(self->loops, loop);
-    ov_dict_del(self->ssrcs, (void *)key_ssrc);
-
-    ov_log_debug("%s removed loop %s", self->id, loop);
-    return true;
-error:
-    return false;
-}
-*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -1419,7 +1399,7 @@ bool ov_interconnect_session_media_io_external(
         goto ignore;
     }
 
-    ov_log_debug("IO recv %s %zu bytes", loop_name, l);
+    // ov_log_debug("IO recv %s %zu bytes", loop_name, l);
 
     uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
 
@@ -1490,7 +1470,7 @@ bool ov_interconnect_session_forward_loop_io(
     ssize_t bytes = ov_interconnect_session_send(self, buf, out);
     if (bytes < out) goto error;
 
-    ov_log_debug("IO send %s %zu bytes", name, bytes);
+    // ov_log_debug("IO send %s %zu bytes", name, bytes);
 /*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
