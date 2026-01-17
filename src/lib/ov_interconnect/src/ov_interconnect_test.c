@@ -329,7 +329,66 @@ int test_ov_interconnect_drop_mixer(){
     testrun(setup_interconnect(&loop, &io, &self));
     testrun(ov_interconnect_cast(self));
 
-   
+    int mixer = ov_socket_create(self->config.socket.mixer, true, NULL);
+    ov_socket_ensure_nonblocking(mixer);
+
+    ov_event_loop_run(loop, OV_RUN_ONCE);
+
+    ov_json_value *msg = ov_event_api_message_create("register", NULL, 0);
+    char *str = ov_json_value_to_string(msg);
+    msg = ov_json_value_free(msg);
+
+    ov_socket_data dest = {0};
+    ov_socket_fill_sockaddr_storage(&dest.sa, AF_INET,
+        self->config.socket.mixer.host,
+        self->config.socket.mixer.port);
+    dest = ov_socket_data_from_sockaddr_storage(&dest.sa);
+    socklen_t sa_len = sizeof(struct sockaddr_in);
+
+    ssize_t bytes = -1;
+    while(-1 == bytes){
+
+        bytes = sendto(mixer, str, strlen(str), 0, (struct sockaddr*)&dest.sa, sa_len);
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+
+    }
+
+    str = ov_data_pointer_free(str);
+
+    bytes = -1;
+
+    ov_socket_data source = {0};
+
+    char buffer[2048] = {0};
+    size_t size = 2048;
+
+    while (-1 == bytes){
+
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        bytes = recvfrom(mixer, buffer, size, 0, (struct sockaddr*)&source.sa, &sa_len);
+
+    }
+
+    msg = ov_json_value_from_string(buffer, bytes);
+    testrun(ov_event_api_event_is(msg, "configure"));
+    msg = ov_json_value_free(msg);
+
+    // to get the mixer socket within the interconnect, we simply assign the mixer
+    ov_mixer_data mdata = ov_interconnect_assign_mixer(self, "test");
+
+    testrun(ov_interconnect_drop_mixer(self, mdata.socket));
+
+    bytes = -1;
+
+    while (-1 == bytes){
+
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        bytes = recvfrom(mixer, buffer, size, 0, (struct sockaddr*)&source.sa, &sa_len);
+
+    }
+
+    // close received as expected
+    testrun(bytes == 0);
     
     testrun(NULL == ov_interconnect_free(self));
     testrun(NULL == ov_io_free(io));
@@ -339,6 +398,125 @@ int test_ov_interconnect_drop_mixer(){
 }
 
 /*----------------------------------------------------------------------------*/
+
+static int add_mixer(ov_interconnect *self, ov_event_loop *loop){
+
+    int mixer = ov_socket_create(self->config.socket.mixer, true, NULL);
+    ov_socket_ensure_nonblocking(mixer);
+
+    ov_event_loop_run(loop, OV_RUN_ONCE);
+
+    ov_json_value *msg = ov_event_api_message_create("register", NULL, 0);
+    char *str = ov_json_value_to_string(msg);
+    msg = ov_json_value_free(msg);
+
+    ov_socket_data dest = {0};
+    ov_socket_fill_sockaddr_storage(&dest.sa, AF_INET,
+        self->config.socket.mixer.host,
+        self->config.socket.mixer.port);
+    dest = ov_socket_data_from_sockaddr_storage(&dest.sa);
+    socklen_t sa_len = sizeof(struct sockaddr_in);
+
+    ssize_t bytes = -1;
+    while(-1 == bytes){
+
+        bytes = sendto(mixer, str, strlen(str), 0, (struct sockaddr*)&dest.sa, sa_len);
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+
+    }
+
+    str = ov_data_pointer_free(str);
+
+    bytes = -1;
+
+    ov_socket_data source = {0};
+
+    char buffer[2048] = {0};
+    size_t size = 2048;
+
+    while (-1 == bytes){
+
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        bytes = recvfrom(mixer, buffer, size, 0, (struct sockaddr*)&source.sa, &sa_len);
+
+    }
+
+    msg = ov_json_value_from_string(buffer, bytes);
+    testrun(ov_event_api_event_is(msg, "configure"));
+    msg = ov_json_value_free(msg);
+
+    return mixer;
+}
+
+/*----------------------------------------------------------------------------*/
+
+int check_interconnect(){
+
+    ov_event_loop *loop = NULL;
+    ov_io *io = NULL;
+    ov_interconnect *self = NULL;
+
+    testrun(setup_interconnect(&loop, &io, &self));
+    testrun(ov_interconnect_cast(self));
+
+    ov_interconnect *client = NULL;
+    ov_interconnect_config config = self->config;
+
+    config.socket.client = true;
+    config.socket.mixer = ov_socket_load_dynamic_port((ov_socket_configuration){
+            .type = TCP,
+            .host = "127.0.0.1"
+        });
+    config.socket.internal = ov_socket_load_dynamic_port((ov_socket_configuration){
+            .type = UDP,
+            .host = "127.0.0.1"
+        });
+    config.socket.media = ov_socket_load_dynamic_port((ov_socket_configuration){
+            .type = UDP,
+            .host = "127.0.0.1"
+        });
+
+    client = ov_interconnect_create(config);
+    testrun(client);
+
+    ov_json_value *loops = generate_loop_config();
+    testrun(loops);
+
+    testrun(ov_interconnect_load_loops(self, loops));
+    testrun(ov_interconnect_load_loops(client, loops));
+
+    for (int i = 0; i < 1000; i++){
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        usleep(5000);
+    }
+
+    testrun(1 == ov_dict_count(self->session.by_signaling_remote));
+    testrun(1 == ov_dict_count(client->session.by_signaling_remote));
+    
+    int mixer1 = add_mixer(self, loop);
+    int mixer2 = add_mixer(self, loop);
+    int mixer3 = add_mixer(self, loop);
+
+    int mixer4 = add_mixer(client, loop);
+    int mixer5 = add_mixer(client, loop);
+    int mixer6 = add_mixer(client, loop);
+
+    testrun(mixer1);
+    testrun(mixer2);
+    testrun(mixer3);
+    testrun(mixer4);
+    testrun(mixer5);
+    testrun(mixer6);
+
+    testrun(NULL == ov_interconnect_free(self));
+    testrun(NULL == ov_io_free(io));
+    testrun(NULL == ov_event_loop_free(loop));
+
+    return testrun_log_success();
+}
+
+/*----------------------------------------------------------------------------*/
+
 
 
 /*
@@ -356,5 +534,6 @@ OV_TEST_RUN("ov_interconnect_test",
             test_ov_interconnect_create,
             test_ov_interconnect_load_loops,
             test_ov_interconnect_drop_mixer,
+            check_interconnect,
 
             domains_deinit);

@@ -1576,9 +1576,12 @@ bool ov_interconnect_session_forward_loop_io(
     buffer[1] = 0x80 & buffer[1];
     buffer[1] |= 0X64;
 
-    int out = size;
+    int out = 2048;
 
-    srtp_err_status_t r = srtp_protect(self->srtp.local.session, buffer, &out);
+    uint8_t buf[2028] = {0};
+    memcpy(buf, buffer, size);
+
+    srtp_err_status_t r = srtp_protect(self->srtp.local.session, buf, &out);
 
     switch (r) {
 
@@ -1592,7 +1595,7 @@ bool ov_interconnect_session_forward_loop_io(
             break;
     }
 
-    ssize_t bytes = ov_interconnect_session_send(self, buffer, out);
+    ssize_t bytes = ov_interconnect_session_send(self, buf, out);
     if (bytes < out) goto error;
 /*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
