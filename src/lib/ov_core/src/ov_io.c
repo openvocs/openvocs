@@ -490,7 +490,6 @@ static int open_connection(ov_io *self, ov_io_socket_config config);
 /*----------------------------------------------------------------------------*/
 
 static bool handle_in_thread(ov_thread_loop *self, ov_thread_message *msg) {
-    msg = ov_thread_message_cast(msg);
 
     if (!self || !msg) goto error;
     if (msg->type != 123) goto error;
@@ -532,13 +531,24 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool handle_in_loop(ov_thread_loop *self, ov_thread_message *msg) {
+    
+    if (!self || !msg) goto error;
+
+error:
+    msg = ov_thread_message_free(msg);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static ov_thread_loop *start_connect_thread(ov_event_loop *loop,
                                             ov_io *manager) {
     return ov_thread_loop_create(
         loop,
         (ov_thread_loop_callbacks){
             .handle_message_in_thread = handle_in_thread,
-            .handle_message_in_loop = NULL,
+            .handle_message_in_loop = handle_in_loop,
         },
         manager);
 }

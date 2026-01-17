@@ -1187,6 +1187,7 @@ static bool open_sockets(ov_interconnect *self){
 
     } else {
 
+        sig.auto_reconnect = false;
         self->socket.signaling = ov_event_app_open_listener(
             self->app.signaling, sig);
 
@@ -1209,7 +1210,7 @@ static bool open_sockets(ov_interconnect *self){
     // step 2 open mixer socket
 
     ov_io_socket_config mixer = (ov_io_socket_config){
-        .auto_reconnect = true,
+        .auto_reconnect = false,
         .socket = self->config.socket.mixer,
         .callbacks = (ov_io_callback){
             .userdata = self,
