@@ -95,13 +95,13 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     bool result =
         ov_interconnect_loop_io(self->config.base, self, 
             out->bytes.data, out->bytes.length);
-
-    out = ov_rtp_frame_free(frame);
+        
     frame = ov_rtp_frame_free(frame);
+    out = ov_rtp_frame_free(out);
     return result;
 error:
-    out = ov_rtp_frame_free(frame);
     frame = ov_rtp_frame_free(frame);
+    ov_rtp_frame_free(out);
     return false;
 }
 
@@ -139,10 +139,12 @@ ov_interconnect_loop *ov_interconnect_loop_create(
 
     if (!ov_socket_get_data(self->socket, &self->local, NULL)) goto error;
 
-    ov_log_debug("opened LOOP receiver %s | %s:%i", 
+    ov_log_debug("opened LOOP receiver %s | %s:%i for %s:%i", 
         self->config.name, 
         self->local.host,
-        self->local.port);
+        self->local.port,
+        self->config.multicast.host,
+        self->config.multicast.port);
 
     if (!ov_event_loop_set(
         self->config.loop, 
