@@ -95,7 +95,7 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     bool result =
         ov_interconnect_loop_io(self->config.base, self, 
             out->bytes.data, out->bytes.length);
-
+        
     frame = ov_rtp_frame_free(frame);
     out = ov_rtp_frame_free(out);
     return result;
