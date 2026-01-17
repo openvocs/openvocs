@@ -143,8 +143,8 @@ ov_interconnect_loop *ov_interconnect_loop_create(
         self->config.name, 
         self->local.host,
         self->local.port,
-        self->multicast.host,
-        self->multicast.port);
+        self->config.multicast.host,
+        self->config.multicast.port);
 
     if (!ov_event_loop_set(
         self->config.loop, 
