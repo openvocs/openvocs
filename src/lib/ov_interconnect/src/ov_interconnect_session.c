@@ -303,112 +303,6 @@ void *ov_interconnect_session_free(void *data) {
  *
  *      ------------------------------------------------------------------------
  */
-/*
-static bool session_handshake_passive(
-    ov_interconnect_session *self, const uint8_t *buffer, size_t size) {
-
-    int r = 0, n = 0;
-
-    if (!self)
-        goto error;
-
-    ov_dtls *dtls = self->config.dtls;
-
-    if (self->dtls.ssl) {
-        SSL_free(self->dtls.ssl);
-        self->dtls.ssl = NULL;
-    }
-
-    self->dtls.dtls = dtls;
-    self->dtls.handshaked = false;
-    self->dtls.type = OV_DTLS_PASSIVE;
-    self->dtls.ssl = SSL_new(ov_dtls_get_ctx(dtls));
-
-    if (!self->dtls.ssl)
-        goto error;
-
-    SSL_set_accept_state(self->dtls.ssl);
-
-    r = SSL_set_tlsext_use_srtp(self->dtls.ssl, ov_dtls_get_srtp_profile(dtls));
-    if (0 != r)
-        goto error;
-
-    self->dtls.read = BIO_new(BIO_s_mem());
-    self->dtls.write = ov_interconnect_dtls_bio_create(self);
-    BIO_set_mem_eof_return(self->dtls.read, -1);
-    BIO_set_mem_eof_return(self->dtls.write, -1);
-
-    SSL_set_bio(self->dtls.ssl, self->dtls.read, self->dtls.write);
-    SSL_set_options(self->dtls.ssl, SSL_OP_COOKIE_EXCHANGE);
-
-    r = BIO_write(self->dtls.read, buffer, size);
-    if (r < 0)
-        goto error;
-
-    BIO_ADDR *peer_bio = BIO_ADDR_new();
-
-    r = DTLSv1_listen(self->dtls.ssl, peer_bio);
-
-    if (peer_bio) {
-        BIO_ADDR_free(peer_bio);
-        peer_bio = NULL;
-    }
-
-    if (r >= 1) {
-
-        self->dtls.handshaked = true;
-        goto done;
-
-    } else if (r == 0) {
-
-        self->dtls.dtls = NULL;
-
-        SSL_free(self->dtls.ssl);
-        self->dtls.ssl = NULL;
-
-    } else {
-
-        n = SSL_get_error(self->dtls.ssl, r);
-
-        switch (n) {
-
-        case SSL_ERROR_NONE:
-        case SSL_ERROR_WANT_READ:
-        case SSL_ERROR_WANT_CONNECT:
-        case SSL_ERROR_WANT_ACCEPT:
-        case SSL_ERROR_WANT_X509_LOOKUP:
-        case SSL_ERROR_WANT_WRITE:
-            break;
-
-        case SSL_ERROR_ZERO_RETURN:
-            // connection close
-            // ov_log_debug("FD %i connection closed", socket);
-            goto error;
-            break;
-
-        case SSL_ERROR_SYSCALL:
-            goto error;
-
-            break;
-
-        case SSL_ERROR_SSL:
-            goto error;
-
-            break;
-
-        default:
-
-            goto error;
-            break;
-        }
-    }
-
-done:
-    return true;
-error:
-    return false;
-}
-*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -678,7 +572,6 @@ call_again_later:
         goto error;
 
 success:
-    ov_log_debug("DTLS active handshaking - success");
     self->dtls.handshaked = true;
     return true;
 
@@ -1111,8 +1004,6 @@ static bool handshake_passive(
 
     int r = 0, n = 0;
 
-    ov_log_debug("DTLS passive handshaking.");
-
     if (!self)
       goto error;
 
@@ -1161,7 +1052,6 @@ static bool handshake_passive(
     if (r >= 1) {
 
       self->dtls.handshaked = true;
-      ov_log_debug("DTLS passive handshaking - success");
       goto done;
 
     } else if (r == 0) {
