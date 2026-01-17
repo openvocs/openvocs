@@ -1500,7 +1500,7 @@ bool ov_interconnect_session_media_io_external(
         ov_log_error("Could not get SRTP session.");
         goto error;
     }
-    
+/*
     srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
     switch (r) {
@@ -1514,7 +1514,7 @@ bool ov_interconnect_session_media_io_external(
             goto ignore;
             break;
     }
-    
+*/
     char *loop_name = ov_dict_get(self->ssrcs, (void *)(uintptr_t)frame->expanded.ssrc);
 
     if (!loop_name){
@@ -1580,7 +1580,7 @@ bool ov_interconnect_session_forward_loop_io(
 
     uint8_t buf[4096] = {0};
     memcpy(buf, buffer, size);
-
+/*
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buf, &out);
 
     switch (r) {
@@ -1594,7 +1594,7 @@ bool ov_interconnect_session_forward_loop_io(
             goto done;
             break;
     }
-
+*/
     ssize_t bytes = ov_interconnect_session_send(self, buf, out);
     if (bytes < out) goto error;
 /*
