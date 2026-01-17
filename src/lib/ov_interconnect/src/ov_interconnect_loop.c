@@ -97,7 +97,7 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
             out->bytes.data, out->bytes.length);
 
     frame = ov_rtp_frame_free(frame);
-    ov_rtp_frame_free(out);
+    out = ov_rtp_frame_free(out);
     return result;
 error:
     frame = ov_rtp_frame_free(frame);

@@ -1157,6 +1157,7 @@ static void cb_signaling_close(void *userdata, int socket){
 static void cb_signaling_connected(void *userdata, int socket){
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
+    if (!self) goto error;
 
     ov_log_debug("opened connection %i to %s:%i", socket,
                self->config.socket.signaling.host,
@@ -1172,6 +1173,7 @@ static void cb_signaling_connected(void *userdata, int socket){
     // register that connection to allow access within the responses
     intptr_t key = socket;
     ov_dict_set(self->registered, (void *)key, NULL, NULL);
+error: 
     return;
 }
 

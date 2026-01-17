@@ -1576,9 +1576,9 @@ bool ov_interconnect_session_forward_loop_io(
     buffer[1] = 0x80 & buffer[1];
     buffer[1] |= 0X64;
 
-    int out = 2048;
+    int out = size;
 
-    uint8_t buf[2028] = {0};
+    uint8_t buf[4096] = {0};
     memcpy(buf, buffer, size);
 
     srtp_err_status_t r = srtp_protect(self->srtp.local.session, buf, &out);
