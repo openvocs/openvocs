@@ -1419,6 +1419,8 @@ bool ov_interconnect_session_media_io_external(
         goto ignore;
     }
 
+    ov_log_debug("IO recv %s %zu bytes", loop_name, l);
+
     uint32_t ssrc_to_set = ov_interconnect_loop_get_ssrc(loop);
 
     /* set SSRC to internal SSRC */
@@ -1487,6 +1489,8 @@ bool ov_interconnect_session_forward_loop_io(
 */
     ssize_t bytes = ov_interconnect_session_send(self, buf, out);
     if (bytes < out) goto error;
+
+    ov_log_debug("IO send %s %zu bytes", name, bytes);
 /*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
