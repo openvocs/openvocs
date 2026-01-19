@@ -160,7 +160,7 @@ int domains_init() {
 
 static bool setup_interconnect(ov_event_loop **loop_out, 
     ov_io **io_out, ov_interconnect **interconnect_out){
-
+/*
     ov_event_loop *loop = ov_event_loop_default(
         (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
 
@@ -211,6 +211,7 @@ static bool setup_interconnect(ov_event_loop **loop_out,
     *loop_out = loop;
     *io_out = io;
     *interconnect_out = inter;
+*/  
     return true;
 }
 
