@@ -174,19 +174,23 @@ static bool setup_interconnect(ov_event_loop **loop_out,
         .io = io,
         .socket.signaling = ov_socket_load_dynamic_port((ov_socket_configuration){
             .type = TCP,
-            .host = "127.0.0.1"
+            .host = "127.0.0.1",
+            .port = 0
         }),
         .socket.media = ov_socket_load_dynamic_port((ov_socket_configuration){
             .type = UDP,
-            .host = "127.0.0.1"
+            .host = "127.0.0.1",
+            -port = 0
         }),
         .socket.internal = ov_socket_load_dynamic_port((ov_socket_configuration){
             .type = TCP,
-            .host = "127.0.0.1"
+            .host = "127.0.0.1",
+            .port = 0
         }),
         .socket.mixer = ov_socket_load_dynamic_port((ov_socket_configuration){
             .type = TCP,
-            .host = "127.0.0.1"
+            .host = "127.0.0.1",
+            .port = 0
         }),
 
     };
