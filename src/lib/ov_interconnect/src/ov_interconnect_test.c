@@ -180,7 +180,7 @@ static bool setup_interconnect(ov_event_loop **loop_out,
         .socket.media = ov_socket_load_dynamic_port((ov_socket_configuration){
             .type = UDP,
             .host = "127.0.0.1",
-            -port = 0
+            .port = 0
         }),
         .socket.internal = ov_socket_load_dynamic_port((ov_socket_configuration){
             .type = TCP,
