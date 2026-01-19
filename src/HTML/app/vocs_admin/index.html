@@ -42,32 +42,36 @@
             let view_container = document.getElementById("view_container");
             let loading_screen = document.getElementById("loading_screen");
             view_container.addEventListener("switch_view", async (event) => {
-                if (event.detail.origin === Auth_View.VIEW_ID) {
-                    Auth_View.remove();
+                if (event.detail.origin !== event.detail.target)
+                    if (event.detail.origin === Auth_View.VIEW_ID)
+                        Auth_View.remove();
+                    else if (event.detail.origin === Config_View.VIEW_ID)
+                        Config_View.remove();
+                    else if (event.detail.origin === Overview.VIEW_ID)
+                        Overview.remove();
+
+                if (event.detail.target === Overview.VIEW_ID) {
                     await Overview.render(view_container);
-                } else if (event.detail.origin === Overview.VIEW_ID) {
+                } else if (event.detail.target === Config_View.VIEW_ID) {
                     ov_Websockets.user().domain = event.detail.domain;
                     ov_Websockets.user().project = event.detail.project;
-                    if (event.detail.target === "project") {
-                        loading_screen.show("Loading project...")
+                    if (event.detail.type === "project") {
+                        loading_screen.show("Loading project...");
                         if (!event.detail.project)
                             console.log("switch to project view and create new project");
                         else
                             console.log("switch to project view", event.detail.project, event.detail.domain);
-                        Overview.remove();
                         await Config_View.render_project(view_container, ov_Websockets.user());
                         loading_screen.hide();
                     } else {
+                        loading_screen.show("Loading domain...");
                         if (!event.detail.domain)
                             console.log("switch to domain view and create new domain");
                         else
                             console.log("switch to domain view", event.detail.domain);
-                        Overview.remove();
                         await Config_View.render_domain(view_container, ov_Websockets.user());
+                        loading_screen.hide();
                     }
-                } else if (event.detail.origin === Config_View.VIEW_ID) {
-                    Config_View.remove();
-                    await Overview.render(view_container);
                 }
             });
 

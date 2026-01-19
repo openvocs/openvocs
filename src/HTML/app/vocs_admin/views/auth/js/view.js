@@ -61,7 +61,7 @@ export async function init(view_id) {
 
         if (result) {
             DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: view_id }
+                detail: { origin: view_id, target: VIEW.OVERVIEW }
             }));
         } else {
             display_disconnect_notice(ov_Websockets.current_lead_websocket.server_error);

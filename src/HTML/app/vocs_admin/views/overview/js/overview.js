@@ -33,7 +33,7 @@ import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_DB from "/lib/ov_db.js";
 import * as View from "./view.js";
 
-export const VIEW_ID = "vocs_admin_overview";
+export const VIEW_ID = VIEW.OVERVIEW;
 var view_container;
 
 export async function render(container) {
