@@ -355,7 +355,7 @@ static bool next_raw_is(ov_chunker *chunker, size_t expected_octets,
 static int test_ov_chunker_next_chunk_raw() {
 
     bool ov_chunker_next_chunk_raw(ov_chunker * self, size_t num_octets,
-                                   uint8_t * dest);
+                                   uint8_t *dest);
 
     testrun(!ov_chunker_next_chunk_raw(0, 0, 0));
 

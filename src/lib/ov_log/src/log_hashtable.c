@@ -134,7 +134,7 @@ static uint64_t hash_c_string(const void *c_string) {
         /* Use a prime as factor to prevent short cycles  -
          * if you dont understand, leave it as it is ... */
         hash += 13 * c;
-        c = (uint8_t) * (++s);
+        c = (uint8_t)*(++s);
     }
 
     return hash;

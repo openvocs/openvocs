@@ -408,7 +408,7 @@ int check_stun() {
     struct sockaddr_storage sa_out = {0};
     struct sockaddr_storage sa_in = {0};
     struct sockaddr_storage sa_xor = {0};
-    struct sockaddr_storage * xor = &sa_xor;
+    struct sockaddr_storage *xor = &sa_xor;
     socklen_t in_len = sizeof(sa_in);
 
     ov_socket_data expect = {0};

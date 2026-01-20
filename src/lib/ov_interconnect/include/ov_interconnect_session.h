@@ -71,8 +71,8 @@ typedef struct {
  *      ------------------------------------------------------------------------
  */
 
-ov_interconnect_session *ov_interconnect_session_create(
-    ov_interconnect_session_config config);
+ov_interconnect_session *
+ov_interconnect_session_create(ov_interconnect_session_config config);
 
 void *ov_interconnect_session_free(void *self);
 
@@ -85,37 +85,30 @@ void *ov_interconnect_session_free(void *self);
  */
 
 int ov_interconnect_session_send(ov_interconnect_session *self,
-                                const uint8_t *buffer, size_t size);
+                                 const uint8_t *buffer, size_t size);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_session_media_io_external(
-    ov_interconnect_session *self,
-    uint8_t *buffer,
-    size_t bytes,
-    const ov_socket_data *remote);
+bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
+                                               uint8_t *buffer, size_t bytes,
+                                               const ov_socket_data *remote);
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_interconnect_session_media_io_ssl_external(
-    ov_interconnect_session *self,
-    uint8_t *buffer,
-    size_t bytes,
+    ov_interconnect_session *self, uint8_t *buffer, size_t bytes,
     const ov_socket_data *remote);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_session_handshake_active(
-    ov_interconnect_session *self,
-    const char *fingerprint);
+bool ov_interconnect_session_handshake_active(ov_interconnect_session *self,
+                                              const char *fingerprint);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_session_forward_loop_io(
-    ov_interconnect_session *self,
-    const ov_interconnect_loop *loop,
-    uint8_t *buffer, 
-    size_t size);
+bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
+                                             const ov_interconnect_loop *loop,
+                                             uint8_t *buffer, size_t size);
 
 /*
  *      ------------------------------------------------------------------------
@@ -125,18 +118,14 @@ bool ov_interconnect_session_forward_loop_io(
  *      ------------------------------------------------------------------------
  */
 
-bool ov_interconnect_session_add(
-    ov_interconnect_session *self,
-    const char *name, 
-    uint32_t ssrc_remote);
+bool ov_interconnect_session_add(ov_interconnect_session *self,
+                                 const char *name, uint32_t ssrc_remote);
 
 int ov_interconnect_session_get_signaling_socket(
     const ov_interconnect_session *self);
 
-bool ov_interconnect_session_loops_added(
-    const ov_interconnect_session *self);
+bool ov_interconnect_session_loops_added(const ov_interconnect_session *self);
 
-bool ov_interconnect_session_added_loops(
-    ov_interconnect_session *self);
+bool ov_interconnect_session_added_loops(ov_interconnect_session *self);
 
 #endif /* ov_interconnect_session_h */

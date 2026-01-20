@@ -88,7 +88,8 @@ int main(int argc, char **argv) {
 
     io = ov_io_create(io_config);
 
-    if (!io) goto error;
+    if (!io)
+        goto error;
 
     ov_interconnect_config config =
         ov_interconnect_config_from_json(json_config);

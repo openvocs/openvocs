@@ -56,8 +56,8 @@ typedef struct ov_interconnect_loop_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_interconnect_loop *ov_interconnect_loop_create(
-    ov_interconnect_loop_config config);
+ov_interconnect_loop *
+ov_interconnect_loop_create(ov_interconnect_loop_config config);
 
 void *ov_interconnect_loop_free(void *self);
 
@@ -70,15 +70,13 @@ bool ov_interconnect_loop_assign_mixer(ov_interconnect_loop *self);
 
 int ov_interconnect_loop_get_mixer(const ov_interconnect_loop *self);
 
-ov_mixer_forward ov_interconnect_loop_get_forward(
-        const ov_interconnect_loop *self);
+ov_mixer_forward
+ov_interconnect_loop_get_forward(const ov_interconnect_loop *self);
 
-ov_mc_loop_data ov_interconnect_loop_get_loop_data(
-    const ov_interconnect_loop *self);
+ov_mc_loop_data
+ov_interconnect_loop_get_loop_data(const ov_interconnect_loop *self);
 
-bool ov_interconnect_loop_send(
-        const ov_interconnect_loop *self,
-        const uint8_t *buffer, 
-        size_t size);
+bool ov_interconnect_loop_send(const ov_interconnect_loop *self,
+                               const uint8_t *buffer, size_t size);
 
 #endif /* ov_interconnect_loop_h */

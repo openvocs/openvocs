@@ -29,14 +29,14 @@
 */
 #include "../include/ov_interconnect_loop.h"
 
+#include <ov_base/ov_convert.h>
+#include <ov_base/ov_mc_socket.h>
 #include <ov_base/ov_random.h>
 #include <ov_base/ov_rtp_frame.h>
-#include <ov_base/ov_mc_socket.h>
-#include <ov_base/ov_convert.h>
 
 /*----------------------------------------------------------------------------*/
 
-struct ov_interconnect_loop{
+struct ov_interconnect_loop {
 
     ov_interconnect_loop_config config;
 
@@ -48,7 +48,6 @@ struct ov_interconnect_loop{
     ov_mixer_data mixer;
 
     uint16_t sequence_number;
-
 };
 
 /*----------------------------------------------------------------------------*/
@@ -62,8 +61,9 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
     ov_rtp_frame *frame = NULL;
     ov_rtp_frame *out = NULL;
 
-    ov_interconnect_loop *self = (ov_interconnect_loop*)userdata;
-    if (!self || !socket) goto error;
+    ov_interconnect_loop *self = (ov_interconnect_loop *)userdata;
+    if (!self || !socket)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
@@ -80,7 +80,7 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
         goto error;
 
     frame = ov_rtp_frame_decode(buffer, bytes);
-    if (!frame){
+    if (!frame) {
         ov_log_error("Not a RTP frame.");
         goto error;
     }
@@ -92,10 +92,9 @@ static bool io_from_mixer(int socket, uint8_t events, void *userdata) {
 
     out = ov_rtp_frame_encode(&exp);
 
-    bool result =
-        ov_interconnect_loop_io(self->config.base, self, 
-            out->bytes.data, out->bytes.length);
-        
+    bool result = ov_interconnect_loop_io(self->config.base, self,
+                                          out->bytes.data, out->bytes.length);
+
     frame = ov_rtp_frame_free(frame);
     out = ov_rtp_frame_free(out);
     return result;
@@ -107,51 +106,54 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_interconnect_loop *ov_interconnect_loop_create(
-    ov_interconnect_loop_config config){
+ov_interconnect_loop *
+ov_interconnect_loop_create(ov_interconnect_loop_config config) {
 
     ov_interconnect_loop *self = NULL;
 
-    if (!config.loop) goto error;
-    if (0 == config.name[0]) goto error;
-    if (0 == config.multicast.host[0]) goto error;
-    if (0 == config.internal.host[0]) goto error;
-    if (0 == config.multicast.port) goto error;
+    if (!config.loop)
+        goto error;
+    if (0 == config.name[0])
+        goto error;
+    if (0 == config.multicast.host[0])
+        goto error;
+    if (0 == config.internal.host[0])
+        goto error;
+    if (0 == config.multicast.port)
+        goto error;
 
     config.multicast.type = UDP;
 
     self = calloc(1, sizeof(ov_interconnect_loop));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->config = config;
-    self->ssrc = ov_random_uint32(); 
+    self->ssrc = ov_random_uint32();
 
     ov_socket_configuration socket = config.internal;
     socket.type = UDP;
     socket.port = 0;
 
     self->socket = ov_socket_create(socket, false, NULL);
-    if (-1 == self->socket){
+    if (-1 == self->socket) {
         ov_log_error("could not open socket at %s", config.internal.host);
     }
 
-    if (!ov_socket_ensure_nonblocking(self->socket))goto error;
+    if (!ov_socket_ensure_nonblocking(self->socket))
+        goto error;
 
-    if (!ov_socket_get_data(self->socket, &self->local, NULL)) goto error;
+    if (!ov_socket_get_data(self->socket, &self->local, NULL))
+        goto error;
 
-    ov_log_debug("opened LOOP receiver %s | %s:%i for %s:%i", 
-        self->config.name, 
-        self->local.host,
-        self->local.port,
-        self->config.multicast.host,
-        self->config.multicast.port);
+    ov_log_debug("opened LOOP receiver %s | %s:%i for %s:%i", self->config.name,
+                 self->local.host, self->local.port,
+                 self->config.multicast.host, self->config.multicast.port);
 
-    if (!ov_event_loop_set(
-        self->config.loop, 
-        self->socket,
-        OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-        self, 
-        io_from_mixer)) goto error;
+    if (!ov_event_loop_set(self->config.loop, self->socket,
+                           OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
+                           self, io_from_mixer))
+        goto error;
 
     return self;
 error:
@@ -161,18 +163,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-void *ov_interconnect_loop_free(void *data){
+void *ov_interconnect_loop_free(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    ov_interconnect_loop *self = (ov_interconnect_loop*)data;
+    ov_interconnect_loop *self = (ov_interconnect_loop *)data;
 
-    if (-1 != self->socket){
+    if (-1 != self->socket) {
 
         ov_event_loop_unset(self->config.loop, self->socket, NULL);
         close(self->socket);
         self->socket = -1;
-
     }
 
     ov_interconnect_drop_mixer(self->config.base, self->mixer.socket);
@@ -182,25 +184,28 @@ void *ov_interconnect_loop_free(void *data){
 
 /*----------------------------------------------------------------------------*/
 
-uint32_t ov_interconnect_loop_get_ssrc(const ov_interconnect_loop *self){
+uint32_t ov_interconnect_loop_get_ssrc(const ov_interconnect_loop *self) {
 
-    if (!self) return 0;
+    if (!self)
+        return 0;
     return self->ssrc;
 }
 
 /*----------------------------------------------------------------------------*/
 
-const char *ov_interconnect_loop_get_name(const ov_interconnect_loop *self){
+const char *ov_interconnect_loop_get_name(const ov_interconnect_loop *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     return self->config.name;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_loop_has_mixer(const ov_interconnect_loop *self){
+bool ov_interconnect_loop_has_mixer(const ov_interconnect_loop *self) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     if (0 != self->mixer.socket)
         return true;
@@ -210,70 +215,60 @@ bool ov_interconnect_loop_has_mixer(const ov_interconnect_loop *self){
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_loop_assign_mixer(ov_interconnect_loop *self){
+bool ov_interconnect_loop_assign_mixer(ov_interconnect_loop *self) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     if (self->mixer.socket > 0)
         return true;
 
-    ov_mixer_data data = ov_interconnect_assign_mixer(
-        self->config.base,
-        self->config.name);
+    ov_mixer_data data =
+        ov_interconnect_assign_mixer(self->config.base, self->config.name);
 
-    if (0 == data.socket) goto error;
+    if (0 == data.socket)
+        goto error;
 
     self->mixer = data;
 
-    ov_socket_configuration config = (ov_socket_configuration){
-        .port = self->local.port,
-        .type = UDP
-    };
+    ov_socket_configuration config =
+        (ov_socket_configuration){.port = self->local.port, .type = UDP};
 
     strncpy(config.host, self->local.host, OV_HOST_NAME_MAX);
 
     ov_mixer_forward forward = (ov_mixer_forward){
-        .socket = config,
-        .ssrc = self->ssrc,
-        .payload_type = 100
-    };
+        .socket = config, .ssrc = self->ssrc, .payload_type = 100};
 
     ov_log_debug("assgined mixer to loop %s", self->config.name);
-    
-    return ov_interconnect_send_aquire_mixer(
-        self->config.base,
-        data,
-        forward);
+
+    return ov_interconnect_send_aquire_mixer(self->config.base, data, forward);
 error:
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-int ov_interconnect_loop_get_mixer(const ov_interconnect_loop *self){
+int ov_interconnect_loop_get_mixer(const ov_interconnect_loop *self) {
 
-    if (!self) return -1;
+    if (!self)
+        return -1;
     return self->mixer.socket;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_mixer_forward ov_interconnect_loop_get_forward(
-        const ov_interconnect_loop *self){
+ov_mixer_forward
+ov_interconnect_loop_get_forward(const ov_interconnect_loop *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-     ov_socket_configuration config = (ov_socket_configuration){
-        .port = self->local.port,
-        .type = UDP
-    };
+    ov_socket_configuration config =
+        (ov_socket_configuration){.port = self->local.port, .type = UDP};
     strncpy(config.host, self->local.host, OV_HOST_NAME_MAX);
 
     ov_mixer_forward forward = (ov_mixer_forward){
-        .socket = config,
-        .ssrc = self->ssrc,
-        .payload_type = 100
-    };
+        .socket = config, .ssrc = self->ssrc, .payload_type = 100};
 
     return forward;
 error:
@@ -282,17 +277,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_loop_data ov_interconnect_loop_get_loop_data(
-    const ov_interconnect_loop *self){
+ov_mc_loop_data
+ov_interconnect_loop_get_loop_data(const ov_interconnect_loop *self) {
 
-    if (!self) return (ov_mc_loop_data){0};
+    if (!self)
+        return (ov_mc_loop_data){0};
 
     uint8_t volume_scale = ov_convert_from_vol_percent(50, 3);
 
-    ov_mc_loop_data data = (ov_mc_loop_data){
-        .socket = self->config.multicast,
-        .volume = volume_scale
-    };
+    ov_mc_loop_data data = (ov_mc_loop_data){.socket = self->config.multicast,
+                                             .volume = volume_scale};
 
     strncpy(data.name, self->config.name, OV_HOST_NAME_MAX);
 
@@ -301,10 +295,8 @@ ov_mc_loop_data ov_interconnect_loop_get_loop_data(
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_loop_send(
-        const ov_interconnect_loop *self,
-        const uint8_t *buffer, 
-        size_t size){
+bool ov_interconnect_loop_send(const ov_interconnect_loop *self,
+                               const uint8_t *buffer, size_t size) {
 
     if (!self || !buffer || !size)
         goto error;
@@ -323,15 +315,15 @@ bool ov_interconnect_loop_send(
 
     ssize_t out =
         sendto(self->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
-/*
-    ov_log_debug("send %zi bytes to %s:%i", out, 
-        self->config.multicast.host,
-        self->config.multicast.port);
-*/
-    if (out != (ssize_t) size) goto error;
+    /*
+        ov_log_debug("send %zi bytes to %s:%i", out,
+            self->config.multicast.host,
+            self->config.multicast.port);
+    */
+    if (out != (ssize_t)size)
+        goto error;
 
     return true;
 error:
     return false;
-
 }

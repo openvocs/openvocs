@@ -50,7 +50,7 @@ uint64_t ov_hash_simple_c_string(const void *c_string) {
         /* Use a prime as factor to prevent short cycles  -
          * if you dont understand, leave it as it is ... */
         hash += 13 * c;
-        c = (uint8_t) * (++s);
+        c = (uint8_t)*(++s);
     }
 
     return hash;
@@ -110,7 +110,7 @@ uint64_t ov_hash_pearson_c_string(const void *c_string) {
     while (0 != c) {
 
         h = PEARSON_PERMUTATION_TABLE[h ^ c];
-        c = (uint8_t) * (++s);
+        c = (uint8_t)*(++s);
     }
 
     return h;

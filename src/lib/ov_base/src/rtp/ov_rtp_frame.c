@@ -300,7 +300,9 @@ static ov_rtp_frame *rtp_frame_get_new(size_t min_bytes_length) {
 #else
 
 #define SET_CSRC_ARRAY(frame, csrcs, num)                                      \
-    { frame->expanded.csrc_ids = csrcs; }
+    {                                                                          \
+        frame->expanded.csrc_ids = csrcs;                                      \
+    }
 
 #endif
 

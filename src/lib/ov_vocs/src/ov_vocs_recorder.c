@@ -227,7 +227,8 @@ static bool start_record(void *userdata, const int fh,
         goto error;
 
     ov_json_value *res = ov_event_api_get_response(input);
-    if (!res) goto error;
+    if (!res)
+        goto error;
 
     const char *uuid = ov_event_api_get_uuid(input);
 

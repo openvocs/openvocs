@@ -504,8 +504,7 @@ static bool recs_found(ov_database *db, ssize_t const *recs_expected,
     }
 }
 
-#define expected_loops(...)                                                    \
-    (ssize_t[]) { __VA_ARGS__, -1 }
+#define expected_loops(...) (ssize_t[]){__VA_ARGS__, -1}
 
 #define search_params(x, ...)                                                  \
     (ov_db_recordings_get_params) { x, __VA_ARGS__ }

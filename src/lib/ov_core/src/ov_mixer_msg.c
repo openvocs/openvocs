@@ -145,7 +145,8 @@ ov_mixer_config ov_mixer_config_from_json(const ov_json_value *json) {
     ov_mixer_config config = (ov_mixer_config){0};
 
     const ov_json_value *par = ov_json_get(json, "/mixer");
-    if (!par) par = json;
+    if (!par)
+        par = json;
 
     config.vad.zero_crossings_rate_threshold_hertz = ov_json_number_get(
         ov_json_get(par, "/" OV_KEY_VAD "/" OV_KEY_ZERO_CROSSINGS_RATE_HERTZ));
@@ -250,7 +251,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_mixer_msg_acquire(const char *username,
-                                       ov_mixer_forward data) {
+                                    ov_mixer_forward data) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -293,7 +294,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_mixer_msg_forward(const char *username,
-                                       ov_mixer_forward data) {
+                                    ov_mixer_forward data) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;

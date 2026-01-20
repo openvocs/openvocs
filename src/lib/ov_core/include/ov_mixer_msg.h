@@ -106,7 +106,7 @@ ov_mixer_config ov_mixer_config_from_json(const ov_json_value *json);
     }
 */
 ov_json_value *ov_mixer_msg_acquire(const char *username,
-                                       ov_mixer_forward data);
+                                    ov_mixer_forward data);
 
 /*----------------------------------------------------------------------------*/
 
@@ -129,7 +129,7 @@ ov_json_value *ov_mixer_msg_acquire(const char *username,
     }
 */
 ov_json_value *ov_mixer_msg_forward(const char *username,
-                                       ov_mixer_forward data);
+                                    ov_mixer_forward data);
 
 /*----------------------------------------------------------------------------*/
 

@@ -30,16 +30,16 @@
 #include "../include/ov_interconnect.h"
 #include "../include/ov_interconnect_dtls_filter.h"
 #include "../include/ov_interconnect_loop.h"
-#include "../include/ov_interconnect_session.h"
 #include "../include/ov_interconnect_msg.h"
+#include "../include/ov_interconnect_session.h"
 
-#include <ov_base/ov_dict.h>
-#include <ov_base/ov_string.h>
-#include <ov_base/ov_error_codes.h>
 #include <ov_base/ov_config_keys.h>
+#include <ov_base/ov_dict.h>
+#include <ov_base/ov_error_codes.h>
+#include <ov_base/ov_string.h>
 
-#include <ov_core/ov_event_app.h>
 #include <ov_core/ov_event_api.h>
+#include <ov_core/ov_event_app.h>
 
 #include <ov_stun/ov_stun_binding.h>
 #include <ov_stun/ov_stun_frame.h>
@@ -83,14 +83,12 @@ struct ov_interconnect {
     ov_dict *registered;
 
     ov_mixer_registry *mixers;
-
 };
-
 
 /*----------------------------------------------------------------------------*/
 
-static ov_interconnect_session *get_session_by_signaling_socket(
-    ov_interconnect *self, int socket) {
+static ov_interconnect_session *
+get_session_by_signaling_socket(ov_interconnect *self, int socket) {
 
     char buf[OV_HOST_NAME_MAX + 20] = {0};
 
@@ -107,8 +105,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool drop_session_by_signaling_socket(
-    ov_interconnect *self, int socket) {
+static bool drop_session_by_signaling_socket(ov_interconnect *self,
+                                             int socket) {
 
     char buf[OV_HOST_NAME_MAX + 20] = {0};
 
@@ -125,8 +123,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_interconnect_session *get_session_by_media_remote(
-    ov_interconnect *self, ov_socket_data *remote) {
+static ov_interconnect_session *
+get_session_by_media_remote(ov_interconnect *self, ov_socket_data *remote) {
 
     char buf[OV_HOST_NAME_MAX + 20] = {0};
 
@@ -141,8 +139,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool drop_session_by_media_remote(
-    ov_interconnect *self, ov_socket_data *remote) {
+static bool drop_session_by_media_remote(ov_interconnect *self,
+                                         ov_socket_data *remote) {
 
     char buf[OV_HOST_NAME_MAX + 20] = {0};
 
@@ -163,29 +161,29 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-
 struct container2 {
 
     ov_interconnect *self;
     int mixer_socket;
     bool assigned;
-
 };
 
 /*----------------------------------------------------------------------------*/
 
-static bool assign_mixer(const void *key, void *val, void *data){
+static bool assign_mixer(const void *key, void *val, void *data) {
 
-    if (!key) return true;
-    struct container2 *container = (struct container2*)data;
+    if (!key)
+        return true;
+    struct container2 *container = (struct container2 *)data;
 
-    if (container->assigned) return true;
+    if (container->assigned)
+        return true;
 
-    ov_interconnect_loop *loop = (ov_interconnect_loop*) val;
+    ov_interconnect_loop *loop = (ov_interconnect_loop *)val;
 
-    if (!ov_interconnect_loop_has_mixer(loop)){
+    if (!ov_interconnect_loop_has_mixer(loop)) {
 
-        if (ov_interconnect_loop_assign_mixer(loop)){
+        if (ov_interconnect_loop_assign_mixer(loop)) {
             container->assigned = true;
         }
     }
@@ -195,20 +193,15 @@ static bool assign_mixer(const void *key, void *val, void *data){
 
 /*----------------------------------------------------------------------------*/
 
-static bool assign_mixer_to_loops(ov_interconnect *self, int socket){
+static bool assign_mixer_to_loops(ov_interconnect *self, int socket) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     struct container2 container = (struct container2){
-        .self = self,
-        .mixer_socket = socket,
-        .assigned = false
-    };
+        .self = self, .mixer_socket = socket, .assigned = false};
 
-    return ov_dict_for_each(
-        self->loops,
-        &container,
-        assign_mixer);
+    return ov_dict_for_each(self->loops, &container, assign_mixer);
 
 error:
     return false;
@@ -216,17 +209,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void event_mixer_register(
-    void *userdata, const char *event_name, int socket, ov_json_value *input){
+static void event_mixer_register(void *userdata, const char *event_name,
+                                 int socket, ov_json_value *input) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self || !event_name || !input) goto error;
+    if (!self || !event_name || !input)
+        goto error;
 
     ov_socket_data remote = {0};
-    if (!ov_socket_get_data(socket, NULL, &remote)) goto error;
+    if (!ov_socket_get_data(socket, NULL, &remote))
+        goto error;
 
-    if (!ov_mixer_registry_register_mixer(
-        self->mixers, socket, &remote)) goto error;
+    if (!ov_mixer_registry_register_mixer(self->mixers, socket, &remote))
+        goto error;
 
     ov_log_debug("registered mixer %s:%i", remote.host, remote.port);
 
@@ -249,22 +244,23 @@ struct container3 {
 
     int socket;
     ov_interconnect_loop *loop;
-
 };
 
 /*----------------------------------------------------------------------------*/
 
-static bool find_loop_by_mixer(const void *key, void *val, void *data){
+static bool find_loop_by_mixer(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    struct container3 *container = (struct container3*) data; 
+    struct container3 *container = (struct container3 *)data;
 
-    if (container->loop) return true;
+    if (container->loop)
+        return true;
 
-    ov_interconnect_loop *loop = (ov_interconnect_loop*) val;
+    ov_interconnect_loop *loop = (ov_interconnect_loop *)val;
     int socket = ov_interconnect_loop_get_mixer(loop);
-    
+
     if (socket == container->socket)
         container->loop = loop;
 
@@ -273,28 +269,28 @@ static bool find_loop_by_mixer(const void *key, void *val, void *data){
 
 /*----------------------------------------------------------------------------*/
 
-static void event_mixer_acquire(
-    void *userdata, const char *event_name, int socket, ov_json_value *input){
+static void event_mixer_acquire(void *userdata, const char *event_name,
+                                int socket, ov_json_value *input) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self || !event_name || !input) goto error;
+    if (!self || !event_name || !input)
+        goto error;
 
     ov_json_value *res = ov_event_api_get_response(input);
-    if (!res) goto error;
+    if (!res)
+        goto error;
 
     bool success = false;
 
     if (0 == ov_event_api_get_error_code(input))
         success = true;
 
-    struct container3 container = (struct container3){
-        .loop = NULL,
-        .socket = socket
-    };
+    struct container3 container =
+        (struct container3){.loop = NULL, .socket = socket};
 
     ov_dict_for_each(self->loops, &container, find_loop_by_mixer);
 
-    if (success && container.loop){
+    if (success && container.loop) {
 
         ov_json_value *out = ov_mixer_msg_join(
             ov_interconnect_loop_get_loop_data(container.loop));
@@ -316,36 +312,35 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void event_mixer_join(
-    void *userdata, const char *event_name, int socket, ov_json_value *input){
+static void event_mixer_join(void *userdata, const char *event_name, int socket,
+                             ov_json_value *input) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self || !event_name || !input) goto error;
+    if (!self || !event_name || !input)
+        goto error;
 
     ov_json_value *res = ov_event_api_get_response(input);
-    if (!res) goto error;
+    if (!res)
+        goto error;
 
     bool success = false;
 
     if (0 == ov_event_api_get_error_code(input))
         success = true;
 
-    struct container3 container = (struct container3){
-        .loop = NULL,
-        .socket = socket
-    };
+    struct container3 container =
+        (struct container3){.loop = NULL, .socket = socket};
 
     ov_dict_for_each(self->loops, &container, find_loop_by_mixer);
 
-    if (success && container.loop){
+    if (success && container.loop) {
 
-        ov_log_info("MIXER for loop %s - joined", 
-            ov_interconnect_loop_get_name(container.loop));
-   
+        ov_log_info("MIXER for loop %s - joined",
+                    ov_interconnect_loop_get_name(container.loop));
+
     } else {
 
         ov_log_error("join not successfull - TBD");
-
     }
 
     ov_json_value_free(input);
@@ -363,12 +358,13 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static void event_register_response(
-    ov_interconnect *self, int socket, ov_json_value *input){
+static void event_register_response(ov_interconnect *self, int socket,
+                                    ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
     uint64_t error_code = ov_event_api_get_error_code(input);
     const char *error_desc = ov_event_api_get_error_desc(input);
@@ -383,25 +379,23 @@ static void event_register_response(
 
     ov_log_debug("REGISTER SUCCESS at %i remote |%s|", socket, name);
 
-    ov_interconnect_session *session = get_session_by_signaling_socket(
-        self, socket);
+    ov_interconnect_session *session =
+        get_session_by_signaling_socket(self, socket);
 
-    if (!session){
+    if (!session) {
 
         out = ov_interconnect_msg_connect_media(
-        self->config.name, 
-        OV_INTERCONNECT_DEFAULT_CODEC,
-        self->config.socket.media.host, 
-        self->config.socket.media.port);
+            self->config.name, OV_INTERCONNECT_DEFAULT_CODEC,
+            self->config.socket.media.host, self->config.socket.media.port);
 
         bool result = ov_event_app_send(self->app.signaling, socket, out);
-        
+
         if (result)
             ov_log_debug("SEND msg connect.");
 
         ov_json_value_free(out);
     }
-   
+
     ov_json_value_free(input);
 
     return;
@@ -412,17 +406,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void event_signaling_register(
-    void *userdata, const char *event_name, int socket, ov_json_value *input){
+static void event_signaling_register(void *userdata, const char *event_name,
+                                     int socket, ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *res = NULL;
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self || !event_name || !input) goto error;
-    
-    if (ov_event_api_get_response(input)){
+    if (!self || !event_name || !input)
+        goto error;
+
+    if (ov_event_api_get_response(input)) {
         event_register_response(self, socket, input);
         return;
     }
@@ -478,35 +473,33 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_interconnect_session *session_create(
-    ov_interconnect *self, 
-    ov_interconnect_session_config config,
-    int socket){
+static ov_interconnect_session *
+session_create(ov_interconnect *self, ov_interconnect_session_config config,
+               int socket) {
 
     char buf[OV_HOST_NAME_MAX + 20] = {0};
 
     ov_socket_get_data(socket, NULL, &config.remote.signaling);
 
     ov_interconnect_session *session = ov_interconnect_session_create(config);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     char *key = NULL;
 
     memset(buf, 0, OV_HOST_NAME_MAX + 20);
 
-    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", 
-        config.remote.signaling.host,
-        config.remote.signaling.port);
+    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", config.remote.signaling.host,
+             config.remote.signaling.port);
 
     key = ov_string_dup(buf);
     ov_dict_set(self->session.by_signaling_remote, key, session, NULL);
 
     memset(buf, 0, OV_HOST_NAME_MAX + 20);
 
-    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", 
-        config.remote.media.host, 
-        config.remote.media.port);
-    
+    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", config.remote.media.host,
+             config.remote.media.port);
+
     key = ov_string_dup(buf);
     ov_dict_set(self->session.by_media_remote, key, session, NULL);
 
@@ -517,12 +510,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void event_connect_media_response(
-    ov_interconnect *self, int socket, ov_json_value *input){
+static void event_connect_media_response(ov_interconnect *self, int socket,
+                                         ov_json_value *input) {
 
     ov_interconnect_session *session = NULL;
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
     UNUSED(socket);
 
     uint64_t error_code = ov_event_api_get_error_code(input);
@@ -545,7 +539,7 @@ static void event_connect_media_response(
     uint32_t port = ov_json_number_get(
         ov_json_get(input, "/" OV_KEY_RESPONSE "/" OV_KEY_PORT));
 
-    if (!host || !name || !finger || 0 == port){
+    if (!host || !name || !finger || 0 == port) {
 
         ov_log_error("MEDIA response parameter missing.");
         return;
@@ -555,15 +549,13 @@ static void event_connect_media_response(
 
     // start DTLS active to remote
 
-    ov_interconnect_session_config config =
-        (ov_interconnect_session_config){
-            .base = self,
-            .loop = self->config.loop,
-            .dtls = self->dtls,
-            .internal = self->config.socket.internal,
-            .reconnect_interval_usecs = 100000,
-            .keepalive_trigger_usec =
-                self->config.limits.keepalive_trigger_usec};
+    ov_interconnect_session_config config = (ov_interconnect_session_config){
+        .base = self,
+        .loop = self->config.loop,
+        .dtls = self->dtls,
+        .internal = self->config.socket.internal,
+        .reconnect_interval_usecs = 100000,
+        .keepalive_trigger_usec = self->config.limits.keepalive_trigger_usec};
 
     ov_socket_data remote = (ov_socket_data){0};
     if (!ov_socket_get_data(socket, NULL, &remote))
@@ -573,8 +565,7 @@ static void event_connect_media_response(
     config.signaling = socket;
     strncpy(config.remote.media.host, host, OV_HOST_NAME_MAX);
     config.remote.media.port = port;
-    strncpy(config.remote.interface, name,
-            OV_INTERCONNECT_INTERFACE_NAME_MAX);
+    strncpy(config.remote.interface, name, OV_INTERCONNECT_INTERFACE_NAME_MAX);
 
     session = session_create(self, config, socket);
     if (!session)
@@ -592,8 +583,9 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void event_signaling_connect_media(
-    void *userdata, const char *event_name, int socket, ov_json_value *input){
+static void event_signaling_connect_media(void *userdata,
+                                          const char *event_name, int socket,
+                                          ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -605,7 +597,7 @@ static void event_signaling_connect_media(
     if (!self || !event_name || !input)
         goto error;
 
-    if (ov_event_api_get_response(input)){
+    if (ov_event_api_get_response(input)) {
         event_connect_media_response(self, socket, input);
         return;
     }
@@ -644,37 +636,40 @@ static void event_signaling_connect_media(
         goto send_response;
     }
 
-    ov_interconnect_session_config config =
-        (ov_interconnect_session_config){
-            .base = self,
-            .loop = self->config.loop,
-            .dtls = self->dtls,
-            .keepalive_trigger_usec =
-                self->config.limits.keepalive_trigger_usec};
+    ov_interconnect_session_config config = (ov_interconnect_session_config){
+        .base = self,
+        .loop = self->config.loop,
+        .dtls = self->dtls,
+        .keepalive_trigger_usec = self->config.limits.keepalive_trigger_usec};
 
     ov_socket_data remote = (ov_socket_data){0};
-    if (!ov_socket_get_data(socket, NULL, &remote))goto error;
+    if (!ov_socket_get_data(socket, NULL, &remote))
+        goto error;
 
     config.remote.signaling = remote;
     config.signaling = socket;
     strncpy(config.remote.media.host, host, OV_HOST_NAME_MAX);
     config.remote.media.port = port;
-    strncpy(config.remote.interface, name,
-            OV_INTERCONNECT_INTERFACE_NAME_MAX);
+    strncpy(config.remote.interface, name, OV_INTERCONNECT_INTERFACE_NAME_MAX);
 
     session = session_create(self, config, socket);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     out = ov_event_api_create_success_response(input);
     res = ov_event_api_get_response(out);
     val = ov_json_number(self->config.socket.media.port);
-    if (!ov_json_object_set(res, OV_KEY_PORT, val)) goto error;
+    if (!ov_json_object_set(res, OV_KEY_PORT, val))
+        goto error;
     val = ov_json_string(self->config.socket.media.host);
-    if (!ov_json_object_set(res, OV_KEY_HOST, val)) goto error;
+    if (!ov_json_object_set(res, OV_KEY_HOST, val))
+        goto error;
     val = ov_json_string(ov_dtls_get_fingerprint(self->dtls));
-    if (!ov_json_object_set(res, OV_KEY_FINGERPRINT, val)) goto error;
+    if (!ov_json_object_set(res, OV_KEY_FINGERPRINT, val))
+        goto error;
     val = ov_json_string(self->config.name);
-    if (!ov_json_object_set(res, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(res, OV_KEY_NAME, val))
+        goto error;
     val = NULL;
 
     ov_log_info("GOT MEDIA INVITE |%s| %s:%i ", name, host, port);
@@ -715,7 +710,8 @@ static bool add_loops_response(void *value, void *data) {
     if (!item || !data)
         goto error;
 
-    const char *name = ov_json_string_get(ov_json_object_get(item, OV_KEY_NAME));
+    const char *name =
+        ov_json_string_get(ov_json_object_get(item, OV_KEY_NAME));
 
     uint32_t ssrc = ov_json_number_get(ov_json_object_get(item, OV_KEY_SSRC));
 
@@ -723,9 +719,11 @@ static bool add_loops_response(void *value, void *data) {
         goto error;
 
     ov_interconnect_loop *loop = ov_dict_get(c->self->loops, name);
-    if (!loop) goto done;
+    if (!loop)
+        goto done;
 
-    if (!ov_interconnect_session_add(c->session, name, ssrc)) goto done;
+    if (!ov_interconnect_session_add(c->session, name, ssrc))
+        goto done;
 
 done:
     return true;
@@ -738,8 +736,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void event_connect_loops_response(
-    ov_interconnect *self, int socket, ov_json_value *input){
+static void event_connect_loops_response(ov_interconnect *self, int socket,
+                                         ov_json_value *input) {
 
     if (!self || !socket || !input)
         goto error;
@@ -749,9 +747,11 @@ static void event_connect_loops_response(
     if (!loops)
         goto error;
 
-    ov_interconnect_session *session = get_session_by_signaling_socket(self, socket);
+    ov_interconnect_session *session =
+        get_session_by_signaling_socket(self, socket);
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     struct container container =
         (struct container){.self = self, .session = session};
@@ -780,32 +780,39 @@ static bool add_loops(void *value, void *data) {
     ov_json_value *item = ov_json_value_cast(value);
 
     struct container *c = (struct container *)data;
-    if (!item || !data) goto error;
+    if (!item || !data)
+        goto error;
 
     const char *name =
         ov_json_string_get(ov_json_object_get(item, OV_KEY_NAME));
 
     uint32_t ssrc = ov_json_number_get(ov_json_object_get(item, OV_KEY_SSRC));
 
-    if (!name || !ssrc) goto error;
+    if (!name || !ssrc)
+        goto error;
 
     ov_interconnect_loop *loop = ov_dict_get(c->self->loops, name);
-    if (!loop) goto done;
+    if (!loop)
+        goto done;
 
-    if (!ov_interconnect_session_add(c->session, name, ssrc)) goto done;
+    if (!ov_interconnect_session_add(c->session, name, ssrc))
+        goto done;
 
     uint32_t local_ssrc = ov_interconnect_loop_get_ssrc(loop);
 
     out = ov_json_object();
     val = ov_json_string(name);
 
-    if (!ov_json_object_set(out, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_NAME, val))
+        goto error;
     val = ov_json_number(local_ssrc);
 
-    if (!ov_json_object_set(out, OV_KEY_SSRC, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_SSRC, val))
+        goto error;
     val = NULL;
 
-    if (!ov_json_array_push(c->array, out)) goto error;
+    if (!ov_json_array_push(c->array, out))
+        goto error;
 
 done:
     return true;
@@ -818,17 +825,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void event_signaling_connect_loops(
-    void *userdata, const char *name, int socket, ov_json_value *input){
+static void event_signaling_connect_loops(void *userdata, const char *name,
+                                          int socket, ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *res = NULL;
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self || !input || !name) goto error;
+    if (!self || !input || !name)
+        goto error;
 
-    if (ov_event_api_get_response(input)){
+    if (ov_event_api_get_response(input)) {
         event_connect_loops_response(self, socket, input);
         return;
     }
@@ -955,27 +963,23 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool io_external_media_rtp(ov_interconnect *self, uint8_t *buffer,
-                            size_t bytes, ov_socket_data *remote) {
+                                  size_t bytes, ov_socket_data *remote) {
 
     ov_interconnect_session *session = NULL;
-    
+
     if (!self || !buffer || !bytes || !remote)
         goto error;
 
     session = get_session_by_media_remote(self, remote);
     if (!session) {
 
-        ov_log_debug("Got RTP from %s:%i - no session ignoring",
-            remote->host, remote->port);
+        ov_log_debug("Got RTP from %s:%i - no session ignoring", remote->host,
+                     remote->port);
 
         goto done;
     }
 
-    ov_interconnect_session_media_io_external(
-        session,
-        buffer, 
-        bytes,
-        remote);
+    ov_interconnect_session_media_io_external(session, buffer, bytes, remote);
 
 done:
     return true;
@@ -986,7 +990,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool io_external_media_ssl(ov_interconnect *self, uint8_t *buffer,
-                            size_t bytes, ov_socket_data *remote) {
+                                  size_t bytes, ov_socket_data *remote) {
 
     ov_interconnect_session *session = NULL;
 
@@ -996,17 +1000,14 @@ static bool io_external_media_ssl(ov_interconnect *self, uint8_t *buffer,
     session = get_session_by_media_remote(self, remote);
     if (!session) {
 
-        ov_log_debug("Got SSL from %s:%i - no session ignoring",
-            remote->host, remote->port);
+        ov_log_debug("Got SSL from %s:%i - no session ignoring", remote->host,
+                     remote->port);
 
         goto done;
     }
 
-    ov_interconnect_session_media_io_ssl_external(
-        session,
-        buffer, 
-        bytes,
-        remote);
+    ov_interconnect_session_media_io_ssl_external(session, buffer, bytes,
+                                                  remote);
 
 done:
     return true;
@@ -1016,14 +1017,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_external_media(int socket, uint8_t events, void *userdata){
+static bool io_external_media(int socket, uint8_t events, void *userdata) {
 
     uint8_t buffer[OV_UDP_PAYLOAD_OCTETS] = {0};
     ov_socket_data remote = {};
     socklen_t src_addr_len = sizeof(remote.sa);
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
@@ -1082,7 +1084,6 @@ error:
     return false;
 }
 
-
 /*
  *      ------------------------------------------------------------------------
  *
@@ -1091,7 +1092,7 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static void cb_signaling_close(void *userdata, int socket){
+static void cb_signaling_close(void *userdata, int socket) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
 
@@ -1105,14 +1106,15 @@ static void cb_signaling_close(void *userdata, int socket){
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_signaling_connected(void *userdata, int socket){
+static void cb_signaling_connected(void *userdata, int socket) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     ov_log_debug("opened connection %i to %s:%i", socket,
-               self->config.socket.signaling.host,
-               self->config.socket.signaling.port);
+                 self->config.socket.signaling.host,
+                 self->config.socket.signaling.port);
 
     ov_json_value *msg =
         ov_interconnect_msg_register(self->config.name, self->config.password);
@@ -1124,13 +1126,13 @@ static void cb_signaling_connected(void *userdata, int socket){
     // register that connection to allow access within the responses
     intptr_t key = socket;
     ov_dict_set(self->registered, (void *)key, NULL, NULL);
-error: 
+error:
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_mixer_close(void *userdata, int socket){
+static void cb_mixer_close(void *userdata, int socket) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
 
@@ -1150,24 +1152,25 @@ static void cb_mixer_close(void *userdata, int socket){
  *      ------------------------------------------------------------------------
  */
 
-static bool open_sockets(ov_interconnect *self){
+static bool open_sockets(ov_interconnect *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     // step 1 open signaling socket
 
-    ov_io_socket_config sig = (ov_io_socket_config){
-        .auto_reconnect = true,
-        .socket = self->config.socket.signaling,
-        .callbacks = (ov_io_callback){
-            .userdata = self,
-            .accept = NULL,
-            .io = NULL, // done in app
-            .close = cb_signaling_close,
-            .connected = cb_signaling_connected,
-        },
-        .ssl = (ov_io_ssl_config){0}
-    };
+    ov_io_socket_config sig =
+        (ov_io_socket_config){.auto_reconnect = true,
+                              .socket = self->config.socket.signaling,
+                              .callbacks =
+                                  (ov_io_callback){
+                                      .userdata = self,
+                                      .accept = NULL,
+                                      .io = NULL, // done in app
+                                      .close = cb_signaling_close,
+                                      .connected = cb_signaling_connected,
+                                  },
+                              .ssl = (ov_io_ssl_config){0}};
 
     if (self->config.tls.client.domain[0] != 0)
         strncpy(sig.ssl.domain, self->config.tls.client.domain, PATH_MAX);
@@ -1178,10 +1181,10 @@ static bool open_sockets(ov_interconnect *self){
     if (self->config.tls.client.ca.path[0] != 0)
         strncpy(sig.ssl.ca.path, self->config.tls.client.ca.path, PATH_MAX);
 
-    if (self->config.socket.client){
+    if (self->config.socket.client) {
 
-        self->socket.signaling = ov_event_app_open_connection(
-            self->app.signaling, sig);
+        self->socket.signaling =
+            ov_event_app_open_connection(self->app.signaling, sig);
 
         if (-1 != self->socket.signaling)
             cb_signaling_connected(self, self->socket.signaling);
@@ -1189,22 +1192,22 @@ static bool open_sockets(ov_interconnect *self){
     } else {
 
         sig.auto_reconnect = false;
-        self->socket.signaling = ov_event_app_open_listener(
-            self->app.signaling, sig);
+        self->socket.signaling =
+            ov_event_app_open_listener(self->app.signaling, sig);
 
-        if (-1 == self->socket.signaling){
+        if (-1 == self->socket.signaling) {
 
             ov_log_error("Could not open signaling socket %s:%i",
-                self->config.socket.signaling.host,
-                self->config.socket.signaling.port);
+                         self->config.socket.signaling.host,
+                         self->config.socket.signaling.port);
 
             goto error;
 
         } else {
 
             ov_log_info("opened signaling socket %s:%i",
-                self->config.socket.signaling.host,
-                self->config.socket.signaling.port);
+                        self->config.socket.signaling.host,
+                        self->config.socket.signaling.port);
         }
     }
 
@@ -1213,59 +1216,52 @@ static bool open_sockets(ov_interconnect *self){
     ov_io_socket_config mixer = (ov_io_socket_config){
         .auto_reconnect = false,
         .socket = self->config.socket.mixer,
-        .callbacks = (ov_io_callback){
-            .userdata = self,
-            .accept = NULL,
-            .io = NULL, // done in app
-            .close = cb_mixer_close,
-            .connected = NULL
-        },
-        .ssl = (ov_io_ssl_config){0}
-    };
+        .callbacks = (ov_io_callback){.userdata = self,
+                                      .accept = NULL,
+                                      .io = NULL, // done in app
+                                      .close = cb_mixer_close,
+                                      .connected = NULL},
+        .ssl = (ov_io_ssl_config){0}};
 
-    self->socket.mixer = ov_event_app_open_listener(
-        self->app.mixer, mixer);
+    self->socket.mixer = ov_event_app_open_listener(self->app.mixer, mixer);
 
-    if (-1 == self->socket.mixer){
+    if (-1 == self->socket.mixer) {
 
         ov_log_error("Could not open mixer socket %s:%i",
-            self->config.socket.mixer.host,
-            self->config.socket.mixer.port);
+                     self->config.socket.mixer.host,
+                     self->config.socket.mixer.port);
 
-            goto error;
+        goto error;
 
     } else {
 
-        ov_log_info("opened mixer socket %s:%i",
-            self->config.socket.mixer.host,
-            self->config.socket.mixer.port);
+        ov_log_info("opened mixer socket %s:%i", self->config.socket.mixer.host,
+                    self->config.socket.mixer.port);
     }
 
     // step 3 open media socket
 
-    self->socket.media = ov_socket_create(self->config.socket.media, false, NULL);
+    self->socket.media =
+        ov_socket_create(self->config.socket.media, false, NULL);
     ov_socket_ensure_nonblocking(self->socket.media);
 
-    if (!ov_event_loop_set(
-        self->config.loop,
-        self->socket.media,
-        OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-        self,
-        io_external_media)) goto error;
+    if (!ov_event_loop_set(self->config.loop, self->socket.media,
+                           OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
+                           self, io_external_media))
+        goto error;
 
-    if (-1 == self->socket.media){
+    if (-1 == self->socket.media) {
 
         ov_log_error("Could not open media socket %s:%i",
-            self->config.socket.media.host,
-            self->config.socket.media.port);
+                     self->config.socket.media.host,
+                     self->config.socket.media.port);
 
-            goto error;
+        goto error;
 
     } else {
 
-        ov_log_info("opened media socket %s:%i",
-            self->config.socket.media.host,
-            self->config.socket.media.port);
+        ov_log_info("opened media socket %s:%i", self->config.socket.media.host,
+                    self->config.socket.media.port);
     }
 
     return true;
@@ -1276,55 +1272,43 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool register_events(ov_interconnect *self){
+static bool register_events(ov_interconnect *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     // events interconnect signaling
 
-    if (!ov_event_app_register(
-        self->app.signaling,
-        "register",
-        self,
-        event_signaling_register)) goto error;
+    if (!ov_event_app_register(self->app.signaling, "register", self,
+                               event_signaling_register))
+        goto error;
 
-    if (!ov_event_app_register(
-        self->app.signaling,
-        "connect_media",
-        self,
-        event_signaling_connect_media)) goto error;
+    if (!ov_event_app_register(self->app.signaling, "connect_media", self,
+                               event_signaling_connect_media))
+        goto error;
 
-    if (!ov_event_app_register(
-        self->app.signaling,
-        "connect_loops",
-        self,
-        event_signaling_connect_loops)) goto error;
+    if (!ov_event_app_register(self->app.signaling, "connect_loops", self,
+                               event_signaling_connect_loops))
+        goto error;
 
     // events mixer signaling
 
-    if (!ov_event_app_register(
-        self->app.mixer,
-        "register",
-        self,
-        event_mixer_register)) goto error;
+    if (!ov_event_app_register(self->app.mixer, "register", self,
+                               event_mixer_register))
+        goto error;
 
-    if (!ov_event_app_register(
-        self->app.mixer,
-        "acquire",
-        self,
-        event_mixer_acquire)) goto error;
-/*
-    if (!ov_event_app_register(
-        self->app.mixer,
-        "forward",
-        self,
-        event_mixer_forward)) goto error;
-*/
-    if (!ov_event_app_register(
-        self->app.mixer,
-        "join",
-        self,
-        event_mixer_join)) goto error;
+    if (!ov_event_app_register(self->app.mixer, "acquire", self,
+                               event_mixer_acquire))
+        goto error;
+    /*
+        if (!ov_event_app_register(
+            self->app.mixer,
+            "forward",
+            self,
+            event_mixer_forward)) goto error;
+    */
+    if (!ov_event_app_register(self->app.mixer, "join", self, event_mixer_join))
+        goto error;
 
     return true;
 error:
@@ -1363,35 +1347,34 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_interconnect *ov_interconnect_create(ov_interconnect_config config){
+ov_interconnect *ov_interconnect_create(ov_interconnect_config config) {
 
     ov_interconnect *self = NULL;
 
-    if (!check_config(&config)) goto error;
+    if (!check_config(&config))
+        goto error;
 
     self = calloc(1, sizeof(ov_interconnect));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_byte = OV_INTERCONNECT_MAGIC_BYTES;
     self->config = config;
 
     self->dtls = ov_dtls_create(self->config.dtls);
-    if (!self->dtls) goto error;
+    if (!self->dtls)
+        goto error;
 
     self->app.signaling = ov_event_app_create(
-        (ov_event_app_config){
-            .io = config.io,
-            .callbacks.userdata = self,
-            .callbacks.close = cb_signaling_close,
-            .callbacks.connected = cb_signaling_connected
-        });
+        (ov_event_app_config){.io = config.io,
+                              .callbacks.userdata = self,
+                              .callbacks.close = cb_signaling_close,
+                              .callbacks.connected = cb_signaling_connected});
 
     self->app.mixer = ov_event_app_create(
-        (ov_event_app_config){
-            .io = config.io,
-            .callbacks.userdata = self,
-            .callbacks.close = cb_mixer_close
-        });
+        (ov_event_app_config){.io = config.io,
+                              .callbacks.userdata = self,
+                              .callbacks.close = cb_mixer_close});
 
     ov_dict_config d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_interconnect_loop_free;
@@ -1402,28 +1385,33 @@ ov_interconnect *ov_interconnect_create(ov_interconnect_config config){
     d_config.value.data_function.free = NULL;
 
     self->session.by_media_remote = ov_dict_create(d_config);
-    if (!self->session.by_media_remote) goto error;
+    if (!self->session.by_media_remote)
+        goto error;
 
     d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_interconnect_session_free;
 
     self->session.by_signaling_remote = ov_dict_create(d_config);
-    if (!self->session.by_signaling_remote) goto error;
+    if (!self->session.by_signaling_remote)
+        goto error;
 
     d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = NULL;
 
     self->registered = ov_dict_create(d_config);
-    if (!self->registered) goto error;
+    if (!self->registered)
+        goto error;
 
     self->mixers = ov_mixer_registry_create((ov_mixer_registry_config){0});
 
     ov_interconnect_dtls_filter_init();
     srtp_init();
 
-    if (!open_sockets(self)) goto error;
+    if (!open_sockets(self))
+        goto error;
 
-    if (!register_events(self)) goto error;
+    if (!register_events(self))
+        goto error;
 
     return self;
 error:
@@ -1435,7 +1423,8 @@ error:
 
 ov_interconnect *ov_interconnect_free(ov_interconnect *self) {
 
-    if (!ov_interconnect_cast(self)) goto error;
+    if (!ov_interconnect_cast(self))
+        goto error;
 
     if (-1 != self->socket.signaling) {
         ov_event_app_close(self->app.signaling, self->socket.signaling);
@@ -1487,7 +1476,8 @@ ov_interconnect *ov_interconnect_cast(const void *data) {
  *      ------------------------------------------------------------------------
  */
 
-ov_interconnect_config ov_interconnect_config_from_json(const ov_json_value *val){
+ov_interconnect_config
+ov_interconnect_config_from_json(const ov_json_value *val) {
 
     ov_interconnect_config config = {0};
     if (!val)
@@ -1592,16 +1582,14 @@ static bool load_loop(const void *key, void *val, void *data) {
 
     ov_socket_configuration socket_config =
         ov_socket_configuration_from_json(val, (ov_socket_configuration){0});
-    
+
     socket_config.type = UDP;
 
     if (!name || (0 == socket_config.host[0]) || (0 == socket_config.port))
         goto error;
 
-    ov_interconnect_loop_config config = 
-    (ov_interconnect_loop_config){
-        .loop = self->config.loop, 
-        .base = self};
+    ov_interconnect_loop_config config =
+        (ov_interconnect_loop_config){.loop = self->config.loop, .base = self};
 
     strncpy(config.name, name, OV_HOST_NAME_MAX);
     config.multicast = socket_config;
@@ -1609,7 +1597,8 @@ static bool load_loop(const void *key, void *val, void *data) {
 
     ov_interconnect_loop *loop = ov_interconnect_loop_create(config);
 
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     char *k = strdup(name);
 
@@ -1619,10 +1608,8 @@ static bool load_loop(const void *key, void *val, void *data) {
         goto error;
     }
 
-    ov_log_debug("loaded loop %s|%s:%i", 
-        name, 
-        socket_config.host,
-        socket_config.port);
+    ov_log_debug("loaded loop %s|%s:%i", name, socket_config.host,
+                 socket_config.port);
 
     return true;
 error:
@@ -1631,7 +1618,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_load_loops(ov_interconnect *self, const ov_json_value *config){
+bool ov_interconnect_load_loops(ov_interconnect *self,
+                                const ov_json_value *config) {
 
     if (!self || !config)
         goto error;
@@ -1653,9 +1641,10 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_drop_mixer(ov_interconnect *self, int socket){
+bool ov_interconnect_drop_mixer(ov_interconnect *self, int socket) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     ov_event_app_close(self->app.mixer, socket);
     ov_mixer_registry_unregister_mixer(self->mixers, socket);
@@ -1666,18 +1655,17 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_mixer_data ov_interconnect_assign_mixer(ov_interconnect *self, 
-    const char *name){
+ov_mixer_data ov_interconnect_assign_mixer(ov_interconnect *self,
+                                           const char *name) {
 
     return ov_mixer_registry_acquire_user(self->mixers, name);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_send_aquire_mixer(
-    ov_interconnect *self,
-    ov_mixer_data data,
-    ov_mixer_forward forward){
+bool ov_interconnect_send_aquire_mixer(ov_interconnect *self,
+                                       ov_mixer_data data,
+                                       ov_mixer_forward forward) {
 
     ov_json_value *out = ov_mixer_msg_acquire(data.user, forward);
     ov_event_app_send(self->app.mixer, data.socket, out);
@@ -1703,12 +1691,11 @@ struct container1 {
 
 /*----------------------------------------------------------------------------*/
 
-static bool forward_loop_io_to_session(const void *key, void *val,
-                                         void *data) {
+static bool forward_loop_io_to_session(const void *key, void *val, void *data) {
 
     if (!key)
         return true;
-    ov_interconnect_session *session = (ov_interconnect_session*)val;
+    ov_interconnect_session *session = (ov_interconnect_session *)val;
     struct container1 *container = (struct container1 *)data;
 
     return ov_interconnect_session_forward_loop_io(
@@ -1717,13 +1704,11 @@ static bool forward_loop_io_to_session(const void *key, void *val,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_loop_io(
-    ov_interconnect *self,
-    ov_interconnect_loop *loop,
-    uint8_t *buffer,
-    size_t size){
+bool ov_interconnect_loop_io(ov_interconnect *self, ov_interconnect_loop *loop,
+                             uint8_t *buffer, size_t size) {
 
-    if (!self || !loop || !buffer) goto error;
+    if (!self || !loop || !buffer)
+        goto error;
 
     struct container1 container = (struct container1){
         .self = self, .loop = loop, .buffer = buffer, .size = size};
@@ -1737,19 +1722,21 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-int ov_interconnect_get_media_socket(const ov_interconnect *self){
+int ov_interconnect_get_media_socket(const ov_interconnect *self) {
 
-    if (!self) return -1;
+    if (!self)
+        return -1;
 
     return self->socket.media;
 }
 
 /*----------------------------------------------------------------------------*/
 
-const ov_interconnect_loop *ov_interconnect_get_loop(
-    const ov_interconnect *self, const char *name){
+const ov_interconnect_loop *
+ov_interconnect_get_loop(const ov_interconnect *self, const char *name) {
 
-    if (!self || !name) goto error;
+    if (!self || !name)
+        goto error;
 
     return ov_dict_get(self->loops, name);
 error:
@@ -1763,9 +1750,10 @@ static bool add_loop_definition(const void *key, void *value, void *data) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    ov_interconnect_loop *loop = (ov_interconnect_loop*)(value);
+    ov_interconnect_loop *loop = (ov_interconnect_loop *)(value);
     ov_json_value *array = ov_json_value_cast(data);
 
     if (!loop || !ov_json_is_array(array))
@@ -1816,7 +1804,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_interconnect_srtp_ready(ov_interconnect *self,
-    ov_interconnect_session *session) {
+                                ov_interconnect_session *session) {
 
     ov_json_value *out = NULL;
     ov_json_value *par = NULL;
@@ -1842,10 +1830,9 @@ bool ov_interconnect_srtp_ready(ov_interconnect *self,
     par = ov_event_api_set_parameter(out);
     ov_json_object_set(par, OV_KEY_LOOPS, loops);
 
-    ov_event_app_send(
-        self->app.signaling,
-        ov_interconnect_session_get_signaling_socket(session), 
-        out);
+    ov_event_app_send(self->app.signaling,
+                      ov_interconnect_session_get_signaling_socket(session),
+                      out);
 
     ov_json_value_free(out);
     ov_interconnect_session_added_loops(session);

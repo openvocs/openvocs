@@ -429,7 +429,7 @@ static Law law_from_parameters(const ov_json_value *parameters) {
 #define REMOVE_HIGH_ORDER_BIT(x) ((x) & ~HIGH_ORDER_BIT)
 
 #define A_LAW_SIGN(x)                                                          \
-    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t)1 : (int8_t) - 1)
+    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t)1 : (int8_t)-1)
 
 /*----------------------------------------------------------------------------*
  *                                   A-Law
@@ -529,7 +529,7 @@ static uint8_t alaw_get_exponent(uint16_t x) {
  *----------------------------------------------------------------------------*/
 
 #define U_LAW_SIGN(x)                                                          \
-    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t) - 1 : (int8_t)1)
+    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t)-1 : (int8_t)1)
 
 /*---------------------------------------------------------------------------*/
 

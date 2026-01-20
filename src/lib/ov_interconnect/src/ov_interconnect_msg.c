@@ -34,7 +34,7 @@
 #include <ov_core/ov_event_api.h>
 
 ov_json_value *ov_interconnect_msg_register(const char *name,
-                                               const char *pass) {
+                                            const char *pass) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -66,9 +66,9 @@ error:
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ov_interconnect_msg_connect_media(const char *name,
-                                                    const char *codec,
-                                                    const char *host,
-                                                    uint32_t port) {
+                                                 const char *codec,
+                                                 const char *host,
+                                                 uint32_t port) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;

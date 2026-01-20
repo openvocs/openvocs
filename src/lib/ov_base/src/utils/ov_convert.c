@@ -419,8 +419,8 @@ bool ov_convert_binary_to_hex(const uint8_t *binary, size_t binary_length,
 
     for (size_t i = 0; i < binary_length; i++) {
 
-        ptr[i * 2] = (uint8_t) "0123456789ABCDEF"[binary[i] >> 4];
-        ptr[i * 2 + 1] = (uint8_t) "0123456789ABCDEF"[binary[i] & 0x0F];
+        ptr[i * 2] = (uint8_t)"0123456789ABCDEF"[binary[i] >> 4];
+        ptr[i * 2 + 1] = (uint8_t)"0123456789ABCDEF"[binary[i] & 0x0F];
     }
 
     return true;

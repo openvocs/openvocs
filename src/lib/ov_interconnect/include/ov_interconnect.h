@@ -34,8 +34,8 @@
 #include <ov_base/ov_socket.h>
 
 #include <ov_core/ov_io.h>
-#include <ov_core/ov_mixer_registry.h>
 #include <ov_core/ov_mixer_msg.h>
+#include <ov_core/ov_mixer_registry.h>
 
 #include <ov_encryption/ov_dtls.h>
 
@@ -107,7 +107,6 @@ typedef struct ov_interconnect_config {
 
 } ov_interconnect_config;
 
-
 /*
  *      ------------------------------------------------------------------------
  *
@@ -128,11 +127,13 @@ ov_interconnect *ov_interconnect_cast(const void *data);
  *      ------------------------------------------------------------------------
  */
 
-ov_interconnect_config ov_interconnect_config_from_json(const ov_json_value *val);
+ov_interconnect_config
+ov_interconnect_config_from_json(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_load_loops(ov_interconnect *self, const ov_json_value *val);
+bool ov_interconnect_load_loops(ov_interconnect *self,
+                                const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
@@ -140,15 +141,14 @@ bool ov_interconnect_drop_mixer(ov_interconnect *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mixer_data ov_interconnect_assign_mixer(ov_interconnect *self, 
-    const char *name);
+ov_mixer_data ov_interconnect_assign_mixer(ov_interconnect *self,
+                                           const char *name);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_send_aquire_mixer(
-    ov_interconnect *self,
-    ov_mixer_data data,
-    ov_mixer_forward forward);
+bool ov_interconnect_send_aquire_mixer(ov_interconnect *self,
+                                       ov_mixer_data data,
+                                       ov_mixer_forward forward);
 
 /*
  *      ------------------------------------------------------------------------
@@ -158,14 +158,11 @@ bool ov_interconnect_send_aquire_mixer(
  *      ------------------------------------------------------------------------
  */
 
-bool ov_interconnect_loop_io(
-    ov_interconnect *self,
-    ov_interconnect_loop *loop,
-    uint8_t *buffer,
-    size_t size);
+bool ov_interconnect_loop_io(ov_interconnect *self, ov_interconnect_loop *loop,
+                             uint8_t *buffer, size_t size);
 
 bool ov_interconnect_srtp_ready(ov_interconnect *self,
-    ov_interconnect_session *session);
+                                ov_interconnect_session *session);
 
 /*
  *      ------------------------------------------------------------------------
@@ -175,10 +172,9 @@ bool ov_interconnect_srtp_ready(ov_interconnect *self,
  *      ------------------------------------------------------------------------
  */
 
-
 int ov_interconnect_get_media_socket(const ov_interconnect *self);
 
-const ov_interconnect_loop *ov_interconnect_get_loop(
-    const ov_interconnect *self, const char *name);
+const ov_interconnect_loop *
+ov_interconnect_get_loop(const ov_interconnect *self, const char *name);
 
 #endif /* ov_interconnect_h */

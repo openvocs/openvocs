@@ -42,5 +42,4 @@ void ov_interconnect_dtls_filter_deinit();
 */
 BIO *ov_interconnect_dtls_bio_create(ov_interconnect_session *session);
 
-
 #endif /* ov_interconnect_dtls_filter_h */

@@ -46,11 +46,11 @@ int test_ov_mixer_msg_acquire() {
     testrun(!ov_mixer_msg_acquire(NULL, (ov_mixer_forward){0}));
     testrun(!ov_mixer_msg_acquire("user", (ov_mixer_forward){0}));
 
-    val = ov_mixer_msg_acquire(
-        "user", (ov_mixer_forward){.ssrc = 1,
-                                           .socket.port = 1234,
-                                           .socket.host = "127.0.0.1",
-                                           .socket.type = UDP});
+    val = ov_mixer_msg_acquire("user",
+                               (ov_mixer_forward){.ssrc = 1,
+                                                  .socket.port = 1234,
+                                                  .socket.host = "127.0.0.1",
+                                                  .socket.type = UDP});
 
     testrun(val);
     testrun(ov_event_api_event_is(val, OV_KEY_ACQUIRE));
@@ -73,9 +73,9 @@ int test_ov_mixer_msg_aquire_get_username() {
 
     ov_json_value *val = val = ov_mixer_msg_acquire(
         "user", (ov_mixer_forward){.ssrc = 1,
-                                           .socket.port = 1234,
-                                           .socket.host = "127.0.0.1",
-                                           .socket.type = UDP});
+                                   .socket.port = 1234,
+                                   .socket.host = "127.0.0.1",
+                                   .socket.type = UDP});
 
     const char *str = ov_mixer_msg_aquire_get_username(val);
     testrun(0 == strcmp(str, "user"));
@@ -94,9 +94,9 @@ int test_ov_mixer_msg_acquire_get_forward() {
 
     ov_json_value *val = ov_mixer_msg_acquire(
         "user", (ov_mixer_forward){.ssrc = 1,
-                                           .socket.port = 1234,
-                                           .socket.host = "127.0.0.1",
-                                           .socket.type = UDP});
+                                   .socket.port = 1234,
+                                   .socket.host = "127.0.0.1",
+                                   .socket.type = UDP});
     testrun(val);
 
     ov_mixer_forward data = ov_mixer_msg_acquire_get_forward(val);
@@ -127,9 +127,9 @@ int test_ov_mixer_msg_join() {
     testrun(!val);
 
     val = ov_mixer_msg_join((ov_mc_loop_data){.socket.host = "224.0.0.0",
-                                                 .socket.port = 12345,
-                                                 .socket.type = UDP,
-                                                 .name = "loop1"});
+                                              .socket.port = 12345,
+                                              .socket.type = UDP,
+                                              .name = "loop1"});
 
     testrun(val);
     testrun(ov_event_api_event_is(val, OV_KEY_JOIN));
@@ -151,9 +151,9 @@ int test_ov_mixer_msg_join_from_json() {
 
     ov_json_value *val =
         ov_mixer_msg_join((ov_mc_loop_data){.socket.host = "224.0.0.0",
-                                               .socket.port = 12345,
-                                               .socket.type = UDP,
-                                               .name = "loop1"});
+                                            .socket.port = 12345,
+                                            .socket.type = UDP,
+                                            .name = "loop1"});
 
     testrun(val);
 

@@ -31,8 +31,8 @@
 #define ov_mixer_registry_h
 
 #include <inttypes.h>
-#include <stdbool.h>
 #include <ov_base/ov_socket.h>
+#include <stdbool.h>
 
 typedef struct ov_mixer_registry ov_mixer_registry;
 
@@ -80,19 +80,17 @@ ov_mixer_registry *ov_mixer_registry_free(ov_mixer_registry *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mixer_registry_register_mixer(ov_mixer_registry *self,
-                                      int socket,
+bool ov_mixer_registry_register_mixer(ov_mixer_registry *self, int socket,
                                       const ov_socket_data *remote);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mixer_registry_unregister_mixer(ov_mixer_registry *self,
-                                        int socket);
+bool ov_mixer_registry_unregister_mixer(ov_mixer_registry *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
 ov_mixer_data ov_mixer_registry_acquire_user(ov_mixer_registry *self,
-                                               const char *uuid);
+                                             const char *uuid);
 
 /*----------------------------------------------------------------------------*/
 
@@ -101,19 +99,14 @@ ov_mixer_data ov_mixer_registry_get_user(ov_mixer_registry *self,
 
 /*----------------------------------------------------------------------------*/
 
-ov_mixer_data ov_mixer_registry_get_socket(ov_mixer_registry *self,
-                                           int socket);
+ov_mixer_data ov_mixer_registry_get_socket(ov_mixer_registry *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mixer_registry_release_user(ov_mixer_registry *self,
-                                    const char *uuid);
+bool ov_mixer_registry_release_user(ov_mixer_registry *self, const char *uuid);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mixer_registry_count ov_mixer_registry_count_mixers(
-        ov_mixer_registry *self);
-
-
+ov_mixer_registry_count ov_mixer_registry_count_mixers(ov_mixer_registry *self);
 
 #endif /* ov_mixer_registry_h */

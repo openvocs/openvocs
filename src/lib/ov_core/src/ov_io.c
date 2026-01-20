@@ -128,7 +128,6 @@ struct ov_io {
 
     } reconnects;
 
-    
     ov_dict *connections;
 };
 
@@ -192,7 +191,7 @@ static void *connection_free(void *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_thread_message *thread_message_reconnect(){
+static ov_thread_message *thread_message_reconnect() {
 
     return ov_thread_message_standard_create(123, NULL);
 }
@@ -491,13 +490,17 @@ static int open_connection(ov_io *self, ov_io_socket_config config);
 
 static bool handle_in_thread(ov_thread_loop *self, ov_thread_message *msg) {
 
-    if (!self || !msg) goto error;
-    if (msg->type != 123) goto error;
+    if (!self || !msg)
+        goto error;
+    if (msg->type != 123)
+        goto error;
 
     ov_io *io = ov_thread_loop_get_data(self);
-    if (!io) goto error;
+    if (!io)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&io->reconnects.lock)) goto error;
+    if (!ov_thread_lock_try_lock(&io->reconnects.lock))
+        goto error;
 
     ov_list *reconnects = io->reconnects.list;
     io->reconnects.list = ov_linked_list_create(
@@ -509,11 +512,12 @@ static bool handle_in_thread(ov_thread_loop *self, ov_thread_message *msg) {
     while (config) {
 
         socket = open_connection(io, *config);
-        if (socket < 0){
+        if (socket < 0) {
             ov_log_error("reconnect attempt to %s:%i failed",
                          config->socket.host, config->socket.port);
         } else {
-            ov_log_debug("reconnected to %s:%i", config->socket.host, config->socket.port);
+            ov_log_debug("reconnected to %s:%i", config->socket.host,
+                         config->socket.port);
         }
 
         config = ov_data_pointer_free(config);
@@ -532,8 +536,9 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool handle_in_loop(ov_thread_loop *self, ov_thread_message *msg) {
-    
-    if (!self || !msg) goto error;
+
+    if (!self || !msg)
+        goto error;
 
 error:
     msg = ov_thread_message_free(msg);
@@ -598,7 +603,8 @@ ov_io *ov_io_create(ov_io_config config) {
         goto error;
     }
 
-    if (!ov_thread_lock_init(&self->reconnects.lock, 100000)) goto error;
+    if (!ov_thread_lock_init(&self->reconnects.lock, 100000))
+        goto error;
 
     /* Initialize OpenSSL */
     SSL_load_error_strings();
@@ -715,9 +721,10 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
             if (conn->config.auto_reconnect) {
 
-                if (ov_thread_lock_try_lock(&self->reconnects.lock)){
+                if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
 
-                    ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+                    ov_io_socket_config *conf =
+                        calloc(1, sizeof(ov_io_socket_config));
 
                     *conf = conn->config;
 
@@ -730,14 +737,13 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
                     ov_thread_lock_unlock(&self->reconnects.lock);
 
                     ov_log_debug("enabled reconnect to %s:%i",
-                        conf->socket.host, conf->socket.port);
+                                 conf->socket.host, conf->socket.port);
                 } else {
 
                     ov_log_debug("failed to enable reconnect to %s:%i",
-                        conn->config.socket.host, conn->config.socket.port);
-
+                                 conn->config.socket.host,
+                                 conn->config.socket.port);
                 }
-                
             }
         }
 
@@ -840,9 +846,10 @@ static bool io_stream(int socket, uint8_t events, void *data) {
 
             if (conn->config.auto_reconnect) {
 
-                if (ov_thread_lock_try_lock(&self->reconnects.lock)){
+                if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
 
-                    ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+                    ov_io_socket_config *conf =
+                        calloc(1, sizeof(ov_io_socket_config));
 
                     *conf = conn->config;
 
@@ -855,12 +862,12 @@ static bool io_stream(int socket, uint8_t events, void *data) {
                     ov_thread_lock_unlock(&self->reconnects.lock);
 
                     ov_log_debug("enabled reconnect to %s:%i",
-                        conf->socket.host, conf->socket.port);
+                                 conf->socket.host, conf->socket.port);
                 } else {
 
                     ov_log_debug("failed to enable reconnect to %s:%i",
-                        conn->config.socket.host, conn->config.socket.port);
-
+                                 conn->config.socket.host,
+                                 conn->config.socket.port);
                 }
             }
         }
@@ -2062,7 +2069,6 @@ error:
     return false;
 }
 
-
 /*----------------------------------------------------------------------------*/
 
 static int open_connection(ov_io *self, ov_io_socket_config config) {
@@ -2174,7 +2180,7 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
     if (!config.callbacks.io)
         goto error;
 
-    if (ov_thread_lock_try_lock(&self->reconnects.lock)){
+    if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
 
         ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
         *conf = config;
@@ -2183,18 +2189,16 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
 
             conf = ov_data_pointer_free(conf);
             ov_log_error("failed to enable auto reconnect");
-        
         }
 
         ov_thread_lock_unlock(&self->reconnects.lock);
 
-        ov_log_debug("enabled reconnect to %s:%i",
-                        config.socket.host, config.socket.port);
+        ov_log_debug("enabled reconnect to %s:%i", config.socket.host,
+                     config.socket.port);
     } else {
-        
-        ov_log_debug("failed to enable reconnect to %s:%i",
-                       config.socket.host, config.socket.port);
 
+        ov_log_debug("failed to enable reconnect to %s:%i", config.socket.host,
+                     config.socket.port);
     }
 
 error:

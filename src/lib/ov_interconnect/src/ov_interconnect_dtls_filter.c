@@ -106,8 +106,7 @@ bool ov_interconnect_dtls_filter_init() {
     }
     BIO_meth_set_write(ov_interconnect_dtls_filter_methods, dtls_bio_write);
     BIO_meth_set_ctrl(ov_interconnect_dtls_filter_methods, dtls_bio_ctrl);
-    BIO_meth_set_create(ov_interconnect_dtls_filter_methods,
-                        dtls_bio_create);
+    BIO_meth_set_create(ov_interconnect_dtls_filter_methods, dtls_bio_create);
     BIO_meth_set_destroy(ov_interconnect_dtls_filter_methods, dtls_bio_free);
 
     return true;
