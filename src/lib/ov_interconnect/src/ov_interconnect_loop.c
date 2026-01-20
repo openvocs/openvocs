@@ -283,7 +283,9 @@ ov_interconnect_loop_get_loop_data(const ov_interconnect_loop *self) {
     if (!self)
         return (ov_mc_loop_data){0};
 
-    uint8_t volume_scale = ov_convert_from_vol_percent(50, 3);
+    uint64_t volume = ov_interconnect_get_volume(self->config.base);
+
+    uint8_t volume_scale = ov_convert_from_vol_percent(volume, 3);
 
     ov_mc_loop_data data = (ov_mc_loop_data){.socket = self->config.multicast,
                                              .volume = volume_scale};

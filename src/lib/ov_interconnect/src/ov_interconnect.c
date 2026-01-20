@@ -1557,6 +1557,8 @@ ov_interconnect_config_from_json(const ov_json_value *val) {
     config.limits.client_connect_trigger_usec *= 1000000;
     config.limits.keepalive_trigger_usec *= 1000000;
 
+    config.volume = ov_json_number_get(ov_json_get(conf, "/volume"));
+
     config.dtls = ov_dtls_config_from_json(val);
 
     config.mixer = ov_mixer_config_from_json(conf);
@@ -1841,4 +1843,12 @@ done:
 error:
     ov_json_value_free(out);
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+uint64_t ov_interconnect_get_volume(const ov_interconnect *self){
+
+    if (!self) return 0;
+    return self->config.volume;
 }

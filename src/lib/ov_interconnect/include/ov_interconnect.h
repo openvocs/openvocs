@@ -94,6 +94,8 @@ typedef struct ov_interconnect_config {
 
     } tls;
 
+    uint64_t volume;
+
     struct {
 
         uint64_t client_connect_trigger_usec;
@@ -176,5 +178,7 @@ int ov_interconnect_get_media_socket(const ov_interconnect *self);
 
 const ov_interconnect_loop *
 ov_interconnect_get_loop(const ov_interconnect *self, const char *name);
+
+uint64_t ov_interconnect_get_volume(const ov_interconnect *self);
 
 #endif /* ov_interconnect_h */

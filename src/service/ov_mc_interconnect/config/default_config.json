@@ -10,6 +10,7 @@
 	{
 		"name": "OP server",
 		"password" : "secret preshared key",
+		"volume" : 100,
 		"socket" :
 		{
 			"client" : false,
