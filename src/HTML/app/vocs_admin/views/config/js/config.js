@@ -32,7 +32,7 @@ import * as ov_DB from "/lib/ov_db.js";
 import * as ov_Auth from "/lib/ov_auth.js";
 import * as View from "./view.js";
 
-export const VIEW_ID = "vocs_admin_config";
+export const VIEW_ID = VIEW.CONFIG;
 var view_container;
 
 export async function render_project(container, user, page) {

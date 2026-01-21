@@ -30,7 +30,7 @@
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as View from "./view.js";
 
-export const VIEW_ID = "authentication";
+export const VIEW_ID = VIEW.AUTH;
 var view_container;
 
 export async function render(container) {

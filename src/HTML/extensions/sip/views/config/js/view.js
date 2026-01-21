@@ -88,8 +88,12 @@ export function add_loop(id, data, roles_data) {
         for (let entry of data.sip.whitelist)
             loop.add_whitelist_entry(entry.caller, entry.callee);
 
-    for (let role_id of Object.keys(data.roles))
-        loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, roles_data[role_id].name);
+    for (let role_id of Object.keys(data.roles)) {
+        if (roles_data[role_id])
+            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, roles_data[role_id].name);
+        else
+            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, role_id);
+    }
 
     loop.addEventListener("click", () => {
         this.select_loop(loop);
@@ -144,7 +148,7 @@ export function select_loop(loop) {
 
         element.callee = entry.callee;
         element.caller = entry.caller;
-        if(loop.disabled)
+        if (loop.disabled)
             element.disabled = true;
 
         element.addEventListener("delete_entry", () => {
@@ -160,7 +164,7 @@ export function select_loop(loop) {
 
         element.id = role_id;
         element.name = loop.roles[role_id].name ? loop.roles[role_id].name : role_id;
-        if(loop.disabled)
+        if (loop.disabled)
             element.disabled = true;
 
         let value = "none";

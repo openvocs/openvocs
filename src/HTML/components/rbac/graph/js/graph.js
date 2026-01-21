@@ -74,7 +74,6 @@ export function create_node(type, data, subset_id) {
                 for (let user_id of Object.keys(data.users))
                     element.linked_nodes.set(user_id, data.users[user_id]);
         }
-        console.log(element)
         register_node(element);
     }
     element.onmouseenter = function () {

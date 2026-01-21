@@ -49,6 +49,8 @@ export default class ov_RBAC_Graph extends HTMLElement {
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue)
             return;
+        if (name === "no_new_users")
+            this.#no_new_users = newValue;
     }
 
     // -----------------------------------------------------------------
@@ -168,7 +170,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
             this.#render_node(undefined, "role");
         });
 
-        this.#dom.add_loop.addEventListener("click", () => {
+        this.#dom.add_loop.addEventListener("click", async () => {
             this.#render_node(undefined, "loop");
         });
 
@@ -212,7 +214,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
     }
 
     get no_new_users() {
-        return this.no_new_users;
+        return this.#no_new_users;
     }
 
     filter_unused_users(value) {

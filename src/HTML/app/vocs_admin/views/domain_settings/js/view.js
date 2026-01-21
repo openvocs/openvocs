@@ -27,6 +27,8 @@
     	
     ---------------------------------------------------------------------------
 */
+import * as ov_Websockets from "/lib/ov_websocket_list.js";
+
 const DOM = {};
 
 var VIEW_ID;
@@ -42,6 +44,7 @@ export function init(view_id) {
     DOM.ldap_user = document.getElementById("ldap_user");
     DOM.ldap_password = document.getElementById("ldap_password");
     DOM.ldap_button = document.getElementById("ldap_import_button");
+    DOM.ldap_notice = document.getElementById("ldap_notice");
 
     DOM.delete_button.addEventListener("click", () => {
         if (window.confirm("Do you really want to delete this domain?"))
@@ -60,7 +63,16 @@ export function init(view_id) {
             }, bubbles: true
         }));
         DOM.ldap_password.value = "";
-    })
+        DOM.ldap_notice.innerText = "Importing...";
+    });
+
+    ov_Websockets.addEventListener("ldap_update", (event) => {
+        DOM.ldap_notice.innerText = "Users were updated."
+        console.log("Imported information from LDAP:", event);
+        // view_container.dispatchEvent(new CustomEvent("switch_view", {
+        //     detail: { origin: VIEW_ID, target: VIEW_ID, type: "domain", domain: ov_Websockets.user().domain }
+        // }));
+    });
 
     DOM.name.addEventListener("change", changed_name);
 

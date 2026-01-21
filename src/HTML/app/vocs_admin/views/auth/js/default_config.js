@@ -59,3 +59,9 @@ BROADCAST_REGISTRATION = false;
 ALLOW_IMPORT_EXPORT = true;
 
 ALLOW_HIGHLIGHTED_LOOPS = false;
+
+VIEW = {
+    AUTH: "authentication",
+    OVERVIEW: "overview",
+    CONFIG: "config"
+}

@@ -133,7 +133,7 @@ export async function init(view_id, container, type) {
 
     DOM.back_button.addEventListener("click", () => {
         view_container.dispatchEvent(new CustomEvent("switch_view", {
-            detail: { origin: VIEW_ID }
+            detail: { origin: VIEW_ID, target: VIEW.OVERVIEW }
         }));
     });
 
@@ -195,7 +195,7 @@ export async function init(view_id, container, type) {
 
         if (errors.length === 0)
             view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: VIEW_ID }
+                detail: { origin: VIEW_ID, target: VIEW.OVERVIEW }
             }));
         else {
             //todo disconnect ?
@@ -222,7 +222,7 @@ export async function init(view_id, container, type) {
         DOM.loading_screen.hide();
         if (errors.length === 0)
             view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: VIEW_ID }
+                detail: { origin: VIEW_ID, target: VIEW.OVERVIEW }
             }));
         else {
             //todo disconnect ?
@@ -402,7 +402,7 @@ export async function render_project(project, domain, id, domain_id, page) {
             let proj_config = collect_config();
             let dom_config = collect_config({ id: proj_config.domain });
             let roles = { ...proj_config.roles, ...dom_config.roles };
-            for (let loop_id of Object.keys(dom_config.loops)) 
+            for (let loop_id of Object.keys(dom_config.loops))
                 dom_config.loops[loop_id].global = true;
             let loops = { ...proj_config.loops, ...dom_config.loops };
             Config_SIP.render(loops, roles, true);

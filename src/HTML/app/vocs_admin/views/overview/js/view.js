@@ -83,7 +83,7 @@ export async function init(view_id) {
 
     DOM.add_domain_button.addEventListener("click", () => {
         DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-            detail: { origin: VIEW_ID, target: "domain", domain: undefined }
+            detail: { origin: VIEW_ID, target: VIEW_ID.CONFIG, type:"domain", domain: undefined }
         }));
     });
 
@@ -149,14 +149,14 @@ export function draw(user) {
             }
             projects_element.addEventListener("change", (event) => {
                 DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                    detail: { origin: VIEW_ID, target: "project", project: event.target.value, "domain": domain.id }
+                    detail: { origin: VIEW_ID, target: VIEW.CONFIG, type: "project", project: event.target.value, domain: domain.id }
                 }));
             });
         }
 
         domain_element.querySelector(".add_project").addEventListener("click", () => {
             DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: VIEW_ID, target: "project", project: undefined, "domain": domain.id }
+                detail: { origin: VIEW_ID, target: VIEW.CONFIG, type: "project", project: undefined, domain: domain.id }
             }));
         });
     }
@@ -189,7 +189,7 @@ function add_domain(id, name, value) {
     domain_item.querySelector(".domain_settings_button").addEventListener("click", () => {
         ov_Websockets.user().domain = value;
         DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-            detail: { origin: VIEW_ID, target: "domain", domain: value }
+            detail: { origin: VIEW_ID, target: VIEW.CONFIG, type: "domain", domain: value }
         }));
     });
     DOM.domains.appendChild(domain_item);
