@@ -1383,18 +1383,21 @@ bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
         goto error;
     }
 
-    srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
+    if (ov_interconnect_is_encrypted(self->config.base)){
 
-    switch (r) {
+        srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
-    case srtp_err_status_ok:
-        // ov_log_debug("SRTP unprotect success");
-        break;
+        switch (r) {
 
-    default:
-        ov_log_error("SRTP unprotect error");
-        goto ignore;
-        break;
+        case srtp_err_status_ok:
+            // ov_log_debug("SRTP protect success.");
+            break;
+
+        default:
+            ov_log_error("SRTP unprotect error");
+            break;
+        }
+
     }
 
     char *loop_name =
@@ -1467,18 +1470,22 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
     uint8_t buf[4096] = {0};
     memcpy(buf, buffer, size);
 
-    srtp_err_status_t r = srtp_protect(self->srtp.local.session, buf, &out);
+    if (ov_interconnect_is_encrypted(self->config.base)){
 
-    switch (r) {
+        srtp_err_status_t r = srtp_protect(self->srtp.local.session, buf, &out);
 
-    case srtp_err_status_ok:
-        // ov_log_debug("SRTP protect success.");
-        break;
+        switch (r) {
 
-    default:
-        ov_log_error("SRTP protect error %i for %s cannot send.", r, name);
-        goto done;
-        break;
+        case srtp_err_status_ok:
+            // ov_log_debug("SRTP protect success.");
+            break;
+
+        default:
+            ov_log_error("SRTP protect error cannot send.");
+            goto done;
+            break;
+        }
+
     }
 
     ssize_t bytes = ov_interconnect_session_send(self, buf, out);

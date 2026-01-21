@@ -95,6 +95,7 @@ typedef struct ov_interconnect_config {
     } tls;
 
     uint64_t volume;
+    bool encryption;
 
     struct {
 
@@ -180,5 +181,7 @@ const ov_interconnect_loop *
 ov_interconnect_get_loop(const ov_interconnect *self, const char *name);
 
 uint64_t ov_interconnect_get_volume(const ov_interconnect *self);
+
+bool ov_interconnect_is_encrypted(const ov_interconnect *self);
 
 #endif /* ov_interconnect_h */
