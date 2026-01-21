@@ -1563,10 +1563,10 @@ ov_interconnect_config_from_json(const ov_json_value *val) {
 
     config.mixer = ov_mixer_config_from_json(conf);
 
-    if (ov_json_is_true(ov_json_get(conf, "/encryption"))){
-        config.encryption = true;
-    } else {
+    if (ov_json_is_true(ov_json_get(conf, "/encryption_off"))){
         config.encryption = false;
+    } else {
+        config.encryption = true;
     }
 
     return config;
