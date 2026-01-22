@@ -133,6 +133,10 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
-ov_event_io_config ov_vocs_event_io_uri_config(ov_vocs *self);
+void *ov_vocs_get_io_callback(ov_vocs *vocs);
+
+/*----------------------------------------------------------------------------*/
+
+void *ov_vocs_get_close_callback(ov_vocs *vocs);
 
 #endif /* ov_vocs_h */

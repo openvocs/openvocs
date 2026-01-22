@@ -102,4 +102,8 @@ ov_event_loop *ov_webserver_get_eventloop(const ov_webserver *self);
 bool ov_webserver_register_close(ov_webserver *self, void *userdata,
                                   void(callback)(void *userdata, int socket));
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_webserver_close(ov_webserver *self, int socket);
+
 #endif /* ov_webserver_h */

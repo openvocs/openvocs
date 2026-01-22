@@ -187,44 +187,11 @@
 	{
 		"name":"ov_vocs_service",
 
-		"debug":false,
-		"ip4_only":true,
-
-		"domains":"./src/service/ov_mc_vocs/config/domains",
-
-		"mime" : {
-			"path" : "./src/service/ov_mc_vocs/config/mime",
-			"extension" : "mime"
-		},
-
-		"sockets":
+		"socket":
 		{
-			"http":
-			{
-				"host":"127.0.0.1",
-				"port":80,
-				"type":"TCP"
-			},
-			"https":
-			{
-				"host":"0.0.0.0",
-				"port":443,
-				"type":"TCP"
-			},
-			"stun":
-			[
-				{
-					"host":"127.0.0.1",
-					"port":13478,
-					"type":"UDP"
-				}
-			]
-		},
-
-		"timer":
-		{
-			"accept":1000000,
-			"io":0
+			"host":"0.0.0.0",
+			"port":443,
+			"type":"TCP"
 		}
 	}
 }

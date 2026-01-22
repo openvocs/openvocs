@@ -458,30 +458,12 @@ generate_config_ov_vocs() {
      \"webserver\":
      {
        \"name\":\"VOCS GATEWAY\",
-       \"debug\":false,
-       \"ip4_only\":true,
-       \"domains\":\"$DIR_DOMAINS\",
-       \"mime\" : {
-         \"path\" : \"$DIR_MIME\",
-         \"extension\" : \"mime\"
-       },
-       \"sockets\":
+       \"socket\":
        {
-         \"https\":
-         {
            \"host\":\"$IP\",
            \"port\":443,
            \"type\":\"TCP\"
-         },
-         \"stun\":
-         [
-           {
-             \"host\":\"$IP\",
-             \"port\":3478,
-             \"type\":\"UDP\"
-           }
-         ]
-       }
+        }
      }
    }" > $DIR_OV_MC_VOCS"/config.json"
 

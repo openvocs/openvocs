@@ -463,7 +463,6 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool send_talking_loop_broadcast(ov_vocs *vocs, int socket,
-                                        const ov_event_parameter *params,
                                         const char *loop,
                                         const ov_json_value *state,
                                         const char *client) {
@@ -472,8 +471,6 @@ static bool send_talking_loop_broadcast(ov_vocs *vocs, int socket,
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !loop)
         goto error;
@@ -663,6 +660,14 @@ static void cb_socket_close(void *userdata, int socket) {
 
 error:
     return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void *ov_vocs_get_close_callback(ov_vocs *vocs){
+
+    if (!vocs) return NULL;
+    return cb_socket_close;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1335,6 +1340,7 @@ static bool module_load_backend(ov_vocs *self) {
  *      ------------------------------------------------------------------------
  */
 
+/*
 static bool cb_client_process(void *userdata, const int socket,
                               const ov_event_parameter *params,
                               ov_json_value *input) {
@@ -1354,7 +1360,6 @@ static bool cb_client_process(void *userdata, const int socket,
 
     if (function) {
 
-        /* Execute function and let function context decide for socket close */
 
         return function(self, socket, params, input);
     }
@@ -1362,18 +1367,17 @@ static bool cb_client_process(void *userdata, const int socket,
     ov_log_debug("Websocket IO %s at %i event %s unsupported\n",
                  params->uri.name, socket, event);
 
-    /* Close connection socket with false as return value */
 
 error:
     ov_json_value_free(input);
     return false;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 
 static bool set_function(ov_dict *dict, const char *name,
                          bool(func)(ov_vocs *vocs, int socket,
-                                    const ov_event_parameter *params,
                                     ov_json_value *input)) {
 
     if (!dict || !name || !func)
@@ -3167,15 +3171,6 @@ void *ov_vocs_free(void *self) {
 }
 
 /*----------------------------------------------------------------------------*/
-ov_event_io_config ov_vocs_event_io_uri_config(ov_vocs *self) {
-
-    return (ov_event_io_config){.name = "api",
-                                .userdata = self,
-                                .callback.close = cb_socket_close,
-                                .callback.process = cb_client_process};
-}
-
-/*----------------------------------------------------------------------------*/
 
 ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val) {
 
@@ -3215,4 +3210,44 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val) {
     return out;
 error:
     return (ov_vocs_config){0};
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void vocs_event_callback(void *userdata, int socket, ov_json_value *input){
+
+    bool (*function)(ov_vocs *vocs, int socket, ov_json_value *input) =
+        NULL;
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self || (0 > socket) || !input) {
+        goto error;
+    }
+
+    const char *event = ov_event_api_get_event(input);
+
+    function = ov_dict_get(self->io, event);
+
+    if (function) {
+
+        function(self, socket, input);
+        return;
+    }
+
+    ov_log_debug("Websocket IO at %i event %s unsupported\n", socket, event);
+
+    /* Close connection socket with false as return value */
+
+error:
+    ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void *ov_vocs_get_io_callback(ov_vocs *vocs){
+
+    if (!vocs) return NULL;
+
+    return vocs_event_callback;
 }

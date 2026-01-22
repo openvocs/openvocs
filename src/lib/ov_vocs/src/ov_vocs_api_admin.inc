@@ -11,10 +11,7 @@
 
 static bool admin_start_recording(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     if (!vocs || !input) goto error;
 
@@ -67,10 +64,7 @@ error:
 
 static bool admin_stop_recording(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     if (!vocs || !input) goto error;
 
@@ -128,10 +122,7 @@ error:
 
 static bool admin_broadcast(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     if (!vocs || !input) goto error;
 
@@ -167,10 +158,7 @@ error:
 
 static bool admin_get_recorded_loops(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -203,10 +191,7 @@ error:
 
 static bool admin_get_all_loops(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -339,10 +324,7 @@ error:
 
 static bool admin_get_mixer_state(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     ov_json_value *out = NULL;
 
@@ -394,10 +376,7 @@ error:
 
 static bool admin_state_mixer(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -433,10 +412,7 @@ error:
 
 static bool admin_state_connections(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     ov_json_value *out = NULL;
     ov_json_value *obj = NULL;
@@ -472,10 +448,7 @@ error:
 
 static bool admin_state_session(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
-
-	UNUSED(params);
 
     if (!vocs || !input) goto error;
 

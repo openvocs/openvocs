@@ -36,7 +36,7 @@
 
 #include <ov_core/ov_event_trigger.h>
 #include <ov_core/ov_io.h>
-#include <ov_core/ov_webserver_minimal.h>
+#include <ov_core/ov_webserver.h>
 
 #include <ov_vocs_db/ov_vocs_db.h>
 #include <ov_vocs_db/ov_vocs_db_app.h>
@@ -53,8 +53,8 @@
 
 static bool env_close_socket(void *userdata, int socket) {
 
-    ov_webserver_minimal *srv = ov_webserver_minimal_cast(userdata);
-    return ov_webserver_minimal_close(srv, socket);
+    ov_webserver *srv = (ov_webserver*)(userdata);
+    return ov_webserver_close(srv, socket);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -62,8 +62,8 @@ static bool env_close_socket(void *userdata, int socket) {
 static bool env_send_socket(void *userdata, int socket,
                             const ov_json_value *msg) {
 
-    ov_webserver_minimal *srv = ov_webserver_minimal_cast(userdata);
-    return ov_webserver_minimal_send_json(srv, socket, msg);
+    ov_webserver *srv = (ov_webserver*)(userdata);
+    return ov_webserver_send(srv, socket, msg);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
     int retval = EXIT_FAILURE;
 
     ov_event_loop *loop = NULL;
-    ov_webserver_minimal *server = NULL;
+    ov_webserver *server = NULL;
     ov_json_value *json_config = NULL;
     ov_vocs_db *db = NULL;
     ov_vocs_db_persistance *db_persistance = NULL;
@@ -118,15 +118,7 @@ int main(int argc, char **argv) {
 
     /* Create webserver instance */
 
-    ov_webserver_minimal_config webserver_config = {0};
-    webserver_config = ov_webserver_minimal_config_from_json(json_config);
-    webserver_config.base.loop = loop;
-
-    server = ov_webserver_minimal_create(webserver_config);
-    if (!server) {
-        ov_log_error("Failed to create webserver");
-        goto error;
-    }
+    
 
     const char *domain = ov_json_string_get(ov_json_object_get(
         (ov_json_object_get(json_config, "vocs")), OV_KEY_DOMAIN));
@@ -140,6 +132,17 @@ int main(int argc, char **argv) {
 
     if (!io)
         goto error;
+
+    ov_webserver_config webserver_config = {0};
+    webserver_config = ov_webserver_config_from_item(json_config);
+    webserver_config.loop = loop;
+    webserver_config.io = io;
+
+    server = ov_webserver_create(webserver_config);
+    if (!server) {
+        ov_log_error("Failed to create webserver");
+        goto error;
+    }
 
     /*  Create DB relevant items
      *
@@ -197,21 +200,12 @@ int main(int argc, char **argv) {
 
     /* Enable uri domain/api for VOCS operation */
 
-    if (!ov_webserver_minimal_configure_uri_event_io(
-            server,
-            (ov_memory_pointer){.start = (uint8_t *)domain,
-                                .length = strlen(domain)
+    if (!ov_webserver_enable_callback(server, domain, 
+        vocs, 
+        ov_vocs_get_io_callback(vocs))) goto error;
 
-            },
-            ov_vocs_event_io_uri_config(vocs))) {
-
-        ov_log_error("Failed to enable vocs URI callback "
-                     "at domain %s - check config to include same domain in "
-                     "webserver and vocs module.",
-                     domain);
-
-        goto error;
-    }
+    if (!ov_webserver_register_close(server, vocs,
+        ov_vocs_get_close_callback(vocs))) goto error;
 
     /*  Run event loop */
     loop->run(loop, OV_RUN_MAX);
@@ -224,7 +218,7 @@ error:
     vocs = ov_vocs_free(vocs);
     db_persistance = ov_vocs_db_persistance_free(db_persistance);
     db = ov_vocs_db_free(db);
-    server = ov_webserver_minimal_free(server);
+    server = ov_webserver_free(server);
     loop = ov_event_loop_free(loop);
     trigger = ov_event_trigger_free(trigger);
     io = ov_io_free(io);

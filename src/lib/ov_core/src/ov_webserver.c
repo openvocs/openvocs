@@ -119,6 +119,18 @@ static void *connection_free(void *connection) {
                                              conn->socket);
     }
 
+    if (-1 != conn->socket){
+
+        close(conn->socket);
+
+        ov_event_loop_unset(
+            conn->server->config.loop,
+            conn->socket,
+            NULL);
+
+        conn->socket = -1;
+    }
+
     conn->websocket.queue = ov_list_free(conn->websocket.queue);
     conn->buffer = ov_buffer_free(conn->buffer);
     conn->domain = ov_data_pointer_free(conn->domain);
@@ -1463,4 +1475,13 @@ bool ov_webserver_register_close(ov_webserver *self, void *userdata,
     return true;
 error:
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_webserver_close(ov_webserver *self, int socket){
+
+    if (!self) return false;
+
+    return ov_dict_del(self->connections, (void*)(intptr_t)socket);
 }

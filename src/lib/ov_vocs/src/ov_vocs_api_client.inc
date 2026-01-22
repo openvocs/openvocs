@@ -10,10 +10,8 @@
 
 static bool client_media(ov_vocs *vocs,
                          int socket,
-                         const ov_event_parameter *params,
                          ov_json_value *input) {
 
-    UNUSED(params);
     ov_json_value *data = NULL;
 
     if (!vocs || !input || socket < 0) goto error;
@@ -141,10 +139,8 @@ error:
 
 static bool client_candidate(ov_vocs *vocs,
                              int socket,
-                             const ov_event_parameter *params,
                              ov_json_value *input) {
 
-    UNUSED(params);
     ov_json_value *data = NULL;
 
     if (!vocs || !input || socket < 0) goto error;
@@ -223,10 +219,8 @@ error:
 
 static bool client_end_of_candidates(ov_vocs *vocs,
                                      int socket,
-                                     const ov_event_parameter *params,
                                      ov_json_value *input) {
 
-    UNUSED(params);
     ov_json_value *data = NULL;
 
     if (!vocs || !input || socket < 0) goto error;
@@ -303,14 +297,11 @@ error:
 
 static bool client_authorize(ov_vocs *vocs,
                              int socket,
-                             const ov_event_parameter *params,
                              ov_json_value *input) {
 
     ov_json_value *data = NULL;
     ov_json_value *out = NULL;
     bool result = false;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -387,14 +378,11 @@ error:
 
 static bool client_get(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     ov_json_value *val = NULL;
     ov_json_value *out = NULL;
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -489,7 +477,6 @@ error:
 
 static bool client_user_roles(ov_vocs *vocs,
                               int socket,
-                              const ov_event_parameter *params,
                               ov_json_value *input) {
 
     bool result = false;
@@ -497,8 +484,6 @@ static bool client_user_roles(ov_vocs *vocs,
     ov_json_value *val = NULL;
 
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -566,17 +551,12 @@ static bool add_loop_broadcast_and_state(const void *key,
 
 static bool client_role_loops(ov_vocs *vocs,
                               int socket,
-                              const ov_event_parameter *params,
                               ov_json_value *input) {
 
     bool result = false;
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
-    UNUSED(params);
-
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -627,13 +607,10 @@ error:
 
 static bool client_event_get_recording(ov_vocs *vocs,
                                        int socket,
-                                       const ov_event_parameter *params,
                                        ov_json_value *input) {
 
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -693,14 +670,11 @@ error:
 
 static bool client_event_sip_status(ov_vocs *vocs,
                                     int socket,
-                                    const ov_event_parameter *params,
                                     ov_json_value *input) {
 
     ov_json_value *val = NULL;
     ov_json_value *out = NULL;
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -740,15 +714,11 @@ error:
 
 static bool client_switch_loop_state(ov_vocs *vocs,
                                      int socket,
-                                     const ov_event_parameter *params,
                                      ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
-
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -904,10 +874,8 @@ error:
 
 static bool client_switch_loop_volume(ov_vocs *vocs,
                                       int socket,
-                                      const ov_event_parameter *params,
                                       ov_json_value *input) {
 
-    UNUSED(params);
     ov_json_value *data = NULL;
 
     if (!vocs || !input || socket < 0) goto error;
@@ -1003,14 +971,11 @@ error:
 
 static bool client_talking(ov_vocs *vocs,
                            int socket,
-                           const ov_event_parameter *params,
                            ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -1085,7 +1050,7 @@ static bool client_talking(ov_vocs *vocs,
     send_success_response(vocs, input, socket, &out);
 
     if (!send_talking_loop_broadcast(
-            vocs, socket, params, loop, state, client_id)) {
+            vocs, socket, loop, state, client_id)) {
 
         ov_log_error(
             "Failed to send talking broadcast at %s from %s", loop, user);
@@ -1104,10 +1069,7 @@ error:
 
 static bool client_calling(ov_vocs *vocs,
                            int socket,
-                           const ov_event_parameter *params,
                            ov_json_value *input) {
-
-    UNUSED(params);
 
     ov_json_value *data = NULL;
 
@@ -1195,10 +1157,7 @@ error:
 
 static bool client_hangup(ov_vocs *vocs,
                           int socket,
-                          const ov_event_parameter *params,
                           ov_json_value *input) {
-
-    UNUSED(params);
 
     ov_json_value *data = NULL;
 
@@ -1266,10 +1225,7 @@ error:
 
 static bool client_permit_call(ov_vocs *vocs,
                                int socket,
-                               const ov_event_parameter *params,
                                ov_json_value *input) {
-
-    UNUSED(params);
 
     ov_json_value *data = NULL;
 
@@ -1329,10 +1285,7 @@ error:
 
 static bool client_revoke_call(ov_vocs *vocs,
                                int socket,
-                               const ov_event_parameter *params,
                                ov_json_value *input) {
-
-    UNUSED(params);
 
     ov_json_value *data = NULL;
 
@@ -1392,12 +1345,9 @@ error:
 
 static bool client_call_function(ov_vocs *vocs,
                                  int socket,
-                                 const ov_event_parameter *params,
                                  ov_json_value *input,
                                  bool (*function)(ov_mc_backend_sip *sip,
                                                   const char *uuid)) {
-
-    UNUSED(params);
 
     ov_json_value *data = NULL;
 
@@ -1457,40 +1407,36 @@ error:
 
 static bool client_list_calls(ov_vocs *vocs,
                               int socket,
-                              const ov_event_parameter *params,
                               ov_json_value *input) {
 
     return client_call_function(
-        vocs, socket, params, input, ov_mc_backend_sip_list_calls);
+        vocs, socket, input, ov_mc_backend_sip_list_calls);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool client_list_call_permissions(ov_vocs *vocs,
                                          int socket,
-                                         const ov_event_parameter *params,
                                          ov_json_value *input) {
 
     return client_call_function(
-        vocs, socket, params, input, ov_mc_backend_sip_list_permissions);
+        vocs, socket, input, ov_mc_backend_sip_list_permissions);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool client_list_sip_status(ov_vocs *vocs,
                                    int socket,
-                                   const ov_event_parameter *params,
                                    ov_json_value *input) {
 
     return client_call_function(
-        vocs, socket, params, input, ov_mc_backend_sip_get_status);
+        vocs, socket, input, ov_mc_backend_sip_get_status);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool client_event_set_keyset_layout(ov_vocs *vocs,
                                            int socket,
-                                           const ov_event_parameter *params,
                                            ov_json_value *input) {
 
     /* checking input:
@@ -1511,7 +1457,7 @@ static bool client_event_set_keyset_layout(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
 
@@ -1559,7 +1505,7 @@ static bool client_event_set_keyset_layout(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1576,7 +1522,6 @@ error:
 
 static bool client_event_get_keyset_layout(ov_vocs *vocs,
                                            int socket,
-                                           const ov_event_parameter *params,
                                            ov_json_value *input) {
 
     /* checking input:
@@ -1596,7 +1541,7 @@ static bool client_event_get_keyset_layout(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
 
@@ -1638,7 +1583,7 @@ static bool client_event_get_keyset_layout(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1655,7 +1600,6 @@ error:
 
 static bool client_event_set_user_data(ov_vocs *vocs,
                                        int socket,
-                                       const ov_event_parameter *params,
                                        ov_json_value *input) {
 
     /* checking input:
@@ -1674,7 +1618,7 @@ static bool client_event_set_user_data(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
@@ -1722,7 +1666,7 @@ static bool client_event_set_user_data(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1739,7 +1683,6 @@ error:
 
 static bool client_event_get_user_data(ov_vocs *vocs,
                                        int socket,
-                                       const ov_event_parameter *params,
                                        ov_json_value *input) {
 
     /* checking input:
@@ -1757,7 +1700,7 @@ static bool client_event_get_user_data(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
 
@@ -1789,7 +1732,7 @@ static bool client_event_get_user_data(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1806,7 +1749,6 @@ error:
 
 static bool client_event_register(ov_vocs *vocs,
                                   int socket,
-                                  const ov_event_parameter *params,
                                   ov_json_value *input) {
 
     /* checking input:
@@ -1823,7 +1765,7 @@ static bool client_event_register(ov_vocs *vocs,
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     if (!ov_broadcast_registry_set(vocs->broadcasts,
                                    OV_BROADCAST_KEY_SYSTEM_BROADCAST,
@@ -1834,7 +1776,7 @@ static bool client_event_register(ov_vocs *vocs,
 
     out = ov_event_api_create_success_response(input);
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     return true;

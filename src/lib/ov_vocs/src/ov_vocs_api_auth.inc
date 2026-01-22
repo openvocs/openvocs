@@ -8,13 +8,11 @@
 
 static bool client_logout(ov_vocs *vocs,
                           int socket,
-                          const ov_event_parameter *params,
                           ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
     bool result = false;
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -136,15 +134,12 @@ error:
 
 static bool client_login(ov_vocs *vocs,
                          int socket,
-                         const ov_event_parameter *params,
                          ov_json_value *input) {
 
     ov_json_value *data = NULL;
     ov_json_value *out = NULL;
 
     bool result = false;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -286,13 +281,10 @@ error:
 
 static bool update_client_login(ov_vocs *vocs,
                                 int socket,
-                                const ov_event_parameter *params,
                                 ov_json_value *input) {
 
     bool result = false;
     ov_json_value *out = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -349,13 +341,10 @@ error:
 
 static bool check_ldap_enabled(ov_vocs *vocs,
                                 int socket,
-                                const ov_event_parameter *params,
                                 ov_json_value *input) {
 
     bool result = false;
     ov_json_value *val = NULL;
-
-    UNUSED(params);
 
     if (!vocs || !input || socket < 0) goto error;
 
