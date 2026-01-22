@@ -155,7 +155,7 @@ static bool cb_io_callback(int fd, uint8_t events, void *userdata) {
 
         close(fd);
 
-        ov_log_info("cb_io_callback: fd %i closed\n", fd);
+        ov_log_info("cb_io_callback: fd %i closed", fd);
         rd->fd = -1;
     }
 
@@ -256,8 +256,6 @@ static ov_thread_message *new_con_msg_create(int fd, size_t i) {
 static bool handle_in_thread(ov_thread_loop *self, ov_thread_message *msg) {
     msg = ov_thread_message_cast(msg);
 
-    fprintf(stderr, "Connect thread woken up again...\n");
-
     if (0 == self) {
         ov_log_error("Cannot handle message - invalid thread loop");
 
@@ -356,7 +354,6 @@ static bool cb_reconnect_timer(uint32_t id, void *data) {
 
     UNUSED(id);
 
-    fprintf(stderr, "Reconnect timer called\n");
     reconnect_mgr *rm = as_reconnect_mgr(data);
 
     if (0 == rm) {
@@ -371,10 +368,8 @@ static bool cb_reconnect_timer(uint32_t id, void *data) {
     for (size_t i = 0; rm->capacity > i; ++i) {
         if (!rm->fd_reconnect_data[i].in_use) continue;
 
-        fprintf(stderr, "Reconnect timer: Checking %zu\n", i);
-
         if (0 > rm->fd_reconnect_data[i].fd) {
-            fprintf(stderr, "Reconnect timer: %zu not connected\n", i);
+            ov_log_info("Reconnect timer: %zu not connected", i);
             ov_thread_message *msg =
                 create_connect_message(rm->fd_reconnect_data[i].sconfig, i);
 
@@ -428,8 +423,6 @@ ov_reconnect_manager *ov_reconnect_manager_create(
     ov_event_loop *loop, uint32_t reconnect_interval_secs,
     size_t max_reconnect_sockets) {
     ov_reconnect_manager *rm = 0;
-
-    fprintf(stderr, "Creating reconnect manager...\n");
 
     if (0 == loop) goto error;
 
@@ -486,9 +479,6 @@ ov_reconnect_manager *ov_reconnect_manager_create(
     return rm;
 
 error:
-
-    fprintf(stderr, "Error during reconnect manager creation\n");
-    exit(1);
 
     if ((0 != rm) && (0 != rm->fd_reconnect_data)) {
         free(rm->fd_reconnect_data);
@@ -585,8 +575,6 @@ bool ov_reconnect_manager_connect(ov_reconnect_manager *self,
      * will be done by the timer the next time it is called
      */
 
-    fprintf(stderr, "reconnect connect called...\n");
-
     if (0 == self) {
         ov_log_error("No reconnect manager given (0 pointer)");
         goto error;
@@ -627,8 +615,6 @@ bool ov_reconnect_manager_connect(ov_reconnect_manager *self,
     rd->callbacks = callbacks;
 
     rd->fd = -1;
-
-    fprintf(stderr, "reconnect installed at %zu\n", found);
 
     return true;
 
