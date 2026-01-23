@@ -667,7 +667,7 @@ static bool client_event_get_recording(ov_vocs *vocs,
                             input,
                             socket,
                             OV_ERROR_CODE_PROCESSING_ERROR,
-                            OV_ERROR_DESC_PROCESSING_ERROR);
+                            "No entries found");
 
     } else if (OV_DB_RECORDINGS_RESULT_TOO_BIG == val) {
 
