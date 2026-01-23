@@ -663,11 +663,8 @@ static bool client_event_get_recording(ov_vocs *vocs,
     val = ov_vocs_recorder_get_recording(vocs->recorder, db_params);
     if (!val) {
 
-        send_error_response(vocs,
-                            input,
-                            socket,
-                            OV_ERROR_CODE_PROCESSING_ERROR,
-                            "No entries found");
+        val = ov_json_array();
+        send_success_response(vocs, input, socket, &val);
 
     } else if (OV_DB_RECORDINGS_RESULT_TOO_BIG == val) {
 
