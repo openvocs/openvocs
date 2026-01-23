@@ -238,6 +238,8 @@ static bool start_record(void *userdata, const int fh,
     void (*function)(void *, int, const char *, const char *, ov_result) =
         cb.function;
 
+    if (!function) goto error;
+
     ov_event_api_get_error_parameter(input, &code, &desc);
 
     if (!ov_recorder_response_start_from_json(res, &resp))
@@ -358,10 +360,6 @@ static bool stop_record(void *userdata, const int socket,
 
         function(cb.userdata, cb.socket, uuid, loop,
                  (ov_result){.error_code = code, .message = (char *)desc});
-
-        self->config.callbacks.stop_record(
-            self->config.callbacks.userdata, uuid,
-            (ov_result){.error_code = code, .message = (char *)desc});
 
         goto done;
     }
@@ -1069,6 +1067,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+/*
 bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self, const char *loop,
                                       const char *uuid) {
 
@@ -1169,9 +1168,10 @@ bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self, const char *loop,
 error:
     return false;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
-
+/*
 bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop,
                                      const char *uuid) {
 
@@ -1229,6 +1229,7 @@ bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop,
 error:
     return false;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 

@@ -2717,67 +2717,6 @@ static bool module_load_sip_static(ov_vocs *self) {
  *      ------------------------------------------------------------------------
  */
 
-static void cb_start_record(void *userdata, const char *uuid, ov_result error) {
-
-    ov_vocs *self = ov_vocs_cast(userdata);
-    if (!self || !uuid)
-        goto error;
-
-    ov_event_async_data adata = ov_event_async_unset(self->async, uuid);
-
-    if (!adata.value)
-        goto error;
-
-    switch (error.error_code) {
-
-    case OV_ERROR_NOERROR:
-
-        send_success_response(self, adata.value, adata.socket, NULL);
-        break;
-
-    default:
-        send_error_response(self, adata.value, adata.socket, error.error_code,
-                            error.message);
-    }
-
-    adata.value = ov_json_value_free(adata.value);
-
-error:
-
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void cb_stop_record(void *userdata, const char *uuid, ov_result error) {
-
-    ov_vocs *self = ov_vocs_cast(userdata);
-    if (!self || !uuid)
-        goto error;
-
-    ov_event_async_data adata = ov_event_async_unset(self->async, uuid);
-
-    if (!adata.value)
-        goto error;
-
-    switch (error.error_code) {
-
-    case OV_ERROR_NOERROR:
-
-        send_success_response(self, adata.value, adata.socket, NULL);
-        break;
-
-    default:
-        send_error_response(self, adata.value, adata.socket, error.error_code,
-                            error.message);
-    }
-
-    adata.value = ov_json_value_free(adata.value);
-
-error:
-    return;
-}
-
 /*----------------------------------------------------------------------------*/
 
 static bool module_load_recorder(ov_vocs *self) {
@@ -2786,10 +2725,7 @@ static bool module_load_recorder(ov_vocs *self) {
 
     self->config.module.recorder.loop = self->config.loop;
     self->config.module.recorder.vocs_db = self->config.db;
-
-    self->config.module.recorder.callbacks.userdata = self;
-    self->config.module.recorder.callbacks.start_record = cb_start_record;
-    self->config.module.recorder.callbacks.stop_record = cb_stop_record;
+    self->config.module.recorder.timeout.response_usec = self->config.timeout.response_usec;
 
     self->recorder = ov_vocs_recorder_create(self->config.module.recorder);
     if (!self->recorder)

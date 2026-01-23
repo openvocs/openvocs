@@ -6,6 +6,37 @@
  *      ------------------------------------------------------------------------
  */
 
+/*----------------------------------------------------------------------------*/
+
+static void cb_start_recording(void *userdata, int socket, const char *uuid, 
+    const char *loop, ov_result result){
+
+    ov_json_value *out = NULL;
+    UNUSED(socket);
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self || !uuid || !loop) goto error;
+
+    ov_event_async_data async = ov_event_async_unset(self->async, uuid);
+    if (0 == async.socket) goto error;
+
+    if (0 != result.error_code){
+
+        out = ov_event_api_create_error_response(async.value, result.error_code, result.message);
+
+    } else {
+
+        out = ov_event_api_create_success_response(async.value);
+    }
+
+    env_send(self, async.socket, out);
+    out = ov_json_value_free(out);
+
+error:
+    ov_event_async_data_clear(&async);
+    return;
+
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -49,18 +80,49 @@ static bool admin_start_recording(ov_vocs *vocs,
 
     input = NULL;
 
-    if (!ov_vocs_recorder_start_recording(vocs->recorder, loop, uuid)) {
-        input = ov_json_value_free(input);
+    if (!ov_vocs_recorder_start_loop_recording(
+        vocs->recorder, uuid, loop, vocs, socket, cb_start_recording)) {
         goto done;
     }
-
-    
 
 done:
     return true;
 error:
     ov_json_value_free(input);
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_stop_recording(void *userdata, int socket, const char *uuid, 
+    const char *loop, ov_result result){
+
+    UNUSED(socket);
+
+    ov_json_value *out = NULL;
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self || !uuid || !loop) goto error;
+
+    ov_event_async_data async = ov_event_async_unset(self->async, uuid);
+    if (0 == async.socket) goto error;
+
+    if (0 != result.error_code){
+
+        out = ov_event_api_create_error_response(async.value, result.error_code, result.message);
+
+    } else {
+
+        out = ov_event_api_create_success_response(async.value);
+    }
+
+    env_send(self, async.socket, out);
+    out = ov_json_value_free(out);
+
+error:
+    ov_event_async_data_clear(&async);
+    return;
+
 }
 
 /*----------------------------------------------------------------------------*/
@@ -105,16 +167,14 @@ static bool admin_stop_recording(ov_vocs *vocs,
 
     input = NULL;
 
-    if (!ov_vocs_recorder_stop_recording(vocs->recorder, loop, uuid)) {
+    if (!ov_vocs_recorder_stop_loop_recording(
+        vocs->recorder, uuid, loop, vocs, socket, cb_stop_recording)) {
 
         send_error_response(vocs,
                             input,
                             socket,
                             OV_ERROR_CODE_PROCESSING_ERROR,
                             OV_ERROR_DESC_PROCESSING_ERROR);
-
-        input = ov_json_value_free(input);
-        goto done;
     }
 
 done:
