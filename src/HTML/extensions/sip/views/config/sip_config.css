@@ -18,7 +18,8 @@ ov-sip-whitelist {
     display: block;
 }
 
-ov-sip-config-role:nth-child(2n + 1), ov-sip-whitelist:nth-child(2n + 1) {
+ov-sip-config-role:nth-child(2n + 1),
+ov-sip-whitelist:nth-child(2n + 1) {
     background-color: var(--element_hover_background_color);
 }
 
@@ -28,7 +29,8 @@ ov-sip-config-role:nth-child(2n + 1), ov-sip-whitelist:nth-child(2n + 1) {
     margin: auto;
 }
 
-#loops, #sip_settings {
+#loops,
+#sip_settings {
     height: 100%;
     overflow-y: auto;
 }
@@ -37,10 +39,16 @@ ov-sip-config-role:nth-child(2n + 1), ov-sip-whitelist:nth-child(2n + 1) {
     display: none;
 }
 
-#sip_loops:empty ~ #warning {
+#sip_loops:empty~#warning {
     display: inherit;
 }
 
-#sip_loops:empty + #sip_settings {
+#sip_loops:empty+#sip_settings {
     display: none;
+}
+
+#sip_roles:not(:has(ov-sip-config-role:not([hidden=true])))::after {
+    content: "This loop has no roles.";
+    margin-top: 0.5rem;
+    display: inline-block;
 }

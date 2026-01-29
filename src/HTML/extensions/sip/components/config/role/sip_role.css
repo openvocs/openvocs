@@ -5,3 +5,7 @@ select {
 label {
     min-width: 11rem;
 }
+
+:host([hidden=true]) {
+    display: none !important;
+}

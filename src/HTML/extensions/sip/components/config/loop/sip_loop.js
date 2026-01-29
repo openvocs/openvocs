@@ -87,8 +87,8 @@ export default class ov_SIP_Loop extends HTMLElement {
         this.#roles = {};
     }
 
-    add_role(role, value, name) {
-        this.#roles[role] = { value: value, name: name };
+    add_role(role, value, name, hidden) {
+        this.#roles[role] = { value: value, name: name, hidden: hidden };
     }
 
     get roles() {
