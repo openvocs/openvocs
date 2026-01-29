@@ -37,6 +37,7 @@ export default class ov_SIP_Loop extends HTMLElement {
     #roles = {};
     #selected = false;
     #disabled = false;
+    #global = false;
 
     constructor() {
         super();
@@ -44,6 +45,7 @@ export default class ov_SIP_Loop extends HTMLElement {
     }
 
     static get observedAttributes() {
+        return ["disabled", "global", "selected"]
     }
 
     #update_name() {
@@ -100,8 +102,10 @@ export default class ov_SIP_Loop extends HTMLElement {
     }
 
     set selected(value) {
-        this.#selected = value;
-        this.#update_selected();
+        if (!value)
+            this.removeAttribute("selected")
+        else
+            this.setAttribute("selected", value);
     }
 
     get selected() {
@@ -109,16 +113,40 @@ export default class ov_SIP_Loop extends HTMLElement {
     }
 
     set disabled(value) {
-        this.#disabled = value;
+        if (!value)
+            this.removeAttribute("disabled")
+        else
+            this.setAttribute("disabled", value);
     }
 
     get disabled() {
         return this.#disabled;
     }
 
+    set global(value) {
+        if (!value)
+            this.removeAttribute("global")
+        else
+            this.setAttribute("global", value);
+    }
+
+    get global() {
+        return this.#global;
+    }
+
     attributeChangedCallback(name, old_value, new_value) {
         if (old_value === new_value)
             return;
+        if (name === "selected") {
+            this.#selected = new_value;
+            this.#update_selected();
+        }
+        if (name === "disabled") {
+            this.#disabled = value;
+        }
+        if (name === "global") {
+            this.#global = value;
+        }
     }
 
     async connectedCallback() {

@@ -5,7 +5,7 @@
     padding: 0.4rem;
 }
 
-#loop.calls_allowed .sip-phone-icon{
+#loop.calls_allowed .sip-phone-icon {
     opacity: 1;
 }
 
@@ -23,8 +23,13 @@
     font-size: 1rem;
 }
 
+:host([global=true]) #loop_name::after {
+    content: "\29BF";
+    margin-left: 0.1rem;
+}
+
 #loop:disabled {
-  cursor: default;
-  color: var(--white) !important;
-  border: var(--element_art_color) solid 0.1rem;
+    cursor: default;
+    color: var(--white) !important;
+    border: var(--element_art_color) solid 0.1rem;
 }
