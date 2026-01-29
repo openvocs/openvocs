@@ -142,10 +142,10 @@ export default class ov_SIP_Loop extends HTMLElement {
             this.#update_selected();
         }
         if (name === "disabled") {
-            this.#disabled = value;
+            this.#disabled = new_value;
         }
         if (name === "global") {
-            this.#global = value;
+            this.#global = new_value;
         }
     }
 
@@ -157,14 +157,15 @@ export default class ov_SIP_Loop extends HTMLElement {
     }
 
     #update_sip_indicator() {
-        if (this.#whitelist.length === 0) {
-            let element = this.shadowRoot.querySelector(".calls_allowed");
-            if (element)
-                element.classList.remove("calls_allowed");
-        } else {
+        let roles_set = Object.values(this.#roles).some(role => role.value !== undefined);
+        if (this.#whitelist.length !== 0 || roles_set) {
             let element = this.shadowRoot.querySelector("#loop:not(.calls_allowed)");
             if (element)
                 element.classList.add("calls_allowed");
+        } else {
+            let element = this.shadowRoot.querySelector(".calls_allowed");
+            if (element)
+                element.classList.remove("calls_allowed");
         }
     }
 
