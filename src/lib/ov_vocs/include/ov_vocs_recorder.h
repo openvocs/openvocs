@@ -74,15 +74,6 @@ typedef struct ov_vocs_recorder_config {
 
     } timeout;
 
-    struct {
-
-        void *userdata;
-
-        void (*start_record)(void *userdata, const char *uuid, ov_result error);
-        void (*stop_record)(void *userdata, const char *uuid, ov_result error);
-
-    } callbacks;
-
     ov_database_info db;
 
 } ov_vocs_recorder_config;
@@ -109,12 +100,12 @@ ov_vocs_recorder_config_from_json(const ov_json_value *value);
 ov_event_io_config ov_vocs_recorder_io_uri_config(ov_vocs_recorder *self);
 
 /*----------------------------------------------------------------------------*/
-
+/*
 bool ov_vocs_recorder_start_recording(ov_vocs_recorder *self, const char *loop,
                                       const char *uuid);
 bool ov_vocs_recorder_stop_recording(ov_vocs_recorder *self, const char *loop,
                                      const char *uuid);
-
+*/
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *
