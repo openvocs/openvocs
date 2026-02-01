@@ -455,9 +455,20 @@ generate_config_ov_vocs() {
          \"network\" : 3000000
        }
      },
+     \"io\":
+     {
+      \"domain\":
+      {
+        \"path\": \"/etc/openvocs/ov_mc_vocs/domains\"
+      }
+     },
      \"webserver\":
      {
        \"name\":\"VOCS GATEWAY\",
+       \"domains\":
+       {
+         \"$IP\" : \"/srv/openvocs/HTML\"
+       },
        \"socket\":
        {
            \"host\":\"$IP\",

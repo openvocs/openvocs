@@ -183,9 +183,22 @@
 		}
 	},
 
+	"io" :
+	{
+		"domain" : 
+		{
+			"path" : "./src/service/ov_mc_vocs/config/domains"
+		}
+	},
+
     "webserver":
 	{
 		"name":"ov_vocs_service",
+
+		"domains" : 
+		{
+			"localhost" : "./src/HTML/"
+		},
 
 		"socket":
 		{

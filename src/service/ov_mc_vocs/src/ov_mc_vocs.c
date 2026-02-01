@@ -63,7 +63,7 @@ static bool env_send_socket(void *userdata, int socket,
                             const ov_json_value *msg) {
 
     ov_webserver *srv = (ov_webserver*)(userdata);
-    return ov_webserver_send(srv, socket, msg);
+    return ov_webserver_send_json(srv, socket, msg);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -118,8 +118,6 @@ int main(int argc, char **argv) {
 
     /* Create webserver instance */
 
-    
-
     const char *domain = ov_json_string_get(ov_json_object_get(
         (ov_json_object_get(json_config, "vocs")), OV_KEY_DOMAIN));
 
@@ -128,13 +126,16 @@ int main(int argc, char **argv) {
         goto error;
     }
 
-    io = ov_io_create((ov_io_config){.loop = loop});
+    ov_io_config io_config = ov_io_config_from_json(json_config);
+    io_config.loop = loop;
+
+    io = ov_io_create(io_config);
 
     if (!io)
         goto error;
 
     ov_webserver_config webserver_config = {0};
-    webserver_config = ov_webserver_config_from_item(json_config);
+    webserver_config = ov_webserver_config_from_json(json_config);
     webserver_config.loop = loop;
     webserver_config.io = io;
 
@@ -144,6 +145,9 @@ int main(int argc, char **argv) {
         goto error;
     }
 
+    if (!ov_webserver_enable_domains(server, json_config))
+        goto error;
+    
     /*  Create DB relevant items
      *
      *  (1) DB itself
@@ -200,7 +204,10 @@ int main(int argc, char **argv) {
 
     /* Enable uri domain/api for VOCS operation */
 
-    if (!ov_webserver_enable_callback(server, domain, 
+    if (!ov_webserver_enable_event_callback(
+        server, 
+        domain,
+        "/api", 
         vocs, 
         ov_vocs_get_io_callback(vocs))) goto error;
 

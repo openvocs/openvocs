@@ -3226,6 +3226,8 @@ static void vocs_event_callback(void *userdata, int socket, ov_json_value *input
 
     const char *event = ov_event_api_get_event(input);
 
+    ov_log_debug("Websocket IO at %i event %s\n", socket, event);
+
     function = ov_dict_get(self->io, event);
 
     if (function) {

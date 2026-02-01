@@ -19,7 +19,7 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_webserver.h
+        @file           ov_webserver_io.h
         @author         Töpfer, Markus
 
         @date           2026-01-31
@@ -27,28 +27,22 @@
 
         ------------------------------------------------------------------------
 */
-#ifndef ov_webserver_h
-#define ov_webserver_h
-
-#include <ov_base/ov_event_loop.h>
-#include <ov_base/ov_json.h>
-#include <ov_base/ov_socket.h>
+#ifndef ov_webserver_io_h
+#define ov_webserver_io_h
 
 #include "ov_http_pointer.h"
-#include "ov_websocket_pointer.h"
 #include "ov_io.h"
+#include "ov_websocket_pointer.h"
+#include <ov_base/ov_event_loop.h>
+#include <ov_base/ov_json.h>
 
 /*----------------------------------------------------------------------------*/
 
-#define OV_WEBSERVER_MAGIC_BYTES 0xfe89
+typedef struct ov_webserver_io ov_webserver_io;
 
 /*----------------------------------------------------------------------------*/
 
-typedef struct ov_webserver ov_webserver;
-
-/*----------------------------------------------------------------------------*/
-
-typedef struct ov_webserver_config {
+typedef struct ov_webserver_io_config {
 
     ov_event_loop *loop;
     ov_io *io;
@@ -64,54 +58,11 @@ typedef struct ov_webserver_config {
 
         void *userdata;
         void (*close)(void *userdata, int socket);
+        bool (*io) (void *userdata, int socket, const ov_http_message *msg);
 
     } callbacks;
 
-} ov_webserver_config;
-
-/*----------------------------------------------------------------------------*/
-
-struct ov_webserver {
-
-    uint16_t magic_bytes;
-    uint8_t type;
-
-    ov_webserver_config config;
-
-    ov_webserver *(*free) (ov_webserver *self);
-
-    bool (*debug) (ov_webserver *self, bool on);
-
-    bool (*enable_domains)(ov_webserver *self, const ov_json_value* config);
-
-    bool (*enable_events)(ov_webserver *self, 
-                    const char *domain,
-                    const char *uri,
-                    void *userdata,
-                    void (*callback)(void *userdata, 
-                                     int socket, 
-                                     ov_json_value *msg));
-
-    bool (*close) (ov_webserver *self, int socket);
-
-    struct {
-
-        bool (*json) (ov_webserver *self, 
-                      int socket, 
-                      const ov_json_value *msg);
-
-        bool (*http) (ov_webserver *self, 
-                      int socket, 
-                      const ov_http_message *msg);
-        
-        bool (*plain) (ov_webserver *self, 
-                       int socket, 
-                       const char *buffer, 
-                       size_t size);
-
-    } send;
-
-};
+} ov_webserver_io_config;
 
 /*
  *      ------------------------------------------------------------------------
@@ -121,9 +72,9 @@ struct ov_webserver {
  *      ------------------------------------------------------------------------
  */
 
-ov_webserver *ov_webserver_create(ov_webserver_config config);
-ov_webserver *ov_webserver_free(ov_webserver *self);
-ov_webserver *ov_webserver_cast(const void *data);
+ov_webserver_io *ov_webserver_io_create(ov_webserver_io_config config);
+ov_webserver_io *ov_webserver_io_free(ov_webserver_io *self);
+
 
 /*
  *      ------------------------------------------------------------------------
@@ -133,23 +84,23 @@ ov_webserver *ov_webserver_cast(const void *data);
  *      ------------------------------------------------------------------------
  */
 
-ov_webserver_config ov_webserver_config_from_json(
+bool ov_webserver_io_set_debug(ov_webserver_io *self, bool on);
+
+/*----------------------------------------------------------------------------*/
+
+ov_webserver_io_config ov_webserver_io_config_from_json(
         const ov_json_value *config);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_set_debug(ov_webserver *self, bool on);
-
-/*----------------------------------------------------------------------------*/
-
-bool ov_webserver_enable_domains(
-        ov_webserver *self,
+bool ov_webserver_io_enable_domains(
+        ov_webserver_io *self,
         const ov_json_value *config);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_enable_event_callback(
-        ov_webserver *self,
+bool ov_webserver_io_event_callback(
+        ov_webserver_io *self,
         const char *domain, 
         const char *uri,
         void *userdata,
@@ -157,12 +108,15 @@ bool ov_webserver_enable_event_callback(
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_close(ov_webserver *self, int socket);
+bool ov_webserver_io_close(ov_webserver_io *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_register_close(ov_webserver *self, void *userdata,
-    void (*callback)(void *userdata, int socket));
+bool ov_webserver_io_clean_path(ov_webserver_io *self, 
+        int socket,
+        const ov_http_message *msg,
+        char *path_out,
+        size_t path_out_len);
 
 /*
  *      ------------------------------------------------------------------------
@@ -172,17 +126,28 @@ bool ov_webserver_register_close(ov_webserver *self, void *userdata,
  *      ------------------------------------------------------------------------
  */
 
-bool ov_webserver_send_json(
-        ov_webserver *self, int socket, const ov_json_value *msg);
+bool ov_webserver_io_send_json(
+        ov_webserver_io *self, int socket, const ov_json_value *msg);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_send_http(
-        ov_webserver *self, int socket, const ov_http_message *msg);
+bool ov_webserver_io_send_http(
+        ov_webserver_io *self, int socket, const ov_http_message *msg);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_send(
-        ov_webserver *self, int socket, const char *buffer, size_t size);
+bool ov_webserver_io_send(
+        ov_webserver_io *self, int socket, const char *buffer, size_t size);
 
-#endif /* ov_webserver_h */
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      GETTER FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+ov_event_loop *ov_webserver_io_get_eventloop(const ov_webserver_io *self);
+
+
+#endif /* ov_webserver_io_h */
