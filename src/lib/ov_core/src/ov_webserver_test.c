@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2025 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,62 +19,55 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_web_server_minimal.h
+        @file           ov_webserver_test.c
         @author         Töpfer, Markus
 
-        @date           2025-11-12
+        @date           2026-01-31
 
 
         ------------------------------------------------------------------------
 */
-#ifndef ov_web_server_minimal_h
-#define ov_web_server_minimal_h
+#include <ov_test/testrun.h>
+#include "ov_webserver.c"
 
-#include "ov_web_server.h"
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      TEST CASES                                                      #CASES
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+int test_case(){
+        testrun(1 == 1);
+
+        return testrun_log_success();
+}
 
 /*----------------------------------------------------------------------------*/
 
-typedef struct ov_web_server_minimal ov_web_server_minimal;
-
 /*
  *      ------------------------------------------------------------------------
  *
- *      GENERIC FUNCTIONS
+ *      TEST CLUSTER                                                    #CLUSTER
  *
  *      ------------------------------------------------------------------------
  */
 
-ov_web_server_minimal *
-ov_web_server_minimal_create(ov_web_server_config config);
-ov_web_server_minimal *ov_web_server_minimal_free(ov_web_server_minimal *self);
-ov_web_server_minimal *ov_web_server_minimal_cast(const void *data);
+int all_tests() {
 
-bool ov_web_server_minimal_close(ov_web_server_minimal *self, int socket);
+        testrun_init();
+        testrun_test(test_case);
 
-/*
- *      ------------------------------------------------------------------------
- *
- *      SEND FUNCTIONS
- *
- *      ------------------------------------------------------------------------
- */
-
-bool ov_web_server_minimal_send(ov_web_server_minimal *self, int socket,
-                                const ov_buffer *data);
-
-bool ov_web_server_minimal_send_json(ov_web_server_minimal *self, int socket,
-                                     ov_json_value const *const data);
+        return testrun_counter;
+}
 
 /*
  *      ------------------------------------------------------------------------
  *
- *      CONFIG FUNCTIONS
+ *      TEST EXECUTION                                                  #EXEC
  *
  *      ------------------------------------------------------------------------
  */
 
-bool ov_web_server_minimal_configure_uri_event_io(
-    ov_web_server_minimal *self, const ov_memory_pointer hostname,
-    const ov_event_io_config input);
-
-#endif /* ov_web_server_minimal_h */
+testrun_run(all_tests);

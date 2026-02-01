@@ -68,13 +68,12 @@ error:
 
 static bool cb_event_update_password(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input)  {
 
     ov_json_value *out = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -180,7 +179,7 @@ static bool cb_event_update_password(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -196,14 +195,13 @@ error:
 
 static bool cb_event_get_admin_domains(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -232,7 +230,7 @@ static bool cb_event_get_admin_domains(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -248,14 +246,13 @@ error:
 
 static bool cb_event_get_admin_projects(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 	ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -284,7 +281,7 @@ static bool cb_event_get_admin_projects(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -300,14 +297,13 @@ error:
 
 static bool cb_event_check_id_exists(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 	ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -367,7 +363,7 @@ static bool cb_event_check_id_exists(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -384,7 +380,6 @@ error:
 
 static bool cb_event_delete(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -404,7 +399,7 @@ static bool cb_event_delete(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -466,7 +461,7 @@ static bool cb_event_delete(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -483,7 +478,6 @@ error:
 
 static bool cb_event_create(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -508,7 +502,7 @@ static bool cb_event_create(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -593,7 +587,7 @@ static bool cb_event_create(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -610,7 +604,6 @@ error:
 
 static bool cb_event_get_key(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -631,7 +624,7 @@ static bool cb_event_get_key(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -697,7 +690,7 @@ static bool cb_event_get_key(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -714,7 +707,6 @@ error:
 
 static bool cb_event_update_key(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -736,7 +728,7 @@ static bool cb_event_update_key(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -804,7 +796,7 @@ static bool cb_event_update_key(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -821,7 +813,6 @@ error:
 
 static bool cb_event_delete_key(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -842,7 +833,7 @@ static bool cb_event_delete_key(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -907,7 +898,7 @@ static bool cb_event_delete_key(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);
@@ -924,7 +915,6 @@ error:
 
 static bool cb_event_verify(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -947,7 +937,7 @@ static bool cb_event_verify(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1019,7 +1009,7 @@ static bool cb_event_verify(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);
@@ -1036,7 +1026,6 @@ error:
 
 static bool cb_event_update(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1058,7 +1047,7 @@ static bool cb_event_update(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1154,7 +1143,7 @@ static bool cb_event_update(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);
@@ -1171,7 +1160,6 @@ error:
 
 static bool cb_event_load(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1187,7 +1175,7 @@ static bool cb_event_load(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1229,7 +1217,7 @@ static bool cb_event_load(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);
@@ -1246,7 +1234,6 @@ error:
 
 static bool cb_event_save(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1262,7 +1249,7 @@ static bool cb_event_save(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1304,7 +1291,7 @@ static bool cb_event_save(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);
@@ -1321,7 +1308,6 @@ error:
 
 static bool cb_event_set_layout(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1341,7 +1327,7 @@ static bool cb_event_set_layout(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1393,7 +1379,7 @@ static bool cb_event_set_layout(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);
@@ -1410,7 +1396,6 @@ error:
 
 static bool cb_event_get_layout(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1429,7 +1414,7 @@ static bool cb_event_get_layout(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1474,7 +1459,7 @@ static bool cb_event_get_layout(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);
@@ -1491,7 +1476,6 @@ error:
 
 static bool cb_event_add_domain_admin(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1511,7 +1495,7 @@ static bool cb_event_add_domain_admin(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1564,7 +1548,7 @@ static bool cb_event_add_domain_admin(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1581,7 +1565,6 @@ error:
 
 static bool cb_event_add_project_admin(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1601,7 +1584,7 @@ static bool cb_event_add_project_admin(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1654,7 +1637,7 @@ static bool cb_event_add_project_admin(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1700,7 +1683,6 @@ error:
 
 static bool cb_event_ldap_import(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1723,7 +1705,7 @@ static bool cb_event_ldap_import(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1792,10 +1774,6 @@ static bool cb_event_ldap_import(ov_vocs *vocs,
                                             base,
                                             ldap_user,
                                             ldap_pass,
-                                            domain,
-                                            uuid,
-                                            vocs,
-                                            cb_ldap_import)) {
 
         out =
             ov_event_api_create_error_response(input,
@@ -1829,7 +1807,6 @@ error:
 
 static bool cb_event_set_user_data(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1848,7 +1825,7 @@ static bool cb_event_set_user_data(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1898,7 +1875,7 @@ static bool cb_event_set_user_data(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1915,7 +1892,6 @@ error:
 
 static bool cb_event_get_user_data(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     /* checking input:
@@ -1933,7 +1909,7 @@ static bool cb_event_get_user_data(ov_vocs *vocs,
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -1973,7 +1949,7 @@ static bool cb_event_get_user_data(ov_vocs *vocs,
 
 response:
 
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);
@@ -1990,14 +1966,13 @@ error:
 
 static bool cb_event_get_highest_port(ov_vocs *vocs,
                        int socket,
-                       const ov_event_parameter *params,
                        ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
-    if (!vocs || !socket || !params || !input) goto error;
+    if (!vocs || !socket || !input) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
@@ -2018,7 +1993,7 @@ static bool cb_event_get_highest_port(ov_vocs *vocs,
     ov_json_object_set(res, OV_KEY_PORT, ov_json_number(port));
 
 response:
-    ov_event_io_send(params, socket, out);
+    env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     data = ov_json_value_free(data);
     input = ov_json_value_free(input);

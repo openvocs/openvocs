@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2025 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -19,16 +19,16 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_web_server_connection_test.c
+        @file           ov_webserver_io_test.c
         @author         Töpfer, Markus
 
-        @date           2025-11-06
+        @date           2026-01-31
 
 
         ------------------------------------------------------------------------
 */
-#include "ov_web_server_connection.c"
 #include <ov_test/testrun.h>
+#include "ov_webserver_io.c"
 
 /*
  *      ------------------------------------------------------------------------
@@ -38,10 +38,10 @@
  *      ------------------------------------------------------------------------
  */
 
-int test_case() {
-    testrun(1 == 1);
+int test_case(){
+        testrun(1 == 1);
 
-    return testrun_log_success();
+        return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
@@ -56,10 +56,10 @@ int test_case() {
 
 int all_tests() {
 
-    testrun_init();
-    testrun_test(test_case);
+        testrun_init();
+        testrun_test(test_case);
 
-    return testrun_counter;
+        return testrun_counter;
 }
 
 /*

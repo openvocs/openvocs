@@ -455,33 +455,26 @@ generate_config_ov_vocs() {
          \"network\" : 3000000
        }
      },
+     \"io\":
+     {
+      \"domain\":
+      {
+        \"path\": \"/etc/openvocs/ov_mc_vocs/domains\"
+      }
+     },
      \"webserver\":
      {
        \"name\":\"VOCS GATEWAY\",
-       \"debug\":false,
-       \"ip4_only\":true,
-       \"domains\":\"$DIR_DOMAINS\",
-       \"mime\" : {
-         \"path\" : \"$DIR_MIME\",
-         \"extension\" : \"mime\"
-       },
-       \"sockets\":
+       \"domains\":
        {
-         \"https\":
-         {
+         \"$IP\" : \"/srv/openvocs/HTML\"
+       },
+       \"socket\":
+       {
            \"host\":\"$IP\",
            \"port\":443,
            \"type\":\"TCP\"
-         },
-         \"stun\":
-         [
-           {
-             \"host\":\"$IP\",
-             \"port\":3478,
-             \"type\":\"UDP\"
-           }
-         ]
-       }
+        }
      }
    }" > $DIR_OV_MC_VOCS"/config.json"
 
