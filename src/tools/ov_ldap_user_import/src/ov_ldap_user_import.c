@@ -418,7 +418,7 @@ static bool write_users_object(const ov_json_value *users, const char *domain,
         goto error;
     }
 
-    ov_json_value const *active_users = ov_json_get(current, OV_KEY_USERS);
+    ov_json_value const *active_users = ov_json_get(current, "/"OV_KEY_USERS);
     if (!active_users) {
 
         out = NULL;

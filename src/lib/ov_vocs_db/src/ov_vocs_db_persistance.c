@@ -55,6 +55,7 @@
 #include <ov_core/ov_broadcast_registry.h>
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_event_app.h>
+#include <ov_core/ov_callback.h>
 
 #define OV_VOCS_DB_PERSISTANCE_MAGIC_BYTE 0x01db
 #define IMPL_DEFAULT_LOCK_USEC 100 * 1000          // 100ms
@@ -81,6 +82,8 @@ struct ov_vocs_db_persistance {
 
     ov_event_app *app;
     int socket;
+
+    ov_callback_registry *callbacks;
 
     ov_broadcast_registry *broadcasts;
 };
@@ -900,7 +903,7 @@ static void cb_event_ldap_import(void *userdata, const char *name, int socket,
     }
 
     if (!ov_vocs_db_persistance_ldap_import(self, host, base, ldap_user,
-                                            ldap_pass, domain)) {
+                                            ldap_pass, domain, NULL, NULL, NULL)) {
 
         goto done;
     }
@@ -1124,6 +1127,12 @@ ov_vocs_db_persistance_create(ov_vocs_db_persistance_config config) {
     if (!register_app_callbacks(self))
         goto error;
 
+    self->callbacks = ov_callback_registry_create((ov_callback_registry_config){
+        .loop = config.loop
+    });
+
+    if (!self->callbacks) goto error;
+
     return self;
 error:
     ov_vocs_db_persistance_free(self);
@@ -1154,6 +1163,7 @@ ov_vocs_db_persistance_free(ov_vocs_db_persistance *self) {
 
     self->app = ov_event_app_free(self->app);
     self->broadcasts = ov_broadcast_registry_free(self->broadcasts);
+    self->callbacks = ov_callback_registry_free(self->callbacks);
 
     ov_event_loop *loop = self->config.loop;
 
@@ -1768,6 +1778,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+/*
 static bool write_new_config(const ov_json_value *users, const char *domain,
                              const char *path) {
 
@@ -1803,6 +1814,7 @@ error:
     ov_json_value_free(out);
     return false;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -1897,19 +1909,12 @@ static ov_json_value *write_users_object(const ov_json_value *users,
     ov_dir_tree_create(dir_path);
 
     ov_json_value *current = ov_json_read_file(file_path);
-    if (!current) {
-
-        ov_json_value const *active_users = ov_json_get(current, OV_KEY_USERS);
-        ov_json_value *item = ov_json_object_get(changes, OV_KEY_ADD);
-        ov_json_value_copy((void **)&val, active_users);
-        ov_json_object_set(item, OV_KEY_USERS, val);
-        if (!write_new_config(users, domain, file_path))
-            goto error;
-
-        return changes;
-    }
+    
+    if (!current) goto error;
+    
     const char *domain_id =
         ov_json_string_get(ov_json_get(current, "/" OV_KEY_ID));
+    
     if (!domain_id) {
 
         ov_log_error("Update for domain %s, "
@@ -1928,7 +1933,8 @@ static ov_json_value *write_users_object(const ov_json_value *users,
         goto error;
     }
 
-    ov_json_value const *active_users = ov_json_get(current, OV_KEY_USERS);
+    ov_json_value const *active_users = ov_json_get(current, "/"OV_KEY_USERS);
+   
     if (!active_users) {
 
         out = NULL;
@@ -1985,6 +1991,9 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
 
     OV_ASSERT(msg->json_message);
 
+    const char *uuid =
+        ov_json_string_get(ov_json_get(msg->json_message, "/" OV_KEY_UUID));
+
     const char *user =
         ov_json_string_get(ov_json_get(msg->json_message, "/" OV_KEY_USER));
 
@@ -2003,12 +2012,26 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
     users = ldap_get_users(host, base, user, pass,
                            self->config.timeout.ldap_request_usec);
 
+    ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
+
     if (!users) {
         ov_log_error("Failed to import LDAP users from %s as %s", host, user);
+        
+        if (cb.function){
+
+            void (*function)(void *userdata, const char *uuid, ov_result) = cb.function;
+
+            function(cb.userdata, uuid, (ov_result){
+                .error_code = OV_ERROR_CODE_PROCESSING_ERROR,
+                .message = "Failed to import LDAP users"
+            });
+
+        }
     }
 
     ov_json_value *changes =
         write_users_object(users, domain, self->config.path);
+    
     if (!changes)
         goto error;
 
@@ -2017,7 +2040,16 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
         ov_log_error("Failed to reload changes.");
     }
 
-    ov_vocs_db_send_vocs_trigger(self->config.db, changes);
+    if (cb.function){
+
+            void (*function)(void *userdata, const char *uuid, ov_result) = cb.function;
+            function(cb.userdata, uuid, (ov_result){
+                .error_code = 0,
+                .message = NULL
+            });
+
+    }
+
     changes = ov_json_value_free(changes);
 
     ov_thread_message_free(msg);
@@ -2046,7 +2078,11 @@ error:
 bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
                                         const char *host, const char *base,
                                         const char *user, const char *pass,
-                                        const char *domain) {
+                                        const char *domain,
+                                        const char *uuid, 
+                                        void *userdata,
+                                        void (*callback)(void *userdata, const char *uuid,
+                                            ov_result result)) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -2056,6 +2092,10 @@ bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
         goto error;
 
     out = ov_json_object();
+
+    val = ov_json_string(uuid);
+    if (!ov_json_object_set(out, OV_KEY_UUID, val))
+        goto error;
 
     val = ov_json_string(host);
     if (!ov_json_object_set(out, OV_KEY_HOST, val))
@@ -2083,6 +2123,14 @@ bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
 
     if (!ov_thread_loop_send_message(self->thread_loop, msg,
                                      OV_RECEIVER_THREAD))
+        goto error;
+
+    ov_callback cb = (ov_callback){
+        .userdata = userdata,
+        .function = callback
+    };
+
+    if (!ov_callback_registry_register(self->callbacks, uuid, cb, 5000000))
         goto error;
 
     return true;

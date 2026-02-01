@@ -33,6 +33,7 @@
 #define OV_VOCS_DB_PERSISTANCE_CONFIG_FILE "config.json"
 
 #include <ov_base/ov_event_loop.h>
+#include <ov_base/ov_result.h>
 #include <ov_core/ov_io.h>
 
 /*----------------------------------------------------------------------------*/
@@ -93,7 +94,12 @@ ov_vocs_db_persistance_config_from_json(const ov_json_value *val);
 bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
                                         const char *host, const char *base,
                                         const char *user, const char *pass,
-                                        const char *domain);
+                                        const char *domain,
+                                        const char *uuid,
+                                        void *userdata,
+                                        void (*callback)(void *userdata, 
+                                                        const char *uuid,
+                                                        ov_result result));
 
 bool ov_vocs_db_persistance_broadcast(ov_vocs_db_persistance *self,
                                       const ov_json_value *update);

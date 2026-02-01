@@ -2152,7 +2152,7 @@ static bool cb_event_ldap_import(void *userdata, const int socket,
 
         goto response;
     }
-
+/*
     if (!ov_vocs_db_persistance_ldap_import(app->config.persistance, host, base,
                                             ldap_user, ldap_pass, domain)) {
 
@@ -2162,6 +2162,7 @@ static bool cb_event_ldap_import(void *userdata, const int socket,
 
         goto response;
     }
+    */
 
     ov_vocs_db_persistance_broadcast(app->config.persistance, input);
     out = ov_event_api_create_success_response(input);
