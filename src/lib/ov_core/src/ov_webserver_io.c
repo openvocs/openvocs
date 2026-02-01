@@ -880,8 +880,6 @@ static void cb_json_success(void *userdata, int socket, ov_json_value *val) {
     if (!self || !conn)
         goto error;
 
-    ov_log_debug("JSON IO success domain |%s|%s|", conn->domain, conn->uri);
-
     ov_dict *uris = ov_dict_get(self->events, conn->domain);
     if (!uris) {
         ov_log_error("failed to get uris for domain %s", conn->domain);
