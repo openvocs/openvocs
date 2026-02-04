@@ -1774,6 +1774,10 @@ static bool cb_event_ldap_import(ov_vocs *vocs,
                                             base,
                                             ldap_user,
                                             ldap_pass,
+                                            domain,
+                                            uuid,
+                                            vocs,
+                                            cb_ldap_import)){
 
         out =
             ov_event_api_create_error_response(input,
@@ -1790,7 +1794,7 @@ static bool cb_event_ldap_import(ov_vocs *vocs,
 
 response:
 
-    if (out) ov_event_io_send(params, socket, out);
+    if (out) env_send(vocs, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
     data = ov_json_value_free(data);

@@ -70,7 +70,6 @@ OV_LIBS       += -l ov_vocs_db$(OV_EDITION)
 OV_LIBS       += -l ov_vocs$(OV_EDITION)
 OV_LIBS       += -l ov_ldap$(OV_EDITION)
 OV_LIBS 	  += -l ov_ice_proxy$(OV_EDITION)
-OV_LIBS 	  += -l ov_web_server$(OV_EDITION)
 
 OV_LIBS       += -l m
 
