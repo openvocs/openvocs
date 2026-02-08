@@ -444,7 +444,7 @@ static bool admin_state_mixer(ov_vocs *vocs,
 
     if (!vocs || !input) goto error;
 
-    ov_mc_backend_registry_count count =
+    ov_mc_backend_count count =
         ov_mc_backend_state_mixers(vocs->backend);
 
     out = ov_event_api_create_success_response(input);

@@ -34,7 +34,6 @@
 #include <ov_core/ov_callback.h>
 #include <ov_core/ov_io.h>
 
-#include "ov_mc_backend_registry.h"
 #include "ov_mc_mixer_core.h"
 #include <ov_base/ov_event_loop.h>
 
@@ -85,6 +84,7 @@ typedef struct ov_mc_backend_config {
     struct {
 
         uint64_t request_usec;
+        uint64_t threadlock_usec;
 
     } timeout;
 
@@ -220,7 +220,16 @@ bool ov_mc_backend_set_loop_volume(ov_mc_backend *self, const char *uuid,
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_registry_count ov_mc_backend_state_mixers(ov_mc_backend *self);
+typedef struct ov_mc_backend_count {
+
+    uint64_t mixers;
+    uint64_t used;
+
+} ov_mc_backend_count;
+
+/*----------------------------------------------------------------------------*/
+
+ov_mc_backend_count ov_mc_backend_state_mixers(ov_mc_backend *self);
 
 /*----------------------------------------------------------------------------*/
 
