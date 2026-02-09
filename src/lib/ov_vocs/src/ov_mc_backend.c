@@ -72,7 +72,6 @@ struct ov_mc_backend {
         ov_dict *data;
 
     } mixer;
-
 };
 
 /*----------------------------------------------------------------------------*/
@@ -93,19 +92,21 @@ static void close_mixer_data(ov_mc_backend *self, int socket) {
 
     ov_mc_mixer_data out = {0};
 
-    if (!ov_thread_lock_try_lock(&self->mixer.lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
 
-    ov_mc_mixer_data *data = (ov_mc_mixer_data*) ov_dict_get(self->mixer.data, 
-        (void*)(intptr_t) socket);
+    ov_mc_mixer_data *data = (ov_mc_mixer_data *)ov_dict_get(
+        self->mixer.data, (void *)(intptr_t)socket);
 
-    if (!data) goto unlock_mixer;
+    if (!data)
+        goto unlock_mixer;
 
     ov_thread_lock_try_lock(&self->user.lock);
     ov_dict_del(self->user.data, data->user);
     ov_thread_lock_unlock(&self->user.lock);
 
     out = *data;
-    ov_dict_del(self->mixer.data, (void*)(intptr_t) socket);
+    ov_dict_del(self->mixer.data, (void *)(intptr_t)socket);
 
 unlock_mixer:
 
@@ -176,10 +177,11 @@ static void cb_event_register(void *userdata, const char *name, int socket,
     ov_mc_mixer_data data = ov_mc_mixer_data_set_socket(socket);
     strncpy(data.uuid, uuid, sizeof(ov_id));
 
-    if (!ov_thread_lock_try_lock(&self->mixer.lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
     ov_mc_mixer_data *val = calloc(1, sizeof(ov_mc_mixer_data));
     *val = data;
-    ov_dict_set(self->mixer.data, (void*)(intptr_t)socket, val, NULL);
+    ov_dict_set(self->mixer.data, (void *)(intptr_t)socket, val, NULL);
     ov_thread_lock_unlock(&self->mixer.lock);
 
     out = ov_mc_mixer_msg_configure(self->config.mixer.config);
@@ -203,18 +205,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool drop_user_data_from_mixer(
-    ov_mc_backend *self, int socket, const char *user_uuid){
+static bool drop_user_data_from_mixer(ov_mc_backend *self, int socket,
+                                      const char *user_uuid) {
 
-    if (!ov_thread_lock_try_lock(&self->mixer.lock)) goto error;
-        
-    ov_mc_mixer_data *data = ov_dict_get(self->mixer.data, 
-            (void*)(intptr_t) socket);
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
+
+    ov_mc_mixer_data *data =
+        ov_dict_get(self->mixer.data, (void *)(intptr_t)socket);
 
     ov_id_clear(data->user);
     ov_thread_lock_unlock(&self->mixer.lock);
 
-    if (!ov_thread_lock_try_lock(&self->user.lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
     ov_dict_del(self->user.data, user_uuid);
     ov_thread_lock_unlock(&self->user.lock);
 
@@ -225,19 +229,22 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool drop_user_data(ov_mc_backend *self, const char *user){
+static bool drop_user_data(ov_mc_backend *self, const char *user) {
 
-    if (!ov_thread_lock_try_lock(&self->user.lock)) goto error;
-    int mixer = (intptr_t) ov_dict_get(self->user.data, user);
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
+    int mixer = (intptr_t)ov_dict_get(self->user.data, user);
     ov_dict_del(self->user.data, user);
     ov_thread_lock_unlock(&self->user.lock);
 
-    if (!ov_thread_lock_try_lock(&self->mixer.lock)) goto error;
-        
-    ov_mc_mixer_data *data = ov_dict_get(self->mixer.data, 
-            (void*)(intptr_t) mixer);
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
 
-    if (data) ov_id_clear(data->user);
+    ov_mc_mixer_data *data =
+        ov_dict_get(self->mixer.data, (void *)(intptr_t)mixer);
+
+    if (data)
+        ov_id_clear(data->user);
     ov_thread_lock_unlock(&self->mixer.lock);
 
     return true;
@@ -264,10 +271,10 @@ static void cb_event_acquire_response(ov_mc_backend *self, int socket,
     if (!uuid || !user_uuid)
         goto error;
 
-    if (0 != code){
+    if (0 != code) {
 
-        if (!drop_user_data_from_mixer(self, socket, user_uuid)) goto error;
-
+        if (!drop_user_data_from_mixer(self, socket, user_uuid))
+            goto error;
     }
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
@@ -339,8 +346,8 @@ static void cb_event_release_response(ov_mc_backend *self, int socket,
 
     } else {
 
-        if (!drop_user_data(self, user_uuid)) goto error;
-            
+        if (!drop_user_data(self, user_uuid))
+            goto error;
     }
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
@@ -387,13 +394,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_mc_mixer_data get_mixer_data(ov_mc_backend *self, int socket){
+static ov_mc_mixer_data get_mixer_data(ov_mc_backend *self, int socket) {
 
     ov_mc_mixer_data out = {0};
 
-    if (!ov_thread_lock_try_lock(&self->mixer.lock)) goto error;
-    ov_mc_mixer_data *d = ov_dict_get(self->mixer.data, (void*)(intptr_t)socket);
-    if (d) out = *d;
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
+    ov_mc_mixer_data *d =
+        ov_dict_get(self->mixer.data, (void *)(intptr_t)socket);
+    if (d)
+        out = *d;
     ov_thread_lock_unlock(&self->mixer.lock);
 
 error:
@@ -402,17 +412,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_mc_mixer_data get_mixer_data_by_user(ov_mc_backend *self, const char *user){
+static ov_mc_mixer_data get_mixer_data_by_user(ov_mc_backend *self,
+                                               const char *user) {
 
-    if (!ov_thread_lock_try_lock(&self->user.lock)) goto error;
-    int socket = (intptr_t) ov_dict_get(self->user.data, user);
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->user.data, user);
     ov_thread_lock_unlock(&self->user.lock);
 
     return get_mixer_data(self, socket);
 error:
     return (ov_mc_mixer_data){0};
 }
-
 
 /*----------------------------------------------------------------------------*/
 
@@ -442,7 +453,8 @@ static void cb_event_join_response(ov_mc_backend *self, int socket,
     if (cb.function) {
 
         ov_mc_backend_cb_loop function = cb.function;
-        function((void *)cb.userdata, uuid, mixerdata.user, loopdata.name, code, desc);
+        function((void *)cb.userdata, uuid, mixerdata.user, loopdata.name, code,
+                 desc);
 
     } else {
 
@@ -798,17 +810,23 @@ ov_mc_backend *ov_mc_backend_create(ov_mc_backend_config config) {
     if (!self->callbacks)
         goto error;
 
-    if (!ov_thread_lock_init(&self->user.lock, self->config.timeout.threadlock_usec)) goto error;
-    if (!ov_thread_lock_init(&self->mixer.lock, self->config.timeout.threadlock_usec)) goto error;
+    if (!ov_thread_lock_init(&self->user.lock,
+                             self->config.timeout.threadlock_usec))
+        goto error;
+    if (!ov_thread_lock_init(&self->mixer.lock,
+                             self->config.timeout.threadlock_usec))
+        goto error;
 
     ov_dict_config d_config = ov_dict_string_key_config(255);
     self->user.data = ov_dict_create(d_config);
-    if (!self->user.data) goto error;
+    if (!self->user.data)
+        goto error;
 
     d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = ov_data_pointer_free;
     self->mixer.data = ov_dict_create(d_config);
-    if (!self->mixer.data) goto error;
+    if (!self->mixer.data)
+        goto error;
 
     return self;
 error:
@@ -857,45 +875,47 @@ struct container {
 
 /*----------------------------------------------------------------------------*/
 
-static bool get_empty_mixer(const void *key, void *val, void *data){
+static bool get_empty_mixer(const void *key, void *val, void *data) {
 
-    if (!key) return true;
-    ov_mc_mixer_data *mixer = (ov_mc_mixer_data*) val;
-    struct container *container = (struct container*) data;
+    if (!key)
+        return true;
+    ov_mc_mixer_data *mixer = (ov_mc_mixer_data *)val;
+    struct container *container = (struct container *)data;
 
-    if (container->socket > 0) return true;
+    if (container->socket > 0)
+        return true;
 
-    if (0 == mixer->user[0]){
+    if (0 == mixer->user[0]) {
 
-        container->socket = (intptr_t) key;
+        container->socket = (intptr_t)key;
         ov_id_set(mixer->user, container->user);
-
-    } 
+    }
 
     return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool acquire_user(ov_mc_backend *self, const char *user){
+static bool acquire_user(ov_mc_backend *self, const char *user) {
 
-    if (!self || !user) return false;
+    if (!self || !user)
+        return false;
 
-    if (!ov_thread_lock_try_lock(&self->mixer.lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
 
-    struct container container = (struct container){
-        .socket = 0,
-        .user = user
-    };
+    struct container container = (struct container){.socket = 0, .user = user};
 
     ov_dict_for_each(self->mixer.data, &container, get_empty_mixer);
     ov_thread_lock_unlock(&self->mixer.lock);
 
-    if (0 == container.socket) goto error;
+    if (0 == container.socket)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->user.lock)) goto error;
-    ov_dict_set(self->user.data, ov_string_dup(user), 
-        (void*)(intptr_t) container.socket, NULL);
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
+    ov_dict_set(self->user.data, ov_string_dup(user),
+                (void *)(intptr_t)container.socket, NULL);
     ov_thread_lock_unlock(&self->user.lock);
 
     return true;
@@ -923,7 +943,6 @@ bool ov_mc_backend_acquire_mixer(ov_mc_backend *self, const char *uuid,
 
         callback((void *)userdata, uuid, user_uuid, OV_ERROR_NO_RESOURCE,
                  OV_ERROR_DESC_NO_RESOURCE);
-
     }
 
     mixer = get_mixer_data_by_user(self, user_uuid);
@@ -957,7 +976,8 @@ bool ov_mc_backend_acquire_mixer(ov_mc_backend *self, const char *uuid,
 done:
     return true;
 error:
-    if (mixer.socket > 0) close_mixer(self, mixer.socket);
+    if (mixer.socket > 0)
+        close_mixer(self, mixer.socket);
     msg = ov_json_value_free(msg);
     return false;
 }
@@ -1264,11 +1284,12 @@ ov_mc_backend_config ov_mc_backend_config_from_json(const ov_json_value *val) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool count_mixers(const void *key, void *val, void *data){
+static bool count_mixers(const void *key, void *val, void *data) {
 
-    if (!key) return true;
-    ov_mc_mixer_data *d = (ov_mc_mixer_data*) val;
-    ov_mc_backend_count *count = (ov_mc_backend_count*) data;
+    if (!key)
+        return true;
+    ov_mc_mixer_data *d = (ov_mc_mixer_data *)val;
+    ov_mc_backend_count *count = (ov_mc_backend_count *)data;
 
     count->mixers++;
     if (0 != d->user[0])
@@ -1286,10 +1307,10 @@ ov_mc_backend_count ov_mc_backend_state_mixers(ov_mc_backend *self) {
 
     ov_mc_backend_count count = {0};
 
-    if (!ov_thread_lock_try_lock(&self->mixer.lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
     ov_dict_for_each(self->mixer.data, &count, count_mixers);
     ov_thread_lock_unlock(&self->mixer.lock);
-
 
     return count;
 

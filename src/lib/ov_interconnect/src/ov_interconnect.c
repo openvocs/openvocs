@@ -1563,7 +1563,7 @@ ov_interconnect_config_from_json(const ov_json_value *val) {
 
     config.mixer = ov_mixer_config_from_json(conf);
 
-    if (ov_json_is_true(ov_json_get(conf, "/encryption_off"))){
+    if (ov_json_is_true(ov_json_get(conf, "/encryption_off"))) {
         config.encryption = false;
     } else {
         config.encryption = true;
@@ -1853,16 +1853,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-uint64_t ov_interconnect_get_volume(const ov_interconnect *self){
+uint64_t ov_interconnect_get_volume(const ov_interconnect *self) {
 
-    if (!self) return 0;
+    if (!self)
+        return 0;
     return self->config.volume;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_is_encrypted(const ov_interconnect *self){
+bool ov_interconnect_is_encrypted(const ov_interconnect *self) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
     return self->config.encryption;
 }

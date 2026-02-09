@@ -47,7 +47,7 @@ struct ov_webserver_io {
     int socket;
 
     ov_dict *connections;
-    
+
     ov_dict *domains;
     ov_dict *events;
 
@@ -109,18 +109,15 @@ static void *connection_free(void *connection) {
     if (conn->server) {
 
         if (conn->server->config.callbacks.close)
-            conn->server->config.callbacks.close(conn->server->config.callbacks.userdata,
-                                             conn->socket);
+            conn->server->config.callbacks.close(
+                conn->server->config.callbacks.userdata, conn->socket);
     }
 
-    if (-1 != conn->socket){
+    if (-1 != conn->socket) {
 
         close(conn->socket);
 
-        ov_event_loop_unset(
-            conn->server->config.loop,
-            conn->socket,
-            NULL);
+        ov_event_loop_unset(conn->server->config.loop, conn->socket, NULL);
 
         conn->socket = -1;
     }
@@ -159,8 +156,7 @@ static bool cb_io_accept(void *userdata, int listener, int socket) {
         goto error;
     }
 
-    if (!ov_dict_set(self->connections, (void *)(intptr_t)socket, conn,
-                      NULL)) {
+    if (!ov_dict_set(self->connections, (void *)(intptr_t)socket, conn, NULL)) {
         conn = connection_free(conn);
         goto error;
     }
@@ -201,7 +197,7 @@ static bool process_wss_control_frame(Connection *conn,
                 goto error;
 
             if (!ov_websocket_set_data(response, frame->content.start,
-                                        frame->content.length, false))
+                                       frame->content.length, false))
                 goto error;
 
         } else {
@@ -212,7 +208,7 @@ static bool process_wss_control_frame(Connection *conn,
         if (!ov_io_send(
                 conn->server->config.io, conn->socket,
                 (ov_memory_pointer){.start = response->buffer->start,
-                                     .length = response->buffer->length}))
+                                    .length = response->buffer->length}))
             goto error;
 
         break;
@@ -220,7 +216,7 @@ static bool process_wss_control_frame(Connection *conn,
     case OV_WEBSOCKET_OPCODE_CLOSE:
 
         ov_log_debug("received websocket close from %s:%i", conn->remote.host,
-                      conn->remote.port);
+                     conn->remote.port);
 
         goto error;
 
@@ -256,7 +252,7 @@ static bool defragmented_callback(Connection *conn) {
     while (frame) {
 
         if (!ov_buffer_push(buffer, (void *)frame->content.start,
-                             frame->content.length)) {
+                            frame->content.length)) {
             frame = ov_websocket_frame_free(frame);
             goto error;
         }
@@ -266,10 +262,9 @@ static bool defragmented_callback(Connection *conn) {
     }
 
     // we expect only JSON websocket frames
-    if (!ov_json_io_buffer_push(
-            conn->server->json_io_buffer, conn->socket,
-            (ov_memory_pointer){.start = buffer->start,
-                                 .length = buffer->length}))
+    if (!ov_json_io_buffer_push(conn->server->json_io_buffer, conn->socket,
+                                (ov_memory_pointer){.start = buffer->start,
+                                                    .length = buffer->length}))
         goto error;
 
     buffer = ov_buffer_free(buffer);
@@ -292,7 +287,7 @@ static bool process_non_fragmented_frame(Connection *conn,
     if (!ov_json_io_buffer_push(
             conn->server->json_io_buffer, conn->socket,
             (ov_memory_pointer){.start = frame->content.start,
-                                 .length = frame->content.length}))
+                                .length = frame->content.length}))
         goto error;
 
     frame = ov_websocket_frame_free(frame);
@@ -517,7 +512,7 @@ static bool cleaned_path_for_connection(Connection *conn,
         goto error;
 
     uri = ov_uri_from_string((char *)msg->request.uri.start,
-                              msg->request.uri.length);
+                             msg->request.uri.length);
 
     if (!uri || !uri->path)
         goto error;
@@ -527,8 +522,8 @@ static bool cleaned_path_for_connection(Connection *conn,
     if (!domain_path) {
 
         ov_log_error("Access to domain %s denied "
-                      "- no domain root path.",
-                      conn->domain);
+                     "- no domain root path.",
+                     conn->domain);
 
         goto error;
     }
@@ -565,28 +560,28 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_io_clean_path(ov_webserver_io *self, 
-        int socket,
-        const ov_http_message *msg,
-        char *path_out,
-        size_t path_out_len){
+bool ov_webserver_io_clean_path(ov_webserver_io *self, int socket,
+                                const ov_http_message *msg, char *path_out,
+                                size_t path_out_len) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
-    Connection *conn = ov_dict_get(self->connections, (void*)(intptr_t)socket);
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
     return cleaned_path_for_connection(conn, msg, path_out_len, path_out);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool enable_domain(const void *key, void *val, void *data){
+static bool enable_domain(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    const char *name = (char*) key;
+    const char *name = (char *)key;
     const char *path = ov_json_string_get(val);
 
-    ov_webserver_io *self = (ov_webserver_io*) data;
+    ov_webserver_io *self = (ov_webserver_io *)data;
 
     if (!self->domains) {
 
@@ -594,25 +589,26 @@ static bool enable_domain(const void *key, void *val, void *data){
         d_config.value.data_function.free = ov_data_pointer_free;
 
         self->domains = ov_dict_create(d_config);
-        if (!self->domains) goto error;
-
+        if (!self->domains)
+            goto error;
     }
 
-    return ov_dict_set(self->domains, ov_string_dup(name), 
-        ov_string_dup(path), NULL);
+    return ov_dict_set(self->domains, ov_string_dup(name), ov_string_dup(path),
+                       NULL);
 error:
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_io_enable_domains(
-        ov_webserver_io *self,
-        const ov_json_value *config){
+bool ov_webserver_io_enable_domains(ov_webserver_io *self,
+                                    const ov_json_value *config) {
 
-    if (!self || !config) return false;
+    if (!self || !config)
+        return false;
 
-    ov_json_value *domains = (ov_json_value*) ov_json_get(config, "/webserver/domains");
+    ov_json_value *domains =
+        (ov_json_value *)ov_json_get(config, "/webserver/domains");
 
     return ov_json_object_for_each(domains, self, enable_domain);
 }
@@ -632,7 +628,7 @@ static bool process_http_message(Connection *conn, const ov_http_message *msg) {
 
     if (conn->server->debug)
         ov_log_debug("RECV %.*s", (int)msg->buffer->length,
-                      (char *)msg->buffer->start);
+                     (char *)msg->buffer->start);
 
     uint8_t *hostname = (uint8_t *)header_host->value.start;
     size_t hostname_length = header_host->value.length;
@@ -644,17 +640,16 @@ static bool process_http_message(Connection *conn, const ov_http_message *msg) {
     if (0 != strncmp(conn->domain, (char *)hostname, hostname_length)) {
 
         ov_log_error("HTTPs TLS consistency error,"
-                      " using domain %s and hostname %.*s at %s:%i - ignoring",
-                      conn->domain, (int)hostname_length, (char *)hostname,
-                      conn->remote.host, conn->remote.port);
+                     " using domain %s and hostname %.*s at %s:%i - ignoring",
+                     conn->domain, (int)hostname_length, (char *)hostname,
+                     conn->remote.host, conn->remote.port);
     }
 
-    if (!conn->server->config.callbacks.io) goto error;
+    if (!conn->server->config.callbacks.io)
+        goto error;
 
     return conn->server->config.callbacks.io(
-        conn->server->config.callbacks.userdata,
-        conn->socket,
-        msg);
+        conn->server->config.callbacks.userdata, conn->socket, msg);
 
 error:
     return false;
@@ -675,22 +670,22 @@ static bool process_http(Connection *conn, ov_http_message *msg) {
         OV_ASSERT(out);
         OV_ASSERT(is_handshake);
 
-        conn->type = WEBSOCKET; 
+        conn->type = WEBSOCKET;
 
         char uri[PATH_MAX] = {0};
 
-        snprintf(uri, PATH_MAX, "%.*s", (int) 
-            msg->request.uri.length, msg->request.uri.start);
-        
+        snprintf(uri, PATH_MAX, "%.*s", (int)msg->request.uri.length,
+                 msg->request.uri.start);
+
         conn->uri = ov_string_dup(uri);
 
         if (!ov_io_send(conn->server->config.io, conn->socket,
-                         (ov_memory_pointer){.start = out->buffer->start,
-                                              .length = out->buffer->length})) {
+                        (ov_memory_pointer){.start = out->buffer->start,
+                                            .length = out->buffer->length})) {
 
             if (conn->server->debug)
                 ov_log_debug("Failed to send handshake response to %s:%i",
-                              conn->remote.host, conn->remote.port);
+                             conn->remote.host, conn->remote.port);
 
             out = ov_http_message_free(out);
             goto error;
@@ -793,7 +788,7 @@ static bool io_connection(ov_webserver_io *self, Connection *conn,
         if (0 != ov_string_compare(conn->domain, domain)) {
 
             ov_log_error("Connection %i switched from domain %s to domain %s",
-                          conn->socket, conn->domain, domain);
+                         conn->socket, conn->domain, domain);
 
             goto error;
         }
@@ -872,10 +867,9 @@ static void cb_json_success(void *userdata, int socket, ov_json_value *val) {
     if (!userdata || !val)
         goto error;
 
-    ov_webserver_io *self = (ov_webserver_io*)userdata;
+    ov_webserver_io *self = (ov_webserver_io *)userdata;
 
-    Connection *conn =
-        ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
     if (!self || !conn)
         goto error;
@@ -887,12 +881,13 @@ static void cb_json_success(void *userdata, int socket, ov_json_value *val) {
     }
 
     Callback *cb = ov_dict_get(uris, conn->uri);
-    if (!cb){
-        ov_log_error("failed to get cb for domain %s%s", conn->domain, conn->uri);
+    if (!cb) {
+        ov_log_error("failed to get cb for domain %s%s", conn->domain,
+                     conn->uri);
         goto error;
     }
 
-    void (*function)(void *, int, ov_json_value*) = cb->callback;
+    void (*function)(void *, int, ov_json_value *) = cb->callback;
 
     function(cb->userdata, socket, val);
     return;
@@ -908,7 +903,7 @@ static void cb_json_failure(void *userdata, int socket) {
     if (!userdata)
         goto error;
 
-    ov_webserver_io *self = (ov_webserver_io*)userdata;
+    ov_webserver_io *self = (ov_webserver_io *)userdata;
 
     ov_log_error("JSON IO failure at %i - closing", socket);
     ov_io_close(self->config.io, socket);
@@ -965,17 +960,16 @@ ov_webserver_io *ov_webserver_io_create(ov_webserver_io_config config) {
     self->config = config;
 
     self->socket = ov_io_open_listener(
-        self->config.io,
-        (ov_io_socket_config){.socket = self->config.socket,
-                               .callbacks.userdata = self,
-                               .callbacks.accept = cb_io_accept,
-                               .callbacks.io = cb_io,
-                               .callbacks.close = cb_close});
+        self->config.io, (ov_io_socket_config){.socket = self->config.socket,
+                                               .callbacks.userdata = self,
+                                               .callbacks.accept = cb_io_accept,
+                                               .callbacks.io = cb_io,
+                                               .callbacks.close = cb_close});
 
     if (-1 == self->socket) {
 
         ov_log_error("Failed to open socket %s:%i - abort.",
-                      self->config.socket.host, self->config.socket.port);
+                     self->config.socket.host, self->config.socket.port);
 
         goto error;
     }
@@ -989,14 +983,14 @@ ov_webserver_io *ov_webserver_io_create(ov_webserver_io_config config) {
 
     self->json_io_buffer = ov_json_io_buffer_create(
         (ov_json_io_buffer_config){.callback.userdata = self,
-                                    .callback.success = cb_json_success,
-                                    .callback.failure = cb_json_failure});
+                                   .callback.success = cb_json_success,
+                                   .callback.failure = cb_json_failure});
     if (!self->json_io_buffer)
         goto error;
 
     d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_dict_free;
-    self->events =  ov_dict_create(d_config);
+    self->events = ov_dict_create(d_config);
 
     return self;
 error:
@@ -1034,7 +1028,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_webserver_io_config ov_webserver_io_config_from_json(const ov_json_value *input) {
+ov_webserver_io_config
+ov_webserver_io_config_from_json(const ov_json_value *input) {
 
     ov_webserver_io_config config = {0};
     if (!input)
@@ -1048,9 +1043,8 @@ ov_webserver_io_config ov_webserver_io_config_from_json(const ov_json_value *inp
     if (name)
         strncpy(config.name, name, PATH_MAX);
 
-    config.socket =
-        ov_socket_configuration_from_json(ov_json_object_get(item, "socket"),
-            (ov_socket_configuration){0});
+    config.socket = ov_socket_configuration_from_json(
+        ov_json_object_get(item, "socket"), (ov_socket_configuration){0});
 
     ov_json_value *http = ov_json_object_get(item, "http");
     if (http) {
@@ -1067,8 +1061,8 @@ ov_webserver_io_config ov_webserver_io_config_from_json(const ov_json_value *inp
         config.http.buffer.default_size =
             ov_json_number_get(ov_json_object_get(http, "buffer_size"));
 
-        config.http.buffer.max_bytes_recache = ov_json_number_get(
-            ov_json_object_get(http, "buffer_size_recache"));
+        config.http.buffer.max_bytes_recache =
+            ov_json_number_get(ov_json_object_get(http, "buffer_size_recache"));
 
         config.http.transfer.max =
             ov_json_number_get(ov_json_object_get(http, "max_transfer"));
@@ -1083,8 +1077,8 @@ ov_webserver_io_config ov_webserver_io_config_from_json(const ov_json_value *inp
         config.frame.buffer.default_size =
             ov_json_number_get(ov_json_object_get(http, "buffer_size"));
 
-        config.frame.buffer.max_bytes_recache = ov_json_number_get(
-            ov_json_object_get(http, "buffer_size_recache"));
+        config.frame.buffer.max_bytes_recache =
+            ov_json_number_get(ov_json_object_get(http, "buffer_size_recache"));
     }
 
     return config;
@@ -1094,46 +1088,46 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_io_event_callback(
-        ov_webserver_io *self,
-        const char *domain, 
-        const char *uri,
-        void *userdata,
-        void (*callback)(void *userdata, int socket, ov_json_value *msg)){
+bool ov_webserver_io_event_callback(ov_webserver_io *self, const char *domain,
+                                    const char *uri, void *userdata,
+                                    void (*callback)(void *userdata, int socket,
+                                                     ov_json_value *msg)) {
 
     Callback *val = NULL;
     char *key = NULL;
 
-    if (!self || !domain || !uri) goto error;
+    if (!self || !domain || !uri)
+        goto error;
 
     ov_dict *uris = ov_dict_get(self->events, domain);
-    
-    if (!uris){
+
+    if (!uris) {
 
         ov_dict_config d_config = ov_dict_string_key_config(255);
         d_config.value.data_function.free = ov_data_pointer_free;
 
         uris = ov_dict_create(d_config);
         ov_dict_set(self->events, ov_string_dup(domain), uris, NULL);
-
     }
 
     if (!userdata) {
 
         return ov_dict_del(uris, uri);
-
     }
 
     key = ov_string_dup(uri);
-    if (!key) goto error;
+    if (!key)
+        goto error;
 
     val = calloc(1, sizeof(Callback));
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     val->userdata = userdata;
     val->callback = callback;
 
-    if (!ov_dict_set(uris, key, val, NULL)) goto error;
+    if (!ov_dict_set(uris, key, val, NULL))
+        goto error;
 
     ov_log_info("Enabled JSON callback at domain |%s|%s|", domain, uri);
 
@@ -1146,11 +1140,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_io_close(ov_webserver_io *self, int socket){
+bool ov_webserver_io_close(ov_webserver_io *self, int socket) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
-    return ov_dict_del(self->connections, (void*)(intptr_t)socket);
+    return ov_dict_del(self->connections, (void *)(intptr_t)socket);
 }
 
 /*
@@ -1161,10 +1156,8 @@ bool ov_webserver_io_close(ov_webserver_io *self, int socket){
  *      ------------------------------------------------------------------------
  */
 
-
-bool ov_webserver_io_send_json(ov_webserver_io *self, 
-    int socket, 
-    const ov_json_value *msg) {
+bool ov_webserver_io_send_json(ov_webserver_io *self, int socket,
+                               const ov_json_value *msg) {
 
     char *string = NULL;
     ov_websocket_frame *frame = NULL;
@@ -1172,8 +1165,7 @@ bool ov_webserver_io_send_json(ov_webserver_io *self,
     if (!self || !msg)
         goto error;
 
-    Connection *conn =
-        ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
     if (!conn)
         goto error;
 
@@ -1199,8 +1191,8 @@ bool ov_webserver_io_send_json(ov_webserver_io *self,
             goto error;
 
         if (!ov_io_send(self->config.io, conn->socket,
-                         (ov_memory_pointer){.start = frame->buffer->start,
-                                              .length = frame->buffer->length}))
+                        (ov_memory_pointer){.start = frame->buffer->start,
+                                            .length = frame->buffer->length}))
             goto error;
 
         goto done;
@@ -1219,8 +1211,8 @@ bool ov_webserver_io_send_json(ov_webserver_io *self,
         goto error;
 
     if (!ov_io_send(self->config.io, conn->socket,
-                     (ov_memory_pointer){.start = frame->buffer->start,
-                                          .length = frame->buffer->length}))
+                    (ov_memory_pointer){.start = frame->buffer->start,
+                                        .length = frame->buffer->length}))
         goto error;
 
     counter++;
@@ -1235,8 +1227,8 @@ bool ov_webserver_io_send_json(ov_webserver_io *self,
             goto error;
 
         if (!ov_io_send(self->config.io, conn->socket,
-                         (ov_memory_pointer){.start = frame->buffer->start,
-                                              .length = frame->buffer->length}))
+                        (ov_memory_pointer){.start = frame->buffer->start,
+                                            .length = frame->buffer->length}))
             goto error;
 
         open -= chunk;
@@ -1251,8 +1243,8 @@ bool ov_webserver_io_send_json(ov_webserver_io *self,
         goto error;
 
     if (!ov_io_send(self->config.io, conn->socket,
-                     (ov_memory_pointer){.start = frame->buffer->start,
-                                          .length = frame->buffer->length}))
+                    (ov_memory_pointer){.start = frame->buffer->start,
+                                        .length = frame->buffer->length}))
         goto error;
 
 done:
@@ -1267,22 +1259,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_io_send_http(ov_webserver_io *self, 
-    int socket, 
-    const ov_http_message *msg) {
+bool ov_webserver_io_send_http(ov_webserver_io *self, int socket,
+                               const ov_http_message *msg) {
 
     if (!self || !msg)
         goto error;
 
-    Connection *conn =
-        ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
     if (!conn)
         goto error;
 
     if (!ov_io_send(self->config.io, conn->socket,
-                     (ov_memory_pointer){.start = msg->buffer->start,
-                                          .length = msg->buffer->length}))
+                    (ov_memory_pointer){.start = msg->buffer->start,
+                                        .length = msg->buffer->length}))
         goto error;
 
     return true;
@@ -1292,22 +1282,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_io_send(ov_webserver_io *self, 
-    int socket, 
-    const char *buffer, size_t size) {
+bool ov_webserver_io_send(ov_webserver_io *self, int socket, const char *buffer,
+                          size_t size) {
 
     if (!self || !buffer)
         goto error;
 
-    Connection *conn =
-        ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
     if (!conn)
         goto error;
 
-    if (!ov_io_send(self->config.io, conn->socket,
-                     (ov_memory_pointer){ .start = (uint8_t*) buffer,
-                                          .length = size}))
+    if (!ov_io_send(
+            self->config.io, conn->socket,
+            (ov_memory_pointer){.start = (uint8_t *)buffer, .length = size}))
         goto error;
 
     return true;
@@ -1330,4 +1318,3 @@ ov_event_loop *ov_webserver_io_get_eventloop(const ov_webserver_io *self) {
 
     return self->config.loop;
 }
-

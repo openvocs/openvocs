@@ -1383,7 +1383,7 @@ bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
         goto error;
     }
 
-    if (ov_interconnect_is_encrypted(self->config.base)){
+    if (ov_interconnect_is_encrypted(self->config.base)) {
 
         srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
@@ -1397,7 +1397,6 @@ bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
             ov_log_error("SRTP unprotect error");
             break;
         }
-
     }
 
     char *loop_name =
@@ -1470,7 +1469,7 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
     uint8_t buf[4096] = {0};
     memcpy(buf, buffer, size);
 
-    if (ov_interconnect_is_encrypted(self->config.base)){
+    if (ov_interconnect_is_encrypted(self->config.base)) {
 
         srtp_err_status_t r = srtp_protect(self->srtp.local.session, buf, &out);
 
@@ -1485,7 +1484,6 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
             goto done;
             break;
         }
-
     }
 
     ssize_t bytes = ov_interconnect_session_send(self, buf, out);

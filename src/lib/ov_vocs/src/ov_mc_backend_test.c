@@ -314,15 +314,14 @@ int check_mixer_register() {
 
     // check registered mixer
 
-    ov_mc_backend_count count =
-        ov_mc_backend_state_mixers(backend);
+    ov_mc_backend_count count = ov_mc_backend_state_mixers(backend);
 
     testrun(count.mixers == 1);
     testrun(count.used == 0);
 
     testrun(acquire_user(backend, "2-2-2-2"))
 
-    count = ov_mc_backend_state_mixers(backend);
+        count = ov_mc_backend_state_mixers(backend);
 
     testrun(count.mixers == 1);
     testrun(count.used == 1);
@@ -618,7 +617,7 @@ int test_ov_mc_backend_release_mixer() {
 
     struct userdata userdata = {0};
 
-   ov_event_loop *loop = ov_event_loop_default(
+    ov_event_loop *loop = ov_event_loop_default(
         (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
 
     testrun(loop);
@@ -787,7 +786,7 @@ int test_ov_mc_backend_join_loop() {
         loop->run(loop, OV_RUN_ONCE);
     }
 
-    //fprintf(stdout, "%s", buf);
+    // fprintf(stdout, "%s", buf);
 
     ov_json_value *msg = ov_json_value_from_string(buf, bytes);
     testrun(msg);

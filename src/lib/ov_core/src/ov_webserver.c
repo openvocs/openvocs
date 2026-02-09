@@ -28,8 +28,8 @@
         ------------------------------------------------------------------------
 */
 #include "../include/ov_webserver.h"
-#include "../include/ov_webserver_io.h"
 #include "../include/ov_mimetype.h"
+#include "../include/ov_webserver_io.h"
 
 #include <ov_base/ov_dump.h>
 #include <ov_base/ov_file.h>
@@ -50,10 +50,9 @@ typedef struct Webserver {
 
 /*----------------------------------------------------------------------------*/
 
-#define AS_WEBSERVER(x)                                                         \
-    (((ov_webserver_cast(x) != 0) &&                                            \
-      (0x01 == ((ov_webserver *)x)->type))                                      \
-         ? (Webserver *)(x)                                                     \
+#define AS_WEBSERVER(x)                                                        \
+    (((ov_webserver_cast(x) != 0) && (0x01 == ((ov_webserver *)x)->type))      \
+         ? (Webserver *)(x)                                                    \
          : 0)
 
 /*
@@ -64,15 +63,15 @@ typedef struct Webserver {
  *      ------------------------------------------------------------------------
  */
 
-static void cb_close(void *userdata, int socket){
+static void cb_close(void *userdata, int socket) {
 
-    Webserver *self = AS_WEBSERVER(userdata);  
-    if (!self) return;
+    Webserver *self = AS_WEBSERVER(userdata);
+    if (!self)
+        return;
 
     if (self->public.config.callbacks.close)
         self->public.config.callbacks.close(
-            self->public.config.callbacks.userdata,
-            socket);
+            self->public.config.callbacks.userdata, socket);
 
     return;
 }
@@ -118,8 +117,8 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool answer_range(Webserver *self, int socket, const char *path,
-                         const ov_http_header *range, const ov_http_message *msg,
-                         bool add_body) {
+                         const ov_http_header *range,
+                         const ov_http_message *msg, bool add_body) {
 
     ov_http_message *response = NULL;
 
@@ -145,10 +144,10 @@ static bool answer_range(Webserver *self, int socket, const char *path,
     }
 
     response = ov_http_create_status_string(msg->config, msg->version, 206,
-                                             OV_HTTP_PARTIAL_CONTENT);
+                                            OV_HTTP_PARTIAL_CONTENT);
 
     if (!ov_http_message_add_header_string(response, "server",
-                                            self->public.config.name))
+                                           self->public.config.name))
         goto error;
 
     if (!ov_http_message_set_date(response))
@@ -164,16 +163,16 @@ static bool answer_range(Webserver *self, int socket, const char *path,
         goto error;
 
     if (!ov_http_message_add_header_string(response,
-                                            "Access-Control-Allow-Origin", "*"))
+                                           "Access-Control-Allow-Origin", "*"))
         goto error;
 
     if (!ov_http_message_close_header(response))
         goto error;
 
-    if (add_body){
+    if (add_body) {
 
         if (!ov_http_message_add_body(
-            response, (ov_memory_pointer){.start = buffer, .length = size}))
+                response, (ov_memory_pointer){.start = buffer, .length = size}))
             goto error;
     }
 
@@ -191,7 +190,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool process_get(Webserver *self, int socket, const ov_http_message *msg){
+static bool process_get(Webserver *self, int socket,
+                        const ov_http_message *msg) {
 
     char path[PATH_MAX] = {0};
 
@@ -208,7 +208,7 @@ static bool process_get(Webserver *self, int socket, const ov_http_message *msg)
 
     size_t path_len = strlen(path);
 
-    if (path[path_len-1] == '/')
+    if (path[path_len - 1] == '/')
         strcat(path, "index.html");
 
     const ov_http_header *range =
@@ -239,9 +239,8 @@ static bool process_get(Webserver *self, int socket, const ov_http_message *msg)
         self->public.config.http, (ov_http_version){.major = 1, .minor = 1},
         200, OV_HTTP_OK);
 
-    if (!ov_http_message_add_header_string(response, 
-        "server", 
-        self->public.config.name))
+    if (!ov_http_message_add_header_string(response, "server",
+                                           self->public.config.name))
         goto error;
 
     if (!ov_http_message_set_date(response))
@@ -276,7 +275,7 @@ static bool process_get(Webserver *self, int socket, const ov_http_message *msg)
 
     if (self->debug)
         ov_log_debug("SEND %.*s", (int)response->buffer->length,
-                      (char *)response->buffer->start);
+                     (char *)response->buffer->start);
 
     response = ov_http_message_free(response);
     buffer = ov_data_pointer_free(buffer);
@@ -289,7 +288,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool process_head(Webserver *self, int socket, const ov_http_message *msg){
+static bool process_head(Webserver *self, int socket,
+                         const ov_http_message *msg) {
 
     char path[PATH_MAX] = {0};
 
@@ -332,9 +332,8 @@ static bool process_head(Webserver *self, int socket, const ov_http_message *msg
         self->public.config.http, (ov_http_version){.major = 1, .minor = 1},
         200, OV_HTTP_OK);
 
-    if (!ov_http_message_add_header_string(response, 
-        "server", 
-        self->public.config.name))
+    if (!ov_http_message_add_header_string(response, "server",
+                                           self->public.config.name))
         goto error;
 
     if (!ov_http_message_set_date(response))
@@ -365,7 +364,7 @@ static bool process_head(Webserver *self, int socket, const ov_http_message *msg
 
     if (self->debug)
         ov_log_debug("SEND %.*s", (int)response->buffer->length,
-                      (char *)response->buffer->start);
+                     (char *)response->buffer->start);
 
     response = ov_http_message_free(response);
     buffer = ov_data_pointer_free(buffer);
@@ -374,15 +373,15 @@ error:
     response = ov_http_message_free(response);
     buffer = ov_data_pointer_free(buffer);
     return false;
-    
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_io(void *userdata, int socket, const ov_http_message *msg){
+static bool cb_io(void *userdata, int socket, const ov_http_message *msg) {
 
-    Webserver *self = AS_WEBSERVER(userdata);  
-    if (!self || !msg) return false;
+    Webserver *self = AS_WEBSERVER(userdata);
+    if (!self || !msg)
+        return false;
 
     if (ov_http_is_request(msg, OV_HTTP_METHOD_GET))
         return process_get(self, socket, msg);
@@ -402,10 +401,11 @@ static bool cb_io(void *userdata, int socket, const ov_http_message *msg){
  *      ------------------------------------------------------------------------
  */
 
-static ov_webserver *impl_free(ov_webserver *input){
+static ov_webserver *impl_free(ov_webserver *input) {
 
-    Webserver *self = AS_WEBSERVER(input);  
-    if (!self) return input;
+    Webserver *self = AS_WEBSERVER(input);
+    if (!self)
+        return input;
 
     self->io = ov_webserver_io_free(self->io);
     self = ov_data_pointer_free(self);
@@ -414,10 +414,11 @@ static ov_webserver *impl_free(ov_webserver *input){
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_debug(ov_webserver *input, bool on){
+static bool impl_debug(ov_webserver *input, bool on) {
 
     Webserver *self = AS_WEBSERVER(input);
-    if (!self) return false;
+    if (!self)
+        return false;
 
     self->debug = on;
     ov_webserver_io_set_debug(self->io, on);
@@ -426,80 +427,81 @@ static bool impl_debug(ov_webserver *input, bool on){
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_enable_domains(ov_webserver *input, const ov_json_value* config){
+static bool impl_enable_domains(ov_webserver *input,
+                                const ov_json_value *config) {
 
     Webserver *self = AS_WEBSERVER(input);
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return ov_webserver_io_enable_domains(self->io, config);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_enable_events(ov_webserver *input, 
-    const char *domain,
-    const char *uri,
-    void *userdata,
-    void (*callback)(void *userdata, 
-                    int socket, 
-                    ov_json_value *msg)){
+static bool impl_enable_events(ov_webserver *input, const char *domain,
+                               const char *uri, void *userdata,
+                               void (*callback)(void *userdata, int socket,
+                                                ov_json_value *msg)) {
 
     Webserver *self = AS_WEBSERVER(input);
-    if (!self) return false;
+    if (!self)
+        return false;
 
-    return ov_webserver_io_event_callback(self->io, 
-        domain, 
-        uri,
-        userdata,
-        callback);
+    return ov_webserver_io_event_callback(self->io, domain, uri, userdata,
+                                          callback);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_close(ov_webserver *input, int socket){
+static bool impl_close(ov_webserver *input, int socket) {
 
     Webserver *self = AS_WEBSERVER(input);
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return ov_webserver_io_close(self->io, socket);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_send_json(ov_webserver *input, 
-    int socket, const ov_json_value *msg){
+static bool impl_send_json(ov_webserver *input, int socket,
+                           const ov_json_value *msg) {
 
     Webserver *self = AS_WEBSERVER(input);
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return ov_webserver_io_send_json(self->io, socket, msg);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_send_http(ov_webserver *input, 
-    int socket, const ov_http_message *msg){
+static bool impl_send_http(ov_webserver *input, int socket,
+                           const ov_http_message *msg) {
 
     Webserver *self = AS_WEBSERVER(input);
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return ov_webserver_io_send_http(self->io, socket, msg);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_send_plain(ov_webserver *input, 
-    int socket, const char *buffer, size_t size){
+static bool impl_send_plain(ov_webserver *input, int socket, const char *buffer,
+                            size_t size) {
 
     Webserver *self = AS_WEBSERVER(input);
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return ov_webserver_io_send(self->io, socket, buffer, size);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool init_config(ov_webserver_config *config){
+static bool init_config(ov_webserver_config *config) {
 
     if (!config || !config->loop || !config->io)
         goto error;
@@ -525,14 +527,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_webserver *ov_webserver_create(ov_webserver_config config){
+ov_webserver *ov_webserver_create(ov_webserver_config config) {
 
     Webserver *self = NULL;
-    
-    if (!init_config(&config)) goto error;
+
+    if (!init_config(&config))
+        goto error;
 
     self = calloc(1, sizeof(Webserver));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->public.magic_bytes = OV_WEBSERVER_MAGIC_BYTES;
     self->public.type = 0x01;
@@ -546,21 +550,21 @@ ov_webserver *ov_webserver_create(ov_webserver_config config){
     self->public.send.http = impl_send_http;
     self->public.send.plain = impl_send_plain;
 
-    ov_webserver_io_config io_config = (ov_webserver_io_config){
-        .loop = config.loop,
-        .io = config.io,
-        .socket = config.socket,
-        .http = config.http,
-        .frame = config.frame,
-        .callbacks.userdata = self,
-        .callbacks.close = cb_close,
-        .callbacks.io = cb_io
-    };
+    ov_webserver_io_config io_config =
+        (ov_webserver_io_config){.loop = config.loop,
+                                 .io = config.io,
+                                 .socket = config.socket,
+                                 .http = config.http,
+                                 .frame = config.frame,
+                                 .callbacks.userdata = self,
+                                 .callbacks.close = cb_close,
+                                 .callbacks.io = cb_io};
 
     strncpy(io_config.name, config.name, PATH_MAX);
 
     self->io = ov_webserver_io_create(io_config);
-    if (!self->io) goto error;
+    if (!self->io)
+        goto error;
 
     return ov_webserver_cast(self);
 error:
@@ -570,15 +574,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_webserver *ov_webserver_free(ov_webserver *self){
+ov_webserver *ov_webserver_free(ov_webserver *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     return self->free(self);
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_webserver *ov_webserver_cast(const void *data){
+ov_webserver *ov_webserver_cast(const void *data) {
 
     if (!data)
         return NULL;
@@ -597,23 +602,23 @@ ov_webserver *ov_webserver_cast(const void *data){
  *      ------------------------------------------------------------------------
  */
 
-ov_webserver_config ov_webserver_config_from_json(
-        const ov_json_value *input){
-    
+ov_webserver_config ov_webserver_config_from_json(const ov_json_value *input) {
+
     ov_webserver_config config = {0};
 
-    if (!input) goto error;
+    if (!input)
+        goto error;
 
     const ov_json_value *item = ov_json_object_get(input, "webserver");
-    if (!item) item = input;
+    if (!item)
+        item = input;
 
     const char *name = ov_json_string_get(ov_json_object_get(item, "name"));
     if (name)
         strncpy(config.name, name, PATH_MAX);
 
-    config.socket =
-        ov_socket_configuration_from_json(ov_json_object_get(item, "socket"),
-            (ov_socket_configuration){0});
+    config.socket = ov_socket_configuration_from_json(
+        ov_json_object_get(item, "socket"), (ov_socket_configuration){0});
 
     ov_json_value *http = ov_json_object_get(item, "http");
     if (http) {
@@ -630,8 +635,8 @@ ov_webserver_config ov_webserver_config_from_json(
         config.http.buffer.default_size =
             ov_json_number_get(ov_json_object_get(http, "buffer_size"));
 
-        config.http.buffer.max_bytes_recache = ov_json_number_get(
-            ov_json_object_get(http, "buffer_size_recache"));
+        config.http.buffer.max_bytes_recache =
+            ov_json_number_get(ov_json_object_get(http, "buffer_size_recache"));
 
         config.http.transfer.max =
             ov_json_number_get(ov_json_object_get(http, "max_transfer"));
@@ -646,8 +651,8 @@ ov_webserver_config ov_webserver_config_from_json(
         config.frame.buffer.default_size =
             ov_json_number_get(ov_json_object_get(http, "buffer_size"));
 
-        config.frame.buffer.max_bytes_recache = ov_json_number_get(
-            ov_json_object_get(http, "buffer_size_recache"));
+        config.frame.buffer.max_bytes_recache =
+            ov_json_number_get(ov_json_object_get(http, "buffer_size_recache"));
     }
 
     return config;
@@ -657,19 +662,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_set_debug(ov_webserver *self, bool on){
+bool ov_webserver_set_debug(ov_webserver *self, bool on) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
     return self->debug(self, on);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_enable_domains(
-        ov_webserver *self,
-        const ov_json_value *config){
+bool ov_webserver_enable_domains(ov_webserver *self,
+                                 const ov_json_value *config) {
 
-    if (!self || !config) return false;
+    if (!self || !config)
+        return false;
 
     return self->enable_domains(self, config);
 }
@@ -677,22 +683,21 @@ bool ov_webserver_enable_domains(
 /*----------------------------------------------------------------------------*/
 
 bool ov_webserver_enable_event_callback(
-        ov_webserver *self,
-        const char *domain, 
-        const char *uri,
-        void *userdata,
-        void (*callback)(void *userdata, int socket, ov_json_value *msg)){
+    ov_webserver *self, const char *domain, const char *uri, void *userdata,
+    void (*callback)(void *userdata, int socket, ov_json_value *msg)) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return self->enable_events(self, domain, uri, userdata, callback);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_close(ov_webserver *self, int socket){
+bool ov_webserver_close(ov_webserver *self, int socket) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return self->close(self, socket);
 }
@@ -700,9 +705,10 @@ bool ov_webserver_close(ov_webserver *self, int socket){
 /*----------------------------------------------------------------------------*/
 
 bool ov_webserver_register_close(ov_webserver *self, void *userdata,
-    void (*callback)(void *userdata, int socket)){
+                                 void (*callback)(void *userdata, int socket)) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     self->config.callbacks.userdata = userdata;
     self->config.callbacks.close = callback;
@@ -717,27 +723,30 @@ bool ov_webserver_register_close(ov_webserver *self, void *userdata,
  *      ------------------------------------------------------------------------
  */
 
-bool ov_webserver_send_json(
-        ov_webserver *self, int socket, const ov_json_value *msg){
+bool ov_webserver_send_json(ov_webserver *self, int socket,
+                            const ov_json_value *msg) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
     return self->send.json(self, socket, msg);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_send_http(
-        ov_webserver *self, int socket, const ov_http_message *msg){
+bool ov_webserver_send_http(ov_webserver *self, int socket,
+                            const ov_http_message *msg) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
     return self->send.http(self, socket, msg);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webserver_send(
-        ov_webserver *self, int socket, const char *buffer, size_t size){
+bool ov_webserver_send(ov_webserver *self, int socket, const char *buffer,
+                       size_t size) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
     return self->send.plain(self, socket, buffer, size);
 }

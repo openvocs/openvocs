@@ -28,14 +28,14 @@
         ------------------------------------------------------------------------
 */
 #include "../include/ov_mc_backend_sip.h"
-#include "../include/ov_mc_backend_sip_registry.h"
 #include "../include/ov_mc_sip_msg.h"
 
 #include <ov_base/ov_dict.h>
 #include <ov_base/ov_error_codes.h>
-#include <ov_base/ov_string.h>
-#include <ov_base/ov_time.h>
 #include <ov_base/ov_id.h>
+#include <ov_base/ov_string.h>
+#include <ov_base/ov_thread_lock.h>
+#include <ov_base/ov_time.h>
 
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_event_app.h>
@@ -56,16 +56,84 @@ struct ov_mc_backend_sip {
 
     } socket;
 
-    struct {
-
-        ov_dict *mixer;
-
-    } resources;
-
     ov_event_app *app;
     ov_event_async_store *async;
-    ov_mc_backend_sip_registry *registry;
+
+    struct {
+
+        ov_thread_lock lock;
+        ov_dict *data;
+
+    } mixer;
+
+    struct {
+
+        ov_thread_lock lock;
+        ov_dict *data;
+
+    } call;
+
+    struct {
+
+        ov_thread_lock lock;
+        ov_dict *data;
+
+    } proxy;
 };
+
+/*----------------------------------------------------------------------------*/
+
+typedef struct Proxy {
+
+    int socket;
+    ov_id uuid;
+    uint64_t load;
+
+} Proxy;
+
+/*----------------------------------------------------------------------------*/
+
+static void *free_proxy(void *self) {
+
+    if (!self)
+        return NULL;
+
+    struct Proxy *proxy = (struct Proxy *)self;
+    proxy->socket = 0;
+
+    proxy = ov_data_pointer_free(proxy);
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+typedef struct Call {
+
+    int socket;
+    char *call_id;
+    char *loop_id;
+    char *peer_id;
+
+} Call;
+
+/*----------------------------------------------------------------------------*/
+
+static void *free_call(void *self) {
+
+    if (!self)
+        return NULL;
+
+    Call *call = (Call *)self;
+
+    call->socket = 0;
+    call->call_id = ov_data_pointer_free(call->call_id);
+    call->loop_id = ov_data_pointer_free(call->loop_id);
+    call->peer_id = ov_data_pointer_free(call->peer_id);
+    call = ov_data_pointer_free(call);
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
 
 static void cb_mixer_released(void *userdata, const char *uuid,
                               const char *user_uuid, uint64_t error_code,
@@ -94,17 +162,21 @@ static bool drop_mixer(const void *key, void *val, void *data) {
 static void asign_sip_mixer(ov_mc_backend_sip *self, int socket,
                             const char *name) {
 
-    ov_dict *res = ov_dict_get(self->resources.mixer, (void *)(intptr_t)socket);
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        return;
+
+    ov_dict *res = ov_dict_get(self->mixer.data, (void *)(intptr_t)socket);
 
     if (!res) {
 
         res = ov_dict_create(ov_dict_string_key_config(255));
-        ov_dict_set(self->resources.mixer, (void *)(intptr_t)socket, res, NULL);
+        ov_dict_set(self->mixer.data, (void *)(intptr_t)socket, res, NULL);
     }
 
     char *key = ov_string_dup(name);
     ov_dict_set(res, key, NULL, NULL);
 
+    ov_thread_lock_unlock(&self->mixer.lock);
     return;
 }
 
@@ -113,10 +185,15 @@ static void asign_sip_mixer(ov_mc_backend_sip *self, int socket,
 static void drop_sip_mixer_assignment(ov_mc_backend_sip *self, int socket,
                                       const char *name) {
 
-    ov_dict *res = ov_dict_get(self->resources.mixer, (void *)(intptr_t)socket);
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        return;
+
+    ov_dict *res = ov_dict_get(self->mixer.data, (void *)(intptr_t)socket);
 
     if (res)
         ov_dict_del(res, name);
+
+    ov_thread_lock_unlock(&self->mixer.lock);
 
     return;
 }
@@ -125,11 +202,16 @@ static void drop_sip_mixer_assignment(ov_mc_backend_sip *self, int socket,
 
 static void drop_mixer_resources(ov_mc_backend_sip *self, int socket) {
 
-    ov_dict *res = ov_dict_get(self->resources.mixer, (void *)(intptr_t)socket);
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        return;
+
+    ov_dict *res = ov_dict_get(self->mixer.data, (void *)(intptr_t)socket);
     if (!res)
         goto done;
 
     ov_dict_for_each(res, self, drop_mixer);
+
+    ov_thread_lock_unlock(&self->mixer.lock);
 
 done:
     return;
@@ -157,7 +239,11 @@ static void cb_close(void *userdata, int connection) {
     ov_log_debug("Socket close received at %i", connection);
 
     drop_mixer_resources(self, connection);
-    ov_mc_backend_sip_registry_unregister_proxy(self->registry, connection);
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
+        return;
+    ov_dict_del(self->proxy.data, (void *)(intptr_t)connection);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     if (self->config.callback.connected)
         self->config.callback.connected(self->config.callback.userdata, false);
@@ -329,8 +415,6 @@ static bool configure_sip_gateway(ov_mc_backend_sip *self, int socket) {
     if (!config)
         goto error;
 
-    ov_json_value_dump(stdout, config);
-
     struct container_permission container =
         (struct container_permission){.backend = self, .socket = socket};
 
@@ -355,12 +439,19 @@ static void cb_event_register(void *userdata, const char *name, int socket,
 
     const char *uuid = ov_json_string_get(ov_json_get(input, "/" OV_KEY_UUID));
 
-    if (!ov_mc_backend_sip_registry_register_proxy(self->registry, socket,
-                                                   uuid)) {
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
+        goto error;
 
-        ov_log_error("Failed to register SIP gateway");
+    Proxy *proxy = calloc(1, sizeof(Proxy));
+    if (!proxy) {
+        ov_thread_lock_unlock(&self->proxy.lock);
         goto error;
     }
+
+    ov_id_set(proxy->uuid, uuid);
+
+    ov_dict_set(self->proxy.data, (void *)(intptr_t)socket, proxy, NULL);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     ov_log_debug("registered sip gateway at socket %i", socket);
 
@@ -825,9 +916,23 @@ static void cb_event_notify(void *userdata, const char *name, int socket,
         if (!loop || !peer)
             goto error;
 
-        if (!ov_mc_backend_sip_registry_register_call(self->registry, socket,
-                                                      id, loop, peer))
+        if (!ov_thread_lock_try_lock(&self->call.lock))
             goto error;
+
+        Call *call = calloc(1, sizeof(Call));
+        if (!call) {
+
+            ov_thread_lock_unlock(&self->call.lock);
+            goto error;
+        }
+
+        call->socket = socket;
+        call->call_id = ov_string_dup(id);
+        call->loop_id = ov_string_dup(loop);
+        call->peer_id = ov_string_dup(peer);
+
+        ov_dict_set(self->call.data, ov_string_dup(id), call, NULL);
+        ov_thread_lock_unlock(&self->call.lock);
 
         if (self->config.callback.call.new)
             self->config.callback.call.new(self->config.callback.userdata, loop,
@@ -835,17 +940,18 @@ static void cb_event_notify(void *userdata, const char *name, int socket,
 
     } else if (0 == ov_string_compare(type, "call_terminated")) {
 
-        char *loop = ov_string_dup(
-            ov_mc_backend_sip_registry_get_call_loop(self->registry, id));
-
-        if (!ov_mc_backend_sip_registry_unregister_call(self->registry, id))
+        if (!ov_thread_lock_try_lock(&self->call.lock))
             goto error;
+        Call *call = ov_dict_get(self->call.data, id);
+        if (call) {
 
-        if (self->config.callback.call.terminated)
-            self->config.callback.call.terminated(
-                self->config.callback.userdata, id, loop);
+            if (self->config.callback.call.terminated)
+                self->config.callback.call.terminated(
+                    self->config.callback.userdata, id, call->loop_id);
+        }
 
-        loop = ov_data_pointer_free(loop);
+        ov_dict_del(self->call.data, id);
+        ov_thread_lock_unlock(&self->call.lock);
 
     } else {
 
@@ -905,8 +1011,22 @@ static void cb_event_call_response(ov_mc_backend_sip *self, int socket,
 
     if (0 == code) {
 
-        ov_mc_backend_sip_registry_register_call(self->registry, socket,
-                                                 call_id, loop, callee);
+        if (!ov_thread_lock_try_lock(&self->call.lock))
+            goto error;
+
+        Call *call = calloc(1, sizeof(Call));
+        if (!call) {
+            ov_thread_lock_unlock(&self->call.lock);
+            goto error;
+        }
+
+        call->socket = socket;
+        call->call_id = ov_string_dup(call_id);
+        call->loop_id = ov_string_dup(loop);
+        call->peer_id = ov_string_dup(callee);
+
+        ov_dict_set(self->call.data, ov_string_dup(call_id), call, NULL);
+        ov_thread_lock_unlock(&self->call.lock);
     }
 
     if (self->config.callback.call.init)
@@ -1051,12 +1171,18 @@ static void cb_event_hangup_response(ov_mc_backend_sip *self, int socket,
     ov_json_value *req = ov_event_api_get_request(input);
     ov_json_value *par = ov_event_api_get_parameter(req);
     const char *call_id = ov_json_string_get(ov_json_get(par, "/" OV_KEY_CALL));
-    const char *loopname =
-        ov_mc_backend_sip_registry_get_call_loop(self->registry, call_id);
 
-    if (self->config.callback.call.terminated)
-        self->config.callback.call.terminated(self->config.callback.userdata,
-                                              call_id, loopname);
+    if (!ov_thread_lock_try_lock(&self->call.lock))
+        goto error;
+
+    Call *call = ov_dict_get(self->call.data, call_id);
+    if (call) {
+
+        if (self->config.callback.call.terminated)
+            self->config.callback.call.terminated(
+                self->config.callback.userdata, call_id, call->loop_id);
+    }
+    ov_thread_lock_unlock(&self->call.lock);
 
 error:
     ov_json_value_free(input);
@@ -1304,6 +1430,9 @@ ov_mc_backend_sip *ov_mc_backend_sip_create(ov_mc_backend_sip_config config) {
     if (0 == config.timeout.response_usec)
         config.timeout.response_usec = OV_MC_BACKEND_SIP_DEFAULT_TIMEOUT;
 
+    if (0 == config.timeout.threadlock_usec)
+        config.timeout.threadlock_usec = 100000;
+
     self = calloc(1, sizeof(ov_mc_backend_sip));
     if (!self)
         goto error;
@@ -1344,17 +1473,37 @@ ov_mc_backend_sip *ov_mc_backend_sip_create(ov_mc_backend_sip_config config) {
     if (!self->async)
         goto error;
 
-    self->registry = ov_mc_backend_sip_registry_create(
-        (ov_mc_backend_sip_registry_config){0});
+    if (!ov_thread_lock_init(&self->mixer.lock,
+                             self->config.timeout.threadlock_usec))
+        goto error;
 
-    if (!self->registry)
+    if (!ov_thread_lock_init(&self->proxy.lock,
+                             self->config.timeout.threadlock_usec))
+        goto error;
+
+    if (!ov_thread_lock_init(&self->call.lock,
+                             self->config.timeout.threadlock_usec))
         goto error;
 
     ov_dict_config d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = ov_dict_free;
 
-    self->resources.mixer = ov_dict_create(d_config);
-    if (!self->resources.mixer)
+    self->mixer.data = ov_dict_create(d_config);
+    if (!self->mixer.data)
+        goto error;
+
+    d_config = ov_dict_intptr_key_config(255);
+    d_config.value.data_function.free = free_proxy;
+
+    self->proxy.data = ov_dict_create(d_config);
+    if (!self->proxy.data)
+        goto error;
+
+    d_config = ov_dict_string_key_config(255);
+    d_config.value.data_function.free = free_call;
+
+    self->call.data = ov_dict_create(d_config);
+    if (!self->call.data)
         goto error;
 
     return self;
@@ -1370,10 +1519,15 @@ ov_mc_backend_sip *ov_mc_backend_sip_free(ov_mc_backend_sip *self) {
     if (!ov_mc_backend_sip_cast(self))
         return self;
 
+    ov_thread_lock_clear(&self->mixer.lock);
+    ov_thread_lock_clear(&self->proxy.lock);
+    ov_thread_lock_clear(&self->call.lock);
+
     self->app = ov_event_app_free(self->app);
     self->async = ov_event_async_store_free(self->async);
-    self->registry = ov_mc_backend_sip_registry_free(self->registry);
-    self->resources.mixer = ov_dict_free(self->resources.mixer);
+    self->mixer.data = ov_dict_free(self->mixer.data);
+    self->proxy.data = ov_dict_free(self->proxy.data);
+    self->call.data = ov_dict_free(self->call.data);
     self = ov_data_pointer_free(self);
     return NULL;
 }
@@ -1409,7 +1563,29 @@ ov_mc_backend_sip_config_from_json(const ov_json_value *val) {
     config.timeout.response_usec = ov_json_number_get(
         ov_json_get(data, "/" OV_KEY_TIMEOUT "/" OV_KEY_RESPONSE_TIMEOUT));
 
+    config.timeout.threadlock_usec = ov_json_number_get(
+        ov_json_get(data, "/" OV_KEY_TIMEOUT "/threadlock_usec"));
+
     return config;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool get_proxy(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+    Proxy *current = (Proxy *)val;
+    Proxy **set = (Proxy **)data;
+    Proxy *act = *set;
+
+    if (!act)
+        *set = current;
+
+    if (act->load > current->load)
+        *set = current;
+
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1424,7 +1600,23 @@ char *ov_mc_backend_sip_create_call(ov_mc_backend_sip *self, const char *loop,
     if (!self || !loop || !destination_number)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
+        goto error;
+
+    Proxy *proxy = NULL;
+
+    ov_dict_for_each(self->proxy.data, &proxy, get_proxy);
+
+    if (!proxy) {
+
+        ov_thread_lock_unlock(&self->proxy.lock);
+        goto error;
+    }
+
+    int gw = proxy->socket;
+    proxy->load++;
+    ov_thread_lock_unlock(&self->proxy.lock);
+
     if (0 >= gw)
         goto error;
 
@@ -1455,7 +1647,15 @@ bool ov_mc_backend_sip_terminate_call(ov_mc_backend_sip *self,
     if (!self || !call_id)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_call_proxy(self->registry, call_id);
+    int gw = 0;
+
+    if (!ov_thread_lock_try_lock(&self->call.lock))
+        goto error;
+    Call *call = ov_dict_get(self->call.data, call_id);
+    if (call)
+        gw = call->socket;
+    ov_thread_lock_unlock(&self->call.lock);
+
     if (0 >= gw)
         goto error;
 
@@ -1476,6 +1676,27 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+struct container {
+
+    ov_mc_backend_sip *self;
+    ov_json_value *out;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool send_proxy_message(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+    Proxy *proxy = (Proxy *)val;
+    struct container *container = (struct container *)data;
+
+    ov_event_app_send(container->self->app, proxy->socket, container->out);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_mc_backend_sip_create_permission(ov_mc_backend_sip *self,
                                          ov_sip_permission permission) {
 
@@ -1484,16 +1705,16 @@ bool ov_mc_backend_sip_create_permission(ov_mc_backend_sip *self,
     if (!self)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
-    if (0 >= gw)
-        goto error;
-
     out = ov_mc_sip_msg_permit(permission);
     if (!out)
         goto error;
 
-    if (!ov_event_app_send(self->app, gw, out))
+    struct container container = (struct container){.self = self, .out = out};
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
         goto error;
+    ov_dict_for_each(self->proxy.data, &container, send_proxy_message);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     out = ov_json_value_free(out);
     return true;
@@ -1513,16 +1734,16 @@ bool ov_mc_backend_sip_terminate_permission(ov_mc_backend_sip *self,
     if (!self)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
-    if (0 >= gw)
-        goto error;
-
     out = ov_mc_sip_msg_revoke(permission);
     if (!out)
         goto error;
 
-    if (!ov_event_app_send(self->app, gw, out))
+    struct container container = (struct container){.self = self, .out = out};
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
         goto error;
+    ov_dict_for_each(self->proxy.data, &container, send_proxy_message);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     out = ov_json_value_free(out);
     return true;
@@ -1541,16 +1762,16 @@ bool ov_mc_backend_sip_list_calls(ov_mc_backend_sip *self, const char *uuid) {
     if (!self)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
-    if (0 >= gw)
-        goto error;
-
     out = ov_mc_sip_msg_list_calls(uuid);
     if (!out)
         goto error;
 
-    if (!ov_event_app_send(self->app, gw, out))
+    struct container container = (struct container){.self = self, .out = out};
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
         goto error;
+    ov_dict_for_each(self->proxy.data, &container, send_proxy_message);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     out = ov_json_value_free(out);
     return true;
@@ -1570,16 +1791,16 @@ bool ov_mc_backend_sip_list_permissions(ov_mc_backend_sip *self,
     if (!self)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
-    if (0 >= gw)
-        goto error;
-
     out = ov_mc_sip_msg_list_permissions(uuid);
     if (!out)
         goto error;
 
-    if (!ov_event_app_send(self->app, gw, out))
+    struct container container = (struct container){.self = self, .out = out};
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
         goto error;
+    ov_dict_for_each(self->proxy.data, &container, send_proxy_message);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     out = ov_json_value_free(out);
     return true;
@@ -1598,16 +1819,16 @@ bool ov_mc_backend_sip_get_status(ov_mc_backend_sip *self, const char *uuid) {
     if (!self)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
-    if (0 >= gw)
-        goto error;
-
     out = ov_mc_sip_msg_get_status(uuid);
     if (!out)
         goto error;
 
-    if (!ov_event_app_send(self->app, gw, out))
+    struct container container = (struct container){.self = self, .out = out};
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
         goto error;
+    ov_dict_for_each(self->proxy.data, &container, send_proxy_message);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     out = ov_json_value_free(out);
     return true;
@@ -1624,9 +1845,14 @@ bool ov_mc_backend_sip_get_connect_status(ov_mc_backend_sip *self) {
     if (!self)
         goto error;
 
-    int gw = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
+        goto error;
 
-    if (gw > 0)
+    Proxy *proxy = NULL;
+    ov_dict_for_each(self->proxy.data, &proxy, get_proxy);
+    ov_thread_lock_unlock(&self->proxy.lock);
+
+    if (proxy)
         return true;
 
 error:
@@ -1635,12 +1861,26 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool configure_sip(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+    Proxy *proxy = (Proxy *)val;
+    ov_mc_backend_sip *self = ov_mc_backend_sip_cast(data);
+
+    return configure_sip_gateway(self, proxy->socket);
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_mc_backend_sip_configure(ov_mc_backend_sip *self) {
 
-    int socket = ov_mc_backend_sip_registry_get_proxy_socket(self->registry);
-
-    if (-1 != socket)
-        configure_sip_gateway(self, socket);
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
+        goto error;
+    ov_dict_for_each(self->proxy.data, self, configure_sip);
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     return true;
+error:
+    return false;
 }

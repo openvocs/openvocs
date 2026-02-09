@@ -61,6 +61,7 @@ typedef struct ov_mc_backend_sip_config {
     struct {
 
         uint64_t response_usec;
+        uint64_t threadlock_usec;
 
     } timeout;
 

@@ -238,7 +238,8 @@ static bool start_record(void *userdata, const int fh,
     void (*function)(void *, int, const char *, const char *, ov_result) =
         cb.function;
 
-    if (!function) goto error;
+    if (!function)
+        goto error;
 
     ov_event_api_get_error_parameter(input, &code, &desc);
 
@@ -1336,13 +1337,13 @@ bool ov_vocs_recorder_start_loop_recording(
         goto error;
     }
 
-    ov_recorder_event_start event =
-        (ov_recorder_event_start){.loop = (char *)loop,
-                                  .mc_ip = socket_config.host,
-                                  .mc_port = socket_config.port,
-                                  .silence_cutoff_interval_msecs =
-                                        self->config.limits.silence_cutoff_interval_msec,
-                                  .vad = self->config.vad};
+    ov_recorder_event_start event = (ov_recorder_event_start){
+        .loop = (char *)loop,
+        .mc_ip = socket_config.host,
+        .mc_port = socket_config.port,
+        .silence_cutoff_interval_msecs =
+            self->config.limits.silence_cutoff_interval_msec,
+        .vad = self->config.vad};
 
     ov_event_connection *conn = find_empty_recorder(self);
     if (!conn) {

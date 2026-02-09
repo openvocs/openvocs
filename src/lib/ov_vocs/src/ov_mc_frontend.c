@@ -28,12 +28,13 @@
         ------------------------------------------------------------------------
 */
 #include "../include/ov_mc_frontend.h"
-#include "../include/ov_mc_frontend_registry.h"
 
 #define OV_MC_FRONTEND_MAGIC_BYTES 0xabde
 
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_error_codes.h>
+#include <ov_base/ov_linked_list.h>
+#include <ov_base/ov_thread_lock.h>
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_event_app.h>
 
@@ -52,8 +53,28 @@ struct ov_mc_frontend {
     } socket;
 
     ov_event_app *app;
-    ov_mc_frontend_registry *registry;
+
+    struct {
+
+        ov_thread_lock lock;
+        ov_dict *data;
+
+    } session;
+
+    struct {
+
+        ov_thread_lock lock;
+        ov_dict *data;
+
+    } proxy;
 };
+
+typedef struct Proxy {
+
+    ov_id id;
+    uint64_t load;
+
+} Proxy;
 
 /*
  *      ------------------------------------------------------------------------
@@ -75,19 +96,6 @@ static bool cb_accept(void *userdata, int listener, int connection) {
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_close(void *userdata, int connection) {
-
-    ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
-    UNUSED(self);
-
-    ov_log_debug("Socket close received at %i", connection);
-
-    ov_mc_frontend_registry_unregister_proxy(self->registry, connection);
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static void cb_registry_session_drop(void *userdata, const char *session) {
 
     ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
@@ -101,6 +109,72 @@ static void cb_registry_session_drop(void *userdata, const char *session) {
                                               session);
 
 error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+struct container {
+
+    int socket;
+    ov_mc_frontend *self;
+    ov_list *list;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool search_session_of_connection(const void *key, void *val,
+                                         void *data) {
+
+    if (!key)
+        return true;
+
+    struct container *container = (struct container *)data;
+    if (container->socket == (intptr_t)val) {
+        ov_list_push(container->list, (void *)key);
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_sessions(void *item, void *data) {
+
+    ov_mc_frontend *self = ov_mc_frontend_cast(data);
+    cb_registry_session_drop(self, (const char *)item);
+    ov_dict_del(self->session.data, item);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_close(void *userdata, int connection) {
+
+    ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
+    UNUSED(self);
+
+    ov_log_debug("Socket close received at %i", connection);
+
+    struct container container =
+        (struct container){.socket = connection,
+                           .self = self,
+                           .list = ov_linked_list_create((ov_list_config){0})};
+
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    ov_dict_for_each(self->session.data, &container,
+                     search_session_of_connection);
+    ov_list_for_each(container.list, self, drop_sessions);
+    ov_thread_lock_unlock(&self->session.lock);
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
+        goto error;
+    ov_dict_del(self->proxy.data, (void *)(intptr_t)connection);
+    ov_thread_lock_unlock(&self->proxy.lock);
+
+error:
+    ov_list_free(container.list);
     return;
 }
 
@@ -127,8 +201,18 @@ static void cb_event_register(void *userdata, const char *name, int socket,
     if (!uuid)
         goto error;
 
-    if (!ov_mc_frontend_registry_register_proxy(self->registry, socket, uuid))
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
         goto error;
+
+    Proxy *proxy = calloc(1, sizeof(Proxy));
+
+    if (proxy) {
+        ov_id_set(proxy->id, uuid);
+        proxy->load = 0;
+        ov_dict_set(self->proxy.data, (void *)(intptr_t)socket, proxy, NULL);
+    }
+
+    ov_thread_lock_unlock(&self->proxy.lock);
 
     input = ov_json_value_free(input);
     return;
@@ -265,14 +349,11 @@ static void cb_event_ice_session_create_response(ov_mc_frontend *self,
 
         /* (3) persist session data */
 
-        if (!ov_mc_frontend_registry_register_session(self->registry, socket,
-                                                      ice_session_id)) {
+        if (ov_thread_lock_try_lock(&self->session.lock)) {
 
-            state.result.error_code = OV_ERROR_CODE_PROCESSING_ERROR;
-            state.result.message = "failed to persist ICE session data";
-
-            drop_session = true;
-            break;
+            ov_dict_set(self->session.data, ov_string_dup(ice_session_id),
+                        (void *)(intptr_t)socket, NULL);
+            ov_thread_lock_unlock(&self->session.lock);
         }
 
         break;
@@ -403,7 +484,10 @@ static void cb_event_ice_session_drop_response(ov_mc_frontend *self, int socket,
     if (!id)
         goto error;
 
-    ov_mc_frontend_registry_unregister_session(self->registry, id);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    ov_dict_del(self->session.data, id);
+    ov_thread_lock_unlock(&self->session.lock);
 
     self->config.callback.session.dropped(self->config.callback.userdata, id);
 
@@ -428,7 +512,10 @@ static void cb_event_ice_session_drop(void *userdata, const char *name,
 
     OV_ASSERT(id);
 
-    ov_mc_frontend_registry_unregister_session(self->registry, id);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    ov_dict_del(self->session.data, id);
+    ov_thread_lock_unlock(&self->session.lock);
 
     self->config.callback.session.dropped(self->config.callback.userdata, id);
 
@@ -767,6 +854,12 @@ ov_mc_frontend *ov_mc_frontend_create(ov_mc_frontend_config config) {
     if (!config.loop)
         goto error;
 
+    if (0 == config.limits.request_usec)
+        config.limits.request_usec = 5000000;
+
+    if (0 == config.limits.threadlock_usec)
+        config.limits.threadlock_usec = 100000;
+
     self = calloc(1, sizeof(ov_mc_frontend));
     if (!self)
         goto error;
@@ -801,12 +894,22 @@ ov_mc_frontend *ov_mc_frontend_create(ov_mc_frontend_config config) {
     if (!register_app_callbacks(self))
         goto error;
 
-    self->registry =
-        ov_mc_frontend_registry_create((ov_mc_frontend_registry_config){
-            .callback.userdata = self,
-            .callback.session.drop = cb_registry_session_drop});
+    if (!ov_thread_lock_init(&self->proxy.lock,
+                             self->config.limits.threadlock_usec))
+        goto error;
+    if (!ov_thread_lock_init(&self->session.lock,
+                             self->config.limits.threadlock_usec))
+        goto error;
 
-    if (!self->registry)
+    ov_dict_config d_config = ov_dict_string_key_config(255);
+    self->session.data = ov_dict_create(d_config);
+    if (!self->session.data)
+        goto error;
+
+    d_config = ov_dict_intptr_key_config(255);
+    d_config.value.data_function.free = ov_data_pointer_free;
+    self->proxy.data = ov_dict_create(d_config);
+    if (!self->proxy.data)
         goto error;
 
     return self;
@@ -822,7 +925,12 @@ ov_mc_frontend *ov_mc_frontend_free(ov_mc_frontend *self) {
     if (!ov_mc_frontend_cast(self))
         return self;
 
-    self->registry = ov_mc_frontend_registry_free(self->registry);
+    ov_thread_lock_clear(&self->proxy.lock);
+    ov_thread_lock_clear(&self->session.lock);
+
+    self->session.data = ov_dict_free(self->session.data);
+    self->proxy.data = ov_dict_free(self->proxy.data);
+
     self->app = ov_event_app_free(self->app);
     self = ov_data_pointer_free(self);
     return NULL;
@@ -849,6 +957,39 @@ ov_mc_frontend *ov_mc_frontend_cast(const void *data) {
  *      ------------------------------------------------------------------------
  */
 
+struct container2 {
+
+    int socket;
+    uint64_t load;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool search_proxy(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+    Proxy *proxy = (Proxy *)val;
+    struct container2 *container = (struct container2 *)data;
+
+    if (0 == container->socket) {
+        container->socket = (intptr_t)key;
+        container->load = proxy->load;
+        return true;
+    }
+
+    if (proxy->load < container->load) {
+
+        container->socket = (intptr_t)key;
+        container->load = proxy->load;
+        return true;
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_mc_frontend_create_session(ov_mc_frontend *self, char const *uuid,
                                    const char *sdp) {
 
@@ -858,15 +999,21 @@ bool ov_mc_frontend_create_session(ov_mc_frontend *self, char const *uuid,
     if (!self || !uuid || !sdp)
         goto error;
 
-    int proxy = ov_mc_frontend_registry_get_proxy_socket(self->registry);
-    if (-1 == proxy) {
+    struct container2 container = (struct container2){.socket = 0, .load = 0};
+
+    if (!ov_thread_lock_try_lock(&self->proxy.lock))
+        goto error;
+    ov_dict_for_each(self->proxy.data, &container, search_proxy);
+    ov_thread_lock_unlock(&self->proxy.lock);
+
+    if (0 == container.socket) {
         ov_log_error("No proxy avaialable.");
         goto error;
     }
 
     out = ov_ice_proxy_vocs_msg_create_session_with_sdp(uuid, sdp);
 
-    result = ov_event_app_send(self->app, proxy, out);
+    result = ov_event_app_send(self->app, container.socket, out);
     out = ov_json_value_free(out);
 
     return result;
@@ -887,8 +1034,10 @@ bool ov_mc_frontend_update_session(ov_mc_frontend *self, char const *uuid,
     if (!self || !uuid || !session_uuid || !sdp)
         goto error;
 
-    int socket = ov_mc_frontend_registry_get_session_socket(self->registry,
-                                                            session_uuid);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->session.data, session_uuid);
+    ov_thread_lock_unlock(&self->session.lock);
 
     if (0 >= socket)
         goto error;
@@ -915,8 +1064,10 @@ bool ov_mc_frontend_drop_session(ov_mc_frontend *self, const char *uuid,
     if (!self || !uuid || !session_id)
         goto error;
 
-    int socket =
-        ov_mc_frontend_registry_get_session_socket(self->registry, session_id);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->session.data, session_id);
+    ov_thread_lock_unlock(&self->session.lock);
 
     if (0 >= socket)
         goto done;
@@ -945,8 +1096,10 @@ bool ov_mc_frontend_candidate(ov_mc_frontend *self, char const *uuid,
     if (!self || !uuid || !session_id || !info)
         goto error;
 
-    int socket =
-        ov_mc_frontend_registry_get_session_socket(self->registry, session_id);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->session.data, session_id);
+    ov_thread_lock_unlock(&self->session.lock);
 
     if (0 >= socket)
         goto error;
@@ -974,8 +1127,10 @@ bool ov_mc_frontend_end_of_candidates(ov_mc_frontend *self, char const *uuid,
     if (!self || !uuid || !session_id)
         goto error;
 
-    int socket =
-        ov_mc_frontend_registry_get_session_socket(self->registry, session_id);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->session.data, session_id);
+    ov_thread_lock_unlock(&self->session.lock);
 
     if (0 >= socket)
         goto error;
@@ -1004,8 +1159,10 @@ bool ov_mc_frontend_talk(ov_mc_frontend *self, char const *uuid,
     if (!self || !uuid || !session_id)
         goto error;
 
-    int socket =
-        ov_mc_frontend_registry_get_session_socket(self->registry, session_id);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->session.data, session_id);
+    ov_thread_lock_unlock(&self->session.lock);
 
     if (0 >= socket)
         goto error;
@@ -1049,8 +1206,10 @@ bool ov_mc_frontened_get_session_state(ov_mc_frontend *self, const char *uuid,
     if (!self || !uuid || !session_id)
         goto error;
 
-    int socket =
-        ov_mc_frontend_registry_get_session_socket(self->registry, session_id);
+    if (!ov_thread_lock_try_lock(&self->session.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->session.data, session_id);
+    ov_thread_lock_unlock(&self->session.lock);
 
     if (0 >= socket)
         goto error;

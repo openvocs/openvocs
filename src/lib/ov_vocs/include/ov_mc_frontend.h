@@ -58,6 +58,13 @@ typedef struct ov_mc_frontend_config {
 
     struct {
 
+        uint64_t request_usec;
+        uint64_t threadlock_usec;
+
+    } limits;
+
+    struct {
+
         void *userdata;
 
         struct {

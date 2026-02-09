@@ -664,9 +664,10 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-void *ov_vocs_get_close_callback(ov_vocs *vocs){
+void *ov_vocs_get_close_callback(ov_vocs *vocs) {
 
-    if (!vocs) return NULL;
+    if (!vocs)
+        return NULL;
     return cb_socket_close;
 }
 
@@ -1395,10 +1396,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-#include "ov_vocs_api_admin.inc"
-#include "ov_vocs_api_auth.inc"
-#include "ov_vocs_api_client.inc"
-#include "ov_vocs_api_db.inc"
+#include "ov_vocs_api.inc"
 
 /*----------------------------------------------------------------------------*/
 
@@ -2729,7 +2727,8 @@ static bool module_load_recorder(ov_vocs *self) {
 
     self->config.module.recorder.loop = self->config.loop;
     self->config.module.recorder.vocs_db = self->config.db;
-    self->config.module.recorder.timeout.response_usec = self->config.timeout.response_usec;
+    self->config.module.recorder.timeout.response_usec =
+        self->config.timeout.response_usec;
 
     self->recorder = ov_vocs_recorder_create(self->config.module.recorder);
     if (!self->recorder)
@@ -3150,10 +3149,10 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void vocs_event_callback(void *userdata, int socket, ov_json_value *input){
+static void vocs_event_callback(void *userdata, int socket,
+                                ov_json_value *input) {
 
-    bool (*function)(ov_vocs *vocs, int socket, ov_json_value *input) =
-        NULL;
+    bool (*function)(ov_vocs *vocs, int socket, ov_json_value *input) = NULL;
 
     ov_vocs *self = ov_vocs_cast(userdata);
     if (!self || (0 > socket) || !input) {
@@ -3183,9 +3182,10 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-void *ov_vocs_get_io_callback(ov_vocs *vocs){
+void *ov_vocs_get_io_callback(ov_vocs *vocs) {
 
-    if (!vocs) return NULL;
+    if (!vocs)
+        return NULL;
 
     return vocs_event_callback;
 }
