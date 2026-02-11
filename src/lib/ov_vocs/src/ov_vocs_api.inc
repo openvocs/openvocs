@@ -565,6 +565,50 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool add_connection_data(const void *key, void *val, void *data){
+
+    if (!key) return true;
+
+    ov_json_value *array = ov_json_value_cast(data);
+    ov_json_value *copy = NULL;
+    ov_json_value *item = ov_json_value_cast(val);
+
+    ov_json_value_copy((void**)&copy, item);
+    ov_json_array_push(array, copy);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool admin_get_clients(ov_vocs *vocs,
+                       int socket,
+                       ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    if (!vocs || !input) goto error;
+
+    val = ov_json_array();
+
+    if (!ov_socket_json_for_each(
+        vocs->connections, val, add_connection_data)) goto error;
+
+    out = ov_event_api_create_success_response(input);
+    ov_json_value *res = ov_event_api_get_response(out);
+    ov_json_object_set(res, "result", val);
+
+    env_send(vocs, socket, out);
+    ov_json_value_free(out);
+
+    return true;
+error:
+    ov_json_value_free(input);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool enable_api_admin(ov_vocs *vocs){
 
 	if (!set_function(vocs->io, OV_EVENT_START_RECORD, admin_start_recording)) goto error;
@@ -590,6 +634,9 @@ static bool enable_api_admin(ov_vocs *vocs){
         goto error;
 
     if (!set_function(vocs->io, "get_all_loops", admin_get_all_loops))
+        goto error;
+
+    if (!set_function(vocs->io, "get_clients", admin_get_clients))
         goto error;
 
     return true;
@@ -2749,6 +2796,17 @@ static bool client_event_register(ov_vocs *vocs,
     ov_json_value *val = NULL;
 
     if (!vocs || !socket || !input) goto error;
+
+    ov_json_value *data = ov_socket_json_get(vocs->connections, socket);
+    if (!data) data = ov_json_object();
+
+    ov_socket_data remote ={0};
+    ov_socket_get_data(socket, NULL, &remote);
+
+    ov_json_value *sock = ov_socket_data_to_json(&remote);
+    ov_json_object_set(data, "remote", sock);
+
+    ov_socket_json_set(vocs->connections, socket, &data);
 
     if (!ov_broadcast_registry_set(vocs->broadcasts,
                                    OV_BROADCAST_KEY_SYSTEM_BROADCAST,

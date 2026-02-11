@@ -56,6 +56,7 @@ typedef struct ov_webserver_config {
     char name[PATH_MAX];
 
     ov_socket_configuration socket;
+    ov_socket_configuration stun;
 
     ov_http_message_config http;
     ov_websocket_frame_config frame;

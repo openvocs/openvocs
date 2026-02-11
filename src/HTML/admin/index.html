@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>openvocs</title>
+    <meta name="description" content="openvocs entry page">
+    <meta name="keywords"
+        content="Voice Conferencing Systems, Mission Control Room Conferencing, Intercom, WebRTC, Space Control Center, German Space Operations Center, GSOC, VOCS">
+    <meta name="author" content="Markus T&oumlpfer">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <script type="text/javascript" src="js/openvocs.js"></script> 
+<style>
+* {
+  box-sizing: border-box;
+}
+
+.left {
+  padding: 20px;
+  float: left;
+  width: 20%; 
+}
+
+.main {
+  padding: 20px;
+  float: left;
+  width: 60%; 
+}
+
+.right {
+  padding: 20px;
+  float: left;
+  width: 20%;
+}
+
+@media screen and (max-width: 800px) {
+  .left, .main, .right {
+    width: 100%; 
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <figure class = "float:left">
+    <img src="../images/openvocs_logo.svg" height = "50px" alt="openvocs logo">
+  </figure>
+</header>
+
+<div id="left" class="left">
+  <nav>
+    <button id="overview" value="overview" onclick="site.render_overview()">overview</button>
+  </nav>
+</div>
+
+<div id="main" class="main">
+</div>
+
+<div id="right" class="right">
+</div>
+
+<footer>
+</footer>
+
+</body>
+</html>

@@ -36,12 +36,18 @@
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_uri.h>
 #include <ov_base/ov_utils.h>
+#include <ov_stun/ov_stun_attribute.h>
+#include <ov_stun/ov_stun_binding.h>
+#include <ov_stun/ov_stun_frame.h>
+#define IMPL_MAX_STUN_ATTRIBUTES 5
 
 /*----------------------------------------------------------------------------*/
 
 typedef struct Webserver {
 
     ov_webserver public;
+
+    int stun;
 
     ov_webserver_io *io;
     bool debug;
@@ -527,6 +533,131 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool io_stun(int socket_fd, uint8_t events, void *data) {
+
+    /*
+     *  We only support unauthenticated binding requests
+     *  to support ICE.
+     *
+     *  We perform a minimum of required operations and copy
+     *  to create the answer, but ensure the protocol is correct.
+     */
+
+    size_t size = OV_UDP_PAYLOAD_OCTETS;
+
+    uint8_t buffer[size];
+    memset(buffer, 0, size);
+
+    uint8_t *attr[IMPL_MAX_STUN_ATTRIBUTES] = {0};
+
+    ov_webserver *srv = ov_webserver_cast(data);
+    if (!srv)
+        goto error;
+
+    if (!(events & OV_EVENT_IO_IN))
+        goto done;
+
+    struct sockaddr_storage sa = {0};
+    socklen_t sa_len = sizeof(sa);
+
+    ssize_t in =
+        recvfrom(socket_fd, buffer, size, 0, (struct sockaddr *)&sa, &sa_len);
+
+    // read again
+    if (in < 0)
+        goto done;
+
+    // ignore any non stun io
+    if (!ov_stun_frame_is_valid(buffer, in))
+        goto done;
+
+    // ignore any non binding
+    if (!ov_stun_method_is_binding(buffer, in))
+        goto done;
+
+    // only requests supported
+    if (!ov_stun_frame_class_is_request(buffer, in))
+        goto done;
+
+    // check we received no more attributes as supported
+    if (!ov_stun_frame_slice(buffer, in, attr, IMPL_MAX_STUN_ATTRIBUTES))
+        goto error;
+
+    uint16_t type = 0;
+
+    // we only support a fingerprint as attribute
+    for (size_t i = 0; i < IMPL_MAX_STUN_ATTRIBUTES; i++) {
+
+        if (attr[i] == NULL)
+            break;
+
+        type = ov_stun_attribute_get_type(attr[i], 4);
+
+        switch (type) {
+
+        case STUN_SOFTWARE:
+        case STUN_FINGERPRINT:
+            break;
+
+        default:
+            goto done;
+        }
+    }
+
+    // fingerprint is optinal
+    if (!ov_stun_check_fingerprint(buffer, in, attr, IMPL_MAX_STUN_ATTRIBUTES,
+                                   false))
+        goto done;
+
+    /*
+     *  We do use the read buffer to create the response.
+     *  This will limit memory operations to the minimum amount.
+     *
+     *  This means, we need to change the class to response,
+     *  and keep the magic_cookie, method and transaction id.
+     *
+     *  We will copy the xor mapped address as first attribute after
+     *  the header, and reset the length attribute within the header.
+     *
+     *  This is a zero copy implementaion within the read buffer.
+     */
+
+    if (!ov_stun_frame_set_success_response(buffer, in))
+        goto error;
+
+    if (!ov_stun_xor_mapped_address_encode(buffer + 20, size - 20, buffer, NULL,
+                                           &sa))
+        goto done;
+
+    size_t out = 20 + ov_stun_xor_mapped_address_encoding_length(&sa);
+    OV_ASSERT(out < size);
+
+    if (!ov_stun_frame_set_length(buffer, size, out - 20))
+        goto error;
+
+    // just to be sure, we nullify the rest of the buffer
+    memset(buffer + out, 0, size - out);
+
+    ssize_t send =
+        sendto(socket_fd, buffer, out, 0, (const struct sockaddr *)&sa,
+               sizeof(struct sockaddr_storage));
+
+    UNUSED(send);
+    /*
+     *  We do ignore if we actually send the reponse or not,
+     *  (in case of non debuging)
+     *  as the STUN protocol is not reliable anyway.
+     */
+
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_webserver *ov_webserver_create(ov_webserver_config config) {
 
     Webserver *self = NULL;
@@ -565,6 +696,21 @@ ov_webserver *ov_webserver_create(ov_webserver_config config) {
     self->io = ov_webserver_io_create(io_config);
     if (!self->io)
         goto error;
+
+    self->stun = ov_socket_create(config.stun, false, NULL);
+
+    if (!ov_socket_ensure_nonblocking(self->stun)) {
+        close(self->stun);
+        goto error;
+    }
+
+    if (!ov_event_loop_set(config.loop, self->stun, 
+        OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE, self, io_stun)) {
+        close(self->stun);
+        goto error;
+    }
+
+    ov_log_info("created STUN listener %s:%i", config.stun.host, config.stun.port);
 
     return ov_webserver_cast(self);
 error:
@@ -619,6 +765,9 @@ ov_webserver_config ov_webserver_config_from_json(const ov_json_value *input) {
 
     config.socket = ov_socket_configuration_from_json(
         ov_json_object_get(item, "socket"), (ov_socket_configuration){0});
+
+    config.stun = ov_socket_configuration_from_json(
+        ov_json_object_get(item, "stun"), (ov_socket_configuration){0});
 
     ov_json_value *http = ov_json_object_get(item, "http");
     if (http) {
