@@ -33,7 +33,7 @@
 // audio connection -----------------------------------------------------------
 ICE_SERVERS = [
     {
-      urls: "turn:openvocs.net:33533",
+      urls: "stun:openvocs.net:33333",
       username: "openvocs",
       credential: "2simple!"
     }
