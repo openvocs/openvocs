@@ -698,19 +698,21 @@ ov_webserver *ov_webserver_create(ov_webserver_config config) {
         goto error;
 
     self->stun = ov_socket_create(config.stun, false, NULL);
+    if (-1 != self->stun){
 
-    if (!ov_socket_ensure_nonblocking(self->stun)) {
-        close(self->stun);
-        goto error;
+        if (!ov_socket_ensure_nonblocking(self->stun)) {
+            close(self->stun);
+            goto error;
+        }
+
+        if (!ov_event_loop_set(config.loop, self->stun, 
+            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE, self, io_stun)) {
+            close(self->stun);
+            goto error;
+        }
+
+        ov_log_info("created STUN listener %s:%i", config.stun.host, config.stun.port);
     }
-
-    if (!ov_event_loop_set(config.loop, self->stun, 
-        OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE, self, io_stun)) {
-        close(self->stun);
-        goto error;
-    }
-
-    ov_log_info("created STUN listener %s:%i", config.stun.host, config.stun.port);
 
     return ov_webserver_cast(self);
 error:

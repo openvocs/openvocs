@@ -1802,8 +1802,14 @@ static void cb_frontend_candidate(void *userdata, const ov_response_state event,
     orig = data.value;
 
     val = ov_ice_candidate_info_to_json(*info);
-    if (!val)
+    if (!val){
+        ov_log_error("Failed to parse candidate");
         goto error;
+    }
+
+    char *string = ov_json_value_to_string(val);
+    ov_log_debug("Candidate %s", string);
+    string = ov_data_pointer_free(string);
 
     switch (event.result.error_code) {
 
@@ -2823,6 +2829,7 @@ static bool module_load_ldap(ov_vocs *self) {
 
     OV_ASSERT(self);
 
+    if (self->config.ldap.enable == false) return true;
     self->config.ldap.config.loop = self->config.loop;
     self->ldap = ov_ldap_create(self->config.ldap.config);
     if (!self->ldap)
