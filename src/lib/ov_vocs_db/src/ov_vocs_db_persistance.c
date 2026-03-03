@@ -1840,19 +1840,25 @@ static bool add_new_user(const void *key, void *val, void *data) {
     ov_json_value *active_users = ov_json_value_cast(u->active_users);
 
     if (ov_json_object_get(active_users, user_id)) {
+        
         return true;
-    } else {
+
+    }
+
+    /*  else {
 
         ov_json_value *item = ov_json_object_get(u->out, OV_KEY_DELETE);
         ov_json_object_set(item, user_id, ov_json_null());
+        ov_list_push(u->outdated, user_id);
 
-        return ov_list_push(u->outdated, user_id);
     }
+    */
 
     ov_json_value *out = NULL;
 
     if (!ov_json_value_copy((void **)&out, user))
         goto error;
+
     ov_json_value *ldap = ov_json_true();
     ov_json_object_set(out, OV_KEY_LDAP, ldap);
 
@@ -1868,6 +1874,33 @@ static bool add_new_user(const void *key, void *val, void *data) {
 error:
     return false;
 }
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_outdated_user(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+
+    char *user_id = (char *)key;
+    UNUSED(val);
+
+    struct users_search *u = (struct users_search *)data;
+
+    ov_json_value *active_users = ov_json_value_cast(u->active_users);
+
+    if (ov_json_object_get(active_users, user_id)) {
+        
+        return true;
+
+    } else {
+
+        return ov_list_push(u->outdated, user_id);
+    }
+
+    return false;
+}
+
 
 /*----------------------------------------------------------------------------*/
 
@@ -1953,6 +1986,10 @@ static ov_json_value *write_users_object(const ov_json_value *users,
 
         if (!ov_json_object_for_each((ov_json_value *)users, &container,
                                      add_new_user))
+            goto error;
+
+        if (!ov_json_object_for_each((ov_json_value *)users, &container,
+                                     drop_outdated_user))
             goto error;
 
         if (!ov_list_for_each(list, (void *)active_users, drop_outdated))

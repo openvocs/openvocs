@@ -1,14 +1,3 @@
-var websocket = {
-
-    init: function() {
-
-        websocket = document.createElement('script');
-        websocket.src = "js/websocket.js";
-        document.head.appendChild(websocket);
-
-    }
-};
-
 var api = {
 
     init: function() {
@@ -19,6 +8,18 @@ var api = {
         
     }
 };
+
+var websocket = {
+
+    init: function() {
+
+        websocket = document.createElement('script');
+        websocket.src = "js/websocket.js";
+        document.head.appendChild(websocket);
+        
+    }
+};
+
 
 var site = {
 
@@ -33,14 +34,9 @@ var site = {
 
 var openvocs = {
 
-    websocket:null,
-    site:null,
-    api:null,
-
     init: function(){
 
         console.log("openvocs init");
-
         websocket.init();
         api.init();
         site.init();
