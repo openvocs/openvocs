@@ -1156,10 +1156,6 @@ static void cb_backend_mixer_leave(void *userdata, const char *uuid,
                               OV_VOCS_NONE))
         goto drop;
 
-    if (!ov_broadcast_registry_set(vocs->broadcasts, loopname, socket,
-                                   OV_BROADCAST_UNSET))
-        goto drop;
-
     ov_vocs_loop *loop = ov_dict_get(vocs->loops, loopname);
     OV_ASSERT(loop);
 
