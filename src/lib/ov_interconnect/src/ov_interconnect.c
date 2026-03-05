@@ -88,6 +88,38 @@ struct ov_interconnect {
 /*----------------------------------------------------------------------------*/
 
 static ov_interconnect_session *
+get_session_by_media_remote(ov_interconnect *self, ov_socket_data *remote) {
+
+    char buf[OV_HOST_NAME_MAX + 20] = {0};
+
+    if (!self || !remote)
+        goto error;
+
+    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
+    return ov_dict_get(self->session.by_media_remote, buf);
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_session_by_media_remote(ov_interconnect *self,
+                                         ov_socket_data *remote) {
+
+    char buf[OV_HOST_NAME_MAX + 20] = {0};
+
+    if (!self || !remote)
+        goto error;
+
+    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
+    return ov_dict_del(self->session.by_media_remote, buf);
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_interconnect_session *
 get_session_by_signaling_socket(ov_interconnect *self, int socket) {
 
     char buf[OV_HOST_NAME_MAX + 20] = {0};
@@ -123,37 +155,7 @@ error:
     return NULL;
 }
 
-/*----------------------------------------------------------------------------*/
 
-static ov_interconnect_session *
-get_session_by_media_remote(ov_interconnect *self, ov_socket_data *remote) {
-
-    char buf[OV_HOST_NAME_MAX + 20] = {0};
-
-    if (!self || !remote)
-        goto error;
-
-    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
-    return ov_dict_get(self->session.by_media_remote, buf);
-error:
-    return NULL;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool drop_session_by_media_remote(ov_interconnect *self,
-                                         ov_socket_data *remote) {
-
-    char buf[OV_HOST_NAME_MAX + 20] = {0};
-
-    if (!self || !remote)
-        goto error;
-
-    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
-    return ov_dict_del(self->session.by_media_remote, buf);
-error:
-    return NULL;
-}
 
 /*
  *      ------------------------------------------------------------------------
