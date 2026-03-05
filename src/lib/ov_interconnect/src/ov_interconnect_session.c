@@ -1394,7 +1394,8 @@ bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
             break;
 
         default:
-            ov_log_error("SRTP unprotect error");
+            // ov_log_error("SRTP unprotect error");
+            goto ignore;
             break;
         }
     }
@@ -1480,7 +1481,7 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
             break;
 
         default:
-            ov_log_error("SRTP protect error cannot send.");
+            // ov_log_error("SRTP protect error cannot send.");
             goto done;
             break;
         }

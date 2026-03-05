@@ -116,6 +116,8 @@ static bool drop_session_by_signaling_socket(ov_interconnect *self,
     ov_socket_data remote = (ov_socket_data){0};
     ov_socket_get_data(socket, NULL, &remote);
     snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote.host, remote.port);
+
+    drop_session_by_media_remote(self, &remote);
     return ov_dict_del(self->session.by_signaling_remote, buf);
 error:
     return NULL;
