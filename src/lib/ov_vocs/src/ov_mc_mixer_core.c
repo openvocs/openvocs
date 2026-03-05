@@ -539,14 +539,14 @@ static ov_frame_data *frame_data_extract_nocheck(ov_mc_mixer_core *mixer,
 
             if (mixer->config.incoming_vad) {
 
-                ov_log_debug("VAD active - normalizing");
+                //ov_log_debug("VAD active - normalizing");
                 data = frame_data_from_pcm_with_vad(
                     decoded, &frame->expanded, mixer->config.vad,
                     mixer->config.drop_no_va, scale_factor, rtp_stream);
 
             } else {
 
-                ov_log_debug("VAD inactive - no normalization");
+                //ov_log_debug("VAD inactive - no normalization");
                 data = frame_data_from_pcm(decoded, &frame->expanded,
                                            scale_factor);
             }
