@@ -1538,3 +1538,9 @@ bool ov_interconnect_session_added_loops(ov_interconnect_session *self) {
     self->loops_added = true;
     return true;
 }
+
+ov_socket_data ov_interconnect_session_get_media_remote(ov_interconnect_session *self){
+
+    if (!self) return (ov_socket_data){0};
+    return self->config.remote.media;
+}

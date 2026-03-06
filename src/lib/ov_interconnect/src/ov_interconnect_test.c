@@ -272,7 +272,7 @@ int test_ov_interconnect_create() {
     testrun(self->dtls);
     testrun(self->app.signaling);
     testrun(self->app.mixer);
-    testrun(self->session.by_signaling_remote);
+    testrun(self->session.by_signaling);
     testrun(self->session.by_media_remote);
     testrun(self->loops);
     testrun(self->registered);
@@ -484,8 +484,8 @@ int check_interconnect() {
         usleep(5000);
     }
 
-    testrun(1 == ov_dict_count(self->session.by_signaling_remote));
-    testrun(1 == ov_dict_count(client->session.by_signaling_remote));
+    testrun(1 == ov_dict_count(self->session.by_signaling));
+    testrun(1 == ov_dict_count(client->session.by_signaling));
 
     int mixer1 = add_mixer(self, loop);
     int mixer2 = add_mixer(self, loop);

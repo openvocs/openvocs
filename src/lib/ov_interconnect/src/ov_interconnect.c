@@ -74,7 +74,7 @@ struct ov_interconnect {
 
     struct {
 
-        ov_dict *by_signaling_remote;
+        ov_dict *by_signaling;
         ov_dict *by_media_remote;
 
     } session;
@@ -122,15 +122,10 @@ error:
 static ov_interconnect_session *
 get_session_by_signaling_socket(ov_interconnect *self, int socket) {
 
-    char buf[OV_HOST_NAME_MAX + 20] = {0};
-
     if (!self)
         goto error;
 
-    ov_socket_data remote = (ov_socket_data){0};
-    ov_socket_get_data(socket, NULL, &remote);
-    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote.host, remote.port);
-    return ov_dict_get(self->session.by_signaling_remote, buf);
+    return ov_dict_get(self->session.by_signaling, (void*)(intptr_t)socket);
 error:
     return NULL;
 }
@@ -140,19 +135,21 @@ error:
 static bool drop_session_by_signaling_socket(ov_interconnect *self,
                                              int socket) {
 
-    char buf[OV_HOST_NAME_MAX + 20] = {0};
+    if (!self) goto error;
 
-    if (!self)
-        goto error;
+    ov_interconnect_session *session = ov_dict_remove(self->session.by_signaling,
+        (void*)(intptr_t)socket);
 
-    ov_socket_data remote = (ov_socket_data){0};
-    ov_socket_get_data(socket, NULL, &remote);
-    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", remote.host, remote.port);
+    if (!session) goto error;
 
-    drop_session_by_media_remote(self, &remote);
-    return ov_dict_del(self->session.by_signaling_remote, buf);
+    ov_socket_data media = ov_interconnect_session_get_media_remote(session);
+    drop_session_by_media_remote(self, &media);
+
+    session = ov_interconnect_session_free(session);
+
+    return true;
 error:
-    return NULL;
+    return false;
 }
 
 
@@ -482,6 +479,7 @@ session_create(ov_interconnect *self, ov_interconnect_session_config config,
                int socket) {
 
     char buf[OV_HOST_NAME_MAX + 20] = {0};
+    char *key = NULL;
 
     ov_socket_get_data(socket, NULL, &config.remote.signaling);
 
@@ -489,15 +487,7 @@ session_create(ov_interconnect *self, ov_interconnect_session_config config,
     if (!session)
         goto error;
 
-    char *key = NULL;
-
-    memset(buf, 0, OV_HOST_NAME_MAX + 20);
-
-    snprintf(buf, OV_HOST_NAME_MAX + 20, "%s:%i", config.remote.signaling.host,
-             config.remote.signaling.port);
-
-    key = ov_string_dup(buf);
-    ov_dict_set(self->session.by_signaling_remote, key, session, NULL);
+    ov_dict_set(self->session.by_signaling, (void*)(intptr_t)socket, session, NULL);
 
     memset(buf, 0, OV_HOST_NAME_MAX + 20);
 
@@ -1099,12 +1089,7 @@ error:
 static void cb_signaling_close(void *userdata, int socket) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
-
-    ov_socket_data remote = (ov_socket_data){0};
-    ov_socket_get_data(socket, NULL, &remote);
-
     drop_session_by_signaling_socket(self, socket);
-    drop_session_by_media_remote(self, &remote);
     return;
 }
 
@@ -1392,11 +1377,11 @@ ov_interconnect *ov_interconnect_create(ov_interconnect_config config) {
     if (!self->session.by_media_remote)
         goto error;
 
-    d_config = ov_dict_string_key_config(255);
+    d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = ov_interconnect_session_free;
 
-    self->session.by_signaling_remote = ov_dict_create(d_config);
-    if (!self->session.by_signaling_remote)
+    self->session.by_signaling = ov_dict_create(d_config);
+    if (!self->session.by_signaling)
         goto error;
 
     d_config = ov_dict_intptr_key_config(255);
@@ -1445,8 +1430,8 @@ ov_interconnect *ov_interconnect_free(ov_interconnect *self) {
     }
 
     self->loops = ov_dict_free(self->loops);
-    self->session.by_signaling_remote =
-        ov_dict_free(self->session.by_signaling_remote);
+    self->session.by_signaling =
+        ov_dict_free(self->session.by_signaling);
     self->session.by_media_remote = ov_dict_free(self->session.by_media_remote);
 
     self->dtls = ov_dtls_free(self->dtls);

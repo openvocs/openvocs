@@ -128,4 +128,6 @@ bool ov_interconnect_session_loops_added(const ov_interconnect_session *self);
 
 bool ov_interconnect_session_added_loops(ov_interconnect_session *self);
 
+ov_socket_data ov_interconnect_session_get_media_remote(ov_interconnect_session *self);
+
 #endif /* ov_interconnect_session_h */
