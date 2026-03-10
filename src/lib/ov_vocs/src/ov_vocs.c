@@ -46,9 +46,8 @@
 
 #include "../include/ov_mc_sip_msg.h"
 #include "../include/ov_vocs_loop.h"
+#include "../include/ov_vocs_cluster.h"
 #include <ov_base/ov_error_codes.h>
-
-#include <ov_vocs_db/ov_vocs_db_app.h>
 
 #define ov_vocs_MAGIC_BYTES 0x13db
 
@@ -81,6 +80,7 @@ struct ov_vocs {
     ov_dict *io;       // event functions (event io)
 
     ov_socket_json *connections;
+    ov_vocs_cluster *cluster;
 };
 
 /*
@@ -2813,6 +2813,35 @@ static bool module_load_vad(ov_vocs *self) {
     return true;
 }
 
+/*----------------------------------------------------------------------------*/
+
+static void io_cluster(void *userdata, ov_json_value *msg){
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self || !msg) goto error;
+
+
+error:
+    ov_json_value_free(msg);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool module_load_cluster(ov_vocs *self) {
+
+    OV_ASSERT(self);
+
+    self->cluster = ov_vocs_cluster_create((ov_vocs_cluster_config){
+        .loop = self->config.loop,
+        .multicast = self->config.socket.cluster,
+        .callback.userdata = self,
+        .callback.io = io_cluster
+    });
+
+    return true;
+}
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -2923,7 +2952,7 @@ static void process_trigger(void *userdata, ov_json_value *input) {
     if (!event)
         goto error;
 
-    if (0 == ov_string_compare(event, OV_VOCS_DB_UPDATE_DB)) {
+    if (0 == ov_string_compare(event, "update_db")) {
 
         ov_json_value *proc = (ov_json_value *)ov_json_get(
             input, "/" OV_KEY_PARAMETER "/" OV_KEY_PROCESSING);
@@ -3051,6 +3080,11 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
 
     if (!module_load_vad(vocs)) {
         ov_log_error("Failed to enable VAD");
+        goto error;
+    }
+
+    if (!module_load_cluster(vocs)) {
+        ov_log_error("Failed to enable cluster");
         goto error;
     }
 

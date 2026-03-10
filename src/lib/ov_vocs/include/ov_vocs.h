@@ -43,7 +43,6 @@
 #include <ov_ldap/ov_ldap.h>
 
 #include <ov_vocs_db/ov_vocs_db.h>
-#include <ov_vocs_db/ov_vocs_db_app.h>
 #include <ov_vocs_db/ov_vocs_env.h>
 
 #define OV_KEY_VOCS "vocs"
@@ -92,6 +91,12 @@ typedef struct {
         ov_mc_backend_vad_config vad;
 
     } module;
+
+    struct {
+
+        ov_socket_configuration cluster;
+
+    } socket;
 
     struct {
 

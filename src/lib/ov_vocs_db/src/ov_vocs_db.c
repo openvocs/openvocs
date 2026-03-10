@@ -28,7 +28,6 @@
         ------------------------------------------------------------------------
 */
 #include "../include/ov_vocs_db.h"
-#include "../include/ov_vocs_db_app.h"
 #include "../include/ov_vocs_db_persistance.h"
 
 #include <limits.h>
@@ -2149,7 +2148,7 @@ done:
     }
 
     ov_json_value *msg =
-        ov_event_api_message_create(OV_VOCS_DB_UPDATE_DB, NULL, 0);
+        ov_event_api_message_create("update_db", NULL, 0);
 
     if (!ov_event_trigger_send(self->config.trigger, "VOCS", msg))
         msg = ov_json_value_free(msg);
@@ -2835,7 +2834,7 @@ done:
     }
 
     ov_json_value *msg =
-        ov_event_api_message_create(OV_VOCS_DB_UPDATE_DB, NULL, 0);
+        ov_event_api_message_create("update_db", NULL, 0);
 
     if (out) {
 
