@@ -41,6 +41,8 @@
 #include "ov_database.h"
 
 void set_database_info_getter(ov_database_info (*info_getter)(void));
+void set_database_wait_for_reconnect_secs(size_t secs);
+
 int test_ov_db_prepare();
 int test_ov_db_events_add_participation_state_unoptimized();
 int test_ov_db_events_add_participation_state();
