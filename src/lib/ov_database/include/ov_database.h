@@ -97,7 +97,7 @@ typedef struct ov_database_struct {
      * function is used
      */
     bool (*add_recording)(struct ov_database_struct* self, const char* id,
-                           const char* uri, char const* loop,
+                           const char* loop, char const* uri,
                            const char* start_time, const char* end_time);
 
 } ov_database;

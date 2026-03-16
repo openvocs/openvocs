@@ -290,7 +290,7 @@ bool sqlite_add_participation_state(struct ov_database_struct* self,
 /*----------------------------------------------------------------------------*/
 
 bool sqlite_add_recording(struct ov_database_struct* self, const char* id,
-                          const char* loop, char const* uri,
+                           const char* loop, char const* uri,
                           const char* start_time, const char* end_time) {
 
     db_sqlite* sdb = as_sqlite_mut(self);
