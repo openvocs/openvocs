@@ -65,7 +65,8 @@ static int test_ov_database_info_from_json() {
 
     jval = ov_json_value_free(jval);
 
-    jval = json_from_string("{\"" OV_KEY_HOST "\":\"krambambuli\","
+    jval = json_from_string("{\"" OV_KEY_HOST
+                            "\":\"krambambuli\","
                             "\"" OV_KEY_PORT "\":2144}");
 
     testrun(!dbi_equals(ov_database_info_from_json(jval), dbi));
@@ -75,11 +76,13 @@ static int test_ov_database_info_from_json() {
 
     jval = ov_json_value_free(jval);
 
-    jval = json_from_string(
-        "{\"" OV_KEY_HOST "\":\"krambambuli\","
-        "\"" OV_KEY_PORT "\":2144, \"" OV_KEY_USER "\":\"arbol\","
-        "\"" OV_KEY_PASSWORD "\":\"braga\", \"" OV_KEY_DB "\":\"db2\","
-        "\"" OV_KEY_TYPE "\":\"baalburga\"}");
+    jval = json_from_string("{\"" OV_KEY_HOST
+                            "\":\"krambambuli\","
+                            "\"" OV_KEY_PORT "\":2144, \"" OV_KEY_USER
+                            "\":\"arbol\","
+                            "\"" OV_KEY_PASSWORD "\":\"braga\", \"" OV_KEY_DB
+                            "\":\"db2\","
+                            "\"" OV_KEY_TYPE "\":\"baalburga\"}");
 
     testrun(!dbi_equals(ov_database_info_from_json(jval), dbi));
 
@@ -288,7 +291,9 @@ static int test_ov_database_query() {
 
     } else {
 
-        fprintf(stderr, "Failure table: %" PRIu64 " %s\n", table_res.error_code,
+        fprintf(stderr,
+                "Failure table: %" PRIu64 " %s\n",
+                table_res.error_code,
                 table_res.message);
     }
 
@@ -308,8 +313,10 @@ static int test_ov_database_query() {
 
     } else {
 
-        fprintf(stderr, "Failure inserting entry: %" PRIu64 " %s\n",
-                entry_inserted.error_code, entry_inserted.message);
+        fprintf(stderr,
+                "Failure inserting entry: %" PRIu64 " %s\n",
+                entry_inserted.error_code,
+                entry_inserted.message);
     }
 
     testrun(OV_ERROR_NOERROR == entry_inserted.error_code);
@@ -326,8 +333,10 @@ static int test_ov_database_query() {
 
     } else {
 
-        fprintf(stderr, "Failure selecting: %" PRIu64 " %s\n",
-                select_res.error_code, select_res.message);
+        fprintf(stderr,
+                "Failure selecting: %" PRIu64 " %s\n",
+                select_res.error_code,
+                select_res.message);
     }
 
     testrun(0 != jresult);
@@ -354,7 +363,11 @@ static int teardown() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_database", test_ov_database_info_from_json,
-            test_ov_database_info_to_json, test_ov_database_register_connector,
-            test_ov_database_connect, test_ov_database_connect_singleton,
-            test_ov_database_query, teardown);
+OV_TEST_RUN("ov_database",
+            test_ov_database_info_from_json,
+            test_ov_database_info_to_json,
+            test_ov_database_register_connector,
+            test_ov_database_connect,
+            test_ov_database_connect_singleton,
+            test_ov_database_query,
+            teardown);

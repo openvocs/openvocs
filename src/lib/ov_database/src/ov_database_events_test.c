@@ -26,6 +26,7 @@
 */
 
 #include "ov_database_events.c"
+
 #include <ov_base/ov_id.h>
 #include <ov_base/ov_json_pointer.h>
 #include <ov_base/ov_plugin_system.h>
@@ -35,8 +36,7 @@
 
 #ifdef OV_TEST_USE_POSTGRES
 
-static ov_database_info database_info(char const *dbname) {
-
+static ov_database_info database_info(char const* dbname) {
     return (ov_database_info){
 
         .type = OV_DB_POSTGRES,
@@ -51,8 +51,7 @@ static ov_database_info database_info(char const *dbname) {
 
 #else
 
-static ov_database_info database_info(char const *fname) {
-
+static ov_database_info database_info(char const* fname) {
     return (ov_database_info){
 
         .type = OV_DB_SQLITE,
@@ -65,18 +64,16 @@ static ov_database_info database_info(char const *fname) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_database *connect_to_db() {
-
+static ov_database* connect_to_db() {
     return ov_database_connect(database_info(0));
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_db_prepare() {
-
     testrun(!ov_db_prepare(0));
 
-    ov_database *db = connect_to_db();
+    ov_database* db = connect_to_db();
     testrun(0 != db);
 
     testrun(ov_db_prepare(db));
@@ -88,12 +85,79 @@ static int test_ov_db_prepare() {
 
 /*----------------------------------------------------------------------------*/
 
-static int test_ov_db_events_add_participation_state() {
+static int test_ov_db_events_add_participation_state_unoptimized() {
 
     testrun(!ov_db_events_add_participation_state(
         0, 0, 0, 0, OV_PARTICIPATION_STATE_NONE, 0));
 
-    ov_database *db = connect_to_db();
+    ov_database* db = connect_to_db();
+    testrun(0 != db);
+
+    /* Switch off optimized function */
+    db->add_participation_state = 0;
+
+    testrun(ov_db_prepare(db));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, 0, 0, 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        0, "user1", 0, 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, "user1", 0, 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        0, 0, "role2", 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, 0, "role2", 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        0, "user1", "role2", 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, "user1", "role2", 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, 0, 0, "loop3", OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        0, "user1", 0, "loop3", OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, "user1", 0, "loop3", OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        0, 0, "role2", "loop3", OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, 0, "role2", "loop3", OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        0, "user1", "role2", "loop3", OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(!ov_db_events_add_participation_state(
+        db, "user1", "role2", "loop3", OV_PARTICIPATION_STATE_NONE, 0));
+
+    testrun(ov_db_events_add_participation_state(
+        db, "user1", "role2", "loop3", OV_PARTICIPATION_STATE_RECV, 0));
+
+    testrun(ov_db_events_add_participation_state(
+        db, "user1", "role2", "loop3", OV_PARTICIPATION_STATE_RECV, 13));
+
+    db = ov_database_close(db);
+
+    return testrun_log_success();
+}
+
+/*----------------------------------------------------------------------------*/
+
+static int test_ov_db_events_add_participation_state() {
+    testrun(!ov_db_events_add_participation_state(
+        0, 0, 0, 0, OV_PARTICIPATION_STATE_NONE, 0));
+
+    ov_database* db = connect_to_db();
     testrun(0 != db);
     testrun(ov_db_prepare(db));
 
@@ -156,31 +220,45 @@ static int test_ov_db_events_add_participation_state() {
 
 typedef struct {
     bool found;
-    char const *user;
+    char const* user;
+    char const* loop;
+    char const* role;
+    char const* evtime;
 } find_pstate_params;
 
-static bool find_pstate(void *value, void *data) {
-
-    find_pstate_params *params = data;
-    ov_json_value *jval = value;
+static bool find_pstate(void* value, void* data) {
+    find_pstate_params* params = data;
+    ov_json_value* jval = value;
 
     if ((0 != params) && (0 != jval)) {
+        char const* user = ov_json_string_get(ov_json_get(jval, "/usr"));
+        char const* role = ov_json_string_get(ov_json_get(jval, "/evstate"));
+        char const* loop = ov_json_string_get(ov_json_get(jval, "/evloop"));
+        char const* evtime = ov_json_string_get(ov_json_get(jval, "/evtime"));
+        char const* state = ov_json_string_get(ov_json_get(jval, "/evstate"));
 
-        char const *user = ov_json_string_get(ov_json_get(jval, "/usr"));
+        fprintf(stderr,
+                "Looking for %s: Found user %s, Role %s, Loop %s, time %s, "
+                "participation state %s\n",
+                params->user, user, role, loop, evtime, state);
 
-        params->found = (params->found || ov_string_equal(user, params->user));
+        params->found =
+            (params->found ||
+             (((0 == params->user) || ov_string_equal(user, params->user)) &&
+              ((0 == params->loop) || ov_string_equal(loop, params->loop)) &&
+              ((0 == params->role) || ov_string_equal(role, params->role)) &&
+              ((0 == params->evtime) ||
+               ov_string_equal(evtime, params->evtime))));
         return true;
 
     } else {
-
         return false;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool pstates_user_is_there(ov_json_value const *jval, char const *user) {
-
+static bool pstates_user_is_there(ov_json_value const* jval, char const* user) {
     fprintf(stderr, "Looking for pstate event for user: %s\n",
             ov_string_sanitize(user));
 
@@ -189,15 +267,14 @@ static bool pstates_user_is_there(ov_json_value const *jval, char const *user) {
         .user = user,
     };
 
-    ov_json_array_for_each((ov_json_value *)jval, &params, find_pstate);
+    ov_json_array_for_each((ov_json_value*)jval, &params, find_pstate);
     return params.found;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_db_events_get_partitipation_state() {
-
-    ov_database *db = connect_to_db();
+    ov_database* db = connect_to_db();
     testrun(0 != db);
     testrun(ov_db_prepare(db));
 
@@ -205,24 +282,32 @@ static int test_ov_db_events_get_partitipation_state() {
     testrun(0 ==
             ov_db_events_get_participation_state(0, 0, .user = "bauer hans"));
 
-    char const *users[] = {"adolf", "bauer",   "conrad", "duerer", "ernst",
+    char const* users[] = {"adolf", "bauer",   "conrad", "duerer", "ernst",
                            "frank", "goering", "heinz",  "ingo",   "johann"};
 
     size_t num_events = sizeof(users) / sizeof(users[0]);
 
-    char const *roles[] = {"r1", "r5", "r2", "r4", "r3",
+    char const* roles[] = {"r1", "r5", "r2", "r4", "r3",
                            "r3", "r4", "r2", "r5", "r1"};
 
-    char const *loops[] = {"l1", "l2", "l3", "l4", "l5",
+    char const* loops[] = {"l1", "l2", "l3", "l4", "l5",
                            "l1", "l2", "l3", "l4", "l5"};
 
-    for (size_t i = 0; i < num_events; ++i) {
+    ov_participation_state states[] = {
+        OV_PARTICIPATION_STATE_RECV, OV_PARTICIPATION_STATE_RECV,
+        OV_PARTICIPATION_STATE_RECV, OV_PARTICIPATION_STATE_RECV,
+        OV_PARTICIPATION_STATE_RECV,
 
-        testrun(ov_db_events_add_participation_state(
-            db, users[i], roles[i], loops[i], OV_PARTICIPATION_STATE_RECV, i));
+        OV_PARTICIPATION_STATE_RECV, OV_PARTICIPATION_STATE_RECV,
+        OV_PARTICIPATION_STATE_RECV, OV_PARTICIPATION_STATE_RECV,
+        OV_PARTICIPATION_STATE_RECV};
+
+    for (size_t i = 0; i < num_events; ++i) {
+        testrun(ov_db_events_add_participation_state(db, users[i], roles[i],
+                                                     loops[i], states[i], i));
     }
 
-    ov_json_value *jresult =
+    ov_json_value* jresult =
         ov_db_events_get_participation_state(db, 0, .loop = "l5");
 
     fprintf(stderr, "result is %p\n", jresult);
@@ -289,10 +374,9 @@ static int test_ov_db_events_get_partitipation_state() {
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_db_recordings_add() {
-
     testrun(!ov_db_recordings_add(0, 0, 0, 0, 0, 0));
 
-    ov_database *db = connect_to_db();
+    ov_database* db = connect_to_db();
     testrun(0 != db);
     testrun(ov_db_prepare(db));
 
@@ -409,31 +493,27 @@ static int test_ov_db_recordings_remove() { return testrun_log_success(); }
 
 typedef struct {
     bool found;
-    char const *id;
+    char const* id;
 } find_recording_params;
 
-static bool find_recording(void *value, void *data) {
-
-    find_recording_params *params = data;
-    ov_json_value *jval = value;
+static bool find_recording(void* value, void* data) {
+    find_recording_params* params = data;
+    ov_json_value* jval = value;
 
     if ((0 != params) && (0 != jval)) {
-
-        char const *id = ov_json_string_get(ov_json_get(jval, "/id"));
+        char const* id = ov_json_string_get(ov_json_get(jval, "/id"));
 
         params->found = (params->found || ov_string_equal(id, params->id));
         return true;
 
     } else {
-
         return false;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool rec_is_there(ov_json_value const *jval, char const *id) {
-
+static bool rec_is_there(ov_json_value const* jval, char const* id) {
     fprintf(stderr, "Looking for recording: %s\n", ov_string_sanitize(id));
 
     find_recording_params params = {
@@ -441,39 +521,33 @@ static bool rec_is_there(ov_json_value const *jval, char const *id) {
         .id = id,
     };
 
-    ov_json_array_for_each((ov_json_value *)jval, &params, find_recording);
+    ov_json_array_for_each((ov_json_value*)jval, &params, find_recording);
     return params.found;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool rec_found_in_json(ov_json_value const *jval,
-                              ssize_t const *recs_expected_indices,
+static bool rec_found_in_json(ov_json_value const* jval,
+                              ssize_t const* recs_expected_indices,
                               ov_id const all_recs[]) {
-
     size_t all_recs_len = 0;
-    for (all_recs_len = 0; ov_id_valid(all_recs[all_recs_len]); ++all_recs_len)
-        ;
+    for (all_recs_len = 0; ov_id_valid(all_recs[all_recs_len]); ++all_recs_len);
 
     size_t rei_len = 0;
-    for (rei_len = 0; -1 < recs_expected_indices[rei_len]; ++rei_len)
-        ;
+    for (rei_len = 0; -1 < recs_expected_indices[rei_len]; ++rei_len);
 
     for (size_t i = 0; i < all_recs_len; ++i) {
-
-        char const *rec = all_recs[i];
+        char const* rec = all_recs[i];
         intptr_t iptr = i;
 
         bool expected =
-            ov_utils_is_in_array(recs_expected_indices, rei_len, (void *)iptr);
+            ov_utils_is_in_array(recs_expected_indices, rei_len, (void*)iptr);
 
         if (expected && (!rec_is_there(jval, rec))) {
-
             ov_log_error("Expected recording %s, but is not there", rec);
             return false;
 
         } else if ((!expected) && rec_is_there(jval, rec)) {
-
             ov_log_error("Unexpected recording %s, but is there", rec);
             return false;
         }
@@ -484,18 +558,15 @@ static bool rec_found_in_json(ov_json_value const *jval,
 
 /*----------------------------------------------------------------------------*/
 
-static bool recs_found(ov_database *db, ssize_t const *recs_expected,
+static bool recs_found(ov_database* db, ssize_t const* recs_expected,
                        ov_id const all_recs[],
                        ov_db_recordings_get_params params) {
-
-    ov_json_value *recs = ov_db_recordings_get_struct(db, 0, params);
+    ov_json_value* recs = ov_db_recordings_get_struct(db, 0, params);
 
     if (0 == recs) {
-
         return false;
 
     } else {
-
         ov_json_value_dump(stderr, recs);
         bool ok = rec_found_in_json(recs, recs_expected, all_recs);
         recs = ov_json_value_free(recs);
@@ -504,16 +575,14 @@ static bool recs_found(ov_database *db, ssize_t const *recs_expected,
     }
 }
 
-#define expected_loops(...)                                                    \
-    (ssize_t[]) { __VA_ARGS__, -1 }
+#define expected_loops(...) (ssize_t[]){__VA_ARGS__, -1}
 
-#define search_params(x, ...)                                                  \
+#define search_params(x, ...) \
     (ov_db_recordings_get_params) { x, __VA_ARGS__ }
 
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_db_recordings_get() {
-
     testrun(0 == ov_db_recordings_get(0, 0, 0));
 
     ov_database_export_symbols_for_plugins();
@@ -534,7 +603,7 @@ static int test_ov_db_recordings_get() {
 
     // ov_database *db = ov_database_connect(database_info("/tmp/sql.sqlite"));
 
-    ov_database *db = connect_to_db();
+    ov_database* db = connect_to_db();
     testrun(0 != db);
 
     testrun(ov_db_prepare(db));
@@ -546,7 +615,7 @@ static int test_ov_db_recordings_get() {
     ov_id ids[12] = {0};
     size_t ids_len = sizeof(ids) / sizeof(ids[0]) - 1;
 
-    char const *uris[] = {"anton", "berton", "certon", "david",
+    char const* uris[] = {"anton", "berton", "certon", "david",
                           "emil",  "fabian", "gerd",   "hein",
                           "igor",  "kurt",   "lima",   0};
 
@@ -562,7 +631,7 @@ static int test_ov_db_recordings_get() {
     size_t K = 9;
     size_t L = 10;
 
-    char const *loops[sizeof(ids) / sizeof(ids[0])] = {
+    char const* loops[sizeof(ids) / sizeof(ids[0])] = {
         "A", "B", "C", "D", "E", "F", "G", "H", "I", "K", "L", 0};
 
     for (size_t i = 0; i < ids_len - 1; ++i) {
@@ -576,7 +645,7 @@ static int test_ov_db_recordings_get() {
     ov_id_fill_with_uuid(ids[L]);
     ov_db_recordings_add(db, ids[L], loops[L], uris[L], 1730157139, 1730157150);
 
-    ov_json_value *recs = ov_db_recordings_get(db, 0, 0);
+    ov_json_value* recs = ov_db_recordings_get(db, 0, 0);
     testrun(0 != recs);
 
     ov_json_value_dump(stderr, recs);
@@ -729,6 +798,7 @@ static int test_ov_db_recordings_get() {
 /*----------------------------------------------------------------------------*/
 
 OV_TEST_RUN("ov_database_events", test_ov_db_prepare,
+            test_ov_db_events_add_participation_state_unoptimized,
             test_ov_db_events_add_participation_state,
             test_ov_db_events_get_partitipation_state,
             test_ov_db_recordings_add, test_ov_db_recordings_remove,

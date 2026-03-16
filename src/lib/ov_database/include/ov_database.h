@@ -47,6 +47,11 @@
 
 /*----------------------------------------------------------------------------*/
 
+#define OV_DATABASE_EVENTS_RECORDINGS_TABLE "recordings"
+#define OV_DATABASE_EVENTS_PARTICIPATION_EVENTS_TABLE "events"
+
+/*----------------------------------------------------------------------------*/
+
 #define OV_DB_POSTGRES "postgres"
 #define OV_DB_MARIADB "mariadb"
 #define OV_DB_SQLITE "sqlite"
@@ -60,12 +65,40 @@ typedef struct ov_database_struct {
 
     bool (*close)(struct ov_database_struct *self);
 
-    ov_result (*query)(struct ov_database_struct *self, char const *sql,
+    ov_result (*query)(struct ov_database_struct *self,
+                       char const *sql,
                        ov_json_value **jtarget);
 
-    bool (*add_limit_clause)(char *target, size_t target_capacity_octets,
-                             char const *select_statement, uint32_t limit,
+    bool (*add_limit_clause)(char *target,
+                             size_t target_capacity_octets,
+                             char const *select_statement,
+                             uint32_t limit,
                              uint32_t offset);
+
+    /**
+     * Called in ov_database_prepare - here you can assume that the
+     * events and recordings tables actually exist
+     * Optional: If pointer is 0, it is just not called.
+     */
+    bool (*init)(struct ov_database_struct *self);
+
+    /**
+     * Specialized function. Optional: If 0, the default unoptimized
+     * function is used
+     */
+    bool (*add_participation_state)(struct ov_database_struct* self,
+                                           const char* user, const char* role,
+                                           const char* loop,
+                                           const char* state,
+                                           const char* evtime);
+
+    /**
+     * Specialized function. Optional: If 0, the default unoptimized
+     * function is used
+     */
+    bool (*add_recording)(struct ov_database_struct* self, const char* id,
+                           const char* uri, char const* loop,
+                           const char* start_time, const char* end_time);
 
 } ov_database;
 
@@ -76,33 +109,32 @@ typedef struct ov_database_struct {
  * the database will be created in memory.
  */
 typedef struct {
-
-    char const *type;
-    char const *host;
+    char const* type;
+    char const* host;
     uint16_t port;
-    char const *dbname;
-    char const *user;
-    char const *password;
+    char const* dbname;
+    char const* user;
+    char const* password;
 
     uint64_t reconnect_secs;
 
 } ov_database_info;
 
-ov_database_info ov_database_info_from_json(ov_json_value const *jval);
-ov_json_value *ov_database_info_to_json(ov_database_info dbi);
+ov_database_info ov_database_info_from_json(ov_json_value const* jval);
+ov_json_value* ov_database_info_to_json(ov_database_info dbi);
 
 /*----------------------------------------------------------------------------*/
 
-typedef ov_database *(*ov_database_connector)(ov_database_info info);
+typedef ov_database* (*ov_database_connector)(ov_database_info info);
 
 bool ov_database_export_symbols_for_plugins();
 
-bool ov_database_connector_register(char const *dbtype,
+bool ov_database_connector_register(char const* dbtype,
                                     ov_database_connector connector);
 
 /*----------------------------------------------------------------------------*/
 
-ov_database *ov_database_connect(ov_database_info info);
+ov_database* ov_database_connect(ov_database_info info);
 
 /**
  * Like connect, but will create one single connection and return that one
@@ -112,9 +144,9 @@ ov_database *ov_database_connect(ov_database_info info);
  * Internally, the singleton is closed when as many closes()
  * have been performed as the singleton was handed out.
  */
-ov_database *ov_database_connect_singleton(ov_database_info info);
+ov_database* ov_database_connect_singleton(ov_database_info info);
 
-ov_database *ov_database_close(ov_database *self);
+ov_database* ov_database_close(ov_database* self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -123,14 +155,14 @@ ov_database *ov_database_close(ov_database *self);
  * If data is expected to be returned, hand over a JSON value `jtarget` .
  * The data will be added to this JSON value.
  */
-ov_result ov_database_query(ov_database *self, char const *sql,
-                            ov_json_value **jtarget);
+ov_result ov_database_query(ov_database* self, char const* sql,
+                            ov_json_value** jtarget);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_database_add_limit_clause(ov_database *self, char *target,
+bool ov_database_add_limit_clause(ov_database* self, char* target,
                                   size_t target_capacity_octets,
-                                  char const *select_statement, uint32_t limit,
+                                  char const* select_statement, uint32_t limit,
                                   uint32_t offset);
 
 /*----------------------------------------------------------------------------*/
