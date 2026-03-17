@@ -34,8 +34,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-static bool stradd(char **target, size_t *target_capacity,
-                   char const *to_append) {
+static bool stradd(char** target, size_t* target_capacity,
+                   char const* to_append) {
     size_t append_len = ov_string_len(to_append);
 
     if (0 == append_len) {
@@ -68,7 +68,7 @@ static bool stradd(char **target, size_t *target_capacity,
 
 /*----------------------------------------------------------------------------*/
 
-static bool set_bool(bool *var, bool value) {
+static bool set_bool(bool* var, bool value) {
     if (0 != var) {
         *var = value;
         return true;
@@ -79,7 +79,7 @@ static bool set_bool(bool *var, bool value) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_and_clause(char **target, size_t *capacity, bool add_and) {
+static bool add_and_clause(char** target, size_t* capacity, bool add_and) {
     if (add_and) {
         return stradd(target, capacity, " AND ");
 
@@ -90,8 +90,10 @@ static bool add_and_clause(char **target, size_t *capacity, bool add_and) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool query(ov_database *self, char const *sql, ov_json_value **jtarget,
-                  char const *error_msg) {
+static bool query(ov_database* self, char const* sql, ov_json_value** jtarget,
+                  char const* error_msg) {
+    fprintf(stderr, "SQL: %s\n", sql);
+
     ov_result res = ov_database_query(self, sql, jtarget);
 
     if (OV_ERROR_NOERROR != res.error_code) {
@@ -109,7 +111,7 @@ static bool query(ov_database *self, char const *sql, ov_json_value **jtarget,
 
 /*----------------------------------------------------------------------------*/
 
-static bool result_has_less_entries_than(ov_json_value const **res,
+static bool result_has_less_entries_than(ov_json_value const** res,
                                          uint32_t max_num_entries) {
     return (0 == max_num_entries) || (0 == res) || (0 == *res) ||
            (ov_json_is_array(*res) &&
@@ -118,9 +120,9 @@ static bool result_has_less_entries_than(ov_json_value const **res,
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_limit_clause_if_required(ov_database *self, char *target,
+static bool add_limit_clause_if_required(ov_database* self, char* target,
                                          size_t target_capacity_octets,
-                                         char const *statement,
+                                         char const* statement,
                                          uint32_t max_num_results) {
     if (0 == max_num_results) {
         return (0 != target) && (0 != statement) &&
@@ -138,9 +140,9 @@ static bool add_limit_clause_if_required(ov_database *self, char *target,
 
 typedef enum { OK, TOO_MANY_RESULTS, ERROR } QueryResult;
 
-static QueryResult query_select(ov_database *self, uint32_t max_num_results,
-                                char const *sql, ov_json_value **jtarget,
-                                char const *error_msg) {
+static QueryResult query_select(ov_database* self, uint32_t max_num_results,
+                                char const* sql, ov_json_value** jtarget,
+                                char const* error_msg) {
     char select_sql[1000] = {0};
 
     if (ov_ptr_valid(sql, "No SQL statement") &&
@@ -150,7 +152,7 @@ static QueryResult query_select(ov_database *self, uint32_t max_num_results,
 
         if (ok) {
             if ((0 == max_num_results) ||
-                result_has_less_entries_than((ov_json_value const **)jtarget,
+                result_has_less_entries_than((ov_json_value const**)jtarget,
                                              max_num_results + 1)) {
                 return OK;
 
@@ -173,12 +175,10 @@ static QueryResult query_select(ov_database *self, uint32_t max_num_results,
 
 /*----------------------------------------------------------------------------*/
 
-#define RECORDINGS_TABLE "recordings"
 #define ID_LEN 36
 #define URI_LEN 300
 #define LOOP_LEN 200
 
-#define PARTICIPATION_EVENTS_TABLE "events"
 #define USER_LEN 300
 #define ROLE_LEN 300
 #define PARTICIPATION_STATE_LEN 15
@@ -186,26 +186,33 @@ static QueryResult query_select(ov_database *self, uint32_t max_num_results,
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
 
-bool ov_db_prepare(ov_database *self) {
+bool ov_db_prepare(ov_database* self) {
     return query(self,
-                 "CREATE TABLE IF NOT EXISTS " RECORDINGS_TABLE
-                 " (id CHAR(" STR(ID_LEN) "), uri VARCHAR(" STR(
-                     URI_LEN) "), loop VARCHAR(" STR(LOOP_LEN) "), starttime "
-                                                               "TIMESTAMP, "
-                                                               "endtime "
-                                                               "TIMESTAMP);",
-                 0, "Could not prepare recordings database") &&
-           query(
-               self,
-               "CREATE TABLE IF NOT EXISTS " PARTICIPATION_EVENTS_TABLE
-               " (usr VARCHAR(" STR(USER_LEN) "), role VARCHAR(" STR(ROLE_LEN) "), loop VARCHAR(" STR(
-                   LOOP_LEN) "), evstate VARCHAR(" STR(PARTICIPATION_STATE_LEN) "), evtime TIMESTAMP);",
-               0, "Could not prepare recordings database");
+                  "CREATE TABLE IF NOT EXISTS "
+                  OV_DATABASE_EVENTS_RECORDINGS_TABLE
+                  " (id CHAR(" STR(ID_LEN)
+                  "), uri VARCHAR(" STR(URI_LEN)
+                  "), loop VARCHAR(" STR(LOOP_LEN)
+                  "), starttime TIMESTAMP, endtime TIMESTAMP);",
+                  0,
+                  "Could not prepare recordings database") &&
+            query(
+                self,
+                "CREATE TABLE IF NOT EXISTS "
+                OV_DATABASE_EVENTS_PARTICIPATION_EVENTS_TABLE
+                " (usr VARCHAR(" STR(USER_LEN)
+                "), role VARCHAR(" STR(ROLE_LEN)
+                "), loop VARCHAR(" STR(LOOP_LEN)
+                "), evstate VARCHAR(" STR(PARTICIPATION_STATE_LEN)
+                "), evtime TIMESTAMP);",
+                0,
+                "Could not prepare recordings database") &&
+            ((0 == self->init) || (self->init(self)));
 }
 
 /*----------------------------------------------------------------------------*/
 
-static char *epoch_secs_to_sql_datetime(char *target, size_t target_capacity,
+static char* epoch_secs_to_sql_datetime(char* target, size_t target_capacity,
                                         time_t time_epoch_secs) {
     struct tm time_tm = {0};
 
@@ -221,17 +228,14 @@ static char *epoch_secs_to_sql_datetime(char *target, size_t target_capacity,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_db_events_add_participation_state(ov_database *self, const char *user,
-                                          const char *role, const char *loop,
-                                          ov_participation_state state,
-                                          time_t time_epoch) {
+static bool add_participation_state(ov_database* self, const char* user,
+                                    const char* role, const char* loop,
+                                    const char* state, const char* evtime) {
     size_t user_len = ov_string_len(user);
     size_t role_len = ov_string_len(role);
     size_t loop_len = ov_string_len(loop);
 
     char sql[500] = {0};
-    char str_time[30] = {0};
-    char const *str_state = ov_participation_state_to_string(state);
 
     if (ov_ptr_valid(user,
                      "Cannot insert participation event into database: No user "
@@ -251,19 +255,14 @@ bool ov_db_events_add_participation_state(ov_database *self, const char *user,
         ov_cond_valid(loop_len <= LOOP_LEN,
                       "Cannot insert recording into database: Role string is "
                       "too long") &&
-        ov_ptr_valid(str_state,
+        ov_ptr_valid(state,
                      "Cannot insert participation event into database: "
-                     "Invalid participation state") &&
-        ov_cond_valid(OV_PARTICIPATION_STATE_NONE != state,
-                      "Cannot insert participation event into database: "
-                      "Invalid participation state")) {
-        snprintf(
-            sql, sizeof(sql),
-            "INSERT INTO " PARTICIPATION_EVENTS_TABLE
-            " (usr, role, loop, evstate, evtime) "
-            " VALUES ('%s', '%s', '%s', '%s', '%s');",
-            user, role, loop, str_state,
-            epoch_secs_to_sql_datetime(str_time, sizeof(str_time), time_epoch));
+                     "Invalid participation state")) {
+        snprintf(sql, sizeof(sql),
+                 "INSERT INTO " OV_DATABASE_EVENTS_PARTICIPATION_EVENTS_TABLE
+                 " (usr, role, loop, evstate, evtime) "
+                 " VALUES ('%s', '%s', '%s', '%s', '%s');",
+                 user, role, loop, state, evtime);
 
         return query(self, sql, 0,
                      "Cannot insert participation event into database");
@@ -275,14 +274,45 @@ bool ov_db_events_add_participation_state(ov_database *self, const char *user,
 
 /*----------------------------------------------------------------------------*/
 
-static bool
-pstate_params_to_sql_query(char *target, size_t target_capacity,
-                           ov_db_events_get_participation_state_params params) {
-    char *write_ptr = target;
+bool ov_db_events_add_participation_state(ov_database* self, const char* user,
+                                          const char* role, const char* loop,
+                                          ov_participation_state state,
+                                          time_t time_epoch) {
+    char str_time[30] = {0};
+
+    if (ov_ptr_valid(
+            self,
+            "Cannot insert participation state in database: No database") &&
+        ov_cond_valid(OV_PARTICIPATION_STATE_NONE != state,
+                      "Cannot insert participation event into database: "
+                      "Invalid participation state")) {
+        if (0 != self->add_participation_state) {
+            return self->add_participation_state(
+                self, user, role, loop, ov_participation_state_to_string(state),
+                epoch_secs_to_sql_datetime(str_time, sizeof(str_time),
+                                           time_epoch));
+
+        } else {
+            return add_participation_state(
+                self, user, role, loop, ov_participation_state_to_string(state),
+                epoch_secs_to_sql_datetime(str_time, sizeof(str_time),
+                                           time_epoch));
+        }
+    } else {
+        return false;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool pstate_params_to_sql_query(
+    char* target, size_t target_capacity,
+    ov_db_events_get_participation_state_params params) {
+    char* write_ptr = target;
 
     stradd(&write_ptr, &target_capacity,
            "SELECT usr, loop, evstate, evtime  "
-           "FROM " PARTICIPATION_EVENTS_TABLE);
+           "FROM " OV_DATABASE_EVENTS_PARTICIPATION_EVENTS_TABLE);
 
     if ((0 != params.user) || (0 != params.from_epoch_secs) ||
         (0 != params.until_epoch_secs) || (0 != params.loop) ||
@@ -366,14 +396,14 @@ pstate_params_to_sql_query(char *target, size_t target_capacity,
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_db_events_get_participation_state_struct(
-    ov_database *self, uint32_t max_num_results,
+ov_json_value* ov_db_events_get_participation_state_struct(
+    ov_database* self, uint32_t max_num_results,
     ov_db_events_get_participation_state_params params) {
     char sql[1000] = {0};
 
     QueryResult result = ERROR;
 
-    ov_json_value *jtarget = 0;
+    ov_json_value* jtarget = 0;
 
     if (pstate_params_to_sql_query(sql, sizeof(sql), params)) {
         result = query_select(self, max_num_results, sql, &jtarget,
@@ -382,19 +412,19 @@ ov_json_value *ov_db_events_get_participation_state_struct(
     }
 
     switch (result) {
-    case TOO_MANY_RESULTS:
-        jtarget = ov_json_value_free(jtarget);
-        return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
+        case TOO_MANY_RESULTS:
+            jtarget = ov_json_value_free(jtarget);
+            return (ov_json_value*)OV_DB_RECORDINGS_RESULT_TOO_BIG;
 
-    case ERROR:
-        jtarget = ov_json_value_free(jtarget);
-        return jtarget;
+        case ERROR:
+            jtarget = ov_json_value_free(jtarget);
+            return jtarget;
 
-    case OK:
-        return jtarget;
+        case OK:
+            return jtarget;
 
-    default:
-        return jtarget;
+        default:
+            return jtarget;
     };
 
     return 0;
@@ -404,21 +434,19 @@ ov_json_value *ov_db_events_get_participation_state_struct(
                                    Recordings
  ****************************************************************************/
 
-bool ov_db_recordings_add(ov_database *self, char const *id, char const *loop,
-                          char const *uri, time_t start_epoch_secs,
-                          time_t end_epoch_secs) {
+static bool recordings_add(ov_database* self, char const* id, char const* loop,
+                           char const* uri, char const* time_start,
+                           char const* time_end) {
     char sql[500] = {0};
 
     size_t id_len = ov_string_len(id);
     size_t uri_len = ov_string_len(uri);
     size_t loop_len = ov_string_len(loop);
 
-    char tsstart[30] = {0};
-    char tsend[30] = {0};
-
-    ov_log_info("Inserting %s %s Loop: %s from %zu until %zu\n",
-                ov_string_sanitize(id), ov_string_sanitize(uri),
-                ov_string_sanitize(loop), start_epoch_secs, end_epoch_secs);
+    fprintf(stderr, "Inserting %s %s Loop: %s from %s until %s\n",
+            ov_string_sanitize(id), ov_string_sanitize(uri),
+            ov_string_sanitize(loop), ov_string_sanitize(time_start),
+            ov_string_sanitize(time_end));
 
     if (ov_ptr_valid(id,
                      "Cannot insert recording into database: No ID given") &&
@@ -426,6 +454,12 @@ bool ov_db_recordings_add(ov_database *self, char const *id, char const *loop,
                      "Cannot insert recording into database: No URI given") &&
         ov_ptr_valid(loop,
                      "Cannot insert recording into database: No Loop given") &&
+        ov_ptr_valid(
+            time_start,
+            "Cannot insert recording into database: No start time given") &&
+        ov_ptr_valid(
+            time_end,
+            "Cannot insert recording into database: No end time given") &&
         ov_cond_valid(id_len == ID_LEN,
                       "Cannot insert recording into database: ID is not a "
                       "UUID") &&
@@ -433,15 +467,11 @@ bool ov_db_recordings_add(ov_database *self, char const *id, char const *loop,
                       "Cannot insert recording into database: URI too long") &&
         ov_cond_valid(loop_len <= LOOP_LEN,
                       "Cannot insert recording into database: Loop too long")) {
-        snprintf(
-            sql, sizeof(sql),
-            "INSERT INTO " RECORDINGS_TABLE
-            " (id, uri, loop, starttime, endtime) "
-            " VALUES ('%s', '%s', '%s', '%s', '%s');",
-            id, uri, loop,
-            epoch_secs_to_sql_datetime(tsstart, sizeof(tsstart),
-                                       start_epoch_secs),
-            epoch_secs_to_sql_datetime(tsend, sizeof(tsend), end_epoch_secs));
+        snprintf(sql, sizeof(sql),
+                 "INSERT INTO " OV_DATABASE_EVENTS_RECORDINGS_TABLE
+                 " (id, uri, loop, starttime, endtime) "
+                 " VALUES ('%s', '%s', '%s', '%s', '%s');",
+                 id, uri, loop, time_start, time_end);
 
         return query(self, sql, 0, "Could not add recording to database");
 
@@ -452,14 +482,50 @@ bool ov_db_recordings_add(ov_database *self, char const *id, char const *loop,
 
 /*----------------------------------------------------------------------------*/
 
-static bool
-params_to_sql_query_without_user(char *target, size_t target_capacity,
-                                 const ov_db_recordings_get_params params) {
-    char *write_ptr = target;
+bool ov_db_recordings_add(ov_database* self, char const* id, char const* loop,
+                          char const* uri, time_t start_epoch_secs,
+                          time_t end_epoch_secs) {
+    char tsstart[30] = {0};
+    char tsend[30] = {0};
+
+    if (ov_ptr_valid(self,
+                     "Cannot insert recording in database: No database") &&
+        ov_ptr_valid(id, "Cannot insert recording in database: No ID given") &&
+        ov_ptr_valid(uri,
+                     "Cannot insert recording in database: No URI given") &&
+        ov_ptr_valid(loop,
+                     "Cannot insert recording in database: No LOOP given")) {
+        if (0 != self->add_recording) {
+            return self->add_recording(
+                self, id, loop, uri,
+                epoch_secs_to_sql_datetime(tsstart, sizeof(tsstart),
+                                           start_epoch_secs),
+                epoch_secs_to_sql_datetime(tsend, sizeof(tsend),
+                                           end_epoch_secs));
+
+        } else {
+            return recordings_add(
+                self, id, loop, uri,
+                epoch_secs_to_sql_datetime(tsstart, sizeof(tsstart),
+                                           start_epoch_secs),
+                epoch_secs_to_sql_datetime(tsend, sizeof(tsend),
+                                           end_epoch_secs));
+        }
+    } else {
+        return false;
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool params_to_sql_query_without_user(
+    char* target, size_t target_capacity,
+    const ov_db_recordings_get_params params) {
+    char* write_ptr = target;
 
     stradd(&write_ptr, &target_capacity,
            "SELECT r.id, r.uri, r.loop, r.starttime, r.endtime "
-           "FROM " RECORDINGS_TABLE " r");
+           "FROM " OV_DATABASE_EVENTS_RECORDINGS_TABLE " r");
 
     if ((0 != params.id) || (0 != params.from_epoch_secs) ||
         (0 != params.until_epoch_secs) || (0 != params.loop)) {
@@ -523,15 +589,16 @@ params_to_sql_query_without_user(char *target, size_t target_capacity,
 
 /*----------------------------------------------------------------------------*/
 
-static bool
-params_to_sql_query_with_user(char *target, size_t target_capacity,
-                              const ov_db_recordings_get_params params) {
+static bool params_to_sql_query_with_user(
+    char* target, size_t target_capacity,
+    const ov_db_recordings_get_params params) {
     char timestamp[30] = {0};
-    char *write_ptr = target;
+    char* write_ptr = target;
 
     stradd(&write_ptr, &target_capacity,
            "SELECT r.id, r.uri, r.loop, r.starttime, r.endtime "
-           "FROM " RECORDINGS_TABLE " r, " PARTICIPATION_EVENTS_TABLE
+           "FROM " OV_DATABASE_EVENTS_RECORDINGS_TABLE
+           " r, " OV_DATABASE_EVENTS_PARTICIPATION_EVENTS_TABLE
            " e WHERE e.usr='");
 
     stradd(&write_ptr, &target_capacity, params.user);
@@ -613,7 +680,7 @@ params_to_sql_query_with_user(char *target, size_t target_capacity,
 
 /*----------------------------------------------------------------------------*/
 
-static bool params_to_sql_query(char *target, size_t target_capacity,
+static bool params_to_sql_query(char* target, size_t target_capacity,
                                 const ov_db_recordings_get_params params) {
     if (0 == params.user) {
         return params_to_sql_query_without_user(target, target_capacity,
@@ -626,17 +693,17 @@ static bool params_to_sql_query(char *target, size_t target_capacity,
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value const *OV_DB_RECORDINGS_RESULT_TOO_BIG =
-    (ov_json_value const *)&OV_DB_RECORDINGS_RESULT_TOO_BIG;
+ov_json_value const* OV_DB_RECORDINGS_RESULT_TOO_BIG =
+    (ov_json_value const*)&OV_DB_RECORDINGS_RESULT_TOO_BIG;
 
-ov_json_value *ov_db_recordings_get_struct(ov_database *self,
+ov_json_value* ov_db_recordings_get_struct(ov_database* self,
                                            uint32_t max_num_results,
                                            ov_db_recordings_get_params params) {
     char sql[1000] = {0};
 
     QueryResult result = ERROR;
 
-    ov_json_value *jtarget = 0;
+    ov_json_value* jtarget = 0;
 
     if (params_to_sql_query(sql, sizeof(sql), params)) {
         result = query_select(self, max_num_results, sql, &jtarget,
@@ -644,19 +711,19 @@ ov_json_value *ov_db_recordings_get_struct(ov_database *self,
     }
 
     switch (result) {
-    case TOO_MANY_RESULTS:
-        jtarget = ov_json_value_free(jtarget);
-        return (ov_json_value *)OV_DB_RECORDINGS_RESULT_TOO_BIG;
+        case TOO_MANY_RESULTS:
+            jtarget = ov_json_value_free(jtarget);
+            return (ov_json_value*)OV_DB_RECORDINGS_RESULT_TOO_BIG;
 
-    case ERROR:
-        jtarget = ov_json_value_free(jtarget);
-        return jtarget;
+        case ERROR:
+            jtarget = ov_json_value_free(jtarget);
+            return jtarget;
 
-    case OK:
-        return jtarget;
+        case OK:
+            return jtarget;
 
-    default:
-        return jtarget;
+        default:
+            return jtarget;
     };
 }
 
