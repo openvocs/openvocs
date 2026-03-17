@@ -790,6 +790,8 @@ static bool client_login(ov_vocs *vocs,
     if (!vocs || !input || socket < 0) goto error;
 
     data = ov_socket_json_get(vocs->connections, socket);
+    if(!data) goto error;
+
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (user) {
@@ -3097,6 +3099,7 @@ static bool cb_event_update_password(ov_vocs *vocs,
         }
 
         out = ov_event_api_create_success_response(input);
+        ov_cluster_send(vocs->cluster, input);
         //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
         goto response;
     }
@@ -3380,8 +3383,8 @@ static bool cb_event_delete(ov_vocs *vocs,
         goto response;
     }
 
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
+    ov_cluster_send(vocs->cluster, input);
 
 response:
 
@@ -3506,8 +3509,8 @@ static bool cb_event_create(ov_vocs *vocs,
         goto response;
     }
 
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
+    ov_cluster_send(vocs->cluster, input);
 
 response:
 
@@ -3718,6 +3721,8 @@ static bool cb_event_update_key(ov_vocs *vocs,
     //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
 
+    ov_cluster_send(vocs->cluster, input);
+
 response:
 
     env_send(vocs, socket, out);
@@ -3817,8 +3822,8 @@ static bool cb_event_delete_key(ov_vocs *vocs,
         goto response;
     }
 
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
+    ov_cluster_send(vocs->cluster, input);
 
 response:
 
@@ -4062,8 +4067,9 @@ static bool cb_event_update(ov_vocs *vocs,
     }
 
     OV_ASSERT(errors == NULL);
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
+
+    ov_cluster_send(vocs->cluster, input);
 
 response:
 
@@ -4210,7 +4216,6 @@ static bool cb_event_save(ov_vocs *vocs,
         goto response;
     }
 
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
 
 response:
@@ -4298,8 +4303,8 @@ static bool cb_event_set_layout(ov_vocs *vocs,
         goto response;
     }
 
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
+    ov_cluster_send(vocs->cluster, input);
 
 response:
 
@@ -4467,8 +4472,9 @@ static bool cb_event_add_domain_admin(ov_vocs *vocs,
         goto response;
     }
 
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
+
+    ov_cluster_send(vocs->cluster, input);
 
 response:
 
@@ -4556,9 +4562,8 @@ static bool cb_event_add_project_admin(ov_vocs *vocs,
         goto response;
     }
 
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
     out = ov_event_api_create_success_response(input);
-
+    ov_cluster_send(vocs->cluster, input);
 response:
 
     env_send(vocs, socket, out);
@@ -4711,10 +4716,8 @@ static bool cb_event_ldap_import(ov_vocs *vocs,
         goto response;
     }
 
-/*
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
-    out = ov_event_api_create_success_response(input);
-*/
+
+    ov_cluster_send(vocs->cluster, input);
 
 response:
 
@@ -4798,8 +4801,6 @@ static bool cb_event_set_user_data(ov_vocs *vocs,
     out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
     ov_json_object_set(res, OV_KEY_LAYOUT, val);
-
-    //ov_vocs_db_persistance_broadcast(vocs->config.persistance, input);
 
 response:
 

@@ -53,7 +53,8 @@ typedef struct ov_vocs_recorder_config {
 
     ov_event_loop *loop;
     ov_vocs_db *vocs_db;
-
+    ov_io *io;
+    
     ov_vad_config vad;
 
     struct {

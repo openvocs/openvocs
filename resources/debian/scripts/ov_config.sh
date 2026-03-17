@@ -462,6 +462,12 @@ generate_config_ov_vocs() {
         \"path\": \"/etc/openvocs/ov_mc_vocs/domains\"
       }
      },
+     \"cluster\":
+     {
+        \"host\":\"224.0.0.10\",
+        \"port\":12345,
+        \"type\":\"UDP\"
+     },
      \"webserver\":
      {
        \"name\":\"VOCS GATEWAY\",

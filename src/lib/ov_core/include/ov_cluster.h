@@ -19,28 +19,24 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_vocs_cluster.h
+        @file           ov_cluster.h
         @author         Töpfer, Markus
 
-        @date           2026-03-10
+        @date           2026-03-11
 
 
         ------------------------------------------------------------------------
 */
-#ifndef ov_vocs_cluster_h
-#define ov_vocs_cluster_h
+#ifndef ov_cluster_h
+#define ov_cluster_h
 
-#include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_socket.h>
-#include <ov_core/ov_io.h>
+#include <ov_base/ov_event_loop.h>
+#include <ov_base/ov_json.h>
 
-/*----------------------------------------------------------------------------*/
+typedef struct ov_cluster ov_cluster;
 
-typedef struct ov_vocs_cluster ov_vocs_cluster;
-
-/*----------------------------------------------------------------------------*/
-
-typedef struct ov_vocs_cluster_config {
+typedef struct ov_cluster_config {
 
     ov_event_loop *loop;
     ov_socket_configuration multicast;
@@ -52,7 +48,7 @@ typedef struct ov_vocs_cluster_config {
 
     } callback;
 
-} ov_vocs_cluster_config;
+} ov_cluster_config;
 
 /*
  *      ------------------------------------------------------------------------
@@ -62,13 +58,12 @@ typedef struct ov_vocs_cluster_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_vocs_cluster *ov_vocs_cluster_create(ov_vocs_cluster_config config);
-ov_vocs_cluster *ov_vocs_cluster_free(ov_vocs_cluster *self);
-ov_vocs_cluster *ov_vocs_cluster_cast(const void *self);
+ov_cluster *ov_cluster_create(ov_cluster_config config);
+ov_cluster *ov_cluster_free(ov_cluster *self);
+ov_cluster *ov_cluster_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_cluster_send(ov_vocs_cluster *self, const ov_json_value *msg);
+bool ov_cluster_send(ov_cluster *self, ov_json_value *msg);
 
-
-#endif /* ov_vocs_cluster_h */
+#endif /* ov_cluster_h */

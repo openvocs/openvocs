@@ -46,6 +46,7 @@ int ov_mc_socket(ov_socket_configuration config) {
 
     if (!config.host[0])
         goto error;
+
     config.type = UDP;
 
     int loop = 1;

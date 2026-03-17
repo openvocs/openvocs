@@ -43,10 +43,10 @@
 #include <ov_core/ov_event_engine.h>
 #include <ov_core/ov_event_session.h>
 #include <ov_core/ov_socket_json.h>
+#include <ov_core/ov_cluster.h>
 
 #include "../include/ov_mc_sip_msg.h"
 #include "../include/ov_vocs_loop.h"
-#include "../include/ov_vocs_cluster.h"
 #include <ov_base/ov_error_codes.h>
 
 #define ov_vocs_MAGIC_BYTES 0x13db
@@ -80,7 +80,7 @@ struct ov_vocs {
     ov_dict *io;       // event functions (event io)
 
     ov_socket_json *connections;
-    ov_vocs_cluster *cluster;
+    ov_cluster *cluster;
 };
 
 /*
@@ -1393,6 +1393,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 #include "ov_vocs_api.inc"
+#include "ov_vocs_cluster_api.inc"
 
 /*----------------------------------------------------------------------------*/
 
@@ -1414,6 +1415,8 @@ static bool enable_websocket_function(ov_vocs *vocs) {
 error:
     return false;
 }
+
+
 
 /*
  *      ------------------------------------------------------------------------
@@ -2729,6 +2732,7 @@ static bool module_load_recorder(ov_vocs *self) {
 
     self->config.module.recorder.loop = self->config.loop;
     self->config.module.recorder.vocs_db = self->config.db;
+    self->config.module.recorder.io = self->config.io,
     self->config.module.recorder.timeout.response_usec =
         self->config.timeout.response_usec;
 
@@ -2809,35 +2813,6 @@ static bool module_load_vad(ov_vocs *self) {
     self->vad = ov_mc_backend_vad_create(self->config.module.vad);
     if (!self->vad)
         return false;
-
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void io_cluster(void *userdata, ov_json_value *msg){
-
-    ov_vocs *self = ov_vocs_cast(userdata);
-    if (!self || !msg) goto error;
-
-
-error:
-    ov_json_value_free(msg);
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool module_load_cluster(ov_vocs *self) {
-
-    OV_ASSERT(self);
-
-    self->cluster = ov_vocs_cluster_create((ov_vocs_cluster_config){
-        .loop = self->config.loop,
-        .multicast = self->config.socket.cluster,
-        .callback.userdata = self,
-        .callback.io = io_cluster
-    });
 
     return true;
 }
@@ -3048,11 +3023,6 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
         goto error;
     }
 
-    if (!enable_websocket_function(vocs)) {
-        ov_log_error("Failed to enable websocket.");
-        goto error;
-    }
-
     if (config.ldap.enable && !module_load_ldap(vocs)) {
         ov_log_error("Failed to enable LDAP");
         goto error;
@@ -3083,16 +3053,28 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
         goto error;
     }
 
-    if (!module_load_cluster(vocs)) {
-        ov_log_error("Failed to enable cluster");
-        goto error;
-    }
-
     if (config.trigger)
         ov_event_trigger_register_listener(
             config.trigger, "VOCS",
             (ov_event_trigger_data){.userdata = vocs,
                                     .process = process_trigger});
+
+    if (!enable_websocket_function(vocs)) {
+        ov_log_error("Failed to enable websocket.");
+        goto error;
+    }
+
+    ov_cluster_config cluster = (ov_cluster_config){
+        .loop = config.loop,
+        .multicast = config.socket.cluster,
+        .callback.userdata = vocs,
+        .callback.io = io_cluster
+    };
+
+    vocs->cluster = ov_cluster_create(cluster);
+    if (!vocs->cluster){
+        ov_log_error("Failed to load cluster.");
+    }
 
     return vocs;
 error:
@@ -3178,6 +3160,10 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val) {
 
     if (session_path)
         strncpy(out.sessions.path, session_path, PATH_MAX);
+
+    const ov_json_value *cluster = ov_json_object_get(config, "cluster");
+    out.socket.cluster = ov_socket_configuration_from_json(cluster, 
+        (ov_socket_configuration){0});
 
     return out;
 error:

@@ -9,6 +9,13 @@
 
 		"domain" : "localhost",
 
+		"cluster" : 
+		{
+			"host" : "224.0.0.1",
+			"port" : 60000,
+			"type" : "UDP"
+		},
+
 		"sip" :
 		{
 			"timeout":
@@ -146,18 +153,6 @@
 
 		"path" : "./src/service/ov_mc_vocs/config",
 
-		"cluster" :
-		{
-
-			"manager" :true,
-			"socket" : 
-			{
-				"host" : "127.0.0.1",
-				"port" : 45000,
-				"type" : "TCP"
-			}
-		},
-
 		"timeout" :
 		{
 			"ldap" : 5000000,
@@ -203,7 +198,7 @@
 		"socket":
 		{
 			"host":"0.0.0.0",
-			"port":1443,
+			"port":443,
 			"type":"TCP"
 		},
 		"stun":
