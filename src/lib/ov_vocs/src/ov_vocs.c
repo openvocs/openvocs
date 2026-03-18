@@ -3119,6 +3119,7 @@ void *ov_vocs_free(void *self) {
     vocs->io = ov_dict_free(vocs->io);
     vocs->broadcasts = ov_broadcast_registry_free(vocs->broadcasts);
     vocs->connections = ov_socket_json_free(vocs->connections);
+    vocs->cluster = ov_cluster_free(vocs->cluster);
 
     self = ov_data_pointer_free(self);
     return NULL;
