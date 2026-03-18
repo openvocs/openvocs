@@ -65,12 +65,6 @@ struct ov_vocs_recorder {
 
     ov_event_app *app;
 
-    struct {
-
-        uint32_t startup_delay;
-
-    } timer;
-
     ov_dict *recorder;
     ov_dict *recordings;
 
@@ -97,6 +91,211 @@ static ov_database *get_database_mut(ov_vocs_recorder *self) {
  *
  *      ------------------------------------------------------------------------
  */
+
+/*----------------------------------------------------------------------------*/
+
+struct container_rec {
+
+    ov_vocs_record *rec;
+    int recorder;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool find_record(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+
+    ov_vocs_record *record = (ov_vocs_record *)val;
+    struct container_rec *rec = (struct container_rec *)data;
+
+    if (!record || !rec)
+        return false;
+
+    if (record->active.recorder == rec->recorder)
+        rec->rec = record;
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_vocs_record *find_recording_of_recorder(ov_vocs_recorder *self,
+                                                  int socket) {
+
+    if (!self || !socket)
+        goto error;
+
+    struct container_rec rec = (struct container_rec){.recorder = socket};
+
+    if (!ov_dict_for_each(self->recordings, &rec, find_record))
+        goto error;
+
+    return rec.rec;
+
+error:
+    return NULL;
+}
+
+struct container1 {
+
+    bool found_empty;
+    ov_event_connection *conn;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool find_empty_recorder_entry(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+    struct container1 *container = (struct container1 *)data;
+    ov_event_connection *conn = (ov_event_connection *)val;
+
+    if (container->found_empty)
+        return true;
+
+    const ov_json_value *empty =
+        ov_event_connection_get_json(conn, OV_KEY_EMPTY);
+    if (!empty || ov_json_is_true(empty)) {
+
+        container->found_empty = true;
+        container->conn = conn;
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_event_connection *find_empty_recorder(ov_vocs_recorder *self) {
+
+    struct container1 container = (struct container1){
+
+        .found_empty = false, .conn = NULL};
+
+    if (!ov_dict_for_each(self->recorder, &container,
+                          find_empty_recorder_entry))
+        goto error;
+
+    if (!container.found_empty) {
+        ov_log_error("No recorder available for recording.");
+        goto error;
+    }
+error:
+    return container.conn;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool request_new_recording(ov_vocs_recorder *self, const char *loop) {
+
+    if (!self || !loop)
+        goto error;
+
+    ov_socket_configuration socket =
+        ov_vocs_db_get_multicast_group(self->config.vocs_db, loop);
+
+    ov_recorder_event_start event = (ov_recorder_event_start){
+        .loop = (char *)loop,
+        .mc_ip = socket.host,
+        .mc_port = socket.port,
+        .silence_cutoff_interval_msecs =
+            self->config.limits.silence_cutoff_interval_msec,
+        .vad = self->config.vad};
+
+    ov_event_connection *conn = find_empty_recorder(self);
+    if (!conn) {
+
+        ov_log_error("No recorder avaliable for loop %s", loop);
+        goto error;
+    }
+
+    // we block the recorder here
+    ov_json_value *f = ov_json_false();
+    ov_event_connection_set_json(conn, OV_KEY_EMPTY, f);
+    f = ov_json_value_free(f);
+
+    ov_vocs_record_config conf = {0};
+    strncpy(conf.loopname, loop, OV_MC_LOOP_NAME_MAX);
+
+    ov_vocs_record *rec = ov_vocs_record_create(conf);
+
+    if (!rec)
+        goto error;
+
+    if (!ov_dict_set(self->recordings, ov_string_dup(loop), rec, NULL))
+        goto error;
+
+    ov_json_value *out =
+        ov_event_api_message_create(OV_EVENT_START_RECORD, 0, 0);
+    ov_json_value *par = ov_event_api_set_parameter(out);
+    if (!ov_recorder_event_start_to_json(par, &event)) {
+        out = ov_json_value_free(out);
+        goto error;
+    }
+
+    rec->active.recorder = ov_event_connection_get_socket(conn);
+
+    char *str = ov_json_value_to_string(out);
+    ov_log_debug("Activated recording %s", str);
+    str = ov_data_pointer_free(str);
+
+    ov_event_connection_send(conn, out);
+    out = ov_json_value_free(out);
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool check_recording(void *item, void *data) {
+
+    ov_json_value *value = ov_json_value_cast(item);
+    ov_vocs_recorder *self = ov_vocs_recorder_cast(data);
+    if (!value || !self)
+        goto error;
+
+    const char *name =
+        ov_json_string_get(ov_json_object_get(value, OV_KEY_LOOP));
+
+    ov_vocs_record *record = ov_dict_get(self->recordings, name);
+
+    if (record && record->active.running)
+        return true;
+
+    return request_new_recording(self, name);
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool assign_recording(ov_vocs_recorder *self){
+
+    ov_json_value *loops = ov_vocs_db_get_recorded_loops(self->config.vocs_db);
+    if (!loops) {
+        ov_log_error("No recording to start.");
+        goto done;
+    }
+
+    if (!ov_json_array_for_each(loops, self, check_recording)) {
+
+        ov_log_error("Failed to start all recordings.");
+        goto error;
+    }
+
+done:
+    loops = ov_json_value_free(loops);
+    return true;
+
+error:
+    loops = ov_json_value_free(loops);
+    return false;
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -159,6 +358,9 @@ response:
     out = ov_json_value_free(out);
 
     ov_json_value_free(input);
+
+    assign_recording(self);
+
     return;
 error:
     ov_json_value_free(input);
@@ -530,164 +732,6 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-struct container_rec {
-
-    ov_vocs_record *rec;
-    int recorder;
-};
-
-/*----------------------------------------------------------------------------*/
-
-static bool find_record(const void *key, void *val, void *data) {
-
-    if (!key)
-        return true;
-
-    ov_vocs_record *record = (ov_vocs_record *)val;
-    struct container_rec *rec = (struct container_rec *)data;
-
-    if (!record || !rec)
-        return false;
-
-    if (record->active.recorder == rec->recorder)
-        rec->rec = record;
-
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static ov_vocs_record *find_recording_of_recorder(ov_vocs_recorder *self,
-                                                  int socket) {
-
-    if (!self || !socket)
-        goto error;
-
-    struct container_rec rec = (struct container_rec){.recorder = socket};
-
-    if (!ov_dict_for_each(self->recordings, &rec, find_record))
-        goto error;
-
-    return rec.rec;
-
-error:
-    return NULL;
-}
-
-struct container1 {
-
-    bool found_empty;
-    ov_event_connection *conn;
-};
-
-/*----------------------------------------------------------------------------*/
-
-static bool find_empty_recorder_entry(const void *key, void *val, void *data) {
-
-    if (!key)
-        return true;
-    struct container1 *container = (struct container1 *)data;
-    ov_event_connection *conn = (ov_event_connection *)val;
-
-    if (container->found_empty)
-        return true;
-
-    const ov_json_value *empty =
-        ov_event_connection_get_json(conn, OV_KEY_EMPTY);
-    if (!empty || ov_json_is_true(empty)) {
-
-        container->found_empty = true;
-        container->conn = conn;
-    }
-
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static ov_event_connection *find_empty_recorder(ov_vocs_recorder *self) {
-
-    struct container1 container = (struct container1){
-
-        .found_empty = false, .conn = NULL};
-
-    if (!ov_dict_for_each(self->recorder, &container,
-                          find_empty_recorder_entry))
-        goto error;
-
-    if (!container.found_empty) {
-        ov_log_error("No recorder available for recording.");
-        goto error;
-    }
-error:
-    return container.conn;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool request_new_recording(ov_vocs_recorder *self, const char *loop) {
-
-    if (!self || !loop)
-        goto error;
-
-    ov_socket_configuration socket =
-        ov_vocs_db_get_multicast_group(self->config.vocs_db, loop);
-
-    ov_recorder_event_start event = (ov_recorder_event_start){
-        .loop = (char *)loop,
-        .mc_ip = socket.host,
-        .mc_port = socket.port,
-        .silence_cutoff_interval_msecs =
-            self->config.limits.silence_cutoff_interval_msec,
-        .vad = self->config.vad};
-
-    ov_event_connection *conn = find_empty_recorder(self);
-    if (!conn) {
-
-        ov_log_error("No recorder avaliable for loop %s", loop);
-        goto error;
-    }
-
-    // we block the recorder here
-    ov_json_value *f = ov_json_false();
-    ov_event_connection_set_json(conn, OV_KEY_EMPTY, f);
-    f = ov_json_value_free(f);
-
-    ov_vocs_record_config conf = {0};
-    strncpy(conf.loopname, loop, OV_MC_LOOP_NAME_MAX);
-
-    ov_vocs_record *rec = ov_vocs_record_create(conf);
-
-    if (!rec)
-        goto error;
-
-    if (!ov_dict_set(self->recordings, ov_string_dup(loop), rec, NULL))
-        goto error;
-
-    ov_json_value *out =
-        ov_event_api_message_create(OV_EVENT_START_RECORD, 0, 0);
-    ov_json_value *par = ov_event_api_set_parameter(out);
-    if (!ov_recorder_event_start_to_json(par, &event)) {
-        out = ov_json_value_free(out);
-        goto error;
-    }
-
-    rec->active.recorder = ov_event_connection_get_socket(conn);
-
-    char *str = ov_json_value_to_string(out);
-    ov_log_debug("Activated recording %s", str);
-    str = ov_data_pointer_free(str);
-
-    ov_event_connection_send(conn, out);
-    out = ov_json_value_free(out);
-
-    return true;
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static void cb_recorder_socket_close(void *userdata, int socket) {
 
     ov_vocs_recorder *self = ov_vocs_recorder_cast(userdata);
@@ -705,57 +749,6 @@ static void cb_recorder_socket_close(void *userdata, int socket) {
 
     ov_dict_del(self->recorder, (void *)(intptr_t)socket);
     return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool start_recording(void *item, void *data) {
-
-    ov_json_value *value = ov_json_value_cast(item);
-    ov_vocs_recorder *self = ov_vocs_recorder_cast(data);
-    if (!value || !self)
-        goto error;
-
-    const char *name =
-        ov_json_string_get(ov_json_object_get(value, OV_KEY_LOOP));
-
-    return request_new_recording(self, name);
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool start_all_recordings(uint32_t id, void *userdata) {
-
-    UNUSED(id);
-
-    ov_json_value *loops = NULL;
-
-    ov_vocs_recorder *self = ov_vocs_recorder_cast(userdata);
-    if (!self)
-        goto error;
-
-    self->timer.startup_delay = OV_TIMER_INVALID;
-
-    loops = ov_vocs_db_get_recorded_loops(self->config.vocs_db);
-    if (!loops) {
-        ov_log_error("No recording to start.");
-        goto done;
-    }
-
-    if (!ov_json_array_for_each(loops, self, start_recording)) {
-
-        ov_log_error("Failed to start all recordings.");
-    }
-
-done:
-    loops = ov_json_value_free(loops);
-    return true;
-
-error:
-    ov_json_value_free(loops);
-    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -838,11 +831,6 @@ ov_vocs_recorder *ov_vocs_recorder_create(ov_vocs_recorder_config config) {
     if (!ov_db_prepare(self->db)) {
         ov_log_error("Could not initialize event database");
     }
-
-    // add startup delay for recordings to let recorders connect before
-    self->timer.startup_delay =
-        ov_event_loop_timer_set(self->config.loop, OV_RECORDER_STARTUP_DELAY,
-                                self, start_all_recordings);
 
     self->callbacks = ov_callback_registry_create((ov_callback_registry_config){
         .loop = self->config.loop,
