@@ -38,7 +38,28 @@
  *      ------------------------------------------------------------------------
  */
 
+/*----------------------------------------------------------------------------*/
+
+struct userdata {
+
+    ov_json_value *msg;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static void dummy_io(void *userdata, ov_json_value *msg){
+
+    struct userdata *data = (struct userdata*) userdata;
+    data->msg = ov_json_value_free(data->msg);
+    data->msg = msg;
+    return;
+} 
+
+/*----------------------------------------------------------------------------*/
+
 int test_ov_cluster_create(){
+
+    struct userdata userdata = {0};
     
     ov_event_loop *loop = ov_event_loop_default(
         (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
@@ -50,7 +71,9 @@ int test_ov_cluster_create(){
         .multicast = (ov_socket_configuration){
             .host = "224.0.0.1",
             .port = 60000
-        }
+        },
+        .callback.userdata = &userdata,
+        .callback.io = dummy_io
     };
 
     ov_cluster *cluster = ov_cluster_create(config);
@@ -68,6 +91,8 @@ int test_ov_cluster_create(){
 /*----------------------------------------------------------------------------*/
 
 int test_ov_cluster_free(){
+
+    struct userdata userdata = {0};
     
     ov_event_loop *loop = ov_event_loop_default(
         (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
@@ -80,7 +105,9 @@ int test_ov_cluster_free(){
             .host = "224.0.0.1",
             .port = 60000,
             .type = UDP
-        }
+        },
+        .callback.userdata = &userdata,
+        .callback.io = dummy_io
     };
 
     ov_cluster *cluster = ov_cluster_create(config);
@@ -116,23 +143,6 @@ int test_ov_cluster_free(){
 
     return testrun_log_success();
 }
-
-/*----------------------------------------------------------------------------*/
-
-struct userdata {
-
-    ov_json_value *msg;
-};
-
-/*----------------------------------------------------------------------------*/
-
-static void dummy_io(void *userdata, ov_json_value *msg){
-
-    struct userdata *data = (struct userdata*) userdata;
-    data->msg = ov_json_value_free(data->msg);
-    data->msg = msg;
-    return;
-} 
 
 /*----------------------------------------------------------------------------*/
 
