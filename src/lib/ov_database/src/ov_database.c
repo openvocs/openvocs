@@ -54,6 +54,8 @@ ov_database_info ov_database_info_from_json(ov_json_value const *jval) {
     dbi.user = ov_json_string_get(ov_json_get(jval, "/" OV_KEY_USER));
     dbi.password = ov_json_string_get(ov_json_get(jval, "/" OV_KEY_PASSWORD));
 
+    dbi.use_ssl = ov_json_is_true(ov_json_get(jval, "/" "use_ssl"));
+
     // jval = json_from_string("{\"" OV_KEY_HOST "\":\"krambambuli\","
     //         "\"" OV_KEY_PORT "\":2144, \"" OV_KEY_USER "\":\"arbol\","
     //         "\"" OV_KEY_PASSWORD "\"braga\", \"" OV_KEY_DB "\":\"db2\","
@@ -74,6 +76,9 @@ ov_json_value *ov_database_info_to_json(ov_database_info dbi) {
     ov_json_object_set(jval, OV_KEY_DB, ov_json_string(dbi.dbname));
     ov_json_object_set(jval, OV_KEY_USER, ov_json_string(dbi.user));
     ov_json_object_set(jval, OV_KEY_PASSWORD, ov_json_string(dbi.password));
+    if (dbi.use_ssl) {
+        ov_json_object_set(jval, "use_ssl", ov_json_true());
+    }
 
     return jval;
 }
@@ -119,7 +124,6 @@ typedef struct {
     sqlite3_stmt *add_participation_state_stmt;
     sqlite3_stmt *add_recording_stmt;
 
-
 } db_sqlite;
 
 static db_sqlite const *as_sqlite(ov_database const *self) {
@@ -138,8 +142,8 @@ static bool sqlite_close(ov_database *self) {
 
     if (ov_ptr_valid(sql, "Cannot close database: No database")) {
 
-        if(0 != sql->add_participation_state_stmt) {
-        sqlite3_finalize(sql->add_participation_state_stmt);
+        if (0 != sql->add_participation_state_stmt) {
+            sqlite3_finalize(sql->add_participation_state_stmt);
         }
         if (0 != sql->add_recording_stmt) {
             sqlite3_finalize(sql->add_recording_stmt);
@@ -154,8 +158,8 @@ static bool sqlite_close(ov_database *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value* sqlite_row_to_json(size_t num_cols, char** cols,
-                                         char** col_names) {
+static ov_json_value *sqlite_row_to_json(size_t num_cols, char **cols,
+                                         char **col_names) {
     if ((0 == num_cols) || (0 == cols) || (0 == col_names)) {
         fprintf(stderr, "Cannot add row: %zu cols: %p col_names  %p\n",
                 num_cols, cols, col_names);
@@ -163,7 +167,7 @@ static ov_json_value* sqlite_row_to_json(size_t num_cols, char** cols,
         return 0;
 
     } else {
-        ov_json_value* jrow = ov_json_object();
+        ov_json_value *jrow = ov_json_object();
 
         for (size_t i = 0; i < num_cols; ++i) {
             if (0 != col_names[i]) {
@@ -178,13 +182,13 @@ static ov_json_value* sqlite_row_to_json(size_t num_cols, char** cols,
 
 /*----------------------------------------------------------------------------*/
 
-static int sqlite_exec_callback(void* jtarget, int num_cols, char** cols,
-                                char** col_names) {
-    ov_json_value* jval = jtarget;
+static int sqlite_exec_callback(void *jtarget, int num_cols, char **cols,
+                                char **col_names) {
+    ov_json_value *jval = jtarget;
 
-    if ((0 != jval) && ov_cond_valid(num_cols > 0,
-                                     "Querying database failed: number of "
-                                     "result columns is negative")) {
+    if ((0 != jval) &&
+        ov_cond_valid(num_cols > 0, "Querying database failed: number of "
+                                    "result columns is negative")) {
 
         ov_json_array_push(jtarget,
                            sqlite_row_to_json(num_cols, cols, col_names));
@@ -195,25 +199,24 @@ static int sqlite_exec_callback(void* jtarget, int num_cols, char** cols,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_result sqlite_query(ov_database* self, char const* sql,
-                              ov_json_value** jtarget) {
+static ov_result sqlite_query(ov_database *self, char const *sql,
+                              ov_json_value **jtarget) {
     ov_result res = {
         .error_code = OV_ERROR_NOERROR,
     };
 
-    ov_json_value* jval = 0;
+    ov_json_value *jval = 0;
 
     if (0 != jtarget) {
         jval = ov_json_array();
     }
 
-    db_sqlite* sdb = as_sqlite_mut(self);
+    db_sqlite *sdb = as_sqlite_mut(self);
 
     if (ov_ptr_valid(sdb, "Cannot query database - no database") &&
-        ov_ptr_valid(sdb->sqlite,
-                     "Cannot query database - database not fully "
-                     "initialized")) {
-        char* errormsg = 0;
+        ov_ptr_valid(sdb->sqlite, "Cannot query database - database not fully "
+                                  "initialized")) {
+        char *errormsg = 0;
 
         if (SQLITE_OK != sqlite3_exec(sdb->sqlite, sql, sqlite_exec_callback,
                                       jval, &errormsg)) {
@@ -237,8 +240,8 @@ static ov_result sqlite_query(ov_database* self, char const* sql,
 
 /*---------------------------------------------------------------------------*/
 
-bool sqlite_add_limit_clause(char* target, size_t target_capacity_octets,
-                             char const* select_statement, uint32_t limit,
+bool sqlite_add_limit_clause(char *target, size_t target_capacity_octets,
+                             char const *select_statement, uint32_t limit,
                              uint32_t offset) {
     UNUSED(offset);
 
@@ -253,12 +256,12 @@ bool sqlite_add_limit_clause(char* target, size_t target_capacity_octets,
 
 /*----------------------------------------------------------------------------*/
 
-bool sqlite_add_participation_state(struct ov_database_struct* self,
-                                    const char* user, const char* role,
-                                    const char* loop, const char* state,
-                                    const char* evtime) {
+bool sqlite_add_participation_state(struct ov_database_struct *self,
+                                    const char *user, const char *role,
+                                    const char *loop, const char *state,
+                                    const char *evtime) {
 
-    db_sqlite* sdb = as_sqlite_mut(self);
+    db_sqlite *sdb = as_sqlite_mut(self);
 
     if (ov_ptr_valid(sdb,
                      "Cannot add participation state to SQLite: No database") &&
@@ -289,14 +292,13 @@ bool sqlite_add_participation_state(struct ov_database_struct* self,
 
 /*----------------------------------------------------------------------------*/
 
-bool sqlite_add_recording(struct ov_database_struct* self, const char* id,
-                           const char* loop, char const* uri,
-                          const char* start_time, const char* end_time) {
+bool sqlite_add_recording(struct ov_database_struct *self, const char *id,
+                          const char *loop, char const *uri,
+                          const char *start_time, const char *end_time) {
 
-    db_sqlite* sdb = as_sqlite_mut(self);
+    db_sqlite *sdb = as_sqlite_mut(self);
 
-    if (ov_ptr_valid(sdb,
-                     "Cannot add recording to SQLite: No database") &&
+    if (ov_ptr_valid(sdb, "Cannot add recording to SQLite: No database") &&
         ov_ptr_valid(
             sdb->add_recording_stmt,
             "Cannot add recording to SQLite: Statement was not prepared")) {
@@ -321,15 +323,15 @@ bool sqlite_add_recording(struct ov_database_struct* self, const char* id,
 
 /*----------------------------------------------------------------------------*/
 
-static bool sqlite_init(ov_database* self) {
-    db_sqlite* sdb = as_sqlite_mut(self);
+static bool sqlite_init(ov_database *self) {
+    db_sqlite *sdb = as_sqlite_mut(self);
 
     if (ov_ptr_valid(sdb, "Cannot add recording to SQLite: No database")) {
-        char const* add_pariticipation_state_sql =
+        char const *add_pariticipation_state_sql =
             "INSERT INTO " OV_DATABASE_EVENTS_PARTICIPATION_EVENTS_TABLE
             " (usr, role, loop, evstate, evtime)  VALUES (?, ?, ?, ?, ?);";
 
-        char const* add_recordings_sql =
+        char const *add_recordings_sql =
             "INSERT INTO " OV_DATABASE_EVENTS_RECORDINGS_TABLE
             " (id, uri, loop, starttime, endtime) "
             " VALUES (?, ?, ?, ?, ?);";
@@ -362,10 +364,10 @@ static bool sqlite_init(ov_database* self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_database* new_database_sqlite(ov_database_info info) {
-    db_sqlite* db = 0;
+static ov_database *new_database_sqlite(ov_database_info info) {
+    db_sqlite *db = 0;
 
-    sqlite3* sdb = 0;
+    sqlite3 *sdb = 0;
 
     info.dbname = OV_OR_DEFAULT(info.dbname, OV_DB_SQLITE_MEMORY);
 
@@ -395,13 +397,13 @@ static ov_database* new_database_sqlite(ov_database_info info) {
                                     GLOBALS
  ****************************************************************************/
 
-static ov_hashtable* database_providers = 0;
-static ov_database* g_database = 0;
+static ov_hashtable *database_providers = 0;
+static ov_database *g_database = 0;
 size_t g_database_users = 0;
 
 /*----------------------------------------------------------------------------*/
 
-static ov_database* database_close(ov_database* self);
+static ov_database *database_close(ov_database *self);
 
 static void teardown_database(void) {
     database_providers = ov_hashtable_free(database_providers);
@@ -413,7 +415,7 @@ static void teardown_database(void) {
                                      PUBLIC
  ****************************************************************************/
 
-static ov_database_connector connector_for(char const* dbtype) {
+static ov_database_connector connector_for(char const *dbtype) {
     if (ov_string_equal(dbtype, OV_DB_SQLITE)) {
         return new_database_sqlite;
 
@@ -431,7 +433,7 @@ bool ov_database_export_symbols_for_plugins() {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_database_connector_register(char const* dbtype,
+bool ov_database_connector_register(char const *dbtype,
                                     ov_database_connector connector) {
     if (ov_ptr_valid(dbtype,
                      "Cannot register database provider: No type given") &&
@@ -456,7 +458,7 @@ bool ov_database_connector_register(char const* dbtype,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_database* polish_db(ov_database* db) {
+static ov_database *polish_db(ov_database *db) {
     if (0 != db) {
         db->magic_bytes = MAGIC_BYTES;
     }
@@ -466,7 +468,7 @@ static ov_database* polish_db(ov_database* db) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_database* ov_database_connect(ov_database_info info) {
+ov_database *ov_database_connect(ov_database_info info) {
     ov_database_connector connector = connector_for(info.type);
 
     if (ov_ptr_valid(connector, "Unsupported database type")) {
@@ -479,7 +481,7 @@ ov_database* ov_database_connect(ov_database_info info) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_database* ov_database_connect_singleton(ov_database_info info) {
+ov_database *ov_database_connect_singleton(ov_database_info info) {
     if (0 == g_database) {
         ov_teardown_register(teardown_database, "ov_database");
         g_database = ov_database_connect(info);
@@ -493,7 +495,7 @@ ov_database* ov_database_connect_singleton(ov_database_info info) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_database* database_close(ov_database* self) {
+static ov_database *database_close(ov_database *self) {
     if (ov_ptr_valid(self, "Cannot close database - no database") &&
         ov_ptr_valid(self->close, "Cannot close database - no close method")) {
         self->close(self);
@@ -506,7 +508,7 @@ static ov_database* database_close(ov_database* self) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_database* ov_database_close(ov_database* self) {
+ov_database *ov_database_close(ov_database *self) {
     if (self != g_database) {
         self = database_close(self);
 
@@ -527,8 +529,8 @@ ov_database* ov_database_close(ov_database* self) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_result ov_database_query(ov_database* self, char const* sql,
-                            ov_json_value** jtarget) {
+ov_result ov_database_query(ov_database *self, char const *sql,
+                            ov_json_value **jtarget) {
     if (ov_ptr_valid(self, "Cannot query database - no database") &&
         ov_ptr_valid(self->query, "Cannot query database - no query method")) {
         return self->query(self, sql, jtarget);
@@ -543,9 +545,9 @@ ov_result ov_database_query(ov_database* self, char const* sql,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_database_add_limit_clause(ov_database* self, char* target,
+bool ov_database_add_limit_clause(ov_database *self, char *target,
                                   size_t target_capacity_octets,
-                                  char const* select_statement, uint32_t limit,
+                                  char const *select_statement, uint32_t limit,
                                   uint32_t offset) {
     return ov_cond_valid(0 == offset, "Offset not supported currently") &&
            ov_ptr_valid(self,

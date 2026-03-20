@@ -118,6 +118,8 @@ typedef struct {
 
     uint64_t reconnect_secs;
 
+    bool use_ssl;
+
 } ov_database_info;
 
 ov_database_info ov_database_info_from_json(ov_json_value const* jval);
