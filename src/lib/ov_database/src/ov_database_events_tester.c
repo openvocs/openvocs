@@ -82,6 +82,8 @@ int test_ov_db_prepare() {
     testrun(0 != db);
 
     testrun(ov_db_prepare(db));
+    ov_database_query(db, "DELETE FROM recordings;", 0);
+    ov_database_query(db, "DELETE FROM events;", 0);
 
     db = ov_database_close(db);
 
@@ -102,6 +104,8 @@ int test_ov_db_events_add_participation_state_unoptimized() {
     db->add_participation_state = 0;
 
     testrun(ov_db_prepare(db));
+    ov_database_query(db, "DELETE FROM recordings;", 0);
+    ov_database_query(db, "DELETE FROM events;", 0);
 
     testrun(!ov_db_events_add_participation_state(
         db, 0, 0, 0, OV_PARTICIPATION_STATE_NONE, 0));
@@ -165,6 +169,8 @@ int test_ov_db_events_add_participation_state() {
     ov_database *db = connect_to_db();
     testrun(0 != db);
     testrun(ov_db_prepare(db));
+    ov_database_query(db, "DELETE FROM recordings;", 0);
+    ov_database_query(db, "DELETE FROM events;", 0);
 
     testrun(!ov_db_events_add_participation_state(
         db, 0, 0, 0, OV_PARTICIPATION_STATE_NONE, 0));
@@ -282,6 +288,9 @@ int test_ov_db_events_get_partitipation_state() {
     ov_database *db = connect_to_db();
     testrun(0 != db);
     testrun(ov_db_prepare(db));
+    ov_database_query(db, "DELETE FROM recordings;", 0);
+    ov_database_query(db, "DELETE FROM events;", 0);
+
 
     testrun(0 == ov_db_events_get_participation_state(0, 0, 0));
     testrun(0 ==
@@ -384,6 +393,8 @@ int test_ov_db_recordings_add() {
     ov_database *db = connect_to_db();
     testrun(0 != db);
     testrun(ov_db_prepare(db));
+    ov_database_query(db, "DELETE FROM recordings;", 0);
+    ov_database_query(db, "DELETE FROM events;", 0);
 
     testrun(!ov_db_recordings_add(db, 0, 0, 0, 0, 0));
 
@@ -533,6 +544,8 @@ int test_ov_db_recordings_get() {
     testrun(0 != db);
 
     testrun(ov_db_prepare(db));
+    ov_database_query(db, "DELETE FROM recordings;", 0);
+    ov_database_query(db, "DELETE FROM events;", 0);
 
     // Fill in some stuff
 
