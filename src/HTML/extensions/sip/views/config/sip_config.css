@@ -39,6 +39,10 @@ ov-sip-whitelist:nth-child(2n + 1) {
     display: none;
 }
 
+#sip_loops {
+    overflow-y: auto;
+}
+
 #sip_loops:empty~#warning {
     display: inherit;
 }
