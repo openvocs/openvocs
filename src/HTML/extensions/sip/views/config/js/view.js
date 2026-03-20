@@ -125,9 +125,9 @@ function save_settings_of_current_loop() {
 
         for (let role of DOM.roles.children) {
             if (role.value !== "none")
-                loop.add_role(role.id, role.value === "callout", role.name);
+                loop.add_role(role.id, role.value === "callout", role.name, role.hidden);
             else
-                loop.add_role(role.id, undefined, role.name);
+                loop.add_role(role.id, undefined, role.name, role.hidden);
         }
     }
     return loop;
