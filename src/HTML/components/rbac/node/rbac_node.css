@@ -39,7 +39,8 @@
     letter-spacing: 0;
     text-anchor: middle;
     opacity: 0.5;
-    line-height: 2.5rem;
+    line-height: 1.1rem;
+    align-self: center;
 }
 
 :host([frozen]) #node_name::before {

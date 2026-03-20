@@ -54,13 +54,6 @@ typedef struct ov_vocs_db_persistance_config {
 
     struct {
 
-        bool manager;
-        ov_socket_configuration socket;
-
-    } cluster;
-
-    struct {
-
         uint64_t thread_lock_usec;
         uint64_t ldap_request_usec;
 
@@ -100,8 +93,5 @@ bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
                                         void (*callback)(void *userdata, 
                                                         const char *uuid,
                                                         ov_result result));
-
-bool ov_vocs_db_persistance_broadcast(ov_vocs_db_persistance *self,
-                                      const ov_json_value *update);
 
 #endif /* ov_vocs_db_persistance_h */

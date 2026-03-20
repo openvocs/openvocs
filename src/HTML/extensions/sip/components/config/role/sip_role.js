@@ -35,6 +35,7 @@ export default class ov_SIP_Role extends HTMLElement {
     #name;
     #value;
     #disabled = false;
+    #hidden = false;
 
     constructor() {
         super();
@@ -42,11 +43,14 @@ export default class ov_SIP_Role extends HTMLElement {
     }
 
     static get observedAttributes() {
+        return ["hidden"];
     }
 
     attributeChangedCallback(name, old_value, new_value) {
         if (old_value === new_value)
             return;
+        if (name === "hidden")
+            this.#hidden = new_value;
 
     }
 
@@ -103,6 +107,17 @@ export default class ov_SIP_Role extends HTMLElement {
 
     get disabled() {
         return this.#disabled;
+    }
+
+    set hidden(value) {
+        if (value)
+            this.setAttribute("hidden", value);
+        else
+            this.removeAttribute("hidden");
+    }
+
+    get hidden() {
+        return this.#hidden;
     }
 
     async connectedCallback() {

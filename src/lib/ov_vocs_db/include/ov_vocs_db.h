@@ -86,6 +86,32 @@
 #include "ov_vocs_permission.h"
 
 #define OV_VOCS_DB_KEY_LDAP_UPDATE "ldap_update"
+#define OV_VOCS_DB_UPDATE_DB "update_db"
+#define OV_VOCS_DB_UPDATE_PASSWORD "update_password"
+#define OV_VOCS_DB_ADMIN_DOMAINS "admin_domains"
+#define OV_VOCS_DB_ADMIN_PROJECTS "admin_projects"
+#define OV_VOCS_DB_ID_EXISTS "check_id_exists"
+#define OV_VOCS_DB_GET "get"
+#define OV_VOCS_DB_DELETE "delete"
+#define OV_VOCS_DB_CREATE "create"
+#define OV_VOCS_DB_VERIFY "verify"
+#define OV_VOCS_DB_UPDATE "update"
+#define OV_VOCS_DB_LOAD "load"
+#define OV_VOCS_DB_SAVE "save"
+#define OV_VOCS_DB_SET_LAYOUT "set_layout"
+#define OV_VOCS_DB_GET_LAYOUT "get_layout"
+#define OV_VOCS_DB_GET_KEY "get_key"
+#define OV_VOCS_DB_UPDATE_KEY "update_key"
+#define OV_VOCS_DB_DELETE_KEY "delete_key"
+#define OV_VOCS_DB_ADD_DOMAIN_ADMIN "add_domain_admin"
+#define OV_VOCS_DB_ADD_PROJECT_ADMIN "add_project_admin"
+#define OV_VOCS_DB_LDAP_IMPORT "ldap_import"
+
+#define OV_VOCS_DB_SET_KEYSET_LAYOUT "set_keyset_layout"
+#define OV_VOCS_DB_GET_KEYSET_LAYOUT "get_keyset_layout"
+
+#define OV_VOCS_DB_SET_USER_DATA "set_user_data"
+#define OV_VOCS_DB_GET_USER_DATA "get_user_data"
 
 /*----------------------------------------------------------------------------*/
 

@@ -285,20 +285,15 @@ export default class ov_RBAC_Graph extends HTMLElement {
             }
 
             if (data.roles) {
-                let admin = false;
                 let sorted_nodes = Object.values(data.roles).sort((a, b) => {
                     let first = a.name ? a.name : a.id;
                     let second = b.name ? b.name : b.id;
                     return first.localeCompare(second);
                 });
                 for (let node of sorted_nodes) {
-                    if (node.id === "admin")
-                        admin = true;
-                    this.#render_node(node, "role", id, node.id === "admin");
+                    if (!(data.domain && node.id === "admin")) // for backward capability -> we currently don't support project admins, so we need to delete them
+                        this.#render_node(node, "role", id, node.id === "admin");
                 }
-                if (!admin)
-                    this.#render_node({ id: "admin" }, "role", id, true);
-
             }
 
             if (data.loops) {

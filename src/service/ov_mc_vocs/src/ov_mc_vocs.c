@@ -39,7 +39,6 @@
 #include <ov_core/ov_webserver.h>
 
 #include <ov_vocs_db/ov_vocs_db.h>
-#include <ov_vocs_db/ov_vocs_db_app.h>
 #include <ov_vocs_db/ov_vocs_db_persistance.h>
 
 #include <ov_base/ov_plugin_system.h>

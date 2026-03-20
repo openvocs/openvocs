@@ -41,6 +41,8 @@ export async function render(container) {
     view_container.appendChild(await loadCSS());
     view_container.appendChild(await loadHtml());
 
+    ov_Websockets.user().admin = undefined;
+
     View.init(VIEW_ID);
 
     if (!await ov_DB.domains() || !await ov_DB.projects()) {

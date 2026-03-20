@@ -258,6 +258,7 @@ const char *ov_event_session_init(ov_event_session *self, const char *client,
         goto error;
 
     char *key = ov_string_dup(client);
+    
     if (!ov_dict_set(self->sessions, key, s, NULL)) {
         key = ov_data_pointer_free(key);
         s = ov_data_pointer_free(s);
@@ -349,7 +350,7 @@ bool ov_event_session_verify(ov_event_session *self, const char *client,
     if (!ov_id_match(id, s->id))
         goto error;
 
-    if (0 != strcmp(s->user, user))
+    if (0 != ov_string_compare(s->user, user))
         goto error;
 
     return true;
