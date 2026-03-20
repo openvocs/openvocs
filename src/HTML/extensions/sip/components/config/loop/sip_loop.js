@@ -85,10 +85,12 @@ export default class ov_SIP_Loop extends HTMLElement {
 
     clear_roles() {
         this.#roles = {};
+        this.#update_sip_indicator();
     }
 
     add_role(role, value, name, hidden) {
-        this.#roles[role] = { value: value, name: name, hidden: hidden };
+        this.#roles[role] = { value: value, name: name, hidden: !!hidden };
+        this.#update_sip_indicator();
     }
 
     get roles() {
@@ -157,7 +159,7 @@ export default class ov_SIP_Loop extends HTMLElement {
     }
 
     #update_sip_indicator() {
-        let roles_set = Object.values(this.#roles).some(role => role.value !== undefined);
+        let roles_set = Object.values(this.#roles).some(role => role.value !== undefined && !role.hidden);
         if (this.#whitelist.length !== 0 || roles_set) {
             let element = this.shadowRoot.querySelector("#loop:not(.calls_allowed)");
             if (element)
