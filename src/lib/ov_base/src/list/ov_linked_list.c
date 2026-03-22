@@ -529,12 +529,14 @@ static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item) {
 
     /* If the new element is the first element */
     if (entity == &ll->head) {
-        new->last = 0;
+        new->last = NULL;
+        entity->next = new;
+        entity->last = new;
     }
 
     /* If new element is the only element in the list,
      * head.next ought to point to it ...*/
-    if (0 == ll->head.last) {
+    if (NULL == ll->head.last) {
         ll->head.last = new;
         ll->head.next = new;
     }

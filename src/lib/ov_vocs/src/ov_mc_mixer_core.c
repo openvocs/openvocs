@@ -103,10 +103,12 @@ static ov_list *ov_mc_mixer_core_frame_processing_list_free(ov_list *list) {
     if (!list)
         goto error;
 
-    for (ov_rtp_frame *frame = ov_list_pop(list); 0 != frame;
-         frame = ov_list_pop(list)) {
+    ov_rtp_frame *frame = ov_list_pop(list);
+    
+    while(frame){
 
         frame = ov_rtp_frame_free(frame);
+        frame = ov_list_pop(list);
     }
 
     return ov_list_free(list);
@@ -1232,6 +1234,10 @@ bool ov_mc_mixer_core_reconfigure(ov_mc_mixer_core *self,
     self->comfort_noise_32bit = create_comfort_noise_for_default_frame(self);
 
     self->mix_timer = ov_event_loop_timer_set(config.loop, 20000, self, cb_mix);
+
+    ov_list *frames =
+        ov_rtp_frame_buffer_get_current_frames(self->frame_buffer);
+    frames = ov_mc_mixer_core_frame_processing_list_free(frames);
 
     return true;
 error:
