@@ -1267,10 +1267,6 @@ ov_mc_mixer_core *ov_mc_mixer_core_free(ov_mc_mixer_core *self) {
     self->codec.codecs = ov_dict_free(self->codec.codecs);
     self->comfort_noise_32bit = ov_buffer_free(self->comfort_noise_32bit);
 
-    if (self->frame_buffer) {
-        self->frame_buffer = self->frame_buffer->free(self->frame_buffer);
-    }
-
     self = ov_data_pointer_free(self);
     return NULL;
 }

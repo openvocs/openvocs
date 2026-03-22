@@ -35,7 +35,7 @@
 #include <ov_base/ov_json_io_buffer.h>
 #include <ov_base/ov_string.h>
 
-#define ov_event_app_MAGIC_BYTES 0xeff0
+#define OV_EVENT_APP_MAGIC_BYTES 0xeff0
 
 /*----------------------------------------------------------------------------*/
 
@@ -109,7 +109,7 @@ ov_event_app *ov_event_app_create(ov_event_app_config config) {
     if (!self)
         goto error;
 
-    self->magic_bytes = ov_event_app_MAGIC_BYTES;
+    self->magic_bytes = OV_EVENT_APP_MAGIC_BYTES;
     self->config = config;
 
     ov_json_io_buffer_config json_buffer_config =
@@ -154,7 +154,7 @@ ov_event_app *ov_event_app_cast(const void *data) {
     if (!data)
         return NULL;
 
-    if (*(uint16_t *)data != ov_event_app_MAGIC_BYTES)
+    if (*(uint16_t *)data != OV_EVENT_APP_MAGIC_BYTES)
         return NULL;
 
     return (ov_event_app *)data;

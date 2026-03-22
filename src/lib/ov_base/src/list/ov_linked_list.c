@@ -536,6 +536,7 @@ static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item) {
      * head.next ought to point to it ...*/
     if (0 == ll->head.last) {
         ll->head.last = new;
+        ll->head.next = new;
     }
 
     ASSERT_LIST_INVARIANTS(ll);
