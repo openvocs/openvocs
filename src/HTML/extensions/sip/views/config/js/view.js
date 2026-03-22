@@ -92,7 +92,7 @@ export function add_loop(id, data, roles_data) {
         if (roles_data[role_id])
             loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, roles_data[role_id].name);
         else
-            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, role_id);
+            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, role_id, true);
     }
 
     loop.addEventListener("click", () => {
@@ -125,9 +125,9 @@ function save_settings_of_current_loop() {
 
         for (let role of DOM.roles.children) {
             if (role.value !== "none")
-                loop.add_role(role.id, role.value === "callout", role.name);
+                loop.add_role(role.id, role.value === "callout", role.name, role.hidden);
             else
-                loop.add_role(role.id, undefined, role.name);
+                loop.add_role(role.id, undefined, role.name, role.hidden);
         }
     }
     return loop;
@@ -163,8 +163,10 @@ export function select_loop(loop) {
         DOM.roles.appendChild(element);
 
         element.id = role_id;
-        element.name = loop.roles[role_id].name ? loop.roles[role_id].name : role_id;
-        if (loop.disabled)
+        element.name = loop.roles[role_id].name;
+        if (loop.roles[role_id].hidden)
+            element.hidden = true;
+        else if (loop.disabled)
             element.disabled = true;
 
         let value = "none";

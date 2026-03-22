@@ -53,6 +53,7 @@ export async function render_project(container, user, page) {
     domain_config = await ov_DB.get_config(DOMAIN, user.domain);
 
     if (!user.domains.has(user.domain)) {
+        user.admin = "project";
         if (domain_config.users)
             for (let user_id of Object.keys(domain_config.users))
                 domain_config.users[user_id].frozen = true;
@@ -65,6 +66,7 @@ export async function render_project(container, user, page) {
             for (let loop_id of Object.keys(domain_config.loops))
                 domain_config.loops[loop_id].frozen = true;
     } else {
+        user.admin = "domain";
         if (domain_config.users)
             for (let user_id of Object.keys(domain_config.users))
                 domain_config.users[user_id].global = true;
