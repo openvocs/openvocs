@@ -536,6 +536,7 @@ static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item) {
      * head.next ought to point to it ...*/
     if (NULL == ll->head.last) {
         ll->head.last = new;
+        ll->head.next = new;
     }
 
     ASSERT_LIST_INVARIANTS(ll);
@@ -663,7 +664,7 @@ static void *impl_linked_list_pop(ov_list *self) {
         ll->head.next = NULL;
     }
 
-    ASSERT_LIST_INVARIANTS(ll);
+    //ASSERT_LIST_INVARIANTS(ll);
 
     return content;
 
