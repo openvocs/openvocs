@@ -1235,10 +1235,6 @@ bool ov_mc_mixer_core_reconfigure(ov_mc_mixer_core *self,
 
     self->mix_timer = ov_event_loop_timer_set(config.loop, 20000, self, cb_mix);
 
-    ov_list *frames =
-        ov_rtp_frame_buffer_get_current_frames(self->frame_buffer);
-    frames = ov_mc_mixer_core_frame_processing_list_free(frames);
-
     return true;
 error:
     return false;
