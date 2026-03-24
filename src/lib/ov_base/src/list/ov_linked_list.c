@@ -642,7 +642,11 @@ static void *impl_linked_list_pop(ov_list *self) {
     if (0 == ll)
         goto no_list_error;
 
-    //ASSERT_LIST_INVARIANTS(ll);
+    // fix for unknown error of list invariants 
+    if (0 == ll->head.last)
+        ll->head.next = NULL;
+
+    ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *last = ll->head.last;
 
@@ -664,7 +668,7 @@ static void *impl_linked_list_pop(ov_list *self) {
         ll->head.next = NULL;
     }
 
-    //ASSERT_LIST_INVARIANTS(ll);
+    ASSERT_LIST_INVARIANTS(ll);
 
     return content;
 
