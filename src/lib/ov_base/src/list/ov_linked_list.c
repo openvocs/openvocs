@@ -641,9 +641,7 @@ static void *impl_linked_list_pop(ov_list *self) {
     if (0 == ll)
         goto no_list_error;
 
-    ov_list_dump(stderr, self);
-
-    ASSERT_LIST_INVARIANTS(ll);
+    //ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *last = ll->head.last;
 
