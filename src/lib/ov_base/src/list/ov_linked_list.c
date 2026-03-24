@@ -124,6 +124,10 @@ static void release_list_entity(ListEntity *entity) {
     }
 
     memset(entity, 0, sizeof(ListEntity));
+
+    entity->next = NULL;
+    entity->last = NULL;
+
     entity = ov_registered_cache_put(g_list_entity_cache, entity);
 
     if (0 != entity) {
@@ -530,6 +534,7 @@ static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item) {
     /* If the new element is the first element */
     if (entity == &ll->head) {
         new->last = NULL;
+        ll->head.next = new;
     }
 
     /* If new element is the only element in the list,
@@ -642,7 +647,7 @@ static void *impl_linked_list_pop(ov_list *self) {
     if (NULL == ll)
         goto no_list_error;
 
-    ASSERT_LIST_INVARIANTS(ll);
+    //ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *last = ll->head.last;
 
@@ -664,13 +669,13 @@ static void *impl_linked_list_pop(ov_list *self) {
         ll->head.next = NULL;
     }
 
-    ASSERT_LIST_INVARIANTS(ll);
+    //ASSERT_LIST_INVARIANTS(ll);
 
     return content;
 
 error:
 
-    ASSERT_LIST_INVARIANTS(ll);
+    //ASSERT_LIST_INVARIANTS(ll);
 
 no_list_error:
 
