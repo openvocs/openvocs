@@ -34,6 +34,7 @@ This file is part of the openvocs project. https://openvocs.org
 
 #include "../../include/ov_list_test_interface.h"
 #include "ov_linked_list.c"
+#include "ov_teardown.h"
 
 int expand_list_to_position_test() {
 
@@ -296,6 +297,8 @@ int all_tests() {
     OV_LIST_PERFORM_INTERFACE_TESTS(ov_linked_list_create);
 
     testrun_test(test_ov_linked_list_enable_caching);
+
+    ov_teardown();
 
     return testrun_counter;
 }
