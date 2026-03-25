@@ -68,7 +68,37 @@ typedef struct {
 /*----------------------------------------------------------------------------*/
 
 /*
- For each function *must* hold:
+
+The list double-linked. It is either empty:
+
+   -----------------------------------
+   | Last: 0 | Content: 0  | Next: 0 |
+   -----------------------------------
+
+Or contains some entries:
+
+   -----------------------------
+   | Last | Content: 0  | Next |
+   -----------------------------
+                           |
+                           V
+         ---------------------------------
+         | Last: 0 | Content: 13245  | Next |
+         ---------------------------------
+                  ^                  |
+                  |                  V
+              ------------------------------------
+              | Last | Content: 13245  | Next: 0 |
+              ------------------------------------
+
+Nota bene:
+- The first entry is special, the content is always 0.
+- Other than with regular entries, its 'last' pointer points to the end of the list
+- Its 'next' pointer points towards the first entry with actual content
+- The first entry with actual content is always the second in the list.
+
+
+ Therefore, for each function *must* hold:
 
         OV_ASSERT((0 == list->head.next) || (0 == list->head.next->last));
         OV_ASSERT((0 == list->head.last) || (0 == list->head.last->next));
@@ -89,10 +119,10 @@ Each function assumes that the above conditions hold ond function entry!
 */
 
 #define ASSERT_LIST_INVARIANTS(list)                                           \
-    OV_ASSERT((NULL == list->head.next) || (NULL == list->head.next->last));         \
-    OV_ASSERT((NULL == list->head.last) || (NULL == list->head.last->next));         \
-    OV_ASSERT(((NULL != list->head.next) && (NULL != list->head.last)) ||            \
-              ((NULL == list->head.next) && (NULL == list->head.last)));
+    OV_ASSERT((0 == list->head.next) || (0 == list->head.next->last));         \
+    OV_ASSERT((0 == list->head.last) || (0 == list->head.last->next));         \
+    OV_ASSERT(((0 != list->head.next) && (0 != list->head.last)) ||            \
+              ((0 == list->head.next) && (0 == list->head.last)));
 
 /*----------------------------------------------------------------------------*/
 
@@ -101,7 +131,7 @@ const uint16_t LINKED_LIST_TYPE = 0x4c4c;
 #define AS_LINKED_LIST(x)                                                      \
     (((ov_list_cast(x) != 0) && (LINKED_LIST_TYPE == ((ov_list *)x)->type))    \
          ? (LinkedList *)(x)                                                   \
-         : NULL)
+         : 0)
 
 /******************************************************************************
  *                            release/free methods
@@ -109,8 +139,7 @@ const uint16_t LINKED_LIST_TYPE = 0x4c4c;
 
 static void *free_list_entity(void *entity) {
 
-    if (NULL != entity)
-        free(entity);
+    if (0 != entity) free(entity);
 
     return 0;
 }
@@ -119,21 +148,17 @@ static void *free_list_entity(void *entity) {
 
 static void release_list_entity(ListEntity *entity) {
 
-    if (NULL == entity) {
+    if (0 == entity) {
         return;
     }
 
     memset(entity, 0, sizeof(ListEntity));
-
-    entity->next = NULL;
-    entity->last = NULL;
-
     entity = ov_registered_cache_put(g_list_entity_cache, entity);
 
     if (0 != entity) {
 
         free_list_entity(entity);
-        entity = NULL;
+        entity = 0;
     }
 }
 
@@ -155,13 +180,12 @@ static ListEntity *acquire_list_entity() {
 
 void release_list(LinkedList *list) {
 
-    if (NULL == list)
-        return;
+    if (0 == list) return;
 
     memset(list, 0, sizeof(LinkedList));
     list = ov_registered_cache_put(g_list_cache, list);
 
-    if (NULL != list) {
+    if (0 != list) {
 
         list = ov_list_free(&list->public);
     }
@@ -185,14 +209,17 @@ static bool impl_linked_list_clear(ov_list *self);
 static ov_list *impl_linked_list_free(ov_list *self);
 static size_t impl_linked_list_get_pos(const ov_list *self, const void *item);
 static void *impl_linked_list_get(ov_list *self, size_t pos);
-static bool impl_linked_list_set(ov_list *self, size_t pos, void *item,
+static bool impl_linked_list_set(ov_list *self,
+                                 size_t pos,
+                                 void *item,
                                  void **old);
 static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item);
 static void *impl_linked_list_remove(ov_list *self, size_t pos);
 static bool impl_linked_list_push(ov_list *self, void *item);
 static void *impl_linked_list_pop(ov_list *self);
 static size_t impl_linked_list_count(const ov_list *self);
-static bool impl_linked_list_for_each(ov_list *self, void *data,
+static bool impl_linked_list_for_each(ov_list *self,
+                                      void *data,
                                       bool (*function)(void *item, void *data));
 
 static void *impl_linked_list_iter(ov_list *self);
@@ -209,7 +236,7 @@ ov_list *ov_linked_list_create(ov_list_config config) {
 
     LinkedList *list = ov_registered_cache_get(g_list_cache);
 
-    if (NULL == list) {
+    if (0 == list) {
         list = calloc(1, sizeof(LinkedList));
     }
 
@@ -251,8 +278,7 @@ static inline ListEntity *get_entity_at_position(const ov_list *list,
 
     const LinkedList *ll = AS_LINKED_LIST(list);
 
-    if (NULL == ll || (pos == 0))
-        goto no_list_error;
+    if (0 == ll || (pos == 0)) goto no_list_error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -264,15 +290,13 @@ static inline ListEntity *get_entity_at_position(const ov_list *list,
 
         counter++;
 
-        if (counter == pos)
-            break;
+        if (counter == pos) break;
 
         entity = entity->next;
     }
 
     // pos > as list ?
-    if (counter != pos)
-        goto error;
+    if (counter != pos) goto error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -291,10 +315,8 @@ no_list_error:
 static inline ListEntity *expand_list_to_position(ov_list *self, size_t pos) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (NULL == ll)
-        goto error;
-    if (0 == pos)
-        goto error;
+    if (0 == ll) goto error;
+    if (0 == pos) goto error;
 
     ListEntity *entity = &ll->head;
     ListEntity *next = entity->next;
@@ -304,8 +326,7 @@ static inline ListEntity *expand_list_to_position(ov_list *self, size_t pos) {
         if (!next) {
 
             // add NULL to list
-            if (!self->push(self, NULL))
-                goto error;
+            if (!self->push(self, NULL)) goto error;
 
             entity = ll->head.last;
 
@@ -329,13 +350,11 @@ error:
 static bool impl_linked_list_is_empty(const ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (NULL == ll)
-        goto error;
+    if (0 == ll) goto error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
-    if (NULL == ll->head.next)
-        return true;
+    if (NULL == ll->head.next) return true;
 error:
 
     return false;
@@ -346,8 +365,7 @@ error:
 static bool impl_linked_list_clear(ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (NULL == ll)
-        goto no_list_error;
+    if (0 == ll) goto no_list_error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -385,8 +403,7 @@ static ov_list *impl_linked_list_free(ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
 
-    if (NULL == ll)
-        goto error;
+    if (0 == ll) goto error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -398,7 +415,7 @@ static ov_list *impl_linked_list_free(ov_list *self) {
 
     self = ov_registered_cache_put(g_list_cache, self);
 
-    if (NULL != self) {
+    if (0 != self) {
 
         free(self);
     }
@@ -415,12 +432,11 @@ error:
 static size_t impl_linked_list_get_pos(const ov_list *self, const void *item) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (!ll)
-        goto error;
+    if (!ll) goto error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
-    if (NULL == item) {
+    if (0 == item) {
         goto error;
     }
 
@@ -451,8 +467,7 @@ error:
 static void *impl_linked_list_get(ov_list *self, size_t pos) {
 
     ListEntity *entity = get_entity_at_position(self, pos);
-    if (NULL == entity)
-        goto error;
+    if (0 == entity) goto error;
 
     return entity->content;
 
@@ -463,27 +478,24 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static bool impl_linked_list_set(ov_list *self, size_t pos, void *item,
+static bool impl_linked_list_set(ov_list *self,
+                                 size_t pos,
+                                 void *item,
                                  void **old) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (NULL == ll)
-        goto no_list_error;
+    if (0 == ll) goto no_list_error;
 
-    if (0 == pos)
-        goto error;
+    if (0 == pos) goto error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *entity = expand_list_to_position(self, pos);
-    if (!entity)
-        goto error;
+    if (!entity) goto error;
 
-    if (!entity->next)
-        return self->push(self, item);
+    if (!entity->next) return self->push(self, item);
 
-    if (old)
-        *old = entity->next->content;
+    if (old) *old = entity->next->content;
 
     entity->next->content = item;
 
@@ -505,43 +517,37 @@ no_list_error:
 static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (!ll || (pos == 0))
-        goto no_list_error;
+    if (!ll || (pos == 0)) goto no_list_error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *new = NULL;
     ListEntity *entity = expand_list_to_position(self, pos);
-    if (!entity)
-        goto error;
+    if (!entity) goto error;
 
     new = acquire_list_entity();
     new->last = entity;
     new->next = entity->next;
     new->content = item;
 
-    if (entity->next)
-        entity->next->last = new;
+    if (entity->next) entity->next->last = new;
 
     entity->next = new;
 
     /* Special cases */
 
     /* If the new element is the last element */
-    if (entity == ll->head.last)
-        ll->head.last = new;
+    if (entity == ll->head.last) ll->head.last = new;
 
     /* If the new element is the first element */
     if (entity == &ll->head) {
-        new->last = NULL;
-        ll->head.next = new;
+        new->last = 0;
     }
 
     /* If new element is the only element in the list,
-     * head.next ought to point to it ...*/
-    if (NULL == ll->head.last) {
+     * head.next already ought to point to it ...*/
+    if (0 == ll->head.last) {
         ll->head.last = new;
-        ll->head.next = new;
     }
 
     ASSERT_LIST_INVARIANTS(ll);
@@ -562,31 +568,25 @@ static void *impl_linked_list_remove(ov_list *self, size_t pos) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
 
-    if (NULL == ll)
-        goto no_list_error;
+    if (0 == ll) goto no_list_error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *entity = get_entity_at_position(self, pos);
 
-    if (NULL == entity)
-        goto error;
+    if (0 == entity) goto error;
 
     void *content = entity->content;
 
     // plug out of list
-    if (ll->head.next == entity)
-        ll->head.next = entity->next;
+    if (ll->head.next == entity) ll->head.next = entity->next;
 
-    if (ll->head.last == entity)
-        ll->head.last = entity->last;
+    if (ll->head.last == entity) ll->head.last = entity->last;
 
     // plug out of chain
-    if (entity->last)
-        entity->last->next = entity->next;
+    if (entity->last) entity->last->next = entity->next;
 
-    if (entity->next)
-        entity->next->last = entity->last;
+    if (entity->next) entity->next->last = entity->last;
 
     release_list_entity(entity);
 
@@ -608,8 +608,7 @@ no_list_error:
 static bool impl_linked_list_push(ov_list *self, void *item) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (NULL == ll)
-        goto error;
+    if (0 == ll) goto error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -644,15 +643,13 @@ error:
 static void *impl_linked_list_pop(ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (NULL == ll)
-        goto no_list_error;
+    if (0 == ll) goto no_list_error;
 
-    //ASSERT_LIST_INVARIANTS(ll);
+    ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *last = ll->head.last;
 
-    if (!last)
-        goto error;
+    if (!last) goto error;
 
     ll->head.last = last->last;
     void *content = last->content;
@@ -669,13 +666,13 @@ static void *impl_linked_list_pop(ov_list *self) {
         ll->head.next = NULL;
     }
 
-    //ASSERT_LIST_INVARIANTS(ll);
+    ASSERT_LIST_INVARIANTS(ll);
 
     return content;
 
 error:
 
-    //ASSERT_LIST_INVARIANTS(ll);
+    ASSERT_LIST_INVARIANTS(ll);
 
 no_list_error:
 
@@ -687,8 +684,7 @@ no_list_error:
 static size_t impl_linked_list_count(const ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
-    if (NULL == ll)
-        goto no_list_error;
+    if (0 == ll) goto no_list_error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -712,26 +708,22 @@ no_list_error:
 
 /*---------------------------------------------------------------------------*/
 
-static bool impl_linked_list_for_each(ov_list *self, void *data,
-                                      bool (*function)(void *item,
-                                                       void *data)) {
+static bool impl_linked_list_for_each(
+    ov_list *self, void *data, bool (*function)(void *item, void *data)) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
 
-    if (NULL == ll)
-        goto no_list_error;
+    if (0 == ll) goto no_list_error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
-    if (0 == function)
-        goto error;
+    if (0 == function) goto error;
 
     ListEntity *next = ll->head.next;
 
     while (next) {
 
-        if (!function(next->content, data))
-            goto error;
+        if (!function(next->content, data)) goto error;
         next = next->next;
     }
 
@@ -753,8 +745,7 @@ void *impl_linked_list_iter(ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
 
-    if (NULL == ll)
-        goto error;
+    if (0 == ll) goto error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -771,20 +762,17 @@ void *impl_linked_list_next(ov_list *self, void *iter, void **element) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
 
-    if (NULL == ll)
-        goto no_list_error;
+    if (0 == ll) goto no_list_error;
 
     ASSERT_LIST_INVARIANTS(ll);
 
-    if (0 == iter)
-        goto error;
+    if (0 == iter) goto error;
 
     // @NOTE cannot easy check if iter is part of the list
 
     ListEntity *entity = iter;
 
-    if (NULL != element)
-        *element = entity->content;
+    if (0 != element) *element = entity->content;
 
     ASSERT_LIST_INVARIANTS(ll);
 
@@ -792,7 +780,7 @@ void *impl_linked_list_next(ov_list *self, void *iter, void **element) {
 
 error:
 
-    if (NULL != element) {
+    if (0 != element) {
         *element = 0;
     }
 
@@ -809,8 +797,7 @@ static void *linked_list_free(void *vptr) {
 
     ov_list *ll = ov_list_cast(vptr);
 
-    if (NULL == ll)
-        goto error;
+    if (0 == ll) goto error;
 
     if (!ll->clear(ll)) {
         /* The list has been screwed up ...
