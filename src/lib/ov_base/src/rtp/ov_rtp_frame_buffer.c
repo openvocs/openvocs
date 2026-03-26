@@ -531,7 +531,7 @@ ov_rtp_frame_buffer_get_current_frames(ov_rtp_frame_buffer *restrict self) {
     if (0 != self) {
 
         ov_list *stages = internal->stages;
-        current = stages->remove(stages, 1);
+        current = ov_list_cast(stages->remove(stages, 1));
     }
 
     return current;
@@ -604,3 +604,33 @@ finish:
 }
 
 /*----------------------------------------------------------------------------*/
+
+bool ov_rtp_frame_buffer_clear(ov_rtp_frame_buffer *self){
+
+    if (!self) goto error;
+
+    internal_frame_buffer *internal = as_internal_frame_buffer((void *)self);
+
+    ov_list *stages = internal->stages;
+    ov_list *frames = ov_list_pop(stages);
+    
+    while(frames){
+
+        ov_rtp_frame *frame = ov_list_pop(frames);
+
+        while(frame){
+
+            frame = ov_rtp_frame_free(frame);
+            frame = ov_list_pop(frames);
+        }
+
+        frames = ov_list_free(frames);
+        frames = ov_list_pop(stages);
+
+    }
+
+    return true;
+
+error:
+    return false;
+}

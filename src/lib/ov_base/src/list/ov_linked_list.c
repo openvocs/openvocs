@@ -547,6 +547,7 @@ static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item) {
     /* If new element is the only element in the list,
      * head.next already ought to point to it ...*/
     if (0 == ll->head.last) {
+        ll->head.next = new;
         ll->head.last = new;
     }
 
@@ -644,7 +645,7 @@ static void *impl_linked_list_pop(ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
     if (0 == ll) goto no_list_error;
-
+    
     ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *last = ll->head.last;

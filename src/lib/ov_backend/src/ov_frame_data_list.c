@@ -35,7 +35,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-static ov_registered_cache *g_list_cache = 0;
+static ov_registered_cache *g_frame_list_cache = 0;
 
 /*----------------------------------------------------------------------------*/
 
@@ -107,7 +107,7 @@ void ov_frame_data_list_enable_caching(size_t capacity) {
 
     };
 
-    g_list_cache = ov_registered_cache_extend("frame_data_list", cfg);
+    g_frame_list_cache = ov_registered_cache_extend("frame_data_list", cfg);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -119,7 +119,7 @@ ov_frame_data_list *ov_frame_data_list_create(size_t num_entries) {
         goto error;
     }
 
-    ov_frame_data_list *list = ov_registered_cache_get(g_list_cache);
+    ov_frame_data_list *list = ov_registered_cache_get(g_frame_list_cache);
 
     if (0 == list) {
         list = calloc(1, sizeof(ov_frame_data_list));
@@ -162,7 +162,7 @@ ov_frame_data_list *ov_frame_data_list_free(ov_frame_data_list *list) {
 
     clear_frame_data_list_nocheck(list);
 
-    list = ov_registered_cache_put(g_list_cache, list);
+    list = ov_registered_cache_put(g_frame_list_cache, list);
 
     if (0 != list) {
         free_frame_data_list(list);

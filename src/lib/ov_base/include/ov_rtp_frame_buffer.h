@@ -98,4 +98,6 @@ void ov_rtp_frame_buffer_print(FILE *stream, ov_rtp_frame_buffer const *buffer);
 
 /*----------------------------------------------------------------------------*/
 
+bool ov_rtp_frame_buffer_clear(ov_rtp_frame_buffer *self);
+
 #endif /* ov_rtp_frame_buffer_h */

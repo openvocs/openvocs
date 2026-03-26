@@ -414,6 +414,9 @@ int test_ov_rtp_frame_buffer_get_current_frames() {
 
     current = free_frame_list(current);
 
+    current = ov_rtp_frame_buffer_get_current_frames(buffer);
+    testrun(0 == current);
+
     buffer = buffer->free(buffer);
 
     /**********************************************************************

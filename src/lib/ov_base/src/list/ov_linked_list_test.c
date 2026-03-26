@@ -233,6 +233,20 @@ int check_insert() {
         item = ov_list_pop(list);
     }
 
+    eins = calloc(1, sizeof(uint64_t));
+    zwei = calloc(1, sizeof(uint64_t));
+    drei = calloc(1, sizeof(uint64_t));
+
+    testrun(ov_list_insert(list, 2, drei));
+    testrun(ov_list_insert(list, 1, eins));
+    testrun(ov_list_insert(list, 2, zwei));
+
+    item = ov_list_pop(list);
+    while (item) {
+        free(item);
+        item = ov_list_pop(list);
+    }
+    
     list = ov_list_free(list);
     return testrun_log_success();
 }

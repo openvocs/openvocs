@@ -100,7 +100,7 @@ struct ov_mc_mixer_core {
 
 static ov_list *ov_mc_mixer_core_frame_processing_list_free(ov_list *list) {
 
-    if (!list)
+    if (!list || !ov_list_cast(list))
         goto error;
 
     ov_rtp_frame *frame = ov_list_pop(list);
@@ -925,8 +925,8 @@ static bool process_frames(ov_mc_mixer_core *mixer, ov_list *frames) {
     ov_buffer *mixed_payload = NULL;
     ov_frame_data_list *used_frames = NULL;
 
-    if (!mixer || !frames)
-        goto finish;
+    OV_ASSERT(mixer);
+    OV_ASSERT(frames);
 
     size_t num_frames = ov_list_count(frames);
 
@@ -935,7 +935,7 @@ static bool process_frames(ov_mc_mixer_core *mixer, ov_list *frames) {
     mixed_payload = mix_frames_nocheck(mixer, num_frames, frames, &num_samples,
                                        &used_frames);
 
-    frames = 0;
+    frames = NULL;
 
     if (0 == mixed_payload) {
         mixed_payload = get_comfort_noise(mixer, &num_samples);
@@ -973,7 +973,6 @@ static bool process_frames(ov_mc_mixer_core *mixer, ov_list *frames) {
 finish:
 
     mixed_payload = ov_buffer_free(mixed_payload);
-    frames = ov_mc_mixer_core_frame_processing_list_free(frames);
     used_frames = ov_frame_data_list_free(used_frames);
 
     OV_ASSERT(0 == mixed_payload);
@@ -1027,11 +1026,7 @@ static bool cb_mix(uint32_t id, void *data) {
         frame_list = ov_linked_list_create((ov_list_config){0});
     }
 
-    if (process_frames(mixer, frame_list)) {
-        frame_list = NULL;
-    }
-
-    frame_list = ov_mc_mixer_core_frame_processing_list_free(frame_list);
+    process_frames(mixer, frame_list);
 
     return true;
 }
@@ -1235,9 +1230,7 @@ bool ov_mc_mixer_core_reconfigure(ov_mc_mixer_core *self,
 
     self->mix_timer = ov_event_loop_timer_set(config.loop, 20000, self, cb_mix);
 
-    ov_list *frames =
-        ov_rtp_frame_buffer_get_current_frames(self->frame_buffer);
-    frames = ov_mc_mixer_core_frame_processing_list_free(frames);
+    ov_rtp_frame_buffer_clear(self->frame_buffer);
 
     return true;
 error:
@@ -1409,9 +1402,7 @@ bool ov_mc_mixer_core_release(ov_mc_mixer_core *self) {
     self->name = ov_data_pointer_free(self->name);
     self->forward = (ov_mc_mixer_core_forward){0};
 
-    ov_list *frames =
-        ov_rtp_frame_buffer_get_current_frames(self->frame_buffer);
-    frames = ov_mc_mixer_core_frame_processing_list_free(frames);
+    ov_rtp_frame_buffer_clear(self->frame_buffer);
 
     return true;
 error:
