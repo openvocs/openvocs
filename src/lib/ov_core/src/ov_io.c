@@ -29,6 +29,7 @@
 */
 #include "../include/ov_io.h"
 #include "../include/ov_domain.h"
+#include "../include/ov_mimetype.h"
 
 #include <ov_base/ov_dict.h>
 #include <ov_base/ov_list.h>
@@ -36,6 +37,10 @@
 #include <ov_base/ov_thread_lock.h>
 #include <ov_base/ov_thread_loop.h>
 #include <ov_base/ov_time.h>
+#include <ov_base/ov_uri.h>
+#include <ov_base/ov_file.h>
+#include <ov_base/ov_json_io_buffer.h>
+#include <ov_base/ov_linked_list.h>
 
 #include <openssl/conf.h>
 #include <openssl/err.h>
@@ -52,7 +57,9 @@ typedef enum ConnectionType {
 
     OV_IO_LISTENER,
     OV_IO_CONNECTION,
-    OV_IO_CLIENT_CONNECTION
+    OV_IO_CLIENT_CONNECTION,
+    OV_IO_WEB_CONNECTION,
+    OV_IO_WEBSOCKET_CONNECTION
 
 } ConnectionType;
 
@@ -70,7 +77,10 @@ typedef struct Connection {
     int listener;
 
     char domain[PATH_MAX];
+    char uri[PATH_MAX];
+
     ov_io_socket_config config;
+    ov_io_https_config https;
 
     struct {
 
@@ -91,11 +101,34 @@ typedef struct Connection {
 
         } out;
 
+        struct {
+
+            ov_buffer *buffer;
+
+        } in;
+
     } io_data;
+
+    struct {
+
+        ov_list *queue;
+        uint64_t counter;
+        ov_websocket_fragmentation_state last;
+
+    } websocket;
 
     uint32_t timer_id;
 
 } Connection;
+
+/*----------------------------------------------------------------------------*/
+
+typedef struct Callback {
+
+    void *userdata;
+    void (*callback)(void *userdata, int socket, ov_json_value *msg);
+
+} Callback;
 
 /*----------------------------------------------------------------------------*/
 
@@ -129,6 +162,8 @@ struct ov_io {
     } reconnects;
 
     ov_dict *connections;
+
+    ov_json_io_buffer *json_io_buffer;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -189,7 +224,10 @@ static void *connection_free(void *self) {
         }
     }
 
+    conn->io_data.in.buffer = ov_buffer_free(conn->io_data.in.buffer);
+    conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
     conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
+    conn->websocket.queue = ov_list_free(conn->websocket.queue);
 
     conn = ov_data_pointer_free(conn);
     return NULL;
@@ -448,15 +486,17 @@ static bool check_connection_timeout(const void *key, void *val, void *data) {
         return true;
     Connection *conn = (Connection *)val;
     struct container1 *container = (struct container1 *)data;
-    UNUSED(conn);
-    UNUSED(container);
-    /*
-        if (container->now - conn->created <
+    
+    if (conn->created_usec == conn->last_update_usec){
+
+        if (container->now - conn->created_usec <
             conn->io->config.limits.timeout_usec){
 
             ov_list_push(container->list, (void*) key);
         }
-    */
+
+    }
+    
     return true;
 }
 
@@ -525,6 +565,9 @@ static bool init_config(ov_io_config *config) {
 
     if (0 == config->limits.timeout_usec)
         config->limits.timeout_usec = 3000000;
+
+    if (0 == config->name[0])
+        strncat(config->name, "io", PATH_MAX);
 
     return true;
 error:
@@ -609,6 +652,53 @@ static ov_thread_loop *start_connect_thread(ov_event_loop *loop,
 
 /*----------------------------------------------------------------------------*/
 
+static void json_success(void *userdata, int socket, ov_json_value *val) {
+
+    if (!userdata || !val)
+        goto error;
+
+    ov_io *self = (ov_io *)userdata;
+
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
+
+    if (!self || !conn)
+        goto error;
+
+    ov_domain *domain = ov_io_get_domain(self, conn->domain);
+    if (!domain) goto error;
+
+    Callback *cb = ov_dict_get(domain->event_handler.uri, conn->uri);
+    if (!cb) {
+        goto error;
+    }
+
+    void (*function)(void *, int, ov_json_value *) = cb->callback;
+
+    function(cb->userdata, socket, val);
+    return;
+error:
+    ov_json_value_free(val);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void json_failure(void *userdata, int socket) {
+
+    if (!userdata)
+        goto error;
+
+    ov_io *self = (ov_io *)userdata;
+
+    ov_log_error("JSON IO failure at %i - closing", socket);
+    ov_io_close(self, socket);
+
+error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_io *ov_io_create(ov_io_config config) {
 
     ov_io *self = NULL;
@@ -655,6 +745,12 @@ ov_io *ov_io_create(ov_io_config config) {
     if (!ov_thread_lock_init(&self->reconnects.lock, 100000))
         goto error;
 
+    self->json_io_buffer = ov_json_io_buffer_create((ov_json_io_buffer_config){
+        .callback.userdata = self,
+        .callback.success = json_success,
+        .callback.failure = json_failure
+    });
+
     /* Initialize OpenSSL */
     SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
@@ -693,6 +789,8 @@ ov_io *ov_io_free(ov_io *self) {
         ov_domain_array_free(self->domain.size, self->domain.array);
 
     self->reconnects.list = ov_list_free(self->reconnects.list);
+
+    self->json_io_buffer = ov_json_io_buffer_free(self->json_io_buffer);
 
     self = ov_data_pointer_free(self);
     return NULL;
@@ -763,38 +861,9 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
     ssize_t bytes = 0;
 
     bytes = recv(conn->socket, buffer, size, 0);
+    conn->last_update_usec = ov_time_get_current_time_usecs();
 
     if (0 == bytes) {
-
-        if (conn->type == OV_IO_CLIENT_CONNECTION) {
-
-            if (conn->config.auto_reconnect) {
-
-                if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
-
-                    ov_io_socket_config *conf =
-                        calloc(1, sizeof(ov_io_socket_config));
-
-                    *conf = conn->config;
-
-                    if (!ov_list_queue_push(self->reconnects.list, conf)) {
-
-                        conf = ov_data_pointer_free(conf);
-                        ov_log_error("failed to enable auto reconnect");
-                    }
-
-                    ov_thread_lock_unlock(&self->reconnects.lock);
-
-                    ov_log_debug("enabled reconnect to %s:%i",
-                                 conf->socket.host, conf->socket.port);
-                } else {
-
-                    ov_log_debug("failed to enable reconnect to %s:%i",
-                                 conn->config.socket.host,
-                                 conn->config.socket.port);
-                }
-            }
-        }
 
         ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
         return false;
@@ -812,12 +881,10 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
     } else {
 
-        conn->last_update_usec = ov_time_get_current_time_usecs();
-
         if (conn->config.callbacks.io) {
 
             return conn->config.callbacks.io(
-                conn->config.callbacks.userdata, conn->socket, NULL,
+                conn->config.callbacks.userdata, conn->socket, conn->domain,
                 (ov_memory_pointer){.start = buffer, .length = bytes});
         }
     }
@@ -833,6 +900,8 @@ static bool stream_send(ov_io *self, Connection *conn) {
         goto error;
 
     ssize_t bytes = 0;
+
+    conn->last_update_usec = ov_time_get_current_time_usecs();
 
     if (conn->io_data.out.buffer) {
 
@@ -889,37 +958,9 @@ static bool io_stream(int socket, uint8_t events, void *data) {
     Connection *conn =
         (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
+    conn->last_update_usec = ov_time_get_current_time_usecs();
+
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
-
-        if (conn->type == OV_IO_CLIENT_CONNECTION) {
-
-            if (conn->config.auto_reconnect) {
-
-                if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
-
-                    ov_io_socket_config *conf =
-                        calloc(1, sizeof(ov_io_socket_config));
-
-                    *conf = conn->config;
-
-                    if (!ov_list_queue_push(self->reconnects.list, conf)) {
-
-                        conf = ov_data_pointer_free(conf);
-                        ov_log_error("failed to enable auto reconnect");
-                    }
-
-                    ov_thread_lock_unlock(&self->reconnects.lock);
-
-                    ov_log_debug("enabled reconnect to %s:%i",
-                                 conf->socket.host, conf->socket.port);
-                } else {
-
-                    ov_log_debug("failed to enable reconnect to %s:%i",
-                                 conn->config.socket.host,
-                                 conn->config.socket.port);
-                }
-            }
-        }
 
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto done;
@@ -1070,6 +1111,8 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
         goto error;
 
     ssize_t bytes = 0;
+
+    conn->last_update_usec = ov_time_get_current_time_usecs();
 
     if (conn->io_data.out.buffer) {
 
@@ -1268,7 +1311,7 @@ static Connection *accept_stream_base(
     conn->config = listener->config;
     conn->io = self;
     conn->created_usec = ov_time_get_current_time_usecs();
-    conn->last_update_usec = 0;
+    conn->last_update_usec = ov_time_get_current_time_usecs();
     conn->io_data.callback = callback;
     conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
     conn->io_data.out.queue =
@@ -1627,6 +1670,7 @@ int ov_io_open_listener(ov_io *self, ov_io_socket_config config) {
     conn->socket = listener;
     conn->config = config;
     conn->io = self;
+    conn->created_usec = ov_time_get_current_time_usecs();
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
     if (!open_listener_ctx(self, conn))
@@ -1949,23 +1993,6 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
-        if (conn->type == OV_IO_CLIENT_CONNECTION) {
-
-            if (conn->config.auto_reconnect) {
-
-                ov_io_socket_config *conf =
-                    calloc(1, sizeof(ov_io_socket_config));
-
-                *conf = conn->config;
-                if (!ov_list_queue_push(self->reconnects.list, conf)) {
-
-                    conf = ov_data_pointer_free(conf);
-                    ov_log_error("failed to enable auto reconnect");
-                    goto error;
-                }
-            }
-        }
-
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
     }
@@ -2192,6 +2219,8 @@ static int open_connection(ov_io *self, ov_io_socket_config config) {
     conn->listener = -1;
     conn->type = OV_IO_CLIENT_CONNECTION;
     conn->config = config;
+    conn->created_usec = ov_time_get_current_time_usecs();
+    conn->last_update_usec = ov_time_get_current_time_usecs();
     conn->io = self;
     conn->io_data.callback = io;
     conn->io_data.out.buffer = NULL;
@@ -2297,26 +2326,24 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
+static bool io_send(ov_io *self, Connection *conn, ov_memory_pointer buffer){
 
-    if (!self)
-        goto error;
+    OV_ASSERT(self);
+    OV_ASSERT(conn);
 
-    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
-    if (!conn)
-        goto error;
+    conn->last_update_usec = ov_time_get_current_time_usecs();
 
     ov_event_loop *loop = self->config.loop;
 
     /* Ensure outgoing readiness listening */
 
-    if (!loop->callback.set(loop, socket,
+    if (!loop->callback.set(loop, conn->socket,
                             OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
                                 OV_EVENT_IO_CLOSE | OV_EVENT_IO_OUT,
                             self, conn->io_data.callback))
         goto error;
 
-    size_t max = ov_socket_get_send_buffer_size(socket);
+    size_t max = ov_socket_get_send_buffer_size(conn->socket);
     if (max < buffer.length) {
 
         ov_buffer *temp = NULL;
@@ -2386,6 +2413,114 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool send_websocket_frames(ov_io *self, Connection *conn, ov_memory_pointer buffer){
+
+    OV_ASSERT(self);
+    OV_ASSERT(conn);
+
+    ov_websocket_frame *frame = NULL;
+
+    frame = ov_websocket_frame_create(self->config.frame);
+    if (!frame)
+        goto error;
+
+    ov_websocket_frame_clear(frame);
+
+    size_t chunk = 1000;
+
+    if (buffer.length < chunk) {
+
+        frame->buffer->start[0] = 0x80 | OV_WEBSOCKET_OPCODE_TEXT;
+
+        if (!ov_websocket_set_data(frame, (uint8_t *)buffer.start, buffer.length, false))
+            goto error;
+
+        if (!io_send(self, conn,
+                        (ov_memory_pointer){.start = frame->buffer->start,
+                                            .length = frame->buffer->length}))
+            goto error;
+
+        goto done;
+    }
+
+    // send in chunks
+
+    size_t counter = 0;
+
+    uint8_t *ptr = (uint8_t *)buffer.start;
+    size_t open = buffer.length;
+
+    frame->buffer->start[0] = 0x00 | OV_WEBSOCKET_OPCODE_TEXT;
+
+    if (!ov_websocket_set_data(frame, ptr, chunk, false))
+        goto error;
+
+    if (!io_send(self, conn,
+                    (ov_memory_pointer){.start = frame->buffer->start,
+                                        .length = frame->buffer->length}))
+        goto error;
+
+    counter++;
+    open -= chunk;
+    ptr += chunk;
+
+    while (open > chunk) {
+
+        frame->buffer->start[0] = 0x00;
+
+        if (!ov_websocket_set_data(frame, ptr, chunk, false))
+            goto error;
+
+        if (!io_send(self, conn,
+                        (ov_memory_pointer){.start = frame->buffer->start,
+                                            .length = frame->buffer->length}))
+            goto error;
+
+        open -= chunk;
+        ptr += chunk;
+
+        counter++;
+    }
+
+    frame->buffer->start[0] = 0x80;
+
+    if (!ov_websocket_set_data(frame, ptr, open, false))
+        goto error;
+
+    if (!io_send(self, conn,
+                    (ov_memory_pointer){.start = frame->buffer->start,
+                                        .length = frame->buffer->length}))
+        goto error;
+
+done:
+    ov_websocket_frame_free(frame);
+    return true;
+error:
+    ov_websocket_frame_free(frame);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
+
+    if (!self)
+        goto error;
+
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    if (!conn)
+        goto error;
+
+    if (OV_IO_WEBSOCKET_CONNECTION == conn->type)
+        return send_websocket_frames(self, conn, buffer);
+
+    return io_send(self, conn, buffer);
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_domain *ov_io_get_domain(ov_io *self, const char *name) {
 
     OV_ASSERT(self);
@@ -2406,4 +2541,1146 @@ ov_domain *ov_io_get_domain(ov_io *self, const char *name) {
     }
 
     return domain;
+}
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      HTTPS FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+static bool clean_path(Connection *conn,
+    const ov_http_message *msg, size_t len, char *out) {
+
+    ov_uri *uri = NULL;
+    if (len < PATH_MAX)
+        goto error;
+
+    uri = ov_uri_from_string((char *)msg->request.uri.start,
+                             msg->request.uri.length);
+
+    if (!uri || !uri->path)
+        goto error;
+
+    ov_domain *domain = ov_io_get_domain(conn->io, conn->domain);
+    if (!domain) goto error;
+
+    char cleaned_path[PATH_MAX + 1] = {0};
+    if (!ov_uri_path_remove_dot_segments(uri->path, cleaned_path))
+        goto error;
+
+    /* clean empty paths between document root and uri path,
+     *
+     * (A) document root may finish with /
+     * (B) we ensure to add some /
+     * (C) uri may contain some initial /
+     *
+     * --> delete any non requried for some clean path */
+
+    char full_path[PATH_MAX + 1] = {0};
+
+    ssize_t bytes =
+        snprintf(full_path, PATH_MAX, "%s/%s", domain->config.path, cleaned_path);
+
+    if (bytes < 1)
+        goto error;
+
+    if (!ov_uri_path_remove_dot_segments(full_path, out))
+        goto error;
+
+    uri = ov_uri_free(uri);
+    return true;
+error:
+    uri = ov_uri_free(uri);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool parse_content_range(const ov_http_header *range, size_t *from,
+                                size_t *to) {
+
+    OV_ASSERT(range);
+    OV_ASSERT(from);
+    OV_ASSERT(to);
+
+    long n1 = 0;
+    long n2 = 0;
+
+    if (!ov_string_startswith((const char *)range->value.start, "bytes="))
+        goto error;
+
+    char *end_ptr = NULL;
+
+    char *ptr = memchr(range->value.start, '=', range->value.length);
+    if (!ptr)
+        goto error;
+
+    ptr++;
+
+    n1 = strtol(ptr, &end_ptr, 10);
+
+    ptr = end_ptr;
+    ptr++;
+
+    n2 = strtol(ptr, &end_ptr, 10);
+
+    *from = n1;
+    *to = n2;
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool answer_range(Connection *conn, const char *path,
+                         const ov_http_header *range,
+                         const ov_http_message *msg, bool add_body) {
+
+    ov_http_message *response = NULL;
+
+    uint8_t *buffer = NULL;
+    size_t size = 0;
+
+    OV_ASSERT(conn);
+    OV_ASSERT(msg);
+    OV_ASSERT(path);
+    OV_ASSERT(range);
+
+    size_t from = 0;
+    size_t to = 0;
+    size_t all = 0;
+
+    if (!parse_content_range(range, &from, &to))
+        goto error;
+
+    if (OV_FILE_SUCCESS !=
+        ov_file_read_partial(path, &buffer, &size, from, to, &all)) {
+        ov_log_error("failed to partial read file %s", path);
+        goto error;
+    }
+
+    response = ov_http_create_status_string(msg->config, msg->version, 206,
+                                            OV_HTTP_PARTIAL_CONTENT);
+
+    if (!ov_http_message_add_header_string(response, "server",
+                                           conn->io->config.name))
+        goto error;
+
+    if (!ov_http_message_set_date(response))
+        goto error;
+
+    if (!ov_http_message_set_content_length(response, size))
+        goto error;
+
+    if (to == 0)
+        to = all;
+
+    if (!ov_http_message_set_content_range(response, all, from, to))
+        goto error;
+
+    if (!ov_http_message_add_header_string(response,
+                                           "Access-Control-Allow-Origin", "*"))
+        goto error;
+
+    if (!ov_http_message_close_header(response))
+        goto error;
+
+    if (add_body) {
+
+        if (!ov_http_message_add_body(
+                response, (ov_memory_pointer){.start = buffer, .length = size}))
+            goto error;
+    }
+
+    if (!ov_io_send(conn->io, conn->socket, (ov_memory_pointer){
+        .start = response->buffer->start,
+        .length = response->buffer->length
+    })) goto error;
+
+    response = ov_http_message_free(response);
+    buffer = ov_data_pointer_free(buffer);
+    return true;
+error:
+    response = ov_http_message_free(response);
+    buffer = ov_data_pointer_free(buffer);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_get(Connection *conn,
+                        const ov_http_message *msg) {
+
+    char path[PATH_MAX] = {0};
+
+    ov_http_message *response = NULL;
+
+    uint8_t *buffer = NULL;
+    size_t size = 0;
+
+    OV_ASSERT(conn);
+    OV_ASSERT(msg);
+
+    if (!clean_path(conn, msg, PATH_MAX, path))
+        goto error;
+
+    size_t path_len = strlen(path);
+
+    if (path[path_len - 1] == '/')
+        strcat(path, "index.html");
+
+    const ov_http_header *range =
+        ov_http_header_get(msg->header, msg->config.header.capacity, "Range");
+
+    if (range)
+        return answer_range(conn, path, range, msg, true);
+
+    if (OV_FILE_SUCCESS != ov_file_read(path, &buffer, &size)) {
+        ov_log_error("failed to read file %s", path);
+        goto error;
+    }
+
+    const char *ext = NULL;
+    char *ptr = path + strlen(path);
+
+    while (ptr[0] != '.') {
+        ptr--;
+        if (ptr == path)
+            break;
+    }
+
+    ext = ptr + 1;
+
+    const char *mimetype = ov_mimetype_from_file_extension(ext, strlen(ext));
+
+    response = ov_http_create_status_string(
+        conn->io->config.http_message, (ov_http_version){.major = 1, .minor = 1},
+        200, OV_HTTP_OK);
+
+    if (!ov_http_message_add_header_string(response, "server",
+                                           conn->io->config.name))
+        goto error;
+
+    if (!ov_http_message_set_date(response))
+        goto error;
+
+    if (!ov_http_message_set_content_length(response, size))
+        goto error;
+
+    if (mimetype) {
+
+        if (!ov_http_message_add_content_type(response, mimetype, NULL))
+            goto error;
+
+    } else {
+
+        if (!ov_http_message_add_content_type(response, "text/plain", NULL))
+            goto error;
+    }
+
+    if (!ov_http_message_add_header_string(response, "Accept-Ranges", "bytes"))
+        goto error;
+
+    if (!ov_http_message_close_header(response))
+        goto error;
+
+    if (!ov_http_message_add_body(
+            response, (ov_memory_pointer){.start = buffer, .length = size}))
+        goto error;
+
+    if (!ov_io_send(conn->io, conn->socket, (ov_memory_pointer){
+        .start = response->buffer->start,
+        .length = response->buffer->length
+    })) goto error;
+
+    response = ov_http_message_free(response);
+    buffer = ov_data_pointer_free(buffer);
+    return true;
+error:
+    response = ov_http_message_free(response);
+    buffer = ov_data_pointer_free(buffer);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_head(Connection *conn,
+                         const ov_http_message *msg) {
+
+    char path[PATH_MAX] = {0};
+
+    ov_http_message *response = NULL;
+
+    uint8_t *buffer = NULL;
+    size_t size = 0;
+
+    OV_ASSERT(conn);
+    OV_ASSERT(msg);
+
+    if (!clean_path(conn, msg, PATH_MAX, path))
+        goto error;
+
+    const ov_http_header *range =
+        ov_http_header_get(msg->header, msg->config.header.capacity, "Range");
+
+    if (range)
+        return answer_range(conn, path, range, msg, false);
+
+    if (OV_FILE_SUCCESS != ov_file_read(path, &buffer, &size)) {
+        ov_log_error("failed to read file %s", path);
+        goto error;
+    }
+
+    const char *ext = NULL;
+    char *ptr = path + strlen(path);
+
+    while (ptr[0] != '.') {
+        ptr--;
+        if (ptr == path)
+            break;
+    }
+
+    ext = ptr + 1;
+
+    const char *mimetype = ov_mimetype_from_file_extension(ext, strlen(ext));
+
+    response = ov_http_create_status_string(
+        conn->io->config.http_message, (ov_http_version){.major = 1, .minor = 1},
+        200, OV_HTTP_OK);
+
+    if (!ov_http_message_add_header_string(response, "server",
+                                           conn->io->config.name))
+        goto error;
+
+    if (!ov_http_message_set_date(response))
+        goto error;
+
+    if (!ov_http_message_set_content_length(response, size))
+        goto error;
+
+    if (mimetype) {
+
+        if (!ov_http_message_add_content_type(response, mimetype, NULL))
+            goto error;
+
+    } else {
+
+        if (!ov_http_message_add_content_type(response, "text/plain", NULL))
+            goto error;
+    }
+
+    if (!ov_http_message_add_header_string(response, "Accept-Ranges", "bytes"))
+        goto error;
+
+    if (!ov_http_message_close_header(response))
+        goto error;
+
+    if (!ov_io_send(conn->io, conn->socket, (ov_memory_pointer){
+        .start = response->buffer->start,
+        .length = response->buffer->length
+    })) goto error;
+
+    response = ov_http_message_free(response);
+    buffer = ov_data_pointer_free(buffer);
+    return true;
+error:
+    response = ov_http_message_free(response);
+    buffer = ov_data_pointer_free(buffer);
+    return false;
+}
+
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_https_message(Connection *conn, const ov_http_message *msg) {
+
+    OV_ASSERT(conn);
+    OV_ASSERT(msg);
+
+    const ov_http_header *header_host = ov_http_header_get_unique(
+        msg->header, msg->config.header.capacity, OV_HTTP_KEY_HOST);
+
+    if (!header_host)
+        goto error;
+
+    ov_domain *domain = ov_io_get_domain(conn->io, conn->domain);
+    if (!domain) goto error;
+
+    if (conn->https.callbacks.callback){
+
+        if (!conn->https.callbacks.callback(
+            conn->https.callbacks.userdata,
+            conn->domain,
+            domain->config.path,
+            msg)) goto error;
+    
+    } else {
+
+        if (ov_http_is_request(msg, OV_HTTP_METHOD_GET))
+            return process_get(conn, msg);
+
+        if (ov_http_is_request(msg, OV_HTTP_METHOD_HEAD))
+            return process_head(conn, msg);
+
+        ov_log_debug("HTTP METHOD NOT IMPLEMENTED.");
+        goto error;
+    }
+
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_https(Connection *conn, ov_http_message *msg) {
+
+    OV_ASSERT(conn);
+    OV_ASSERT(msg);
+
+    ov_http_message *out = NULL;
+    bool is_handshake = false;
+
+    if (ov_websocket_process_handshake_request(msg, &out, &is_handshake)) {
+
+        OV_ASSERT(out);
+        OV_ASSERT(is_handshake);
+
+        conn->type = OV_IO_WEBSOCKET_CONNECTION;
+
+        snprintf(conn->uri, PATH_MAX, "%.*s", (int)msg->request.uri.length,
+                 msg->request.uri.start);
+
+        if (!ov_io_send(conn->io, conn->socket,
+                        (ov_memory_pointer){.start = out->buffer->start,
+                                            .length = out->buffer->length})) {
+
+            out = ov_http_message_free(out);
+            goto error;
+
+        } else {
+
+            out = ov_http_message_free(out);
+            goto done;
+        }
+        goto done;
+    }
+
+    if (is_handshake)
+        goto error;
+
+    bool result = process_https_message(conn, msg);
+    if (!result)
+        goto error;
+
+done:
+    ov_http_message_free(msg);
+    return true;
+error:
+    ov_http_message_free(msg);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_https_input(ov_io *self, Connection *conn){
+
+    OV_ASSERT(self);
+    OV_ASSERT(conn);
+
+    ov_http_parser_state state = OV_HTTP_PARSER_ERROR;
+
+    bool all_done = false;
+    bool result = false;
+
+    while (!all_done) {
+
+        if (!conn->io_data.in.buffer) {
+            conn->io_data.in.buffer = ov_buffer_create(2048);
+            goto done;
+        }
+
+        ov_http_message *msg = ov_http_message_pop(
+            &conn->io_data.in.buffer, &self->config.http_message, &state);
+
+        switch (state) {
+
+        case OV_HTTP_PARSER_SUCCESS:
+
+            if (msg) {
+                result = process_https(conn, msg);
+            } else {
+                goto done;
+            }
+            break;
+
+        case OV_HTTP_PARSER_PROGRESS:
+
+            if (msg)
+                msg = ov_http_message_free(msg);
+            goto done;
+
+        default:
+            goto error;
+        }
+
+        if (!result)
+            goto error;
+    }
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_wss_control_frame(Connection *conn,
+                                      ov_websocket_frame *frame) {
+
+    OV_ASSERT(conn);
+    OV_ASSERT(frame);
+
+    ov_websocket_frame *response = NULL;
+
+    switch (frame->opcode) {
+
+    case OV_WEBSOCKET_OPCODE_PONG:
+        break;
+
+    case OV_WEBSOCKET_OPCODE_PING:
+
+        response = ov_websocket_frame_create(frame->config);
+
+        if (!response)
+            goto error;
+
+        // set fin and OV_WEBSOCKET_OPCODE_PONG
+        response->buffer->start[0] = 0x8A;
+
+        if (frame->content.start) {
+
+            if (!ov_websocket_frame_unmask(frame))
+                goto error;
+
+            if (!ov_websocket_set_data(response, frame->content.start,
+                                       frame->content.length, false))
+                goto error;
+
+        } else {
+
+            response->buffer->length = 2;
+        }
+
+        if (!ov_io_send(
+                conn->io, conn->socket,
+                (ov_memory_pointer){.start = response->buffer->start,
+                                    .length = response->buffer->length}))
+            goto error;
+
+        break;
+
+    case OV_WEBSOCKET_OPCODE_CLOSE:
+        goto error;
+
+    default:
+        goto error;
+    }
+
+    frame = ov_websocket_frame_free(frame);
+    response = ov_websocket_frame_free(response);
+    return true;
+error:
+    frame = ov_websocket_frame_free(frame);
+    response = ov_websocket_frame_free(response);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool defragmented_callback(Connection *conn) {
+
+    OV_ASSERT(conn);
+    OV_ASSERT(conn->websocket.queue);
+
+    ov_websocket_frame *frame = NULL;
+    ov_buffer *buffer = ov_buffer_create(2048);
+    if (!buffer)
+        goto error;
+
+    frame = ov_list_queue_pop(conn->websocket.queue);
+    if (!frame)
+        goto error;
+
+    while (frame) {
+
+        if (!ov_buffer_push(buffer, (void *)frame->content.start,
+                            frame->content.length)) {
+            frame = ov_websocket_frame_free(frame);
+            goto error;
+        }
+
+        frame = ov_websocket_frame_free(frame);
+        frame = ov_list_queue_pop(conn->websocket.queue);
+    }
+
+    // we expect only JSON websocket frames
+    if (!ov_json_io_buffer_push(conn->io->json_io_buffer, conn->socket,
+                                (ov_memory_pointer){.start = buffer->start,
+                                                    .length = buffer->length}))
+        goto error;
+
+    buffer = ov_buffer_free(buffer);
+    conn->websocket.counter = 0;
+    return true;
+error:
+    ov_buffer_free(buffer);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_non_fragmented_frame(Connection *conn,
+                                         ov_websocket_frame *frame) {
+
+    OV_ASSERT(conn);
+    OV_ASSERT(frame);
+
+    // we expect only JSON websocket frames
+    if (!ov_json_io_buffer_push(
+            conn->io->json_io_buffer, conn->socket,
+            (ov_memory_pointer){.start = frame->content.start,
+                                .length = frame->content.length}))
+        goto error;
+
+    frame = ov_websocket_frame_free(frame);
+    return true;
+error:
+    frame = ov_websocket_frame_free(frame);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool defragmented_wss_delivery(Connection *conn,
+                                      ov_websocket_frame *frame) {
+
+    OV_ASSERT(conn);
+    OV_ASSERT(frame);
+
+    bool callback_queue = false;
+
+    ov_websocket_frame *out = NULL;
+
+    switch (frame->state) {
+
+    case OV_WEBSOCKET_FRAGMENTATION_NONE:
+
+        switch (conn->websocket.last) {
+
+        case OV_WEBSOCKET_FRAGMENTATION_NONE:
+        case OV_WEBSOCKET_FRAGMENTATION_LAST:
+            break;
+
+        default:
+            goto error;
+        }
+
+        // non fragmented frame
+        return process_non_fragmented_frame(conn, frame);
+
+    case OV_WEBSOCKET_FRAGMENTATION_START:
+
+        switch (conn->websocket.last) {
+
+        case OV_WEBSOCKET_FRAGMENTATION_NONE:
+        case OV_WEBSOCKET_FRAGMENTATION_LAST:
+            break;
+
+        default:
+            goto error;
+        }
+
+        if (!conn->websocket.queue)
+            conn->websocket.queue = ov_linked_list_create(
+                (ov_list_config){.item.free = ov_websocket_frame_free});
+
+        // at fragmentation start the queue should be empty
+
+        out = ov_list_queue_pop(conn->websocket.queue);
+        if (out) {
+
+            out = ov_websocket_frame_free(out);
+            goto error;
+        }
+
+        // push to queue
+        break;
+
+    case OV_WEBSOCKET_FRAGMENTATION_CONTINUE:
+
+        switch (conn->websocket.last) {
+
+        case OV_WEBSOCKET_FRAGMENTATION_START:
+        case OV_WEBSOCKET_FRAGMENTATION_CONTINUE:
+            break;
+
+        default:
+            goto error;
+        }
+
+        // push to queue
+        break;
+
+    case OV_WEBSOCKET_FRAGMENTATION_LAST:
+
+        switch (conn->websocket.last) {
+
+        case OV_WEBSOCKET_FRAGMENTATION_START:
+        case OV_WEBSOCKET_FRAGMENTATION_CONTINUE:
+            break;
+
+        default:
+            goto error;
+        }
+
+        callback_queue = true;
+        // push to queue
+        break;
+
+    default:
+        // fragmentation mismatch
+        goto error;
+    }
+
+    if (!ov_list_queue_push(conn->websocket.queue, frame))
+        goto error;
+
+    conn->websocket.counter++;
+    conn->websocket.last = frame->state;
+    frame = NULL;
+
+    if (callback_queue)
+        return defragmented_callback(conn);
+
+    return true;
+error:
+    ov_websocket_frame_free(frame);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_websocket(Connection *conn, ov_websocket_frame *frame) {
+
+    OV_ASSERT(conn);
+    OV_ASSERT(frame);
+
+    bool result = false;
+    bool text = false;
+
+    if (frame->opcode >= 0x08) {
+
+        result = process_wss_control_frame(conn, frame);
+        goto done;
+    }
+
+    switch (frame->opcode) {
+
+    case OV_WEBSOCKET_OPCODE_CONTINUATION:
+        break;
+    case OV_WEBSOCKET_OPCODE_TEXT:
+        text = true;
+        break;
+    case OV_WEBSOCKET_OPCODE_BINARY:
+        text = false;
+        break;
+    default:
+        goto error;
+    }
+
+    if (!ov_websocket_frame_unmask(frame))
+        goto error;
+
+    UNUSED(text);
+    return defragmented_wss_delivery(conn, frame);
+
+done:
+    if (!result)
+        goto error;
+
+    ov_websocket_frame_free(frame);
+    return true;
+error:
+    frame = ov_websocket_frame_free(frame);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_websocket_input(ov_io *self, Connection *conn) {
+
+    OV_ASSERT(conn);
+
+    ov_websocket_parser_state state = OV_WEBSOCKET_PARSER_ERROR;
+
+    bool all_done = false;
+    bool result = false;
+
+    while (!all_done) {
+
+        if (!conn->io_data.in.buffer) {
+            conn->io_data.in.buffer = ov_buffer_create(2048);
+            goto done;
+        }
+
+        ov_websocket_frame *msg = ov_websocket_frame_pop(
+            &conn->io_data.in.buffer, &self->config.frame, &state);
+
+        switch (state) {
+
+        case OV_WEBSOCKET_PARSER_SUCCESS:
+
+            OV_ASSERT(msg);
+            result = process_websocket(conn, msg);
+            break;
+
+        case OV_WEBSOCKET_PARSER_PROGRESS:
+
+            if (msg)
+                msg = ov_websocket_frame_free(msg);
+            goto done;
+
+        default:
+            goto error;
+        }
+
+        if (!result)
+            goto error;
+    }
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_https_io(ov_io *self, Connection *conn, 
+    const uint8_t *buffer, size_t size){
+
+    if (!self || !conn || !buffer) goto error;
+
+    if (0 == conn->io_data.in.buffer){
+        conn->io_data.in.buffer = ov_buffer_create(size);
+    }
+
+    ov_buffer_push(conn->io_data.in.buffer, (uint8_t*)buffer, size);
+
+    bool result = false;
+
+    switch(conn->type){
+
+        case OV_IO_WEB_CONNECTION:
+            result = process_https_input(self, conn);
+            break;
+        case OV_IO_WEBSOCKET_CONNECTION:
+            result = process_websocket_input(self, conn);
+            break;
+        default:
+            goto error;
+    }
+
+    if (!result) goto error;
+    return result;
+
+error:
+    if (self && conn)
+        ov_dict_del(self->connections, (void*)(intptr_t)conn->socket);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool io_stream_https(int socket, uint8_t events, void *data) {
+
+    char errorstring[OV_SSL_ERROR_STRING_BUFFER_SIZE] = {0};
+    int errorcode = -1, n = 0;
+    Connection *conn = 0;
+
+    uint8_t buffer[OV_SSL_MAX_BUFFER] = {0};
+
+    ov_io *self = ov_io_cast(data);
+    if (!self)
+        goto error;
+
+    conn =
+        (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    if (!conn)
+        goto error;
+
+    conn->last_update_usec = ov_time_get_current_time_usecs();
+
+    if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+        ov_dict_del(self->connections, (void *)(intptr_t)socket);
+        goto done;
+    }
+
+    if (!conn->tls.handshaked)
+        return tls_perform_handshake(self, conn);
+
+    if (events & OV_EVENT_IO_OUT)
+        return io_stream_ssl_send(self, conn);
+
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
+
+    ssize_t bytes = SSL_read(conn->tls.ssl, buffer, OV_SSL_MAX_BUFFER);
+
+    if (bytes > 0) {
+
+        return process_https_io(self, conn, buffer, bytes);
+
+    } else if (bytes == 0) {
+
+        goto error;
+
+    } else {
+
+        n = SSL_get_error(conn->tls.ssl, bytes);
+
+        switch (n) {
+        case SSL_ERROR_NONE:
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_WRITE:
+        case SSL_ERROR_WANT_CONNECT:
+        case SSL_ERROR_WANT_ACCEPT:
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            break;
+
+        case SSL_ERROR_ZERO_RETURN:
+            // connection close
+            goto error;
+            break;
+
+        case SSL_ERROR_SYSCALL:
+
+            ov_log_error("SSL_ERROR_SYSCALL"
+                         "%d | %s",
+                         errno, strerror(errno));
+
+            goto error;
+            break;
+
+        case SSL_ERROR_SSL:
+
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
+            ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
+                         conn->socket);
+            goto send_no_shutdown;
+            break;
+
+        default:
+            goto error;
+            break;
+        }
+    }
+
+    /* Try to read again */
+done:
+    return true;
+
+send_no_shutdown:
+
+    if (conn->tls.ssl) {
+        SSL_free(conn->tls.ssl);
+        conn->tls.ssl = NULL;
+    }
+
+error:
+
+    if (self)
+        ov_dict_del(self->connections, (void *)(intptr_t)socket);
+
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool accept_https(int socket, uint8_t events, void *data) {
+
+    SSL *ssl = NULL;
+
+    ov_io *self = ov_io_cast(data);
+    if (!self)
+        goto error;
+
+    Connection *listener_conn =
+        (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
+
+    if (!listener_conn)
+        goto error;
+
+    if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+        close_listener(self, socket);
+        goto done;
+    }
+
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
+
+    Connection *conn =
+        accept_stream_base(self, listener_conn, socket, io_stream_https);
+    if (!conn)
+        goto error;
+
+    conn->type = OV_IO_WEB_CONNECTION;
+    conn->https = listener_conn->https;
+
+    if (listener_conn->tls.ctx) {
+
+        ssl = SSL_new(listener_conn->tls.ctx);
+
+    } else {
+
+        int id = 0;
+        if (-1 != self->domain.default_domain)
+            id = self->domain.default_domain;
+
+        ssl = SSL_new(self->domain.array[id].context.tls);
+    }
+
+    if (!ssl)
+        goto unroll;
+
+    if (1 != SSL_set_fd(ssl, conn->socket))
+        goto unroll;
+
+    SSL_set_accept_state(ssl);
+
+    conn->tls.handshaked = false;
+    conn->tls.ssl = ssl;
+
+done:
+    return true;
+
+unroll:
+    ov_dict_del(self->connections, (void *)(intptr_t)socket);
+
+error:
+    if (ssl)
+        SSL_free(ssl);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+int ov_io_open_https(ov_io *self, ov_io_https_config config){
+
+    if (!self) goto error;
+
+    if (0 == self->domain.size){
+        ov_log_error("Cannot open HTTPs port without domains.");
+        goto error;
+    }
+
+    if (0 == config.socket.host[0])
+        goto error;
+
+    config.socket.type = TLS;
+
+    bool (*accept_handler)(int socket, uint8_t events, void *data) = accept_https;
+
+    int listener = ov_socket_create(config.socket, false, NULL);
+    if (!ov_socket_ensure_nonblocking(listener))
+        goto error;
+
+    Connection *conn = calloc(1, sizeof(Connection));
+    if (!conn)
+        goto error;
+
+    if (!ov_dict_set(self->connections, (void *)(intptr_t)listener, conn,
+                     NULL)) {
+        conn = ov_data_pointer_free(conn);
+        goto error;
+    }
+
+    conn->type = OV_IO_LISTENER;
+    conn->socket = listener;
+    conn->https = config;
+    conn->io = self;
+    conn->created_usec = ov_time_get_current_time_usecs();
+    conn->last_update_usec = ov_time_get_current_time_usecs();
+
+    if (!open_listener_ctx(self, conn))
+        goto error;
+
+    if (!ov_event_loop_set(self->config.loop, listener,
+                           OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
+                           self, accept_handler))
+        goto error;
+
+    ov_log_debug("created HTTPS listener %s:%i", config.socket.host,
+                 config.socket.port);
+
+    return listener;
+
+error:
+    return -1;
+}
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      URI FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+bool ov_io_enable_websocket_events(ov_io *self,
+                                       const char *domain,
+                                       const char *uri,
+                                       void *userdata,
+                                       void(*callback)(
+                                            void *userdata,
+                                            int socket,
+                                            ov_json_value *msg)){
+
+    Callback *cb = NULL;
+    char *key = NULL;
+
+    if (!self || !domain || !uri || !userdata || !callback) goto error;
+
+    ov_domain *dom = ov_io_get_domain(self, domain);
+    if (!dom) goto error;
+
+    ov_dict_config d_config = ov_dict_string_key_config(255);
+    d_config.value.data_function.free = ov_data_pointer_free;
+
+    if (0 == dom->event_handler.uri)
+        dom->event_handler.uri = ov_dict_create(d_config);
+
+    key = ov_string_dup(uri);
+    cb = calloc(1, sizeof(Callback));
+
+    if (!key || !cb) goto error;
+
+    if (!ov_dict_set(dom->event_handler.uri, key, cb, NULL)) goto error;
+
+    cb->callback = callback;
+    cb->userdata = userdata;
+
+    return true;
+error:
+    key = ov_data_pointer_free(key);
+    cb = ov_data_pointer_free(cb);
+    return false;
 }
