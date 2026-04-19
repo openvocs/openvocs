@@ -1579,8 +1579,10 @@ static bool get_proxy(const void *key, void *val, void *data) {
     Proxy **set = (Proxy **)data;
     Proxy *act = *set;
 
-    if (!act)
+    if (!act){
         *set = current;
+        return true;
+    }
 
     if (act->load > current->load)
         *set = current;
