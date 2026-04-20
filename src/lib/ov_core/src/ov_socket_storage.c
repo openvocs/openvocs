@@ -30,6 +30,7 @@
 #include "../include/ov_socket_storage.h"
 
 #include <ov_base/ov_dict.h>
+#include <ov_base/ov_convert.h>
 
 struct ov_socket_storage {
 
@@ -95,4 +96,59 @@ bool ov_socket_storage_drop(ov_socket_storage *self, int socket){
 
     if (!self) return false;
     return ov_dict_del(self->sockets, (void*)(intptr_t) socket);
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_storage_for_each(ov_socket_storage *self, void *userdata, 
+        bool (*function)(const void *key, void *val, void *data)){
+
+    if (!self) return false;
+
+    return ov_dict_for_each(self->sockets, userdata, function);
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool add_data_to_out(const void *key, void *val, void *data) {
+
+    char *k = NULL;
+    size_t l = 0;
+
+    if (!key)
+        return true;
+
+    ov_json_value *out = ov_json_value_cast(data);
+    ov_json_value *self = ov_json_value_cast(val);
+
+    ov_json_value *copy = NULL;
+    if (!ov_json_value_copy((void **)&copy, self))
+        goto error;
+
+    intptr_t p = (intptr_t)key;
+
+    if (!ov_convert_int64_to_string((int64_t)p, &k, &l))
+        goto error;
+    if (!ov_json_object_set(out, k, copy))
+        goto error;
+
+    return true;
+error:
+    copy = ov_json_value_free(copy);
+    k = ov_data_pointer_free(k);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_storage_for_each_set_data(ov_socket_storage *self,
+                                      ov_json_value *out) {
+
+    if (!self)
+        goto error;
+
+    bool result = ov_dict_for_each(self->sockets, out, add_data_to_out);
+    return result;
+error:
+    return false;
 }

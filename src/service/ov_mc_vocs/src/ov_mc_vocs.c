@@ -48,23 +48,6 @@
     OPENVOCS_ROOT                                                              \
     "/src/service/ov_mc_vocs/config/default_config.json"
 
-/*----------------------------------------------------------------------------*/
-
-static bool env_close_socket(void *userdata, int socket) {
-
-    ov_webserver *srv = (ov_webserver*)(userdata);
-    return ov_webserver_close(srv, socket);
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool env_send_socket(void *userdata, int socket,
-                            const ov_json_value *msg) {
-
-    ov_webserver *srv = (ov_webserver*)(userdata);
-    return ov_webserver_send_json(srv, socket, msg);
-}
-
 /*---------------------------------------------------------------------------*/
 
 int main(int argc, char **argv) {
@@ -72,7 +55,6 @@ int main(int argc, char **argv) {
     int retval = EXIT_FAILURE;
 
     ov_event_loop *loop = NULL;
-    ov_webserver *server = NULL;
     ov_json_value *json_config = NULL;
     ov_vocs_db *db = NULL;
     ov_vocs_db_persistance *db_persistance = NULL;
@@ -133,26 +115,6 @@ int main(int argc, char **argv) {
     if (!io)
         goto error;
 
-    ov_webserver_config webserver_config = {0};
-    webserver_config = ov_webserver_config_from_json(json_config);
-    webserver_config.loop = loop;
-    webserver_config.io = io;
-
-    server = ov_webserver_create(webserver_config);
-    if (!server) {
-        ov_log_error("Failed to create webserver");
-        goto error;
-    }
-
-    if (!ov_webserver_enable_domains(server, json_config))
-        goto error;
-    
-    /*  Create DB relevant items
-     *
-     *  (1) DB itself
-     *  (2) DB persistance layer
-     *  (3) DB service layer
-     */
     trigger = ov_event_trigger_create((ov_event_trigger_config){0});
     if (!trigger)
         goto error;
@@ -185,33 +147,31 @@ int main(int argc, char **argv) {
     if (!ov_vocs_db_set_persistance(db, db_persistance))
         goto error;
 
-    /* Create the vocs core */
-
     ov_vocs_config core_config = ov_vocs_config_from_json(json_config);
     core_config.loop = loop;
     core_config.db = db;
     core_config.persistance = db_persistance;
     core_config.io = io;
-    core_config.env.userdata = server;
-    core_config.env.close = env_close_socket;
-    core_config.env.send = env_send_socket;
     core_config.trigger = trigger;
 
     vocs = ov_vocs_create(core_config);
     if (!vocs)
         goto error;
 
-    /* Enable uri domain/api for VOCS operation */
+    ov_io_https_config https_config = ov_io_https_config_from_json(json_config);
+    https_config.callbacks.userdata = vocs;
+    https_config.callbacks.close = ov_vocs_get_close_callback(vocs);
 
-    if (!ov_webserver_enable_event_callback(
-        server, 
-        domain,
-        "/api", 
+    int webserver = ov_io_open_https(io, https_config);
+    if (-1 == webserver){
+        ov_log_error("Failed to create Webserver.");
+        goto error;
+    }
+
+    if (!ov_vocs_enable_websocket_events(
         vocs, 
-        ov_vocs_get_io_callback(vocs))) goto error;
-
-    if (!ov_webserver_register_close(server, vocs,
-        ov_vocs_get_close_callback(vocs))) goto error;
+        domain,
+        "/api")) goto error;
 
     /*  Run event loop */
     loop->run(loop, OV_RUN_MAX);
@@ -224,7 +184,6 @@ error:
     vocs = ov_vocs_free(vocs);
     db_persistance = ov_vocs_db_persistance_free(db_persistance);
     db = ov_vocs_db_free(db);
-    server = ov_webserver_free(server);
     loop = ov_event_loop_free(loop);
     trigger = ov_event_trigger_free(trigger);
     io = ov_io_free(io);

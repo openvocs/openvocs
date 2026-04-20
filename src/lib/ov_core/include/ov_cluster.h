@@ -64,6 +64,6 @@ ov_cluster *ov_cluster_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_cluster_send(ov_cluster *self, ov_json_value *msg);
+bool ov_cluster_send(ov_cluster *self, const ov_json_value *msg);
 
 #endif /* ov_cluster_h */

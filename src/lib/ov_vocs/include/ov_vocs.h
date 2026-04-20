@@ -95,6 +95,7 @@ typedef struct {
     struct {
 
         ov_socket_configuration cluster;
+        ov_socket_configuration events;
 
     } socket;
 
@@ -118,6 +119,12 @@ typedef struct {
 
     } sessions;
 
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
+
 } ov_vocs_config;
 
 /*
@@ -138,10 +145,11 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
-void *ov_vocs_get_io_callback(ov_vocs *vocs);
+void *ov_vocs_get_close_callback(ov_vocs *vocs);
 
 /*----------------------------------------------------------------------------*/
 
-void *ov_vocs_get_close_callback(ov_vocs *vocs);
+bool ov_vocs_enable_websocket_events(ov_vocs *self, 
+    const char *domain, const char *uri);
 
 #endif /* ov_vocs_h */

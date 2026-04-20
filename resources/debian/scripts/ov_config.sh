@@ -323,6 +323,24 @@ generate_config_ov_vocs() {
            \"type\":\"UDP\"
         },
 
+        \"events\":
+        {
+           \"host\":\"127.0.0.1\",
+           \"port\":60000,
+           \"type\":\"TCP\"
+        },
+
+
+        \"sessions\":
+        {
+           \"path\":\"/tmp/openvocs/sessions\"
+        },
+
+        \"password\":
+        {
+           \"path\":\"/etc/openvocs/ov_mc_vocs/password\"
+        },
+
        \"sip\" :
        {
          \"timeout\":
@@ -359,18 +377,6 @@ generate_config_ov_vocs() {
            {
              \"host\" : \"$ICE_PROXY_HOST\",
              \"port\" : $ICE_PROXY_PORT,
-             \"type\" : \"TCP\"
-           }
-         }
-       },
-       \"events\" :
-       {
-         \"socket\" :
-         {
-           \"manager\":
-           {
-             \"host\" : \"$ICE_INTERNAL_HOST\",
-             \"port\" : $EVENTS_PORT,
              \"type\" : \"TCP\"
            }
          }
@@ -472,11 +478,6 @@ generate_config_ov_vocs() {
      
      \"webserver\":
      {
-       \"name\":\"VOCS GATEWAY\",
-       \"domains\":
-       {
-         \"$IP\" : \"/srv/openvocs/HTML\"
-       },
        \"socket\":
        {
            \"host\":\"$IP\",

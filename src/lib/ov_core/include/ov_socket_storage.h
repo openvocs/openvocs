@@ -50,5 +50,15 @@ ov_socket_storage *ov_socket_storage_free(ov_socket_storage *self);
 ov_json_value *ov_socket_storage_get(ov_socket_storage *self, int socket);
 bool ov_socket_storage_drop(ov_socket_storage *self, int socket);
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_storage_for_each(ov_socket_storage *self, void *userdata, 
+        bool (*function)(const void *key, void *val, void *data));
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_storage_for_each_set_data(ov_socket_storage *self, 
+        ov_json_value *data);
+
 
 #endif /* ov_socket_storage_h */

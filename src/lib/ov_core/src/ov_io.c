@@ -179,6 +179,12 @@ static void *connection_free(void *self) {
         ov_event_loop_timer_unset(conn->io->config.loop, conn->timer_id, NULL);
     }
 
+    if (conn->https.callbacks.close) {
+
+        conn->https.callbacks.close(conn->https.callbacks.userdata,
+                                     conn->socket);
+    }
+
     if (conn->config.callbacks.close) {
 
         conn->config.callbacks.close(conn->config.callbacks.userdata,
@@ -2314,6 +2320,22 @@ ov_io_config ov_io_config_from_json(const ov_json_value *input) {
 
 /*----------------------------------------------------------------------------*/
 
+ov_io_https_config ov_io_https_config_from_json(const ov_json_value *input){
+
+    ov_io_https_config config = {0};
+
+    const ov_json_value *conf = ov_json_object_get(input, "webserver");
+    if (!conf)
+        conf = input;
+
+    config.socket = ov_socket_configuration_from_json(
+        (ov_json_get(conf, "/socket")), (ov_socket_configuration){0});
+
+    return config;
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_io_close(ov_io *self, int socket) {
 
     if (!self)
@@ -3684,3 +3706,4 @@ error:
     cb = ov_data_pointer_free(cb);
     return false;
 }
+

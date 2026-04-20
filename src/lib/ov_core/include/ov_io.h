@@ -201,6 +201,10 @@ struct ov_io_https_config {
             const char *path,
             const ov_http_message *msg);
 
+        void (*close)(
+            void *userdata,
+            int socket);
+
     } callbacks;
 
 };
@@ -208,6 +212,10 @@ struct ov_io_https_config {
 /*----------------------------------------------------------------------------*/
 
 int ov_io_open_https(ov_io *self, ov_io_https_config config);
+
+/*----------------------------------------------------------------------------*/
+
+ov_io_https_config ov_io_https_config_from_json(const ov_json_value *input);
 
 /*
  *      ------------------------------------------------------------------------
