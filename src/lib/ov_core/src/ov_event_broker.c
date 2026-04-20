@@ -164,6 +164,8 @@ static void broker_login(void *userdata, const char *name, int socket,
         goto response;
     }
 
+    if (buffer[size - 1] == '\n') buffer[size - 1] = 0;
+
     if (0 != ov_string_compare(password, buffer)){
 
         out = ov_event_api_create_error_response(
@@ -336,6 +338,52 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static void broker_functions(void *userdata, const char *name, int socket, 
+    const ov_json_value *msg){
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    ov_event_broker *self = ov_event_broker_cast(userdata);
+    if (!self || !name || !msg) goto error;
+
+    ov_json_value *data = ov_socket_storage_get(self->connections, socket);
+    
+    if (!ov_json_is_true(ov_json_object_get(data, "auth"))) {
+
+        out = ov_event_api_create_error_response(
+                msg, 
+                OV_ERROR_CODE_AUTH,
+                OV_ERROR_DESC_AUTH);
+
+        goto response;
+    }
+
+    val = ov_event_broker_get_functions(self);
+    if (!val) goto error;
+
+    out = ov_event_api_create_success_response(msg);
+    ov_json_value *par = ov_event_api_set_parameter(out);
+    ov_json_object_set(par, "functions", val);
+
+response:
+
+    char *str = ov_json_value_to_string(out);
+    if (!str) goto error;
+
+    ov_io_send(self->config.io, socket, (ov_memory_pointer){
+        .start = (uint8_t*) str,
+        .length = strlen(str)
+    });
+
+    str = ov_data_pointer_free(str);
+error:
+    out = ov_json_value_free(out);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool register_events(ov_event_broker *self){
 
     if (!self) goto error;
@@ -366,6 +414,13 @@ static bool register_events(ov_event_broker *self){
         "subscribe", 
         self, 
         broker_subscribe))
+        goto error;
+
+    if (!ov_event_broker_register(
+        self, 
+        "functions", 
+        self, 
+        broker_functions))
         goto error;
 
     return true;
@@ -695,4 +750,36 @@ int ov_event_broker_open_listener(ov_event_broker *self,
     return ov_io_open_listener(self->config.io, config);
 error:
     return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool add_event_name(const void *key, void *val, void *data){
+
+    if (!key) return true;
+    UNUSED(val);
+
+    ov_json_value *out = ov_json_value_cast(data);
+
+    ov_json_object_set(out, (const char*) key, ov_json_null());
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_event_broker_get_functions(const ov_event_broker *self){
+
+    ov_json_value *out = NULL;
+
+    if (!self) goto error;
+
+    out = ov_json_object();
+
+    ov_dict_for_each(self->events, out, add_event_name);
+
+    return out;
+
+error:
+    ov_json_value_free(out);
+    return NULL;
 }

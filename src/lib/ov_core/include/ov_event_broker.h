@@ -91,6 +91,10 @@ bool ov_event_broker_enable_websocket_events(ov_event_broker *self,
                                        const char *domain,
                                        const char *uri);
 
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_event_broker_get_functions(const ov_event_broker *self);
+
 /*
  *      ------------------------------------------------------------------------
  *
