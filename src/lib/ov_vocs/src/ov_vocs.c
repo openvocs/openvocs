@@ -629,7 +629,6 @@ static bool drop_connection(ov_vocs *vocs, int socket, bool frontend,
 
     ov_socket_storage_drop(vocs->connections, socket);
 
-    vocs->config.env.close(vocs->config.env.userdata, socket);
     return true;
 error:
     return false;
@@ -1323,7 +1322,6 @@ error:
 }
 
 
-
 /*
  *      ------------------------------------------------------------------------
  *
@@ -1492,8 +1490,6 @@ static void cb_frontend_session_completed(void *userdata,
     data = ov_socket_storage_get(vocs->connections, socket);
 
     if (success && ov_json_is_true(ov_json_get(data, "/" OV_KEY_ICE))) {
-
-        data = ov_json_value_free(data);
         return;
     }
 
@@ -2940,7 +2936,6 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
             config.trigger, "VOCS",
             (ov_event_trigger_data){.userdata = vocs,
                                     .process = process_trigger});
-
 
     ov_event_broker_config broker_config = (ov_event_broker_config){
         .loop = config.loop,

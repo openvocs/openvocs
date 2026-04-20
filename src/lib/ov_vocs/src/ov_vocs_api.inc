@@ -1354,8 +1354,6 @@ static void client_authorize(void *userdata, const char *name,
     } else {
         ov_log_error("VOCS AUTHORIZE failed at %i | %s", socket, user);
     }
-
-    /* close socket if authorization messaging failed */
 error:
     ov_json_value_free(out);
     return ;

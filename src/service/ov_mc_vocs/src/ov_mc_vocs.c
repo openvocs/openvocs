@@ -180,12 +180,13 @@ int main(int argc, char **argv) {
 
 error:
 
+    io = ov_io_free(io);
     json_config = ov_json_value_free(json_config);
     vocs = ov_vocs_free(vocs);
     db_persistance = ov_vocs_db_persistance_free(db_persistance);
     db = ov_vocs_db_free(db);
     loop = ov_event_loop_free(loop);
     trigger = ov_event_trigger_free(trigger);
-    io = ov_io_free(io);
+  
     return retval;
 }

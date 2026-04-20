@@ -492,6 +492,8 @@ static bool check_connection_timeout(const void *key, void *val, void *data) {
         return true;
     Connection *conn = (Connection *)val;
     struct container1 *container = (struct container1 *)data;
+
+    if (conn->type == OV_IO_LISTENER) return true;
     
     if (conn->created_usec == conn->last_update_usec){
 
@@ -574,6 +576,8 @@ static bool init_config(ov_io_config *config) {
 
     if (0 == config->name[0])
         strncat(config->name, "io", PATH_MAX);
+
+    config->http_message = ov_http_message_config_init(config->http_message);
 
     return true;
 error:
@@ -1315,6 +1319,7 @@ static Connection *accept_stream_base(
     conn->socket = nfd;
     conn->listener = socket;
     conn->config = listener->config;
+    conn->https = listener->https;
     conn->io = self;
     conn->created_usec = ov_time_get_current_time_usecs();
     conn->last_update_usec = ov_time_get_current_time_usecs();
@@ -2329,7 +2334,7 @@ ov_io_https_config ov_io_https_config_from_json(const ov_json_value *input){
         conf = input;
 
     config.socket = ov_socket_configuration_from_json(
-        (ov_json_get(conf, "/socket")), (ov_socket_configuration){0});
+        ov_json_get(conf, "/socket"), (ov_socket_configuration){0});
 
     return config;
 }
