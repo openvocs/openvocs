@@ -268,7 +268,7 @@ static void admin_get_all_loops(void *userdata, const char *name,
 
     out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
-    if (!ov_json_object_set(res, OV_KEY_RESULT, val)) goto error;
+    if (!ov_json_object_set(res, "loops", val)) goto error;
 
     val = NULL;
 
@@ -621,7 +621,7 @@ static bool enable_api_admin(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "get_mixer_state",
+        "admin_get_mixer_state",
         vocs,
         admin_get_mixer_state)) goto error;
 
@@ -633,19 +633,19 @@ static bool enable_api_admin(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "get_recorded_loops",
+        "client_get_recorded_loops",
         vocs,
         admin_get_recorded_loops)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "get_all_loops",
+        "db_get_all_loops",
         vocs,
         admin_get_all_loops)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "get_clients",
+        "db_get_clients",
         vocs,
         admin_get_clients)) goto error;
 
@@ -1422,7 +1422,7 @@ static void client_get(void *userdata, const char *name,
         val = ov_vocs_db_get_entity_domain(
             vocs->config.db, OV_VOCS_DB_USER, user);
 
-        if (val) ov_json_object_set(result_obj, OV_KEY_DOMAIN, val);
+        if (val) ov_json_object_set(result_obj, "origin", val);
 
         val = NULL;
 
@@ -1438,7 +1438,7 @@ static void client_get(void *userdata, const char *name,
 
     out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
-    if (!ov_json_object_set(res, OV_KEY_RESULT, result_obj)) goto error;
+    if (!ov_json_object_set(res, "data", result_obj)) goto error;
 
     val = ov_json_string(type);
     if (!ov_json_object_set(res, OV_KEY_TYPE, val)) goto error;
@@ -1649,7 +1649,6 @@ static void client_event_sip_status(void *userdata, const char *name,
         int socket, const ov_json_value *input) {
 
     ov_json_value *val = NULL;
-    ov_json_value *out = NULL;
     ov_json_value *data = NULL;
 
     UNUSED(name);
@@ -1670,20 +1669,15 @@ static void client_event_sip_status(void *userdata, const char *name,
 
     bool status = ov_mc_backend_sip_get_connect_status(vocs->sip);
 
-    out = ov_json_object();
-
     if (status) {
         val = ov_json_true();
     } else {
         val = ov_json_false();
     }
 
-    ov_json_object_set(out, OV_KEY_CONNECTED, val);
-
-    send_success_response(vocs, input, socket, &out);
+    send_success_response(vocs, input, socket, &val);
 
 error:
-    ov_json_value_free(out);
     return;
 }
 
@@ -2642,6 +2636,10 @@ static void client_event_register(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
+    const char *uuid = ov_json_string_get(ov_json_get(input, "/client_id"));
+
+    ov_client_registry_register(vocs->client_registry, uuid, socket);
+
     ov_json_value *data = ov_socket_storage_get(vocs->connections, socket);
     if (!data) data = ov_json_object();
 
@@ -2650,6 +2648,9 @@ static void client_event_register(void *userdata, const char *name,
 
     ov_json_value *sock = ov_socket_data_to_json(&remote);
     ov_json_object_set(data, "remote", sock);
+    
+    sock = ov_socket_data_to_json(&remote);
+    ov_client_registry_set_data(vocs->client_registry, uuid, sock);
 
     if (!ov_broadcast_registry_set(vocs->broadcasts,
                                    OV_BROADCAST_KEY_SYSTEM_BROADCAST,
@@ -2741,43 +2742,43 @@ static bool enable_api_client(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_CALL,
+        "client_call",
         vocs,
         client_calling)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_HANGUP,
+        "client_hangup",
         vocs,
         client_hangup)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_PERMIT_CALL,
+        "client_permit_call",
         vocs,
         client_permit_call)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_REVOKE_CALL,
+        "client_revoke_call",
         vocs,
         client_revoke_call)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_LIST_CALLS,
+        "client_list_calls",
         vocs,
         client_list_calls)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_LIST_CALL_PERMISSIONS,
+        "client_list_call_permissions",
         vocs,
         client_list_call_permissions)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_LIST_SIP_STATUS,
+        "client_list_sip_status",
         vocs,
         client_list_sip_status)) goto error;
 
@@ -2807,13 +2808,13 @@ static bool enable_api_client(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_GET_RECORDING,
+        "client_get_recording",
         vocs,
         client_event_get_recording)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        OV_KEY_SIP,
+        "is_sip_enabled",
         vocs,
         client_event_sip_status)) goto error;
 
@@ -3183,8 +3184,7 @@ static void cb_event_check_id_exists(void *userdata, const char *name,
     }
 
     out = ov_event_api_create_success_response(input);
-    ov_json_value *res = ov_event_api_get_response(out);
-    ov_json_object_set(res, OV_KEY_RESULT, val);
+    ov_json_object_set(out, "response", val);
 
 response:
 
@@ -4701,7 +4701,7 @@ static bool enable_api_db(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "get_highest_port",
+        "db_get_highest_port",
         vocs,
         cb_event_get_highest_port)) goto error;
 

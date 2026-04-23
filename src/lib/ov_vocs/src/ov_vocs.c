@@ -82,6 +82,8 @@ struct ov_vocs {
     ov_cluster *cluster;
 
     int broker_socket;
+
+    ov_client_registry *client_registry;
 };
 
 /*
@@ -647,6 +649,8 @@ static void cb_socket_close(void *userdata, int socket) {
     if (data) {
         drop_connection(vocs, socket, true, true);
     }
+
+    ov_client_registry_unregister(vocs->client_registry, socket);
 
 error:
     return;
@@ -2865,6 +2869,8 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
     if (!vocs->connections)
         goto error;
 
+    vocs->client_registry = ov_client_registry_create();
+
     vocs->async = ov_event_async_store_create(
         (ov_event_async_store_config){.loop = config.loop});
 
@@ -2940,6 +2946,8 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
     ov_event_broker_config broker_config = (ov_event_broker_config){
         .loop = config.loop,
         .io = config.io,
+        .registry = vocs->client_registry,
+        .connections = vocs->connections
     };
 
     if (0 != vocs->config.password.path[0])
@@ -3005,6 +3013,7 @@ void *ov_vocs_free(void *self) {
     if (!vocs)
         return self;
 
+    vocs->client_registry = ov_client_registry_free(vocs->client_registry);
     vocs->backend = ov_mc_backend_free(vocs->backend);
     vocs->frontend = ov_mc_frontend_free(vocs->frontend);
     vocs->sip = ov_mc_backend_sip_free(vocs->sip);
