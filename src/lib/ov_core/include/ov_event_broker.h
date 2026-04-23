@@ -31,6 +31,8 @@
 #define ov_event_broker_h
 
 #include "ov_io.h"
+#include "ov_client_registry.h"
+#include "ov_socket_storage.h"
 
 #include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_json.h>
@@ -47,6 +49,8 @@ typedef struct ov_event_broker_config {
 
     ov_event_loop *loop;
     ov_io *io;
+    ov_client_registry *registry;
+    ov_socket_storage *connections;
 
     char password_path[PATH_MAX];
 

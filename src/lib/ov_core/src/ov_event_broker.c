@@ -48,7 +48,6 @@ struct ov_event_broker {
     ov_dict *events;
     ov_json_io_buffer *json_io_buffer;
 
-    ov_dict *clients;
     ov_socket_storage *connections;
 };
 
@@ -107,24 +106,23 @@ static void *event_free(void *self){
 
 /*----------------------------------------------------------------------------*/
 
-static void client_register(void *userdata, const char *name, int socket, 
-    const ov_json_value *msg){
+static bool check_user_login(ov_event_broker *self, int socket){
 
-    ov_event_broker *self = ov_event_broker_cast(userdata);
-    if (!self || !name || !msg) goto error;
+    ov_json_value *data = ov_socket_storage_get(self->config.connections, socket);
+    const char *user = ov_json_string_get(ov_json_get(data, "/user"));
+   
+    if (!user){
 
-    const char *id = ov_json_string_get(ov_json_get(msg, "/client"));
-    if (!id) goto error;
+        data = ov_socket_storage_get(self->connections, socket);
+    
+        if (!ov_json_is_true(ov_json_object_get(data, "auth"))) {
+            goto error;
+        }
+    }
 
-    char *client = ov_string_dup(name);
-    if (!ov_dict_set(self->clients, client, (void*)(intptr_t)socket, NULL)){
-        client = ov_data_pointer_free(client);
-        goto error;
-    } 
-
-    ov_log_info("registered client %s at %i", id, socket);
+    return true;
 error:
-    return;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -224,9 +222,7 @@ static void broker_publish(void *userdata, const char *name, int socket,
 
     }
 
-    ov_json_value *data = ov_socket_storage_get(self->connections, socket);
-    
-    if (!ov_json_is_true(ov_json_object_get(data, "auth"))) {
+    if (!check_user_login(self, socket)){
 
         out = ov_event_api_create_error_response(
                 msg, 
@@ -291,9 +287,7 @@ static void broker_subscribe(void *userdata, const char *name, int socket,
 
     }
 
-    ov_json_value *data = ov_socket_storage_get(self->connections, socket);
-    
-    if (!ov_json_is_true(ov_json_object_get(data, "auth"))) {
+    if (!check_user_login(self, socket)){
 
         out = ov_event_api_create_error_response(
                 msg, 
@@ -347,14 +341,12 @@ static void broker_functions(void *userdata, const char *name, int socket,
     ov_event_broker *self = ov_event_broker_cast(userdata);
     if (!self || !name || !msg) goto error;
 
-    ov_json_value *data = ov_socket_storage_get(self->connections, socket);
-    
-    if (!ov_json_is_true(ov_json_object_get(data, "auth"))) {
+    if (!check_user_login(self, socket)){
 
         out = ov_event_api_create_error_response(
-                msg, 
-                OV_ERROR_CODE_AUTH,
-                OV_ERROR_DESC_AUTH);
+                    msg, 
+                    OV_ERROR_CODE_AUTH,
+                    OV_ERROR_DESC_AUTH);
 
         goto response;
     }
@@ -384,16 +376,82 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static void broker_forward(void *userdata, const char *name, int socket, 
+    const ov_json_value *msg){
+
+    ov_json_value *out = NULL;
+
+    ov_event_broker *self = ov_event_broker_cast(userdata);
+    if (!self || !name || !msg) goto error;
+
+    if (!check_user_login(self, socket)){
+
+        out = ov_event_api_create_error_response(
+                    msg, 
+                    OV_ERROR_CODE_AUTH,
+                    OV_ERROR_DESC_AUTH);
+
+        goto response;
+    }
+
+    const char *client_id = ov_json_string_get(ov_json_get(msg, "/client_id"));
+    const ov_json_value *message = ov_json_get(msg, "/message");
+
+    if (!client_id || !message){
+
+        out = ov_event_api_create_error_response(
+                msg, 
+                OV_ERROR_CODE_PARAMETER_ERROR,
+                OV_ERROR_DESC_PARAMETER_ERROR);
+
+        goto response;
+    }
+
+    int client_socket = ov_client_registry_get_socket(self->config.registry, client_id);
+
+    if (-1 == client_socket){
+
+        out = ov_event_api_create_error_response(
+                msg, 
+                OV_ERROR_CODE_PARAMETER_ERROR,
+                "client unknown");
+
+        goto response;
+
+    }
+
+    char *str = ov_json_value_to_string(message);
+    if (!str) goto error;
+
+    ov_io_send(self->config.io, client_socket, (ov_memory_pointer){
+        .start = (uint8_t*) str,
+        .length = strlen(str)
+    });
+
+    str = ov_data_pointer_free(str);
+    out = ov_event_api_create_success_response(msg);
+
+response:
+
+    str = ov_json_value_to_string(out);
+    if (!str) goto error;
+
+    ov_io_send(self->config.io, socket, (ov_memory_pointer){
+        .start = (uint8_t*) str,
+        .length = strlen(str)
+    });
+
+    str = ov_data_pointer_free(str);
+error:
+    out = ov_json_value_free(out);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool register_events(ov_event_broker *self){
 
     if (!self) goto error;
-
-    if (!ov_event_broker_register(
-        self, 
-        "register", 
-        self, 
-        client_register))
-        goto error;
 
     if (!ov_event_broker_register(
         self, 
@@ -414,6 +472,13 @@ static bool register_events(ov_event_broker *self){
         "subscribe", 
         self, 
         broker_subscribe))
+        goto error;
+
+    if (!ov_event_broker_register(
+        self, 
+        "forward", 
+        self, 
+        broker_forward))
         goto error;
 
     if (!ov_event_broker_register(
@@ -489,12 +554,6 @@ ov_event_broker *ov_event_broker_create(ov_event_broker_config config){
     self->events = ov_dict_create(d_config);
     if (!self->events) goto error;
 
-    d_config = ov_dict_string_key_config(255);
-    d_config.value.data_function.free = NULL;
-
-    self->clients = ov_dict_create(d_config);
-    if (!self->clients) goto error;
-
     self->json_io_buffer = ov_json_io_buffer_create((ov_json_io_buffer_config){
         .debug = false,
         .objects_only = false,
@@ -524,7 +583,6 @@ ov_event_broker *ov_event_broker_free(ov_event_broker *self){
 
     self->json_io_buffer = ov_json_io_buffer_free(self->json_io_buffer);
     self->events = ov_dict_free(self->events);
-    self->clients = ov_dict_free(self->clients);
     self->connections = ov_socket_storage_free(self->connections);
     
     self = ov_data_pointer_free(self);

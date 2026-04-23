@@ -195,7 +195,6 @@ int test_ov_event_broker_create(){
     testrun(ov_event_broker_cast(self));
     testrun(self->events);
     testrun(self->json_io_buffer);
-    testrun(self->clients);
     testrun(self->connections);
 
     testrun(NULL == ov_event_broker_free(self));
