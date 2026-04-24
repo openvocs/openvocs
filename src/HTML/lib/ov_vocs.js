@@ -36,96 +36,31 @@ import * as ov_Websockets from "./ov_websocket_list.js";
 var RETRIES_ON_TEMP_ERROR = 5;
 
 export var EVENT = {
-    KEYSET_LAYOUT: "get_keyset_layout",
-    UPDATE_USER_SETTINGS: "set_user_data",
-    USER_SETTINGS: "get_user_data",
+    MEDIA: "client_media",
+    CANDIDATE: "client_candidate",
+    END_OF_CANDIDATES: "client_end_of_candidates",
+    MEDIA_READY: "client_media_ready",
 
-    MEDIA: "media",
-    CANDIDATE: "candidate",
-    END_OF_CANDIDATES: "end_of_candidates",
-    MEDIA_READY: "media_ready",
-
-    ROLE_LOOPS: "role_loops",
-    SWITCH_LOOP_STATE: "switch_loop_state",
-    SWITCH_LOOP_VOLUME: "switch_loop_volume",
-    TALKING: "talking",
-    VAD: "vad"
+    SWITCH_LOOP_STATE: "client_switch_loop_state",
+    SWITCH_LOOP_VOLUME: "client_switch_loop_volume",
+    TALKING: "client_talking",
+    VAD: "client_vad"
 };
 
-export async function collect_keyset_layout(layout_id, websocket) {
-    if (websocket)
-        return await ws_collect_keyset_layout(websocket, layout_id);
-
-    let lead_promise;
-    for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
-            let promise = ws_collect_keyset_layout(ws, layout_id);
-            if (ws === ov_Websockets.current_lead_websocket)
-                lead_promise = promise;
-        }
-    }
-    return await lead_promise;
-}
-
-export async function update_user_settings(settings, websocket) {
-    if (websocket)
-        return await ws_update_user_settings(websocket, settings);
-
-    let lead_promise;
-    for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
-            let promise = ws_update_user_settings(ws, settings);
-            if (ws === ov_Websockets.current_lead_websocket)
-                lead_promise = promise;
-        }
-    }
-    return await lead_promise;
-}
-
 export async function update_user_role_settings(role_settings, websocket) {
-    let parameter = await ws_collect_user_settings(websocket ? websocket : ov_Websockets.current_lead_websocket);
+    let parameter = await ov_DB.collect_user_settings(websocket ? websocket : ov_Websockets.current_lead_websocket);
     if (!parameter)
         return false;
     if (!parameter.roles)
         parameter.roles = {};
     Object.assign(parameter.roles, role_settings); // merge
     if (websocket)
-        return await ws_update_user_settings(websocket, parameter);
+        return await ov_DB.update_user_settings(parameter, websocket);
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
         if (ws.is_ready && ws.authenticated) {
-            let promise = ws_update_user_settings(ws, parameter);
-            if (ws === ov_Websockets.current_lead_websocket)
-                lead_promise = promise;
-        }
-    }
-    return await lead_promise;
-}
-
-export async function collect_user_settings(websocket) {
-    if (websocket)
-        return await ws_collect_user_settings(websocket);
-
-    let lead_promise;
-    for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
-            let promise = ws_collect_user_settings(ws);
-            if (ws === ov_Websockets.current_lead_websocket)
-                lead_promise = promise;
-        }
-    }
-    return await lead_promise;
-}
-
-export async function collect_loops(websocket) {
-    if (websocket)
-        return await ws_collect_loops(websocket);
-
-    let lead_promise;
-    for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
-            let promise = ws_collect_loops(ws);
+            let promise = ov_DB.update_user_settings(parameter, ws);
             if (ws === ov_Websockets.current_lead_websocket)
                 lead_promise = promise;
         }
@@ -268,96 +203,6 @@ export async function send_end_of_ice_candidates(websocket) {
         }
     }
     return true;
-}
-
-async function ws_collect_keyset_layout(websocket, layout_id) {
-    let result;
-    if (!layout_id)
-        layout_id = "default";
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "collecting keyset layout...");
-            result = await websocket.send_event(EVENT.KEYSET_LAYOUT, { domain: websocket.user.domain, layout: layout_id });
-            console.log(log_prefix(websocket) + "received settings for layout" + layout_id);
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to collect keyset layout again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "collect keyset layout failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
-    }
-    return result.layout;
-}
-
-async function ws_collect_user_settings(websocket) {
-    let result;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "collecting user settings...");
-            result = await websocket.send_event(EVENT.USER_SETTINGS);
-            console.log(log_prefix(websocket) + "received user settings");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to collect user settings again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "collect user settings failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
-    }
-    return result.data;
-}
-
-async function ws_update_user_settings(websocket, parameter) {
-    let result;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "update user settings...");
-            result = await websocket.send_event(EVENT.UPDATE_USER_SETTINGS, parameter);
-            console.log(log_prefix(websocket) + "updated user settings");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to update user settings again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "update user settings failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
-    }
-    return result;
-}
-
-async function ws_collect_loops(websocket) {
-    let result;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "collecting role loops...");
-            result = await websocket.send_event(EVENT.ROLE_LOOPS);
-            console.log(log_prefix(websocket) + "received loops");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to collect role loops again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "collect role loops failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
-    }
-    return result.loops;
 }
 
 async function ws_switch_loop_state(loop_id, old_state, new_state, audio_activity, websocket) {

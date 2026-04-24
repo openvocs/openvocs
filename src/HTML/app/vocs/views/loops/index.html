@@ -29,12 +29,13 @@
 		import * as ov_Websockets from "/lib/ov_websocket_list.js";
 		import * as Voice_Client from "./js/vocs.js";
 		import * as ov_Auth from "/lib/ov_auth.js";
+		import * as ov_DB from "/lib/ov_db.js";
 
 		document.addEventListener("DOMContentLoaded", async function () {
 			let view_container = document.getElementById("view_container");
 			await ov_Websockets.setup_connections(ov_Websocket);
             await ov_Auth.login("test", "test", ov_Websockets.prime_websocket);
-            await ov_Auth.collect_roles();
+            await ov_DB.collect_roles(ov_Websockets.prime_websocket);
             await ov_Auth.authorize_role("test2");
 
 			Voice_Client.render(view_container);

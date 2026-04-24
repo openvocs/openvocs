@@ -37,20 +37,51 @@ import ov_Project_Map from "./ov_data_structure/ov_project_map.js";
 import ov_Domain_Map from "./ov_data_structure/ov_domain_map.js";
 
 export default class ov_Websocket {
-    // core events
     static EVENT = {
-        REGISTER: "register",
+        EVENTS: "get_events",
+
+        //auth events
         LOGIN: "login",
-        EXTEND_SESSION: "update_login",
+        EXTEND_SESSION: "extend_login_session",
         AUTHORIZE_ROLE: "authorize",
         LOGOUT: "logout",
+        
+        //system events
+        REGISTER: "register",
+        BROADCAST: "broadcast",
+        LDAP_CHECK: "is_ldap_enabled",
+        SIP: "is_sip_enabled",
 
-        GET: "get", //domain, project, user details
-        USER_ROLES: "user_roles",
-        ADMIN_DOMAINS: "admin_domains",
-        ADMIN_PROJECTS: "admin_projects",
+        //DB events
+        CHECK_ID: "db_check_id_exists",
+        VERIFY: "db_verify",
+        
+        CREATE: "db_create", //project, user, role, loop
+        LDAP_IMPORT: "db_ldap_import",
 
-        BROADCAST: "broadcast"
+        UPDATE: "db_update", //project, user, role, loop
+        UPDATE_KEY: "db_update_key",
+        UPDATE_PASSWORD: "db_update_password",
+        
+        DELETE: "db_delete", //project, user, role, loop
+        DELETE_KEY: "db_delete_key",
+        
+        GET: "db_get", //domain, project, user details
+        USER_ROLES: "db_get_user_roles",
+        LOOPS: "db_get_all_loops",
+        ROLE_LOOPS: "db_get_role_loops",
+        ADMIN_DOMAINS: "db_get_admin_domains",
+        ADMIN_PROJECTS: "db_get_admin_projects",
+        HIGHEST_MULTICAST_PORT: "db_get_highest_port",
+        
+        SET_KEYSET_LAYOUT: "db_set_keyset_layout",
+        KEYSET_LAYOUT: "db_get_keyset_layout",
+
+        UPDATE_USER_SETTINGS: "db_set_user_data",
+        USER_SETTINGS: "db_get_user_data",
+
+        PERSIST: "db_save",
+        LOAD_DB_CONTENT: "db_load"
     };
 
     static REQUEST_SCOPE = {
@@ -265,12 +296,12 @@ export default class ov_Websocket {
     //-----------------------------------------------------------------------------
     #handle_websocket_event(event) {
         if (this.#log_incoming_events) {
-            if (event.event === ov_Websocket.EVENT.LOGIN)
-                console.log(this.#log_prefix() + "incoming event: LOGIN (content hidden)");
-            else if (event.event === "ldap_import")
-                console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
-            else
-                console.log(this.#log_prefix() + "incoming event", JSON.stringify(event));
+            // if (event.event === ov_Websocket.EVENT.LOGIN)
+            //     console.log(this.#log_prefix() + "incoming event: LOGIN (content hidden)");
+            // else if (event.event === "ldap_import")
+            //     console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
+            // else
+            console.log(this.#log_prefix() + "incoming event", JSON.stringify(event));
         }
 
         if (!event.hasOwnProperty("event")) {
@@ -329,7 +360,7 @@ export default class ov_Websocket {
                 if (event.event === ov_Websocket.EVENT.LOGIN)
                     console.log(this.#log_prefix() + "outgoing event: LOGIN (content hidden)");
                 else if (event.event === "ldap_import")
-                    console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
+                    console.log(this.#log_prefix() + "outgoing event: LDAP IMPORT (content hidden)");
                 else
                     console.log(this.#log_prefix() + "outgoing event", message);
             }
@@ -417,8 +448,7 @@ export default class ov_Websocket {
             case ov_Websocket.EVENT.LOGIN:
                 if (!error) {
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHENTICATED;
-                    let session = !message.session ? event.session : message.session;
-                    ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, session);
+                    ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, message.session);
                     clearInterval(this.#extend_session_interval_id);
                     this.#extend_session_interval_id = setInterval(async () => {
                         let session = ov_Web_Storage.get_session(APP, this.#url);
@@ -441,7 +471,7 @@ export default class ov_Websocket {
             case ov_Websocket.EVENT.AUTHORIZE_ROLE:
                 if (!error) {
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHORIZED;
-                    this.#user.role = event.response.id;
+                    this.#user.role = message.id;
                     if (this.#user.roles) {
                         let role = this.#user.roles.find(this.#user.role);
                         if (role)
@@ -449,33 +479,29 @@ export default class ov_Websocket {
                     }
                     ov_Web_Storage.add_role_to_session(APP, this.#url, this.#user.role);
                 }
-                message = event.response.id;
                 break;
             case ov_Websocket.EVENT.LOGOUT:
                 this.#ws_state = ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
                 break;
 
             case ov_Websocket.EVENT.GET:
-                if (event.response.type === ov_Websocket.REQUEST_SCOPE.USER) {
-                    this.#user.parse_values(event.response.result);
-                    if (event.response.result.domain) {
-                        this.#user.domain = event.response.result.domain.domain;
-                        if (!this.#user.project)
-                            this.#user.project = event.response.result.domain.project;
-                    }
-                    message = this.#user;
-                } else if (event.response.type === ov_Websocket.REQUEST_SCOPE.PROJECT)
-                    message = event.response.result;
+                if (message.type === ov_Websocket.REQUEST_SCOPE.USER && message.data.id === this.#user.id) {
+                    this.#user.parse_values(message.data);
+                    // if (message.data.domain) {
+                    //     this.#user.domain = message.data.domain.domain;
+                    //     if (!this.#user.project)
+                    //         this.#user.project = message.data.domain.project;
+                    // }
+                }
                 break;
-
             case ov_Websocket.EVENT.ADMIN_DOMAINS:
-                this.#user.domains = ov_Domain_Map.parse(event.response.domains);
+                this.#user.domains = ov_Domain_Map.parse(message.domains);
                 break;
             case ov_Websocket.EVENT.ADMIN_PROJECTS:
-                this.#user.projects = ov_Project_Map.parse(event.response.projects);
+                this.#user.projects = ov_Project_Map.parse(message.projects);
                 break;
             case ov_Websocket.EVENT.USER_ROLES:
-                this.#user.roles = ov_Role_List.parse(event.response.roles);
+                this.#user.roles = ov_Role_List.parse(message.roles);
                 message = this.#user.roles;
                 break;
         }

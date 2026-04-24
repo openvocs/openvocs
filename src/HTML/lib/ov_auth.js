@@ -32,6 +32,7 @@
 import ov_Websocket from "./ov_websocket.js";
 import * as ov_Websockets from "./ov_websocket_list.js";
 import * as ov_Web_Storage from "./ov_utils/ov_web_storage.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 var RETRIES_ON_TEMP_ERROR = 5;
 
@@ -106,25 +107,10 @@ export async function relogin(websocket) {
         result = await ws_login(session.user, session.session, websocket);
     if (result && session.role) {
         if (!websocket.user.roles)
-            result = await collect_roles(websocket);
+            result = await ov_DB.collect_roles(websocket);
         result = await ws_authorize_role(session.role, websocket);
     }
     return result;
-}
-
-export async function collect_roles(websocket) {
-    if (websocket)
-        return await ws_collect_roles(websocket);
-
-    let lead_promise;
-    for (let ws of ov_Websockets.list) {
-        if (ws.is_connecting && ws.authenticated) {
-            let promise = ws_collect_roles(ws);
-            if (ws === ov_Websockets.current_lead_websocket)
-                lead_promise = promise;
-        }
-    }
-    return await lead_promise;
 }
 
 export async function authorize_role(role_id, websocket) {
@@ -241,26 +227,6 @@ async function ws_login(username, password, websocket) {
                 await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
             } else {
                 console.warn(log_prefix(websocket) + " collect user information failed.", error);
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-async function ws_collect_roles(websocket) {
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "collecting user roles...");
-            let roles = await websocket.send_event(ov_Websocket.EVENT.USER_ROLES);
-            console.log(log_prefix(websocket) + "received " + roles.length + " roles: " + roles.toString());
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + " temp error - try to collect user roles again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + " collect user roles failed.", error);
                 return false;
             }
         }

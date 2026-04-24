@@ -33,6 +33,7 @@ import * as View from "./ui/view.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_WebRTCs from "/lib/ov_media/ov_webrtc_list.js";
 import * as ov_Auth from "/lib/ov_auth.js";
+import * as ov_DB from "/lib/ov_db.js";
 import * as ov_Vocs from "/lib/ov_vocs.js";
 
 var view_container;
@@ -218,7 +219,7 @@ async function establish_connection(websocket) {
         }
     }
     if (result && !ov_Websockets.user().roles)
-        result = await ov_Auth.collect_roles(websocket);
+        result = await ov_DB.collect_roles(websocket);
     if (result && websocket.is_ready && websocket.authorized) {
         let media = ov_WebRTCs.get(websocket);
         if (!media.is_connected)

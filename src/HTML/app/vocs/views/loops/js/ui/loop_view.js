@@ -33,6 +33,7 @@ import ov_Websocket from "/lib/ov_websocket.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_WebRTCs from "/lib/ov_media/ov_webrtc_list.js";
 import * as ov_Vocs from "/lib/ov_vocs.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 import ov_Loop_Pages from "/components/loops/pages/loop_pages.js";
 import ov_Loop from "/components/loops/loop/loop.js";
@@ -58,6 +59,7 @@ var current_talk_loop;
 var loop_settings;
 
 export async function init() {
+    SIP = await ov_DB.check_sip(ov_Websockets.current_lead_websocket);
     if (SIP)
         ov_SIP = await import("/extensions/sip/ov_sip.js");
     DOM.loops = document.getElementById("loops");
@@ -79,9 +81,9 @@ export async function draw() {
 
     current_talk_loop = undefined;
 
-    let loops_data = await ov_Vocs.collect_loops(ov_Websockets.current_lead_websocket);
+    let loops_data = await ov_DB.collect_loops(ov_Websockets.current_lead_websocket);
 
-    let settings = await ov_Vocs.collect_keyset_layout(ov_Websockets.user().project, ov_Websockets.current_lead_websocket);
+    let settings = await ov_DB.collect_keyset_layout(ov_Websockets.user().project, ov_Websockets.current_lead_websocket);
 
     DOM.loops.draw(loops_data, settings, ov_Websockets.current_lead_websocket.server_name);
 
@@ -112,8 +114,7 @@ export async function draw() {
     await Promise.allSettled(promises);
 
     if (pages[0].sip) {
-        let sip = await ov_SIP.sip(ov_Websockets.current_lead_websocket);
-        if (sip.connected) {
+        if (await ov_DB.check_sip(ov_Websockets.current_lead_websocket)) {
             let calls = await ov_SIP.sip_list_calls(ov_Websockets.current_lead_websocket);
             for (let call of Object.keys(calls)) {
                 for (let page of pages) {
@@ -317,7 +318,7 @@ export async function show_page(new_page) {
     let role = ov_Websockets.user().role;
 
     if (new_page === undefined) {
-        loop_settings = await ov_Vocs.collect_user_settings();
+        loop_settings = await ov_DB.collect_user_settings();
         new_page = loop_settings && loop_settings.roles && loop_settings.roles[role] ? loop_settings.roles[role].page : 0;
     }
 
@@ -370,5 +371,5 @@ export async function sync_loops(websocket) {
     for (let page of pages)
         for (let loop of page.values)
             await update_loop_state(loop, loop.state, websocket);
-    await ov_Vocs.update_user_settings(loop_settings, websocket);
+    await ov_DB.update_user_settings(loop_settings, websocket);
 }

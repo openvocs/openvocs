@@ -30,6 +30,7 @@
 import * as ov_WebRTCs from "/lib/ov_media/ov_webrtc_list.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Auth from "/lib/ov_auth.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 import * as Loop_View from "./loop_view.js";
 
@@ -301,7 +302,7 @@ export function init() {
 async function login(username, password, websocket) {
     let result = await ov_Auth.login(username, password, websocket);
     if (result)
-        result = await ov_Auth.collect_roles(websocket);
+        result = await ov_DB.collect_roles(websocket);
     if (result && ov_Websockets.user().role)
         result = await ov_Auth.authorize_role(ov_Websockets.user().role, websocket)
     return result;

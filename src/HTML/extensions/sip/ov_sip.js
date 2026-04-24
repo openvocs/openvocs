@@ -32,14 +32,13 @@
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 
 export const EVENT = {
-    SIP: "sip",
-    SIP_CALL: "call",
-    SIP_HANGUP: "hangup",
-    SIP_PERMIT: "permit_call",
-    SIP_REVOKE: "revoke_call",
-    SIP_LIST_CALLS: "list_calls",
-    SIP_LIST_CALL_PERMISSIONS: "list_call_permissions",
-    SIP_LIST_STATUS: "list_sip_status"
+    SIP_CALL: "sip_call",
+    SIP_HANGUP: "sip_hangup",
+    SIP_PERMIT: "sip_permit_call",
+    SIP_REVOKE: "sip_revoke_call",
+    SIP_LIST_CALLS: "sip_get_calls",
+    SIP_LIST_CALL_PERMISSIONS: "sip_get_call_permissions",
+    SIP_LIST_STATUS: "sip_get_status"
 };
 
 var RETRIES_ON_TEMP_ERROR = 5;
@@ -141,28 +140,6 @@ export async function sip_revoke(loop_id, caller, callee, websocket) {
 list_status() {
     return this.#request(this.#create_event(EVENT.SIP_LIST_STATUS));
 }*/
-
-async function ws_sip(websocket) {
-    let result;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "requesting sip status...");
-            result = await websocket.send_event(EVENT.SIP);
-            console.log(log_prefix(websocket) + "sip server connected: " + result.connected);
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to request sip status again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "requesting sip status failed.", error.error);
-                disconnect(websocket);
-                return false;
-            }
-        }
-    }
-    return result;
-}
 
 async function ws_sip_call(loop_id, from, to, websocket) {
     let result;

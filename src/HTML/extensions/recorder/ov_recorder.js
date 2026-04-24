@@ -32,12 +32,10 @@
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 
 export const EVENT = {
-    START_PLAYBACK: "playback_start",
-    STOP_PLAYBACK: "playback_stop",
-    START_RECORD: "record_start",
-    STOP_RECORD: "record_stop",
-    RECORDED_LOOPS: "get_recorded_loops",
-    RECORDINGS: "get_recording"
+    START_RECORD: "recording_start",
+    STOP_RECORD: "recording_stop",
+    RECORDED_LOOPS: "recording_get_recorded_loops",
+    RECORDINGS: "recording_get_recordings"
 };
 
 var RETRIES_ON_TEMP_ERROR = 5;

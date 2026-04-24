@@ -27,8 +27,9 @@
     	
     ---------------------------------------------------------------------------
 */
-import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_Auth from "/lib/ov_auth.js";
+import * as ov_DB from "/lib/ov_db.js";
 import * as CSS from "/css/css.js";
 
 // import custom HTML elements
@@ -89,7 +90,7 @@ export async function init(view_id) {
         if (result) {
             set_message("");
             set_server_id();
-            if (await ov_Auth.collect_roles())
+            if (await ov_DB.collect_roles())
                 populate_role_list();
             else
                 set_message("We failed to get the information to which roles " +

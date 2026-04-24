@@ -185,7 +185,7 @@ export default class ov_SIP_Loop extends ov_Loop {
             }
         }
 
-        ov_Websockets.addEventListener(ov_SIP.EVENT.SIP, this.#on_server_status.bind(this));
+        ov_Websockets.addEventListener(ov_Websocket.EVENT.SIP, this.#on_server_status.bind(this));
         ov_Websockets.addEventListener(ov_SIP.EVENT.SIP_CALL, this.#on_call.bind(this));
         ov_Websockets.addEventListener(ov_SIP.EVENT.SIP_HANGUP, this.#on_hangup.bind(this));
     }
