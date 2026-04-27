@@ -107,11 +107,11 @@
 #define OV_VOCS_DB_ADD_PROJECT_ADMIN "db_add_project_admin"
 #define OV_VOCS_DB_LDAP_IMPORT "client_ldap_import"
 
-#define OV_VOCS_DB_SET_KEYSET_LAYOUT "client_set_keyset_layout"
-#define OV_VOCS_DB_GET_KEYSET_LAYOUT "client_get_keyset_layout"
+#define OV_VOCS_DB_SET_KEYSET_LAYOUT "db_set_keyset_layout"
+#define OV_VOCS_DB_GET_KEYSET_LAYOUT "db_get_keyset_layout"
 
-#define OV_VOCS_DB_SET_USER_DATA "client_set_user_data"
-#define OV_VOCS_DB_GET_USER_DATA "client_get_user_data"
+#define OV_VOCS_DB_SET_USER_DATA "db_set_user_data"
+#define OV_VOCS_DB_GET_USER_DATA "db_get_user_data"
 
 /*----------------------------------------------------------------------------*/
 
