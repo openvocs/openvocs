@@ -95,9 +95,9 @@
 
 #define OV_EVENT_API_PERMISSION "permission" // loop permissions
 
-#define OV_EVENT_API_USER_ROLES "client_user_roles"
-#define OV_EVENT_API_USER_LOOPS "client_user_loops"
-#define OV_EVENT_API_ROLE_LOOPS "client_role_loops"
+#define OV_EVENT_API_USER_ROLES "db_get_user_roles"
+#define OV_EVENT_API_USER_LOOPS "db_get_user_loops"
+#define OV_EVENT_API_ROLE_LOOPS "db_get_role_loops"
 #define OV_EVENT_API_ADMIN_PROJECTS "db_get_admin_projects"
 #define OV_EVENT_API_ADMIN_DOMAINS "db_get_admin_domains"
 
@@ -116,8 +116,7 @@
 #define OV_EVENT_API_LDAP_IMPORT "client_ldap_import"
 
 #define OV_EVENT_API_REGISTER "register"
-#define OV_EVENT_API_MEDIA "client_media"
-#define OV_EVENT_API_MEDIA "client_media"
+#define OV_EVENT_API_MEDIA "media"
 
 #define OV_EVENT_API_CREATE "db_create"
 #define OV_EVENT_API_UPDATE "db_update"

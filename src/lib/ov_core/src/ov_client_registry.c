@@ -49,6 +49,8 @@ struct data {
 
 void *data_free(void *data){
 
+    if (!data) return NULL;
+
     struct data *d = (struct data*) data;
     d->data = ov_json_value_free(d->data);
     d = ov_data_pointer_free(d);
