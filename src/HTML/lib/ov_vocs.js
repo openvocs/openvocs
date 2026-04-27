@@ -36,10 +36,10 @@ import * as ov_Websockets from "./ov_websocket_list.js";
 var RETRIES_ON_TEMP_ERROR = 5;
 
 export var EVENT = {
-    MEDIA: "client_media",
-    CANDIDATE: "client_candidate",
-    END_OF_CANDIDATES: "client_end_of_candidates",
-    MEDIA_READY: "client_media_ready",
+    MEDIA: "media",
+    CANDIDATE: "candidate",
+    END_OF_CANDIDATES: "end_of_candidates",
+    MEDIA_READY: "media_ready",
 
     SWITCH_LOOP_STATE: "client_switch_loop_state",
     SWITCH_LOOP_VOLUME: "client_switch_loop_volume",
