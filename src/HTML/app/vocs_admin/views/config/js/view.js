@@ -277,7 +277,7 @@ export async function init(view_id, container, type) {
 }
 
 async function request_settings(layout_name) {
-    return await ov_Vocs.collect_keyset_layout(layout_name, ov_Websockets.current_lead_websocket);
+    return await ov_DB.collect_keyset_layout(layout_name, ov_Websockets.current_lead_websocket);
 }
 
 function add_sip_to_config(config) {

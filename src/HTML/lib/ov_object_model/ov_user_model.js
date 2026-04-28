@@ -181,7 +181,6 @@ export default class ov_User {
                 this[prop] = json[prop];
             else if (prop === "origin") {
                 this.domain = json.origin.domain;
-                console.log("origin", json.origin)
                 if (json.origin.project)
                     this.project = json.origin.project;
             }
