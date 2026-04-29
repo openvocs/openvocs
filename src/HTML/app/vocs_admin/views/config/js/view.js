@@ -186,7 +186,7 @@ export async function init(view_id, container, type) {
         let errors = [];
         for (let websocket of ov_Websockets.list) {
             let project = Project_Settings.collect();
-            if (!await ov_DB.delete_project(project.domain, project.id, websocket)) {
+            if (!await ov_DB.remove("project", project.id, websocket)) {
                 errors.push(websocket);
             }
         }
@@ -214,7 +214,7 @@ export async function init(view_id, container, type) {
         let errors = [];
         for (let websocket of ov_Websockets.list) {
             let domain = Domain_Settings.collect();
-            if (!await ov_DB.delete_domain(domain.id, websocket)) {
+            if (!await ov_DB.remove("domain", domain.id, websocket)) {
                 errors.push(websocket);
             }
         }

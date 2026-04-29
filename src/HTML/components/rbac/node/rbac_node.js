@@ -32,6 +32,8 @@ import * as CSS from "/css/css.js";
 
 import ov_Dialog from "/components/dialog/dialog.js";
 
+import * as ov_DB from "/lib/ov_db.js";
+
 export default class ov_RBAC_Node extends HTMLElement {
     #type;
     #value;
@@ -370,7 +372,7 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.show_settings();
     }
 
-    show_settings(error) {
+    async show_settings(error) {
         if (error)
             this.#dom.error_msg.innerText = error;
         else
@@ -386,7 +388,21 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#dom.edit_pass.value = this.node_password ? this.node_password : null;
         this.#dom.edit_multicast_ip.value = this.node_multicast_ip ? this.node_multicast_ip :
             ((DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") ? DEFAULT_MULTICAST_ADDRESS : null);
-        this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port : null;
+        this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port : await (async () => {
+            let port = null;
+            if (DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") {
+                port = await ov_DB.get_highest_multicast_port();
+                port = MIN_MULTICAST_PORT > port ? MIN_MULTICAST_PORT + 1 : port + 1;
+                MIN_MULTICAST_PORT = port;
+            }
+            if (port > 65535) {
+                port = null;
+                let error_msg = "The highest possible multicast port (65535) is already in use. Please find a smaller unused port.";
+                this.#dom.error_msg.innerText = error_msg;
+                console.warn(error_msg);
+            }
+            return port;
+        })();
         this.#dom.edit_highlight_color.value = this.node_highlight_color ? this.node_highlight_color : "";
 
         this.#dom.name_char_count.textContent = this.#dom.edit_name.value.length;
