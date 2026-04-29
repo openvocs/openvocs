@@ -755,6 +755,46 @@ bool ov_vm_abort_with(ov_vm *self, char const *id, ov_vm_abort_opts opts) {
     }
 }
 
+/*----------------------------------------------------------------------------*/
+
+static bool get_any_prog_from_db(char const *id,
+                                            ov_vm_prog const *prog,
+                                            uint64_t start_time_epoch_usecs,
+                                            void *data) {
+
+    UNUSED(prog);
+    UNUSED(start_time_epoch_usecs);
+
+    *((char const **)data) = id;
+    return false;
+
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vm_abort_all_with(ov_vm *self, ov_vm_abort_opts opts) {
+
+    if(0 == self) {
+        return false;
+    }
+
+    char *id = 0;
+    ov_vm_prog_db const *db = get_prog_db(self);
+
+    ov_vm_prog_db_for_each(db, get_any_prog_from_db, &id);
+
+    while (0 != id) {
+
+        ov_vm_prog *prog = prog_for_id(self, id);
+        abort_program_with(self, prog, opts);
+
+        id = 0;
+        ov_vm_prog_db_for_each(db, get_any_prog_from_db, &id);
+    }
+
+    return true;
+}
+
 /*****************************************************************************
                              Add an alias for a program
  ****************************************************************************/
