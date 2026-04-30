@@ -324,17 +324,17 @@ export default class ov_RBAC_Graph extends HTMLElement {
         };
 
         for (let user of Graph.nodes.users.values()) {
-            if (!user.frozen && (!id || user.subset === id || (include_unspecified && user.subset === undefined)))
+            if (!id || user.subset === id || (include_unspecified && user.subset === undefined))
                 data.users[user.node_id] = user.data;
         }
         for (let role of Graph.nodes.roles.values())
-            if (!role.frozen && (!id || role.subset === id || (include_unspecified && role.subset === undefined))) {
+            if (!id || role.subset === id || (include_unspecified && role.subset === undefined)) {
                 let role_data = role.data;
                 data.roles[role_data.id] = role_data;
             }
 
         for (let loop of Graph.nodes.loops.values())
-            if (!loop.frozen && (!id || loop.subset === id || (include_unspecified && loop.subset === undefined)))
+            if (!id || loop.subset === id || (include_unspecified && loop.subset === undefined))
                 data.loops[loop.node_id] = loop.data;
 
         return data;
