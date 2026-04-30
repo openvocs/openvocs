@@ -99,21 +99,21 @@ export default class ov_Login_Form extends HTMLElement {
             });
         }
 
-        this.#dom.user_field.addEventListener("click", () => {
+        this.#dom.user_field.addEventListener("focus", () => {
             this.#current_input = this.#dom.user_field;
             if (this.#login_keyboard)
                 this.#login_keyboard.setOptions({
                     inputName: this.#current_input.id
                 });
         });
-        this.#dom.password_field.addEventListener("click", () => {
+        this.#dom.password_field.addEventListener("focus", () => {
             this.#current_input = this.#dom.password_field;
             if (this.#login_keyboard)
                 this.#login_keyboard.setOptions({
                     inputName: this.#current_input.id
                 });
         });
-        this.#dom.user_field.click();
+        this.focus_user_input();
 
         this.#dom.show_password = document.getElementById("show_password");
         this.#dom.show_password.addEventListener("touchstart", () => {
@@ -131,6 +131,14 @@ export default class ov_Login_Form extends HTMLElement {
         this.#dom.show_password.addEventListener("mouseup", () => {
             this.#dom.password_field.type = "password";
         });
+    }
+
+    focus_user_input() {
+        this.#dom.user_field.focus();
+    }
+
+    focus_password_input() {
+        this.#dom.password_field.focus();
     }
 
     async #process_login() {
