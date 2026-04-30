@@ -2375,6 +2375,24 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static void async_timedout_sip(void *userdata, ov_event_async_data data) {
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self)
+        goto error;
+
+    ov_json_value *out = ov_event_api_create_error_response(
+        data.value, OV_ERROR_TIMEOUT, OV_ERROR_DESC_TIMEOUT);
+    env_send(self, data.socket, out);
+    out = ov_json_value_free(out);
+
+error:
+    ov_event_async_data_clear(&data);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool client_call_function(ov_vocs *vocs,
                                  int socket,
                                  ov_json_value *input,
@@ -2405,7 +2423,7 @@ static bool client_call_function(ov_vocs *vocs,
             (ov_event_async_data){.socket = socket,
                                   .value = input,
                                   .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
+                                  .timedout.callback = async_timedout_sip},
             vocs->config.timeout.response_usec)) {
 
         goto error;
@@ -2440,6 +2458,8 @@ error:
 static bool client_list_calls(ov_vocs *vocs,
                               int socket,
                               ov_json_value *input) {
+
+    
 
     return client_call_function(
         vocs, socket, input, ov_mc_backend_sip_list_calls);
