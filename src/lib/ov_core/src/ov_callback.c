@@ -96,7 +96,7 @@ static bool search_timedout(const void *key, void *val, void *data) {
     ov_callback_data *d = (ov_callback_data *)val;
     struct container *c = (struct container *)data;
 
-    if (c->now > d->created_usec + d->timeout_usec)
+    if (c->now > (d->created_usec + d->timeout_usec))
         ov_list_push(c->list, (void *)key);
 
     return true;

@@ -298,6 +298,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool event_app_send(void *userdata, int socket, const ov_json_value *data){
+
+    ov_event_app *app = ov_event_app_cast(userdata);
+    return ov_event_app_send(app, socket, data);
+}
+
+/*----------------------------------------------------------------------------*/
+
 static void event_recorder_register(void *userdata, const char *name, int socket,
     ov_json_value *input) {
 
@@ -322,7 +330,11 @@ static void event_recorder_register(void *userdata, const char *name, int socket
     }
 
     ov_event_connection *conn = ov_event_connection_create(
-        (ov_event_connection_config){.socket = socket});
+        (ov_event_connection_config){
+            .socket = socket,
+            .params.send.instance = self->app,
+            .params.send.send = event_app_send
+        });
 
     if (!conn) {
 
@@ -436,9 +448,6 @@ static void start_record(void *userdata, const char *name, int socket,
     void (*function)(void *, int, const char *, const char *, ov_result) =
         cb.function;
 
-    if (!function)
-        goto error;
-
     ov_event_api_get_error_parameter(input, &code, &desc);
 
     if (!ov_recorder_response_start_from_json(res, &resp))
@@ -464,8 +473,11 @@ static void start_record(void *userdata, const char *name, int socket,
 
         ov_log_debug("activated recording of loop %s at recorder", loop);
 
-        function(cb.userdata, cb.socket, uuid, loop,
+        if (function) function(cb.userdata, cb.socket, uuid, loop,
                  (ov_result){.error_code = OV_ERROR_NOERROR, .message = NULL});
+
+        if (!ov_vocs_db_set_recorded(self->config.vocs_db, loop, true))
+            ov_log_error("Failed to persist recording in config.");
 
         break;
 
@@ -473,7 +485,7 @@ static void start_record(void *userdata, const char *name, int socket,
 
         ov_log_error("Start recording error %i|%s", code, desc);
 
-        function(cb.userdata, cb.socket, uuid, loop,
+        if (function) function(cb.userdata, cb.socket, uuid, loop,
                  (ov_result){.error_code = code, .message = (char *)desc});
     }
 
@@ -524,6 +536,9 @@ static void stop_record(void *userdata, const char *name, int socket,
     if (!loop)
         goto error;
 
+    if (!ov_vocs_db_set_recorded(self->config.vocs_db, loop, false))
+        ov_log_error("Failed to persist stop recording in config");
+
     ov_vocs_record *record = ov_dict_get(self->recordings, loop);
     if (!record)
         goto unblock;
@@ -548,6 +563,8 @@ static void stop_record(void *userdata, const char *name, int socket,
         //             time(0));
 
         ov_vocs_record_reset_active(record);
+
+        ov_vocs_db_set_recorded(self->config.vocs_db, loop, false);
 
         function(cb.userdata, cb.socket, uuid, loop,
                  (ov_result){.error_code = OV_ERROR_NOERROR, .message = NULL});
