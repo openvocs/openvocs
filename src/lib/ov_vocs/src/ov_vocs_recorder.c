@@ -180,7 +180,6 @@ static ov_event_connection *find_empty_recorder(ov_vocs_recorder *self) {
         goto error;
 
     if (!container.found_empty) {
-        ov_log_error("No recorder available for recording.");
         goto error;
     }
 error:
@@ -264,7 +263,7 @@ static bool check_recording(void *item, void *data) {
 
     ov_vocs_record *record = ov_dict_get(self->recordings, name);
 
-    if (record && record->active.running)
+    if (record && (0 != record->active.recorder))
         return true;
 
     return request_new_recording(self, name);
@@ -463,7 +462,7 @@ static void start_record(void *userdata, const char *name, int socket,
 
         ov_vocs_record_set_active(record, resp.id, loop, resp.filename, socket);
 
-        ov_log_debug("activated recording of loop %s", loop);
+        ov_log_debug("activated recording of loop %s at recorder", loop);
 
         function(cb.userdata, cb.socket, uuid, loop,
                  (ov_result){.error_code = OV_ERROR_NOERROR, .message = NULL});
