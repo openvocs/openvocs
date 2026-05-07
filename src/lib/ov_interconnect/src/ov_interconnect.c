@@ -570,10 +570,10 @@ static void event_connect_media_response(ov_interconnect *self, int socket,
         if (!session)
             goto error;
 
-    }
+        if (!ov_interconnect_session_handshake_active(session, finger))
+            goto error;
 
-    if (!ov_interconnect_session_handshake_active(session, finger))
-        goto error;
+    }
 
     ov_json_value_free(input);
     return;
