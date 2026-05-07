@@ -541,29 +541,36 @@ static void event_connect_media_response(ov_interconnect *self, int socket,
 
     ov_log_debug("got remote media parameter |%s| %s:%i", name, host, port);
 
-    // start DTLS active to remote
+    session =
+        get_session_by_signaling_socket(self, socket);
 
-    ov_interconnect_session_config config = (ov_interconnect_session_config){
-        .base = self,
-        .loop = self->config.loop,
-        .dtls = self->dtls,
-        .internal = self->config.socket.internal,
-        .reconnect_interval_usecs = 100000,
-        .keepalive_trigger_usec = self->config.limits.keepalive_trigger_usec};
+    if (!session){
 
-    ov_socket_data remote = (ov_socket_data){0};
-    if (!ov_socket_get_data(socket, NULL, &remote))
-        goto error;
+        // start DTLS active to remote
 
-    config.remote.signaling = remote;
-    config.signaling = socket;
-    strncpy(config.remote.media.host, host, OV_HOST_NAME_MAX);
-    config.remote.media.port = port;
-    strncpy(config.remote.interface, name, OV_INTERCONNECT_INTERFACE_NAME_MAX);
+        ov_interconnect_session_config config = (ov_interconnect_session_config){
+            .base = self,
+            .loop = self->config.loop,
+            .dtls = self->dtls,
+            .internal = self->config.socket.internal,
+            .reconnect_interval_usecs = 100000,
+            .keepalive_trigger_usec = self->config.limits.keepalive_trigger_usec};
 
-    session = session_create(self, config, socket);
-    if (!session)
-        goto error;
+        ov_socket_data remote = (ov_socket_data){0};
+        if (!ov_socket_get_data(socket, NULL, &remote))
+            goto error;
+
+        config.remote.signaling = remote;
+        config.signaling = socket;
+        strncpy(config.remote.media.host, host, OV_HOST_NAME_MAX);
+        config.remote.media.port = port;
+        strncpy(config.remote.interface, name, OV_INTERCONNECT_INTERFACE_NAME_MAX);
+
+        session = session_create(self, config, socket);
+        if (!session)
+            goto error;
+
+    }
 
     if (!ov_interconnect_session_handshake_active(session, finger))
         goto error;
