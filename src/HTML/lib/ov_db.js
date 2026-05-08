@@ -58,7 +58,7 @@ export async function check_ldap(ws) {
 }
 
 export async function check_sip(websocket) {
-    ws = ws ? ws : ov_Websockets.current_lead_websocket;
+    websocket = websocket ? websocket : ov_Websockets.current_lead_websocket;
     let result;
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
         try {

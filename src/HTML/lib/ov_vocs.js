@@ -30,8 +30,8 @@
 */
 import ov_Loop from "/components/loops/loop/loop.js";
 
-import ov_Websocket from "./ov_websocket.js";
 import * as ov_Websockets from "./ov_websocket_list.js";
+import * as ov_DB from "./ov_db.js";
 
 var RETRIES_ON_TEMP_ERROR = 5;
 

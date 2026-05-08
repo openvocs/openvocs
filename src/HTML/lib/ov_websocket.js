@@ -474,7 +474,7 @@ export default class ov_Websocket {
                     this.#user.role = message.id;
                     if (this.#user.roles) {
                         let role = this.#user.roles.find(this.#user.role);
-                        if (role)
+                        if (role && role.project)
                             this.#user.project = role.project;
                     }
                     ov_Web_Storage.add_role_to_session(APP, this.#url, this.#user.role);
