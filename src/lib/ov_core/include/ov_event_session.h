@@ -53,6 +53,7 @@ typedef struct ov_event_session_config {
     struct {
 
         uint64_t max_lifetime_usec;
+        uint64_t threadlock_timeout_usec;
 
     } limit;
 
