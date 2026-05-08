@@ -31,19 +31,16 @@ uint32_t start_values[] = {18, 97, 98, 99};
 
 char const *test_string_init_not_null = "ihgfedcba";
 
-uint32_t ref_crcs_init_not_null[] = {
-    0xc534d97f, 0xc1a266f, 0x35971aaa, 0x22ec0ee9};
+uint32_t ref_crcs_init_not_null[] = {0xc534d97f, 0xc1a266f, 0x35971aaa,
+                                     0x22ec0ee9};
 
 /*----------------------------------------------------------------------------*/
 
-static uint32_t checksum(uint32_t init,
-                         char const *str,
-                         bool rfin,
-                         bool rfout,
+static uint32_t checksum(uint32_t init, char const *str, bool rfin, bool rfout,
                          uint32_t lookup[0x100]) {
 
-    return ov_crc32_sum(
-        init, (uint8_t const *)str, strlen(str), rfin, rfout, lookup);
+    return ov_crc32_sum(init, (uint8_t const *)str, strlen(str), rfin, rfout,
+                        lookup);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -71,10 +68,7 @@ int test_ov_crc32_sum() {
 
     testrun(0xe6220edb ==
             (0xffffffff ^ checksum(checksum(0, "bac", false, false, table),
-                                   "arac",
-                                   false,
-                                   false,
-                                   table)));
+                                   "arac", false, false, table)));
 
     return testrun_log_success();
 }
@@ -112,74 +106,21 @@ static int test_ov_crc32_ogg() {
 
     testrun(crc32_ogg_equals("a"));
 
-    uint8_t real_ogg[] = {0x4f,
-                          0x67,
-                          0x67,
-                          0x53,
-                          0x00,
-                          0x02,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x74,
-                          0xa3,
-                          0x90,
-                          0x5b,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          // Next would come the CRC, but the RFC requires us to
-                          // calculate the CRC with the CRC field set to all 0
-                          // 0x6d, 0x94, 0x4e, 0x3d
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x01,
-                          0x1e,
-                          0x01,
-                          0x76,
-                          0x6f,
-                          0x72,
-                          0x62,
-                          0x69,
-                          0x73,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x02,
-                          0x44,
-                          0xac,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x80,
-                          0xb5,
-                          0x01,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0x00,
-                          0xb8,
-                          0x01};
+    uint8_t real_ogg[] = {
+        0x4f, 0x67, 0x67, 0x53, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x74, 0xa3, 0x90, 0x5b, 0x00, 0x00, 0x00, 0x00,
+        // Next would come the CRC, but the RFC requires us to
+        // calculate the CRC with the CRC field set to all 0
+        // 0x6d, 0x94, 0x4e, 0x3d
+        0x00, 0x00, 0x00, 0x00, 0x01, 0x1e, 0x01, 0x76, 0x6f, 0x72, 0x62, 0x69,
+        0x73, 0x00, 0x00, 0x00, 0x00, 0x02, 0x44, 0xac, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x80, 0xb5, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0xb8, 0x01};
 
     testrun(0x3d4e946d == ov_crc32_ogg(0, real_ogg, sizeof(real_ogg)));
 
     // Chaining
     testrun(0x3d4e946d == ov_crc32_ogg(ov_crc32_ogg(0, real_ogg, 12),
-                                       real_ogg + 12,
-                                       sizeof(real_ogg) - 12));
+                                       real_ogg + 12, sizeof(real_ogg) - 12));
 
     return testrun_log_success();
 }
@@ -207,16 +148,12 @@ static int test_ov_crc32_zlib() {
 
     testrun(0x41d03a30 ==
             ov_crc32_zlib(ov_crc32_zlib(0, (uint8_t const *)"ab", 2),
-                          (uint8_t const *)"ac",
-                          2));
+                          (uint8_t const *)"ac", 2));
 
     return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_crc32",
-            test_ov_crc32_sum,
-            test_ov_crc32_posix,
-            test_ov_crc32_ogg,
-            test_ov_crc32_zlib);
+OV_TEST_RUN("ov_crc32", test_ov_crc32_sum, test_ov_crc32_posix,
+            test_ov_crc32_ogg, test_ov_crc32_zlib);

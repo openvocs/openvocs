@@ -70,8 +70,7 @@ static bool authenticate_user(const char *host) {
 
     if (err != LDAP_SUCCESS) {
 
-        fprintf(stderr,
-                "ldap_set_option(PROTOCOL_VERSION): %s\n",
+        fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
                 ldap_err2string(err));
         goto error;
     };
@@ -81,8 +80,8 @@ static bool authenticate_user(const char *host) {
     err = ldap_set_option(ld, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
     if (err != LDAP_SUCCESS) {
 
-        fprintf(
-            stderr, "ldap_set_option(SIZELIMIT): %s\n", ldap_err2string(err));
+        fprintf(stderr, "ldap_set_option(SIZELIMIT): %s\n",
+                ldap_err2string(err));
         goto error;
     };
 
@@ -98,20 +97,20 @@ static bool authenticate_user(const char *host) {
     err = ldap_result(ld, msgid, 0, &timeout, &res);
 
     switch (err) {
-        case -1:
+    case -1:
 
-            ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
-            fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
-            goto error;
+        ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
+        fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
+        goto error;
 
-        case 0:
+    case 0:
 
-            fprintf(stderr, "ldap_result(): timeout expired\n");
-            ldap_abandon_ext(ld, msgid, NULL, NULL);
-            goto error;
+        fprintf(stderr, "ldap_result(): timeout expired\n");
+        ldap_abandon_ext(ld, msgid, NULL, NULL);
+        goto error;
 
-        default:
-            break;
+    default:
+        break;
     };
 
     ldap_parse_result(ld, res, &err, &dn, NULL, NULL, NULL, 0);
@@ -128,7 +127,8 @@ static bool authenticate_user(const char *host) {
 
 error:
 
-    if (ld) ldap_unbind_ext_s(ld, NULL, NULL);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
 
     return false;
 }
@@ -165,8 +165,7 @@ static LDAP *ldap_bind(const char *host) {
 
     if (err != LDAP_SUCCESS) {
 
-        fprintf(stderr,
-                "ldap_set_option(PROTOCOL_VERSION): %s\n",
+        fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
                 ldap_err2string(err));
         goto error;
     };
@@ -176,8 +175,8 @@ static LDAP *ldap_bind(const char *host) {
     err = ldap_set_option(ld, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
     if (err != LDAP_SUCCESS) {
 
-        fprintf(
-            stderr, "ldap_set_option(SIZELIMIT): %s\n", ldap_err2string(err));
+        fprintf(stderr, "ldap_set_option(SIZELIMIT): %s\n",
+                ldap_err2string(err));
         goto error;
     };
 
@@ -192,20 +191,20 @@ static LDAP *ldap_bind(const char *host) {
     err = ldap_result(ld, msgid, 0, &timeout, &res);
 
     switch (err) {
-        case -1:
+    case -1:
 
-            ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
-            fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
-            goto error;
+        ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
+        fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
+        goto error;
 
-        case 0:
+    case 0:
 
-            fprintf(stderr, "ldap_result(): timeout expired\n");
-            ldap_abandon_ext(ld, msgid, NULL, NULL);
-            goto error;
+        fprintf(stderr, "ldap_result(): timeout expired\n");
+        ldap_abandon_ext(ld, msgid, NULL, NULL);
+        goto error;
 
-        default:
-            break;
+    default:
+        break;
     };
 
     ldap_parse_result(ld, res, &err, &dn, NULL, NULL, NULL, 0);
@@ -219,7 +218,8 @@ static LDAP *ldap_bind(const char *host) {
 
     return ld;
 error:
-    if (ld) ldap_unbind_ext_s(ld, NULL, NULL);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
     return NULL;
 }
 
@@ -353,7 +353,8 @@ static bool get_all_users(const char *host) {
 
     LDAPMessage *res = NULL;
     LDAP *ld = ldap_bind(host);
-    if (!ld) goto error;
+    if (!ld)
+        goto error;
 
     int err = 0;
 
@@ -408,12 +409,14 @@ static bool get_all_users(const char *host) {
                 // printf("%i %s: %s\n", pos, attribute, vals[pos]->bv_val);
             }
 
-            if (0 == strcmp(attribute, "sn")) surname = strdup(vals[0]->bv_val);
+            if (0 == strcmp(attribute, "sn"))
+                surname = strdup(vals[0]->bv_val);
 
             if (0 == strcmp(attribute, "cn"))
                 forename = strdup(vals[0]->bv_val);
 
-            if (0 == strcmp(attribute, "uid")) uid = strdup(vals[0]->bv_val);
+            if (0 == strcmp(attribute, "uid"))
+                uid = strdup(vals[0]->bv_val);
 
             attribute = ldap_next_attribute(ld, entry, ber);
 
@@ -451,8 +454,10 @@ static bool get_all_users(const char *host) {
     ldap_unbind_ext_s(ld, NULL, NULL);
     return true;
 error:
-    if (res) ldap_msgfree(res);
-    if (ld) ldap_unbind_ext_s(ld, NULL, NULL);
+    if (res)
+        ldap_msgfree(res);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
     return false;
 }
 
@@ -466,13 +471,15 @@ int main(int argc, char **argv) {
     // const char *host = "192.168.1.47";
     const char *host = "localhost";
 
-    if (!authenticate_user(host)) goto error;
+    if (!authenticate_user(host))
+        goto error;
     /*
         if (!get_user_parameter(host))
             goto error;
     */
 
-    if (!get_all_users(host)) goto error;
+    if (!get_all_users(host))
+        goto error;
 
     return EXIT_SUCCESS;
 error:

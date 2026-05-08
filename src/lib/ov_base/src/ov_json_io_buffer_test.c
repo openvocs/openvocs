@@ -53,8 +53,7 @@ struct dummy_userdata {
 
 /*----------------------------------------------------------------------------*/
 
-static void dummy_receive_no_drop(void *userdata,
-                                  int socket,
+static void dummy_receive_no_drop(void *userdata, int socket,
                                   ov_json_value *value) {
 
     struct dummy_userdata *data = (struct dummy_userdata *)userdata;
@@ -66,8 +65,7 @@ static void dummy_receive_no_drop(void *userdata,
 
 /*----------------------------------------------------------------------------*/
 
-static void dummy_receive_drop(void *userdata,
-                               int socket,
+static void dummy_receive_drop(void *userdata, int socket,
                                ov_json_value *value) {
 
     struct dummy_userdata *data = (struct dummy_userdata *)userdata;
@@ -93,7 +91,8 @@ static void dummy_error(void *userdata, int socket) {
 
 static bool dummy_init(struct dummy_userdata *dummy) {
 
-    if (!dummy) return false;
+    if (!dummy)
+        return false;
 
     dummy->socket = 0;
 
@@ -106,7 +105,8 @@ static bool dummy_init(struct dummy_userdata *dummy) {
 
 static bool dummy_deinit(struct dummy_userdata *dummy) {
 
-    if (!dummy) return false;
+    if (!dummy)
+        return false;
 
     dummy->self = NULL;
     dummy->list = ov_list_free(dummy->list);
@@ -160,8 +160,8 @@ int test_ov_json_io_buffer_free() {
 
     char *valid_json = "{\"key\":";
 
-    ov_memory_pointer ptr = (ov_memory_pointer){
-        .start = (uint8_t *)valid_json, .length = strlen(valid_json)};
+    ov_memory_pointer ptr = (ov_memory_pointer){.start = (uint8_t *)valid_json,
+                                                .length = strlen(valid_json)};
 
     dummy.socket = 0;
     testrun(0 == ov_list_count(dummy.list));
@@ -206,8 +206,7 @@ int test_ov_json_io_buffer_push() {
     intptr_t key = 1;
 
     testrun(!ov_json_io_buffer_push(
-        NULL,
-        key,
+        NULL, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     testrun(!ov_json_io_buffer_push(
@@ -223,8 +222,7 @@ int test_ov_json_io_buffer_push() {
     // check negative indicies (allowed as ID based content from -INT to + INT)
 
     testrun(ov_json_io_buffer_push(
-        self,
-        -1,
+        self, -1,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     key = -1;
@@ -242,8 +240,7 @@ int test_ov_json_io_buffer_push() {
     key = 1;
 
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -252,8 +249,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "\"val\"";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // no callback yet
@@ -266,8 +262,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "}{\"next\":";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     testrun(1 == dummy.socket);
@@ -284,8 +279,7 @@ int test_ov_json_io_buffer_push() {
     // expect a drop of all content
     str = "invalid content in terms of json";
     testrun(!ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     testrun(!ov_dict_get(self->dict, (void *)key));
@@ -294,23 +288,20 @@ int test_ov_json_io_buffer_push() {
     // try to add invalid content (nothing added yet at socket id)
     testrun(ov_dict_is_empty(self->dict));
     testrun(!ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_get(self->dict, (void *)key));
     testrun(ov_dict_is_empty(self->dict));
 
     str = "{:";
     testrun(!ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(ov_dict_is_empty(self->dict));
 
     str = "[\"some valid array\"]";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -324,8 +315,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "[\"some incomplete array ";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -336,8 +326,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "\"some valid string\"";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -352,8 +341,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "\"some incomplete string";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -365,8 +353,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "null";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -381,8 +368,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "true";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -397,8 +383,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "false";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -413,8 +398,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "tr";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -424,8 +408,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "fal";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -435,8 +418,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "n";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -446,8 +428,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "{\"some incomplete object";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -459,8 +440,7 @@ int test_ov_json_io_buffer_push() {
     testrun(0 == ov_list_count(dummy.list));
     str = "{\"key\":\"1\"} {";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(1 == ov_list_count(dummy.list));
@@ -472,8 +452,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "{\"key\":\"1\"} {    ";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(1 == ov_list_count(dummy.list));
@@ -488,8 +467,7 @@ int test_ov_json_io_buffer_push() {
     testrun(dummy.error == false);
     str = "{\"key\":\"1\"} {   : ";
     testrun(!ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(0 == ov_list_count(dummy.list));
     testrun(ov_dict_is_empty(self->dict));
@@ -499,8 +477,7 @@ int test_ov_json_io_buffer_push() {
     dummy.error = false;
     str = "{\"key\":\"1\"} {[";
     testrun(!ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(0 == ov_list_count(dummy.list));
     testrun(ov_dict_is_empty(self->dict));
@@ -508,8 +485,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "{} {\"key\":\"1\"} {\"key\":\"2\"} {\"key\":\"3\"} {";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     buffer = ov_dict_get(self->dict, (void *)key);
@@ -533,8 +509,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "null null";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(2 == ov_list_count(dummy.list));
@@ -549,8 +524,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "true true";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(2 == ov_list_count(dummy.list));
@@ -565,8 +539,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "false false";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(2 == ov_list_count(dummy.list));
@@ -581,8 +554,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "false true false true false";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(5 == ov_list_count(dummy.list));
@@ -606,8 +578,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "false true false true null";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(5 == ov_list_count(dummy.list));
@@ -626,8 +597,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "null true false";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(3 == ov_list_count(dummy.list));
@@ -645,8 +615,7 @@ int test_ov_json_io_buffer_push() {
     // after optional whitespace
     str = "{} [] \"string\" true false null";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(6 == ov_list_count(dummy.list));
@@ -667,8 +636,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "{}[]\"string\"truefalsenull";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(6 == ov_list_count(dummy.list));
@@ -689,8 +657,7 @@ int test_ov_json_io_buffer_push() {
 
     str = "{}[]\"string\"truefalsenull";
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(!ov_dict_is_empty(self->dict));
     testrun(6 == ov_list_count(dummy.list));
@@ -712,8 +679,7 @@ int test_ov_json_io_buffer_push() {
     str = "{} {";
 
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     testrun(!ov_dict_is_empty(self->dict));
@@ -727,8 +693,7 @@ int test_ov_json_io_buffer_push() {
     testrun(0 == ov_list_count(dummy.list));
 
     testrun(ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     testrun(!ov_dict_is_empty(self->dict));
@@ -745,8 +710,7 @@ int test_ov_json_io_buffer_push() {
     testrun(0 == ov_list_count(dummy.list));
 
     testrun(!ov_json_io_buffer_push(
-        self,
-        key,
+        self, key,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // check we received the first JSON and dropped
@@ -785,8 +749,7 @@ int test_ov_json_io_buffer_drop() {
 
         key = i;
         testrun(
-            ov_json_io_buffer_push(self,
-                                   key,
+            ov_json_io_buffer_push(self, key,
                                    (ov_memory_pointer){.start = (uint8_t *)str,
                                                        .length = strlen(str)}));
 

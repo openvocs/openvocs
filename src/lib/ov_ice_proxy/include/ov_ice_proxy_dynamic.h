@@ -42,7 +42,7 @@
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_generic *ov_ice_proxy_dynamic_create(
-    ov_ice_proxy_generic_config config);
+ov_ice_proxy_generic *
+ov_ice_proxy_dynamic_create(ov_ice_proxy_generic_config config);
 
 #endif /* ov_ice_proxy_dynamic_h */

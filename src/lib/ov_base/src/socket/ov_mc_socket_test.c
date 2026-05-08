@@ -60,11 +60,7 @@ int test_ov_mc_socket() {
     char *out = "test";
     char buffer[1024] = {0};
 
-    ssize_t bytes = sendto(server,
-                           out,
-                           4,
-                           0,
-                           (struct sockaddr *)&address,
+    ssize_t bytes = sendto(server, out, 4, 0, (struct sockaddr *)&address,
                            sizeof(struct sockaddr_in));
 
     testrun(4 == bytes);

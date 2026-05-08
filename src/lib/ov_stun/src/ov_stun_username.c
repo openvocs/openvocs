@@ -43,16 +43,20 @@
 
 bool ov_stun_attribute_frame_is_username(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 8) goto error;
+    if (!buffer || length < 8)
+        goto error;
 
     uint16_t type = ov_stun_attribute_get_type(buffer, length);
     int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != STUN_USERNAME) goto error;
+    if (type != STUN_USERNAME)
+        goto error;
 
-    if (size < 1 || size > 513) goto error;
+    if (size < 1 || size > 513)
+        goto error;
 
-    if (length < (size_t)size + 4) goto error;
+    if (length < (size_t)size + 4)
+        goto error;
 
     return true;
 
@@ -69,7 +73,8 @@ error:
 
 bool ov_stun_username_validate(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 1 || length > 513) return false;
+    if (!buffer || length < 1 || length > 513)
+        return false;
 
     // MUST be valid UTF8
     return ov_utf8_validate_sequence(buffer, length);
@@ -86,11 +91,13 @@ bool ov_stun_username_validate(const uint8_t *buffer, size_t length) {
 size_t ov_stun_username_encoding_length(const uint8_t *username,
                                         size_t length) {
 
-    if (!username || length == 0 || length > 513) goto error;
+    if (!username || length == 0 || length > 513)
+        goto error;
 
     size_t pad = 0;
     pad = length % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     return length + 4 + pad;
 error:
@@ -99,48 +106,52 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_username_encode(uint8_t *buffer,
-                             size_t length,
-                             uint8_t **next,
-                             const uint8_t *username,
-                             size_t size) {
+bool ov_stun_username_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                             const uint8_t *username, size_t size) {
 
-    if (!buffer || !username || size > 513 || size == 0) goto error;
+    if (!buffer || !username || size > 513 || size == 0)
+        goto error;
 
     size_t len = ov_stun_username_encoding_length(username, size);
 
-    if (length < len) goto error;
+    if (length < len)
+        goto error;
 
-    if (!ov_stun_username_validate(username, size)) goto error;
+    if (!ov_stun_username_validate(username, size))
+        goto error;
 
-    return ov_stun_attribute_encode(
-        buffer, length, next, STUN_USERNAME, username, size);
+    return ov_stun_attribute_encode(buffer, length, next, STUN_USERNAME,
+                                    username, size);
 error:
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_username_decode(const uint8_t *buffer,
-                             size_t length,
-                             uint8_t **username,
-                             size_t *size) {
+bool ov_stun_username_decode(const uint8_t *buffer, size_t length,
+                             uint8_t **username, size_t *size) {
 
-    if (!buffer || length < 5 || !username || !size) goto error;
+    if (!buffer || length < 5 || !username || !size)
+        goto error;
 
-    if (!ov_stun_attribute_frame_is_username(buffer, length)) goto error;
+    if (!ov_stun_attribute_frame_is_username(buffer, length))
+        goto error;
 
     *size = ov_stun_attribute_get_length(buffer, length);
     *username = (uint8_t *)buffer + 4;
 
-    if (*size == 0) goto error;
+    if (*size == 0)
+        goto error;
 
-    if (!ov_stun_username_validate(*username, *size)) goto error;
+    if (!ov_stun_username_validate(*username, *size))
+        goto error;
 
     return true;
 
 error:
-    if (username) *username = NULL;
-    if (size) *size = 0;
+    if (username)
+        *username = NULL;
+    if (size)
+        *size = 0;
     return false;
 }

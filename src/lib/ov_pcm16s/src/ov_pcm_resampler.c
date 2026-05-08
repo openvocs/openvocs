@@ -83,8 +83,7 @@ static size_t to_h_index(size_t out_index, size_t in_index, size_t max_in) {
 
 /*----------------------------------------------------------------------------*/
 
-static double h_at(ov_pcm_16_resampler const *self,
-                   size_t out_index,
+static double h_at(ov_pcm_16_resampler const *self, size_t out_index,
                    size_t in_index) {
 
     OV_ASSERT(0 != self);
@@ -98,11 +97,10 @@ static double h_at(ov_pcm_16_resampler const *self,
 
 /*----------------------------------------------------------------------------*/
 
-ov_pcm_16_resampler *ov_pcm_16_resampler_create(
-    size_t max_number_of_in_samples,
-    size_t max_number_of_out_samples,
-    double samplerate_in_hz,
-    double samplerate_out_hz) {
+ov_pcm_16_resampler *
+ov_pcm_16_resampler_create(size_t max_number_of_in_samples,
+                           size_t max_number_of_out_samples,
+                           double samplerate_in_hz, double samplerate_out_hz) {
 
     double in_sample_length_s = samplerate_in_hz;
     in_sample_length_s = 1.0 / in_sample_length_s;
@@ -176,10 +174,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool resample_nocheck(ov_pcm_16_resampler const *self,
-                             int16_t const *in,
-                             size_t no_in_samples,
-                             int16_t *out,
+static bool resample_nocheck(ov_pcm_16_resampler const *self, int16_t const *in,
+                             size_t no_in_samples, int16_t *out,
                              size_t no_out_samples) {
 
     OV_ASSERT(0 != self);
@@ -208,10 +204,8 @@ static bool resample_nocheck(ov_pcm_16_resampler const *self,
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_pcm_16_resample(ov_pcm_16_resampler *self,
-                           int16_t const *in,
-                           size_t num_in_samples,
-                           int16_t *out,
+ssize_t ov_pcm_16_resample(ov_pcm_16_resampler *self, int16_t const *in,
+                           size_t num_in_samples, int16_t *out,
                            size_t out_samples_capacity) {
 
     if (0 == in) {
@@ -251,8 +245,8 @@ ssize_t ov_pcm_16_resample(ov_pcm_16_resampler *self,
         num_output_samples_to_generate = out_samples_capacity;
     }
 
-    if (!resample_nocheck(
-            self, in, num_in_samples, out, num_output_samples_to_generate)) {
+    if (!resample_nocheck(self, in, num_in_samples, out,
+                          num_output_samples_to_generate)) {
         goto error;
     }
 
@@ -267,10 +261,8 @@ error:
                       Direct implementation - for ref only
  ****************************************************************************/
 
-static double restored_signal(size_t m,
-                              const double out_sample_length_s,
-                              int16_t const *samples,
-                              size_t num_samples,
+static double restored_signal(size_t m, const double out_sample_length_s,
+                              int16_t const *samples, size_t num_samples,
                               const double in_sample_length_s,
                               const double pi_times_samplerate_in_hz) {
 
@@ -288,8 +280,7 @@ static double restored_signal(size_t m,
 
 static bool resample_uncached_nocheck(ov_pcm_16_resampler const *self,
                                       int16_t const *in,
-                                      size_t number_of_in_samples,
-                                      int16_t *out,
+                                      size_t number_of_in_samples, int16_t *out,
                                       size_t number_of_out_samples) {
 
     // Upsampling done via interpolation as described here:
@@ -301,12 +292,9 @@ static bool resample_uncached_nocheck(ov_pcm_16_resampler const *self,
     const double pi_times_samplerate_in_hz = self->samplerate_in_hz * M_PI;
 
     for (size_t m = 0; m < number_of_out_samples; ++m) {
-        out[m] = restored_signal(m,
-                                 out_sample_length_s,
-                                 in,
-                                 number_of_in_samples,
-                                 in_sample_length_s,
-                                 pi_times_samplerate_in_hz);
+        out[m] =
+            restored_signal(m, out_sample_length_s, in, number_of_in_samples,
+                            in_sample_length_s, pi_times_samplerate_in_hz);
     }
 
     return true;
@@ -316,8 +304,7 @@ static bool resample_uncached_nocheck(ov_pcm_16_resampler const *self,
 
 ssize_t ov_pcm_16_resample_uncached(ov_pcm_16_resampler const *self,
                                     int16_t const *in,
-                                    const size_t num_in_samples,
-                                    int16_t *out,
+                                    const size_t num_in_samples, int16_t *out,
                                     const size_t out_samples_capacity) {
 
     if (0 == self) {
@@ -359,8 +346,8 @@ ssize_t ov_pcm_16_resample_uncached(ov_pcm_16_resampler const *self,
     const size_t num_out_samples_to_generate =
         OV_MIN(num_out_samples, out_samples_capacity);
 
-    bool success = resample_uncached_nocheck(
-        self, in, num_in_samples, out, num_out_samples_to_generate);
+    bool success = resample_uncached_nocheck(self, in, num_in_samples, out,
+                                             num_out_samples_to_generate);
 
     if (!success) {
         goto error;

@@ -39,13 +39,16 @@
 
 bool ov_match_strict(const void *key, const void *string) {
 
-    if (!key || !string) return false;
+    if (!key || !string)
+        return false;
 
     size_t len = strlen(string);
 
-    if (strlen(key) != len) return false;
+    if (strlen(key) != len)
+        return false;
 
-    if (0 == memcmp(key, string, len)) return true;
+    if (0 == memcmp(key, string, len))
+        return true;
 
     return false;
 }
@@ -54,11 +57,14 @@ bool ov_match_strict(const void *key, const void *string) {
 
 bool ov_match_c_string_strict(const void *key, const void *string) {
 
-    if (key == string) return true;
+    if (key == string)
+        return true;
 
-    if (!key || !string) return false;
+    if (!key || !string)
+        return false;
 
-    if (0 == strcmp(key, string)) return true;
+    if (0 == strcmp(key, string))
+        return true;
 
     return false;
 }
@@ -67,11 +73,14 @@ bool ov_match_c_string_strict(const void *key, const void *string) {
 
 bool ov_match_c_string_case_ignore_strict(const void *key, const void *string) {
 
-    if (key == string) return true;
+    if (key == string)
+        return true;
 
-    if (!key || !string) return false;
+    if (!key || !string)
+        return false;
 
-    if (0 == strcasecmp(key, string)) return true;
+    if (0 == strcasecmp(key, string))
+        return true;
 
     return false;
 }
@@ -87,7 +96,8 @@ bool ov_match_intptr(const void *ptr1, const void *ptr2) {
 
 bool ov_match_uint64(const void *ptr1, const void *ptr2) {
 
-    if (!ptr1 || !ptr2) return false;
+    if (!ptr1 || !ptr2)
+        return false;
 
     return ((*(uint64_t *)ptr1) == (*(uint64_t *)ptr2));
 }

@@ -35,9 +35,11 @@ ov_turn_permission *ov_turn_permission_create(const char *host,
                                               uint64_t expire_usec) {
 
     ov_turn_permission *self = calloc(1, sizeof(ov_turn_permission));
-    if (!self || !host) goto error;
+    if (!self || !host)
+        goto error;
 
-    if (!strncpy(self->host, host, OV_HOST_NAME_MAX)) goto error;
+    if (!strncpy(self->host, host, OV_HOST_NAME_MAX))
+        goto error;
 
     self->updated = ov_time_get_current_time_usecs();
     self->lifetime_usec = expire_usec;
@@ -53,7 +55,8 @@ error:
 
 ov_turn_permission *ov_turn_permission_free(ov_turn_permission *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     self = ov_data_pointer_free(self);
     return NULL;

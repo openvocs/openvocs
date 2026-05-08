@@ -33,6 +33,8 @@ import * as CSS from "/css/css.js";
 export default class ov_RBAC_Graph extends HTMLElement {
 
     #dom = {};
+    #allow_highlighted_loops;
+    #no_new_users;
 
     constructor() {
         super();
@@ -41,11 +43,14 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
+        return ["no_new_users"]
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue)
             return;
+        if (name === "no_new_users")
+            this.#no_new_users = newValue;
     }
 
     // -----------------------------------------------------------------
@@ -64,6 +69,26 @@ export default class ov_RBAC_Graph extends HTMLElement {
         this.#dom.add_loop = this.shadowRoot.querySelector("#loop_header .add_entry");
 
         let source_node;
+
+        window.addEventListener("keydown", (event) => {
+            if (event.code === "Escape" && source_node) {
+
+                Graph.highlight_node(source_node, "select", false);
+
+                for (let user of Graph.nodes.users.values()) {
+                    user.classList.toggle("edit_" + source_node.type + "_edges", false);
+                }
+                for (let role of Graph.nodes.roles.values()) {
+                    role.classList.toggle("edit_" + source_node.type + "_edges", false);
+                }
+                for (let loop of Graph.nodes.loops.values()) {
+                    loop.classList.toggle("edit_" + source_node.type + "_edges", false);
+                }
+                source_node.classList.toggle("edit", false);
+                source_node = undefined;
+            }
+
+        });
 
         this.#dom.graph.addEventListener("delete_node", (event) => {
             let node = event.detail.node;
@@ -129,7 +154,10 @@ export default class ov_RBAC_Graph extends HTMLElement {
                     Graph.register_node(event.detail.node);
                 else {
                     event.detail.node.node_id = undefined;
-                    event.detail.node.show_settings("ID is already assigned to other node. Please change ID.");
+                    if (event.detail.node.type === "user")
+                        event.detail.node.show_settings("Username is already assigned. Please change username.");
+                    else
+                        event.detail.node.show_settings("ID is already assigned. Please change ID.");
                 }
             }
         });
@@ -142,7 +170,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
             this.#render_node(undefined, "role");
         });
 
-        this.#dom.add_loop.addEventListener("click", () => {
+        this.#dom.add_loop.addEventListener("click", async () => {
             this.#render_node(undefined, "loop");
         });
 
@@ -168,6 +196,25 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     get users() {
         return Graph.nodes.users;
+    }
+
+    set allow_highlighted_loops(value) {
+        this.#allow_highlighted_loops = value;
+    }
+
+    get allow_highlighted_loops() {
+        return this.#allow_highlighted_loops;
+    }
+
+    set no_new_users(value) {
+        if (value)
+            this.setAttribute("no_new_users", "");
+        else
+            this.removeAttribute("no_new_users");
+    }
+
+    get no_new_users() {
+        return this.#no_new_users;
     }
 
     filter_unused_users(value) {
@@ -227,25 +274,37 @@ export default class ov_RBAC_Graph extends HTMLElement {
     add_node_subset(data, id) {
         if (data.users || data.roles || data.loops) {
             // order is important! first users than roles than loops
-            if (data.users)
-                for (let node of Object.values(data.users))
-                    this.#render_node(node, "user", id);
-
-            if (data.roles) {
-                let admin = false;
-                for (let node of Object.values(data.roles)) {
-                    this.#render_node(node, "role", id);
-                    if (node.id === "admin")
-                        admin = true;
-                }
-                if (!admin)
-                    this.#render_node({ id: "admin" }, "role", id);
-
+            if (data.users) {
+                let sorted_nodes = Object.values(data.users).sort((a, b) => {
+                    let first = a.name ? a.name : a.id;
+                    let second = b.name ? b.name : b.id;
+                    return first.localeCompare(second);
+                });
+                for (let node of sorted_nodes)
+                    this.#render_node(node, "user", id, node.id === "admin");
             }
 
-            if (data.loops)
-                for (let node of Object.values(data.loops))
+            if (data.roles) {
+                let sorted_nodes = Object.values(data.roles).sort((a, b) => {
+                    let first = a.name ? a.name : a.id;
+                    let second = b.name ? b.name : b.id;
+                    return first.localeCompare(second);
+                });
+                for (let node of sorted_nodes) {
+                    if (!(data.domain && node.id === "admin")) // for backward capability -> we currently don't support project admins, so we need to delete them
+                        this.#render_node(node, "role", id, node.id === "admin");
+                }
+            }
+
+            if (data.loops) {
+                let sorted_nodes = Object.values(data.loops).sort((a, b) => {
+                    let first = a.name ? a.name : a.id;
+                    let second = b.name ? b.name : b.id;
+                    return first.localeCompare(second);
+                });
+                for (let node of sorted_nodes)
                     this.#render_node(node, "loop", id);
+            }
 
 
             this.#dom.add_user.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -295,8 +354,9 @@ export default class ov_RBAC_Graph extends HTMLElement {
         this.#dom.node_layer_3.replaceChildren();
     }
 
-    #render_node(node, type, subset_id) {
+    #render_node(node, type, subset_id, prepend) {
         let element = Graph.create_node(type, node, subset_id);
+        element.allow_highlighting = this.#allow_highlighted_loops;
         let container;
         if (type === "user")
             container = this.#dom.node_layer_1;
@@ -304,10 +364,15 @@ export default class ov_RBAC_Graph extends HTMLElement {
             container = this.#dom.node_layer_2;
         else if (type === "loop")
             container = this.#dom.node_layer_3;
-        container.appendChild(element);
+        if (!prepend)
+            container.appendChild(element);
+        else
+            container.insertBefore(element, container.firstChild);
 
         if (node && (node.ldap || node.frozen))
             element.frozen = true;
+        if (node && node.global)
+            element.global = true;
         this.#adjust_grid_size();
         element.scrollIntoView({ behavior: "smooth", block: "start" });
     }

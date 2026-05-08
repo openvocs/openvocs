@@ -63,14 +63,17 @@ static ov_registered_cache *g_cache = 0;
 
 bool ov_websocket_generate_secure_websocket_key(uint8_t *buffer, size_t size) {
 
-    if (!buffer || !size) goto error;
+    if (!buffer || !size)
+        goto error;
 
-    if (size < OV_WEBSOCKET_SECURE_KEY_SIZE) goto error;
+    if (size < OV_WEBSOCKET_SECURE_KEY_SIZE)
+        goto error;
 
     ov_id uuid = {0};
     ov_id_fill_with_uuid(uuid);
 
-    if (!ov_base64_encode((uint8_t *)uuid, 16, &buffer, &size)) goto error;
+    if (!ov_base64_encode((uint8_t *)uuid, 16, &buffer, &size))
+        goto error;
 
     return true;
 error:
@@ -79,10 +82,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_websocket_generate_secure_accept_key(const uint8_t *key,
-                                             size_t len,
-                                             uint8_t **result,
-                                             size_t *size) {
+bool ov_websocket_generate_secure_accept_key(const uint8_t *key, size_t len,
+                                             uint8_t **result, size_t *size) {
 
     if (!key || (len != OV_WEBSOCKET_SECURE_KEY_SIZE) || !result || !size)
         return false;
@@ -102,15 +103,13 @@ bool ov_websocket_generate_secure_accept_key(const uint8_t *key,
     uint8_t buf[buf_size];
     uint8_t *hash = buf;
 
-    if (!ov_hash_string(OV_HASH_SHA1,
-                        acceptkey,
-                        strlen((char *)acceptkey),
-                        &hash,
-                        &buf_size))
+    if (!ov_hash_string(OV_HASH_SHA1, acceptkey, strlen((char *)acceptkey),
+                        &hash, &buf_size))
         return false;
 
     // STEP 4 - BASE64 encode the result
-    if (!ov_base64_encode(hash, SHA_DIGEST_LENGTH, result, size)) return false;
+    if (!ov_base64_encode(hash, SHA_DIGEST_LENGTH, result, size))
+        return false;
 
     return true;
 }
@@ -125,7 +124,8 @@ bool ov_websocket_generate_secure_accept_key(const uint8_t *key,
 
 static bool is_upgrade_request(const ov_http_message *msg) {
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
     const ov_http_header *upgrade = ov_http_header_get_unique(
         msg->header, msg->config.header.capacity, OV_HTTP_KEY_UPGRADE);
@@ -133,11 +133,13 @@ static bool is_upgrade_request(const ov_http_message *msg) {
     const ov_http_header *connection = ov_http_header_get_unique(
         msg->header, msg->config.header.capacity, OV_HTTP_KEY_CONNECTION);
 
-    if (!upgrade || !connection) goto error;
+    if (!upgrade || !connection)
+        goto error;
 
     /* Upgrade request MUST be websocket */
 
-    if (upgrade->value.length != ws_key_len) goto error;
+    if (upgrade->value.length != ws_key_len)
+        goto error;
 
     if (0 !=
         strncasecmp((char *)upgrade->value.start, OV_WEBSOCKET_KEY, ws_key_len))
@@ -151,11 +153,8 @@ static bool is_upgrade_request(const ov_http_message *msg) {
      */
 
     if (!ov_http_pointer_find_item_in_comma_list(
-            connection->value.start,
-            connection->value.length,
-            (uint8_t *)OV_WEBSOCKET_KEY_UPGRADE,
-            ws_key_upgrade_len,
-            true))
+            connection->value.start, connection->value.length,
+            (uint8_t *)OV_WEBSOCKET_KEY_UPGRADE, ws_key_upgrade_len, true))
         goto error;
 
     return true;
@@ -177,7 +176,8 @@ bool ov_websocket_process_handshake_request(const ov_http_message *msg,
     if (!msg || !out || !ov_http_is_request(msg, OV_HTTP_METHOD_GET))
         goto error;
 
-    if (!is_upgrade_request(msg)) goto error;
+    if (!is_upgrade_request(msg))
+        goto error;
 
     const ov_http_header *host = ov_http_header_get_unique(
         msg->header, msg->config.header.capacity, OV_HTTP_KEY_HOST);
@@ -186,80 +186,77 @@ bool ov_websocket_process_handshake_request(const ov_http_message *msg,
         msg->header, msg->config.header.capacity, OV_WEBSOCKET_KEY_SECURE);
 
     const ov_http_header *sec_ver =
-        ov_http_header_get_unique(msg->header,
-                                  msg->config.header.capacity,
+        ov_http_header_get_unique(msg->header, msg->config.header.capacity,
                                   OV_WEBSOCKET_KEY_SECURE_VERSION);
 
-    if (!host || !sec_key || !sec_ver) goto error;
+    if (!host || !sec_key || !sec_ver)
+        goto error;
 
-    if (is_handshake) *is_handshake = true;
+    if (is_handshake)
+        *is_handshake = true;
 
     /*  NOTE
      *  Origin is not checked, as we do not limit based on origin.
      *  PATH is not checked, as we do not differentiate between paths
      */
 
-    if (0 != strncmp(OV_WEBSOCKET_VERSION,
-                     (char *)sec_ver->value.start,
+    if (0 != strncmp(OV_WEBSOCKET_VERSION, (char *)sec_ver->value.start,
                      sec_ver->value.length)) {
 
-        *out = ov_http_create_status_string(
-            msg->config, msg->version, 426, OV_HTTP_UPGRADE_REQUIRED);
+        *out = ov_http_create_status_string(msg->config, msg->version, 426,
+                                            OV_HTTP_UPGRADE_REQUIRED);
 
-        ov_http_message_add_header_string(
-            *out, OV_WEBSOCKET_KEY_SECURE_VERSION, OV_WEBSOCKET_VERSION);
+        ov_http_message_add_header_string(*out, OV_WEBSOCKET_KEY_SECURE_VERSION,
+                                          OV_WEBSOCKET_VERSION);
 
         ov_http_message_close_header(*out);
 
         goto error;
     }
 
-    if (ov_http_header_get(msg->header,
-                           msg->config.header.capacity,
+    if (ov_http_header_get(msg->header, msg->config.header.capacity,
                            OV_WEBSOCKET_KEY_SECURE_EXTENSION))
-        ov_log_error(
-            "Websocket request with extension set - "
-            " unsupported (ignoring extensions!)");
+        ov_log_error("Websocket request with extension set - "
+                     " unsupported (ignoring extensions!)");
 
-    if (ov_http_header_get(msg->header,
-                           msg->config.header.capacity,
+    if (ov_http_header_get(msg->header, msg->config.header.capacity,
                            OV_WEBSOCKET_KEY_SECURE_PROTOCOL))
-        ov_log_error(
-            "Websocket request with subprotocols set - "
-            " unsupported (ignoring subprotocols!)");
+        ov_log_error("Websocket request with subprotocols set - "
+                     " unsupported (ignoring subprotocols!)");
 
     /*  sec_key
      *
      *  MUST be a base64 encoded 16 byte value
      *  (24 bytes) */
 
-    if (sec_key->value.length != 24) goto error;
+    if (sec_key->value.length != 24)
+        goto error;
 
     if (!ov_websocket_generate_secure_accept_key(sec_key->value.start,
                                                  sec_key->value.length,
-                                                 &accept_key,
-                                                 &accept_key_size))
+                                                 &accept_key, &accept_key_size))
         goto error;
 
     /* Create response */
 
-    *out = ov_http_create_status_string(
-        msg->config, msg->version, 101, OV_HTTP_SWITCH_PROTOCOLS);
+    *out = ov_http_create_status_string(msg->config, msg->version, 101,
+                                        OV_HTTP_SWITCH_PROTOCOLS);
 
-    ov_http_message_add_header_string(
-        *out, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY);
+    ov_http_message_add_header_string(*out, OV_HTTP_KEY_UPGRADE,
+                                      OV_WEBSOCKET_KEY);
 
-    ov_http_message_add_header_string(
-        *out, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE);
+    ov_http_message_add_header_string(*out, OV_HTTP_KEY_CONNECTION,
+                                      OV_HTTP_KEY_UPGRADE);
 
-    ov_http_message_add_header_string(
-        *out, OV_WEBSOCKET_KEY_SECURE_ACCEPT, (char *)accept_key);
+    ov_http_message_add_header_string(*out, OV_WEBSOCKET_KEY_SECURE_ACCEPT,
+                                      (char *)accept_key);
 
     ov_http_message_close_header(*out);
 
     return true;
 error:
-    if (is_handshake) *is_handshake = false;
+    if (is_handshake)
+        *is_handshake = false;
     return false;
 }
 
@@ -308,7 +305,8 @@ static ov_websocket_frame *frame_create(ov_registered_cache *cache,
     if (!frame) {
 
         frame = calloc(1, sizeof(ov_websocket_frame));
-        if (!frame) goto error;
+        if (!frame)
+            goto error;
 
         frame->magic_byte = OV_WEBSOCKET_MAGIC_BYTE;
     }
@@ -339,14 +337,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_websocket_frame *ov_websocket_frame_create(
-    ov_websocket_frame_config config) {
+ov_websocket_frame *
+ov_websocket_frame_create(ov_websocket_frame_config config) {
 
     config = config_init(config);
 
     ov_websocket_frame *frame = frame_create(g_cache, config);
 
-    if (!frame) return NULL;
+    if (!frame)
+        return NULL;
 
     OV_ASSERT(ov_websocket_frame_cast(frame));
     OV_ASSERT(frame->buffer);
@@ -358,7 +357,8 @@ ov_websocket_frame *ov_websocket_frame_create(
 bool ov_websocket_frame_clear(ov_websocket_frame *data) {
 
     ov_websocket_frame *frame = ov_websocket_frame_cast(data);
-    if (!frame) goto error;
+    if (!frame)
+        goto error;
 
     frame->opcode = 0;
     frame->state = OV_WEBSOCKET_FRAGMENTATION_NONE;
@@ -389,7 +389,8 @@ error:
 void *ov_websocket_frame_free(void *data) {
 
     ov_websocket_frame *frame = ov_websocket_frame_cast(data);
-    if (!ov_websocket_frame_clear(frame)) return data;
+    if (!ov_websocket_frame_clear(frame))
+        return data;
 
     if ((0 != frame->config.buffer.max_bytes_recache) &&
         (frame->buffer->capacity > frame->config.buffer.max_bytes_recache)) {
@@ -406,7 +407,8 @@ void *ov_websocket_frame_free(void *data) {
 void *ov_websocket_frame_free_uncached(void *data) {
 
     ov_websocket_frame *frame = ov_websocket_frame_cast(data);
-    if (!ov_websocket_frame_clear(frame)) return data;
+    if (!ov_websocket_frame_clear(frame))
+        return data;
 
     frame->buffer = ov_buffer_free_uncached(frame->buffer);
     frame = ov_data_pointer_free(frame);
@@ -417,7 +419,8 @@ void *ov_websocket_frame_free_uncached(void *data) {
 
 ov_websocket_frame *ov_websocket_frame_cast(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
     if (*(uint16_t *)data == OV_WEBSOCKET_MAGIC_BYTE)
         return (ov_websocket_frame *)data;
@@ -464,9 +467,11 @@ static ov_websocket_parser_state parse_payload_length(ov_websocket_frame *frame,
 
     ov_websocket_parser_state state = OV_WEBSOCKET_PARSER_ERROR;
 
-    if (!frame || !frame->buffer) goto error;
+    if (!frame || !frame->buffer)
+        goto error;
 
-    if (frame->buffer->length < 2) return OV_WEBSOCKET_PARSER_PROGRESS;
+    if (frame->buffer->length < 2)
+        return OV_WEBSOCKET_PARSER_PROGRESS;
 
     int64_t length = frame->buffer->start[1] & 0x7F;
 
@@ -475,7 +480,8 @@ static ov_websocket_parser_state parse_payload_length(ov_websocket_frame *frame,
         frame->content.start = frame->buffer->start + 2;
         frame->content.length = length;
 
-        if (length == 0) frame->content.start = NULL;
+        if (length == 0)
+            frame->content.start = NULL;
 
         state = OV_WEBSOCKET_PARSER_SUCCESS;
         goto finish;
@@ -483,12 +489,14 @@ static ov_websocket_parser_state parse_payload_length(ov_websocket_frame *frame,
 
     if (length == 126) {
 
-        if (frame->buffer->length < 4) return OV_WEBSOCKET_PARSER_PROGRESS;
+        if (frame->buffer->length < 4)
+            return OV_WEBSOCKET_PARSER_PROGRESS;
 
         frame->content.start = frame->buffer->start + 4;
 
         length = frame->buffer->start[2] << 8 | frame->buffer->start[3];
-        if (length < 125) goto error;
+        if (length < 125)
+            goto error;
 
         frame->content.length = length;
 
@@ -503,9 +511,11 @@ static ov_websocket_parser_state parse_payload_length(ov_websocket_frame *frame,
     length = 0;
 
     // most significant bit must be 0
-    if (frame->buffer->start[2] & 0x80) goto error;
+    if (frame->buffer->start[2] & 0x80)
+        goto error;
 
-    if (frame->buffer->length < 10) return OV_WEBSOCKET_PARSER_PROGRESS;
+    if (frame->buffer->length < 10)
+        return OV_WEBSOCKET_PARSER_PROGRESS;
 
     /*
      *  Here we use integer assignments,
@@ -528,7 +538,8 @@ static ov_websocket_parser_state parse_payload_length(ov_websocket_frame *frame,
     length = (byte1 << 56) + (byte2 << 48) + (byte3 << 40) + (byte4 << 32) +
              (byte5 << 24) + (byte6 << 16) + (byte7 << 8) + byte8;
 
-    if (length < 0x10000) goto error;
+    if (length < 0x10000)
+        goto error;
 
     frame->content.start = frame->buffer->start + +10;
     frame->content.length = length;
@@ -543,7 +554,8 @@ finish:
 
     if (frame->buffer->start[1] & 0x80) {
 
-        if (NULL == frame->content.start) goto error;
+        if (NULL == frame->content.start)
+            goto error;
 
         frame->mask = frame->content.start;
         frame->content.start += 4;
@@ -600,24 +612,28 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_websocket_fragmentation_state fragmentation_state(
-    const uint8_t buffer) {
+static ov_websocket_fragmentation_state
+fragmentation_state(const uint8_t buffer) {
 
     bool fin = false;
     bool opcode = false;
 
-    if (buffer & 0x80) fin = true;
+    if (buffer & 0x80)
+        fin = true;
 
-    if (0 != (buffer & 0x0F)) opcode = true;
+    if (0 != (buffer & 0x0F))
+        opcode = true;
 
     if (fin) {
 
-        if (opcode) return OV_WEBSOCKET_FRAGMENTATION_NONE;
+        if (opcode)
+            return OV_WEBSOCKET_FRAGMENTATION_NONE;
 
         return OV_WEBSOCKET_FRAGMENTATION_LAST;
     }
 
-    if (opcode) return OV_WEBSOCKET_FRAGMENTATION_START;
+    if (opcode)
+        return OV_WEBSOCKET_FRAGMENTATION_START;
 
     return OV_WEBSOCKET_FRAGMENTATION_CONTINUE;
 }
@@ -629,13 +645,17 @@ ov_websocket_parser_state ov_websocket_parse_frame(ov_websocket_frame *frame,
 
     ov_websocket_parser_state state = OV_WEBSOCKET_PARSER_ERROR;
 
-    if (!frame) goto error;
+    if (!frame)
+        goto error;
 
-    if (!frame->buffer) goto error;
+    if (!frame->buffer)
+        goto error;
 
-    if (!frame->buffer->start) goto error;
+    if (!frame->buffer->start)
+        goto error;
 
-    if (frame->buffer->length == 0) goto error;
+    if (frame->buffer->length == 0)
+        goto error;
 
     /* Unset valued to be set */
 
@@ -645,20 +665,21 @@ ov_websocket_parser_state ov_websocket_parse_frame(ov_websocket_frame *frame,
 
     state = parse_payload_length(frame, next);
 
-    if (state != OV_WEBSOCKET_PARSER_SUCCESS) return state;
+    if (state != OV_WEBSOCKET_PARSER_SUCCESS)
+        return state;
 
     switch (0x0F & frame->buffer->start[0]) {
 
-        case OV_WEBSOCKET_OPCODE_CONTINUATION:
-        case OV_WEBSOCKET_OPCODE_TEXT:
-        case OV_WEBSOCKET_OPCODE_BINARY:
-        case OV_WEBSOCKET_OPCODE_CLOSE:
-        case OV_WEBSOCKET_OPCODE_PING:
-        case OV_WEBSOCKET_OPCODE_PONG:
-            frame->opcode = 0x0F & frame->buffer->start[0];
-            break;
-        default:
-            goto error;
+    case OV_WEBSOCKET_OPCODE_CONTINUATION:
+    case OV_WEBSOCKET_OPCODE_TEXT:
+    case OV_WEBSOCKET_OPCODE_BINARY:
+    case OV_WEBSOCKET_OPCODE_CLOSE:
+    case OV_WEBSOCKET_OPCODE_PING:
+    case OV_WEBSOCKET_OPCODE_PONG:
+        frame->opcode = 0x0F & frame->buffer->start[0];
+        break;
+    default:
+        goto error;
     }
 
     frame->state = fragmentation_state(frame->buffer->start[0]);
@@ -666,7 +687,8 @@ ov_websocket_parser_state ov_websocket_parse_frame(ov_websocket_frame *frame,
     return OV_WEBSOCKET_PARSER_SUCCESS;
 
 error:
-    if (next && frame && frame->buffer) *next = frame->buffer->start;
+    if (next && frame && frame->buffer)
+        *next = frame->buffer->start;
 
     return OV_WEBSOCKET_PARSER_ERROR;
 }
@@ -681,7 +703,8 @@ error:
 
 static bool generate_masking_key(uint8_t *buffer, size_t size) {
 
-    if (!buffer || size < 4) return false;
+    if (!buffer || size < 4)
+        return false;
 
     return ov_random_bytes(buffer, 4);
 }
@@ -690,7 +713,8 @@ static bool generate_masking_key(uint8_t *buffer, size_t size) {
 
 static bool mask_data(uint8_t *buffer, size_t size, const uint8_t *mask) {
 
-    if (!buffer || size < 1 || !mask) goto error;
+    if (!buffer || size < 1 || !mask)
+        goto error;
 
     uint8_t j = 0;
 
@@ -708,18 +732,19 @@ error:
 
 bool ov_websocket_frame_unmask(ov_websocket_frame *frame) {
 
-    if (!frame) goto error;
+    if (!frame)
+        goto error;
 
     if (!frame->content.start) {
 
-        if (frame->mask) goto error;
+        if (frame->mask)
+            goto error;
 
         goto done;
     }
 
     if (frame->mask)
-        return mask_data((uint8_t *)frame->content.start,
-                         frame->content.length,
+        return mask_data((uint8_t *)frame->content.start, frame->content.length,
                          frame->mask);
 done:
     return true;
@@ -729,18 +754,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_websocket_set_data(ov_websocket_frame *frame,
-                           const uint8_t *data,
-                           size_t length,
-                           bool mask) {
+bool ov_websocket_set_data(ov_websocket_frame *frame, const uint8_t *data,
+                           size_t length, bool mask) {
 
-    if (!frame) goto error;
+    if (!frame)
+        goto error;
 
     size_t required = 0;
 
-    if (!data) length = 0;
+    if (!data)
+        length = 0;
 
-    if (0 == length) data = NULL;
+    if (0 == length)
+        data = NULL;
 
     if (length < 126) {
 
@@ -755,7 +781,8 @@ bool ov_websocket_set_data(ov_websocket_frame *frame,
         required = 10 + length;
     }
 
-    if (mask) required += 4;
+    if (mask)
+        required += 4;
 
     if (!frame->buffer) {
 
@@ -763,8 +790,8 @@ bool ov_websocket_set_data(ov_websocket_frame *frame,
 
     } else if (frame->buffer->capacity < required) {
 
-        if (!ov_buffer_extend(
-                frame->buffer, required - frame->buffer->capacity))
+        if (!ov_buffer_extend(frame->buffer,
+                              required - frame->buffer->capacity))
             goto error;
     }
 
@@ -773,14 +800,16 @@ bool ov_websocket_set_data(ov_websocket_frame *frame,
 
     if (!data || (0 == length)) {
 
-        if (mask) goto error;
+        if (mask)
+            goto error;
     }
 
     uint8_t *next = NULL;
     uint8_t *mask_start = NULL;
 
     uint8_t flag_mask = 0;
-    if (mask) flag_mask = 0x80;
+    if (mask)
+        flag_mask = 0x80;
 
     // set length
     if (length < 126) {
@@ -811,7 +840,8 @@ bool ov_websocket_set_data(ov_websocket_frame *frame,
 
     if (mask) {
 
-        if (!generate_masking_key(next, 4)) goto error;
+        if (!generate_masking_key(next, 4))
+            goto error;
 
         mask_start = next;
         next += 4;
@@ -819,12 +849,14 @@ bool ov_websocket_set_data(ov_websocket_frame *frame,
 
     if (data && (0 != length)) {
 
-        if (!memcpy(next, data, length)) goto error;
+        if (!memcpy(next, data, length))
+            goto error;
     }
 
     if (mask) {
 
-        if (!mask_data(next, length, mask_start)) goto error;
+        if (!mask_data(next, length, mask_start))
+            goto error;
     }
 
     /*  Reparse to frame and set correct buffer length */
@@ -849,18 +881,23 @@ bool ov_websocket_frame_shift_trailing_bytes(ov_websocket_frame *source,
                                              ov_websocket_frame **dest) {
 
     ov_websocket_frame *new = NULL;
-    if (!source || !next || !dest) goto error;
+    if (!source || !next || !dest)
+        goto error;
 
     new = ov_websocket_frame_create(source->config);
-    if (!new) goto error;
+    if (!new)
+        goto error;
 
-    if (next == source->buffer->start + source->buffer->length) goto done;
+    if (next == source->buffer->start + source->buffer->length)
+        goto done;
 
     size_t len = source->buffer->length - (next - source->buffer->start);
 
-    if (!ov_buffer_set(new->buffer, next, len)) goto error;
+    if (!ov_buffer_set(new->buffer, next, len))
+        goto error;
 
-    if (!memset(next, 0, len)) goto error;
+    if (!memset(next, 0, len))
+        goto error;
 
     source->buffer->length = (next - source->buffer->start);
 
@@ -873,15 +910,17 @@ error:
 }
 /*----------------------------------------------------------------------------*/
 
-ov_websocket_frame_config ov_websocket_frame_config_from_json(
-    const ov_json_value *value) {
+ov_websocket_frame_config
+ov_websocket_frame_config_from_json(const ov_json_value *value) {
 
     ov_websocket_frame_config out = {0};
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     ov_json_value *val = NULL;
     const ov_json_value *config = ov_json_object_get(value, OV_KEY_WEBSOCKET);
-    if (!config) config = value;
+    if (!config)
+        config = value;
 
     val = ov_json_object_get(config, OV_KEY_BUFFER);
     out.buffer.default_size =
@@ -896,27 +935,31 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_websocket_frame_config_to_json(
-    ov_websocket_frame_config config) {
+ov_json_value *
+ov_websocket_frame_config_to_json(ov_websocket_frame_config config) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *item = NULL;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_KEY_BUFFER, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_BUFFER, val))
+        goto error;
 
     item = val;
     val = NULL;
 
     val = ov_json_number(config.buffer.default_size);
-    if (!ov_json_object_set(item, OV_KEY_SIZE, val)) goto error;
+    if (!ov_json_object_set(item, OV_KEY_SIZE, val))
+        goto error;
 
     val = ov_json_number(config.buffer.max_bytes_recache);
-    if (!ov_json_object_set(item, OV_KEY_MAX_CACHE, val)) goto error;
+    if (!ov_json_object_set(item, OV_KEY_MAX_CACHE, val))
+        goto error;
 
     return out;
 error:
@@ -927,22 +970,24 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_websocket_frame *ov_websocket_frame_pop(
-    ov_buffer **input,
-    const ov_websocket_frame_config *config,
-    ov_websocket_parser_state *state) {
+ov_websocket_frame *
+ov_websocket_frame_pop(ov_buffer **input,
+                       const ov_websocket_frame_config *config,
+                       ov_websocket_parser_state *state) {
 
     ov_websocket_frame *frame = NULL;
     ov_buffer *new_buffer = NULL;
 
     ov_websocket_parser_state s = OV_WEBSOCKET_PARSER_ERROR;
 
-    if (!input || !config || !state) goto error;
+    if (!input || !config || !state)
+        goto error;
 
     ov_buffer *buffer = *input;
 
     frame = calloc(1, sizeof(ov_websocket_frame));
-    if (!frame) goto error;
+    if (!frame)
+        goto error;
     frame->magic_byte = OV_WEBSOCKET_MAGIC_BYTE;
     frame->config = *config;
     frame->buffer = buffer;
@@ -953,27 +998,30 @@ ov_websocket_frame *ov_websocket_frame_pop(
 
     switch (s) {
 
-        case OV_WEBSOCKET_PARSER_PROGRESS:
-            frame->buffer = NULL;
-            new_buffer = buffer;
-            goto done;
+    case OV_WEBSOCKET_PARSER_PROGRESS:
+        frame->buffer = NULL;
+        new_buffer = buffer;
+        goto done;
 
-        case OV_WEBSOCKET_PARSER_SUCCESS:
-            break;
+    case OV_WEBSOCKET_PARSER_SUCCESS:
+        break;
 
-        default:
-            frame->buffer = NULL;
-            goto error;
+    default:
+        frame->buffer = NULL;
+        goto error;
     }
 
-    if (next == frame->buffer->start + frame->buffer->length) goto done;
+    if (next == frame->buffer->start + frame->buffer->length)
+        goto done;
 
     size_t len = frame->buffer->length - (next - frame->buffer->start);
     new_buffer = ov_buffer_create(len);
 
-    if (!ov_buffer_set(new_buffer, next, len)) goto error;
+    if (!ov_buffer_set(new_buffer, next, len))
+        goto error;
 
-    if (!memset(next, 0, len)) goto error;
+    if (!memset(next, 0, len))
+        goto error;
 
     frame->buffer->length = (next - frame->buffer->start);
 
@@ -983,7 +1031,8 @@ done:
     return frame;
 
 error:
-    if (state) *state = OV_WEBSOCKET_PARSER_ERROR;
+    if (state)
+        *state = OV_WEBSOCKET_PARSER_ERROR;
     frame = ov_websocket_frame_free(frame);
     return NULL;
 }

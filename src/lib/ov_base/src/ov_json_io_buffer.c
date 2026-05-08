@@ -50,7 +50,8 @@ struct ov_json_io_buffer {
 
 ov_json_io_buffer *ov_json_io_buffer_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
     if (*(uint16_t *)data == OV_JSON_IO_BUFFER_MAGIC_BYTE)
         return (ov_json_io_buffer *)data;
@@ -62,10 +63,12 @@ ov_json_io_buffer *ov_json_io_buffer_cast(const void *data) {
 
 ov_json_io_buffer *ov_json_io_buffer_create(ov_json_io_buffer_config config) {
 
-    if (!config.callback.success) return NULL;
+    if (!config.callback.success)
+        return NULL;
 
     ov_json_io_buffer *self = calloc(1, sizeof(ov_json_io_buffer));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_byte = OV_JSON_IO_BUFFER_MAGIC_BYTE;
 
@@ -75,7 +78,8 @@ ov_json_io_buffer *ov_json_io_buffer_create(ov_json_io_buffer_config config) {
     self->dict = ov_dict_create(d_config);
     self->config = config;
 
-    if (!self->dict) goto error;
+    if (!self->dict)
+        goto error;
 
     return self;
 error:
@@ -86,7 +90,8 @@ error:
 
 ov_json_io_buffer *ov_json_io_buffer_free(ov_json_io_buffer *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     self->dict = ov_dict_free(self->dict);
     free(self);
@@ -97,7 +102,8 @@ ov_json_io_buffer *ov_json_io_buffer_free(ov_json_io_buffer *self) {
 
 bool ov_json_io_buffer_drop(ov_json_io_buffer *self, int socket) {
 
-    if (!self || !self->dict) return false;
+    if (!self || !self->dict)
+        return false;
 
     intptr_t key = socket;
     return ov_dict_del(self->dict, (void *)key);
@@ -105,11 +111,11 @@ bool ov_json_io_buffer_drop(ov_json_io_buffer *self, int socket) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_json_io_buffer_push(ov_json_io_buffer *self,
-                            int socket,
+bool ov_json_io_buffer_push(ov_json_io_buffer *self, int socket,
                             const ov_memory_pointer input) {
 
-    if (!self || !self->dict || !input.start || (input.length == 0)) goto error;
+    if (!self || !self->dict || !input.start || (input.length == 0))
+        goto error;
 
     intptr_t key = socket;
 
@@ -125,8 +131,10 @@ bool ov_json_io_buffer_push(ov_json_io_buffer *self,
         }
     }
 
-    if (!ov_buffer_push(buffer, (uint8_t *)input.start, input.length))
+    if (!ov_buffer_push(buffer, (uint8_t *)input.start, input.length)) {
+        ov_log_error("Failed to push to buffer.");
         goto error;
+    }
 
     uint8_t *start = buffer->start;
     size_t open = buffer->length;
@@ -142,9 +150,11 @@ bool ov_json_io_buffer_push(ov_json_io_buffer *self,
         ptr = start;
         len = open;
 
-        if (!ov_json_clear_whitespace(&ptr, &len)) goto mismatch;
+        if (!ov_json_clear_whitespace(&ptr, &len))
+            goto mismatch;
 
-        if (self->config.objects_only && (ptr[0] != '{')) goto mismatch;
+        if (self->config.objects_only && (ptr[0] != '{'))
+            goto mismatch;
 
         /* try to match incomplete first */
 
@@ -167,15 +177,17 @@ bool ov_json_io_buffer_push(ov_json_io_buffer *self,
 
             if (value) {
 
-                self->config.callback.success(
-                    self->config.callback.userdata, socket, value);
+                self->config.callback.success(self->config.callback.userdata,
+                                              socket, value);
 
                 /* check if dropped over callback */
-                if (buffer != ov_dict_get(self->dict, (void *)key)) goto error;
+                if (buffer != ov_dict_get(self->dict, (void *)key))
+                    goto error;
 
                 /* shift buffer */
 
-                if (!ov_buffer_shift(buffer, last + 1)) goto error;
+                if (!ov_buffer_shift(buffer, last + 1))
+                    goto error;
 
                 start = buffer->start;
                 open = buffer->length;

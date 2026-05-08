@@ -126,9 +126,7 @@ typedef struct {
         /**
          * Will be called if socket was closed
          */
-        void (*close)(ov_app *app,
-                      int socket,
-                      const char *uuid,
+        void (*close)(ov_app *app, int socket, const char *uuid,
                       void *userdata);
 
         /*
@@ -153,20 +151,15 @@ typedef struct {
          *      use ov_buffer_cast(*parsed_io_data)
          *
          */
-        bool (*io)(ov_app *app,
-                   int socket,
-                   const char *uuid,
-                   const ov_socket_data *remote,
-                   void **parsed_io_data);
+        bool (*io)(ov_app *app, int socket, const char *uuid,
+                   const ov_socket_data *remote, void **parsed_io_data);
 
         /**
          * Only used if as_client == false .
          * Callback to be called if a new connection was
          * accepted on a (TCP) server socket.
          */
-        bool (*accepted)(ov_app *app,
-                         int server_socket,
-                         int accepted_socket,
+        bool (*accepted)(ov_app *app, int server_socket, int accepted_socket,
                          void *userdata);
 
         /**
@@ -210,8 +203,7 @@ struct ov_app {
          *      socket is opened.
          */
 
-        bool (*open)(ov_app *self,
-                     ov_app_socket_config config,
+        bool (*open)(ov_app *self, ov_app_socket_config config,
                      void (*optional_success_callback)(int socket, void *self),
                      void (*optional_failure_callback)(int socket, void *self));
 
@@ -248,9 +240,7 @@ struct ov_app {
      *      OR be of type ov_buffer.
      */
 
-    bool (*send)(ov_app *self,
-                 int socket,
-                 const ov_socket_data *remote,
+    bool (*send)(ov_app *self, int socket, const ov_socket_data *remote,
                  void *data);
 };
 
@@ -275,8 +265,7 @@ void *ov_app_free(void *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_app_open_socket(ov_app *self,
-                        ov_app_socket_config config,
+bool ov_app_open_socket(ov_app *self, ov_app_socket_config config,
                         void (*success)(int socket, void *self),
                         void (*failure)(int socket, void *self));
 
@@ -286,9 +275,7 @@ bool ov_app_close_socket(ov_app *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_app_send(ov_app *app,
-                 int socket,
-                 const ov_socket_data *remote,
+bool ov_app_send(ov_app *app, int socket, const ov_socket_data *remote,
                  void *data);
 
 /*----------------------------------------------------------------------------*/
@@ -306,10 +293,30 @@ typedef struct {
 
 } ov_app_parameters;
 
+/**
+ * This optstring is ALWAYS expected.
+ * If you try to parse command line options using getopt(3),
+ * ensure
+ * 1. That you reset `optind` to 1
+ * 2. That your optstring should contain OV_APP_DEFAULT_OPTSTRING
+ *
+ * That is, your code should look like
+ *
+ * optind = 1;
+ * char const *my_options = OV_APP_DEFAULT_OPTSTRING "ad:";
+ *
+ * while(getopt(argc, argv, my_options ...)) {...
+ */
+#define OV_APP_DEFAULT_OPTSTRING "c:v"
+
 extern const char *UNKNOWN_ARGUMENT_PRESENT;
 
-const char *ov_app_parse_command_line(int argc,
-                                      char *const argv[],
+const char *
+ov_app_parse_command_line_optargs(int argc, char *const argv[],
+                                  ov_app_parameters *restrict params,
+                                  char const *optargs);
+
+const char *ov_app_parse_command_line(int argc, char *const argv[],
                                       ov_app_parameters *restrict params);
 
 /**

@@ -54,18 +54,19 @@ typedef struct {
 
 static udp_data *as_udp_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     udp_data *udp_data = data;
 
-    if (UDP_MAGIC_BYTES != udp_data->magic_bytes) return 0;
+    if (UDP_MAGIC_BYTES != udp_data->magic_bytes)
+        return 0;
 
     return udp_data;
 }
 
 /*----------------------------------------------------------------------------*/
-static bool get_udp_header_unsafe(ov_format_udp_header *out,
-                                  uint8_t **rd_ptr,
+static bool get_udp_header_unsafe(ov_format_udp_header *out, uint8_t **rd_ptr,
                                   size_t *length) {
 
     OV_ASSERT(0 != out);
@@ -101,11 +102,9 @@ static bool get_udp_header_unsafe(ov_format_udp_header *out,
 
     if (hdr.length_octets != *length) {
 
-        ov_log_error("Length given in UDP header (%" PRIu16
-                     " octets) "
+        ov_log_error("Length given in UDP header (%" PRIu16 " octets) "
                      "and received from lower layer (%zu octets) do not match",
-                     hdr.length_octets,
-                     *length);
+                     hdr.length_octets, *length);
 
         goto error;
     }
@@ -132,8 +131,7 @@ error:
                                    Interface
  ****************************************************************************/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -162,12 +160,10 @@ static ov_buffer impl_next_chunk(ov_format *f,
 
     if (rdata->header.length_octets != INT_HEADER_LENGTH + buf.length) {
 
-        ov_log_error(
-            "UDP paket corrupt - header length(%zu) + payload length "
-            "(%zu) do not match packet length (%" PRIu16,
-            INT_HEADER_LENGTH,
-            buf.length,
-            rdata->header.length_octets);
+        ov_log_error("UDP paket corrupt - header length(%zu) + payload length "
+                     "(%zu) do not match packet length (%" PRIu16,
+                     INT_HEADER_LENGTH, buf.length,
+                     rdata->header.length_octets);
 
         goto error;
     }
@@ -181,8 +177,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     UNUSED(f);
@@ -215,9 +210,8 @@ static void *impl_free_data(void *data) {
 
     if (0 == as_udp_data(data)) {
 
-        ov_log_error(
-            "Internal error: Expected to be called with format "
-            "udp");
+        ov_log_error("Internal error: Expected to be called with format "
+                     "udp");
         goto error;
     }
 
@@ -242,8 +236,8 @@ bool ov_format_udp_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_UDP_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_UDP_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/

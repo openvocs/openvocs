@@ -9,6 +9,13 @@
 
 		"domain" : "localhost",
 
+		"cluster" : 
+		{
+			"host" : "224.0.0.1",
+			"port" : 60000,
+			"type" : "UDP"
+		},
+
 		"sip" :
 		{
 			"timeout":
@@ -115,6 +122,12 @@
 						"port" : 12345
 					}
 				}
+			},
+			"vad" : 
+			{
+				"silence_interval_msec" : 2000,
+				"zero_crossings_rate_hertz" : 5000,
+				"powerlevel_density_dbfs" : -50
 			}
 		},
 
@@ -125,6 +138,11 @@
 				"host" : "127.0.0.1",
 				"type" : "TCP",
 				"port" : 40001
+			},
+			"vad":
+			{
+					"zero_crossings_rate_hertz" : 50000,
+					"powerlevel_density_dbfs" : -500
 			}
 		}
 	},
@@ -134,18 +152,6 @@
 		"git" :true,
 
 		"path" : "./src/service/ov_mc_vocs/config",
-
-		"cluster" :
-		{
-
-			"manager" :true,
-			"socket" : 
-			{
-				"host" : "192.168.178.20",
-				"port" : 45000,
-				"type" : "TCP"
-			}
-		},
 
 		"timeout" :
 		{
@@ -172,48 +178,34 @@
 		}
 	},
 
+	"io" :
+	{
+		"domain" : 
+		{
+			"path" : "./src/service/ov_mc_vocs/config/domains"
+		}
+	},
+
     "webserver":
 	{
 		"name":"ov_vocs_service",
 
-		"debug":false,
-		"ip4_only":true,
-
-		"domains":"./src/service/ov_mc_vocs/config/domains",
-
-		"mime" : {
-			"path" : "./src/service/ov_mc_vocs/config/mime",
-			"extension" : "mime"
+		"domains" : 
+		{
+			"localhost" : "./src/HTML/"
 		},
 
-		"sockets":
+		"socket":
 		{
-			"http":
-			{
-				"host":"127.0.0.1",
-				"port":80,
-				"type":"TCP"
-			},
-			"https":
-			{
-				"host":"0.0.0.0",
-				"port":443,
-				"type":"TCP"
-			},
-			"stun":
-			[
-				{
-					"host":"127.0.0.1",
-					"port":13478,
-					"type":"UDP"
-				}
-			]
+			"host":"0.0.0.0",
+			"port":443,
+			"type":"TCP"
 		},
-
-		"timer":
+		"stun":
 		{
-			"accept":1000000,
-			"io":0
+			"host":"0.0.0.0",
+			"port":33533,
+			"type":"UDP"
 		}
 	}
 }

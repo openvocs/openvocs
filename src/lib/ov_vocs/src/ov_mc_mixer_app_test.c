@@ -161,22 +161,21 @@ int test_ov_mc_mixer_app_cast() {
 
 int test_ov_mc_mixer_app_config_from_json() {
 
-    char *str =
-        "{"
-        "\"app\" :"
-        "{"
-        "\"resource_manager\":"
-        "{"
-        "\"host\" : \"127.0.0.1\","
-        "\"port\" : 12346,"
-        "\"type\" : \"TCP\""
-        "},"
-        "\"limit\" :"
-        "{"
-        "\"reconnect_interval_secs\": 3"
-        "}"
-        "}"
-        "}";
+    char *str = "{"
+                "\"app\" :"
+                "{"
+                "\"resource_manager\":"
+                "{"
+                "\"host\" : \"127.0.0.1\","
+                "\"port\" : 12346,"
+                "\"type\" : \"TCP\""
+                "},"
+                "\"limit\" :"
+                "{"
+                "\"reconnect_interval_secs\": 3"
+                "}"
+                "}"
+                "}";
 
     ov_json_value *in = ov_json_value_from_string(str, strlen(str));
     testrun(in);
@@ -291,12 +290,11 @@ int check_cb_event_acquire() {
     msg = ov_json_value_free(msg);
 
     ov_json_value *in = ov_mc_mixer_msg_acquire(
-        "username",
-        (ov_mc_mixer_core_forward){.ssrc = 12345,
-                                   .payload_type = 1,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.port = 12345,
-                                   .socket.type = UDP});
+        "username", (ov_mc_mixer_core_forward){.ssrc = 12345,
+                                               .payload_type = 1,
+                                               .socket.host = "127.0.0.1",
+                                               .socket.port = 12345,
+                                               .socket.type = UDP});
     testrun(in);
 
     cb_event_acquire(app, "name", app->socket, in);
@@ -327,12 +325,11 @@ int check_cb_event_acquire() {
     // reacquire to different user
 
     in = ov_mc_mixer_msg_acquire(
-        "name",
-        (ov_mc_mixer_core_forward){.ssrc = 12345,
-                                   .payload_type = 1,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.port = 12345,
-                                   .socket.type = UDP});
+        "name", (ov_mc_mixer_core_forward){.ssrc = 12345,
+                                           .payload_type = 1,
+                                           .socket.host = "127.0.0.1",
+                                           .socket.port = 12345,
+                                           .socket.type = UDP});
     testrun(in);
 
     cb_event_acquire(app, "name", app->socket, in);
@@ -363,9 +360,8 @@ int check_cb_event_acquire() {
     // input error
 
     in = ov_mc_mixer_msg_acquire(
-        "name",
-        (ov_mc_mixer_core_forward){
-            .ssrc = 12345, .socket.port = 12345, .socket.type = UDP});
+        "name", (ov_mc_mixer_core_forward){
+                    .ssrc = 12345, .socket.port = 12345, .socket.type = UDP});
     testrun(in);
 
     cb_event_acquire(app, "name", app->socket, in);
@@ -465,12 +461,11 @@ int check_cb_event_release() {
     // acquire to user
 
     in = ov_mc_mixer_msg_acquire(
-        "username",
-        (ov_mc_mixer_core_forward){.ssrc = 12345,
-                                   .payload_type = 1,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.port = 12345,
-                                   .socket.type = UDP});
+        "username", (ov_mc_mixer_core_forward){.ssrc = 12345,
+                                               .payload_type = 1,
+                                               .socket.host = "127.0.0.1",
+                                               .socket.port = 12345,
+                                               .socket.type = UDP});
     testrun(in);
 
     cb_event_acquire(app, "name", app->socket, in);
@@ -600,12 +595,11 @@ int check_cb_event_join() {
     // acquire to user
 
     in = ov_mc_mixer_msg_acquire(
-        "username",
-        (ov_mc_mixer_core_forward){.ssrc = 12345,
-                                   .payload_type = 1,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.port = 12345,
-                                   .socket.type = UDP});
+        "username", (ov_mc_mixer_core_forward){.ssrc = 12345,
+                                               .payload_type = 1,
+                                               .socket.host = "127.0.0.1",
+                                               .socket.port = 12345,
+                                               .socket.type = UDP});
     testrun(in);
 
     cb_event_acquire(app, "name", app->socket, in);
@@ -723,12 +717,11 @@ int check_cb_event_leave() {
     // acquire to user
 
     in = ov_mc_mixer_msg_acquire(
-        "username",
-        (ov_mc_mixer_core_forward){.ssrc = 12345,
-                                   .payload_type = 1,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.port = 12345,
-                                   .socket.type = UDP});
+        "username", (ov_mc_mixer_core_forward){.ssrc = 12345,
+                                               .payload_type = 1,
+                                               .socket.host = "127.0.0.1",
+                                               .socket.port = 12345,
+                                               .socket.type = UDP});
     testrun(in);
 
     cb_event_acquire(app, "name", app->socket, in);
@@ -866,12 +859,11 @@ int check_cb_event_volume() {
     // acquire to user
 
     in = ov_mc_mixer_msg_acquire(
-        "username",
-        (ov_mc_mixer_core_forward){.ssrc = 12345,
-                                   .payload_type = 1,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.port = 12345,
-                                   .socket.type = UDP});
+        "username", (ov_mc_mixer_core_forward){.ssrc = 12345,
+                                               .payload_type = 1,
+                                               .socket.host = "127.0.0.1",
+                                               .socket.port = 12345,
+                                               .socket.type = UDP});
     testrun(in);
 
     cb_event_acquire(app, "name", app->socket, in);

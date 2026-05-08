@@ -99,8 +99,7 @@ typedef struct ov_io_base_listener_config {
          * @return true if data data in buffer was consumed, false if callback
          * should be called again with same data
          */
-        bool (*io)(void *userdata,
-                   int connection,
+        bool (*io)(void *userdata, int connection,
                    const ov_memory_pointer buffer);
 
         void (*close)(void *userdata, int connection);
@@ -345,8 +344,7 @@ ov_io_base_statistics ov_io_base_get_statistics(ov_io_base *self, int socket);
 
     @returns true, if some buffer was added to the send queue
 */
-bool ov_io_base_send(ov_io_base *self,
-                     int socket,
+bool ov_io_base_send(ov_io_base *self, int socket,
                      const ov_memory_pointer buffer);
 
 #endif /* ov_io_base_h */

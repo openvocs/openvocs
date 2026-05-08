@@ -44,8 +44,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-bool setup_receiving_client(ov_rtp_client *client,
-                            ov_rtp_client_parameters *cp,
+bool setup_receiving_client(ov_rtp_client *client, ov_rtp_client_parameters *cp,
                             ov_rtp_client_audio_parameters *ap);
 /*----------------------------------------------------------------------------*/
 

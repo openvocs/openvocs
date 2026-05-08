@@ -73,7 +73,8 @@ void ov_signaling_server_mockup_track_event(ov_app *self,
 bool ov_signaling_server_mockup_event_received(ov_app *self,
                                                char const *event_name);
 
-ov_json_value *ov_signaling_server_mockup_event_parameters(
-    ov_app *self, char const *event_name);
+ov_json_value *
+ov_signaling_server_mockup_event_parameters(ov_app *self,
+                                            char const *event_name);
 
 #endif

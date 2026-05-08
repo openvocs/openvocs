@@ -58,8 +58,8 @@ static void *void_free_broadcast(void *in) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_broadcast_registry *ov_broadcast_registry_create(
-    ov_event_broadcast_config config) {
+ov_broadcast_registry *
+ov_broadcast_registry_create(ov_event_broadcast_config config) {
 
     if (0 == config.lock_timeout_usec)
         config.lock_timeout_usec = IMPL_THREAD_LOCK_TIMEOUT_USEC;
@@ -68,17 +68,20 @@ ov_broadcast_registry *ov_broadcast_registry_create(
         config.max_sockets = ov_socket_get_max_supported_runtime_sockets(0);
 
     ov_broadcast_registry *reg = calloc(1, sizeof(ov_broadcast_registry));
-    if (!reg) goto error;
+    if (!reg)
+        goto error;
 
     reg->config = config;
 
-    if (!ov_thread_lock_init(&reg->lock, config.lock_timeout_usec)) goto error;
+    if (!ov_thread_lock_init(&reg->lock, config.lock_timeout_usec))
+        goto error;
 
     ov_dict_config dconfig = ov_dict_string_key_config(255);
     dconfig.value.data_function.free = void_free_broadcast;
 
     reg->dict = ov_dict_create(dconfig);
-    if (!reg->dict) goto error;
+    if (!reg->dict)
+        goto error;
 
     return reg;
 
@@ -90,14 +93,16 @@ error:
 /*----------------------------------------------------------------------------*/
 ov_broadcast_registry *ov_broadcast_registry_free(ov_broadcast_registry *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     int i = 0;
     int max = 100;
 
     for (i = 0; i < max; i++) {
 
-        if (ov_thread_lock_try_lock(&self->lock)) break;
+        if (ov_thread_lock_try_lock(&self->lock))
+            break;
     }
 
     if (i == max) {
@@ -125,22 +130,23 @@ ov_broadcast_registry *ov_broadcast_registry_free(ov_broadcast_registry *self) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_broadcast_registry_set(ov_broadcast_registry *reg,
-                               const char *name,
-                               int socket,
-                               uint8_t type) {
+bool ov_broadcast_registry_set(ov_broadcast_registry *reg, const char *name,
+                               int socket, uint8_t type) {
 
     bool result = false;
 
-    if (!reg || !name) goto error;
+    if (!reg || !name)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     ov_event_broadcast *bcast = ov_dict_get(reg->dict, name);
     if (!bcast) {
 
         bcast = ov_event_broadcast_create(reg->config);
-        if (!bcast) goto unlock;
+        if (!bcast)
+            goto unlock;
 
         char *key = strdup(name);
 
@@ -176,9 +182,11 @@ bool ov_broadcast_registry_del(ov_broadcast_registry *reg, const char *name) {
 
     bool result = false;
 
-    if (!reg || !name) goto error;
+    if (!reg || !name)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     result = ov_dict_del(reg->dict, name);
 
@@ -195,16 +203,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_broadcast_registry_get(ov_broadcast_registry *reg,
-                               const char *name,
-                               int socket,
-                               uint8_t *out) {
+bool ov_broadcast_registry_get(ov_broadcast_registry *reg, const char *name,
+                               int socket, uint8_t *out) {
 
     uint8_t result = OV_BROADCAST_UNSET;
 
-    if (!reg || !name || !out) goto error;
+    if (!reg || !name || !out)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     ov_event_broadcast *bcast = ov_dict_get(reg->dict, name);
     if (bcast) {
@@ -220,27 +228,29 @@ bool ov_broadcast_registry_get(ov_broadcast_registry *reg,
 
     return true;
 error:
-    if (out) *out = result;
+    if (out)
+        *out = result;
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_broadcast_registry_send(ov_broadcast_registry *reg,
-                                const char *name,
+bool ov_broadcast_registry_send(ov_broadcast_registry *reg, const char *name,
                                 const ov_event_parameter *parameter,
-                                const ov_json_value *input,
-                                uint8_t type) {
+                                const ov_json_value *input, uint8_t type) {
 
     bool result = false;
 
-    if (!reg || !name) goto error;
+    if (!reg || !name)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     ov_event_broadcast *bcast = ov_dict_get(reg->dict, name);
 
-    if (!bcast) goto unlock;
+    if (!bcast)
+        goto unlock;
 
     result = ov_event_broadcast_send_params(bcast, parameter, input, type);
 
@@ -260,18 +270,20 @@ error:
 /*----------------------------------------------------------------------------*/
 
 ov_list *ov_broadcast_registry_get_sockets(ov_broadcast_registry *reg,
-                                           const char *name,
-                                           uint8_t type) {
+                                           const char *name, uint8_t type) {
 
-    if (!reg || !name) goto error;
+    if (!reg || !name)
+        goto error;
 
     ov_list *list = NULL;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     ov_event_broadcast *bcast = ov_dict_get(reg->dict, name);
 
-    if (!bcast) goto unlock;
+    if (!bcast)
+        goto unlock;
 
     list = ov_event_broadcast_get_sockets(bcast, type);
 
@@ -300,7 +312,8 @@ struct container {
 
 static bool unset_socket(const void *key, void *item, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     struct container *container = (struct container *)data;
     ov_event_broadcast *bcast = (ov_event_broadcast *)item;
@@ -320,7 +333,8 @@ error:
 
 static bool delete_key(void *item, void *data) {
 
-    if (!item || !data) return false;
+    if (!item || !data)
+        return false;
 
     ov_broadcast_registry *reg = (ov_broadcast_registry *)data;
     return ov_dict_del(reg->dict, item);
@@ -332,9 +346,11 @@ bool ov_broadcast_registry_unset(ov_broadcast_registry *reg, int socket) {
 
     bool result = false;
 
-    if (!reg || socket < 0) goto error;
+    if (!reg || socket < 0)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     struct container c = {.reg = reg,
                           .socket = socket,
@@ -360,14 +376,15 @@ error:
 /*----------------------------------------------------------------------------*/
 
 int64_t ov_broadcast_registry_count(ov_broadcast_registry *reg,
-                                    const char *name,
-                                    uint8_t type) {
+                                    const char *name, uint8_t type) {
 
     int64_t result = -1;
 
-    if (!reg || !name) goto error;
+    if (!reg || !name)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     ov_event_broadcast *bcast = ov_dict_get(reg->dict, name);
     if (bcast) {
@@ -389,13 +406,15 @@ error:
 
 static bool add_broadcast_state(const void *key, void *item, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *out = ov_json_value_cast(data);
     ov_event_broadcast *bcast = (ov_event_broadcast *)item;
 
     ov_json_value *val = ov_event_broadcast_state(bcast);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     if (!ov_json_object_set(out, key, val)) {
         val = ov_json_value_free(val);
@@ -414,9 +433,11 @@ ov_json_value *ov_broadcast_registry_state(ov_broadcast_registry *reg) {
     ov_json_value *out = NULL;
     bool result = false;
 
-    if (!reg) goto error;
+    if (!reg)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     out = ov_json_object();
     result = ov_dict_for_each(reg->dict, out, add_broadcast_state);
@@ -426,7 +447,8 @@ ov_json_value *ov_broadcast_registry_state(ov_broadcast_registry *reg) {
         goto error;
     }
 
-    if (!result) goto error;
+    if (!result)
+        goto error;
 
     return out;
 
@@ -443,17 +465,21 @@ ov_json_value *ov_broadcast_registry_named_state(ov_broadcast_registry *reg,
     ov_json_value *out = NULL;
     bool result = false;
 
-    if (!reg || !name) goto error;
+    if (!reg || !name)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&reg->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&reg->lock))
+        goto error;
 
     out = ov_json_object();
 
     ov_event_broadcast *bcast = ov_dict_get(reg->dict, name);
-    if (!bcast) goto unlock;
+    if (!bcast)
+        goto unlock;
 
     ov_json_value *val = ov_event_broadcast_state(bcast);
-    if (!val) goto unlock;
+    if (!val)
+        goto unlock;
 
     if (!ov_json_object_set(out, name, val)) {
         val = ov_json_value_free(val);
@@ -469,7 +495,8 @@ unlock:
         goto error;
     }
 
-    if (!result) goto error;
+    if (!result)
+        goto error;
 
     return out;
 

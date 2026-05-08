@@ -114,10 +114,8 @@ static bool append_to_buffer(ov_buffer *target, ov_buffer const *ext) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *merge_data(uint8_t const *restrict b1,
-                             size_t b1len,
-                             size_t b1capacity,
-                             uint8_t const *restrict b2,
+static ov_buffer *merge_data(uint8_t const *restrict b1, size_t b1len,
+                             size_t b1capacity, uint8_t const *restrict b2,
                              size_t b2len) {
 
     size_t required_len = b1len + b2len;
@@ -168,8 +166,8 @@ size_t ov_chunker_available_octets(ov_chunker *self) {
 
 bool ov_chunker_add(ov_chunker *self, ov_buffer const *data) {
 
-    if (ov_ptr_valid(
-            as_chunker(self), "Cannot add data - no valid chunker instance") &&
+    if (ov_ptr_valid(as_chunker(self),
+                     "Cannot add data - no valid chunker instance") &&
         ov_ptr_valid(data, "Cannot add data - no data (0 pointer)")) {
 
         if ((0 != data->length) && !append_to_buffer(self->buffer, data)) {
@@ -182,9 +180,7 @@ bool ov_chunker_add(ov_chunker *self, ov_buffer const *data) {
             ov_buffer *merged = merge_data(
                 self->read_ptr,
                 self->buffer->length - (self->read_ptr - self->buffer->start),
-                self->buffer->capacity,
-                data->start,
-                data->length);
+                self->buffer->capacity, data->start, data->length);
 
             if (ov_ptr_valid(merged, "Could not add data: Could not merge")) {
 
@@ -213,10 +209,10 @@ bool ov_chunker_add(ov_chunker *self, ov_buffer const *data) {
 uint8_t const *ov_chunker_next_chunk_preview(ov_chunker *self,
                                              size_t num_octets) {
 
-    if ((0 < num_octets) && ov_ptr_valid(as_chunker(self),
-                                         "Cannot get more data - invalid "
-                                         "chunker "
-                                         "instance")) {
+    if ((0 < num_octets) &&
+        ov_ptr_valid(as_chunker(self), "Cannot get more data - invalid "
+                                       "chunker "
+                                       "instance")) {
 
         size_t available_octets =
             self->buffer->length - (self->read_ptr - self->buffer->start);
@@ -239,14 +235,12 @@ uint8_t const *ov_chunker_next_chunk_preview(ov_chunker *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_chunker_next_chunk_raw(ov_chunker *self,
-                               size_t num_octets,
+bool ov_chunker_next_chunk_raw(ov_chunker *self, size_t num_octets,
                                uint8_t *dest) {
 
     if ((0 < num_octets) &&
-        ov_ptr_valid(as_chunker(self),
-                     "Cannot get more data - invalid chunker "
-                     "instance") &&
+        ov_ptr_valid(as_chunker(self), "Cannot get more data - invalid chunker "
+                                       "instance") &&
         ov_ptr_valid(dest, "Cannot get more data - 0 pointer")) {
 
         size_t available_octets =
@@ -293,9 +287,8 @@ ov_buffer *ov_chunker_next_chunk(ov_chunker *self, size_t num_octets) {
 
 ov_buffer *ov_chunker_remainder(ov_chunker *self) {
 
-    if (ov_ptr_valid(as_chunker(self),
-                     "Cannot get more data - invalid chunker "
-                     "instance")) {
+    if (ov_ptr_valid(as_chunker(self), "Cannot get more data - invalid chunker "
+                                       "instance")) {
 
         size_t available_octets =
             self->buffer->length - (self->read_ptr - self->buffer->start);

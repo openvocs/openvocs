@@ -36,8 +36,7 @@ char const *TEST_PCAP_FILE = "resources/pcap/test_linux_sll_ipv4_udp.pcap";
 
 static ov_buffer *get_linux_sll_frame(uint16_t packet_type,
                                       uint16_t arphrd_type,
-                                      uint16_t address_len,
-                                      uint8_t address[8],
+                                      uint16_t address_len, uint8_t address[8],
                                       uint16_t protocol_type,
                                       ov_buffer *payload) {
 
@@ -181,10 +180,8 @@ static int test_impl_next_chunk() {
 
         testrun_log("SLL packet type: %" PRIu16 " ARPHRD_type: %" PRIu16
                     " LL address length: %" PRIu16 " Protocol type; %" PRIu16,
-                    hdr.packet_type,
-                    hdr.arphrd_type,
-                    hdr.link_layer_address_length,
-                    hdr.protocol_type);
+                    hdr.packet_type, hdr.arphrd_type,
+                    hdr.link_layer_address_length, hdr.protocol_type);
 
         payload = ov_format_payload_read_chunk_nocopy(linux_sll_fmt, 0);
     };
@@ -258,7 +255,5 @@ static int test_ov_format_linux_sll_get_header() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_linux_sll",
-            test_ov_format_linux_sll_install,
-            test_impl_next_chunk,
-            test_ov_format_linux_sll_get_header);
+OV_TEST_RUN("ov_format_linux_sll", test_ov_format_linux_sll_install,
+            test_impl_next_chunk, test_ov_format_linux_sll_get_header);

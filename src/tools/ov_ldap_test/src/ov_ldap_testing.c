@@ -40,14 +40,14 @@ struct dummy_userdata {
 
 /*----------------------------------------------------------------------------*/
 
-static void dummy_callback(void *userdata,
-                           const char *uuid,
+static void dummy_callback(void *userdata, const char *uuid,
                            ov_ldap_auth_result res) {
 
     UNUSED(userdata);
 
     const char *str = "rejected";
-    if (OV_LDAP_AUTH_GRANTED == res) str = "granted";
+    if (OV_LDAP_AUTH_GRANTED == res)
+        str = "granted";
 
     fprintf(stderr, "AUTH %s %s", uuid, str);
     return;
@@ -74,18 +74,16 @@ int main(int argc, char **argv) {
     };
 
     ov_ldap *ldap = ov_ldap_create(config);
-    if (!ldap) goto error;
+    if (!ldap)
+        goto error;
 
     char *dn = "johndoe";
     char *pw = "2simple!";
 
     ov_ldap_authenticate_password(
-        ldap,
-        dn,
-        pw,
-        "1-2-3-4",
-        (ov_ldap_auth_callback){
-            .userdata = &userdata, .callback = dummy_callback});
+        ldap, dn, pw, "1-2-3-4",
+        (ov_ldap_auth_callback){.userdata = &userdata,
+                                .callback = dummy_callback});
 
     loop->run(loop, OV_RUN_MAX);
 

@@ -77,7 +77,7 @@ export function init() {
         if (event.target.tagName === "INPUT") {
             await Loop_View.talk(false);
             for (let ws of ov_Websockets.list)
-                ov_Web_Storage.add_role_to_session(ws.websocket_url, event.target.id);
+                ov_Web_Storage.add_role_to_session(APP, ws.websocket_url, event.target.id);
             ov_Websockets.reload_page(); // reload page to auto-login in new role
         }
     });
@@ -135,13 +135,13 @@ export async function redraw_roles() {
     DOM.role_select.clear();
     if (ov_Websockets.user()) {
         for (let role of ov_Websockets.user().roles.values) {
-            let name = role.name;
-            if (!name)
-                name = role.abbreviation;
-            if (!name)
-                name = role.id;
-            // await DOM.role_select.add_item(role.id, name + "\n (" + role.project + ")", role.id);
-            await DOM.role_select.add_item(role.id, name, role.id);
+            if (role.id !== "admin") {
+                let name = role.name;
+                if (!name)
+                    name = role.id;
+                // await DOM.role_select.add_item(role.id, name + "\n (" + role.project + ")", role.id);
+                await DOM.role_select.add_item(role.id, name, role.id);
+            }
         }
         DOM.role_select.value = ov_Websockets.user().role;
     }

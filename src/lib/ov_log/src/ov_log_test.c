@@ -52,9 +52,7 @@ static bool init_tmp_dir() {
 
 /*----------------------------------------------------------------------------*/
 
-static int delete_node(char const *path,
-                       const struct stat *sb,
-                       int typeflag,
+static int delete_node(char const *path, const struct stat *sb, int typeflag,
                        struct FTW *ftwbuf) {
 
     UNUSED(sb);
@@ -76,7 +74,8 @@ static bool remove_tmp_dir() {
     char const *path = OUR_TEMP_DIR;
 
     // no stat not existing
-    if (0 != stat(path, &statbuf)) return true;
+    if (0 != stat(path, &statbuf))
+        return true;
 
     if (0 !=
         nftw(path, delete_node, FOPEN_MAX, FTW_DEPTH | FTW_MOUNT | FTW_PHYS)) {
@@ -211,9 +210,7 @@ static int test_ov_log() {
     testrun(stderr_empty());
     testrun(stderr_clear());
 
-    ov_log_set_output(0,
-                      0,
-                      OV_LOG_INFO,
+    ov_log_set_output(0, 0, OV_LOG_INFO,
                       (ov_log_output){
                           .use.systemd = false,
                           .filehandle = -1,
@@ -232,9 +229,7 @@ static int test_ov_log() {
     FILE *aaa = get_file_ptr(fh);
     testrun(0 != aaa);
 
-    testrun(ov_log_set_output("aaa",
-                              0,
-                              OV_LOG_DEBUG,
+    testrun(ov_log_set_output("aaa", 0, OV_LOG_DEBUG,
                               (ov_log_output){
                                   .filehandle = fh,
                               }));
@@ -255,9 +250,7 @@ static int test_ov_log() {
     FILE *ov_log_test_c = get_file_ptr(fh);
     testrun(0 != ov_log_test_c);
 
-    testrun(ov_log_set_output("ov_log_test.c",
-                              0,
-                              OV_LOG_WARNING,
+    testrun(ov_log_set_output("ov_log_test.c", 0, OV_LOG_WARNING,
                               (ov_log_output){
                                   .filehandle = fh,
                               }));
@@ -317,9 +310,7 @@ static int test_ov_log() {
     FILE *ov_log_test_c_not_our_func = get_file_ptr(fh);
     testrun(0 != ov_log_test_c_not_our_func);
 
-    testrun(ov_log_set_output("ov_log_test.c",
-                              "not_our_func",
-                              OV_LOG_WARNING,
+    testrun(ov_log_set_output("ov_log_test.c", "not_our_func", OV_LOG_WARNING,
                               (ov_log_output){
                                   .filehandle = fh,
                               }));
@@ -341,8 +332,7 @@ static int test_ov_log() {
     FILE *ov_log_test_c_lets_log_something = get_file_ptr(fh);
     testrun(0 != ov_log_test_c_lets_log_something);
 
-    testrun(ov_log_set_output("ov_log_test.c",
-                              "lets_log_something",
+    testrun(ov_log_set_output("ov_log_test.c", "lets_log_something",
                               OV_LOG_WARNING,
                               (ov_log_output){
                                   .filehandle = fh,
@@ -430,9 +420,5 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-RUN_TESTS("ov_log",
-          init,
-          test_ov_log,
-          test_ov_log_level_from_string,
-          test_ov_log_level_to_string,
-          tear_down);
+RUN_TESTS("ov_log", init, test_ov_log, test_ov_log_level_from_string,
+          test_ov_log_level_to_string, tear_down);

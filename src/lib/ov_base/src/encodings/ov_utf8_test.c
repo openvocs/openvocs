@@ -1181,34 +1181,34 @@ int test_ov_utf8_validate_sequence() {
 
                 switch (a) {
 
-                    case 0xe0:
+                case 0xe0:
 
-                        if ((b >= 0xA0) && (b <= 0xBF)) {
+                    if ((b >= 0xA0) && (b <= 0xBF)) {
 
-                            testrun(ov_utf8_validate_sequence(buffer, 3));
-                        } else {
-                            testrun(!ov_utf8_validate_sequence(buffer, 3));
-                        }
+                        testrun(ov_utf8_validate_sequence(buffer, 3));
+                    } else {
+                        testrun(!ov_utf8_validate_sequence(buffer, 3));
+                    }
 
-                        break;
-                    case 0xed:
+                    break;
+                case 0xed:
 
-                        if ((b >= 0x80) && (b <= 0x9F)) {
-                            testrun(ov_utf8_validate_sequence(buffer, 3));
-                        } else {
-                            testrun(!ov_utf8_validate_sequence(buffer, 3));
-                        }
+                    if ((b >= 0x80) && (b <= 0x9F)) {
+                        testrun(ov_utf8_validate_sequence(buffer, 3));
+                    } else {
+                        testrun(!ov_utf8_validate_sequence(buffer, 3));
+                    }
 
-                        break;
-                    default:
+                    break;
+                default:
 
-                        if ((b >= 0x80) && (b <= 0xBF)) {
-                            testrun(ov_utf8_validate_sequence(buffer, 3));
+                    if ((b >= 0x80) && (b <= 0xBF)) {
+                        testrun(ov_utf8_validate_sequence(buffer, 3));
 
-                        } else {
-                            testrun(!ov_utf8_validate_sequence(buffer, 3));
-                        }
-                        break;
+                    } else {
+                        testrun(!ov_utf8_validate_sequence(buffer, 3));
+                    }
+                    break;
                 }
             }
 
@@ -1230,34 +1230,34 @@ int test_ov_utf8_validate_sequence() {
 
                 switch (a) {
 
-                    case 0xf0:
+                case 0xf0:
 
-                        if ((b >= 0x90) && (b <= 0xBF)) {
+                    if ((b >= 0x90) && (b <= 0xBF)) {
 
-                            testrun(ov_utf8_validate_sequence(buffer, 4));
-                        } else {
-                            testrun(!ov_utf8_validate_sequence(buffer, 4));
-                        }
+                        testrun(ov_utf8_validate_sequence(buffer, 4));
+                    } else {
+                        testrun(!ov_utf8_validate_sequence(buffer, 4));
+                    }
 
-                        break;
-                    case 0xf4:
+                    break;
+                case 0xf4:
 
-                        if ((b >= 0x80) && (b <= 0x8F)) {
-                            testrun(ov_utf8_validate_sequence(buffer, 4));
-                        } else {
-                            testrun(!ov_utf8_validate_sequence(buffer, 4));
-                        }
+                    if ((b >= 0x80) && (b <= 0x8F)) {
+                        testrun(ov_utf8_validate_sequence(buffer, 4));
+                    } else {
+                        testrun(!ov_utf8_validate_sequence(buffer, 4));
+                    }
 
-                        break;
-                    default:
+                    break;
+                default:
 
-                        if ((b >= 0x80) && (b <= 0xBF)) {
-                            testrun(ov_utf8_validate_sequence(buffer, 4));
+                    if ((b >= 0x80) && (b <= 0xBF)) {
+                        testrun(ov_utf8_validate_sequence(buffer, 4));
 
-                        } else {
-                            testrun(!ov_utf8_validate_sequence(buffer, 4));
-                        }
-                        break;
+                    } else {
+                        testrun(!ov_utf8_validate_sequence(buffer, 4));
+                    }
+                    break;
                 }
             }
 
@@ -1354,37 +1354,37 @@ int testall_ov_utf8_validate_sequence() {
                     buffer[2] = c;
                     switch (a) {
 
-                        case 0xe0:
+                    case 0xe0:
 
-                            if ((b >= 0xA0) && (b <= 0xBF) && (c >= 0x80) &&
-                                (c <= 0xBF)) {
+                        if ((b >= 0xA0) && (b <= 0xBF) && (c >= 0x80) &&
+                            (c <= 0xBF)) {
 
-                                testrun(ov_utf8_validate_sequence(buffer, 3));
-                            } else {
-                                testrun(!ov_utf8_validate_sequence(buffer, 3));
-                            }
+                            testrun(ov_utf8_validate_sequence(buffer, 3));
+                        } else {
+                            testrun(!ov_utf8_validate_sequence(buffer, 3));
+                        }
 
-                            break;
-                        case 0xed:
+                        break;
+                    case 0xed:
 
-                            if ((b >= 0x80) && (b <= 0x9F) && (c >= 0x80) &&
-                                (c <= 0xBF)) {
-                                testrun(ov_utf8_validate_sequence(buffer, 3));
-                            } else {
-                                testrun(!ov_utf8_validate_sequence(buffer, 3));
-                            }
+                        if ((b >= 0x80) && (b <= 0x9F) && (c >= 0x80) &&
+                            (c <= 0xBF)) {
+                            testrun(ov_utf8_validate_sequence(buffer, 3));
+                        } else {
+                            testrun(!ov_utf8_validate_sequence(buffer, 3));
+                        }
 
-                            break;
-                        default:
+                        break;
+                    default:
 
-                            if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
-                                (c <= 0xBF)) {
-                                testrun(ov_utf8_validate_sequence(buffer, 3));
+                        if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
+                            (c <= 0xBF)) {
+                            testrun(ov_utf8_validate_sequence(buffer, 3));
 
-                            } else {
-                                testrun(!ov_utf8_validate_sequence(buffer, 3));
-                            }
-                            break;
+                        } else {
+                            testrun(!ov_utf8_validate_sequence(buffer, 3));
+                        }
+                        break;
                     }
                 }
             }
@@ -1418,43 +1418,37 @@ int testall_ov_utf8_validate_sequence() {
 
                         switch (a) {
 
-                            case 0xf0:
+                        case 0xf0:
 
-                                if ((b >= 0x90) && (b <= 0xBF) && (c >= 0x80) &&
-                                    (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
+                            if ((b >= 0x90) && (b <= 0xBF) && (c >= 0x80) &&
+                                (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
 
-                                    testrun(
-                                        ov_utf8_validate_sequence(buffer, 4));
-                                } else {
-                                    testrun(
-                                        !ov_utf8_validate_sequence(buffer, 4));
-                                }
+                                testrun(ov_utf8_validate_sequence(buffer, 4));
+                            } else {
+                                testrun(!ov_utf8_validate_sequence(buffer, 4));
+                            }
 
-                                break;
-                            case 0xf4:
+                            break;
+                        case 0xf4:
 
-                                if ((b >= 0x80) && (b <= 0x8F) && (c >= 0x80) &&
-                                    (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
-                                    testrun(
-                                        ov_utf8_validate_sequence(buffer, 4));
-                                } else {
-                                    testrun(
-                                        !ov_utf8_validate_sequence(buffer, 4));
-                                }
+                            if ((b >= 0x80) && (b <= 0x8F) && (c >= 0x80) &&
+                                (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
+                                testrun(ov_utf8_validate_sequence(buffer, 4));
+                            } else {
+                                testrun(!ov_utf8_validate_sequence(buffer, 4));
+                            }
 
-                                break;
-                            default:
+                            break;
+                        default:
 
-                                if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
-                                    (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
-                                    testrun(
-                                        ov_utf8_validate_sequence(buffer, 4));
+                            if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
+                                (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
+                                testrun(ov_utf8_validate_sequence(buffer, 4));
 
-                                } else {
-                                    testrun(
-                                        !ov_utf8_validate_sequence(buffer, 4));
-                                }
-                                break;
+                            } else {
+                                testrun(!ov_utf8_validate_sequence(buffer, 4));
+                            }
+                            break;
                         }
                     }
                 }
@@ -1783,67 +1777,67 @@ int test_ov_utf8_decode_code_point() {
                     buffer[2] = c;
                     switch (a) {
 
-                        case 0xe0:
+                    case 0xe0:
 
-                            if ((b >= 0xA0) && (b <= 0xBF) && (c >= 0x80) &&
-                                (c <= 0xBF)) {
+                        if ((b >= 0xA0) && (b <= 0xBF) && (c >= 0x80) &&
+                            (c <= 0xBF)) {
 
-                                testrun((((buffer[0] << 12) & 0xF000) |
-                                         ((buffer[1] << 6) & 0xfc0) |
-                                         (buffer[2] & 0x3F)) ==
-                                        ov_utf8_decode_code_point(
-                                            buffer, 4, &bytes));
+                            testrun(
+                                (((buffer[0] << 12) & 0xF000) |
+                                 ((buffer[1] << 6) & 0xfc0) |
+                                 (buffer[2] & 0x3F)) ==
+                                ov_utf8_decode_code_point(buffer, 4, &bytes));
 
-                                testrun(bytes == 3);
+                            testrun(bytes == 3);
 
-                            } else {
+                        } else {
 
-                                testrun(0 == ov_utf8_decode_code_point(
-                                                 buffer, 4, &bytes));
+                            testrun(0 == ov_utf8_decode_code_point(buffer, 4,
+                                                                   &bytes));
 
-                                testrun(bytes == 0);
-                            }
+                            testrun(bytes == 0);
+                        }
 
-                            break;
-                        case 0xed:
+                        break;
+                    case 0xed:
 
-                            if ((b >= 0x80) && (b <= 0x9F) && (c >= 0x80) &&
-                                (c <= 0xBF)) {
-                                testrun((((buffer[0] << 12) & 0xF000) |
-                                         ((buffer[1] << 6) & 0xfc0) |
-                                         (buffer[2] & 0x3F)) ==
-                                        ov_utf8_decode_code_point(
-                                            buffer, 4, &bytes));
+                        if ((b >= 0x80) && (b <= 0x9F) && (c >= 0x80) &&
+                            (c <= 0xBF)) {
+                            testrun(
+                                (((buffer[0] << 12) & 0xF000) |
+                                 ((buffer[1] << 6) & 0xfc0) |
+                                 (buffer[2] & 0x3F)) ==
+                                ov_utf8_decode_code_point(buffer, 4, &bytes));
 
-                                testrun(bytes == 3);
+                            testrun(bytes == 3);
 
-                            } else {
-                                testrun(0 == ov_utf8_decode_code_point(
-                                                 buffer, 4, &bytes));
+                        } else {
+                            testrun(0 == ov_utf8_decode_code_point(buffer, 4,
+                                                                   &bytes));
 
-                                testrun(bytes == 0);
-                            }
+                            testrun(bytes == 0);
+                        }
 
-                            break;
-                        default:
+                        break;
+                    default:
 
-                            if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
-                                (c <= 0xBF)) {
-                                testrun((((buffer[0] << 12) & 0xF000) |
-                                         ((buffer[1] << 6) & 0xfc0) |
-                                         (buffer[2] & 0x3F)) ==
-                                        ov_utf8_decode_code_point(
-                                            buffer, 4, &bytes));
+                        if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
+                            (c <= 0xBF)) {
+                            testrun(
+                                (((buffer[0] << 12) & 0xF000) |
+                                 ((buffer[1] << 6) & 0xfc0) |
+                                 (buffer[2] & 0x3F)) ==
+                                ov_utf8_decode_code_point(buffer, 4, &bytes));
 
-                                testrun(bytes == 3);
+                            testrun(bytes == 3);
 
-                            } else {
-                                testrun(0 == ov_utf8_decode_code_point(
-                                                 buffer, 4, &bytes));
+                        } else {
+                            testrun(0 == ov_utf8_decode_code_point(buffer, 4,
+                                                                   &bytes));
 
-                                testrun(bytes == 0);
-                            }
-                            break;
+                            testrun(bytes == 0);
+                        }
+                        break;
                     }
                 }
             }
@@ -1868,57 +1862,57 @@ int test_ov_utf8_decode_code_point() {
 
                         switch (a) {
 
-                            case 0xf0:
+                        case 0xf0:
 
-                                if ((b >= 0x90) && (b <= 0xBF) && (c >= 0x80) &&
-                                    (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
+                            if ((b >= 0x90) && (b <= 0xBF) && (c >= 0x80) &&
+                                (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
 
-                                    testrun(ov_utf8_decode_code_point(
-                                        buffer, 4, &bytes));
+                                testrun(ov_utf8_decode_code_point(buffer, 4,
+                                                                  &bytes));
 
-                                    testrun(bytes == 4);
+                                testrun(bytes == 4);
 
-                                } else {
-                                    testrun(0 == ov_utf8_decode_code_point(
-                                                     buffer, 4, &bytes));
+                            } else {
+                                testrun(0 == ov_utf8_decode_code_point(
+                                                 buffer, 4, &bytes));
 
-                                    testrun(bytes == 0);
-                                }
+                                testrun(bytes == 0);
+                            }
 
-                                break;
-                            case 0xf4:
+                            break;
+                        case 0xf4:
 
-                                if ((b >= 0x80) && (b <= 0x8F) && (c >= 0x80) &&
-                                    (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
-                                    testrun(ov_utf8_decode_code_point(
-                                        buffer, 4, &bytes));
+                            if ((b >= 0x80) && (b <= 0x8F) && (c >= 0x80) &&
+                                (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
+                                testrun(ov_utf8_decode_code_point(buffer, 4,
+                                                                  &bytes));
 
-                                    testrun(bytes == 4);
+                                testrun(bytes == 4);
 
-                                } else {
-                                    testrun(0 == ov_utf8_decode_code_point(
-                                                     buffer, 4, &bytes));
+                            } else {
+                                testrun(0 == ov_utf8_decode_code_point(
+                                                 buffer, 4, &bytes));
 
-                                    testrun(bytes == 0);
-                                }
+                                testrun(bytes == 0);
+                            }
 
-                                break;
-                            default:
+                            break;
+                        default:
 
-                                if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
-                                    (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
-                                    testrun(ov_utf8_decode_code_point(
-                                        buffer, 4, &bytes));
+                            if ((b >= 0x80) && (b <= 0xBF) && (c >= 0x80) &&
+                                (c <= 0xBF) && (d >= 0x80) && (d <= 0xBF)) {
+                                testrun(ov_utf8_decode_code_point(buffer, 4,
+                                                                  &bytes));
 
-                                    testrun(bytes == 4);
+                                testrun(bytes == 4);
 
-                                } else {
-                                    testrun(0 == ov_utf8_decode_code_point(
-                                                     buffer, 4, &bytes));
+                            } else {
+                                testrun(0 == ov_utf8_decode_code_point(
+                                                 buffer, 4, &bytes));
 
-                                    testrun(bytes == 0);
-                                }
-                                break;
+                                testrun(bytes == 0);
+                            }
+                            break;
                         }
                     }
                 }

@@ -102,8 +102,7 @@ struct ov_list {
 
     size_t (*count)(const ov_list *self);
 
-    bool (*for_each)(ov_list *self,
-                     void *data,
+    bool (*for_each)(ov_list *self, void *data,
                      bool (*function)(void *item, void *data));
 
     /**
@@ -178,8 +177,7 @@ bool ov_list_push(ov_list *list, void *item);
 void *ov_list_pop(ov_list *list);
 
 size_t ov_list_count(const ov_list *list);
-bool ov_list_for_each(ov_list *list,
-                      void *data,
+bool ov_list_for_each(ov_list *list, void *data,
                       bool (*function)(void *item, void *data));
 
 /******************************************************************************

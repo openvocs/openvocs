@@ -216,8 +216,7 @@ static ov_codec *get_test_codec(uint32_t ssid) {
     }
 
 static bool rtp_frame_equals_data(ov_rtp_frame const *frame,
-                                  ov_frame_data const *data,
-                                  ov_codec *codec) {
+                                  ov_frame_data const *data, ov_codec *codec) {
 
     if (0 == frame) {
 
@@ -246,12 +245,9 @@ static bool rtp_frame_equals_data(ov_rtp_frame const *frame,
     ov_buffer *decoded = ov_buffer_create(data->pcm16s_32bit->length);
     OV_ASSERT(0 != decoded);
 
-    int32_t bytes_decoded = ov_codec_decode(codec,
-                                            exp->sequence_number,
-                                            exp->payload.data,
-                                            exp->payload.length,
-                                            decoded->start,
-                                            decoded->capacity);
+    int32_t bytes_decoded =
+        ov_codec_decode(codec, exp->sequence_number, exp->payload.data,
+                        exp->payload.length, decoded->start, decoded->capacity);
 
     ENSURE(0 < bytes_decoded, "Decoding failed");
     ENSURE((ssize_t)data->pcm16s_32bit->length == 2 * bytes_decoded,
@@ -262,11 +258,8 @@ static bool rtp_frame_equals_data(ov_rtp_frame const *frame,
 
     for (size_t i = 0; i < (size_t)(bytes_decoded / 2); ++i) {
 
-        fprintf(stderr,
-                "%" PRIi16 "   %" PRIi16 "   %" PRIi32 "\n",
-                decoded_ptr[i],
-                decoded_ptr[i],
-                data_ptr[i]);
+        fprintf(stderr, "%" PRIi16 "   %" PRIi16 "   %" PRIi32 "\n",
+                decoded_ptr[i], decoded_ptr[i], data_ptr[i]);
         ENSURE(data_ptr[i] == decoded_ptr[i], "Payloads do not match");
     }
 
@@ -276,8 +269,8 @@ static bool rtp_frame_equals_data(ov_rtp_frame const *frame,
     ENSURE(exp->sequence_number == data->sequence_number, "SEQ do not equal");
     ENSURE(exp->timestamp == data->timestamp, "Timestamps do not equal");
 
-    ENSURE(
-        exp->payload_type == data->payload_type, "Payload types do not equal");
+    ENSURE(exp->payload_type == data->payload_type,
+           "Payload types do not equal");
 
     ENSURE(exp->ssrc == data->ssid, "SSIDs do not equal");
 
@@ -342,11 +335,8 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_frame_data",
-            test_ov_frame_data_enable_caching,
-            test_ov_frame_data_create,
-            test_ov_frame_data_free,
-            test_ov_frame_data_encode_with_codec,
-            tear_down)
+OV_TEST_RUN("ov_frame_data", test_ov_frame_data_enable_caching,
+            test_ov_frame_data_create, test_ov_frame_data_free,
+            test_ov_frame_data_encode_with_codec, tear_down)
 
 /*----------------------------------------------------------------------------*/

@@ -335,8 +335,8 @@ int test_ov_byteorder_from_little_endian_16_bit(void) {
 
         for (size_t t = 0; t < i; t++) {
 
-            testrun(
-                from_little_endian[t] == reference[t], "From little endian");
+            testrun(from_little_endian[t] == reference[t],
+                    "From little endian");
         }
     }
 
@@ -372,26 +372,15 @@ int test_ov_byteorder_from_big_endian_16_bit(void) {
     return testrun_log_success();
 }
 
-RUN_TESTS("ov_byteorder",
-          test_OV_SWAP_16,
-          test_OV_SWAP_32,
-          test_OV_SWAP_64,
+RUN_TESTS("ov_byteorder", test_OV_SWAP_16, test_OV_SWAP_32, test_OV_SWAP_64,
 
-          test_OV_BE16TOH,
-          test_OV_BE32TOH,
-          test_OV_BE64TOH,
+          test_OV_BE16TOH, test_OV_BE32TOH, test_OV_BE64TOH,
 
-          test_OV_LE16TOH,
-          test_OV_LE32TOH,
-          test_OV_LE64TOH,
+          test_OV_LE16TOH, test_OV_LE32TOH, test_OV_LE64TOH,
 
-          test_OV_H16TOBE,
-          test_OV_H32TOBE,
-          test_OV_H64TOBE,
+          test_OV_H16TOBE, test_OV_H32TOBE, test_OV_H64TOBE,
 
-          test_OV_H16TOLE,
-          test_OV_H32TOLE,
-          test_OV_H64TOLE,
+          test_OV_H16TOLE, test_OV_H32TOLE, test_OV_H64TOLE,
 
           test_ov_byteorder_swap_bytes_16_bit,
           test_ov_byteorder_to_little_endian_16_bit,

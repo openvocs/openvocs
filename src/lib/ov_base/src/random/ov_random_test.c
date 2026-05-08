@@ -97,8 +97,7 @@ static void reset_circle_counters() {
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_in_or_out_of_circle(uint64_t x,
-                                      uint64_t y,
+static bool check_in_or_out_of_circle(uint64_t x, uint64_t y,
                                       uint64_t interval_len) {
 
     OV_ASSERT(0 != interval_len);
@@ -140,8 +139,7 @@ static double calc_pi() {
     double pi_approx = inside_unit_circle;
     double total_number_of_pairs = total_number_of_points;
 
-    debug_out("We got %lf points inside circle, %lf in total\n",
-              pi_approx,
+    debug_out("We got %lf points inside circle, %lf in total\n", pi_approx,
               total_number_of_pairs);
 
     pi_approx = pi_approx / total_number_of_pairs;
@@ -156,8 +154,7 @@ static bool pi_is_close_enough(double pi_approx, double max_error) {
     pi_approx *= 4;
     bool close_enough = fabs(pi_approx - M_PI) < max_error;
 
-    debug_out("Pi approximated is %lf, close enough: %s\n",
-              pi_approx,
+    debug_out("Pi approximated is %lf, close enough: %s\n", pi_approx,
               close_enough ? "yes" : "no");
 
     return close_enough;
@@ -219,7 +216,8 @@ int test_ov_random_bytes() {
         memset(array[i], 0, bytes);
         testrun(ov_random_bytes(array[i], bytes));
 
-        if (i == 0) continue;
+        if (i == 0)
+            continue;
 
         for (size_t n = 0; n < (i - 1); n++) {
             testrun(0 != memcmp(array[i], array[n], bytes));
@@ -256,14 +254,16 @@ int test_ov_random_bytes_with_zeros() {
     sz = 100;
     testrun(ov_random_bytes(buffer, sz));
     for (size_t i = 0; i < sz; i++) {
-        if (buffer[i] != 0) found = true;
+        if (buffer[i] != 0)
+            found = true;
     }
     testrun(found);
 
     size_t count = 0;
     testrun(ov_random_bytes(buffer, size));
     for (size_t i = 0; i < size; i++) {
-        if (buffer[i] != 0) count++;
+        if (buffer[i] != 0)
+            count++;
     }
     testrun(count > size / 2);
     return testrun_log_success();
@@ -305,7 +305,8 @@ int test_ov_random_string() {
 
         for (k = 0; k < testValues; k++) {
 
-            if (k == i) continue;
+            if (k == i)
+                continue;
 
             buffer2 = array[k];
             testrun(strncmp(buffer1, buffer2, bufferLength) != 0);
@@ -344,7 +345,8 @@ int test_ov_random_string() {
 
         for (k = 0; k < testValues; k++) {
 
-            if (k == i) continue;
+            if (k == i)
+                continue;
 
             buffer2 = array[k];
             testrun(strncmp(buffer1, buffer2, bufferLength) != 0);
@@ -377,15 +379,16 @@ int test_ov_random_uint32() {
 
         for (size_t n = 0; n < i; n++) {
 
-            if (array[i] == array[n]) doubles++;
+            if (array[i] == array[n])
+                doubles++;
         }
     }
 
     testrun(doubles < 10);
 
     for (size_t i = 0; i < 100000; ++i) {
-        check_in_or_out_of_circle(
-            ov_random_uint32(), ov_random_uint32(), UINT32_MAX);
+        check_in_or_out_of_circle(ov_random_uint32(), ov_random_uint32(),
+                                  UINT32_MAX);
     }
 
     double pi_approx = calc_pi();
@@ -426,8 +429,8 @@ int test_ov_random_uint64() {
     testrun(doubles < 10);
 
     for (size_t i = 0; i < 100000; ++i) {
-        check_in_or_out_of_circle(
-            ov_random_uint64(), ov_random_uint64(), UINT64_MAX);
+        check_in_or_out_of_circle(ov_random_uint64(), ov_random_uint64(),
+                                  UINT64_MAX);
     }
 
     double pi_approx = calc_pi();
@@ -481,8 +484,8 @@ int test_ov_random_range() {
     }
 
     for (size_t i = 0; i < 100000; ++i) {
-        check_in_or_out_of_circle(
-            ov_random_range(14, 829), ov_random_range(14, 829), 829 - 14);
+        check_in_or_out_of_circle(ov_random_range(14, 829),
+                                  ov_random_range(14, 829), 829 - 14);
     }
 
     double pi_approx = calc_pi();
@@ -558,11 +561,6 @@ static int test_ov_random_gaussian() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_random",
-            test_ov_random_bytes_with_zeros,
-            test_ov_random_bytes,
-            test_ov_random_string,
-            test_ov_random_uint32,
-            test_ov_random_uint64,
-            test_ov_random_range,
-            test_ov_random_gaussian);
+OV_TEST_RUN("ov_random", test_ov_random_bytes_with_zeros, test_ov_random_bytes,
+            test_ov_random_string, test_ov_random_uint32, test_ov_random_uint64,
+            test_ov_random_range, test_ov_random_gaussian);

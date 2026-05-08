@@ -81,8 +81,7 @@ static struct usage get_usage() {
 /*----------------------------------------------------------------------------*/
 
 #define print_field(desc, field)                                               \
-    printf("\n\n %s   " #field " %li\n",                                       \
-           desc,                                                               \
+    printf("\n\n %s   " #field " %li\n", desc,                                 \
            after.rusage.ru_##field - before.rusage.ru_##field);
 
 /*----------------------------------------------------------------------------*/
@@ -127,9 +126,7 @@ static size_t const OUT_BUFFER_SIZE_SAMPLES = 5000;
                                    RESAMPLING
  ****************************************************************************/
 
-static void print_samples(FILE *f,
-                          int16_t const *samples,
-                          size_t num_samples,
+static void print_samples(FILE *f, int16_t const *samples, size_t num_samples,
                           double samplerate_hz) {
 
     TEST_ASSERT(0 != f);
@@ -154,10 +151,8 @@ static void print_samples(FILE *f,
 
 /*----------------------------------------------------------------------------*/
 
-static void print_samples_to_file(FILE *out,
-                                  int16_t const *sig_in,
-                                  size_t num_samples,
-                                  double samplerate_hz) {
+static void print_samples_to_file(FILE *out, int16_t const *sig_in,
+                                  size_t num_samples, double samplerate_hz) {
 
     if (0 == out) {
         return;
@@ -261,8 +256,7 @@ struct args {
 
 static bool signal_generator_more_chunks = true;
 
-static bool chunk_from_signal_generator(struct args *args,
-                                        int16_t *buffer,
+static bool chunk_from_signal_generator(struct args *args, int16_t *buffer,
                                         size_t num_samples) {
 
     OV_ASSERT(0 != args);
@@ -288,14 +282,13 @@ static ov_codec *get_codec() {
 
     uint32_t dummy_ssid = 12;
 
-    return ov_codec_factory_get_codec(
-        0, ov_codec_pcm16_signed_id(), dummy_ssid, 0);
+    return ov_codec_factory_get_codec(0, ov_codec_pcm16_signed_id(), dummy_ssid,
+                                      0);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_samples_to_bin_file(struct args *args,
-                                      int16_t *signal,
+static bool write_samples_to_bin_file(struct args *args, int16_t *signal,
                                       size_t num_samples) {
 
     OV_ASSERT(0 != args);
@@ -309,11 +302,9 @@ static bool write_samples_to_bin_file(struct args *args,
         args->out_file_codec = get_codec();
     }
 
-    int32_t written_bytes = ov_codec_encode(args->out_file_codec,
-                                            (uint8_t *)signal,
-                                            sizeof(int16_t) * num_samples,
-                                            (uint8_t *)args->buf,
-                                            args->buf_length_bytes);
+    int32_t written_bytes = ov_codec_encode(
+        args->out_file_codec, (uint8_t *)signal, sizeof(int16_t) * num_samples,
+        (uint8_t *)args->buf, args->buf_length_bytes);
 
     if ((0 > written_bytes) ||
         ((size_t)written_bytes != sizeof(int16_t) * num_samples)) {
@@ -331,8 +322,7 @@ static bool write_samples_to_bin_file(struct args *args,
 
 /*----------------------------------------------------------------------------*/
 
-static bool chunk_from_file(struct args *args,
-                            int16_t *buffer,
+static bool chunk_from_file(struct args *args, int16_t *buffer,
                             size_t num_samples) {
 
     OV_ASSERT(0 != args);
@@ -351,12 +341,9 @@ static bool chunk_from_file(struct args *args,
 
     uint32_t dummy_ssid = 12;
 
-    int32_t written_bytes = ov_codec_decode(args->in_file_codec,
-                                            dummy_ssid,
-                                            args->buf,
-                                            read_bytes,
-                                            (uint8_t *)buffer,
-                                            num_samples * sizeof(int16_t));
+    int32_t written_bytes =
+        ov_codec_decode(args->in_file_codec, dummy_ssid, args->buf, read_bytes,
+                        (uint8_t *)buffer, num_samples * sizeof(int16_t));
 
     if ((0 > written_bytes) || ((size_t)written_bytes != read_bytes)) {
         fprintf(stderr, "Could not decode from file\n");
@@ -368,12 +355,11 @@ static bool chunk_from_file(struct args *args,
 
 /*----------------------------------------------------------------------------*/
 
-static void resample(double samplerate_in_hz,
-                     double samplerate_out_hz,
+static void resample(double samplerate_in_hz, double samplerate_out_hz,
                      struct args args) {
 
-    bool (*next_sample_chunk)(
-        struct args *args, int16_t *buffer, size_t num_samples) = 0;
+    bool (*next_sample_chunk)(struct args *args, int16_t *buffer,
+                              size_t num_samples) = 0;
 
     const size_t num_samples = 200;
 
@@ -404,8 +390,8 @@ static void resample(double samplerate_in_hz,
 
     while (next_sample_chunk(&args, sig_in, num_samples)) {
 
-        print_samples_to_file(
-            args.dump_in_signal_file, sig_in, num_samples, samplerate_in_hz);
+        print_samples_to_file(args.dump_in_signal_file, sig_in, num_samples,
+                              samplerate_in_hz);
 
         ssize_t out_samples = 0;
 
@@ -413,19 +399,19 @@ static void resample(double samplerate_in_hz,
 
         switch (args.method) {
 
-            case NO_PRECALC:
+        case NO_PRECALC:
 
-                out_samples = ov_pcm_16_resample_uncached(
-                    resampler, sig_in, num_samples, out, out_length_samples);
+            out_samples = ov_pcm_16_resample_uncached(
+                resampler, sig_in, num_samples, out, out_length_samples);
 
-                break;
+            break;
 
-            case PRECALC:
+        case PRECALC:
 
-                out_samples = ov_pcm_16_resample(
-                    resampler, sig_in, num_samples, out, out_length_samples);
+            out_samples = ov_pcm_16_resample(resampler, sig_in, num_samples,
+                                             out, out_length_samples);
 
-                break;
+            break;
         };
 
         print_usage(usage);
@@ -439,13 +425,12 @@ static void resample(double samplerate_in_hz,
                     "Warning: Number of required output samples %zu higher "
                     "than "
                     "actual output buffer: %zu\n",
-                    num_out_samples,
-                    out_length_samples);
+                    num_out_samples, out_length_samples);
             num_out_samples = out_length_samples;
         }
 
-        print_samples_to_file(
-            args.dump_out_signal_file, out, num_out_samples, samplerate_out_hz);
+        print_samples_to_file(args.dump_out_signal_file, out, num_out_samples,
+                              samplerate_out_hz);
 
         write_samples_to_bin_file(&args, out, num_out_samples);
     };
@@ -482,11 +467,8 @@ static double to_double(char const *a) {
 
 /*----------------------------------------------------------------------------*/
 
-size_t parse_periods(size_t argc,
-                     char const **argv,
-                     size_t start_index,
-                     double **periods,
-                     size_t *num_periods) {
+size_t parse_periods(size_t argc, char const **argv, size_t start_index,
+                     double **periods, size_t *num_periods) {
 
     OV_ASSERT(0 != argv);
     OV_ASSERT(0 != periods);
@@ -560,8 +542,7 @@ _Noreturn static void usage(char const *cmd) {
             "          Write result in binary to BIN_PCM_FILE\n"
             "        -d dump input signal as CSV to %s\n"
             "                output signal as CSV to %s\n",
-            in_signal_path,
-            out_signal_path);
+            in_signal_path, out_signal_path);
 
     exit(EXIT_FAILURE);
 }
@@ -617,52 +598,50 @@ static bool parse_args(size_t argc, char const **argv, struct args *args) {
 
         switch (arg[1]) {
 
-            case 'n':
-                args->method = NO_PRECALC;
-                break;
+        case 'n':
+            args->method = NO_PRECALC;
+            break;
 
-            case 'p':
-                if (0 != args->in_file) {
-                    error_exit(argv, "Cannot use both '-i' and '-p'");
-                }
+        case 'p':
+            if (0 != args->in_file) {
+                error_exit(argv, "Cannot use both '-i' and '-p'");
+            }
 
-                i = parse_periods(
-                    argc, argv, ++i, &args->periods, &args->num_periods);
-                break;
+            i = parse_periods(argc, argv, ++i, &args->periods,
+                              &args->num_periods);
+            break;
 
-            case 'i':
-                if (0 != args->periods) {
-                    error_exit(argv, "Cannot use both '-i' and '-p'");
-                }
+        case 'i':
+            if (0 != args->periods) {
+                error_exit(argv, "Cannot use both '-i' and '-p'");
+            }
 
-                ++i;
-                if (i >= argc) {
-                    error_exit(argv, "Expect file name after '-i'");
-                }
-                args->in_file = open_file(argv, argv[i], "r");
-                args->in_file_path = argv[i];
+            ++i;
+            if (i >= argc) {
+                error_exit(argv, "Expect file name after '-i'");
+            }
+            args->in_file = open_file(argv, argv[i], "r");
+            args->in_file_path = argv[i];
 
-                break;
+            break;
 
-            case 'o':
+        case 'o':
 
-                ++i;
-                if (i >= argc) {
-                    error_exit(argv, "Expect file name after '-o'");
-                }
+            ++i;
+            if (i >= argc) {
+                error_exit(argv, "Expect file name after '-o'");
+            }
 
-                args->out_file = open_file(argv, argv[i], "w");
-                args->out_file_path = argv[i];
+            args->out_file = open_file(argv, argv[i], "w");
+            args->out_file_path = argv[i];
 
-                break;
+            break;
 
-            case 'd':
-                args->dump_in_signal_file =
-                    open_file(argv, in_signal_path, "w");
-                args->dump_out_signal_file =
-                    open_file(argv, out_signal_path, "w");
+        case 'd':
+            args->dump_in_signal_file = open_file(argv, in_signal_path, "w");
+            args->dump_out_signal_file = open_file(argv, out_signal_path, "w");
 
-                break;
+            break;
         }
         ++i;
     }

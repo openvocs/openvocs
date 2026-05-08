@@ -50,7 +50,8 @@ typedef struct {
 
 bool json_number_init(JsonNumber *self, double content) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->head.magic_byte = OV_JSON_VALUE_MAGIC_BYTE;
     self->head.type = OV_JSON_NUMBER;
@@ -71,9 +72,11 @@ error:
 ov_json_value *ov_json_number(double content) {
 
     JsonNumber *number = calloc(1, sizeof(JsonNumber));
-    if (!number) goto error;
+    if (!number)
+        goto error;
 
-    if (json_number_init(number, content)) return (ov_json_value *)number;
+    if (json_number_init(number, content))
+        return (ov_json_value *)number;
 
     free(number);
 error:
@@ -92,7 +95,8 @@ bool ov_json_is_number(const ov_json_value *value) {
 double ov_json_number_get(const ov_json_value *self) {
 
     JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) return 0;
+    if (!number)
+        return 0;
 
     return number->data;
 }
@@ -102,7 +106,8 @@ double ov_json_number_get(const ov_json_value *self) {
 bool ov_json_number_set(ov_json_value *self, double content) {
 
     JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) return false;
+    if (!number)
+        return false;
 
     number->data = content;
     return true;
@@ -113,7 +118,8 @@ bool ov_json_number_set(ov_json_value *self, double content) {
 bool ov_json_number_clear(void *self) {
 
     JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) goto error;
+    if (!number)
+        goto error;
 
     number->data = 0;
 
@@ -128,10 +134,12 @@ error:
 void *ov_json_number_free(void *self) {
 
     JsonNumber *number = AS_JSON_NUMBER(self);
-    if (!number) return self;
+    if (!number)
+        return self;
 
     // in case of parent loop over ov_json_value_free
-    if (number->head.parent) return ov_json_value_free(self);
+    if (number->head.parent)
+        return ov_json_value_free(self);
 
     free(number);
     return NULL;
@@ -141,20 +149,24 @@ void *ov_json_number_free(void *self) {
 
 void *ov_json_number_copy(void **dest, const void *self) {
 
-    if (!dest || !self) goto error;
+    if (!dest || !self)
+        goto error;
 
     JsonNumber *copy = NULL;
     JsonNumber *orig = AS_JSON_NUMBER(self);
-    if (!orig) goto error;
+    if (!orig)
+        goto error;
 
     if (!*dest) {
 
         *dest = ov_json_number(orig->data);
-        if (*dest) return *dest;
+        if (*dest)
+            return *dest;
     }
 
     copy = AS_JSON_NUMBER(*dest);
-    if (!copy) goto error;
+    if (!copy)
+        goto error;
 
     copy->data = orig->data;
     return copy;
@@ -167,9 +179,11 @@ error:
 bool ov_json_number_dump(FILE *stream, const void *self) {
 
     JsonNumber *orig = AS_JSON_NUMBER(self);
-    if (!stream || !orig) goto error;
+    if (!stream || !orig)
+        goto error;
 
-    if (!fprintf(stream, " %f ", orig->data)) goto error;
+    if (!fprintf(stream, " %f ", orig->data))
+        goto error;
 
     return true;
 error:

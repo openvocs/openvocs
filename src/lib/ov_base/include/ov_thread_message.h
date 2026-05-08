@@ -99,8 +99,9 @@ struct ov_thread_message_struct {
  * Provides a default free()-method that frees the attached json value and
  * the message itself.
  */
-ov_thread_message *ov_thread_message_standard_create(
-    ov_thread_message_type type, ov_json_value *json_message);
+ov_thread_message *
+ov_thread_message_standard_create(ov_thread_message_type type,
+                                  ov_json_value *json_message);
 
 /*----------------------------------------------------------------------------*/
 

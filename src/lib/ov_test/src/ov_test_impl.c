@@ -47,7 +47,8 @@ void ov_test_set_test_directory(char const *binary_path) {
 
 void ov_test_clear_test_directory() {
 
-    if (0 == test_directory) return;
+    if (0 == test_directory)
+        return;
 
     free(test_directory);
     test_directory = 0;
@@ -65,15 +66,17 @@ void (*ov_test_get_exit_hook())(void) { return s_exit_hook; }
 
 char *ov_test_get_resource_path(char const *rel_resource_path) {
 
-    if (0 == rel_resource_path) return strdup(test_directory);
+    if (0 == rel_resource_path)
+        return strdup(test_directory);
 
     char path[255] = {0};
     strncpy(path, test_directory, sizeof(path));
 
-    size_t printed = snprintf(
-        path, sizeof(path), "%s/%s", test_directory, rel_resource_path);
+    size_t printed = snprintf(path, sizeof(path), "%s/%s", test_directory,
+                              rel_resource_path);
 
-    if (sizeof(path) <= printed) return 0;
+    if (sizeof(path) <= printed)
+        return 0;
 
     path[sizeof(path) - 1] = 0;
 
@@ -99,10 +102,14 @@ void ov_test_exit_on_signal() {
 
     for (int i = 0; i < NSIG; ++i) {
 
-        if (i == SIGKILL) continue;
-        if (i == SIGSTOP) continue;
-        if (i == SIGSEGV) continue;
-        if (i == SIGCHLD) continue;
+        if (i == SIGKILL)
+            continue;
+        if (i == SIGSTOP)
+            continue;
+        if (i == SIGSEGV)
+            continue;
+        if (i == SIGCHLD)
+            continue;
 
         sigaction(i, &exit_action, 0);
     }
@@ -117,10 +124,14 @@ void ov_test_ignore_signals() {
 
     for (int i = 0; i < NSIG; ++i) {
 
-        if (i == SIGKILL) continue;
-        if (i == SIGSTOP) continue;
-        if (i == SIGSEGV) continue;
-        if (i == SIGCHLD) continue;
+        if (i == SIGKILL)
+            continue;
+        if (i == SIGSTOP)
+            continue;
+        if (i == SIGSEGV)
+            continue;
+        if (i == SIGCHLD)
+            continue;
 
         sigaction(i, &ignore_action, 0);
     }

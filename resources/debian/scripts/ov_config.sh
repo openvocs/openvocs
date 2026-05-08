@@ -295,11 +295,6 @@ generate_config_vad() {
          \"host\" : \"$VAD_HOST\",
          \"port\" : $VAD_PORT,
          \"type\" : \"TCP\"
-       },
-       \"vad\":
-       {
-         \"zero_crossings_rate_hertz\" : 40000,
-         \"powerlevel_density_dbfs\": -340
        }
      }
    }" > $DIR_OV_MC_VAD"/config.json"
@@ -320,6 +315,13 @@ generate_config_ov_vocs() {
      \"vocs\" :
      {
        \"domain\" : \"$IP\",
+
+       \"cluster\":
+        {
+           \"host\":\"224.0.0.10\",
+           \"port\":12345,
+           \"type\":\"UDP\"
+        },
 
        \"sip\" :
        {
@@ -380,6 +382,11 @@ generate_config_ov_vocs() {
             \"host\" : \"$VAD_HOST\",
              \"port\" : $VAD_PORT,
              \"type\" : \"TCP\"
+            },
+            \"vad\":
+            {
+              \"zero_crossings_rate_hertz\" : 50000,
+              \"powerlevel_density_dbfs\" : -500
             }
          },
        \"backend\" :
@@ -455,33 +462,27 @@ generate_config_ov_vocs() {
          \"network\" : 3000000
        }
      },
+     \"io\":
+     {
+      \"domain\":
+      {
+        \"path\": \"/etc/openvocs/ov_mc_vocs/domains\"
+      }
+     },
+     
      \"webserver\":
      {
        \"name\":\"VOCS GATEWAY\",
-       \"debug\":false,
-       \"ip4_only\":true,
-       \"domains\":\"$DIR_DOMAINS\",
-       \"mime\" : {
-         \"path\" : \"$DIR_MIME\",
-         \"extension\" : \"mime\"
-       },
-       \"sockets\":
+       \"domains\":
        {
-         \"https\":
-         {
+         \"$IP\" : \"/srv/openvocs/HTML\"
+       },
+       \"socket\":
+       {
            \"host\":\"$IP\",
            \"port\":443,
            \"type\":\"TCP\"
-         },
-         \"stun\":
-         [
-           {
-             \"host\":\"$IP\",
-             \"port\":3478,
-             \"type\":\"UDP\"
-           }
-         ]
-       }
+        }
      }
    }" > $DIR_OV_MC_VOCS"/config.json"
 

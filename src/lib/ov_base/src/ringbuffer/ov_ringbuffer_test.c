@@ -44,7 +44,8 @@
 
 void count_calls(void *additional_arg, void *element_to_free) {
 
-    if (0 == element_to_free) return;
+    if (0 == element_to_free)
+        return;
 
     int *ip = (int *)additional_arg;
 
@@ -431,13 +432,13 @@ void free_ringbuffers(ov_ringbuffer **rbs, size_t const num_ringbuffers) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool pointer_in_pointer_array(void *ptr,
-                                     void **ptr_array,
+static bool pointer_in_pointer_array(void *ptr, void **ptr_array,
                                      size_t num_entries) {
 
     for (size_t i = 0; i < num_entries; ++i) {
 
-        if (ptr == ptr_array[i]) return true;
+        if (ptr == ptr_array[i])
+            return true;
     }
 
     return false;
@@ -495,15 +496,10 @@ int tear_down() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_ringbuffer",
-            test_ov_ringbuffer_create,
-            test_impl_ringbuffer_capacity,
-            test_impl_ringbuffer_pop,
-            test_impl_ringbuffer_insert,
-            test_impl_ringbuffer_clear,
-            test_impl_ringbuffer_free,
-            test_impl_ringbuffer_get_statistics,
-            test_ov_ringbuffer_enable_caching,
-            tear_down);
+OV_TEST_RUN("ov_ringbuffer", test_ov_ringbuffer_create,
+            test_impl_ringbuffer_capacity, test_impl_ringbuffer_pop,
+            test_impl_ringbuffer_insert, test_impl_ringbuffer_clear,
+            test_impl_ringbuffer_free, test_impl_ringbuffer_get_statistics,
+            test_ov_ringbuffer_enable_caching, tear_down);
 
 /*----------------------------------------------------------------------------*/

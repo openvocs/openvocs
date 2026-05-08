@@ -118,12 +118,10 @@ static void remove_all(char const *const *paths) {
 
 static int test_ov_log_rotate_files() {
 
-    char const *files[] = {"/tmp/ov_log_rotate.log",
-                           "/tmp/ov_log_rotate.log.001",
-                           "/tmp/ov_log_rotate.log.002",
-                           "/tmp/ov_log_rotate.log.003",
-                           "/tmp/ov_log_rotate.log.004",
-                           0};
+    char const *files[] = {
+        "/tmp/ov_log_rotate.log",     "/tmp/ov_log_rotate.log.001",
+        "/tmp/ov_log_rotate.log.002", "/tmp/ov_log_rotate.log.003",
+        "/tmp/ov_log_rotate.log.004", 0};
 
     remove_all(files);
 

@@ -34,240 +34,151 @@
 
 static bool create_test_db(ov_vocs_db *db) {
 
-    if (!db) goto error;
-
-    if (!ov_vocs_db_create_entity(
-            db, OV_VOCS_DB_DOMAIN, "domain1", OV_VOCS_DB_SCOPE_DOMAIN, NULL))
+    if (!db)
         goto error;
 
-    if (!ov_vocs_db_create_entity(
-            db, OV_VOCS_DB_DOMAIN, "domain2", OV_VOCS_DB_SCOPE_DOMAIN, NULL))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, NULL))
         goto error;
 
-    if (!ov_vocs_db_create_entity(
-            db, OV_VOCS_DB_DOMAIN, "domain3", OV_VOCS_DB_SCOPE_DOMAIN, NULL))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain2",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, NULL))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_PROJECT,
-                                  "project1",
-                                  OV_VOCS_DB_SCOPE_DOMAIN,
-                                  "domain1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain3",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, NULL))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_PROJECT,
-                                  "project2",
-                                  OV_VOCS_DB_SCOPE_DOMAIN,
-                                  "domain2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project1",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, "domain1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_PROJECT,
-                                  "project3",
-                                  OV_VOCS_DB_SCOPE_DOMAIN,
-                                  "domain3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project2",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, "domain2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop11",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project3",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, "domain3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop12",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop11",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop13",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop12",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop21",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop13",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop22",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop21",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop23",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop22",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop31",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop23",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop32",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop31",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_LOOP,
-                                  "loop33",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop32",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role11",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop33",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role12",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role11",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role13",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role12",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role21",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role13",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role22",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role21",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role23",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role22",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role31",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role23",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role32",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role31",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_ROLE,
-                                  "role33",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role32",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user11",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role33",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user12",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user11",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user13",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user12",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user21",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user13",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user22",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user21",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user23",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user22",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user31",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user23",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project2"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user32",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user31",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(db,
-                                  OV_VOCS_DB_USER,
-                                  "user33",
-                                  OV_VOCS_DB_SCOPE_PROJECT,
-                                  "project3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user32",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(
-            db, OV_VOCS_DB_USER, "user1", OV_VOCS_DB_SCOPE_DOMAIN, "domain1"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user33",
+                                  OV_VOCS_DB_SCOPE_PROJECT, "project3"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(
-            db, OV_VOCS_DB_USER, "user2", OV_VOCS_DB_SCOPE_DOMAIN, "domain2"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user1",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, "domain1"))
         goto error;
 
-    if (!ov_vocs_db_create_entity(
-            db, OV_VOCS_DB_USER, "user3", OV_VOCS_DB_SCOPE_DOMAIN, "domain3"))
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user2",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, "domain2"))
+        goto error;
+
+    if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user3",
+                                  OV_VOCS_DB_SCOPE_DOMAIN, "domain3"))
         goto error;
 
     ov_json_value *out = ov_json_object();
@@ -277,8 +188,8 @@ static bool create_test_db(ov_vocs_db *db) {
     ov_json_object_set(out, "role12", ov_json_true());
     ov_json_object_set(out, "role13", ov_json_true());
 
-    if (!ov_vocs_db_update_entity_key(
-            db, OV_VOCS_DB_LOOP, "loop11", OV_KEY_ROLES, out))
+    if (!ov_vocs_db_update_entity_key(db, OV_VOCS_DB_LOOP, "loop11",
+                                      OV_KEY_ROLES, out))
         goto error;
 
     out = ov_json_value_free(out);
@@ -288,8 +199,8 @@ static bool create_test_db(ov_vocs_db *db) {
     ov_json_object_set(out, "user32", ov_json_null());
     ov_json_object_set(out, "user33", ov_json_null());
 
-    if (!ov_vocs_db_update_entity_key(
-            db, OV_VOCS_DB_ROLE, "role31", OV_KEY_USERS, out))
+    if (!ov_vocs_db_update_entity_key(db, OV_VOCS_DB_ROLE, "role31",
+                                      OV_KEY_USERS, out))
         goto error;
 
     out = ov_json_value_free(out);
@@ -382,38 +293,29 @@ int test_ov_vocs_db_dump() {
 
     testrun(ov_vocs_db_dump(stdout, db));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_VOCS_DB_SCOPE_DOMAIN, NULL));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, NULL));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_PROJECT, "project", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_LOOP, "loop", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_ROLE, "role", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_USER, "user", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_LOOP,
-                                     "loop_project",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop_project",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_ROLE,
-                                     "role_project",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role_project",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_USER,
-                                     "user_project",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user_project",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project"));
 
     testrun(ov_vocs_db_dump(stdout, db));
 
@@ -428,86 +330,65 @@ int test_ov_vocs_db_create_entity() {
     ov_vocs_db *db = ov_vocs_db_create((ov_vocs_db_config){0});
     testrun(db);
 
-    testrun(!ov_vocs_db_create_entity(
-        NULL, OV_VOCS_DB_DOMAIN, "domain", OV_VOCS_DB_SCOPE_DOMAIN, NULL));
+    testrun(!ov_vocs_db_create_entity(NULL, OV_VOCS_DB_DOMAIN, "domain",
+                                      OV_VOCS_DB_SCOPE_DOMAIN, NULL));
 
-    testrun(!ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_DOMAIN, NULL, OV_VOCS_DB_SCOPE_DOMAIN, NULL));
+    testrun(!ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, NULL,
+                                      OV_VOCS_DB_SCOPE_DOMAIN, NULL));
 
-    testrun(!ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_PROJECT, "domain", OV_VOCS_DB_SCOPE_DOMAIN, "project"));
+    testrun(!ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "domain",
+                                      OV_VOCS_DB_SCOPE_DOMAIN, "project"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_VOCS_DB_SCOPE_DOMAIN, NULL));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, NULL));
 
     // already created domain
-    testrun(!ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_VOCS_DB_SCOPE_DOMAIN, NULL));
+    testrun(!ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain",
+                                      OV_VOCS_DB_SCOPE_DOMAIN, NULL));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_PROJECT, "project", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
     // already created project
-    testrun(!ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_PROJECT, "project", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(!ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project",
+                                      OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_DOMAIN, "domain2", OV_VOCS_DB_SCOPE_DOMAIN, NULL));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain2",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, NULL));
 
     // already created project in domain
-    testrun(!ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_PROJECT, "project", OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
+    testrun(!ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project",
+                                      OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_PROJECT,
-                                     "project2",
-                                     OV_VOCS_DB_SCOPE_DOMAIN,
-                                     "domain2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project2",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_LOOP, "loop", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_ROLE, "role", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_USER, "user", OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_LOOP,
-                                     "loop_project",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop_project",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_ROLE,
-                                     "role_project",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role_project",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_USER,
-                                     "user_project",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user_project",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_LOOP,
-                                     "loop_project2",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loop_project2",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project2"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_ROLE,
-                                     "role_project2",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "role_project2",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project2"));
 
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_USER,
-                                     "user_project2",
-                                     OV_VOCS_DB_SCOPE_PROJECT,
-                                     "project2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "user_project2",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project2"));
 
     // check created JSON
 
@@ -522,14 +403,14 @@ int test_ov_vocs_db_create_entity() {
     testrun(ov_json_get(db->data.domains, "/domain/projects"));
     testrun(ov_json_get(db->data.domains, "/domain/projects/project"));
     testrun(ov_json_get(db->data.domains, "/domain/projects/project/loops"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain/projects/project/loops/loop_project"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain/projects/project/loops/loop_project"));
     testrun(ov_json_get(db->data.domains, "/domain/projects/project/roles"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain/projects/project/roles/role_project"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain/projects/project/roles/role_project"));
     testrun(ov_json_get(db->data.domains, "/domain/projects/project/users"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain/projects/project/users/user_project"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain/projects/project/users/user_project"));
 
     testrun(ov_json_get(db->data.domains, "/domain2"));
     testrun(!ov_json_get(db->data.domains, "/domain2/loops"));
@@ -538,14 +419,14 @@ int test_ov_vocs_db_create_entity() {
     testrun(ov_json_get(db->data.domains, "/domain2/projects"));
     testrun(ov_json_get(db->data.domains, "/domain2/projects/project2"));
     testrun(ov_json_get(db->data.domains, "/domain2/projects/project2/loops"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain2/projects/project2/loops/loop_project2"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain2/projects/project2/loops/loop_project2"));
     testrun(ov_json_get(db->data.domains, "/domain2/projects/project2/roles"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain2/projects/project2/roles/role_project2"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain2/projects/project2/roles/role_project2"));
     testrun(ov_json_get(db->data.domains, "/domain2/projects/project2/users"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain2/projects/project2/users/user_project2"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain2/projects/project2/users/user_project2"));
 
     // check created index
 
@@ -696,16 +577,16 @@ int test_ov_vocs_db_update_entity_key() {
     ov_vocs_db *db = ov_vocs_db_create((ov_vocs_db_config){0});
     testrun(db);
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_VOCS_DB_SCOPE_DOMAIN, NULL));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, "domain",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, NULL));
 
     ov_json_value *par = NULL;
     ov_json_value *itm = NULL;
     ov_json_value *out = NULL;
     ov_json_value *val = ov_json_true();
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", "key", val));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain", "key",
+                                         val));
 
     testrun(ov_json_get(db->data.domains, "/domain"));
     testrun(ov_json_get(db->data.domains, "/domain/id"));
@@ -715,8 +596,8 @@ int test_ov_vocs_db_update_entity_key() {
     val = ov_json_value_free(val);
     val = ov_json_false();
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", "key", val));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain", "key",
+                                         val));
 
     testrun(ov_json_get(db->data.domains, "/domain"));
     testrun(ov_json_get(db->data.domains, "/domain/id"));
@@ -733,8 +614,8 @@ int test_ov_vocs_db_update_entity_key() {
     val = create_id_object("project2");
     testrun(ov_json_object_set(out, "project2", val));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_PROJECTS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_PROJECTS, out));
 
     testrun(ov_json_get(db->data.domains, "/domain"));
     testrun(ov_json_get(db->data.domains, "/domain/id"));
@@ -769,8 +650,8 @@ int test_ov_vocs_db_update_entity_key() {
     testrun(ov_json_object_set(par, "loop2", itm));
     testrun(ov_json_object_set(val, OV_KEY_LOOPS, par));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_PROJECTS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_PROJECTS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -841,8 +722,8 @@ int test_ov_vocs_db_update_entity_key() {
     testrun(ov_json_object_set(par, "loop2", itm));
     testrun(ov_json_object_set(val, OV_KEY_LOOPS, par));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_PROJECTS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_PROJECTS, out));
 
     testrun(ov_json_get(db->data.domains, "/domain"));
     testrun(ov_json_get(db->data.domains, "/domain/id"));
@@ -850,18 +731,18 @@ int test_ov_vocs_db_update_entity_key() {
     testrun(ov_json_get(db->data.domains, "/domain/projects/project1"));
     testrun(!ov_json_get(db->data.domains, "/domain/projects/project2"));
     testrun(!ov_json_get(db->data.domains, "/domain/projects/project2/users"));
-    testrun(!ov_json_get(
-        db->data.domains, "/domain/projects/project2/users/user1"));
-    testrun(!ov_json_get(
-        db->data.domains, "/domain/projects/project2/users/user2"));
+    testrun(!ov_json_get(db->data.domains,
+                         "/domain/projects/project2/users/user1"));
+    testrun(!ov_json_get(db->data.domains,
+                         "/domain/projects/project2/users/user2"));
     testrun(!ov_json_get(db->data.domains, "/domain/projects/project2/roles"));
-    testrun(!ov_json_get(
-        db->data.domains, "/domain/projects/project2/roles/role1"));
-    testrun(!ov_json_get(
-        db->data.domains, "/domain/projects/project2/roles/role2"));
+    testrun(!ov_json_get(db->data.domains,
+                         "/domain/projects/project2/roles/role1"));
+    testrun(!ov_json_get(db->data.domains,
+                         "/domain/projects/project2/roles/role2"));
     testrun(!ov_json_get(db->data.domains, "/domain/projects/project2/loops"));
-    testrun(!ov_json_get(
-        db->data.domains, "/domain/projects/project2/loops/loop1"));
+    testrun(!ov_json_get(db->data.domains,
+                         "/domain/projects/project2/loops/loop1"));
     testrun(ov_json_get(db->data.domains, "/domain/projects/project1/users"));
     testrun(
         ov_json_get(db->data.domains, "/domain/projects/project1/users/user1"));
@@ -900,8 +781,8 @@ int test_ov_vocs_db_update_entity_key() {
     out = ov_json_value_free(out);
     out = ov_json_object();
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_PROJECTS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_PROJECTS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -929,8 +810,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("user2");
     testrun(ov_json_object_set(out, "user2", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_USERS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_USERS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -970,8 +851,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("role3");
     testrun(ov_json_object_set(out, "role3", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_ROLES, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1019,8 +900,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("loop4");
     testrun(ov_json_object_set(out, "loop4", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_LOOPS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_LOOPS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1067,13 +948,13 @@ int test_ov_vocs_db_update_entity_key() {
 
     // entity unknown
 
-    testrun(!ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "unknown", OV_KEY_PROJECT, out));
+    testrun(!ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                          OV_KEY_PROJECT, out));
 
     // create project for testing
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain", OV_KEY_PROJECTS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain",
+                                         OV_KEY_PROJECTS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1088,8 +969,8 @@ int test_ov_vocs_db_update_entity_key() {
     out = ov_json_value_free(out);
     out = ov_json_true();
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", "key", out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                         "key", out));
 
     testrun(ov_json_get(db->data.domains, "/domain/projects"));
     testrun(ov_json_get(db->data.domains, "/domain/projects/project"));
@@ -1110,8 +991,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("user4");
     testrun(ov_json_object_set(out, "user4", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_USERS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                         OV_KEY_USERS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1148,8 +1029,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("user1");
     testrun(ov_json_object_set(out, "user1", itm));
 
-    testrun(!ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_USERS, out));
+    testrun(!ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                          OV_KEY_USERS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1184,8 +1065,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("user3");
     testrun(ov_json_object_set(out, "user3", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_USERS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                         OV_KEY_USERS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1219,8 +1100,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("role5");
     testrun(ov_json_object_set(out, "role5", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                         OV_KEY_ROLES, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1262,8 +1143,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("role1");
     testrun(ov_json_object_set(out, "role1", itm));
 
-    testrun(!ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_ROLES, out));
+    testrun(!ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                          OV_KEY_ROLES, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1303,8 +1184,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("role4");
     testrun(ov_json_object_set(out, "role4", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                         OV_KEY_ROLES, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1343,8 +1224,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("loop6");
     testrun(ov_json_object_set(out, "loop6", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_LOOPS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                         OV_KEY_LOOPS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1389,8 +1270,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("loop6");
     testrun(ov_json_object_set(out, "loop6", itm));
 
-    testrun(!ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_LOOPS, out));
+    testrun(!ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                          OV_KEY_LOOPS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1435,8 +1316,8 @@ int test_ov_vocs_db_update_entity_key() {
     itm = create_id_object("loop6");
     testrun(ov_json_object_set(out, "loop6", itm));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project", OV_KEY_LOOPS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project",
+                                         OV_KEY_LOOPS, out));
 
     // testrun(ov_vocs_db_dump(stdout, db));
 
@@ -1668,8 +1549,8 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(
         !ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_USER, "unknown", "key"));
 
-    testrun(ov_json_get(
-        db->data.domains, "/domain3/projects/project3/users/user31/id"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain3/projects/project3/users/user31/id"));
     testrun(ov_dict_get(db->index.users, "user31"));
 
     testrun(!ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_USER, "user31", "id"));
@@ -1677,12 +1558,12 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(
         ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_USER, "user31", "unknown"));
 
-    testrun(ov_json_get(
-        db->data.domains, "/domain3/projects/project3/users/user31/id"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain3/projects/project3/users/user31/id"));
     testrun(ov_dict_get(db->index.users, "user31"));
 
-    testrun(ov_json_get(
-        db->data.domains, "/domain3/projects/project3/roles/role31/id"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain3/projects/project3/roles/role31/id"));
     testrun(ov_dict_get(db->index.roles, "role31"));
 
     testrun(!ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_ROLE, "role31", "id"));
@@ -1690,28 +1571,28 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(
         ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_ROLE, "role31", "unknown"));
 
-    testrun(ov_json_get(
-        db->data.domains, "/domain3/projects/project3/roles/role31/id"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain3/projects/project3/roles/role31/id"));
     testrun(ov_dict_get(db->index.roles, "role31"));
 
-    testrun(ov_json_get(
-        db->data.domains, "/domain3/projects/project3/loops/loop31/id"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain3/projects/project3/loops/loop31/id"));
 
     testrun(!ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_LOOP, "loop31", "id"));
 
     testrun(
         ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_LOOP, "loop31", "unknown"));
 
-    testrun(ov_json_get(
-        db->data.domains, "/domain3/projects/project3/loops/loop31/id"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain3/projects/project3/loops/loop31/id"));
 
     testrun(ov_json_get(db->data.domains, "/domain3/projects/project3/id"));
 
-    testrun(!ov_vocs_db_delete_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project3", "id"));
+    testrun(!ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_PROJECT, "project3",
+                                          "id"));
 
-    testrun(ov_vocs_db_delete_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project3", "unknown"));
+    testrun(ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_PROJECT, "project3",
+                                         "unknown"));
 
     testrun(ov_json_get(db->data.domains, "/domain3/projects/project3/id"));
 
@@ -1721,8 +1602,8 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(9 == ov_dict_count(db->index.roles));
     testrun(9 == ov_dict_count(db->index.loops));
 
-    testrun(ov_vocs_db_delete_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project3", "users"));
+    testrun(ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_PROJECT, "project3",
+                                         "users"));
 
     testrun(!ov_json_get(db->data.domains, "/domain3/projects/project3/users"));
 
@@ -1732,8 +1613,8 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(9 == ov_dict_count(db->index.roles));
     testrun(9 == ov_dict_count(db->index.loops));
 
-    testrun(ov_vocs_db_delete_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project3", "roles"));
+    testrun(ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_PROJECT, "project3",
+                                         "roles"));
 
     testrun(!ov_json_get(db->data.domains, "/domain3/projects/project3/roles"));
 
@@ -1743,8 +1624,8 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(6 == ov_dict_count(db->index.roles));
     testrun(9 == ov_dict_count(db->index.loops));
 
-    testrun(ov_vocs_db_delete_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project3", "loops"));
+    testrun(ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_PROJECT, "project3",
+                                         "loops"));
 
     testrun(!ov_json_get(db->data.domains, "/domain3/projects/project3/loops"));
 
@@ -1754,8 +1635,8 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(6 == ov_dict_count(db->index.roles));
     testrun(6 == ov_dict_count(db->index.loops));
 
-    testrun(ov_vocs_db_delete_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain3", "projects"));
+    testrun(ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_DOMAIN, "domain3",
+                                         "projects"));
 
     testrun(!ov_json_get(db->data.domains, "/domain3/projects"));
 
@@ -1765,8 +1646,8 @@ int test_ov_vocs_db_delete_entity_key() {
     testrun(6 == ov_dict_count(db->index.roles));
     testrun(6 == ov_dict_count(db->index.loops));
 
-    testrun(ov_vocs_db_delete_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain2", "projects"));
+    testrun(ov_vocs_db_delete_entity_key(db, OV_VOCS_DB_DOMAIN, "domain2",
+                                         "projects"));
 
     testrun(!ov_json_get(db->data.domains, "/domain2/projects"));
 
@@ -1877,18 +1758,18 @@ int test_ov_vocs_db_delete_entity() {
     testrun(ov_json_get(db->data.domains, "/domain1/projects/project1/users"));
     testrun(ov_json_get(db->data.domains, "/domain1/projects/project1/roles"));
     testrun(ov_json_get(db->data.domains, "/domain1/projects/project1/loops"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain1/projects/project1/users/user11"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain1/projects/project1/users/user12"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain1/projects/project1/roles/role11"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain1/projects/project1/roles/role12"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain1/projects/project1/loops/loop11"));
-    testrun(ov_json_get(
-        db->data.domains, "/domain1/projects/project1/loops/loop12"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain1/projects/project1/users/user11"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain1/projects/project1/users/user12"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain1/projects/project1/roles/role11"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain1/projects/project1/roles/role12"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain1/projects/project1/loops/loop11"));
+    testrun(ov_json_get(db->data.domains,
+                        "/domain1/projects/project1/loops/loop12"));
 
     testrun(NULL == ov_vocs_db_free(db));
     return testrun_log_success();
@@ -1916,19 +1797,19 @@ int test_ov_vocs_db_verify_entity_item() {
     ov_json_value *par = NULL;
     ov_json_value *err = NULL;
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_USER, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_USER, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_USER, "user11", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_USER, "user11", out,
+                                          &err));
 
     val = ov_json_string("password");
     testrun(ov_json_object_set(out, OV_KEY_PASSWORD, val));
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_USER, "user11", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_USER, "user11", out,
+                                           &err));
 
     testrun(err);
     err = ov_json_value_free(err);
@@ -1938,25 +1819,25 @@ int test_ov_vocs_db_verify_entity_item() {
 
     out = ov_json_object();
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_USER, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_USER, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_USER, "role11", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_USER, "role11", out,
+                                          &err));
 
     testrun(!err);
 
     // loop MAY contain everything
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_LOOP, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_LOOP, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_LOOP, "loop11", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_LOOP, "loop11", out,
+                                          &err));
 
     testrun(!err);
 
@@ -1967,13 +1848,13 @@ int test_ov_vocs_db_verify_entity_item() {
 
     out = ov_json_object();
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
@@ -1984,13 +1865,13 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("unknown_user");
     ov_json_object_set(par, "unknown_user", val);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
@@ -1999,13 +1880,13 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("unknown_role");
     ov_json_object_set(par, "unknown_role", val);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
@@ -2014,13 +1895,13 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("unknown_loop");
     ov_json_object_set(par, "unknown_loop", val);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
@@ -2029,19 +1910,19 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("loop11");
     ov_json_object_set(par, "loop11", val);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
@@ -2054,19 +1935,19 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("role11");
     ov_json_object_set(par, "role11", val);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
@@ -2079,19 +1960,19 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("user11");
     ov_json_object_set(par, "user11", val);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
@@ -2100,23 +1981,23 @@ int test_ov_vocs_db_verify_entity_item() {
 
     // unset all known items, verify unknown only content
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "unknown",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          out, &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1", out,
+                                          &err));
 
     testrun(!err);
 
@@ -2128,92 +2009,92 @@ int test_ov_vocs_db_verify_entity_item() {
     ov_json_object_set(project, "project1", val);
     par = val;
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1", out,
+                                          &err));
 
     testrun(!err);
 
     // failure in project
 
     val = create_id_object("user31");
-    ov_json_object_set(
-        (ov_json_value *)ov_json_get(par, "/" OV_KEY_USERS), "user31", val);
+    ov_json_object_set((ov_json_value *)ov_json_get(par, "/" OV_KEY_USERS),
+                       "user31", val);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
-
-    testrun(err);
-    err = ov_json_value_free(err);
-
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    ov_json_object_del(
-        (ov_json_value *)ov_json_get(par, "/" OV_KEY_USERS), "user31");
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                           out, &err));
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(err);
+    err = ov_json_value_free(err);
+
+    ov_json_object_del((ov_json_value *)ov_json_get(par, "/" OV_KEY_USERS),
+                       "user31");
+
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1", out,
+                                          &err));
 
     testrun(!err);
 
     val = create_id_object("role31");
-    ov_json_object_set(
-        (ov_json_value *)ov_json_get(par, "/" OV_KEY_ROLES), "role31", val);
+    ov_json_object_set((ov_json_value *)ov_json_get(par, "/" OV_KEY_ROLES),
+                       "role31", val);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
-
-    testrun(err);
-    err = ov_json_value_free(err);
-
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    ov_json_object_del(
-        (ov_json_value *)ov_json_get(par, "/" OV_KEY_ROLES), "role31");
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                           out, &err));
+
+    testrun(err);
+    err = ov_json_value_free(err);
+
+    ov_json_object_del((ov_json_value *)ov_json_get(par, "/" OV_KEY_ROLES),
+                       "role31");
 
     val = create_id_object("loop31");
-    ov_json_object_set(
-        (ov_json_value *)ov_json_get(par, "/" OV_KEY_LOOPS), "loop31", val);
+    ov_json_object_set((ov_json_value *)ov_json_get(par, "/" OV_KEY_LOOPS),
+                       "loop31", val);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
-
-    testrun(err);
-    err = ov_json_value_free(err);
-
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    ov_json_object_del(
-        (ov_json_value *)ov_json_get(par, "/" OV_KEY_LOOPS), "loop31");
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                           out, &err));
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(err);
+    err = ov_json_value_free(err);
+
+    ov_json_object_del((ov_json_value *)ov_json_get(par, "/" OV_KEY_LOOPS),
+                       "loop31");
+
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1", out,
+                                          &err));
 
     testrun(!err);
 
@@ -2223,14 +2104,14 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("loop11");
     ov_json_object_set(par, "loop11", val);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(!ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(!ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
@@ -2240,13 +2121,13 @@ int test_ov_vocs_db_verify_entity_item() {
     val = create_id_object("loop1");
     ov_json_object_set(par, "loop1", val);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "unknown", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "unknown", out,
+                                          &err));
 
     testrun(!err);
 
-    testrun(ov_vocs_db_verify_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(ov_vocs_db_verify_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1", out,
+                                          &err));
 
     testrun(!err);
 
@@ -2284,10 +2165,9 @@ int test_ov_vocs_db_update_entity_item() {
         ov_event_trigger_create((ov_event_trigger_config){0});
 
     testrun(ov_event_trigger_register_listener(
-        trigger,
-        "VOCS",
-        (ov_event_trigger_data){
-            .userdata = &userdata, .process = dummy_process_trigger}));
+        trigger, "VOCS",
+        (ov_event_trigger_data){.userdata = &userdata,
+                                .process = dummy_process_trigger}));
 
     ov_vocs_db *db = ov_vocs_db_create((ov_vocs_db_config){.trigger = trigger});
     testrun(db);
@@ -2308,8 +2188,8 @@ int test_ov_vocs_db_update_entity_item() {
     // user MUST not contain a password
 
     // user not existing
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_USER, "unknown", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_USER, "unknown", out,
+                                           &err));
 
     testrun(err);
     testrun(0 == strcmp(ov_json_string_get(ov_json_get(err, "/unknown")),
@@ -2317,27 +2197,27 @@ int test_ov_vocs_db_update_entity_item() {
 
     err = ov_json_value_free(err);
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/users/user11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/users/user11");
     testrun(1 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_USER, "user11", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_USER, "user11", out,
+                                          &err));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/users/user11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/users/user11");
     testrun(1 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
 
     val = ov_json_true();
     ov_json_object_set(out, "key", (ov_json_value *)val);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_USER, "user11", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_USER, "user11", out,
+                                          &err));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/users/user11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/users/user11");
     testrun(2 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
     testrun(ov_json_is_true(ov_json_get(val, "/key")));
@@ -2345,11 +2225,11 @@ int test_ov_vocs_db_update_entity_item() {
     val = ov_json_false();
     ov_json_object_set(out, "key", (ov_json_value *)val);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_USER, "user11", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_USER, "user11", out,
+                                          &err));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/users/user11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/users/user11");
     testrun(2 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
     testrun(ov_json_is_false(ov_json_get(val, "/key")));
@@ -2357,12 +2237,12 @@ int test_ov_vocs_db_update_entity_item() {
     val = ov_json_false();
     ov_json_object_set(out, "password", (ov_json_value *)val);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_USER, "user11", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_USER, "user11", out,
+                                           &err));
     err = ov_json_value_free(err);
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/users/user11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/users/user11");
     testrun(2 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
     testrun(ov_json_is_false(ov_json_get(val, "/key")));
@@ -2370,30 +2250,30 @@ int test_ov_vocs_db_update_entity_item() {
     out = ov_json_value_free(out);
     out = ov_json_object();
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/roles/role11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/roles/role11");
     testrun(1 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_ROLE, "role11", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_ROLE, "role11", out,
+                                          &err));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/roles/role11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/roles/role11");
     testrun(1 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/loops/loop11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/loops/loop11");
     testrun(2 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
     testrun(ov_json_get(val, "/roles"));
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_LOOP, "loop11", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_LOOP, "loop11", out,
+                                          &err));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/loops/loop11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/loops/loop11");
     testrun(2 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
     testrun(ov_json_get(val, "/roles"));
@@ -2401,20 +2281,20 @@ int test_ov_vocs_db_update_entity_item() {
     val = ov_json_false();
     ov_json_object_set(out, "key", (ov_json_value *)val);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_ROLE, "role11", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_ROLE, "role11", out,
+                                          &err));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/roles/role11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/roles/role11");
     testrun(2 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
     testrun(ov_json_is_false(ov_json_get(val, "/key")));
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_LOOP, "loop11", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_LOOP, "loop11", out,
+                                          &err));
 
-    val = ov_json_get(
-        db->data.domains, "/domain1/projects/project1/loops/loop11");
+    val = ov_json_get(db->data.domains,
+                      "/domain1/projects/project1/loops/loop11");
     testrun(3 == ov_json_object_count(val));
     testrun(ov_json_get(val, "/id"));
     testrun(ov_json_get(val, "/roles"));
@@ -2427,28 +2307,28 @@ int test_ov_vocs_db_update_entity_item() {
     val = create_id_object("id");
     ov_json_object_set(par, "user31", (ov_json_value *)val);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain3", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_DOMAIN, "domain3",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
     // update project owning the user, will delete user32 and user33
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project3", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project3",
+                                          out, &err));
 
     testrun(!err);
 
@@ -2469,28 +2349,28 @@ int test_ov_vocs_db_update_entity_item() {
     val = create_id_object("id");
     ov_json_object_set(par, "role31", (ov_json_value *)val);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain3", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_DOMAIN, "domain3",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
     // update project owning the role, will delete role32 and role33
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project3", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project3",
+                                          out, &err));
 
     testrun(!err);
 
@@ -2511,28 +2391,28 @@ int test_ov_vocs_db_update_entity_item() {
     val = create_id_object("id");
     ov_json_object_set(par, "loop31", (ov_json_value *)val);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain1", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
-    testrun(!ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "domain3", out, &err));
+    testrun(!ov_vocs_db_update_entity_item(db, OV_VOCS_DB_DOMAIN, "domain3",
+                                           out, &err));
 
     testrun(err);
     err = ov_json_value_free(err);
 
     // update project owning the loop, will delete loop32 and loop33
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project3", out, &err));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project3",
+                                          out, &err));
 
     testrun(!err);
 
@@ -2790,8 +2670,8 @@ int test_ov_vocs_db_authorize_project_admin() {
     ov_json_object_set(usr, "user12", ov_json_null());
     ov_json_object_set(usr, "user13", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project1",
+                                         OV_KEY_ROLES, out));
 
     // create some other project admins
 
@@ -2803,8 +2683,8 @@ int test_ov_vocs_db_authorize_project_admin() {
     ov_json_object_set(usr, "user22", ov_json_null());
     ov_json_object_set(usr, "user23", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project2", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project2",
+                                         OV_KEY_ROLES, out));
 
     // create some domain admins
 
@@ -2816,8 +2696,8 @@ int test_ov_vocs_db_authorize_project_admin() {
     ov_json_object_set(usr, "user21", ov_json_null());
     ov_json_object_set(usr, "user31", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                         OV_KEY_ROLES, out));
 
     out = ov_json_value_free(out);
 
@@ -2860,8 +2740,8 @@ int test_ov_vocs_db_authorize_domain_admin() {
     ov_json_object_set(usr, "user12", ov_json_null());
     ov_json_object_set(usr, "user13", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project1",
+                                         OV_KEY_ROLES, out));
 
     // create some other project admins
 
@@ -2873,8 +2753,8 @@ int test_ov_vocs_db_authorize_domain_admin() {
     ov_json_object_set(usr, "user22", ov_json_null());
     ov_json_object_set(usr, "user23", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project2", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project2",
+                                         OV_KEY_ROLES, out));
 
     // create some domain admins
 
@@ -2886,8 +2766,8 @@ int test_ov_vocs_db_authorize_domain_admin() {
     ov_json_object_set(usr, "user21", ov_json_null());
     ov_json_object_set(usr, "user31", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                         OV_KEY_ROLES, out));
 
     out = ov_json_value_free(out);
 
@@ -2925,8 +2805,8 @@ int test_ov_vocs_db_get_admin_domains() {
     ov_json_object_set(usr, "user12", ov_json_null());
     ov_json_object_set(usr, "user13", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project1",
+                                         OV_KEY_ROLES, out));
 
     // create some other project admins
 
@@ -2934,8 +2814,8 @@ int test_ov_vocs_db_get_admin_domains() {
     ov_json_object_set(usr, "user22", ov_json_null());
     ov_json_object_set(usr, "user23", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project2", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project2",
+                                         OV_KEY_ROLES, out));
 
     // create some domain admins
 
@@ -2950,11 +2830,11 @@ int test_ov_vocs_db_get_admin_domains() {
     ov_json_object_set(usr, "user21", ov_json_null());
     ov_json_object_set(usr, "user31", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                         OV_KEY_ROLES, out));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain2", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain2",
+                                         OV_KEY_ROLES, out));
 
     out = ov_json_value_free(out);
 
@@ -3004,8 +2884,8 @@ int test_ov_vocs_db_get_admin_projects() {
     ov_json_object_set(usr, "user12", ov_json_null());
     ov_json_object_set(usr, "user13", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project1",
+                                         OV_KEY_ROLES, out));
 
     // create some other project admins
 
@@ -3013,8 +2893,8 @@ int test_ov_vocs_db_get_admin_projects() {
     ov_json_object_set(usr, "user22", ov_json_null());
     ov_json_object_set(usr, "user23", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_PROJECT, "project2", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_PROJECT, "project2",
+                                         OV_KEY_ROLES, out));
 
     // create some domain admins
 
@@ -3029,14 +2909,14 @@ int test_ov_vocs_db_get_admin_projects() {
     ov_json_object_set(usr, "user21", ov_json_null());
     ov_json_object_set(usr, "user31", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain1", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain1",
+                                         OV_KEY_ROLES, out));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain2", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain2",
+                                         OV_KEY_ROLES, out));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_DOMAIN, "domain3", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_DOMAIN, "domain3",
+                                         OV_KEY_ROLES, out));
 
     out = ov_json_value_free(out);
 
@@ -3110,11 +2990,11 @@ int test_ov_vocs_db_get_user_roles() {
 
     ov_json_object_set(out, "user31", ov_json_null());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_ROLE, "role11", OV_KEY_USERS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_ROLE, "role11",
+                                         OV_KEY_USERS, out));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_ROLE, "role21", OV_KEY_USERS, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_ROLE, "role21",
+                                         OV_KEY_USERS, out));
 
     out = ov_json_value_free(out);
 
@@ -3161,14 +3041,14 @@ int test_ov_vocs_db_get_role_loops() {
     out = ov_json_object();
     ov_json_object_set(out, "role11", ov_json_true());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_LOOP, "loop21", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_LOOP, "loop21",
+                                         OV_KEY_ROLES, out));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_LOOP, "loop31", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_LOOP, "loop31",
+                                         OV_KEY_ROLES, out));
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_LOOP, "loop33", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_LOOP, "loop33",
+                                         OV_KEY_ROLES, out));
 
     out = ov_json_value_free(out);
 
@@ -3224,8 +3104,8 @@ int test_ov_vocs_db_get_user_role_loops() {
     out = ov_json_object();
     ov_json_object_set(out, "role11", ov_json_true());
 
-    testrun(ov_vocs_db_update_entity_key(
-        db, OV_VOCS_DB_LOOP, "loop21", OV_KEY_ROLES, out));
+    testrun(ov_vocs_db_update_entity_key(db, OV_VOCS_DB_LOOP, "loop21",
+                                         OV_KEY_ROLES, out));
 
     out = ov_json_value_free(out);
 
@@ -3308,8 +3188,8 @@ int test_ov_vocs_db_set_state() {
 
     testrun(create_test_db(db));
 
-    testrun(!ov_vocs_db_set_state(
-        NULL, "user11", "role11", "loop11", OV_VOCS_NONE));
+    testrun(!ov_vocs_db_set_state(NULL, "user11", "role11", "loop11",
+                                  OV_VOCS_NONE));
     testrun(!ov_vocs_db_set_state(db, NULL, "role11", "loop11", OV_VOCS_NONE));
     testrun(!ov_vocs_db_set_state(db, "user11", NULL, "loop11", OV_VOCS_NONE));
     testrun(!ov_vocs_db_set_state(db, "user11", "role11", NULL, OV_VOCS_NONE));
@@ -3455,23 +3335,23 @@ int test_ov_vocs_db_get_parent() {
 
     testrun(create_test_db(db));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_LOOP, "loopA", OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loopA",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_LOOP, "loopB", OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, "loopB",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_USER, "userA", OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "userA",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_USER, "userB", OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, "userB",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_ROLE, "roleA", OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "roleA",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_ROLE, "roleB", OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "roleB",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
 
     // ov_vocs_db_dump(stdout, db);
 
@@ -3565,14 +3445,14 @@ int check_admin_role() {
 
     testrun(create_test_db(db));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_ROLE, "admin", OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "admin",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain1"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_ROLE, "admin", OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "admin",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "domain2"));
 
-    testrun(ov_vocs_db_create_entity(
-        db, OV_VOCS_DB_ROLE, "admin", OV_VOCS_DB_SCOPE_PROJECT, "project1"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, "admin",
+                                     OV_VOCS_DB_SCOPE_PROJECT, "project1"));
 
     testrun(ov_vocs_db_add_domain_admin(db, "domain1", "user11"));
     testrun(ov_vocs_db_add_domain_admin(db, "domain2", "user11"));
@@ -3742,39 +3622,33 @@ int test_ov_vocs_db_get_entity_domain() {
     ov_json_value *out =
         ov_vocs_db_get_entity_domain(db, OV_VOCS_DB_USER, "user11");
     testrun(out);
-    testrun(0 ==
-            strcmp("domain1",
-                   ov_json_string_get(ov_json_object_get(out, OV_KEY_DOMAIN))));
-    testrun(0 == strcmp("project1",
-                        ov_json_string_get(
-                            ov_json_object_get(out, OV_KEY_PROJECT))));
+    testrun(0 == strcmp("domain1", ov_json_string_get(ov_json_object_get(
+                                       out, OV_KEY_DOMAIN))));
+    testrun(0 == strcmp("project1", ov_json_string_get(ov_json_object_get(
+                                        out, OV_KEY_PROJECT))));
     ov_json_value_dump(stdout, out);
     out = ov_json_value_free(out);
 
     out = ov_vocs_db_get_entity_domain(db, OV_VOCS_DB_USER, "user1");
     testrun(out);
-    testrun(0 ==
-            strcmp("domain1",
-                   ov_json_string_get(ov_json_object_get(out, OV_KEY_DOMAIN))));
+    testrun(0 == strcmp("domain1", ov_json_string_get(ov_json_object_get(
+                                       out, OV_KEY_DOMAIN))));
     ov_json_value_dump(stdout, out);
     out = ov_json_value_free(out);
 
     out = ov_vocs_db_get_entity_domain(db, OV_VOCS_DB_USER, "user2");
     testrun(out);
-    testrun(0 ==
-            strcmp("domain2",
-                   ov_json_string_get(ov_json_object_get(out, OV_KEY_DOMAIN))));
+    testrun(0 == strcmp("domain2", ov_json_string_get(ov_json_object_get(
+                                       out, OV_KEY_DOMAIN))));
     ov_json_value_dump(stdout, out);
     out = ov_json_value_free(out);
 
     out = ov_vocs_db_get_entity_domain(db, OV_VOCS_DB_ROLE, "role12");
     testrun(out);
-    testrun(0 ==
-            strcmp("domain1",
-                   ov_json_string_get(ov_json_object_get(out, OV_KEY_DOMAIN))));
-    testrun(0 == strcmp("project1",
-                        ov_json_string_get(
-                            ov_json_object_get(out, OV_KEY_PROJECT))));
+    testrun(0 == strcmp("domain1", ov_json_string_get(ov_json_object_get(
+                                       out, OV_KEY_DOMAIN))));
+    testrun(0 == strcmp("project1", ov_json_string_get(ov_json_object_get(
+                                        out, OV_KEY_PROJECT))));
     ov_json_value_dump(stdout, out);
     out = ov_json_value_free(out);
 
@@ -3784,69 +3658,68 @@ int test_ov_vocs_db_get_entity_domain() {
 
 /*----------------------------------------------------------------------------*/
 
-const char *vocs_db_permission =
-    "{"
-    "\"localhost\" : "
-    "{"
-    "\"id\" : \"localhost\","
-    "\"projects\" : "
-    "{"
-    "\"project1\" :"
-    "{"
-    "\"id\" : \"project1\","
-    "\"loops\" :"
-    "{"
-    "\"loop1\" : "
-    "{"
-    "\"id\" : \"loop1\","
-    "\"sip\" : "
-    "{"
-    "\"whitelist\": "
-    "["
-    "{"
-    "\"caller\" : \"1\","
-    "\"callee\" : \"2\""
-    "},"
-    "]"
-    "}"
-    "},"
-    "\"loop2\" : "
-    "{"
-    "\"id\" : \"loop2\","
-    "\"sip\" : "
-    "{"
-    "\"whitelist\": "
-    "["
-    "{"
-    "\"caller\" : \"2\","
-    "\"callee\" : \"2\""
-    "},"
-    "]"
-    "}"
-    "}"
+const char *vocs_db_permission = "{"
+                                 "\"localhost\" : "
+                                 "{"
+                                 "\"id\" : \"localhost\","
+                                 "\"projects\" : "
+                                 "{"
+                                 "\"project1\" :"
+                                 "{"
+                                 "\"id\" : \"project1\","
+                                 "\"loops\" :"
+                                 "{"
+                                 "\"loop1\" : "
+                                 "{"
+                                 "\"id\" : \"loop1\","
+                                 "\"sip\" : "
+                                 "{"
+                                 "\"whitelist\": "
+                                 "["
+                                 "{"
+                                 "\"caller\" : \"1\","
+                                 "\"callee\" : \"2\""
+                                 "},"
+                                 "]"
+                                 "}"
+                                 "},"
+                                 "\"loop2\" : "
+                                 "{"
+                                 "\"id\" : \"loop2\","
+                                 "\"sip\" : "
+                                 "{"
+                                 "\"whitelist\": "
+                                 "["
+                                 "{"
+                                 "\"caller\" : \"2\","
+                                 "\"callee\" : \"2\""
+                                 "},"
+                                 "]"
+                                 "}"
+                                 "}"
 
-    "}"
-    "}"
-    "},"
-    "\"loops\" : "
-    "{"
-    "\"loop3\" :"
-    "{"
-    "\"id\" : \"loop3\","
-    "\"sip\" : "
-    "{"
-    "\"whitelist\": "
-    "["
-    "{"
-    "\"caller\" : \"1\","
-    "\"callee\" : \"2\""
-    "},"
-    "]"
-    "}"
-    "}"
-    "}"
-    "}"
-    "}";
+                                 "}"
+                                 "}"
+                                 "},"
+                                 "\"loops\" : "
+                                 "{"
+                                 "\"loop3\" :"
+                                 "{"
+                                 "\"id\" : \"loop3\","
+                                 "\"sip\" : "
+                                 "{"
+                                 "\"whitelist\": "
+                                 "["
+                                 "{"
+                                 "\"caller\" : \"1\","
+                                 "\"callee\" : \"2\""
+                                 "},"
+                                 "]"
+                                 "}"
+                                 "}"
+                                 "}"
+                                 "}"
+                                 "}";
 
 /*----------------------------------------------------------------------------*/
 
@@ -3860,10 +3733,9 @@ int check_update_sip_permissions() {
         ov_event_trigger_create((ov_event_trigger_config){0});
 
     testrun(ov_event_trigger_register_listener(
-        trigger,
-        "VOCS",
-        (ov_event_trigger_data){
-            .userdata = &userdata, .process = dummy_process_trigger}));
+        trigger, "VOCS",
+        (ov_event_trigger_data){.userdata = &userdata,
+                                .process = dummy_process_trigger}));
 
     ov_vocs_db *db = ov_vocs_db_create((ov_vocs_db_config){.trigger = trigger});
     testrun(db);
@@ -3888,13 +3760,13 @@ int check_update_sip_permissions() {
     ov_json_object_set(whitelist, OV_KEY_WHITELIST, arr);
     ov_json_object_set(loop, OV_KEY_SIP, whitelist);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_LOOP, "loop11", loop, NULL));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_LOOP, "loop11", loop,
+                                          NULL));
 
     // check trigger
     testrun(userdata.msg);
-    arr = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop11/permit");
+    arr = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop11/permit");
     testrun(ov_json_is_array(arr));
     testrun(3 == ov_json_array_count(arr));
     loop = ov_json_value_free(loop);
@@ -3909,13 +3781,13 @@ int check_update_sip_permissions() {
     out = ov_json_array_pop(arr);
     out = ov_json_value_free(out);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_LOOP, "loop11", loop, NULL));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_LOOP, "loop11", loop,
+                                          NULL));
 
     // check trigger
     testrun(userdata.msg);
-    arr = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop11/revoke");
+    arr = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop11/revoke");
     testrun(2 == ov_json_array_count(arr));
     val = ov_json_array_get(arr, 1);
     testrun(val);
@@ -3950,13 +3822,13 @@ int check_update_sip_permissions() {
     ov_json_object_set(whitelist, OV_KEY_WHITELIST, arr);
     ov_json_object_set(loop, OV_KEY_SIP, whitelist);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", project, NULL));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          project, NULL));
 
     // check trigger
     testrun(userdata.msg);
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop1/permit");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop1/permit");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -3965,13 +3837,13 @@ int check_update_sip_permissions() {
     out = ov_json_object_get(val, OV_KEY_CALLER);
     testrun(out);
     testrun(0 == strcmp("ler", ov_json_string_get(out)));
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop2");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop2");
     testrun(val);
     testrun(ov_json_object_is_empty(val));
 
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop1/revoke");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop1/revoke");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -3996,11 +3868,8 @@ int check_update_sip_permissions() {
     project = ov_json_value_free(project);
 
     // add to project without loops
-    testrun(ov_vocs_db_create_entity(db,
-                                     OV_VOCS_DB_PROJECT,
-                                     "project2",
-                                     OV_VOCS_DB_SCOPE_DOMAIN,
-                                     "localhost"));
+    testrun(ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, "project2",
+                                     OV_VOCS_DB_SCOPE_DOMAIN, "localhost"));
 
     project = ov_vocs_db_get_entity(db, OV_VOCS_DB_PROJECT, "project2");
     testrun(project);
@@ -4015,15 +3884,15 @@ int check_update_sip_permissions() {
     ov_json_object_set(whitelist, OV_KEY_WHITELIST, arr);
     ov_json_object_set(loop, OV_KEY_SIP, whitelist);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project2", project, NULL));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project2",
+                                          project, NULL));
 
     project = ov_json_value_free(project);
 
     // check trigger
     testrun(userdata.msg);
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop23/permit");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop23/permit");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -4066,16 +3935,16 @@ int check_update_sip_permissions() {
     ov_json_object_set(whitelist, OV_KEY_WHITELIST, arr);
     ov_json_object_set(loop, OV_KEY_SIP, whitelist);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_PROJECT, "project1", project, NULL));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_PROJECT, "project1",
+                                          project, NULL));
 
     project = ov_json_value_free(project);
 
     // check trigger
     testrun(userdata.msg);
     // ov_log_debug("%s", ov_json_encode(userdata.msg));
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop1/revoke");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop1/revoke");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -4084,8 +3953,8 @@ int check_update_sip_permissions() {
     out = ov_json_object_get(val, OV_KEY_CALLER);
     testrun(out);
     testrun(0 == strcmp("ler", ov_json_string_get(out)));
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop2/revoke");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop2/revoke");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -4094,8 +3963,8 @@ int check_update_sip_permissions() {
     out = ov_json_object_get(val, OV_KEY_CALLER);
     testrun(out);
     testrun(0 == strcmp("2", ov_json_string_get(out)));
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop2/permit");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop2/permit");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -4124,12 +3993,12 @@ int check_update_sip_permissions() {
     ov_json_object_set(whitelist, OV_KEY_WHITELIST, arr);
     ov_json_object_set(loop, OV_KEY_SIP, whitelist);
 
-    testrun(ov_vocs_db_update_entity_item(
-        db, OV_VOCS_DB_DOMAIN, "localhost", domain, NULL));
+    testrun(ov_vocs_db_update_entity_item(db, OV_VOCS_DB_DOMAIN, "localhost",
+                                          domain, NULL));
 
     testrun(userdata.msg);
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop3/revoke");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop3/revoke");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -4138,8 +4007,8 @@ int check_update_sip_permissions() {
     out = ov_json_object_get(val, OV_KEY_CALLER);
     testrun(out);
     testrun(0 == strcmp("1", ov_json_string_get(out)));
-    val = (ov_json_value *)ov_json_get(
-        userdata.msg, "/parameter/processing/loop3/permit");
+    val = (ov_json_value *)ov_json_get(userdata.msg,
+                                       "/parameter/processing/loop3/permit");
     testrun(ov_json_is_array(val));
     val = ov_json_array_get(val, 1);
     out = ov_json_object_get(val, OV_KEY_CALLEE);
@@ -4153,86 +4022,6 @@ int check_update_sip_permissions() {
 
     testrun(NULL == ov_vocs_db_free(db));
     testrun(NULL == ov_event_trigger_free(trigger));
-    return testrun_log_success();
-}
-
-/*----------------------------------------------------------------------------*/
-
-int check_revoke_call_in_whitelist() {
-
-    ov_json_value *val = NULL;
-
-    ov_json_value *old_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"}"
-        "]");
-
-    ov_json_value *new_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\", \"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"other\"}"
-        "]");
-
-    ov_json_value *out = ov_json_object();
-
-    testrun(revoke_calls(out, old_list, new_list));
-    testrun(2 == ov_json_array_count(ov_json_object_get(out, OV_KEY_REVOKE)));
-    out = ov_json_value_free(out);
-    old_list = ov_json_value_free(old_list);
-    new_list = ov_json_value_free(new_list);
-
-    old_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"}"
-        "]");
-
-    new_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"other\"}"
-        "]");
-
-    out = ov_json_object();
-
-    testrun(revoke_calls(out, old_list, new_list));
-    testrun(0 == ov_json_array_count(ov_json_object_get(out, OV_KEY_REVOKE)));
-    out = ov_json_value_free(out);
-    old_list = ov_json_value_free(old_list);
-    new_list = ov_json_value_free(new_list);
-
-    old_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"}"
-        "]");
-
-    new_list = ov_json_decode(
-        "["
-        "{\"caller\":\"ler\"},"
-        "{\"caller\":\"ler\", \"callee\":\"lee\"},"
-        "{\"caller\":\"ler\", \"callee\":\"other\"}"
-        "]");
-
-    out = ov_json_object();
-
-    testrun(revoke_calls(out, old_list, new_list));
-    testrun(1 == ov_json_array_count(ov_json_object_get(out, OV_KEY_REVOKE)));
-    val = ov_json_array_get(ov_json_object_get(out, OV_KEY_REVOKE), 1);
-    testrun(ov_json_object_get(val, OV_KEY_CALLEE));
-    testrun(0 ==
-            strcmp("lee",
-                   ov_json_string_get(ov_json_object_get(val, OV_KEY_CALLEE))));
-    out = ov_json_value_free(out);
-    old_list = ov_json_value_free(old_list);
-    new_list = ov_json_value_free(new_list);
-
     return testrun_log_success();
 }
 
@@ -4298,7 +4087,6 @@ int all_tests() {
 
     testrun_test(test_ov_vocs_db_get_entity_domain);
 
-    testrun_test(check_revoke_call_in_whitelist);
     testrun_test(check_update_sip_permissions);
 
     return testrun_counter;

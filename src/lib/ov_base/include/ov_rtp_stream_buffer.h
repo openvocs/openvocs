@@ -53,8 +53,7 @@ ov_rtp_stream_buffer *ov_rtp_stream_buffer_free(ov_rtp_stream_buffer *self);
 /*----------------------------------------------------------------------------*/
 
 bool ov_rtp_stream_buffer_accept(ov_rtp_stream_buffer *self,
-                                 uint32_t bottom_ssid,
-                                 uint32_t top_ssid);
+                                 uint32_t bottom_ssid, uint32_t top_ssid);
 
 /*----------------------------------------------------------------------------*/
 
@@ -86,15 +85,14 @@ typedef struct {
     uint16_t sequence_number;
 } ov_rtp_stream_buffer_lookahead_info;
 
-ov_rtp_stream_buffer_lookahead_info ov_rtp_stream_buffer_lookahead(
-    ov_rtp_stream_buffer const *self);
+ov_rtp_stream_buffer_lookahead_info
+ov_rtp_stream_buffer_lookahead(ov_rtp_stream_buffer const *self);
 
 /**
  * Returns number of frames actually put into array
  */
 ssize_t ov_rtp_stream_buffer_get(ov_rtp_stream_buffer *self,
-                                 ov_rtp_frame **array,
-                                 size_t frames_to_return);
+                                 ov_rtp_frame **array, size_t frames_to_return);
 
 /*----------------------------------------------------------------------------*/
 

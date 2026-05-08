@@ -54,7 +54,8 @@ static ov_format_registry *g_format_registry = 0;
 
 static void *free_format_handler(void *fth) {
 
-    if (0 == fth) return fth;
+    if (0 == fth)
+        return fth;
 
     free(fth);
 
@@ -65,7 +66,8 @@ static void *free_format_handler(void *fth) {
 
 static ov_dict *get_format_registry(ov_format_registry *registry) {
 
-    if (0 != registry) return (ov_dict *)registry;
+    if (0 != registry)
+        return (ov_dict *)registry;
 
     if (0 == g_format_registry) {
 
@@ -78,12 +80,11 @@ static ov_dict *get_format_registry(ov_format_registry *registry) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_format *ov_format_as(ov_format *f,
-                        char const *type,
-                        void *options,
+ov_format *ov_format_as(ov_format *f, char const *type, void *options,
                         ov_format_registry *registry) {
 
-    if (0 == type) goto error;
+    if (0 == type)
+        goto error;
 
     if (0 == f) {
 
@@ -95,7 +96,8 @@ ov_format *ov_format_as(ov_format *f,
         registry = g_format_registry;
     }
 
-    if (0 == registry) goto error;
+    if (0 == registry)
+        goto error;
 
     ov_dict *registry_dict = (ov_dict *)registry;
 
@@ -138,9 +140,8 @@ bool ov_format_registry_register_type(char const *type,
 
     if ((0 != handler.create_data) && (0 == handler.free_data)) {
 
-        ov_log_error(
-            "Cannot register a format type with 'create_data' set but "
-            "'free_data' not set");
+        ov_log_error("Cannot register a format type with 'create_data' set but "
+                     "'free_data' not set");
         goto error;
     }
 
@@ -165,15 +166,15 @@ bool ov_format_registry_register_type(char const *type,
 
     if (255 == strnlen(ft_copy, 255)) {
 
-        ov_log_error(
-            "Could not copy format type name - too long(Max 255 chars "
-            "supported)");
+        ov_log_error("Could not copy format type name - too long(Max 255 chars "
+                     "supported)");
         goto error;
     }
 
     bool success = ov_dict_set(registry_dict, ft_copy, handler_copy, 0);
 
-    if (!success) goto error;
+    if (!success)
+        goto error;
 
     return success;
 

@@ -267,9 +267,7 @@ typedef ov_vm_retval (*ov_vm_opcode_handler)(ov_vm *, ov_vm_prog *prog);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vm_register(ov_vm *self,
-                    uint8_t opcode,
-                    char const *symbol,
+bool ov_vm_register(ov_vm *self, uint8_t opcode, char const *symbol,
                     ov_vm_opcode_handler handler,
                     ov_vm_opcode_handler inv_handler);
 
@@ -295,10 +293,8 @@ typedef enum {
  * If this function returns OV_EXEC_TRIGGER_FAIL, you still must take care
  * of `data`.
  */
-ov_vm_exec_result ov_vm_trigger(ov_vm *self,
-                                ov_vm_instr const *instructions,
-                                char const *id,
-                                void *data);
+ov_vm_exec_result ov_vm_trigger(ov_vm *self, ov_vm_instr const *instructions,
+                                char const *id, void *data);
 
 /*----------------------------------------------------------------------------*/
 
@@ -316,6 +312,8 @@ ov_vm_exec_result ov_vm_continue(ov_vm *self, char const *id);
 #define ov_vm_abort(self, id, ...)                                             \
     ov_vm_abort_with(self, id, (ov_vm_abort_opts){__VA_ARGS__})
 
+#define ov_vm_abort_all(self, ...)                                             \
+    ov_vm_abort_all_with(self, (ov_vm_abort_opts){__VA_ARGS__})
 /*----------------------------------------------------------------------------*/
 
 typedef struct {
@@ -325,6 +323,8 @@ typedef struct {
 } ov_vm_abort_opts;
 
 bool ov_vm_abort_with(ov_vm *self, char const *id, ov_vm_abort_opts opts);
+
+bool ov_vm_abort_all_with(ov_vm *self, ov_vm_abort_opts opts);
 
 /*----------------------------------------------------------------------------*/
 

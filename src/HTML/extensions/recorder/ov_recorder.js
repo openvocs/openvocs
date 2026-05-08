@@ -36,7 +36,8 @@ export const EVENT = {
     STOP_PLAYBACK: "playback_stop",
     START_RECORD: "record_start",
     STOP_RECORD: "record_stop",
-    RECORDED_LOOPS: "get_recorded_loops"
+    RECORDED_LOOPS: "get_recorded_loops",
+    RECORDINGS: "get_recording"
 };
 
 var RETRIES_ON_TEMP_ERROR = 5;
@@ -95,6 +96,35 @@ export async function get_recorded_loops(ws) {
     return result.result;
 }
 
+export async function get_recordings(loop_id, from, to, ws) {
+    ws = ws ? ws : ov_Websockets.prime_websocket;
+    let parameter = {
+        "loop": loop_id,
+        "from": from,
+        "to": to
+    }
+    let result;
+    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
+        try {
+            console.log(log_prefix(ws) + "get recordings...");
+            result = await ws.send_event(EVENT.RECORDINGS, parameter);
+            console.log(log_prefix(ws) + "get recordings successful");
+            break;
+        } catch (error) {
+            if (ws.is_connecting && error.temp_error) {
+                console.log(log_prefix(ws) +
+                    "temp error - try to get recordings again after timeout");
+                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
+            } else {
+                console.warn(log_prefix(ws) +
+                    "get recordings failed.", error);
+                return false;
+            }
+        }
+    }
+    return result;
+}
+
 async function ws_start_record(loop_id, websocket) {
     let result;
     let parameter = { loop: loop_id };
@@ -139,6 +169,13 @@ async function ws_stop_record(loop_id, websocket) {
         }
     }
     return result;
+}
+
+function disconnect(websocket) {
+    if (websocket.is_connecting) {
+        console.warn(log_prefix(websocket) + "Pers error. Disconnect and try again.");
+        websocket.disconnect();
+    }
 }
 
 //-----------------------------------------------------------------------------

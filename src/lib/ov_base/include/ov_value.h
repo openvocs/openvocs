@@ -73,8 +73,7 @@ char *ov_value_to_string(ov_value const *value);
  * @func Function to be called for all values contained.
  */
 bool ov_value_for_each(ov_value const *value,
-                       bool (*func)(char const *key,
-                                    ov_value const *val,
+                       bool (*func)(char const *key, ov_value const *val,
                                     void *userdata),
                        void *userdata);
 
@@ -185,17 +184,14 @@ bool ov_value_is_object(ov_value const *value);
  */
 ov_value const *ov_value_object_get(ov_value const *val, char const *key);
 
-ov_value *ov_value_object_set(ov_value *val,
-                              char const *key,
+ov_value *ov_value_object_set(ov_value *val, char const *key,
                               ov_value *content);
 
 /*****************************************************************************
                                     Caching
  ****************************************************************************/
 
-void ov_value_enable_caching(size_t numbers,
-                             size_t strings,
-                             size_t lists,
+void ov_value_enable_caching(size_t numbers, size_t strings, size_t lists,
                              size_t objects);
 
 /*****************************************************************************

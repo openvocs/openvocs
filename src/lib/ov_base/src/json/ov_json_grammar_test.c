@@ -48,14 +48,14 @@ int test_ov_json_is_whitespace() {
     for (int i = 0; i <= 0xff; i++) {
 
         switch (i) {
-            case 0x20:
-            case 0x09:
-            case 0x0A:
-            case 0x0D:
-                testrun(ov_json_is_whitespace(i));
-                break;
-            default:
-                testrun(!ov_json_is_whitespace(i));
+        case 0x20:
+        case 0x09:
+        case 0x0A:
+        case 0x0D:
+            testrun(ov_json_is_whitespace(i));
+            break;
+        default:
+            testrun(!ov_json_is_whitespace(i));
         }
     }
 
@@ -503,14 +503,13 @@ int test_ov_json_match_string() {
     testrun(start == buf);
     testrun(end == NULL);
 
-    char *test =
-        "\"Ad reprehenderit amet ullamco quis. "
-        "Dolore et ad officia non magna  excepteur laborum."
-        "Consectetur in do ullamco duis sunt ipsum velit ea "
-        "tempor."
-        "In est quis enim ex quis fugiat enim nisi labore."
-        "Qui eu nostrud enim proident ut ullamco nisi aute "
-        "in.\\r\\n\"";
+    char *test = "\"Ad reprehenderit amet ullamco quis. "
+                 "Dolore et ad officia non magna  excepteur laborum."
+                 "Consectetur in do ullamco duis sunt ipsum velit ea "
+                 "tempor."
+                 "In est quis enim ex quis fugiat enim nisi labore."
+                 "Qui eu nostrud enim proident ut ullamco nisi aute "
+                 "in.\\r\\n\"";
 
     start = (uint8_t *)test;
     testrun(ov_json_match_string(&start, &end, strlen(test)));
@@ -841,6 +840,9 @@ int test_ov_json_match() {
     testrun(ov_json_match((uint8_t *)buffer, 1, true, NULL));
     testrun(!ov_json_match((uint8_t *)buffer, 1, false, NULL));
 
+    buffer = "\"";
+    testrun(ov_json_match((uint8_t *)buffer, 1, true, NULL));
+
     // check literals
 
     buffer = "[null]";
@@ -1037,9 +1039,8 @@ int test_ov_json_match() {
     testrun(first == (uint8_t *)buffer + strlen(buffer) - 1);
 
     // check key value pair with whitespaces
-    buffer =
-        " \n\t\r{ \n\t\r\"key\" \n\t\r: \n\t\r1 \n\t\r,  "
-        "\n\t\r\"2\"\n\t\r\n:\n\t\r\n2\n\t\r\n}\r\n";
+    buffer = " \n\t\r{ \n\t\r\"key\" \n\t\r: \n\t\r1 \n\t\r,  "
+             "\n\t\r\"2\"\n\t\r\n:\n\t\r\n2\n\t\r\n}\r\n";
     len = strlen(buffer);
     testrun(ov_json_match((uint8_t *)buffer, len, true, &first));
     testrun(ov_json_match((uint8_t *)buffer, len, false, &first));

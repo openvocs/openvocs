@@ -129,11 +129,8 @@ size_t ov_stun_nonce_encoding_length(const uint8_t *nonce, size_t length);
         @param size     size of the nonce to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_nonce_encode(uint8_t *buffer,
-                          size_t length,
-                          uint8_t **next,
-                          const uint8_t *nonce,
-                          size_t size);
+bool ov_stun_nonce_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                          const uint8_t *nonce, size_t size);
 
 /*----------------------------------------------------------------------------*/
 
@@ -145,9 +142,7 @@ bool ov_stun_nonce_encode(uint8_t *buffer,
         @param nonce    pointer to encoded nonce
         @param size     size of the nonce
 */
-bool ov_stun_nonce_decode(const uint8_t *buffer,
-                          size_t length,
-                          uint8_t **nonce,
+bool ov_stun_nonce_decode(const uint8_t *buffer, size_t length, uint8_t **nonce,
                           size_t *size);
 
 /*----------------------------------------------------------------------------*/

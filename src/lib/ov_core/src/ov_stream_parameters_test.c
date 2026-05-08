@@ -84,8 +84,7 @@ int test_ov_stream_parameters_from_json() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_stream_parameters",
-            test_ov_stream_parameters_to_json,
+OV_TEST_RUN("ov_stream_parameters", test_ov_stream_parameters_to_json,
             test_ov_stream_parameters_from_json);
 
 /*----------------------------------------------------------------------------*/

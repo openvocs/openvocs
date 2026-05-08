@@ -150,11 +150,10 @@ static int ov_sip_permission_from_json_test() {
      ************************************************************************/
 
     char const permission_without_valid[] =
-        "{\"" OV_KEY_CALLER "\" : \"roger\", \"" OV_KEY_LOOP
-        "\" : "
+        "{\"" OV_KEY_CALLER "\" : \"roger\", \"" OV_KEY_LOOP "\" : "
         "\"Sicilia\"}";
-    jval = ov_json_value_from_string(
-        permission_without_valid, strlen(permission_without_valid));
+    jval = ov_json_value_from_string(permission_without_valid,
+                                     strlen(permission_without_valid));
     testrun(0 != jval);
 
     ref_permission = (ov_sip_permission){
@@ -171,8 +170,7 @@ static int ov_sip_permission_from_json_test() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_sip_permission",
-            ov_sip_permission_to_json_test,
+OV_TEST_RUN("ov_sip_permission", ov_sip_permission_to_json_test,
             ov_sip_permission_from_json_test);
 
 /*----------------------------------------------------------------------------*/

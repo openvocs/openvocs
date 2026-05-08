@@ -288,10 +288,8 @@ bool ov_websocket_process_handshake_request(const ov_http_message *msg,
 
     @returns true if the data was set to the frame (frame will be reparsed)
 */
-bool ov_websocket_set_data(ov_websocket_frame *frame,
-                           const uint8_t *data,
-                           size_t length,
-                           bool mask);
+bool ov_websocket_set_data(ov_websocket_frame *frame, const uint8_t *data,
+                           size_t length, bool mask);
 
 /*----------------------------------------------------------------------------*/
 
@@ -348,23 +346,21 @@ bool ov_websocket_generate_secure_websocket_key(uint8_t *buffer, size_t size);
 
     NOTE *result will be some allocated string and MUST be freed by the caller
 */
-bool ov_websocket_generate_secure_accept_key(const uint8_t *key,
-                                             size_t length,
-                                             uint8_t **result,
-                                             size_t *size);
+bool ov_websocket_generate_secure_accept_key(const uint8_t *key, size_t length,
+                                             uint8_t **result, size_t *size);
 
 /*----------------------------------------------------------------------------*/
 
-ov_websocket_frame_config ov_websocket_frame_config_from_json(
-    const ov_json_value *value);
-ov_json_value *ov_websocket_frame_config_to_json(
-    ov_websocket_frame_config config);
+ov_websocket_frame_config
+ov_websocket_frame_config_from_json(const ov_json_value *value);
+ov_json_value *
+ov_websocket_frame_config_to_json(ov_websocket_frame_config config);
 
 /*----------------------------------------------------------------------------*/
 
-ov_websocket_frame *ov_websocket_frame_pop(
-    ov_buffer **buffer,
-    const ov_websocket_frame_config *config,
-    ov_websocket_parser_state *state);
+ov_websocket_frame *
+ov_websocket_frame_pop(ov_buffer **buffer,
+                       const ov_websocket_frame_config *config,
+                       ov_websocket_parser_state *state);
 
 #endif /* ov_websocket_pointer_h */

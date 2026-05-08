@@ -140,10 +140,8 @@ struct ov_dict {
     /*
      *      For_each MUST apply function at each key value pair.
      */
-    bool (*for_each)(ov_dict *self,
-                     void *data,
-                     bool (*function)(const void *key,
-                                      void *value,
+    bool (*for_each)(ov_dict *self, void *data,
+                     bool (*function)(const void *key, void *value,
                                       void *data));
 };
 
@@ -207,10 +205,8 @@ void *ov_dict_get(const ov_dict *dict, const void *key);
 bool ov_dict_set(ov_dict *dict, void *key, void *value, void **replaced);
 bool ov_dict_del(ov_dict *dict, const void *key);
 void *ov_dict_remove(ov_dict *dict, const void *key);
-bool ov_dict_for_each(ov_dict *dict,
-                      void *data,
-                      bool (*function)(const void *key,
-                                       void *value,
+bool ov_dict_for_each(ov_dict *dict, void *data,
+                      bool (*function)(const void *key, void *value,
                                        void *data));
 
 /*

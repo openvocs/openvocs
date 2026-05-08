@@ -36,8 +36,7 @@ char const *TEST_WAV_FILE = "resources/wav/test.wav";
 /*----------------------------------------------------------------------------*/
 
 static ov_buffer *get_wav(ov_buffer const *payload,
-                          ov_format_wav_options *options,
-                          uint32_t data_rate,
+                          ov_format_wav_options *options, uint32_t data_rate,
                           size_t num_chunks_before_fmt,
                           size_t num_chunks_after_fmt) {
 
@@ -55,14 +54,10 @@ static ov_buffer *get_wav(ov_buffer const *payload,
     size_t out_length = MASTER_RIFF_CHUNK_LENGTH + DATA_RIFF_HEADER_LENGTH +
                         FMT_CHUNK_LENGTH + payload->length;
 
-    testrun_log(
-        "get_wav: length master: %zu   fmt: %zu   data:%zu   "
-        "payload length: %zu,    out length: %zu",
-        MASTER_RIFF_CHUNK_LENGTH,
-        FMT_CHUNK_LENGTH,
-        DATA_RIFF_HEADER_LENGTH,
-        payload->length,
-        out_length);
+    testrun_log("get_wav: length master: %zu   fmt: %zu   data:%zu   "
+                "payload length: %zu,    out length: %zu",
+                MASTER_RIFF_CHUNK_LENGTH, FMT_CHUNK_LENGTH,
+                DATA_RIFF_HEADER_LENGTH, payload->length, out_length);
 
     OV_ASSERT(FMT_CHUNK_LENGTH == 8 + 16);
 
@@ -83,24 +78,24 @@ static ov_buffer *get_wav(ov_buffer const *payload,
     ptr += 8;
     out_length_remaining -= 8;
 
-    ov_file_write_32(
-        &ptr, &out_length_remaining, OV_H32TOLE(FMT_CHUNK_LENGTH - 8));
+    ov_file_write_32(&ptr, &out_length_remaining,
+                     OV_H32TOLE(FMT_CHUNK_LENGTH - 8));
 
     ov_file_write_16(&ptr, &out_length_remaining, OV_H16TOLE(options->format));
 
-    ov_file_write_16(
-        &ptr, &out_length_remaining, OV_H16TOLE(options->channels));
+    ov_file_write_16(&ptr, &out_length_remaining,
+                     OV_H16TOLE(options->channels));
 
-    ov_file_write_32(
-        &ptr, &out_length_remaining, OV_H32TOLE(options->samplerate_hz));
+    ov_file_write_32(&ptr, &out_length_remaining,
+                     OV_H32TOLE(options->samplerate_hz));
 
     ov_file_write_32(&ptr, &out_length_remaining, OV_H32TOLE(data_rate));
 
-    ov_file_write_16(
-        &ptr, &out_length_remaining, OV_H16TOLE(options->blockAlignmentBytes));
+    ov_file_write_16(&ptr, &out_length_remaining,
+                     OV_H16TOLE(options->blockAlignmentBytes));
 
-    ov_file_write_16(
-        &ptr, &out_length_remaining, OV_H16TOLE(options->bitsPerSample));
+    ov_file_write_16(&ptr, &out_length_remaining,
+                     OV_H16TOLE(options->bitsPerSample));
 
     memcpy(ptr, "data", 4);
 
@@ -326,14 +321,10 @@ static int test_impl_next_chunk() {
     testrun(0 == wav_fmt);
     bare = 0;
 
-    testrun_log(
-        "Bits per sample: %u  Block alignment: %u  Channels: %u"
-        "Format: %u   Samplerate (Hz): %u",
-        options.bitsPerSample,
-        options.blockAlignmentBytes,
-        options.channels,
-        options.format,
-        options.samplerate_hz);
+    testrun_log("Bits per sample: %u  Block alignment: %u  Channels: %u"
+                "Format: %u   Samplerate (Hz): %u",
+                options.bitsPerSample, options.blockAlignmentBytes,
+                options.channels, options.format, options.samplerate_hz);
 
     /*************************************************************************
                                     Cleanup
@@ -540,14 +531,10 @@ static int test_ov_format_wav_get_header() {
     testrun(0 == wav_fmt);
     bare = 0;
 
-    testrun_log(
-        "Bits per sample: %u  Block alignment: %u  Channels: %u"
-        "Format: %u   Samplerate (Hz): %u",
-        options.bitsPerSample,
-        options.blockAlignmentBytes,
-        options.channels,
-        options.format,
-        options.samplerate_hz);
+    testrun_log("Bits per sample: %u  Block alignment: %u  Channels: %u"
+                "Format: %u   Samplerate (Hz): %u",
+                options.bitsPerSample, options.blockAlignmentBytes,
+                options.channels, options.format, options.samplerate_hz);
 
     testrun(16 == options.bitsPerSample);
     testrun(2 == options.blockAlignmentBytes);
@@ -566,8 +553,5 @@ static int test_ov_format_wav_get_header() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_wav",
-            test_ov_format_wav_install,
-            test_impl_next_chunk,
-            test_impl_write_chunk,
-            test_ov_format_wav_get_header);
+OV_TEST_RUN("ov_format_wav", test_ov_format_wav_install, test_impl_next_chunk,
+            test_impl_write_chunk, test_ov_format_wav_get_header);

@@ -122,8 +122,7 @@ ssize_t ov_ice_pair_send(ov_ice_pair *self, const uint8_t *buffer, size_t size);
 
 const char *ov_ice_pair_state_to_string(ov_ice_pair_state state);
 
-bool ov_ice_pair_handshake_passive(ov_ice_pair *pair,
-                                   const uint8_t *buffer,
+bool ov_ice_pair_handshake_passive(ov_ice_pair *pair, const uint8_t *buffer,
                                    size_t size);
 
 bool ov_ice_pair_handshake_active(ov_ice_pair *pair);

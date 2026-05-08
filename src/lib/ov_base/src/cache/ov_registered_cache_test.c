@@ -53,7 +53,8 @@ static void *cache_worker(void *arg) {
     while (true) {
 
         size_t *value = ov_registered_cache_get(cache);
-        if (0 != value) ov_registered_cache_put(cache, value);
+        if (0 != value)
+            ov_registered_cache_put(cache, value);
 
         nanosleep(&time_to_wait, 0);
     }
@@ -485,8 +486,7 @@ static int test_ov_registered_cache_sizes_from_json() {
 
     /* Case 2: Empty sizes section */
 
-    jval = json_from_string("{\"" OV_KEY_CACHE_ENABLED
-                            "\": true,"
+    jval = json_from_string("{\"" OV_KEY_CACHE_ENABLED "\": true,"
                             "\"" OV_KEY_CACHE_SIZES "\": {}}");
     testrun(0 != jval);
 
@@ -507,14 +507,10 @@ static int test_ov_registered_cache_sizes_from_json() {
 
     /* Enabled with cache sizes section */
 
-    jval = json_from_string("{\"" OV_KEY_CACHE_ENABLED
-                            "\": true,"
-                            "\"" OV_KEY_CACHE_SIZES
-                            "\": {"
-                            "\"" CACHE_NAME_1
-                            "\":1,"
-                            "\"" CACHE_NAME_2
-                            "\":3"
+    jval = json_from_string("{\"" OV_KEY_CACHE_ENABLED "\": true,"
+                            "\"" OV_KEY_CACHE_SIZES "\": {"
+                            "\"" CACHE_NAME_1 "\":1,"
+                            "\"" CACHE_NAME_2 "\":3"
                             "}}");
     testrun(0 != jval);
 
@@ -557,8 +553,7 @@ static int test_ov_registered_cache_size_for() {
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_caches_enabled(ov_hashtable *sizes,
-                                 char const **cache_names,
+static bool check_caches_enabled(ov_hashtable *sizes, char const **cache_names,
                                  size_t num_names) {
 
     UNUSED(sizes);
@@ -583,12 +578,9 @@ static bool check_caches(ov_registered_cache_sizes *sizes) {
 
     // Tricky: those need to be the names the corr. units use internally to
     // identify their cache
-    char const *cache_names[] = {"buffer",
-                                 "linked_list",
-                                 "ov_value_number",
-                                 "ov_value_strings",
-                                 "ov_value_lists",
-                                 "ov_value_objects"};
+    char const *cache_names[] = {"buffer",          "linked_list",
+                                 "ov_value_number", "ov_value_strings",
+                                 "ov_value_lists",  "ov_value_objects"};
 
     size_t num_cache_names = sizeof(cache_names) / sizeof(cache_names[0]);
 
@@ -639,8 +631,7 @@ static int test_ov_registered_cache_sizes_configure() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("registered_cache",
-            test_ov_registered_cache_get,
+OV_TEST_RUN("registered_cache", test_ov_registered_cache_get,
             test_ov_registered_cache_put,
             test_ov_registered_cache_set_element_checker,
 

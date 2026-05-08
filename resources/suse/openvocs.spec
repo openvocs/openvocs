@@ -54,8 +54,8 @@ rm -rf $RPM_BUILD_ROOT
 %config /etc/openvocs/ov_mc_mixer
 %config /etc/openvocs/ov_mc_vocs
 %config /etc/openvocs/ov_mc_vad
+%config /etc/openvocs/ov_mc_interconnect
 %config /srv/openvocs/HTML/config_vocs.js
-%config /srv/openvocs/HTML/config_vocs_admin.js
 
 %dir /srv/openvocs
 /srv/openvocs/HTML/*
@@ -67,6 +67,7 @@ rm -rf $RPM_BUILD_ROOT
 /usr/bin/ov_ldap_test_auth
 /usr/bin/ov_ldap_user_import
 /usr/bin/ov_mc_ice_proxy
+/usr/bin/ov_mc_interconnect
 /usr/bin/ov_mc_mixer
 /usr/bin/ov_mc_vocs
 /usr/bin/ov_password
@@ -82,10 +83,14 @@ rm -rf $RPM_BUILD_ROOT
 
 /etc/systemd/system/ov_mc_alsa.service
 /etc/systemd/system/ov_mc_ice_proxy.service
+/etc/systemd/system/ov_mc_interconnect.service
 /etc/systemd/system/ov_mc_mixer@.service
 /etc/systemd/system/ov_mc_mixer.target
 /etc/systemd/system/ov_mc.target
 /etc/systemd/system/ov_mc_vocs.service
 /etc/systemd/system/ov_mc_vad.service
+/etc/systemd/system/ov_mc_interconnect.target
+/etc/systemd/system/ov_mc_interconnect_mixer.target
+/etc/systemd/system/ov_mc_interconnect_mixer@.service
 
 %changelog

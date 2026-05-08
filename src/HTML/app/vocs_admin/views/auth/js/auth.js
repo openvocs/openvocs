@@ -30,7 +30,7 @@
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as View from "./view.js";
 
-export const VIEW_ID = "authentication";
+export const VIEW_ID = VIEW.AUTH;
 var view_container;
 
 export async function render(container) {
@@ -69,10 +69,8 @@ async function loadCSS() {
     return style;
 }
 
-function disconnect_handler() {
+function disconnect_handler(ws) {
     console.log("(login) logged out");
     console.warn("(login) Lead server disconnected.");
-    let error = ov_Websockets.prime_websocket.server_error;
-    let error_code = error ? error.code : undefined;
-    View.display_disconnect_notice(error_code === 5000);
+    View.display_disconnect_notice(ws.server_error);
 }

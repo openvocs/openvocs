@@ -35,26 +35,26 @@ char const *ov_participation_state_to_string(ov_participation_state state) {
 
     switch (state) {
 
-        case OV_PARTICIPATION_STATE_RECV:
-            return OV_KEY_RECV;
+    case OV_PARTICIPATION_STATE_RECV:
+        return OV_KEY_RECV;
 
-        case OV_PARTICIPATION_STATE_RECV_OFF:
-            return OV_KEY_RECV "_OFF";
+    case OV_PARTICIPATION_STATE_RECV_OFF:
+        return OV_KEY_RECV "_OFF";
 
-        case OV_PARTICIPATION_STATE_SEND:
-            return OV_KEY_SEND;
+    case OV_PARTICIPATION_STATE_SEND:
+        return OV_KEY_SEND;
 
-        case OV_PARTICIPATION_STATE_SEND_OFF:
-            return OV_KEY_SEND "_OFF";
+    case OV_PARTICIPATION_STATE_SEND_OFF:
+        return OV_KEY_SEND "_OFF";
 
-        case OV_PARTICIPATION_STATE_PTT_OFF:
-            return OV_KEY_PTT "_OFF";
+    case OV_PARTICIPATION_STATE_PTT_OFF:
+        return OV_KEY_PTT "_OFF";
 
-        case OV_PARTICIPATION_STATE_PTT:
-            return OV_KEY_PTT;
+    case OV_PARTICIPATION_STATE_PTT:
+        return OV_KEY_PTT;
 
-        default:
-            return OV_KEY_NONE;
+    default:
+        return OV_KEY_NONE;
     }
 }
 

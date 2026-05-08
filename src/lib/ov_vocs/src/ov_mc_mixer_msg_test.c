@@ -47,11 +47,10 @@ int test_ov_mc_mixer_msg_acquire() {
     testrun(!ov_mc_mixer_msg_acquire("user", (ov_mc_mixer_core_forward){0}));
 
     val = ov_mc_mixer_msg_acquire(
-        "user",
-        (ov_mc_mixer_core_forward){.ssrc = 1,
-                                   .socket.port = 1234,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.type = UDP});
+        "user", (ov_mc_mixer_core_forward){.ssrc = 1,
+                                           .socket.port = 1234,
+                                           .socket.host = "127.0.0.1",
+                                           .socket.type = UDP});
 
     testrun(val);
     testrun(ov_event_api_event_is(val, OV_KEY_ACQUIRE));
@@ -73,11 +72,10 @@ int test_ov_mc_mixer_msg_acquire() {
 int test_ov_mc_mixer_msg_aquire_get_username() {
 
     ov_json_value *val = val = ov_mc_mixer_msg_acquire(
-        "user",
-        (ov_mc_mixer_core_forward){.ssrc = 1,
-                                   .socket.port = 1234,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.type = UDP});
+        "user", (ov_mc_mixer_core_forward){.ssrc = 1,
+                                           .socket.port = 1234,
+                                           .socket.host = "127.0.0.1",
+                                           .socket.type = UDP});
 
     const char *str = ov_mc_mixer_msg_aquire_get_username(val);
     testrun(0 == strcmp(str, "user"));
@@ -95,11 +93,10 @@ int test_ov_mc_mixer_msg_aquire_get_username() {
 int test_ov_mc_mixer_msg_acquire_get_forward() {
 
     ov_json_value *val = ov_mc_mixer_msg_acquire(
-        "user",
-        (ov_mc_mixer_core_forward){.ssrc = 1,
-                                   .socket.port = 1234,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.type = UDP});
+        "user", (ov_mc_mixer_core_forward){.ssrc = 1,
+                                           .socket.port = 1234,
+                                           .socket.host = "127.0.0.1",
+                                           .socket.type = UDP});
     testrun(val);
 
     ov_mc_mixer_core_forward data = ov_mc_mixer_msg_acquire_get_forward(val);

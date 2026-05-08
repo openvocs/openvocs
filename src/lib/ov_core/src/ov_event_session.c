@@ -36,6 +36,7 @@
 #include <ov_base/ov_linked_list.h>
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_time.h>
+#include <ov_base/ov_thread_lock.h>
 
 #define OV_EVENT_SESSION_MAGIC_BYTES 0x531d
 #define OV_EVENT_SESSION_DEFAULT_LIFETIME 3600000000             // 60 min
@@ -48,6 +49,7 @@ struct ov_event_session {
     uint16_t magic_bytes;
     ov_event_session_config config;
 
+    ov_thread_lock lock;
     ov_dict *sessions;
 
     struct {
@@ -73,7 +75,8 @@ typedef struct Session {
 
 static void *session_free(void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     Session *s = (Session *)self;
     s->client = ov_data_pointer_free(s->client);
@@ -88,10 +91,14 @@ error:
 
 static bool check_config(ov_event_session_config *config) {
 
-    if (!config->loop) goto error;
+    if (!config->loop)
+        goto error;
 
     if (0 == config->limit.max_lifetime_usec)
         config->limit.max_lifetime_usec = OV_EVENT_SESSION_DEFAULT_LIFETIME;
+
+    if (0 == config->limit.threadlock_timeout_usec)
+        config->limit.threadlock_timeout_usec = 2000000;
 
     if (0 == config->path[0])
         strncpy(config->path, OV_EVENT_SESSIONS_PATH, PATH_MAX);
@@ -115,7 +122,8 @@ struct container {
 static bool delete_session(void *key, void *data) {
 
     ov_event_session *self = ov_event_session_cast(data);
-    if (!self || !key) goto error;
+    if (!self || !key)
+        goto error;
 
     return ov_dict_del(self->sessions, key);
 error:
@@ -126,12 +134,14 @@ error:
 
 static bool check_invalid_session(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     Session *s = (Session *)val;
     struct container *c = (struct container *)data;
 
-    if (!s || !c) goto error;
+    if (!s || !c)
+        goto error;
 
     if ((c->now - s->last_update) > c->self->config.limit.max_lifetime_usec) {
 
@@ -149,7 +159,10 @@ static bool invalidate_expired_sessions(uint32_t timer, void *data) {
 
     ov_event_session *self = ov_event_session_cast(data);
     UNUSED(timer);
-    if (!self) goto error;
+    if (!self)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto reschedule;
 
     struct container container = (struct container){
         .now = ov_time_get_current_time_usecs(),
@@ -162,11 +175,12 @@ static bool invalidate_expired_sessions(uint32_t timer, void *data) {
 
     container.expired = ov_list_free(container.expired);
 
-    self->timer.invalidate =
-        ov_event_loop_timer_set(self->config.loop,
-                                OV_EVENT_SESSION_DEFAULT_LIFETIME_CHECK,
-                                self,
-                                invalidate_expired_sessions);
+    ov_thread_lock_unlock(&self->lock);
+
+reschedule:
+    self->timer.invalidate = ov_event_loop_timer_set(
+        self->config.loop, OV_EVENT_SESSION_DEFAULT_LIFETIME_CHECK, self,
+        invalidate_expired_sessions);
 
     return true;
 error:
@@ -178,10 +192,12 @@ error:
 ov_event_session *ov_event_session_create(ov_event_session_config config) {
 
     ov_event_session *self = NULL;
-    if (!check_config(&config)) goto error;
+    if (!check_config(&config))
+        goto error;
 
     self = calloc(1, sizeof(ov_event_session));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_bytes = OV_EVENT_SESSION_MAGIC_BYTES;
     self->config = config;
@@ -190,15 +206,18 @@ ov_event_session *ov_event_session_create(ov_event_session_config config) {
     d_config.value.data_function.free = session_free;
 
     self->sessions = ov_dict_create(d_config);
-    if (!self->sessions) goto error;
+    if (!self->sessions)
+        goto error;
 
-    self->timer.invalidate =
-        ov_event_loop_timer_set(self->config.loop,
-                                OV_EVENT_SESSION_DEFAULT_LIFETIME_CHECK,
-                                self,
-                                invalidate_expired_sessions);
+    self->timer.invalidate = ov_event_loop_timer_set(
+        self->config.loop, OV_EVENT_SESSION_DEFAULT_LIFETIME_CHECK, self,
+        invalidate_expired_sessions);
 
-    if (self->timer.invalidate == OV_TIMER_INVALID) goto error;
+    if (self->timer.invalidate == OV_TIMER_INVALID)
+        goto error;
+
+    if (!ov_thread_lock_init(&self->lock, self->config.limit.threadlock_timeout_usec))
+        goto error;
 
     ov_event_session_load(self);
 
@@ -213,13 +232,15 @@ error:
 
 ov_event_session *ov_event_session_free(ov_event_session *self) {
 
-    if (!ov_event_session_cast(self)) goto error;
+    if (!ov_event_session_cast(self))
+        goto error;
 
     if (OV_TIMER_INVALID != self->timer.invalidate)
-        ov_event_loop_timer_unset(
-            self->config.loop, self->timer.invalidate, NULL);
+        ov_event_loop_timer_unset(self->config.loop, self->timer.invalidate,
+                                  NULL);
 
     self->sessions = ov_dict_free(self->sessions);
+    ov_thread_lock_clear(&self->lock);
     self = ov_data_pointer_free(self);
 error:
     return self;
@@ -229,7 +250,8 @@ error:
 
 ov_event_session *ov_event_session_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == OV_EVENT_SESSION_MAGIC_BYTES)
         return (ov_event_session *)self;
@@ -239,19 +261,26 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-const char *ov_event_session_init(ov_event_session *self,
-                                  const char *client,
+const char *ov_event_session_init(ov_event_session *self, const char *client,
                                   const char *user) {
 
-    if (!self || !client || !user) goto error;
+    if (!self || !client || !user)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
 
     Session *s = calloc(1, sizeof(Session));
-    if (!s) goto error;
+    if (!s){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
 
     char *key = ov_string_dup(client);
+    
     if (!ov_dict_set(self->sessions, key, s, NULL)) {
         key = ov_data_pointer_free(key);
         s = ov_data_pointer_free(s);
+        ov_thread_lock_unlock(&self->lock);
         goto error;
     }
 
@@ -260,8 +289,9 @@ const char *ov_event_session_init(ov_event_session *self,
     s->user = ov_string_dup(user);
     ov_id_fill_with_uuid(s->id);
 
-    ov_event_session_save(self);
+    ov_thread_lock_unlock(&self->lock);
 
+    ov_event_session_save(self);
     return s->id;
 
 error:
@@ -272,11 +302,17 @@ error:
 
 bool ov_event_session_delete(ov_event_session *self, const char *client) {
 
-    if (!self || !client) goto error;
+    if (!self || !client)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
 
     bool result = ov_dict_del(self->sessions, client);
 
+    ov_thread_lock_unlock(&self->lock);
+
     ov_event_session_save(self);
+
     return result;
 error:
     return false;
@@ -284,20 +320,32 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_session_update(ov_event_session *self,
-                             const char *client,
-                             const char *user,
-                             const char *id) {
+bool ov_event_session_update(ov_event_session *self, const char *client,
+                             const char *user, const char *id) {
 
-    if (!self || !client || !id) goto error;
+    if (!self || !client || !id)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
 
     Session *s = ov_dict_get(self->sessions, client);
-    if (!s) goto error;
+    if (!s){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
 
-    if (!ov_id_match(id, s->id)) goto error;
-    if (0 != strcmp(s->user, user)) goto error;
+    if (!ov_id_match(id, s->id)){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
+    if (0 != strcmp(s->user, user)){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
 
     s->last_update = ov_time_get_current_time_usecs();
+
+    ov_thread_lock_unlock(&self->lock);
 
     ov_event_session_save(self);
     return true;
@@ -310,10 +358,12 @@ error:
 const char *ov_event_session_get_user(ov_event_session *self,
                                       const char *client) {
 
-    if (!self || !client) goto error;
+    if (!self || !client)
+        goto error;
 
     Session *s = ov_dict_get(self->sessions, client);
-    if (!s) goto error;
+    if (!s)
+        goto error;
 
     return s->user;
 error:
@@ -322,19 +372,31 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_session_verify(ov_event_session *self,
-                             const char *client,
-                             const char *user,
-                             const char *id) {
+bool ov_event_session_verify(ov_event_session *self, const char *client,
+                             const char *user, const char *id) {
 
-    if (!self || !client || !user || !id) goto error;
+    if (!self || !client || !user || !id)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
 
     Session *s = ov_dict_get(self->sessions, client);
-    if (!s) goto error;
+    if (!s){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
 
-    if (!ov_id_match(id, s->id)) goto error;
+    if (!ov_id_match(id, s->id)){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
 
-    if (0 != strcmp(s->user, user)) goto error;
+    if (0 != ov_string_compare(s->user, user)){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
+
+    ov_thread_lock_unlock(&self->lock);
 
     return true;
 error:
@@ -348,21 +410,26 @@ static ov_json_value *session_to_json(Session *s) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!s) goto error;
+    if (!s)
+        goto error;
 
     out = ov_json_object();
 
     val = ov_json_number(s->last_update);
-    if (!ov_json_object_set(out, OV_KEY_LAST_UPDATE, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_LAST_UPDATE, val))
+        goto error;
 
     val = ov_json_string((char *)s->id);
-    if (!ov_json_object_set(out, OV_KEY_ID, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ID, val))
+        goto error;
 
     val = ov_json_string((char *)s->client);
-    if (!ov_json_object_set(out, OV_KEY_CLIENT, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_CLIENT, val))
+        goto error;
 
     val = ov_json_string((char *)s->user);
-    if (!ov_json_object_set(out, OV_KEY_USER, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_USER, val))
+        goto error;
 
     return out;
 error:
@@ -376,7 +443,8 @@ error:
 static Session *session_from_json(ov_json_value *item) {
 
     Session *s = NULL;
-    if (!item) goto error;
+    if (!item)
+        goto error;
 
     s = calloc(1, sizeof(Session));
 
@@ -387,15 +455,18 @@ static Session *session_from_json(ov_json_value *item) {
 
     string = ov_json_string_get(ov_json_object_get(item, OV_KEY_ID));
 
-    if (string) ov_id_set(s->id, string);
+    if (string)
+        ov_id_set(s->id, string);
 
     string = ov_json_string_get(ov_json_object_get(item, OV_KEY_CLIENT));
 
-    if (string) s->client = ov_string_dup(string);
+    if (string)
+        s->client = ov_string_dup(string);
 
     string = ov_json_string_get(ov_json_object_get(item, OV_KEY_USER));
 
-    if (string) s->user = ov_string_dup(string);
+    if (string)
+        s->user = ov_string_dup(string);
 
     return s;
 error:
@@ -407,14 +478,16 @@ error:
 
 static bool add_session_to_out(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *out = ov_json_value_cast(data);
 
     Session *session = (Session *)value;
 
     ov_json_value *val = session_to_json(session);
-    if (!ov_json_object_set(out, (char *)key, val)) goto error;
+    if (!ov_json_object_set(out, (char *)key, val))
+        goto error;
 
     return true;
 error:
@@ -428,7 +501,10 @@ bool ov_event_session_save(ov_event_session *self) {
 
     ov_json_value *out = NULL;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
 
     if (!ov_dir_access_to_path(self->config.path)) {
 
@@ -441,13 +517,15 @@ bool ov_event_session_save(ov_event_session *self) {
 
     out = ov_json_object();
 
-    if (!ov_dict_for_each(self->sessions, out, add_session_to_out)) goto error;
+    if (!ov_dict_for_each(self->sessions, out, add_session_to_out)){
+        ov_thread_lock_unlock(&self->lock);
+        goto error;
+    }
+
+    ov_thread_lock_unlock(&self->lock);
 
     char path[PATH_MAX + 20] = {0};
-    snprintf(path,
-             PATH_MAX + 20,
-             "%s/%s",
-             self->config.path,
+    snprintf(path, PATH_MAX + 20, "%s/%s", self->config.path,
              OV_EVENT_SESSIONS_FILE);
 
     if (!ov_json_write_file(path, out)) {
@@ -467,13 +545,15 @@ error:
 
 static bool add_session_data(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *val = ov_json_value_cast(value);
     ov_event_session *self = ov_event_session_cast(data);
 
     Session *s = session_from_json(val);
-    if (!s) goto error;
+    if (!s)
+        goto error;
 
     char *k = ov_string_dup((char *)key);
 
@@ -494,13 +574,11 @@ bool ov_event_session_load(ov_event_session *self) {
 
     ov_json_value *data = NULL;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     char path[PATH_MAX + 20] = {0};
-    snprintf(path,
-             PATH_MAX + 20,
-             "%s/%s",
-             self->config.path,
+    snprintf(path, PATH_MAX + 20, "%s/%s", self->config.path,
              OV_EVENT_SESSIONS_FILE);
 
     data = ov_json_read_file(path);
@@ -509,10 +587,14 @@ bool ov_event_session_load(ov_event_session *self) {
         goto error;
     }
 
-    if (!ov_json_object_for_each(data, self, add_session_data)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
+    bool result = ov_json_object_for_each(data, self, add_session_data);
+
+    ov_thread_lock_unlock(&self->lock);
 
     ov_json_value_free(data);
-    return true;
+    return result;
 error:
     ov_json_value_free(data);
     return false;

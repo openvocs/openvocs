@@ -67,8 +67,7 @@ typedef enum ov_ldap_auth_result {
 typedef struct ov_ldap_auth_callback {
 
     void *userdata;
-    void (*callback)(void *userdata,
-                     const char *uuid,
+    void (*callback)(void *userdata, const char *uuid,
                      ov_ldap_auth_result result);
 
 } ov_ldap_auth_callback;
@@ -113,11 +112,8 @@ struct ov_ldap {
 
     struct {
 
-        bool (*password)(ov_ldap *self,
-                         const char *user,
-                         const char *password,
-                         const char *uuid,
-                         ov_ldap_auth_callback callback);
+        bool (*password)(ov_ldap *self, const char *user, const char *password,
+                         const char *uuid, ov_ldap_auth_callback callback);
 
     } authenticate;
 };
@@ -140,10 +136,8 @@ bool ov_ldap_reconfigure(ov_ldap *self, ov_ldap_config config);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_ldap_authenticate_password(ov_ldap *self,
-                                   const char *user,
-                                   const char *password,
-                                   const char *uuid,
+bool ov_ldap_authenticate_password(ov_ldap *self, const char *user,
+                                   const char *password, const char *uuid,
                                    ov_ldap_auth_callback callback);
 
 /*----------------------------------------------------------------------------*/

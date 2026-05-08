@@ -53,6 +53,14 @@ export default class Loop_List {
 
 	remove(loop) {
 		this.#loops.delete(loop.loop_id);
+		this.#columns = 0;
+		this.#rows = 0;
+		for (let loop of this.#loops.values()) {
+			if (loop.layout_pos.row > this.#rows)
+				this.#rows = loop.layout_pos.row;
+			if (loop.layout_pos.column > this.#columns)
+				this.#columns = loop.layout_pos.column;
+		}
 	}
 
 	find(id) {

@@ -723,19 +723,10 @@ int test_ov_buffer_extend() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_buffer",
-            test_ov_buffer_create,
-            test_ov_buffer_from_string,
-            test_ov_buffer_concat,
-            test_ov_buffer_cast,
-            test_ov_buffer_set,
-            test_ov_buffer_clear,
-            test_ov_buffer_free,
-            test_ov_buffer_copy,
-            test_ov_buffer_dump,
-            test_ov_buffer_push,
-            test_ov_buffer_data_functions,
-            test_ov_buffer_enable_caching,
-            test_ov_buffer_shift,
-            test_ov_buffer_shift_length,
+OV_TEST_RUN("ov_buffer", test_ov_buffer_create, test_ov_buffer_from_string,
+            test_ov_buffer_concat, test_ov_buffer_cast, test_ov_buffer_set,
+            test_ov_buffer_clear, test_ov_buffer_free, test_ov_buffer_copy,
+            test_ov_buffer_dump, test_ov_buffer_push,
+            test_ov_buffer_data_functions, test_ov_buffer_enable_caching,
+            test_ov_buffer_shift, test_ov_buffer_shift_length,
             test_ov_buffer_extend);

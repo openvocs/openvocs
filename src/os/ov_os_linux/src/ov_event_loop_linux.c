@@ -107,7 +107,8 @@ static char *append_str(char *restrict write_ptr, char const *restrict str) {
     OV_ASSERT(0 != write_ptr);
     OV_ASSERT(0 != str);
 
-    if (0 == *str) return write_ptr;
+    if (0 == *str)
+        return write_ptr;
 
     for (; 0 != *str; ++str, ++write_ptr) {
 
@@ -185,7 +186,8 @@ static void log_epoll_event(int log_fd, struct epoll_event *event) {
 
     OV_ASSERT(0 != event);
 
-    if (0 >= log_fd) return;
+    if (0 >= log_fd)
+        return;
 
     int fd = event->data.fd;
 
@@ -197,9 +199,7 @@ static void log_epoll_event(int log_fd, struct epoll_event *event) {
 
     if (np <= 0) {
 
-        fprintf(stderr,
-                "Could not write to log fd: %s  %s\n",
-                strerror(np),
+        fprintf(stderr, "Could not write to log fd: %s  %s\n", strerror(np),
                 strerror(errno));
     }
 }
@@ -242,35 +242,31 @@ bool impl_event_loop_linux_stop(ov_event_loop *self);
 
 bool impl_event_loop_linux_run(ov_event_loop *self, uint64_t max);
 
-bool impl_event_loop_linux_callback_set(ov_event_loop *self,
-                                        int socket,
-                                        uint8_t events,
-                                        void *data,
-                                        bool (*callback)(int socket_fd,
-                                                         uint8_t events,
-                                                         void *data));
+bool impl_event_loop_linux_callback_set(
+    ov_event_loop *self, int socket, uint8_t events, void *data,
+    bool (*callback)(int socket_fd, uint8_t events, void *data));
 
-bool impl_event_loop_linux_callback_unset(ov_event_loop *self,
-                                          int socket,
+bool impl_event_loop_linux_callback_unset(ov_event_loop *self, int socket,
                                           void **userdata);
 
 uint32_t impl_event_loop_linux_timer_set(ov_event_loop *self,
-                                         uint64_t relative_usec,
-                                         void *data,
+                                         uint64_t relative_usec, void *data,
                                          bool (*callback)(uint32_t id,
                                                           void *data));
 
-bool impl_event_loop_linux_timer_unset(ov_event_loop *self,
-                                       uint32_t id,
+bool impl_event_loop_linux_timer_unset(ov_event_loop *self, uint32_t id,
                                        void **userdata);
 
 /*----------------------------------------------------------------------------*/
 
 static Loop *cast_to_loop(const void *x) {
 
-    if (0 == x) return 0;
-    if (0 == ov_event_loop_cast(x)) return 0;
-    if (IMPL_POLL_LOOP_TYPE != ((ov_event_loop *)x)->type) return 0;
+    if (0 == x)
+        return 0;
+    if (0 == ov_event_loop_cast(x))
+        return 0;
+    if (IMPL_POLL_LOOP_TYPE != ((ov_event_loop *)x)->type)
+        return 0;
 
     return (Loop *)x;
 }
@@ -281,7 +277,8 @@ static bool wakeup_unsafe(Loop *restrict loop) {
 
     OV_ASSERT(0 != loop);
 
-    if (0 == loop->callbacks) return false;
+    if (0 == loop->callbacks)
+        return false;
 
     int wakeup_fd = loop->wakeup_fd;
 
@@ -315,7 +312,8 @@ static struct callback *get_callback_for_fd_unsafe(Loop *restrict loop,
 
     OV_ASSERT(0 != loop);
 
-    if (0 > fd) return 0;
+    if (0 > fd)
+        return 0;
 
     /* loop->callbacks array is organized as a simple hash table */
 
@@ -325,18 +323,21 @@ static struct callback *get_callback_for_fd_unsafe(Loop *restrict loop,
 
     struct callback *cb = loop->callbacks + start_index;
 
-    if ((fd == cb->fd) || (0 > cb->fd)) return cb;
+    if ((fd == cb->fd) || (0 > cb->fd))
+        return cb;
 
     for (size_t i = start_index + 1; i < max_callbacks; ++i) {
 
         cb = loop->callbacks + i;
-        if ((fd == cb->fd) || (0 > cb->fd)) return cb;
+        if ((fd == cb->fd) || (0 > cb->fd))
+            return cb;
     }
 
     for (size_t i = 0; i < 1 + start_index; ++i) {
 
         cb = loop->callbacks + i;
-        if ((fd == cb->fd) || (0 > cb->fd)) return cb;
+        if ((fd == cb->fd) || (0 > cb->fd))
+            return cb;
     }
 
     return 0;
@@ -348,9 +349,11 @@ static bool release_fd_unsafe(Loop *loop, int fd, void **attached_data) {
 
     OV_ASSERT(0 != loop);
 
-    if (0 > fd) return false;
+    if (0 > fd)
+        return false;
 
-    if (-1 < loop->epoll_fd) epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, fd, 0);
+    if (-1 < loop->epoll_fd)
+        epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, fd, 0);
 
     struct callback *cb = get_callback_for_fd_unsafe(loop, fd);
 
@@ -373,13 +376,9 @@ static bool release_fd_unsafe(Loop *loop, int fd, void **attached_data) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool register_fd_with_epoll(Loop *loop,
-                                   int fd,
-                                   uint32_t events,
-                                   void *data,
-                                   bool (*callback)(int socket_fd,
-                                                    uint8_t events,
-                                                    void *data)) {
+static bool register_fd_with_epoll(
+    Loop *loop, int fd, uint32_t events, void *data,
+    bool (*callback)(int socket_fd, uint8_t events, void *data)) {
     bool callback_has_been_set = false;
 
     struct epoll_event ev = {0};
@@ -394,10 +393,9 @@ static bool register_fd_with_epoll(Loop *loop,
     }
 
     if (0 == events) {
-        ov_log_error(
-            "FAILURE callback listening "
-            "without events "
-            "is NOT SUPPORTED.");
+        ov_log_error("FAILURE callback listening "
+                     "without events "
+                     "is NOT SUPPORTED.");
         goto error;
     }
 
@@ -407,9 +405,8 @@ static bool register_fd_with_epoll(Loop *loop,
     }
 
     if (0 > loop->epoll_fd) {
-        ov_log_error(
-            "Loop does not seem to run? epoll fd not "
-            "set");
+        ov_log_error("Loop does not seem to run? epoll fd not "
+                     "set");
         goto error;
     }
 
@@ -467,19 +464,20 @@ struct timer_data {
 
 static struct timer_data *cast_to_timer_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     struct timer_data *tdata = data;
 
-    if (TIMER_DATA_MAGIC_BYTES != tdata->magic_bytes) return 0;
+    if (TIMER_DATA_MAGIC_BYTES != tdata->magic_bytes)
+        return 0;
 
     return tdata;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cache_timer_fd_unsafe(Loop *loop,
-                                  int fd,
+static bool cache_timer_fd_unsafe(Loop *loop, int fd,
                                   struct timer_data *tdata) {
 
     OV_ASSERT(0 != loop);
@@ -510,7 +508,8 @@ static bool release_timer_fd_unsafe(Loop *loop, int fd, void **userdata) {
 
     OV_ASSERT(0 != loop);
 
-    if (OV_TIMER_INVALID == fd) return false;
+    if (OV_TIMER_INVALID == fd)
+        return false;
 
     struct callback *cb = get_callback_for_fd_unsafe(loop, fd);
 
@@ -529,8 +528,8 @@ static bool release_timer_fd_unsafe(Loop *loop, int fd, void **userdata) {
     struct timer_data *tdata = cast_to_timer_data(cb->data);
     if (0 == tdata) {
 
-        ov_log_error(
-            "Tried to unregister fd %i as timer, which is no timer", fd);
+        ov_log_error("Tried to unregister fd %i as timer, which is no timer",
+                     fd);
 
         return false;
     }
@@ -608,11 +607,9 @@ static bool callback_for_timer(int fd, uint8_t events, void *data) {
 
     if (expired_count != 1) {
 
-        ov_log_warning("Timer %i expired %" PRIu64
-                       " times before callback was "
+        ov_log_warning("Timer %i expired %" PRIu64 " times before callback was "
                        "issued",
-                       fd,
-                       expired_count);
+                       fd, expired_count);
     }
 
     if (0 != callback) {
@@ -629,8 +626,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool acquire_timer_data_unsafe(Loop *loop,
-                                      int *fd,
+static bool acquire_timer_data_unsafe(Loop *loop, int *fd,
                                       struct timer_data **tdata) {
 
     OV_ASSERT(0 != loop);
@@ -656,7 +652,8 @@ static bool acquire_timer_data_unsafe(Loop *loop,
         *tdata = loop->timers_available.timers[current_cache_index].tdata;
     }
 
-    if (0 > tid) tid = timerfd_create(OV_CLOCK_ID, TFD_NONBLOCK | TFD_CLOEXEC);
+    if (0 > tid)
+        tid = timerfd_create(OV_CLOCK_ID, TFD_NONBLOCK | TFD_CLOEXEC);
 
     OV_ASSERT(OV_TIMER_INVALID != tid);
 
@@ -672,7 +669,8 @@ static bool acquire_timer_data_unsafe(Loop *loop,
 
 error:
 
-    if (-1 < tid) close(tid);
+    if (-1 < tid)
+        close(tid);
 
     return false;
 }
@@ -687,7 +685,8 @@ static bool trigger_callback(Loop *loop, struct epoll_event *ep_event) {
 
     bool closed = false;
 
-    if (0 == ep_event) return false;
+    if (0 == ep_event)
+        return false;
 
     int fd = ep_event->data.fd;
 
@@ -749,17 +748,20 @@ error:
 static int get_rel_timeout_msecs(uint64_t start_usec,
                                  uint64_t rel_timeout_usecs) {
 
-    if (rel_timeout_usecs == OV_RUN_ONCE) return 0;
+    if (rel_timeout_usecs == OV_RUN_ONCE)
+        return 0;
 
     uint64_t now_usec = ov_time_get_current_time_usecs();
 
-    if (now_usec - start_usec >= rel_timeout_usecs) return 0;
+    if (now_usec - start_usec >= rel_timeout_usecs)
+        return 0;
 
     uint64_t remaining_usec = rel_timeout_usecs - (now_usec - start_usec);
 
     uint64_t remaining_msec = remaining_usec / 1000;
 
-    if (remaining_msec > INT_MAX) remaining_msec = INT_MAX;
+    if (remaining_msec > INT_MAX)
+        remaining_msec = INT_MAX;
 
     return (int)remaining_msec;
 }
@@ -771,19 +773,21 @@ static bool loop_init(Loop *loop, ov_event_loop_config config) {
     struct callback *callbacks = 0;
     int epoll_fd = -1;
 
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    if (!memset(loop, 0, sizeof(Loop))) goto error;
+    if (!memset(loop, 0, sizeof(Loop)))
+        goto error;
 
-    if (!ov_event_loop_set_type(&loop->public, IMPL_POLL_LOOP_TYPE)) goto error;
+    if (!ov_event_loop_set_type(&loop->public, IMPL_POLL_LOOP_TYPE))
+        goto error;
 
     config = ov_event_loop_config_adapt_to_runtime(config);
 
     if (config.max.sockets < OV_EVENT_LOOP_SOCKETS_MIN) {
-        ov_log_error(
-            "Eventloop config with less then minimum "
-            "sockets %i",
-            OV_EVENT_LOOP_SOCKETS_MIN);
+        ov_log_error("Eventloop config with less then minimum "
+                     "sockets %i",
+                     OV_EVENT_LOOP_SOCKETS_MIN);
         goto error;
     }
 
@@ -843,19 +847,20 @@ static bool loop_init(Loop *loop, ov_event_loop_config config) {
 
     int wakeup_fds[2] = {0};
 
-    if (0 != socketpair(AF_LOCAL, SOCK_STREAM, 0, wakeup_fds)) goto error;
+    if (0 != socketpair(AF_LOCAL, SOCK_STREAM, 0, wakeup_fds))
+        goto error;
 
     int fd0 = wakeup_fds[0];
     int fd1 = wakeup_fds[1];
 
-    if (!impl_event_loop_linux_callback_set(
-            (ov_event_loop *)loop, fd0, EPOLLIN, 0, read_and_drop)) {
+    if (!impl_event_loop_linux_callback_set((ov_event_loop *)loop, fd0, EPOLLIN,
+                                            0, read_and_drop)) {
         ov_log_error("Could not register wakeup fd");
         goto error;
     }
 
-    if (!impl_event_loop_linux_callback_set(
-            (ov_event_loop *)loop, fd1, EPOLLIN, 0, read_and_drop)) {
+    if (!impl_event_loop_linux_callback_set((ov_event_loop *)loop, fd1, EPOLLIN,
+                                            0, read_and_drop)) {
         ov_log_error("Could not register wakeup fd");
         goto error;
     }
@@ -886,7 +891,8 @@ error:
 
     callbacks = 0;
 
-    if (-1 < epoll_fd) close(epoll_fd);
+    if (-1 < epoll_fd)
+        close(epoll_fd);
 
     return false;
 }
@@ -906,15 +912,18 @@ ov_event_loop *ov_event_loop_linux(ov_event_loop_config config) {
 
     loop = calloc(1, sizeof(Loop));
 
-    if (0 == loop) goto error;
+    if (0 == loop)
+        goto error;
 
-    if (!loop_init(loop, config)) goto error;
+    if (!loop_init(loop, config))
+        goto error;
 
     return (ov_event_loop *)loop;
 
 error:
 
-    if (0 != loop) free(loop);
+    if (0 != loop)
+        free(loop);
 
     return 0;
 }
@@ -934,9 +943,11 @@ static void close_all_sockets(Loop *loop) {
         int fd = loop->timers_available.timers[i].fd;
         void *tdata = loop->timers_available.timers[i].tdata;
 
-        if (-1 < fd) close(fd);
+        if (-1 < fd)
+            close(fd);
 
-        if (0 != tdata) free(tdata);
+        if (0 != tdata)
+            free(tdata);
     }
 
     /* And prevent caching again */
@@ -963,7 +974,8 @@ static void close_all_sockets(Loop *loop) {
 ov_event_loop *impl_event_loop_linux_free(ov_event_loop *self) {
 
     Loop *loop = cast_to_loop(self);
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     self = 0;
 
@@ -1005,7 +1017,8 @@ error:
 bool impl_event_loop_linux_is_running(const ov_event_loop *self) {
 
     Loop *loop = cast_to_loop(self);
-    if (!loop) return false;
+    if (!loop)
+        return false;
 
     return loop->running;
 }
@@ -1015,7 +1028,8 @@ bool impl_event_loop_linux_is_running(const ov_event_loop *self) {
 bool impl_event_loop_linux_stop(ov_event_loop *self) {
 
     Loop *loop = cast_to_loop(self);
-    if (!loop) return false;
+    if (!loop)
+        return false;
 
     loop->running = false;
 
@@ -1030,9 +1044,11 @@ bool impl_event_loop_linux_run(ov_event_loop *self, uint64_t max_usecs) {
 
     Loop *loop = cast_to_loop(self);
 
-    if (0 == loop) goto error;
+    if (0 == loop)
+        goto error;
 
-    if (1000 > max_usecs) max_usecs = 1000;
+    if (1000 > max_usecs)
+        max_usecs = 1000;
 
     int epfs = loop->epoll_fd;
 
@@ -1068,8 +1084,8 @@ bool impl_event_loop_linux_run(ov_event_loop *self, uint64_t max_usecs) {
         }
 
         if (0 < loop->public.log_fd) {
-            dprintf(
-                loop->public.log_fd, "epoll: Ready events: %i\n", num_ready);
+            dprintf(loop->public.log_fd, "epoll: Ready events: %i\n",
+                    num_ready);
         }
 
         for (size_t r = 0; r < (size_t)num_ready; ++r) {
@@ -1090,25 +1106,21 @@ error:
  *                             CALLBACK HANDLING
  ******************************************************************************/
 
-bool impl_event_loop_linux_callback_set(ov_event_loop *self,
-                                        int fd,
-                                        uint8_t events,
-                                        void *data,
-                                        bool (*callback)(int socket_fd,
-                                                         uint8_t events,
-                                                         void *data)) {
+bool impl_event_loop_linux_callback_set(
+    ov_event_loop *self, int fd, uint8_t events, void *data,
+    bool (*callback)(int socket_fd, uint8_t events, void *data)) {
 
     Loop *loop = cast_to_loop(self);
 
-    if (0 == loop) goto error;
+    if (0 == loop)
+        goto error;
 
     int so_opt = 0;
     socklen_t so_len = sizeof(so_opt);
 
     if (0 != getsockopt(fd, SOL_SOCKET, SO_ERROR, &so_opt, &so_len)) {
-        ov_log_error(
-            "FAILURE callback listening on socket with error "
-            "is NOT SUPPORTED.");
+        ov_log_error("FAILURE callback listening on socket with error "
+                     "is NOT SUPPORTED.");
         goto error;
     }
 
@@ -1119,7 +1131,8 @@ bool impl_event_loop_linux_callback_set(ov_event_loop *self,
 
     uint32_t epoll_events = to_epoll_flags(events);
 
-    if (0 == epoll_events) goto error;
+    if (0 == epoll_events)
+        goto error;
 
     return register_fd_with_epoll(loop, fd, epoll_events, data, callback);
 
@@ -1130,15 +1143,16 @@ error:
 
 /*------------------------------------------------------------------*/
 
-bool impl_event_loop_linux_callback_unset(ov_event_loop *self,
-                                          int fd,
+bool impl_event_loop_linux_callback_unset(ov_event_loop *self, int fd,
                                           void **userdata) {
 
     Loop *loop = cast_to_loop(self);
 
-    if (0 == loop) goto error;
+    if (0 == loop)
+        goto error;
 
-    if (0 > fd) goto error;
+    if (0 > fd)
+        goto error;
 
     return release_fd_unsafe(loop, fd, userdata);
 
@@ -1150,8 +1164,7 @@ error:
 /*------------------------------------------------------------------*/
 
 uint32_t impl_event_loop_linux_timer_set(ov_event_loop *self,
-                                         uint64_t relative_usec,
-                                         void *data,
+                                         uint64_t relative_usec, void *data,
                                          bool (*callback)(uint32_t id,
                                                           void *data)) {
     Loop *loop = cast_to_loop(self);
@@ -1175,11 +1188,10 @@ uint32_t impl_event_loop_linux_timer_set(ov_event_loop *self,
     }
 
     if (UINT32_MAX < (unsigned)timer_fd) {
-        ov_log_error(
-            "timer fd %i is not handleable as it "
-            "exceeds the "
-            "numerical limit",
-            timer_fd);
+        ov_log_error("timer fd %i is not handleable as it "
+                     "exceeds the "
+                     "numerical limit",
+                     timer_fd);
         goto error;
     }
 
@@ -1198,8 +1210,8 @@ uint32_t impl_event_loop_linux_timer_set(ov_event_loop *self,
     tdata->data = data;
     tdata->callback = callback;
 
-    if (!register_fd_with_epoll(
-            loop, timer_fd, EPOLLIN, tdata, callback_for_timer)) {
+    if (!register_fd_with_epoll(loop, timer_fd, EPOLLIN, tdata,
+                                callback_for_timer)) {
 
         ov_log_error("Could not register timer fd with epoll");
         goto error;
@@ -1215,17 +1227,18 @@ uint32_t impl_event_loop_linux_timer_set(ov_event_loop *self,
 
 error:
 
-    if (-1 < timer_fd) release_timer_fd_unsafe(loop, timer_fd, 0);
+    if (-1 < timer_fd)
+        release_timer_fd_unsafe(loop, timer_fd, 0);
 
-    if (0 != tdata) free(tdata);
+    if (0 != tdata)
+        free(tdata);
 
     return OV_TIMER_INVALID;
 }
 
 /*------------------------------------------------------------------*/
 
-bool impl_event_loop_linux_timer_unset(ov_event_loop *self,
-                                       uint32_t id,
+bool impl_event_loop_linux_timer_unset(ov_event_loop *self, uint32_t id,
                                        void **userdata) {
 
     Loop *loop = cast_to_loop(self);

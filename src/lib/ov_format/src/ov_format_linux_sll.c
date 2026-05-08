@@ -54,19 +54,20 @@ typedef struct {
 
 static linux_sll_data *as_linux_sll_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     linux_sll_data *linux_sll_data = data;
 
-    if (LINUX_SLL_MAGIC_BYTES != linux_sll_data->magic_bytes) return 0;
+    if (LINUX_SLL_MAGIC_BYTES != linux_sll_data->magic_bytes)
+        return 0;
 
     return linux_sll_data;
 }
 
 /*----------------------------------------------------------------------------*/
 static bool get_linux_sll_header_unsafe(ov_format_linux_sll_header *out,
-                                        uint8_t **rd_ptr,
-                                        size_t *length) {
+                                        uint8_t **rd_ptr, size_t *length) {
 
     OV_ASSERT(0 != out);
     OV_ASSERT(0 != rd_ptr);
@@ -124,8 +125,7 @@ error:
                                    Interface
  ****************************************************************************/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -161,8 +161,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     UNUSED(f);
@@ -195,9 +194,8 @@ static void *impl_free_data(void *data) {
 
     if (0 == as_linux_sll_data(data)) {
 
-        ov_log_error(
-            "Internal error: Expected to be called with format "
-            "linux_sll");
+        ov_log_error("Internal error: Expected to be called with format "
+                     "linux_sll");
         goto error;
     }
 
@@ -222,8 +220,8 @@ bool ov_format_linux_sll_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_LINUX_SLL_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_LINUX_SLL_TYPE_STRING,
+                                            handler, registry);
 }
 
 /*----------------------------------------------------------------------------*/

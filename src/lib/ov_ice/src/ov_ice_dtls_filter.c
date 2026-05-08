@@ -46,13 +46,13 @@ static long dtls_bio_ctrl(BIO *bio, int cmd, long num, void *ptr) {
     UNUSED(ptr);
 
     switch (cmd) {
-        case BIO_CTRL_FLUSH:
-            return 1;
-        case BIO_CTRL_WPENDING:
-        case BIO_CTRL_PENDING:
-            return 0L;
-        default:
-            break;
+    case BIO_CTRL_FLUSH:
+        return 1;
+    case BIO_CTRL_WPENDING:
+    case BIO_CTRL_PENDING:
+        return 0L;
+    default:
+        break;
     }
 
     return 0;
@@ -62,7 +62,8 @@ static long dtls_bio_ctrl(BIO *bio, int cmd, long num, void *ptr) {
 
 static int dtls_bio_write(BIO *bio, const char *in, int size) {
 
-    if (size <= 0) goto error;
+    if (size <= 0)
+        goto error;
 
     ov_ice_pair *pair = ov_ice_pair_cast(BIO_get_data(bio));
 

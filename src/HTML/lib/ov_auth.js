@@ -89,15 +89,14 @@ export async function login(username, password, websocket) {
 }
 
 export async function relogin(websocket) {
-    let session;
-    if (websocket)
-        session = ov_Web_Storage.get_session(websocket.websocket_url);
-    else
-        session = ov_Web_Storage.get_session(ov_Websockets.current_lead_websocket.websocket_url);
+    if (!websocket)
+        websocket = ov_Websockets.current_lead_websocket
+
+    let session = ov_Web_Storage.get_session(APP, websocket.websocket_url);
     if (!session) {
         console.error("Session timed out or is undefined e.g. because of AUTH Error. You need to manually login again.");
         // for (let ws of ov_Websockets.list)
-        //     ov_Web_Storage.clear(ws.websocket_url);
+        //     ov_Web_Storage.clear(APP, ws.websocket_url);
         // ov_Websockets.reload_page();
         return false;
     }
@@ -105,8 +104,11 @@ export async function relogin(websocket) {
     let result = false;
     if (session.user && session.session)
         result = await ws_login(session.user, session.session, websocket);
-    if (result && session.role)
+    if (result && session.role) {
+        if (!websocket.user.roles)
+            result = await collect_roles(websocket);
         result = await ws_authorize_role(session.role, websocket);
+    }
     return result;
 }
 
@@ -153,15 +155,15 @@ export async function logout(websocket) {
 
 export function clear_session(ws) {
     if (ws) {
-        ov_Web_Storage.clear(ws.websocket_url);
+        ov_Web_Storage.clear(APP, ws.websocket_url);
         return;
     }
     for (let ws of ov_Websockets.list)
-        ov_Web_Storage.clear(ws.websocket_url);
+        ov_Web_Storage.clear(APP, ws.websocket_url);
 }
 
 export function has_valid_session(ws) {
-    return ov_Web_Storage.get_session(ws.websocket_url) !== null;
+    return ov_Web_Storage.get_session(APP, ws.websocket_url) !== null;
 }
 
 async function ws_connect(websocket) {
@@ -170,15 +172,13 @@ async function ws_connect(websocket) {
         try {
             console.log(log_prefix(websocket) + "connect to server...");
             result = await websocket.connect();
+            if (BROADCAST_REGISTRATION)
+                ws_register(websocket);
         } catch (error) {
             console.warn(log_prefix(websocket) + "failed to connect to server", error);
             return false;
         }
     }
-
-    if (BROADCAST_REGISTRATION)
-        ws_register(websocket);
-
     return result;
 }
 

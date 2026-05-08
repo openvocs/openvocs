@@ -35,6 +35,7 @@
 #ifndef ov_version_h
 #define ov_version_h
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -96,15 +97,13 @@
             "      build id : %s\n"                                            \
             "     commit id : %s\n"                                            \
             " Compiler      : %s\n"                                            \
+            "%s\n"                                                             \
             "------------------------------------------------------------"     \
             "----------------\n"                                               \
             "\n",                                                              \
-            OV_COPYRIGHT,                                                      \
-            OV_VERSION_BUILD_DATE,                                             \
-            OV_VERSION,                                                        \
-            OV_VERSION_BUILD_ID,                                               \
-            OV_VERSION_COMMIT_ID,                                              \
-            OV_VERSION_COMPILER);
+            OV_COPYRIGHT, OV_VERSION_BUILD_DATE, OV_VERSION,                   \
+            OV_VERSION_BUILD_ID, OV_VERSION_COMMIT_ID, OV_VERSION_COMPILER,    \
+            ov_version_additional_info());
 
 /*----------------------------------------------------------------------------*/
 
@@ -117,5 +116,10 @@ inline const char *ov_version_build_id() { return OV_VERSION_BUILD_ID; }
 /*----------------------------------------------------------------------------*/
 
 inline const char *ov_version_build_date() { return OV_VERSION_BUILD_DATE; }
+
+/*----------------------------------------------------------------------------*/
+
+char const *ov_version_additional_info();
+bool ov_version_set_additional_info(char const *additional_info);
 
 #endif /* ov_version_h */

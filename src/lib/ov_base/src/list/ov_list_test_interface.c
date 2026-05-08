@@ -77,7 +77,8 @@ bool check_teststrings(void *item, void *data) {
 
     char *string = item;
 
-    if (0 == string) return false;
+    if (0 == string)
+        return false;
 
     if ((0 != cta->teststrings) && (cta->counter < cta->num_strings) &&
         (0 != strcmp(cta->teststrings[cta->counter], string))) {
@@ -282,8 +283,10 @@ int test_impl_list_copy() {
 
         testrun(((0 == s1) && (0 == s2)) || (0 == strcmp(s1, s2)));
 
-        if (0 != s2) free(s2);
-        if (0 != s1) free(s1);
+        if (0 != s2)
+            free(s2);
+        if (0 != s1)
+            free(s1);
     }
 
     testrun(0 == list->free(list));

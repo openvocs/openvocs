@@ -67,8 +67,8 @@ typedef struct {
  *                                 FUNCTIONS
  ******************************************************************************/
 
-ov_rtp_frame_buffer *ov_rtp_frame_buffer_create(
-    ov_rtp_frame_buffer_config config);
+ov_rtp_frame_buffer *
+ov_rtp_frame_buffer_create(ov_rtp_frame_buffer_config config);
 
 /*----------------------------------------------------------------------------*/
 
@@ -86,8 +86,8 @@ ov_rtp_frame *ov_rtp_frame_buffer_add(ov_rtp_frame_buffer *restrict self,
 
 /*----------------------------------------------------------------------------*/
 
-ov_list *ov_rtp_frame_buffer_get_current_frames(
-    ov_rtp_frame_buffer *restrict self);
+ov_list *
+ov_rtp_frame_buffer_get_current_frames(ov_rtp_frame_buffer *restrict self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -97,5 +97,7 @@ ov_list *ov_rtp_frame_buffer_get_current_frames(
 void ov_rtp_frame_buffer_print(FILE *stream, ov_rtp_frame_buffer const *buffer);
 
 /*----------------------------------------------------------------------------*/
+
+bool ov_rtp_frame_buffer_clear(ov_rtp_frame_buffer *self);
 
 #endif /* ov_rtp_frame_buffer_h */

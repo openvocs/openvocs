@@ -42,11 +42,13 @@ static ov_registered_cache *g_cache = 0;
 
 static ov_frame_data *as_frame_data(void *vptr) {
 
-    if (0 == vptr) return 0;
+    if (0 == vptr)
+        return 0;
 
     ov_frame_data *data = vptr;
 
-    if (FRAME_DATA_MAGIC_BYTES != data->magic_bytes) return 0;
+    if (FRAME_DATA_MAGIC_BYTES != data->magic_bytes)
+        return 0;
 
     return data;
 }
@@ -55,7 +57,8 @@ static ov_frame_data *as_frame_data(void *vptr) {
 
 static void *free_frame_data(void *vptr) {
 
-    if (0 == vptr) return vptr;
+    if (0 == vptr)
+        return vptr;
 
     ov_frame_data *data = as_frame_data(vptr);
 
@@ -338,13 +341,12 @@ ov_frame_data *ov_frame_data_free(ov_frame_data *data) {
 /*----------------------------------------------------------------------------*/
 
 static ov_rtp_frame *encode_frame(ov_frame_data const *frame_data,
-                                  ov_codec *codec,
-                                  bool mark) {
+                                  ov_codec *codec, bool mark) {
 
     if ((!ov_ptr_valid(codec, "Cannot encode frame data: No codec")) ||
         (!ov_ptr_valid(frame_data, "Cannot encode frame data: No data")) ||
-        (!ov_ptr_valid(
-            frame_data->pcm16s_32bit, "Cannot encode frame data: No data"))) {
+        (!ov_ptr_valid(frame_data->pcm16s_32bit,
+                       "Cannot encode frame data: No data"))) {
         return 0;
     }
 

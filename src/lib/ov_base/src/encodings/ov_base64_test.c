@@ -86,12 +86,12 @@ int test_ov_base64_decode_with_alphabet() {
     testrun(!ov_base64_decode_with_alphabet(source, 4, &ptr, &size, alphabet));
 
     size = 100;
-    testrun(!ov_base64_decode_with_alphabet(
-        source, 4, &ptr, &size, base64Alphabet));
+    testrun(!ov_base64_decode_with_alphabet(source, 4, &ptr, &size,
+                                            base64Alphabet));
 
     size = 100;
-    testrun(ov_base64_decode_with_alphabet(
-        source, 4, &ptr, &size, base64urlAlphabet));
+    testrun(ov_base64_decode_with_alphabet(source, 4, &ptr, &size,
+                                           base64urlAlphabet));
 
     return testrun_log_success();
 }
@@ -119,8 +119,8 @@ int test_ov_base64_encode_with_alphabet() {
         ov_base64_encode_with_alphabet(source, 4, &ptr, &size, base64Alphabet));
 
     size = 100;
-    testrun(ov_base64_encode_with_alphabet(
-        source, 4, &ptr, &size, base64urlAlphabet));
+    testrun(ov_base64_encode_with_alphabet(source, 4, &ptr, &size,
+                                           base64urlAlphabet));
 
     return testrun_log_success();
 }
@@ -131,8 +131,8 @@ int test_ov_base64_encode() {
 
     char *rfcTest[] = {"", "f", "fo", "foo", "foob", "fooba", "foobar"};
 
-    char *rfcResult[] = {
-        "", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
+    char *rfcResult[] = {"",         "Zg==",     "Zm8=",    "Zm9v",
+                         "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
 
     uint8_t *result = NULL;
     size_t rsize = 0;
@@ -163,14 +163,13 @@ int test_ov_base64_encode() {
         bsize = 100;
 
         if (i == 0) {
-            testrun(!ov_base64_encode(
-                (uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr, &bsize));
+            testrun(!ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                      &ptr, &bsize));
         } else {
-            testrun(ov_base64_encode(
-                (uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr, &bsize));
+            testrun(ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                     &ptr, &bsize));
 
-            testrun(0 == strncmp((char *)buffer,
-                                 rfcResult[i],
+            testrun(0 == strncmp((char *)buffer, rfcResult[i],
                                  strlen(rfcResult[i])));
             testrun(bsize == strlen(rfcResult[i]));
         }
@@ -219,8 +218,8 @@ int test_ov_base64_decode() {
 
     char *rfcTest[] = {"", "f", "fo", "foo", "foob", "fooba", "foobar"};
 
-    char *rfcResult[] = {
-        "", "Zg==", "Zm8=", "Zm9v", "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
+    char *rfcResult[] = {"",         "Zg==",     "Zm8=",    "Zm9v",
+                         "Zm9vYg==", "Zm9vYmE=", "Zm9vYmFy"};
 
     uint8_t *result = NULL;
     size_t rsize = 0;
@@ -249,14 +248,13 @@ int test_ov_base64_decode() {
         bsize = 100;
 
         if (i == 0) {
-            testrun(!ov_base64_encode(
-                (uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr, &bsize));
+            testrun(!ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                      &ptr, &bsize));
         } else {
-            testrun(ov_base64_encode(
-                (uint8_t *)rfcTest[i], strlen(rfcTest[i]), &ptr, &bsize));
+            testrun(ov_base64_encode((uint8_t *)rfcTest[i], strlen(rfcTest[i]),
+                                     &ptr, &bsize));
 
-            testrun(0 == strncmp((char *)buffer,
-                                 rfcResult[i],
+            testrun(0 == strncmp((char *)buffer, rfcResult[i],
                                  strlen(rfcResult[i])));
             testrun(bsize == strlen(rfcResult[i]));
         }

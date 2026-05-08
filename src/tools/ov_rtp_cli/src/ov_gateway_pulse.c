@@ -122,7 +122,8 @@ error:
 
 static gateway_pulse *as_gateway_pulse(void *self) {
 
-    if (0 == self) return 0;
+    if (0 == self)
+        return 0;
 
     gateway_pulse const *gwp = (gateway_pulse const *)self;
 
@@ -291,8 +292,8 @@ static ov_buffer *impl_get_pcm_s16(ov_gateway *self, size_t requested_samples) {
 
     OV_ASSERT(requested_samples * sizeof(uint16_t) <= receiver->capacity);
 
-    receiver->length = ov_pulse_read(
-        context, receiver->start, requested_samples * sizeof(uint16_t));
+    receiver->length = ov_pulse_read(context, receiver->start,
+                                     requested_samples * sizeof(uint16_t));
 
     return receiver;
 

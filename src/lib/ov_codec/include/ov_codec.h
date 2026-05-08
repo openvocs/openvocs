@@ -27,14 +27,21 @@ Copyright   2017        German Aerospace Center DLR e.V.,
 
      Media Codec structure.
 
-     A codec provides
-     - Encoding from PCM (16 bit signed integers, endianness plattform specific)
- via `ov_codec.encode`
-     - Decoding to   PCM (16 bit signed integers, endianness plattform
- dependent) via `ov_codec.decode`
+     Internally, the openvocs uses PCM, 16bit signed integer at 48kHz
+     (more specific OV_DEFAULT_SAMPLERATE ) with platform specific endianness.
+     Codecs are meant to convert to/from this media format.
 
-     For creating media codecs, use the `ov_codec_factory`, see
- ov_codec_factory.h.
+     A bare codec only decodes/encodes to PCM 16bit signed integers without
+     changing the sample rate.
+
+     Automatic conversion of the sample rates can be enabled by
+     `ov_codec_enable_resampling` .
+
+     If the codec is created by the codec factory from JSON and the JSON
+     contains a `samplerate_hertz` parameter, resampling is activated auto-
+     matically.
+
+     Generally, use the codec factory to create your codecs!
 
      JSON support:
      - To JSON: `ov_codec_to_json`
@@ -94,10 +101,8 @@ char const *ov_codec_type_id(ov_codec const *codec);
  * @return number of written bytes or a negative number in case of
  * error;
  */
-int32_t ov_codec_encode(ov_codec *codec,
-                        const uint8_t *input,
-                        size_t length_bytes,
-                        uint8_t *output,
+int32_t ov_codec_encode(ov_codec *codec, const uint8_t *input,
+                        size_t length_bytes, uint8_t *output,
                         size_t max_out_length_bytes);
 
 /*----------------------------------------------------------------------------*/
@@ -110,12 +115,18 @@ int32_t ov_codec_encode(ov_codec *codec,
  * @return number of written bytes or a negative number in case of
  * error;
  */
-int32_t ov_codec_decode(ov_codec *codec,
-                        uint64_t seq_number,
-                        const uint8_t *input,
-                        size_t length_bytes,
-                        uint8_t *output,
-                        size_t max_out_length_bytes);
+int32_t ov_codec_decode(ov_codec *codec, uint64_t seq_number,
+                        const uint8_t *input, size_t length_bytes,
+                        uint8_t *output, size_t max_out_length_bytes);
+
+/*----------------------------------------------------------------------------*/
+
+/**
+ * Get standard payload type for RTP for this codec.
+ * If there is no standard payload type (like for Opus, where the payload type
+ * has to be negotiated amongst RTP peers), a negative number will be returned.
+ */
+int8_t ov_codec_get_rtp_payload_type(ov_codec const *codec);
 
 /*----------------------------------------------------------------------------*/
 
@@ -167,6 +178,11 @@ bool ov_codec_parameters_set_sample_rate_hertz(ov_json_value *json,
                              For the Codec Factory
  ****************************************************************************/
 
+/**
+ * If the codec is configured for something different than the
+ * internally used OV_DEFAULT_SAMPLERATE,
+ * resample to proper samplerate before encoding
+ */
 bool ov_codec_enable_resampling(ov_codec *codec);
 
 /*****************************************************************************
@@ -205,17 +221,11 @@ struct ov_codec_struct {
 
     ov_codec *(*free)(ov_codec *codec);
 
-    int32_t (*encode)(ov_codec *codec,
-                      const uint8_t *input,
-                      size_t length,
-                      uint8_t *output,
-                      size_t max_out_length);
+    int32_t (*encode)(ov_codec *codec, const uint8_t *input, size_t length,
+                      uint8_t *output, size_t max_out_length);
 
-    int32_t (*decode)(ov_codec *codec,
-                      uint64_t seq_number,
-                      const uint8_t *input,
-                      size_t length,
-                      uint8_t *output,
+    int32_t (*decode)(ov_codec *codec, uint64_t seq_number,
+                      const uint8_t *input, size_t length, uint8_t *output,
                       size_t max_out_length);
 
     ov_json_value *(*get_parameters)(const ov_codec *);
@@ -226,6 +236,14 @@ struct ov_codec_struct {
      * SSID of the stream this codec is associated with.
      */
     uint32_t ssid;
+
+    /**
+     * Payload type number for RTP streams of this codec if defined.
+     * A negative number indicates that there is no fixed payload type for this
+     * codec defined. You have to get your payload type somewhere else.
+     * In that case, you can leave this function pointer at 0.
+     */
+    int8_t (*rtp_payload_type)(ov_codec const *);
 
     /**
      * Don't touch!

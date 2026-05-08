@@ -96,8 +96,7 @@ struct ov_io_callback {
     // will be called back in listener based setup
     bool (*accept)(void *userdata, int listener, int connection);
 
-    bool (*io)(void *userdata,
-               int connection,
+    bool (*io)(void *userdata, int connection,
                const char *optional_domain, // only transmitted for TLS
                const ov_memory_pointer data);
 

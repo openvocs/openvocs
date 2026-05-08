@@ -39,15 +39,15 @@ char const *ov_analogue_event_type_to_string(ov_analogue_event_type type) {
 
     switch (type) {
 
-        case ANALOGUE_IN:
-            return "IN";
+    case ANALOGUE_IN:
+        return "IN";
 
-        case ANALOGUE_OUT:
-            return "OUT";
+    case ANALOGUE_OUT:
+        return "OUT";
 
-        case ANALOGUE_INVALID:
-        default:
-            return "INVALID";
+    case ANALOGUE_INVALID:
+    default:
+        return "INVALID";
     };
 }
 
@@ -106,8 +106,8 @@ ov_analogue_event ov_analogue_event_from_json(ov_json_value const *jval) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_analogue_stop_event ov_analogue_stop_event_from_json(
-    ov_json_value const *jval) {
+ov_analogue_stop_event
+ov_analogue_stop_event_from_json(ov_json_value const *jval) {
 
     ov_analogue_stop_event event = {
         .type = ov_analogue_event_type_from_string(
@@ -121,8 +121,8 @@ ov_analogue_stop_event ov_analogue_stop_event_from_json(
 
 /*----------------------------------------------------------------------------*/
 
-ov_analogue_list_channel_event ov_analogue_list_channel_event_from_json(
-    ov_json_value const *jval) {
+ov_analogue_list_channel_event
+ov_analogue_list_channel_event_from_json(ov_json_value const *jval) {
 
     ov_analogue_list_channel_event event = {
         .type = ov_analogue_event_type_from_string(

@@ -122,14 +122,13 @@ static bool init_alsa_record(ov_alsa_record *self, ov_alsa_record_config cfg) {
 
     ov_chunker *chunker = ov_chunker_create();
 
-    if (ov_ptr_valid(
-            self, "Cannot initialize alsa record object - 0 pointer") &&
-        ov_ptr_valid(
-            codec, "Cannot create alsa record - could not create codec") &&
-        ov_ptr_valid(
-            chunker, "Cannot create alsa record - could not create chunker") &&
-        ov_socket_fill_sockaddr_storage(&self->rtp.dest.addr,
-                                        IPV4,
+    if (ov_ptr_valid(self,
+                     "Cannot initialize alsa record object - 0 pointer") &&
+        ov_ptr_valid(codec,
+                     "Cannot create alsa record - could not create codec") &&
+        ov_ptr_valid(chunker,
+                     "Cannot create alsa record - could not create chunker") &&
+        ov_socket_fill_sockaddr_storage(&self->rtp.dest.addr, IPV4,
                                         cfg.rtp_stream.target.host,
                                         cfg.rtp_stream.target.port)) {
 
@@ -155,8 +154,8 @@ static bool init_alsa_record(ov_alsa_record *self, ov_alsa_record_config cfg) {
 
         size_t samples_period = (size_t)self->rtp.frame_length_samples;
 
-        self->record = ov_alsa_create(
-            cfg.alsa_device, OV_DEFAULT_SAMPLERATE, &samples_period, CAPTURE);
+        self->record = ov_alsa_create(cfg.alsa_device, OV_DEFAULT_SAMPLERATE,
+                                      &samples_period, CAPTURE);
 
         return (0 != self->record);
 
@@ -171,8 +170,7 @@ static bool init_alsa_record(ov_alsa_record *self, ov_alsa_record_config cfg) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool send_as_rtp(struct rtp_stream *rtp,
-                        uint8_t const *pcm,
+static bool send_as_rtp(struct rtp_stream *rtp, uint8_t const *pcm,
                         size_t num_octets) {
 
     int32_t octets_encoded = -1;
@@ -180,11 +178,9 @@ static bool send_as_rtp(struct rtp_stream *rtp,
     if (ov_ptr_valid(rtp, "Cannot send rtp - invalid ov_alsa_record object") &&
         ov_ptr_valid(pcm, "Cannot send rtp - no data to send")) {
 
-        octets_encoded = ov_codec_encode(rtp->codec,
-                                         pcm,
-                                         num_octets,
-                                         rtp->encoded_buffer,
-                                         sizeof(rtp->encoded_buffer));
+        octets_encoded =
+            ov_codec_encode(rtp->codec, pcm, num_octets, rtp->encoded_buffer,
+                            sizeof(rtp->encoded_buffer));
     }
 
     if (ov_cond_valid(octets_encoded >= 0, "Could not encode PCM")) {
@@ -207,15 +203,11 @@ static bool send_as_rtp(struct rtp_stream *rtp,
         if (ov_ptr_valid(frame, "Could not encode RTP frame")) {
 
             ov_log_debug("Sending frame SSRC: %" PRIu32 "  - SEQ %" PRIu16,
-                         frame->expanded.ssrc,
-                         frame->expanded.sequence_number);
+                         frame->expanded.ssrc, frame->expanded.sequence_number);
 
-            sent_bytes = sendto(rtp->sd,
-                                frame->bytes.data,
-                                frame->bytes.length,
-                                0,
-                                (struct sockaddr *)&rtp->dest.addr,
-                                rtp->dest.len);
+            sent_bytes =
+                sendto(rtp->sd, frame->bytes.data, frame->bytes.length, 0,
+                       (struct sockaddr *)&rtp->dest.addr, rtp->dest.len);
 
             ++rtp->sequence_number;
             rtp->timestamp += num_octets / OV_DEFAULT_OCTETS_PER_SAMPLE;
@@ -260,13 +252,13 @@ static void *cb_alsa_record(void *arg) {
         // matter, just send comfort noise instead for the first 20ms
         while (self->thread.keep_running) {
 
-            pcm->length = 2 * ov_alsa_capture_period(
-                                  self->record, (int16_t *)pcm->start, 0);
+            pcm->length = 2 * ov_alsa_capture_period(self->record,
+                                                     (int16_t *)pcm->start, 0);
 
             ov_chunker_add(chunker, pcm);
 
-            if (ov_chunker_next_chunk_raw(
-                    chunker, octets_for_one_frame, pcm->start) &&
+            if (ov_chunker_next_chunk_raw(chunker, octets_for_one_frame,
+                                          pcm->start) &&
                 send_as_rtp(&self->rtp, pcm->start, octets_for_one_frame)) {
 
                 ov_counter_increase(self->counter.rtp_sent, 1);
@@ -286,8 +278,7 @@ static void *cb_alsa_record(void *arg) {
 /*----------------------------------------------------------------------------*/
 
 static ov_alsa_record *create_alsa_record(const ov_alsa_record_config cfg,
-                                          int sd_for_sending,
-                                          ov_result *res) {
+                                          int sd_for_sending, ov_result *res) {
 
     ov_alsa_record *self = calloc(1, sizeof(ov_alsa_record));
     self->magic_bytes = MAGIC_BYTES;
@@ -310,14 +301,13 @@ static ov_alsa_record *create_alsa_record(const ov_alsa_record_config cfg,
                pthread_create(&self->thread.tid, 0, cb_alsa_record, self)) {
 
         ov_log_error("Could not create ALSA record thread");
-        ov_result_set(res,
-                      OV_ERROR_INTERNAL_SERVER,
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                       "Could not create ALSA record thread");
         self = ov_alsa_record_free(self);
 
     } else {
-        ov_log_info(
-            "Start recording from %s", ov_string_sanitize(cfg.alsa_device));
+        ov_log_info("Start recording from %s",
+                    ov_string_sanitize(cfg.alsa_device));
     }
 
     return self;
@@ -326,18 +316,14 @@ static ov_alsa_record *create_alsa_record(const ov_alsa_record_config cfg,
 /*----------------------------------------------------------------------------*/
 
 ov_alsa_record *ov_alsa_record_create(const ov_alsa_record_config cfg,
-                                      int sd_for_sending,
-                                      ov_result *res) {
+                                      int sd_for_sending, ov_result *res) {
 
     if ((0 != cfg.mixer_element) &&
         (!ov_alsa_set_volume(
-            cfg.alsa_device,
-            cfg.mixer_element,
-            CAPTURE,
+            cfg.alsa_device, cfg.mixer_element, CAPTURE,
             OV_OR_DEFAULT(cfg.volume, OV_ALSA_RECORD_DEFAULT_VOLUME)))) {
 
-        ov_result_set(res,
-                      OV_ERROR_INTERNAL_SERVER,
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                       "Cannot set ALSA volume for capture");
 
         return 0;
@@ -383,8 +369,7 @@ ov_alsa_record *ov_alsa_record_free(ov_alsa_record *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool counter_to_json(ov_json_value *target,
-                            char const *key,
+static bool counter_to_json(ov_json_value *target, char const *key,
                             ov_counter counter) {
 
     ov_json_value *jcounter = ov_counter_to_json(counter);

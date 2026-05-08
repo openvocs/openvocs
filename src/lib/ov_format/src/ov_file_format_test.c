@@ -45,18 +45,19 @@ static bool handler_is_in_format_registry(ov_format_registry *registry,
 
     bool result = false;
 
-    if (0 == type) return false;
+    if (0 == type)
+        return false;
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
     ov_format *dummy_bare =
         ov_format_from_memory((uint8_t *)test_string, test_string_len, OV_READ);
 
-    if (0 == dummy_bare) return false;
+    if (0 == dummy_bare)
+        return false;
 
     ov_format *type_fmt = ov_format_as(dummy_bare, type, 0, registry);
 
@@ -86,7 +87,8 @@ static bool handlers_in_format_registry(ov_format_registry *registry,
 
     for (size_t i = 0; num_types > i; ++i) {
 
-        if (!handler_is_in_format_registry(registry, types[i])) return false;
+        if (!handler_is_in_format_registry(registry, types[i]))
+            return false;
     }
 
     return true;
@@ -399,7 +401,8 @@ int test_ov_file_encoding_is_utf8() {
     testrun(ov_random_bytes(buf, size));
     for (size_t i = 0; i < size; i++) {
 
-        if (isascii(buf[i])) continue;
+        if (isascii(buf[i]))
+            continue;
 
         buf[i] = 'A';
     }
@@ -457,8 +460,7 @@ int test_ov_file_encoding_is_utf8() {
 }
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer dummy_next_chunk(ov_format *f,
-                                  size_t requested_bytes,
+static ov_buffer dummy_next_chunk(ov_format *f, size_t requested_bytes,
                                   void *data) {
 
     if (f || (0 == requested_bytes) || data) {
@@ -654,8 +656,8 @@ int test_ov_file_format_register() {
 
     char const *format_types_present[] = {"jpeg", "no jpeg"};
 
-    testrun(handlers_in_format_registry(
-        reg->format_handler, format_types_present, 2));
+    testrun(handlers_in_format_registry(reg->format_handler,
+                                        format_types_present, 2));
 
     params = ov_file_format_get(reg, para.name);
     testrun(params);
@@ -781,9 +783,8 @@ int test_ov_file_desc_from_path() {
     non_file_path = 0;
     testrun(-1 == x.bytes);
 
-    x = ov_file_desc_from_path(
-        "/dgafsfsdffwer2r3433qewa234/"
-        "not_exists_42431mfamsfaagggargagarsg");
+    x = ov_file_desc_from_path("/dgafsfsdffwer2r3433qewa234/"
+                               "not_exists_42431mfamsfaagggargagarsg");
     testrun(-1 == x.bytes);
 
     for (size_t i = 0; i < items; i++) {
@@ -991,7 +992,8 @@ struct container {
 
 static void *thread_test_get_desc(void *arg) {
 
-    if (!arg) goto error;
+    if (!arg)
+        goto error;
 
     //    pthread_t id = pthread_self();
 
@@ -1075,24 +1077,21 @@ int check_parallel_requests() {
                                         .name = "a",
                                         .mime = "a_mime",
                                     },
-                                    1,
-                                    ext[0]));
+                                    1, ext[0]));
 
     testrun(ov_file_format_register(&reg,
                                     (ov_file_format_parameter){
                                         .name = "b",
                                         .mime = "b_mime",
                                     },
-                                    1,
-                                    ext[1]));
+                                    1, ext[1]));
 
     testrun(ov_file_format_register(&reg,
                                     (ov_file_format_parameter){
                                         .name = "c",
                                         .mime = "c_mime",
                                     },
-                                    1,
-                                    ext[2]));
+                                    1, ext[2]));
 
     /* <-- env prepared */
 
@@ -1105,8 +1104,8 @@ int check_parallel_requests() {
 
     for (size_t i = 0; i < 10; i++) {
 
-        testrun(0 == pthread_create(
-                         &threads[i], NULL, thread_test_get_desc, &container));
+        testrun(0 == pthread_create(&threads[i], NULL, thread_test_get_desc,
+                                    &container));
     }
 
     for (size_t i = 0; i < 10; i++) {
@@ -1146,8 +1145,8 @@ int test_ov_file_format_register_values_to_json() {
         (ov_file_format_parameter){0}, 0, (char const *[]){"1"}));
 
     // check min vaid input
-    out = ov_file_format_register_values_to_json(
-        (ov_file_format_parameter){0}, 1, (char const *[]){"1"});
+    out = ov_file_format_register_values_to_json((ov_file_format_parameter){0},
+                                                 1, (char const *[]){"1"});
 
     testrun(out);
     testrun(1 == ov_json_object_count(out));
@@ -1169,15 +1168,13 @@ int test_ov_file_format_register_values_to_json() {
     out = ov_json_value_free(out);
 
     out = ov_file_format_register_values_to_json(
-        (ov_file_format_parameter){.name = "name", .mime = "mime"},
-        3,
+        (ov_file_format_parameter){.name = "name", .mime = "mime"}, 3,
         (char const *[]){"1", "2", "3"});
 
     testrun(out);
     testrun(2 == ov_json_object_count(out));
-    testrun(0 ==
-            strcmp("mime",
-                   ov_json_string_get(ov_json_object_get(out, OV_KEY_MIME))));
+    testrun(0 == strcmp("mime", ov_json_string_get(
+                                    ov_json_object_get(out, OV_KEY_MIME))));
     arr = ov_json_object_get(out, OV_KEY_EXTENSION);
     testrun(3 == ov_json_array_count(arr)) testrun(
         0 == strcmp("1", ov_json_string_get(ov_json_array_get(arr, 1))));
@@ -1196,15 +1193,13 @@ int test_ov_file_format_register_values_from_json() {
     ov_json_value *arr = NULL;
 
     val = ov_file_format_register_values_to_json(
-        (ov_file_format_parameter){.name = "name", .mime = "mime"},
-        3,
+        (ov_file_format_parameter){.name = "name", .mime = "mime"}, 3,
         (char const *[]){"1", "2", "3"});
 
     testrun(val);
     testrun(2 == ov_json_object_count(val));
-    testrun(0 ==
-            strcmp("mime",
-                   ov_json_string_get(ov_json_object_get(val, OV_KEY_MIME))));
+    testrun(0 == strcmp("mime", ov_json_string_get(
+                                    ov_json_object_get(val, OV_KEY_MIME))));
     arr = ov_json_object_get(val, OV_KEY_EXTENSION);
     testrun(3 == ov_json_array_count(arr)) testrun(
         0 == strcmp("1", ov_json_string_get(ov_json_array_get(arr, 1))));
@@ -1217,19 +1212,19 @@ int test_ov_file_format_register_values_from_json() {
     char *array[OV_FILE_EXT_MAX];
     memset(array, 0, sizeof(array));
 
-    testrun(!ov_file_format_register_values_from_json(
-        NULL, NULL, NULL, NULL, NULL));
-    testrun(!ov_file_format_register_values_from_json(
-        NULL, NULL, &para, &p_size, array));
-    testrun(!ov_file_format_register_values_from_json(
-        val, NULL, NULL, &p_size, array));
-    testrun(!ov_file_format_register_values_from_json(
-        val, NULL, &para, NULL, array));
-    testrun(!ov_file_format_register_values_from_json(
-        val, NULL, &para, &p_size, NULL));
+    testrun(!ov_file_format_register_values_from_json(NULL, NULL, NULL, NULL,
+                                                      NULL));
+    testrun(!ov_file_format_register_values_from_json(NULL, NULL, &para,
+                                                      &p_size, array));
+    testrun(!ov_file_format_register_values_from_json(val, NULL, NULL, &p_size,
+                                                      array));
+    testrun(!ov_file_format_register_values_from_json(val, NULL, &para, NULL,
+                                                      array));
+    testrun(!ov_file_format_register_values_from_json(val, NULL, &para, &p_size,
+                                                      NULL));
 
-    testrun(ov_file_format_register_values_from_json(
-        val, NULL, &para, &p_size, array));
+    testrun(ov_file_format_register_values_from_json(val, NULL, &para, &p_size,
+                                                     array));
     testrun(p_size == 3);
     testrun(0 == strcmp(array[0], "1"));
     testrun(0 == strcmp(array[1], "2"));
@@ -1238,8 +1233,8 @@ int test_ov_file_format_register_values_from_json() {
     testrun(0 == para.name[0]);
 
     p_size = size;
-    testrun(ov_file_format_register_values_from_json(
-        val, "x", &para, &p_size, array));
+    testrun(ov_file_format_register_values_from_json(val, "x", &para, &p_size,
+                                                     array));
     testrun(p_size == 3);
     testrun(0 == strcmp(array[0], "1"));
     testrun(0 == strcmp(array[1], "2"));
@@ -1248,14 +1243,14 @@ int test_ov_file_format_register_values_from_json() {
     testrun(0 == strcmp(para.name, "x"));
 
     p_size = 1;
-    testrun(!ov_file_format_register_values_from_json(
-        val, "x", &para, &p_size, array));
+    testrun(!ov_file_format_register_values_from_json(val, "x", &para, &p_size,
+                                                      array));
     p_size = 2;
-    testrun(!ov_file_format_register_values_from_json(
-        val, "x", &para, &p_size, array));
+    testrun(!ov_file_format_register_values_from_json(val, "x", &para, &p_size,
+                                                      array));
     p_size = 3;
-    testrun(ov_file_format_register_values_from_json(
-        val, "new", &para, &p_size, array));
+    testrun(ov_file_format_register_values_from_json(val, "new", &para, &p_size,
+                                                     array));
     testrun(p_size == 3);
     testrun(0 == strcmp(array[0], "1"));
     testrun(0 == strcmp(array[1], "2"));
@@ -1267,10 +1262,10 @@ int test_ov_file_format_register_values_from_json() {
     ov_json_value *obj = ov_json_object();
     testrun(ov_json_object_set(obj, "name", val));
     p_size = size;
-    testrun(!ov_file_format_register_values_from_json(
-        obj, "other_name", &para, &p_size, array));
-    testrun(ov_file_format_register_values_from_json(
-        obj, "name", &para, &p_size, array));
+    testrun(!ov_file_format_register_values_from_json(obj, "other_name", &para,
+                                                      &p_size, array));
+    testrun(ov_file_format_register_values_from_json(obj, "name", &para,
+                                                     &p_size, array));
     testrun(p_size == 3);
     testrun(0 == strcmp(array[0], "1"));
     testrun(0 == strcmp(array[1], "2"));
@@ -1280,15 +1275,15 @@ int test_ov_file_format_register_values_from_json() {
 
     // check without mime
     testrun(ov_json_object_del(val, OV_KEY_MIME));
-    testrun(!ov_file_format_register_values_from_json(
-        val, "name", &para, &p_size, array));
-    testrun(!ov_file_format_register_values_from_json(
-        obj, "name", &para, &p_size, array));
+    testrun(!ov_file_format_register_values_from_json(val, "name", &para,
+                                                      &p_size, array));
+    testrun(!ov_file_format_register_values_from_json(obj, "name", &para,
+                                                      &p_size, array));
 
     ov_json_value *mime = ov_json_string("image/jpeg");
     testrun(ov_json_object_set(val, OV_KEY_MIME, mime));
-    testrun(ov_file_format_register_values_from_json(
-        obj, "name", &para, &p_size, array));
+    testrun(ov_file_format_register_values_from_json(obj, "name", &para,
+                                                     &p_size, array));
     testrun(p_size == 3);
     testrun(0 == strcmp(array[0], "1"));
     testrun(0 == strcmp(array[1], "2"));
@@ -1301,8 +1296,8 @@ int test_ov_file_format_register_values_from_json() {
     testrun(0 ==
             ov_json_array_count(ov_json_object_get(val, OV_KEY_EXTENSION)));
 
-    testrun(ov_file_format_register_values_from_json(
-        obj, "name", &para, &p_size, array));
+    testrun(ov_file_format_register_values_from_json(obj, "name", &para,
+                                                     &p_size, array));
     testrun(p_size == 0);
     testrun(0 == (array[0]));
     testrun(0 == (array[1]));
@@ -1428,9 +1423,9 @@ int test_ov_file_format_register_from_json_from_path() {
     // we do not write the invalid file yet
     for (size_t i = 0; i < items - 1; i++) {
 
-        testrun(OV_FILE_SUCCESS ==
-                ov_file_write(
-                    files[i], (uint8_t *)content[i], strlen(content[i]), "w"));
+        testrun(OV_FILE_SUCCESS == ov_file_write(files[i],
+                                                 (uint8_t *)content[i],
+                                                 strlen(content[i]), "w"));
     }
 
     ov_file_format_registry *reg = NULL;
@@ -1511,8 +1506,7 @@ int test_ov_file_format_register_from_json_from_path() {
     // write invalid.json
     testrun(OV_FILE_SUCCESS == ov_file_write(files[items - 1],
                                              (uint8_t *)content[items - 1],
-                                             strlen(content[items - 1]),
-                                             "w"));
+                                             strlen(content[items - 1]), "w"));
 
     // load all mime extensions
     testrun(ov_file_format_register_from_json_from_path(&reg, dir, "mime"));
@@ -1568,16 +1562,11 @@ int test_ov_file_format_as() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_file_format",
-            check_parse_extensions,
-            test_ov_file_encoding_is_utf8,
-            test_ov_file_format_register,
-            test_ov_file_format_free_registry,
-            test_ov_file_desc_from_path,
-            test_ov_file_format_get_desc,
-            test_ov_file_format_get,
-            test_ov_file_format_get_ext,
-            test_ov_file_format_as,
+OV_TEST_RUN("ov_file_format", check_parse_extensions,
+            test_ov_file_encoding_is_utf8, test_ov_file_format_register,
+            test_ov_file_format_free_registry, test_ov_file_desc_from_path,
+            test_ov_file_format_get_desc, test_ov_file_format_get,
+            test_ov_file_format_get_ext, test_ov_file_format_as,
             check_parallel_requests,
             test_ov_file_format_register_values_to_json,
             test_ov_file_format_register_from_json_from_path,

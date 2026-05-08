@@ -47,12 +47,9 @@ static int test_ov_rtcp_message_free() {
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_message(ov_rtcp_message const *msg,
-                          ov_rtcp_type type,
-                          uint8_t const *original_in,
-                          size_t original_len,
-                          uint8_t const *remainder,
-                          size_t remainder_len) {
+static bool check_message(ov_rtcp_message const *msg, ov_rtcp_type type,
+                          uint8_t const *original_in, size_t original_len,
+                          uint8_t const *remainder, size_t remainder_len) {
 
     const size_t msglen = ov_rtcp_message_len_octets(msg);
 
@@ -62,10 +59,7 @@ static bool check_message(ov_rtcp_message const *msg,
             "Lengths do not match, RTCP message length is %zu, but consumed "
             "length is %zu(original data length was %zu, remaining length is "
             "%zu) ",
-            msglen,
-            original_len - remainder_len,
-            original_len,
-            remainder_len);
+            msglen, original_len - remainder_len, original_len, remainder_len);
 
         return false;
 
@@ -74,8 +68,7 @@ static bool check_message(ov_rtcp_message const *msg,
         testrun_log_error(
             "Data pointer %p violates expection, should be bigger than "
             "original pointer %p, but is not",
-            remainder,
-            original_in);
+            remainder, original_in);
         return false;
 
     } else if (msglen + original_in != remainder) {
@@ -83,10 +76,7 @@ static bool check_message(ov_rtcp_message const *msg,
         testrun_log_error(
             "Data pointer %p violates expectation - should be %zu apart from "
             "%p, but is only %zu apart",
-            remainder,
-            msglen,
-            original_in,
-            remainder - original_in);
+            remainder, msglen, original_in, remainder - original_in);
         return false;
 
     } else if (type != ov_rtcp_message_type(msg)) {
@@ -101,10 +91,8 @@ static bool check_message(ov_rtcp_message const *msg,
 
 /*----------------------------------------------------------------------------*/
 
-static bool next_message_is(uint8_t const **in,
-                            size_t *in_len,
-                            ov_rtcp_type type,
-                            ov_rtcp_message **target) {
+static bool next_message_is(uint8_t const **in, size_t *in_len,
+                            ov_rtcp_type type, ov_rtcp_message **target) {
 
     size_t olen = *in_len;
     uint8_t const *oin = *in;
@@ -237,17 +225,15 @@ static bool sdes_messages_equal(ov_rtcp_message const *m1,
 
         testrun_log_error("Messages differ: Message 1 has SSRC %" PRIu32
                           " Message 2 has SSRC %" PRIu32,
-                          ssrc1,
-                          ssrc2);
+                          ssrc1, ssrc2);
         return false;
 
     } else if (0 != ov_string_compare(cname1, cname2)) {
 
-        testrun_log_error(
-            "Messages differ: Message 1 has CNAME %s"
-            " Message 2 has CNAME %s",
-            ov_string_sanitize(cname1),
-            ov_string_sanitize(cname2));
+        testrun_log_error("Messages differ: Message 1 has CNAME %s"
+                          " Message 2 has CNAME %s",
+                          ov_string_sanitize(cname1),
+                          ov_string_sanitize(cname2));
 
         return false;
 
@@ -272,26 +258,26 @@ static bool messages_equal(ov_rtcp_message const *m1,
 
         switch (ov_rtcp_message_type(m1)) {
 
-            case OV_RTCP_SOURCE_DESC:
+        case OV_RTCP_SOURCE_DESC:
 
-                return sdes_messages_equal(m1, m2);
+            return sdes_messages_equal(m1, m2);
 
-            default:
+        default:
 
-                if (ov_rtcp_message_type(m1) != ov_rtcp_message_type(m2)) {
+            if (ov_rtcp_message_type(m1) != ov_rtcp_message_type(m2)) {
 
-                    testrun_log_error(
-                        "Messages do not equal - types differ: %s vs %s",
-                        ov_rtcp_type_to_string(ov_rtcp_message_type(m1)),
-                        ov_rtcp_type_to_string(ov_rtcp_message_type(m2)));
+                testrun_log_error(
+                    "Messages do not equal - types differ: %s vs %s",
+                    ov_rtcp_type_to_string(ov_rtcp_message_type(m1)),
+                    ov_rtcp_type_to_string(ov_rtcp_message_type(m2)));
 
-                    return false;
-
-                } else {
-
-                    return true;
-                }
                 return false;
+
+            } else {
+
+                return true;
+            }
+            return false;
         };
     }
 }
@@ -514,10 +500,6 @@ static int test_ov_rtcp_message_sdes_ssrc() {
 }
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_rtpc",
-            test_ov_rtcp_message_free,
-            test_ov_rtcp_message_decode,
-            test_ov_rtcp_message_encode,
-            test_ov_rtcp_message_sdes,
-            test_ov_rtcp_message_sdes_cname,
-            test_ov_rtcp_message_sdes_ssrc);
+OV_TEST_RUN("ov_rtpc", test_ov_rtcp_message_free, test_ov_rtcp_message_decode,
+            test_ov_rtcp_message_encode, test_ov_rtcp_message_sdes,
+            test_ov_rtcp_message_sdes_cname, test_ov_rtcp_message_sdes_ssrc);

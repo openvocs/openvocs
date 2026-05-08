@@ -67,9 +67,8 @@ bool ov_thread_lock_init(ov_thread_lock *lock, uint64_t timeout_usecs) {
 
     if (0 == timeout_usecs) {
 
-        ov_log_error(
-            "Refusing to create lock with a default timeout "
-            "of 0");
+        ov_log_error("Refusing to create lock with a default timeout "
+                     "of 0");
         goto error;
     }
 

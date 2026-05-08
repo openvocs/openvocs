@@ -136,9 +136,7 @@ typedef struct {
 
     ssize_t (*write_chunk)(ov_format *f, ov_buffer const *chunk, void *data);
 
-    ssize_t (*overwrite)(ov_format *f,
-                         size_t offset,
-                         ov_buffer const *chunk,
+    ssize_t (*overwrite)(ov_format *f, size_t offset, ov_buffer const *chunk,
                          void *data);
 
     /**
@@ -202,8 +200,7 @@ typedef struct {
  * @param length of mem chunk in bytes. Must never be 0.
  * @return pointer to the new format or 0 in case of error
  */
-ov_format *ov_format_from_memory(uint8_t *memory,
-                                 size_t length,
+ov_format *ov_format_from_memory(uint8_t *memory, size_t length,
                                  ov_format_mode mode);
 
 /*----------------------------------------------------------------------------*/
@@ -259,10 +256,8 @@ ov_format *ov_format_close_non_recursive(ov_format *f);
                                 Format stacking
  ****************************************************************************/
 
-ov_format *ov_format_wrap(ov_format *f,
-                          char const *type,
-                          ov_format_handler *handler,
-                          void *options);
+ov_format *ov_format_wrap(ov_format *f, char const *type,
+                          ov_format_handler *handler, void *options);
 
 ov_format const *ov_format_get(ov_format const *f, char const *format_desc);
 
@@ -315,8 +310,7 @@ ssize_t ov_format_payload_write_chunk(ov_format *f, ov_buffer const *chunk);
  *
  * @return number of overwritten bytes, or negative in case of error
  */
-ssize_t ov_format_payload_overwrite(ov_format *f,
-                                    size_t offset,
+ssize_t ov_format_payload_overwrite(ov_format *f, size_t offset,
                                     ov_buffer const *chunk);
 
 /**

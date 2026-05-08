@@ -47,8 +47,8 @@ static bool header_equals_unsafe(ov_format_rtp_header hdr,
     OV_ASSERT(0 != frame);
     if (hdr.version != frame->expanded.version) {
 
-        ov_log_error(
-            "Versions differ: %i vs %i", hdr.version, frame->expanded.version);
+        ov_log_error("Versions differ: %i vs %i", hdr.version,
+                     frame->expanded.version);
         return false;
     }
 
@@ -185,8 +185,7 @@ static int test_impl_next_chunk() {
 
     testrun(0 != payload.start);
     testrun(rtp_frame->expanded.payload.length == payload.length);
-    testrun(0 == memcmp(rtp_frame->expanded.payload.data,
-                        payload.start,
+    testrun(0 == memcmp(rtp_frame->expanded.payload.data, payload.start,
                         payload.length));
 
     rtp_fmt = ov_format_close(rtp_fmt);
@@ -262,9 +261,7 @@ static int test_impl_next_chunk() {
 
         testrun_log("RTP frame: SSRC: %" PRIu32 " Sequence number: %" PRIu16
                     " timestamp: %" PRIu32 "   payload type: %u",
-                    hdr.ssrc,
-                    hdr.sequence_number,
-                    hdr.timestamp,
+                    hdr.ssrc, hdr.sequence_number, hdr.timestamp,
                     hdr.payload_type);
 
         payload = ov_format_payload_read_chunk_nocopy(rtp_fmt, 0);
@@ -315,8 +312,7 @@ static int test_ov_format_rtp_get_header() {
 
     testrun(0 != payload.start);
     testrun(rtp_frame->expanded.payload.length == payload.length);
-    testrun(0 == memcmp(rtp_frame->expanded.payload.data,
-                        payload.start,
+    testrun(0 == memcmp(rtp_frame->expanded.payload.data, payload.start,
                         payload.length));
 
     testrun(ov_format_rtp_get_header(rtp_fmt, &hdr));
@@ -416,8 +412,8 @@ static int test_ov_format_rtp_get_contributing_sources() {
     rtp_frame = get_encoded_frame(&exp);
     testrun(0 != rtp_frame);
 
-    mem_fmt = ov_format_from_memory(
-        rtp_frame->bytes.data, rtp_frame->bytes.length, OV_READ);
+    mem_fmt = ov_format_from_memory(rtp_frame->bytes.data,
+                                    rtp_frame->bytes.length, OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -538,8 +534,8 @@ static int test_ov_format_rtp_get_ext_header() {
     rtp_frame = get_encoded_frame(&exp);
     testrun(0 != rtp_frame);
 
-    mem_fmt = ov_format_from_memory(
-        rtp_frame->bytes.data, rtp_frame->bytes.length, OV_READ);
+    mem_fmt = ov_format_from_memory(rtp_frame->bytes.data,
+                                    rtp_frame->bytes.length, OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -656,8 +652,8 @@ static int test_ov_format_rtp_get_padding() {
     ov_rtp_frame *rtp_frame_padded = get_encoded_frame(&exp);
     testrun(0 != rtp_frame_padded);
 
-    mem_fmt = ov_format_from_memory(
-        rtp_frame_padded->bytes.data, rtp_frame_padded->bytes.length, OV_READ);
+    mem_fmt = ov_format_from_memory(rtp_frame_padded->bytes.data,
+                                    rtp_frame_padded->bytes.length, OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -708,8 +704,8 @@ static int test_ov_format_rtp_get_padding() {
     rtp_frame_padded = get_encoded_frame(&exp);
     testrun(0 != rtp_frame_padded);
 
-    mem_fmt = ov_format_from_memory(
-        rtp_frame_padded->bytes.data, rtp_frame_padded->bytes.length, OV_READ);
+    mem_fmt = ov_format_from_memory(rtp_frame_padded->bytes.data,
+                                    rtp_frame_padded->bytes.length, OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -763,10 +759,7 @@ static int test_ov_format_rtp_get_padding() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_rtp",
-            test_ov_format_rtp_install,
-            test_impl_next_chunk,
+OV_TEST_RUN("ov_format_rtp", test_ov_format_rtp_install, test_impl_next_chunk,
             test_ov_format_rtp_get_header,
             test_ov_format_rtp_get_contributing_sources,
-            test_ov_format_rtp_get_ext_header,
-            test_ov_format_rtp_get_padding);
+            test_ov_format_rtp_get_ext_header, test_ov_format_rtp_get_padding);

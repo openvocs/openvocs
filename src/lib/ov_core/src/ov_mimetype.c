@@ -68,7 +68,8 @@ const char *ov_mimetype_from_file_extension(const char *ext, size_t size) {
 
     char *out = NULL;
 
-    if (!ext || size < 1) goto done;
+    if (!ext || size < 1)
+        goto done;
 
     size_t ext_size = sizeof(extensions) / sizeof(extensions[0]);
     size_t mime_size = sizeof(mime) / sizeof(mime[0]);
@@ -82,9 +83,11 @@ const char *ov_mimetype_from_file_extension(const char *ext, size_t size) {
     for (size_t i = 0; i < ext_size; i++) {
 
         len = strlen(extensions[i]);
-        if (len != size) continue;
+        if (len != size)
+            continue;
 
-        if (0 != strncmp(extensions[i], ext, size)) continue;
+        if (0 != strncmp(extensions[i], ext, size))
+            continue;
 
         out = mime[i];
         break;

@@ -67,19 +67,20 @@ typedef struct {
 
 static ethernet_data *as_ethernet_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     ethernet_data *ethernet_data = data;
 
-    if (ETHERNET_MAGIC_BYTES != ethernet_data->magic_bytes) return 0;
+    if (ETHERNET_MAGIC_BYTES != ethernet_data->magic_bytes)
+        return 0;
 
     return ethernet_data;
 }
 
 /*----------------------------------------------------------------------------*/
 static bool get_ethernet_header_unsafe(ov_format_ethernet_header *out,
-                                       uint8_t **rd_ptr,
-                                       size_t *length) {
+                                       uint8_t **rd_ptr, size_t *length) {
 
     OV_ASSERT(0 != out);
     OV_ASSERT(0 != rd_ptr);
@@ -140,8 +141,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool get_crc32_checksum_unsafe(uint32_t *crc32_out,
-                                      uint8_t **rd_ptr,
+static bool get_crc32_checksum_unsafe(uint32_t *crc32_out, uint8_t **rd_ptr,
                                       size_t *length) {
 
     OV_ASSERT(0 != crc32_out);
@@ -179,8 +179,7 @@ error:
                                    Interface
  ****************************************************************************/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -215,8 +214,8 @@ static ov_buffer impl_next_chunk(ov_format *f,
     rdata->crc32_checksum = 0;
 
     if (rdata->crc_present &&
-        !get_crc32_checksum_unsafe(
-            &rdata->crc32_checksum, &buf.start, &buf.length)) {
+        !get_crc32_checksum_unsafe(&rdata->crc32_checksum, &buf.start,
+                                   &buf.length)) {
 
         goto error;
     }
@@ -230,8 +229,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     UNUSED(f);
@@ -270,9 +268,8 @@ static void *impl_free_data(void *data) {
 
     if (0 == as_ethernet_data(data)) {
 
-        ov_log_error(
-            "Internal error: Expected to be called with format "
-            "ethernet");
+        ov_log_error("Internal error: Expected to be called with format "
+                     "ethernet");
         goto error;
     }
 
@@ -297,8 +294,8 @@ bool ov_format_ethernet_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_ETHERNET_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_ETHERNET_TYPE_STRING,
+                                            handler, registry);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -356,9 +353,8 @@ uint32_t ov_format_ethernet_calculate_crc32(ov_format const *fmt) {
 
     if (0 == edata) {
 
-        ov_log_error(
-            "Internal error: Expected to be called with ethernet "
-            "format");
+        ov_log_error("Internal error: Expected to be called with ethernet "
+                     "format");
         goto error;
     }
 
@@ -374,8 +370,8 @@ uint32_t ov_format_ethernet_calculate_crc32(ov_format const *fmt) {
         goto error;
     }
 
-    uint32_t crc32 = ov_crc32_zlib(
-        0, edata->raw_frame.start, edata->raw_frame.length - sizeof(uint32_t));
+    uint32_t crc32 = ov_crc32_zlib(0, edata->raw_frame.start,
+                                   edata->raw_frame.length - sizeof(uint32_t));
 
     return crc32;
 
@@ -386,8 +382,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_format_ethernet_mac_to_string(uint8_t *mac,
-                                       char *out_string,
+char *ov_format_ethernet_mac_to_string(uint8_t *mac, char *out_string,
                                        size_t out_len) {
 
     static char static_str[3 * OV_FORMAT_ETHERNET_MAC_LEN_OCTETS] = {0};
@@ -403,15 +398,9 @@ char *ov_format_ethernet_mac_to_string(uint8_t *mac,
         out_len = sizeof(static_str);
     }
 
-    size_t octets_written = snprintf(out_string,
-                                     out_len,
-                                     "%x:%x:%x:%x:%x:%x",
-                                     mac[0] & 0xff,
-                                     mac[1] & 0xff,
-                                     mac[2] & 0xff,
-                                     mac[3] & 0xff,
-                                     mac[4] & 0xff,
-                                     mac[5] & 0xff);
+    size_t octets_written = snprintf(
+        out_string, out_len, "%x:%x:%x:%x:%x:%x", mac[0] & 0xff, mac[1] & 0xff,
+        mac[2] & 0xff, mac[3] & 0xff, mac[4] & 0xff, mac[5] & 0xff);
 
     out_string[out_len - 1] = 0;
 
@@ -459,11 +448,13 @@ typedef struct {
 
 static dispatcher_data *as_dispatcher_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     dispatcher_data *dispatcher_data = data;
 
-    if (DISPATCHER_MAGIC_BYTES != dispatcher_data->magic_bytes) return 0;
+    if (DISPATCHER_MAGIC_BYTES != dispatcher_data->magic_bytes)
+        return 0;
 
     return dispatcher_data;
 }
@@ -569,9 +560,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer impl_dispatcher_next_chunk(ov_format *f,
-                                            size_t requested_bytes,
-                                            void *data) {
+static ov_buffer
+impl_dispatcher_next_chunk(ov_format *f, size_t requested_bytes, void *data) {
 
     ov_buffer buffer = {0};
 
@@ -585,9 +575,8 @@ static ov_buffer impl_dispatcher_next_chunk(ov_format *f,
 
     if (0 == ddata) {
 
-        ov_log_error(
-            "Expected to be called with ethernet ip dispatcher "
-            "format");
+        ov_log_error("Expected to be called with ethernet ip dispatcher "
+                     "format");
         goto error;
     }
 
@@ -605,8 +594,8 @@ static ov_buffer impl_dispatcher_next_chunk(ov_format *f,
         goto error;
     }
 
-    if (!ov_format_buffered_update(
-            ddata->buffered, new_data.start, new_data.length)) {
+    if (!ov_format_buffered_update(ddata->buffered, new_data.start,
+                                   new_data.length)) {
 
         goto error;
     }
@@ -619,30 +608,30 @@ static ov_buffer impl_dispatcher_next_chunk(ov_format *f,
 
     switch (hdr.type) {
 
-        case IPV4:
+    case IPV4:
 
-            ddata->current_ethertype = IPV4;
+        ddata->current_ethertype = IPV4;
 
-            buffer = ov_format_payload_read_chunk_nocopy(
-                ddata->ipv4, requested_bytes);
+        buffer =
+            ov_format_payload_read_chunk_nocopy(ddata->ipv4, requested_bytes);
 
-            break;
+        break;
 
-        case IPV6:
+    case IPV6:
 
-            ddata->current_ethertype = IPV6;
+        ddata->current_ethertype = IPV6;
 
-            buffer = ov_format_payload_read_chunk_nocopy(
-                ddata->ipv6, requested_bytes);
+        buffer =
+            ov_format_payload_read_chunk_nocopy(ddata->ipv6, requested_bytes);
 
-            break;
+        break;
 
-        default:
+    default:
 
-            ddata->current_ethertype = INVALID;
+        ddata->current_ethertype = INVALID;
 
-            ov_log_error("Unsupported ethertype %" PRIu16, hdr.type);
-            goto error;
+        ov_log_error("Unsupported ethertype %" PRIu16, hdr.type);
+        goto error;
     };
 
 error:
@@ -655,29 +644,33 @@ error:
 static ov_format *impl_dispatcher_responsible_for(ov_format const *f,
                                                   char const *type) {
 
-    if (0 == type) goto error;
+    if (0 == type)
+        goto error;
 
     dispatcher_data *data = as_dispatcher_data(ov_format_get_custom_data(f));
 
-    if (0 == data) goto error;
+    if (0 == data)
+        goto error;
 
     /* We are responsible for both ipv4 and ipv6 */
 
     switch (data->current_ethertype) {
 
-        case IPV4:
+    case IPV4:
 
-            if (0 == strcmp(type, "ipv4")) return data->ipv4;
-            break;
+        if (0 == strcmp(type, "ipv4"))
+            return data->ipv4;
+        break;
 
-        case IPV6:
+    case IPV6:
 
-            if (0 == strcmp(type, "ipv6")) return data->ipv6;
-            break;
+        if (0 == strcmp(type, "ipv6"))
+            return data->ipv6;
+        break;
 
-        default:
+    default:
 
-            return false;
+        return false;
     }
 
 error:

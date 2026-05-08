@@ -59,9 +59,11 @@ typedef struct Ldap {
 
 ov_ldap *ov_ldap_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_LDAP_MAGIC_BYTE) return NULL;
+    if (*(uint16_t *)data != OV_LDAP_MAGIC_BYTE)
+        return NULL;
 
     return (ov_ldap *)data;
 }
@@ -71,7 +73,8 @@ ov_ldap *ov_ldap_cast(const void *data) {
 static ov_ldap *impl_free(ov_ldap *self) {
 
     Ldap *ldap = AS_DEFAULT_LDAP(self);
-    if (!ldap) return self;
+    if (!ldap)
+        return self;
 
     ov_thread_loop_stop_threads(ldap->thread_loop);
     ldap->thread_loop = ov_thread_loop_free(ldap->thread_loop);
@@ -82,10 +85,8 @@ static ov_ldap *impl_free(ov_ldap *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_authenticate_password(ov_ldap *self,
-                                       const char *user,
-                                       const char *password,
-                                       const char *uuid,
+static bool impl_authenticate_password(ov_ldap *self, const char *user,
+                                       const char *password, const char *uuid,
                                        ov_ldap_auth_callback callback) {
 
     ov_json_value *out = NULL;
@@ -94,26 +95,30 @@ static bool impl_authenticate_password(ov_ldap *self,
     ov_thread_message *msg = NULL;
 
     Ldap *ldap = AS_DEFAULT_LDAP(self);
-    if (!ldap || !user || !password || !uuid) goto error;
+    if (!ldap || !user || !password || !uuid)
+        goto error;
 
     out = ov_event_api_message_create(OV_EVENT_API_AUTHENTICATE, uuid, 0);
 
     par = ov_event_api_set_parameter(out);
 
     val = ov_json_string(user);
-    if (!ov_json_object_set(par, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_NAME, val))
+        goto error;
 
     val = ov_json_string(password);
-    if (!ov_json_object_set(par, OV_KEY_PASSWORD, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_PASSWORD, val))
+        goto error;
 
     val = NULL;
 
     msg = ov_thread_message_standard_create(OV_GENERIC_MESSAGE, out);
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
-    if (!ov_thread_loop_send_message(
-            ldap->thread_loop, msg, OV_RECEIVER_THREAD))
+    if (!ov_thread_loop_send_message(ldap->thread_loop, msg,
+                                     OV_RECEIVER_THREAD))
         goto error;
 
     ov_ldap_auth_callback *cb = calloc(1, sizeof(ov_ldap_auth_callback));
@@ -147,7 +152,8 @@ static bool handle_thread_authenticate_request(ov_thread_loop *loop,
     LDAPMessage *res = NULL;
     int err = 0;
 
-    if (!loop || !msg) goto error;
+    if (!loop || !msg)
+        goto error;
 
     ov_ldap *ldap = ov_ldap_cast(ov_thread_loop_get_data(loop));
     OV_ASSERT(ldap);
@@ -221,17 +227,17 @@ static bool handle_thread_authenticate_request(ov_thread_loop *loop,
     err = ldap_result(ld, msgid, 0, &nettime, &res);
 
     switch (err) {
-        case -1:
-            ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
-            // fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
-            goto error_response;
+    case -1:
+        ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
+        // fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
+        goto error_response;
 
-        case 0:
-            // fprintf(stderr, "ldap_result(): timeout expired\n");
-            ldap_abandon_ext(ld, msgid, NULL, NULL);
-            goto error_response;
-        default:
-            break;
+    case 0:
+        // fprintf(stderr, "ldap_result(): timeout expired\n");
+        ldap_abandon_ext(ld, msgid, NULL, NULL);
+        goto error_response;
+    default:
+        break;
     };
 
     char *matched = NULL;
@@ -262,7 +268,8 @@ done:
     ldap_unbind_ext_s(ld, NULL, NULL);
     return true;
 error:
-    if (ld) ldap_unbind_ext_s(ld, NULL, NULL);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
 
     ov_thread_message_free(msg);
     return false;
@@ -273,7 +280,8 @@ error:
 static bool handle_thread_message(ov_thread_loop *loop,
                                   ov_thread_message *msg) {
 
-    if (!loop || !msg) goto error;
+    if (!loop || !msg)
+        goto error;
 
     if (ov_event_api_event_is(msg->json_message, OV_EVENT_API_AUTHENTICATE))
         return handle_thread_authenticate_request(loop, msg);
@@ -298,7 +306,8 @@ static bool handle_loop_authenticate_request(ov_thread_loop *loop,
                                              ov_thread_message *msg) {
 
     ov_ldap_auth_callback *cb = NULL;
-    if (!loop || !msg) goto error;
+    if (!loop || !msg)
+        goto error;
 
     Ldap *ldap = AS_DEFAULT_LDAP(ov_thread_loop_get_data(loop));
     OV_ASSERT(ldap);
@@ -307,19 +316,20 @@ static bool handle_loop_authenticate_request(ov_thread_loop *loop,
     OV_ASSERT(uuid);
 
     cb = ov_dict_remove(ldap->store, uuid);
-    if (!cb->userdata || !cb->callback) goto error;
+    if (!cb->userdata || !cb->callback)
+        goto error;
 
     int err = ov_event_api_get_error_code(msg->json_message);
 
     switch (err) {
 
-        case 0:
-            cb->callback(cb->userdata, uuid, OV_LDAP_AUTH_GRANTED);
-            break;
+    case 0:
+        cb->callback(cb->userdata, uuid, OV_LDAP_AUTH_GRANTED);
+        break;
 
-        default:
-            cb->callback(cb->userdata, uuid, OV_LDAP_AUTH_REJECTED);
-            break;
+    default:
+        cb->callback(cb->userdata, uuid, OV_LDAP_AUTH_REJECTED);
+        break;
     }
 
     cb = ov_data_pointer_free(cb);
@@ -335,7 +345,8 @@ error:
 
 static bool handle_loop_message(ov_thread_loop *loop, ov_thread_message *msg) {
 
-    if (!loop || !msg) goto error;
+    if (!loop || !msg)
+        goto error;
 
     if (ov_event_api_event_is(msg->json_message, OV_EVENT_API_AUTHENTICATE))
         return handle_loop_authenticate_request(loop, msg);
@@ -350,9 +361,11 @@ error:
 static bool impl_ldap_reconfigure(ov_ldap *self, ov_ldap_config config) {
 
     Ldap *ldap = AS_DEFAULT_LDAP(self);
-    if (!ldap) goto error;
+    if (!ldap)
+        goto error;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
 
     if (0 == config.timeout.network_timeout_usec)
         config.timeout.network_timeout_usec =
@@ -369,12 +382,14 @@ static bool impl_ldap_reconfigure(ov_ldap *self, ov_ldap_config config) {
     if (0 == config.threads.num_threads)
         config.threads.num_threads = OV_LDAP_DEFAULT_THREADS;
 
-    if (!ov_thread_loop_stop_threads(ldap->thread_loop)) goto error;
+    if (!ov_thread_loop_stop_threads(ldap->thread_loop))
+        goto error;
 
     if (!ov_thread_loop_reconfigure(ldap->thread_loop, config.threads))
         goto error;
 
-    if (!ov_thread_loop_start_threads(ldap->thread_loop)) goto error;
+    if (!ov_thread_loop_start_threads(ldap->thread_loop))
+        goto error;
 
     ldap->public.config = config;
 
@@ -389,7 +404,8 @@ ov_ldap *ov_ldap_create(ov_ldap_config config) {
 
     Ldap *ldap = NULL;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
 
     if (0 == config.timeout.network_timeout_usec)
         config.timeout.network_timeout_usec =
@@ -407,7 +423,8 @@ ov_ldap *ov_ldap_create(ov_ldap_config config) {
         config.threads.num_threads = OV_LDAP_DEFAULT_THREADS;
 
     ldap = calloc(1, sizeof(Ldap));
-    if (!ldap) goto error;
+    if (!ldap)
+        goto error;
 
     ldap->public.magic_byte = OV_LDAP_MAGIC_BYTE;
     ldap->public.type = IMPL_DEFAULT_TYPE;
@@ -422,7 +439,8 @@ ov_ldap *ov_ldap_create(ov_ldap_config config) {
     d_config.value.data_function.free = ov_data_pointer_free;
 
     ldap->store = ov_dict_create(d_config);
-    if (!ldap->store) goto error;
+    if (!ldap->store)
+        goto error;
 
     ldap->thread_loop = ov_thread_loop_create(
         config.loop,
@@ -431,12 +449,14 @@ ov_ldap *ov_ldap_create(ov_ldap_config config) {
             .handle_message_in_loop = handle_loop_message},
         ldap);
 
-    if (!ldap->thread_loop) goto error;
+    if (!ldap->thread_loop)
+        goto error;
 
     if (!ov_thread_loop_reconfigure(ldap->thread_loop, config.threads))
         goto error;
 
-    if (!ov_thread_loop_start_threads(ldap->thread_loop)) goto error;
+    if (!ov_thread_loop_start_threads(ldap->thread_loop))
+        goto error;
 
     return ov_ldap_cast(ldap);
 error:
@@ -448,20 +468,20 @@ error:
 
 ov_ldap *ov_ldap_free(ov_ldap *self) {
 
-    if (!self || !self->free) return self;
+    if (!self || !self->free)
+        return self;
 
     return self->free(self);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_ldap_authenticate_password(ov_ldap *self,
-                                   const char *user,
-                                   const char *password,
-                                   const char *uuid,
+bool ov_ldap_authenticate_password(ov_ldap *self, const char *user,
+                                   const char *password, const char *uuid,
                                    ov_ldap_auth_callback callback) {
 
-    if (!self || !self->authenticate.password) return false;
+    if (!self || !self->authenticate.password)
+        return false;
 
     return self->authenticate.password(self, user, password, uuid, callback);
 }
@@ -470,7 +490,8 @@ bool ov_ldap_authenticate_password(ov_ldap *self,
 
 bool ov_ldap_reconfigure(ov_ldap *self, ov_ldap_config config) {
 
-    if (!self || !self->reconfigure) return false;
+    if (!self || !self->reconfigure)
+        return false;
 
     return self->reconfigure(self, config);
 }
@@ -482,18 +503,22 @@ ov_ldap_config ov_ldap_config_from_json(const ov_json_value *val) {
     ov_ldap_config config = {0};
 
     const ov_json_value *conf = ov_json_object_get(val, OV_KEY_LDAP);
-    if (!conf) conf = val;
+    if (!conf)
+        conf = val;
 
-    if (!conf) goto error;
+    if (!conf)
+        goto error;
 
     ov_json_value *threads = ov_json_object_get(conf, OV_KEY_THREADS);
     config.threads = ov_thread_loop_config_from_json(threads);
 
     const char *str = ov_json_string_get(ov_json_get(conf, "/" OV_KEY_HOST));
-    if (str) strncpy(config.host, str, OV_HOST_NAME_MAX);
+    if (str)
+        strncpy(config.host, str, OV_HOST_NAME_MAX);
 
     str = ov_json_string_get(ov_json_get(conf, "/" OV_KEY_USER_DN_TREE));
-    if (str) strncpy(config.user_dn_tree, str, OV_LDAP_USER_DN_TREE);
+    if (str)
+        strncpy(config.user_dn_tree, str, OV_LDAP_USER_DN_TREE);
 
     config.timeout.network_timeout_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_TIMEOUT "/" OV_KEY_NETWORK));

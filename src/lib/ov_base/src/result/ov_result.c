@@ -36,7 +36,8 @@
 
 bool ov_result_set(ov_result *result, int error_code, char const *message) {
 
-    if (0 == result) goto error;
+    if (0 == result)
+        goto error;
 
     if ((OV_ERROR_NOERROR == error_code) && (0 != message)) {
         goto error;
@@ -79,7 +80,8 @@ char const *ov_result_get_message(ov_result const result) {
 
 bool ov_result_clear(ov_result *result) {
 
-    if (0 == result) goto error;
+    if (0 == result)
+        goto error;
 
     if (0 != result->message) {
 

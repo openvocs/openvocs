@@ -72,9 +72,9 @@
 
 #include <ov_base/ov_registered_cache.h>
 
-#include "ov_signaling_app.h"
 #include <ov_base/ov_rtcp.h>
 #include <ov_base/ov_rtp_frame.h>
+#include <ov_base/ov_socket.h>
 
 /*----------------------------------------------------------------------------*/
 
@@ -101,8 +101,14 @@ typedef enum {
 
 /*----------------------------------------------------------------------------*/
 
-ProcessResult ov_minion_app_process_cmdline(int argc,
-                                            char **argv,
+ProcessResult ov_minion_app_process_cmdline_optargs(int argc, char **argv,
+                                                    char const *app_name,
+                                                    ov_json_value **loaded_json,
+                                                    char const *optargs);
+
+/*----------------------------------------------------------------------------*/
+
+ProcessResult ov_minion_app_process_cmdline(int argc, char **argv,
                                             char const *app_name,
                                             ov_json_value **loaded_json);
 

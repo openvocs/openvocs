@@ -88,8 +88,12 @@ export function add_loop(id, data, roles_data) {
         for (let entry of data.sip.whitelist)
             loop.add_whitelist_entry(entry.caller, entry.callee);
 
-    for (let role_id of Object.keys(data.roles))
-        loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, roles_data[role_id].name);
+    for (let role_id of Object.keys(data.roles)) {
+        if (roles_data[role_id])
+            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, roles_data[role_id].name);
+        else
+            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, role_id, true);
+    }
 
     loop.addEventListener("click", () => {
         this.select_loop(loop);
@@ -106,7 +110,7 @@ export function clear_loops() {
 function get_current_loop() {
     let loops = document.querySelectorAll("ov-sip-config-loop");
     for (let element of loops) {
-        if (element.disabled)
+        if (element.selected)
             return element;
     }
 }
@@ -121,9 +125,9 @@ function save_settings_of_current_loop() {
 
         for (let role of DOM.roles.children) {
             if (role.value !== "none")
-                loop.add_role(role.id, role.value === "callout", role.name);
+                loop.add_role(role.id, role.value === "callout", role.name, role.hidden);
             else
-                loop.add_role(role.id, undefined, role.name);
+                loop.add_role(role.id, undefined, role.name, role.hidden);
         }
     }
     return loop;
@@ -132,9 +136,10 @@ function save_settings_of_current_loop() {
 export function select_loop(loop) {
     let prev_loop = save_settings_of_current_loop();
     if (prev_loop)
-        prev_loop.disabled = false;
+        prev_loop.selected = false;
 
-    loop.disabled = true;
+    loop.selected = true;
+    DOM.add_whitelist.disabled = loop.disabled;
 
     DOM.whitelist.replaceChildren();
     for (let entry of loop.whitelist) {
@@ -143,6 +148,8 @@ export function select_loop(loop) {
 
         element.callee = entry.callee;
         element.caller = entry.caller;
+        if (loop.disabled)
+            element.disabled = true;
 
         element.addEventListener("delete_entry", () => {
             DOM.whitelist.removeChild(element);
@@ -156,7 +163,11 @@ export function select_loop(loop) {
         DOM.roles.appendChild(element);
 
         element.id = role_id;
-        element.name = loop.roles[role_id].name ? loop.roles[role_id].name : role_id;
+        element.name = loop.roles[role_id].name;
+        if (loop.roles[role_id].hidden)
+            element.hidden = true;
+        else if (loop.disabled)
+            element.disabled = true;
 
         let value = "none";
         if (loop.roles[role_id].value === true)

@@ -45,39 +45,13 @@ static const uint32_t ref_flow_label = 0xcba98;
 static const uint8_t ref_next_header = 0x06;
 static const uint8_t ref_hop_limit = 0x02;
 
-static const uint8_t ref_src_address[] = {'0',
-                                          '1',
-                                          '2',
-                                          '3',
-                                          '4',
-                                          '5',
-                                          '6',
-                                          '7',
-                                          '8',
-                                          '9',
-                                          'a',
-                                          'b',
-                                          'c',
-                                          'd',
-                                          'e',
-                                          'f'};
+static const uint8_t ref_src_address[] = {'0', '1', '2', '3', '4', '5',
+                                          '6', '7', '8', '9', 'a', 'b',
+                                          'c', 'd', 'e', 'f'};
 
-static const uint8_t ref_dst_address[] = {'f',
-                                          '2',
-                                          'e',
-                                          '4',
-                                          'd',
-                                          '6',
-                                          'c',
-                                          '8',
-                                          'b',
-                                          '1',
-                                          'a',
-                                          '3',
-                                          '9',
-                                          '5',
-                                          '7',
-                                          '0'};
+static const uint8_t ref_dst_address[] = {'f', '2', 'e', '4', 'd', '6',
+                                          'c', '8', 'b', '1', 'a', '3',
+                                          '9', '5', '7', '0'};
 
 static unsigned char ref_ipv6_frame_payload[] = {
     0x6a, // Version & traffic class
@@ -89,45 +63,13 @@ static unsigned char ref_ipv6_frame_payload[] = {
     0x06, // Next header (TCP)
     0x02, // HOP limit
           // SRC IP
-    '0',
-    '1',
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    'a',
-    'b',
-    'c',
-    'd',
-    'e',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e',
     'f',
     // DST IP
-    'f',
-    '2',
-    'e',
-    '4',
-    'd',
-    '6',
-    'c',
-    '8',
-    'b',
-    '1',
-    'a',
-    '3',
-    '9',
-    '5',
-    '7',
+    'f', '2', 'e', '4', 'd', '6', 'c', '8', 'b', '1', 'a', '3', '9', '5', '7',
     '0',
     // Payload
-    'a',
-    'b',
-    'c',
-    'd',
-    'e'};
+    'a', 'b', 'c', 'd', 'e'};
 
 static const uint8_t *ref_payload =
     ref_ipv6_frame_payload + sizeof(ref_ipv6_frame_payload) - 5;
@@ -150,9 +92,7 @@ static void print_header(FILE *out, ov_format *fmt) {
         return;
     }
 
-    fprintf(out,
-            "%" PRIu32 ".%" PRIu32 " - ",
-            pcap_hdr.timestamp_secs,
+    fprintf(out, "%" PRIu32 ".%" PRIu32 " - ", pcap_hdr.timestamp_secs,
             pcap_hdr.timestamp_usecs);
 
     ov_format const *ipv6 = ov_format_get(fmt, "ipv6");
@@ -167,14 +107,11 @@ static void print_header(FILE *out, ov_format *fmt) {
 
     fprintf(out,
             "SRC IP: %s  DST IP: %s    "
-            "Payload Length: %" PRIu32 " next_header %" PRIu8
-            "   hop limit: "
+            "Payload Length: %" PRIu32 " next_header %" PRIu8 "   hop limit: "
             "%" PRIu8 "\n",
             ov_format_ipv6_ip_to_string(ipv6_hdr.src_ip, 0, 0),
             ov_format_ipv6_ip_to_string(ipv6_hdr.dst_ip, 0, 0),
-            ipv6_hdr.payload_length,
-            ipv6_hdr.next_header,
-            ipv6_hdr.hop_limit);
+            ipv6_hdr.payload_length, ipv6_hdr.next_header, ipv6_hdr.hop_limit);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -290,7 +227,8 @@ static int test_impl_next_chunk() {
 
         ++total_num_packets;
 
-        if (0 == payload.start) continue;
+        if (0 == payload.start)
+            continue;
 
         ov_format_ipv6_header hdr = {0};
 
@@ -306,8 +244,7 @@ static int test_impl_next_chunk() {
 
     ipv6_fmt = ov_format_close(ipv6_fmt);
 
-    testrun_log("Read %zu packets, %zu valid ipv6 packets\n",
-                total_num_packets,
+    testrun_log("Read %zu packets, %zu valid ipv6 packets\n", total_num_packets,
                 valid_ipv6_packets);
 
     testrun(ref_num_valid_ipv6_packets == valid_ipv6_packets);
@@ -339,7 +276,5 @@ static int test_ov_format_ipv6_get_header() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_ipv6",
-            test_ov_format_ipv6_install,
-            test_impl_next_chunk,
+OV_TEST_RUN("ov_format_ipv6", test_ov_format_ipv6_install, test_impl_next_chunk,
             test_ov_format_ipv6_get_header);

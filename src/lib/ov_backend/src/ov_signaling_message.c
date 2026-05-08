@@ -55,8 +55,8 @@ ov_json_value *ov_signaling_message_register(ov_app *app) {
         goto error;
     }
 
-    if (!ov_json_object_set(
-            params, OV_KEY_TYPE, ov_json_string(app->config.name))) {
+    if (!ov_json_object_set(params, OV_KEY_TYPE,
+                            ov_json_string(app->config.name))) {
 
         ov_log_error("Could not set service type");
         goto error;

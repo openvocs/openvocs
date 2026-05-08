@@ -100,23 +100,27 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
 
         this.#dom.phoneNumberField.addEventListener("click", (e) => {
             this.#current_pointer_pos = e.target.selectionStart;
-            this.#keyboard.setCaretPosition(e.target.selectionStart);
+            if (this.#keyboard)
+                this.#keyboard.setCaretPosition(e.target.selectionStart);
         });
 
-        let Keyboard = window.SimpleKeyboard.default;
+        if (SCREEN_KEYBOARD && window.SimpleKeyboard && matchMedia("(width > 480px)").matches) {
+            let Keyboard = window.SimpleKeyboard.default;
 
-        this.#keyboard = new Keyboard(dialButtons, {
-            onChange: input => this.#on_change(input),
-            onKeyPress: button => this.#on_key_press(button),
-            layout: {
-                default: ["1 2 3", "4 5 6", "7 8 9", "+ 0 {bksp}"]
-            },
-            theme: "hg-theme-default ov_sip_keyboard numeric-theme",
-            display: {
-                "{bksp}": '<img src="/images/fluent-ui-system-icons/backspace.svg">'
-            },
-            preventMouseDownDefault: false
-        });
+            this.#keyboard = new Keyboard(dialButtons, {
+                onChange: input => this.#on_change(input),
+                onKeyPress: button => this.#on_key_press(button),
+                layout: {
+                    default: ["1 2 3", "4 5 6", "7 8 9", "+ 0 {bksp}"]
+                },
+                theme: "hg-theme-default ov_sip_keyboard numeric-theme",
+                display: {
+                    "{bksp}": '<img src="/images/fluent-ui-system-icons/backspace.svg">'
+                },
+                preventMouseDownDefault: false
+            });
+        }
+
     }
 
     #on_change(input) {
@@ -135,7 +139,11 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
 
     clear_number() {
         this.#dom.phoneNumberField.value = "";
-        this.#keyboard.clearInput();
+        this.#current_pointer_pos = 0;
+        if (this.#keyboard){
+            this.#keyboard.clearInput();
+            this.#keyboard.setCaretPosition(this.#current_pointer_pos);
+        }
     }
 
     async #render() {

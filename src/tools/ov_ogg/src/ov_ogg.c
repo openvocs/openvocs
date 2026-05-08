@@ -57,10 +57,9 @@ _Noreturn static void usage(char const *cmd) {
             "      -O   Read as OGG Opus instead of plain OGG\n\n\n",
             cmd);
 
-    fprintf(stderr,
-            "\n"
-            "\n"
-            "\n");
+    fprintf(stderr, "\n"
+                    "\n"
+                    "\n");
 
     exit(EXIT_FAILURE);
 }
@@ -91,29 +90,26 @@ static bool process_ogg(ov_format *ogg, ov_format *out) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_format *create_format(char const *fpath,
-                                bool opus,
+static ov_format *create_format(char const *fpath, bool opus,
                                 ov_format_mode mode) {
 
     ov_format *format = 0;
 
     if (0 != fpath) {
 
-        format = ov_format_as(
-            ov_format_open(fpath, mode), OV_FORMAT_OGG_TYPE_STRING, 0, 0);
+        format = ov_format_as(ov_format_open(fpath, mode),
+                              OV_FORMAT_OGG_TYPE_STRING, 0, 0);
 
         if (opus) {
 
-            fprintf(stdout,
-                    "Accessing %s as OGG OPUS\n",
+            fprintf(stdout, "Accessing %s as OGG OPUS\n",
                     ov_string_sanitize(fpath));
 
             format = ov_format_as(format, OV_FORMAT_OGG_OPUS_TYPE_STRING, 0, 0);
 
         } else {
 
-            fprintf(stdout,
-                    "Accessing %s as plain OGG\n",
+            fprintf(stdout, "Accessing %s as plain OGG\n",
                     ov_string_sanitize(fpath));
         }
     }
@@ -144,9 +140,9 @@ configuration parse_arguments(int argc, char const **argv) {
 
         switch (c) {
 
-            case 'O':
-                args.opus = true;
-                break;
+        case 'O':
+            args.opus = true;
+            break;
         };
     };
 

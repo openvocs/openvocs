@@ -97,8 +97,7 @@ int64_t ov_json_parser_encode(const ov_json_value *value,
                               const ov_json_stringify_config *stringify,
                               bool (*collocation)(const char *key,
                                                   ov_list *list),
-                              char *buffer,
-                              size_t size);
+                              char *buffer, size_t size);
 
 /*----------------------------------------------------------------------------*/
 

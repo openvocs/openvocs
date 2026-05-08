@@ -44,9 +44,8 @@ extern ov_event_loop *(*event_loop_creator)(ov_event_loop_config config);
                                                                                \
         event_loop_creator = create;                                           \
                                                                                \
-        testrun_log(                                                           \
-            "test_interface will run for several seconds "                     \
-            "!!!");                                                            \
+        testrun_log("test_interface will run for several seconds "             \
+                    "!!!");                                                    \
         testrun_test(test_impl_event_loop_free);                               \
         testrun_test(test_impl_event_loop_is_running);                         \
         testrun_test(test_impl_event_loop_stop);                               \

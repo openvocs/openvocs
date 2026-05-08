@@ -29,6 +29,7 @@
 */
 //import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_Monitor from "/lib/ov_monitor.js";
 import ov_Domain from "/lib/ov_object_model/ov_domain_model.js";
 import ov_Domain_Map from "/lib/ov_data_structure/ov_domain_map.js";
 import ov_Project from "/lib/ov_object_model/ov_project_model.js";
@@ -48,6 +49,8 @@ const DOM = {
 
 var VIEW_ID;
 
+var selected_server;
+
 export var logout_triggered;
 
 export async function init(view_id) {
@@ -64,6 +67,14 @@ export async function init(view_id) {
     DOM.logout_button = document.getElementById("logout_button");
     DOM.loading_screen = document.getElementById("loading_screen");
 
+    DOM.loading_screen.addEventListener("loading_button_clicked", () => {
+        DOM.menu_slider.toggle();
+    });
+
+    DOM.reload_broadcast = document.getElementById("reload_broadcast");
+    DOM.switch_server_id = document.getElementById("switch_server_id");
+    DOM.switch_server_broadcast = document.getElementById("switch_server_broadcast");
+
     DOM.TEMPLATE = {
         domain: document.getElementById("domain_template")
     };
@@ -72,7 +83,7 @@ export async function init(view_id) {
 
     DOM.add_domain_button.addEventListener("click", () => {
         DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-            detail: { origin: VIEW_ID, target: "domain", domain: undefined }
+            detail: { origin: VIEW_ID, target: VIEW_ID.CONFIG, type:"domain", domain: undefined }
         }));
     });
 
@@ -83,6 +94,41 @@ export async function init(view_id) {
     DOM.logout_button.addEventListener("click", () => {
         logout_triggered = true;
         ov_Auth.logout();
+    });
+
+    DOM.reload_broadcast.addEventListener("click", () => {
+        DOM.loading_screen.show("Sending update broadcast...");
+        for (let ws of ov_Websockets.list)
+            ov_Monitor.broadcast_update(ws);
+        DOM.loading_screen.delayed_hide();
+    });
+    DOM.switch_server_broadcast.disabled = true;
+    DOM.switch_server_broadcast.addEventListener("click", () => {
+        DOM.loading_screen.show("Sending switch server broadcast...");
+        for (let ws of ov_Websockets.list)
+            ov_Monitor.broadcast_switch_server(selected_server.server_url, ws);
+        DOM.loading_screen.delayed_hide();
+    });
+
+    for (let server of ov_Websockets.list) {
+        let option = document.createElement("option");
+        option.value = server.server_url;
+        option.innerText = server.server_name;
+
+        DOM.switch_server_id.appendChild(option);
+        setInterval(() => {
+            option.classList.toggle("off", !server.is_ready);
+        }, 500);
+    }
+
+    DOM.switch_server_id.addEventListener("change", () => {
+        selected_server = ov_Websockets.get_websocket(DOM.switch_server_id.value);
+        if (DOM.switch_server_broadcast.disabled === true) {
+            DOM.switch_server_broadcast.disabled = false;
+            setInterval(() => {
+                DOM.switch_server_id.classList.toggle("off", !selected_server.is_ready);
+            }, 500);
+        }
     });
 }
 
@@ -103,14 +149,14 @@ export function draw(user) {
             }
             projects_element.addEventListener("change", (event) => {
                 DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                    detail: { origin: VIEW_ID, target: "project", project: event.target.value, "domain": domain.id }
+                    detail: { origin: VIEW_ID, target: VIEW.CONFIG, type: "project", project: event.target.value, domain: domain.id }
                 }));
             });
         }
 
         domain_element.querySelector(".add_project").addEventListener("click", () => {
             DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: VIEW_ID, target: "project", project: undefined, "domain": domain.id }
+                detail: { origin: VIEW_ID, target: VIEW.CONFIG, type: "project", project: undefined, domain: domain.id }
             }));
         });
     }
@@ -143,7 +189,7 @@ function add_domain(id, name, value) {
     domain_item.querySelector(".domain_settings_button").addEventListener("click", () => {
         ov_Websockets.user().domain = value;
         DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-            detail: { origin: VIEW_ID, target: "domain", domain: value }
+            detail: { origin: VIEW_ID, target: VIEW.CONFIG, type: "domain", domain: value }
         }));
     });
     DOM.domains.appendChild(domain_item);

@@ -40,9 +40,11 @@ bool ov_dump_binary_as_hex(FILE *stream, uint8_t *binary, uint64_t length) {
 
     uint64_t i = 0;
 
-    if ((!binary) || (!length)) goto error;
+    if ((!binary) || (!length))
+        goto error;
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     for (i = 0; i < length; i++) {
         fprintf(stream, " %02x", binary[i]);
@@ -58,7 +60,8 @@ error:
 
 bool ov_dump_socket_addrinfo(FILE *stream, struct addrinfo *info) {
 
-    if (!stream || !info) goto error;
+    if (!stream || !info)
+        goto error;
 
     if (!fprintf(stream,
                  "flags          %i\n"
@@ -68,18 +71,16 @@ bool ov_dump_socket_addrinfo(FILE *stream, struct addrinfo *info) {
                  "sock_addr_len  %i\n"
                  "canonname      %s\n"
                  "next           %p\n",
-                 info->ai_flags,
-                 info->ai_family,
-                 info->ai_socktype,
-                 info->ai_protocol,
-                 info->ai_addrlen,
-                 info->ai_canonname,
+                 info->ai_flags, info->ai_family, info->ai_socktype,
+                 info->ai_protocol, info->ai_addrlen, info->ai_canonname,
                  info->ai_next))
         goto error;
 
-    if (info->ai_addr) return ov_dump_socket_sockaddr(stream, info->ai_addr);
+    if (info->ai_addr)
+        return ov_dump_socket_sockaddr(stream, info->ai_addr);
 
-    if (fprintf(stream, "ai_addr          (null)\n")) return true;
+    if (fprintf(stream, "ai_addr          (null)\n"))
+        return true;
 
 error:
     return false;
@@ -89,7 +90,8 @@ error:
 
 bool ov_dump_socket_sockaddr(FILE *stream, struct sockaddr *addr) {
 
-    if (!stream || !addr) goto error;
+    if (!stream || !addr)
+        goto error;
 
     if (addr->sa_family == AF_INET) {
 
@@ -109,7 +111,8 @@ error:
 bool ov_dump_socket_sockaddr_storage(FILE *stream,
                                      struct sockaddr_storage *addr) {
 
-    if (!stream || !addr) goto error;
+    if (!stream || !addr)
+        goto error;
 
     if (addr->ss_family == AF_INET) {
 
@@ -128,7 +131,8 @@ error:
 
 bool ov_dump_socket_sockaddr_in(FILE *stream, struct sockaddr_in *addr) {
 
-    if (!stream || !addr) goto error;
+    if (!stream || !addr)
+        goto error;
 
     char dest[INET6_ADDRSTRLEN] = {0};
 
@@ -139,9 +143,7 @@ bool ov_dump_socket_sockaddr_in(FILE *stream, struct sockaddr_in *addr) {
                  "sin_family     %i\n"
                  "sin_port       %hu\n"
                  "IP             %s\n",
-                 addr->sin_family,
-                 ntohs(addr->sin_port),
-                 dest))
+                 addr->sin_family, ntohs(addr->sin_port), dest))
         goto error;
 
     return true;
@@ -153,7 +155,8 @@ error:
 
 bool ov_dump_socket_sockaddr_in6(FILE *stream, struct sockaddr_in6 *addr) {
 
-    if (!stream || !addr) goto error;
+    if (!stream || !addr)
+        goto error;
 
     char dest[INET6_ADDRSTRLEN] = {0};
 
@@ -166,11 +169,8 @@ bool ov_dump_socket_sockaddr_in6(FILE *stream, struct sockaddr_in6 *addr) {
                  "sin6_flowinfo  %u\n"
                  "sin6_scope_id  %u\n"
                  "IP             %s\n",
-                 addr->sin6_family,
-                 ntohs(addr->sin6_port),
-                 addr->sin6_flowinfo,
-                 addr->sin6_scope_id,
-                 dest))
+                 addr->sin6_family, ntohs(addr->sin6_port), addr->sin6_flowinfo,
+                 addr->sin6_scope_id, dest))
         goto error;
 
     return true;

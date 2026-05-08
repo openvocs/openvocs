@@ -43,8 +43,7 @@ static DestructorEntry *g_destructors = 0;
 
 /*----------------------------------------------------------------------------*/
 
-DestructorEntry *destructor_entry(void (*destructor)(void),
-                                  char const *name,
+DestructorEntry *destructor_entry(void (*destructor)(void), char const *name,
                                   DestructorEntry *next) {
 
     DestructorEntry *entry = calloc(1, sizeof(DestructorEntry));

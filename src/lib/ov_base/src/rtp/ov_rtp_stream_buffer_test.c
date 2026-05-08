@@ -33,8 +33,7 @@
                                     HELPERS
  ****************************************************************************/
 
-static ov_rtp_frame *make_frame(uint32_t ssrc,
-                                uint32_t seq,
+static ov_rtp_frame *make_frame(uint32_t ssrc, uint32_t seq,
                                 uint32_t timestamp) {
 
     ov_rtp_frame_expansion ref = {
@@ -93,8 +92,8 @@ int test_ov_rtp_stream_buffer_free() {
 
 int test_ov_rtp_stream_buffer_accept() {
 
-    bool ov_rtp_stream_buffer_accept(
-        ov_rtp_stream_buffer * self, uint32_t lower, uint32_t upper);
+    bool ov_rtp_stream_buffer_accept(ov_rtp_stream_buffer * self,
+                                     uint32_t lower, uint32_t upper);
 
     testrun(!ov_rtp_stream_buffer_accept(0, 0, 0));
 
@@ -333,10 +332,8 @@ static bool frame_equals(ov_rtp_frame const *frame, uint16_t seq_expected) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool cannot_insert_frame(ov_rtp_stream_buffer *buffer,
-                                uint32_t ssrc,
-                                uint32_t seq,
-                                uint32_t timestamp) {
+static bool cannot_insert_frame(ov_rtp_stream_buffer *buffer, uint32_t ssrc,
+                                uint32_t seq, uint32_t timestamp) {
 
     ov_rtp_frame *frame = make_frame(ssrc, seq, timestamp);
 
@@ -482,10 +479,7 @@ int test_ov_rtp_stream_buffer_print() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_rtp_stream_buffer",
-            test_ov_rtp_stream_buffer_create,
-            test_ov_rtp_stream_buffer_free,
-            test_ov_rtp_stream_buffer_accept,
-            test_ov_rtp_stream_buffer_put,
-            test_ov_rtp_stream_buffer_get,
+OV_TEST_RUN("ov_rtp_stream_buffer", test_ov_rtp_stream_buffer_create,
+            test_ov_rtp_stream_buffer_free, test_ov_rtp_stream_buffer_accept,
+            test_ov_rtp_stream_buffer_put, test_ov_rtp_stream_buffer_get,
             test_ov_rtp_stream_buffer_print);

@@ -73,14 +73,14 @@ ov_alsa_mode stream_mode_to_alsa_mode(snd_pcm_stream_t mode) {
 
     switch (mode) {
 
-        case SND_PCM_STREAM_PLAYBACK:
-            return PLAYBACK;
+    case SND_PCM_STREAM_PLAYBACK:
+        return PLAYBACK;
 
-        case SND_PCM_STREAM_CAPTURE:
-            return CAPTURE;
+    case SND_PCM_STREAM_CAPTURE:
+        return CAPTURE;
 
-        default:
-            return PLAYBACK;
+    default:
+        return PLAYBACK;
     };
 }
 
@@ -90,23 +90,23 @@ static char const *access_mode_to_string(snd_pcm_access_t mode) {
 
     switch (mode) {
 
-        case SND_PCM_ACCESS_MMAP_INTERLEAVED:
-            return "MMAP_INTERLEAVED";
+    case SND_PCM_ACCESS_MMAP_INTERLEAVED:
+        return "MMAP_INTERLEAVED";
 
-        case SND_PCM_ACCESS_MMAP_NONINTERLEAVED:
-            return "MMAP_NONINTERLEAVED";
+    case SND_PCM_ACCESS_MMAP_NONINTERLEAVED:
+        return "MMAP_NONINTERLEAVED";
 
-        case SND_PCM_ACCESS_MMAP_COMPLEX:
-            return "MMAP_COMPLEX";
+    case SND_PCM_ACCESS_MMAP_COMPLEX:
+        return "MMAP_COMPLEX";
 
-        case SND_PCM_ACCESS_RW_INTERLEAVED:
-            return "RW_INTERLEAVED";
+    case SND_PCM_ACCESS_RW_INTERLEAVED:
+        return "RW_INTERLEAVED";
 
-        case SND_PCM_ACCESS_RW_NONINTERLEAVED:
-            return "RW_NONINTERLEAVED";
+    case SND_PCM_ACCESS_RW_NONINTERLEAVED:
+        return "RW_NONINTERLEAVED";
 
-        default:
-            return 0;
+    default:
+        return 0;
     };
 }
 
@@ -116,14 +116,14 @@ static char const *stream_mode_to_string(snd_pcm_stream_t mode) {
 
     switch (mode) {
 
-        case SND_PCM_STREAM_CAPTURE:
-            return "capture";
+    case SND_PCM_STREAM_CAPTURE:
+        return "capture";
 
-        case SND_PCM_STREAM_PLAYBACK:
-            return "playback";
+    case SND_PCM_STREAM_PLAYBACK:
+        return "playback";
 
-        default:
-            return 0;
+    default:
+        return 0;
     };
 }
 
@@ -217,54 +217,54 @@ static options get_options(int argc, char *const argv[]) {
 
         switch (c) {
 
-            case 'h':
-                opts.help = true;
-                break;
+        case 'h':
+            opts.help = true;
+            break;
 
-            case 't':
-                opts.try = true;
-                opts.setvolume = false;
-                opts.list = false;
-                break;
+        case 't':
+            opts.try = true;
+            opts.setvolume = false;
+            opts.list = false;
+            break;
 
-            case 'v':
-                opts.try = false;
-                opts.setvolume = true;
-                opts.list = false;
-                opts.volume = strtod(optarg, 0);
-                break;
+        case 'v':
+            opts.try = false;
+            opts.setvolume = true;
+            opts.list = false;
+            opts.volume = strtod(optarg, 0);
+            break;
 
-            case 'd':
-                opts.device = optarg;
-                break;
+        case 'd':
+            opts.device = optarg;
+            break;
 
-            case 'e':
-                opts.element = optarg;
-                break;
+        case 'e':
+            opts.element = optarg;
+            break;
 
-            case 'l':
-                opts.list = true;
-                opts.setvolume = false;
-                break;
+        case 'l':
+            opts.list = true;
+            opts.setvolume = false;
+            break;
 
-            case 'a':
-                opts.access_mode = access_mode_from_string(optarg);
-                break;
+        case 'a':
+            opts.access_mode = access_mode_from_string(optarg);
+            break;
 
-            case 's':
-                opts.stream_mode = stream_mode_from_string(optarg);
-                break;
+        case 's':
+            opts.stream_mode = stream_mode_from_string(optarg);
+            break;
 
-            case 'n':
-                opts.nonblock = true;
-                break;
+        case 'n':
+            opts.nonblock = true;
+            break;
 
-            case 'c':
-                // Bad conversion!!!
-                opts.num_channels = atoi(optarg);
+        case 'c':
+            // Bad conversion!!!
+            opts.num_channels = atoi(optarg);
 
-            default:
-                break;
+        default:
+            break;
         };
     };
 
@@ -284,8 +284,7 @@ static bool list_alsa_devices() {
 static bool alsa_call(int alsa_retval, char const *message) {
 
     if (alsa_retval < 0) {
-        fprintf(stderr,
-                "%s (%s)\n",
+        fprintf(stderr, "%s (%s)\n",
                 OV_OR_DEFAULT(message, "Unknown ALSA error"),
                 snd_strerror(alsa_retval));
         return false;
@@ -319,14 +318,10 @@ static snd_pcm_t *snd_pcm_from_opts(options opts,
 
     int err = -1;
 
-    if ((err = snd_pcm_open(&apcm,
-                            opts.device,
-                            opts.stream_mode,
+    if ((err = snd_pcm_open(&apcm, opts.device, opts.stream_mode,
                             snd_pcm_mode_from_opts(opts))) < 0) {
 
-        fprintf(stderr,
-                "cannot open audio device %s (%s)\n",
-                opts.device,
+        fprintf(stderr, "cannot open audio device %s (%s)\n", opts.device,
                 snd_strerror(err));
         return 0;
 
@@ -337,26 +332,26 @@ static snd_pcm_t *snd_pcm_from_opts(options opts,
                          "cannot initialize hardware parameter structure") &&
 
                // Seems to work: SND_PCM_ACCESS_RW_INTERLEAVED
-               alsa_call(snd_pcm_hw_params_set_access(
-                             apcm, *params, opts.access_mode),
+               alsa_call(snd_pcm_hw_params_set_access(apcm, *params,
+                                                      opts.access_mode),
                          "cannot set access type") &&
 
-               alsa_call(snd_pcm_hw_params_set_channels(
-                             apcm, *params, opts.num_channels),
+               alsa_call(snd_pcm_hw_params_set_channels(apcm, *params,
+                                                        opts.num_channels),
                          "cannot set channel number") &&
 
-               alsa_call(snd_pcm_hw_params_set_format(
-                             apcm, *params, SND_PCM_FORMAT_S16_LE),
+               alsa_call(snd_pcm_hw_params_set_format(apcm, *params,
+                                                      SND_PCM_FORMAT_S16_LE),
                          "cannot set sample format") &&
 
-               alsa_call(snd_pcm_hw_params_set_rate_near(
-                             apcm, *params, &sample_rate, 0),
+               alsa_call(snd_pcm_hw_params_set_rate_near(apcm, *params,
+                                                         &sample_rate, 0),
                          "cannot set sample rate") &&
 
                // Set period size...
 
-               alsa_call(
-                   snd_pcm_hw_params(apcm, *params), "cannot set parameters")) {
+               alsa_call(snd_pcm_hw_params(apcm, *params),
+                         "cannot set parameters")) {
 
         printf("Successfully connected\n");
         return apcm;
@@ -385,14 +380,12 @@ static void print_stream_info(snd_pcm_t *handle, snd_pcm_hw_params_t *params) {
 
         snd_pcm_format_t format;
         snd_pcm_hw_params_get_format(params, &format);
-        printf("format = '%s' (%s)\n",
-               snd_pcm_format_name(format),
+        printf("format = '%s' (%s)\n", snd_pcm_format_name(format),
                snd_pcm_format_description(format));
 
         snd_pcm_subformat_t subformat;
         snd_pcm_hw_params_get_subformat(params, &subformat);
-        printf("subformat = '%s' (%s)\n",
-               snd_pcm_subformat_name(subformat),
+        printf("subformat = '%s' (%s)\n", snd_pcm_subformat_name(subformat),
                snd_pcm_subformat_description(subformat));
 
         unsigned val = 0;
@@ -528,36 +521,34 @@ static bool try_io_on_snd_pcm_with_buffer(snd_pcm_t *apcm,
 
         switch (mode) {
 
-            case SND_PCM_STREAM_PLAYBACK:
+        case SND_PCM_STREAM_PLAYBACK:
 
-                no_frames = snd_pcm_writen(apcm, (void **)&buffer, no_samples);
-                printf("Tried to write %zu frames. ", no_samples);
-                print_alsa_state(no_frames);
-                return true;
+            no_frames = snd_pcm_writen(apcm, (void **)&buffer, no_samples);
+            printf("Tried to write %zu frames. ", no_samples);
+            print_alsa_state(no_frames);
+            return true;
 
-            case SND_PCM_STREAM_CAPTURE:
+        case SND_PCM_STREAM_CAPTURE:
 
-                no_frames = snd_pcm_readi(apcm, (void *)buffer, no_samples);
-                printf("Tried to read %zu frames using readi ", no_samples);
-                print_alsa_state(no_frames);
+            no_frames = snd_pcm_readi(apcm, (void *)buffer, no_samples);
+            printf("Tried to read %zu frames using readi ", no_samples);
+            print_alsa_state(no_frames);
 
-                no_frames = snd_pcm_readn(apcm, (void *)buffer, no_samples);
-                printf("Tried to read %zu frames using readn ", no_samples);
-                print_alsa_state(no_frames);
-                return true;
+            no_frames = snd_pcm_readn(apcm, (void *)buffer, no_samples);
+            printf("Tried to read %zu frames using readn ", no_samples);
+            print_alsa_state(no_frames);
+            return true;
 
-            default:
-                fprintf(
-                    stderr, "Could not try IO on ALSA device: Invalid mode");
-                return false;
+        default:
+            fprintf(stderr, "Could not try IO on ALSA device: Invalid mode");
+            return false;
         };
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool try_io_on_snd_pcm(snd_pcm_t *apcm,
-                              snd_pcm_stream_t mode,
+static bool try_io_on_snd_pcm(snd_pcm_t *apcm, snd_pcm_stream_t mode,
                               size_t no_channels,
                               snd_pcm_uframes_t no_samples) {
 
@@ -580,8 +571,8 @@ static int bool_to_exit_state(bool ok) {
 
 /*----------------------------------------------------------------------------*/
 
-static snd_pcm_hw_params_t *snd_pcm_hw_params_free_wrapper(
-    snd_pcm_hw_params_t *params) {
+static snd_pcm_hw_params_t *
+snd_pcm_hw_params_free_wrapper(snd_pcm_hw_params_t *params) {
 
     if (0 != params) {
 
@@ -593,8 +584,8 @@ static snd_pcm_hw_params_t *snd_pcm_hw_params_free_wrapper(
 
 /*----------------------------------------------------------------------------*/
 
-static snd_pcm_uframes_t get_period_length_samples(
-    snd_pcm_hw_params_t *params) {
+static snd_pcm_uframes_t
+get_period_length_samples(snd_pcm_hw_params_t *params) {
 
     snd_pcm_uframes_t samples = 0;
     int dir = 0;
@@ -618,11 +609,9 @@ int main(int argc, char **argv) {
         return bool_to_exit_state(list_alsa_devices());
 
     } else if (opts.setvolume) {
-        return bool_to_exit_state(
-            ov_alsa_set_volume(opts.device,
-                               opts.element,
-                               stream_mode_to_alsa_mode(opts.stream_mode),
-                               opts.volume));
+        return bool_to_exit_state(ov_alsa_set_volume(
+            opts.device, opts.element,
+            stream_mode_to_alsa_mode(opts.stream_mode), opts.volume));
     } else {
 
         bool ok = true;
@@ -639,9 +628,7 @@ int main(int argc, char **argv) {
 
         ok = (0 != apcm);
         ok = ok && print_available_frames(apcm);
-        ok = ok && try_io_on_snd_pcm(apcm,
-                                     opts.stream_mode,
-                                     opts.num_channels,
+        ok = ok && try_io_on_snd_pcm(apcm, opts.stream_mode, opts.num_channels,
                                      period_length_samples);
 
         snd_pcm_close_wrapper(apcm);

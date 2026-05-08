@@ -90,14 +90,11 @@ static void print_header(FILE *out, ov_format_ipv4_header hdr) {
 
     fprintf(out,
             "SRC IP: %s  DST IP: %s\n"
-            "Header Length: %zu    Total length: %" PRIu16
-            "\n"
+            "Header Length: %zu    Total length: %" PRIu16 "\n"
             "protocol %" PRIu8 "   TTL: %" PRIu8 "\n",
             ov_format_ipv4_ip_to_string(hdr.src_ip, 0, 0),
             ov_format_ipv4_ip_to_string(hdr.dst_ip, 0, 0),
-            hdr.header_length_octets,
-            hdr.total_length_octets,
-            hdr.protocol,
+            hdr.header_length_octets, hdr.total_length_octets, hdr.protocol,
             hdr.time_to_live);
 }
 
@@ -105,8 +102,8 @@ static void print_header(FILE *out, ov_format_ipv4_header hdr) {
 
 static int test_ov_format_ipv4_install() {
 
-    ov_format *fmt = ov_format_from_memory(
-        ref_ipv4_frame_min, sizeof(ref_ipv4_frame_min), OV_READ);
+    ov_format *fmt = ov_format_from_memory(ref_ipv4_frame_min,
+                                           sizeof(ref_ipv4_frame_min), OV_READ);
     testrun(0 != fmt);
     ov_format *ipv4_fmt = ov_format_as(fmt, "ipv4", 0, 0);
     testrun(0 == ipv4_fmt);
@@ -160,8 +157,8 @@ static int test_impl_next_chunk() {
                                Test single frame - with payload
      ************************************************************************/
 
-    mem_fmt = ov_format_from_memory(
-        ref_ipv4_frame_payload, sizeof(ref_ipv4_frame_payload), OV_READ);
+    mem_fmt = ov_format_from_memory(ref_ipv4_frame_payload,
+                                    sizeof(ref_ipv4_frame_payload), OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -307,7 +304,5 @@ static int test_ov_format_ipv4_get_header() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_ipv4",
-            test_ov_format_ipv4_install,
-            test_impl_next_chunk,
+OV_TEST_RUN("ov_format_ipv4", test_ov_format_ipv4_install, test_impl_next_chunk,
             test_ov_format_ipv4_get_header);

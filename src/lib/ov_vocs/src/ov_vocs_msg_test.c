@@ -75,8 +75,8 @@ int test_ov_vocs_msg_login() {
     testrun(!ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
     testrun(!ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_CLIENT));
     testrun(0 == strcmp("user",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_USER))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_USER))));
     msg = ov_json_value_free(msg);
 
     msg = ov_vocs_msg_login("user", "pass", NULL);
@@ -87,8 +87,8 @@ int test_ov_vocs_msg_login() {
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
     testrun(!ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_CLIENT));
     testrun(0 == strcmp("user",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_USER))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_USER))));
     testrun(0 == strcmp("pass",
                         ov_json_string_get(ov_json_get(
                             msg, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD))));
@@ -102,14 +102,13 @@ int test_ov_vocs_msg_login() {
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
     testrun(ov_json_get(msg, "/" OV_KEY_CLIENT));
     testrun(0 == strcmp("user",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_USER))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_USER))));
     testrun(0 == strcmp("pass",
                         ov_json_string_get(ov_json_get(
                             msg, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD))));
-    testrun(0 ==
-            strcmp("client",
-                   ov_json_string_get(ov_json_get(msg, "/" OV_KEY_CLIENT))));
+    testrun(0 == strcmp("client", ov_json_string_get(
+                                      ov_json_get(msg, "/" OV_KEY_CLIENT))));
 
     char *str = ov_json_value_to_string(msg);
     fprintf(stdout, "%s\n", str);
@@ -134,11 +133,10 @@ int test_ov_vocs_msg_media() {
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_SDP));
     testrun(0 == strcmp("request",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE))));
-    testrun(0 == strcmp("sdp",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_SDP))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_TYPE))));
+    testrun(0 == strcmp("sdp", ov_json_string_get(ov_json_get(
+                                   msg, "/" OV_KEY_PARAMETER "/" OV_KEY_SDP))));
 
     char *str = ov_json_value_to_string(msg);
     fprintf(stdout, "%s\n", str);
@@ -162,8 +160,8 @@ int test_ov_vocs_msg_candidate() {
     testrun(ov_event_api_event_is(msg, OV_ICE_STRING_CANDIDATE));
     testrun(ov_event_api_get_uuid(msg));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_CANDIDATE));
-    testrun(ov_json_get(
-        msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MLINEINDEX));
+    testrun(ov_json_get(msg,
+                        "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MLINEINDEX));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MID));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_UFRAG));
     msg = ov_json_value_free(msg);
@@ -173,8 +171,8 @@ int test_ov_vocs_msg_candidate() {
     testrun(ov_event_api_event_is(msg, OV_ICE_STRING_CANDIDATE));
     testrun(ov_event_api_get_uuid(msg));
     testrun(!ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_CANDIDATE));
-    testrun(ov_json_get(
-        msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MLINEINDEX));
+    testrun(ov_json_get(msg,
+                        "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MLINEINDEX));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MID));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_UFRAG));
 

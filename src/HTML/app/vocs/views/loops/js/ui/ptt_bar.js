@@ -235,9 +235,6 @@ export function init() {
         });
 
         async function connect_hid_device(device) {
-            // Handle connect devices of Imtradex
-            if (device.productId !== 256 && device.vendorId !== 8886)
-                return;
             try {
                 await device.open();
                 device.addEventListener("inputreport", (event) => {

@@ -106,7 +106,8 @@ int test_ov_stun_error_code_encoding_length() {
     for (size_t i = 1; i < 1000; i++) {
 
         pad = i % 4;
-        if (pad != 0) pad = 4 - pad;
+        if (pad != 0)
+            pad = 4 - pad;
 
         if (i <= 763) {
             testrun(8 + i + pad == ov_stun_error_code_encoding_length(name, i));
@@ -213,10 +214,10 @@ int test_ov_stun_error_code_encode() {
     testrun(!ov_stun_error_code_encode(attribute, size, NULL, 0, phrase, 0));
     testrun(
         !ov_stun_error_code_encode(attribute, size, NULL, 0, phrase, plength));
-    testrun(!ov_stun_error_code_encode(
-        attribute, size, NULL, 299, phrase, plength));
-    testrun(!ov_stun_error_code_encode(
-        attribute, size, NULL, 700, phrase, plength));
+    testrun(!ov_stun_error_code_encode(attribute, size, NULL, 299, phrase,
+                                       plength));
+    testrun(!ov_stun_error_code_encode(attribute, size, NULL, 700, phrase,
+                                       plength));
 
     testrun(
         ov_stun_error_code_encode(attribute, size, NULL, 300, phrase, plength));
@@ -227,8 +228,8 @@ int test_ov_stun_error_code_encode() {
 
     memset(buffer, 0, size);
     plength = 3;
-    testrun(ov_stun_error_code_encode(
-        attribute, size, &next, 699, phrase, plength));
+    testrun(ov_stun_error_code_encode(attribute, size, &next, 699, phrase,
+                                      plength));
     testrun(STUN_ERROR_CODE == ov_stun_attribute_get_type(attribute, size));
     testrun(next == attribute + 4 + 8); // padded to 4 byte border
     testrun(699 == ov_stun_error_code_decode_code(attribute, size));
@@ -252,7 +253,8 @@ int test_ov_stun_error_code_set_try_alternate() {
 
     size_t pad = 0;
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     testrun(!ov_stun_error_code_set_try_alternate(NULL, 0, NULL));
     testrun(!ov_stun_error_code_set_try_alternate(attribute, 0, NULL));
@@ -295,7 +297,8 @@ int test_ov_stun_error_code_set_bad_request() {
 
     size_t pad = 0;
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     testrun(!ov_stun_error_code_set_bad_request(NULL, 0, NULL));
     testrun(!ov_stun_error_code_set_bad_request(attribute, 0, NULL));
@@ -338,7 +341,8 @@ int test_ov_stun_error_code_set_unauthorized() {
 
     size_t pad = 0;
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     testrun(!ov_stun_error_code_set_unauthorized(NULL, 0, NULL));
     testrun(!ov_stun_error_code_set_unauthorized(attribute, 0, NULL));
@@ -381,15 +385,16 @@ int test_ov_stun_error_code_set_unknown_attribute() {
 
     size_t pad = 0;
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     testrun(!ov_stun_error_code_set_unknown_attribute(NULL, 0, NULL));
     testrun(!ov_stun_error_code_set_unknown_attribute(attribute, 0, NULL));
     testrun(!ov_stun_error_code_set_unknown_attribute(NULL, size, NULL));
 
     // size to small
-    testrun(!ov_stun_error_code_set_unknown_attribute(
-        attribute, strlen(expect), NULL));
+    testrun(!ov_stun_error_code_set_unknown_attribute(attribute, strlen(expect),
+                                                      NULL));
 
     testrun(ov_stun_error_code_set_unknown_attribute(attribute, size, NULL));
     testrun(STUN_ERROR_CODE == ov_stun_attribute_get_type(attribute, size));
@@ -424,7 +429,8 @@ int test_ov_stun_error_code_set_stale_nonce() {
 
     size_t pad = 0;
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     testrun(!ov_stun_error_code_set_stale_nonce(NULL, 0, NULL));
     testrun(!ov_stun_error_code_set_stale_nonce(attribute, 0, NULL));
@@ -467,7 +473,8 @@ int test_ov_stun_error_code_set_server_error() {
 
     size_t pad = 0;
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     testrun(!ov_stun_error_code_set_server_error(NULL, 0, NULL));
     testrun(!ov_stun_error_code_set_server_error(attribute, 0, NULL));
@@ -513,7 +520,8 @@ int test_ov_stun_error_code_generate_response() {
     char *expect = "server error";
     size_t pad = 0;
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
     size_t len = strlen(expect) + pad + 4 + 4;
 
     // prepare frame
@@ -552,7 +560,8 @@ int test_ov_stun_error_code_generate_response() {
     memset(response, 0, size);
     expect = "stale nonce";
     pad = strlen(expect) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
     len = strlen(expect) + pad + 4 + 4;
     testrun(ov_stun_error_code_generate_response(
         frame, 20, response, size, ov_stun_error_code_set_stale_nonce));

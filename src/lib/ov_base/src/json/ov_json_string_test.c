@@ -233,8 +233,7 @@ int test_ov_json_string_copy() {
     string = AS_JSON_STRING(copy);
     testrun(NULL != string->buffer.start);
     testrun(7 == string->buffer.size);
-    testrun(0 == strncmp("xyz1234",
-                         string->buffer.start,
+    testrun(0 == strncmp("xyz1234", string->buffer.start,
                          strlen(string->buffer.start)));
 
     testrun(NULL == ov_json_string_free(copy));
@@ -315,15 +314,13 @@ int test_ov_json_string_set_length() {
     // set with same string length as initial allocation
     testrun(ov_json_string_set_length(value, "abcde", 4));
     testrun(4 == string->buffer.size);
-    testrun(0 == strncmp("abcd",
-                         string->buffer.start,
+    testrun(0 == strncmp("abcd", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // set with longer string length as initial allocation
     testrun(ov_json_string_set_length(value, "12345678", 8));
     testrun(8 == string->buffer.size);
-    testrun(0 == strncmp("12345678",
-                         string->buffer.start,
+    testrun(0 == strncmp("12345678", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // not a string
@@ -331,8 +328,7 @@ int test_ov_json_string_set_length() {
     testrun(!ov_json_string_set_length(value, "xyz", 3));
     // nothing changed
     testrun(8 == string->buffer.size);
-    testrun(0 == strncmp("123456789",
-                         string->buffer.start,
+    testrun(0 == strncmp("123456789", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // reset for free
@@ -368,29 +364,25 @@ int test_ov_json_string_set() {
     // set with shorter string
     testrun(ov_json_string_set(value, "1234"));
     testrun(8 == string->buffer.size);
-    testrun(0 == strncmp("1234",
-                         string->buffer.start,
+    testrun(0 == strncmp("1234", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // set with shorter string as initial alloc
     testrun(ov_json_string_set(value, "abcde"));
     testrun(8 == string->buffer.size);
-    testrun(0 == strncmp("abcde",
-                         string->buffer.start,
+    testrun(0 == strncmp("abcde", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // set with same string length as initial allocation
     testrun(ov_json_string_set(value, "abcdefg"));
     testrun(8 == string->buffer.size);
-    testrun(0 == strncmp("abcdefg",
-                         string->buffer.start,
+    testrun(0 == strncmp("abcdefg", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // set with longer string length as initial allocation
     testrun(ov_json_string_set(value, "12345678"));
     testrun(8 == string->buffer.size);
-    testrun(0 == strncmp("12345678",
-                         string->buffer.start,
+    testrun(0 == strncmp("12345678", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // not a string
@@ -398,8 +390,7 @@ int test_ov_json_string_set() {
     testrun(!ov_json_string_set(value, "xyz"));
     // nothing changed
     testrun(8 == string->buffer.size);
-    testrun(0 == strncmp("123456789",
-                         string->buffer.start,
+    testrun(0 == strncmp("123456789", string->buffer.start,
                          strlen(string->buffer.start)));
 
     // reset for free

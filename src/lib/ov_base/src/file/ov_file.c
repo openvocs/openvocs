@@ -51,7 +51,8 @@
 
 bool ov_file_exists(char const *path) {
 
-    if (0 == path) return false;
+    if (0 == path)
+        return false;
 
     return 0 == access(path, F_OK);
 }
@@ -65,9 +66,11 @@ const char *ov_file_read_check(const char *restrict path) {
 
     /* Never pass 0 pointers to system calls  except expicitly
      * allowed */
-    if (0 == path) return OV_FILE_ACCESS_FAILED;
+    if (0 == path)
+        return OV_FILE_ACCESS_FAILED;
 
-    if (access(path, F_OK) == -1) return OV_FILE_ACCESS_FAILED;
+    if (access(path, F_OK) == -1)
+        return OV_FILE_ACCESS_FAILED;
 
     if (0 != stat(path, &statbuf)) {
         return strerror(errno);
@@ -106,9 +109,11 @@ ssize_t ov_file_read_check_get_bytes(const char *restrict path) {
 
     /* Never pass 0 pointers to system calls  except expicitly
      * allowed */
-    if (0 == path) goto error;
+    if (0 == path)
+        goto error;
 
-    if (access(path, F_OK) == -1) goto error;
+    if (access(path, F_OK) == -1)
+        goto error;
 
     if (0 != stat(path, &statbuf)) {
         goto error;
@@ -141,8 +146,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_file_handle_state ov_file_read(const char *path,
-                                  uint8_t **buffer,
+ov_file_handle_state ov_file_read(const char *path, uint8_t **buffer,
                                   size_t *size) {
 
     ov_file_handle_state state = OV_FILE_ERROR;
@@ -151,16 +155,15 @@ ov_file_handle_state ov_file_read(const char *path,
 
     FILE *fp = NULL;
 
-    if (!path || !buffer || !size) goto error;
+    if (!path || !buffer || !size)
+        goto error;
 
     const char *failure = ov_file_read_check(path);
     if (failure) {
 
-        ov_log_error(
-            "READ, file (%s) "
-            " %s.",
-            path,
-            failure);
+        ov_log_error("READ, file (%s) "
+                     " %s.",
+                     path, failure);
 
         goto error;
     }
@@ -185,10 +188,9 @@ ov_file_handle_state ov_file_read(const char *path,
 
             if ((int)filesize == -1) {
 
-                ov_log_error(
-                    "READ, file (%s) "
-                    "could not read file size.",
-                    path);
+                ov_log_error("READ, file (%s) "
+                             "could not read file size.",
+                             path);
 
                 state = OV_FILE_FAILURE;
                 goto error;
@@ -225,10 +227,9 @@ ov_file_handle_state ov_file_read(const char *path,
 
                 if (read != filesize) {
 
-                    ov_log_error(
-                        "READ, file (%s) "
-                        "could not read file.",
-                        path);
+                    ov_log_error("READ, file (%s) "
+                                 "could not read file.",
+                                 path);
 
                     state = OV_FILE_FAILURE;
                     goto error;
@@ -236,10 +237,9 @@ ov_file_handle_state ov_file_read(const char *path,
 
             } else {
 
-                ov_log_error(
-                    "READ, file (%s) "
-                    "could not get back to start.",
-                    path);
+                ov_log_error("READ, file (%s) "
+                             "could not get back to start.",
+                             path);
 
                 state = OV_FILE_FAILURE;
                 goto error;
@@ -247,10 +247,9 @@ ov_file_handle_state ov_file_read(const char *path,
 
         } else {
 
-            ov_log_error(
-                "READ, file (%s) "
-                "could not find EOF",
-                path);
+            ov_log_error("READ, file (%s) "
+                         "could not find EOF",
+                         path);
 
             state = OV_FILE_FAILURE;
             goto error;
@@ -258,16 +257,16 @@ ov_file_handle_state ov_file_read(const char *path,
 
     } else {
 
-        ov_log_error(
-            "READ, file (%s) "
-            "could not open file.",
-            path);
+        ov_log_error("READ, file (%s) "
+                     "could not open file.",
+                     path);
 
         state = OV_FILE_FAILURE;
         goto error;
     }
 
-    if (fp) fclose(fp);
+    if (fp)
+        fclose(fp);
     return OV_FILE_SUCCESS;
 error:
     if (created && buffer) {
@@ -275,17 +274,15 @@ error:
         *buffer = NULL;
     }
 
-    if (fp) fclose(fp);
+    if (fp)
+        fclose(fp);
     return state;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_file_handle_state ov_file_read_partial(const char *path,
-                                          uint8_t **buffer,
-                                          size_t *size,
-                                          size_t from,
-                                          size_t to,
+ov_file_handle_state ov_file_read_partial(const char *path, uint8_t **buffer,
+                                          size_t *size, size_t from, size_t to,
                                           size_t *all) {
 
     ov_file_handle_state state = OV_FILE_ERROR;
@@ -294,16 +291,15 @@ ov_file_handle_state ov_file_read_partial(const char *path,
 
     FILE *fp = NULL;
 
-    if (!path || !buffer || !size) goto error;
+    if (!path || !buffer || !size)
+        goto error;
 
     const char *failure = ov_file_read_check(path);
     if (failure) {
 
-        ov_log_error(
-            "READ, file (%s) "
-            " %s.",
-            path,
-            failure);
+        ov_log_error("READ, file (%s) "
+                     " %s.",
+                     path, failure);
 
         goto error;
     }
@@ -328,10 +324,9 @@ ov_file_handle_state ov_file_read_partial(const char *path,
 
             if ((int)filesize == -1) {
 
-                ov_log_error(
-                    "READ, file (%s) "
-                    "could not read file size.",
-                    path);
+                ov_log_error("READ, file (%s) "
+                             "could not read file size.",
+                             path);
 
                 state = OV_FILE_FAILURE;
                 goto error;
@@ -371,10 +366,9 @@ ov_file_handle_state ov_file_read_partial(const char *path,
 
                 if (read != sz) {
 
-                    ov_log_error(
-                        "READ, file (%s) "
-                        "could not read file.",
-                        path);
+                    ov_log_error("READ, file (%s) "
+                                 "could not read file.",
+                                 path);
 
                     state = OV_FILE_FAILURE;
                     goto error;
@@ -382,10 +376,9 @@ ov_file_handle_state ov_file_read_partial(const char *path,
 
             } else {
 
-                ov_log_error(
-                    "READ, file (%s) "
-                    "could not get back to start.",
-                    path);
+                ov_log_error("READ, file (%s) "
+                             "could not get back to start.",
+                             path);
 
                 state = OV_FILE_FAILURE;
                 goto error;
@@ -393,10 +386,9 @@ ov_file_handle_state ov_file_read_partial(const char *path,
 
         } else {
 
-            ov_log_error(
-                "READ, file (%s) "
-                "could not find EOF",
-                path);
+            ov_log_error("READ, file (%s) "
+                         "could not find EOF",
+                         path);
 
             state = OV_FILE_FAILURE;
             goto error;
@@ -404,16 +396,16 @@ ov_file_handle_state ov_file_read_partial(const char *path,
 
     } else {
 
-        ov_log_error(
-            "READ, file (%s) "
-            "could not open file.",
-            path);
+        ov_log_error("READ, file (%s) "
+                     "could not open file.",
+                     path);
 
         state = OV_FILE_FAILURE;
         goto error;
     }
 
-    if (fp) fclose(fp);
+    if (fp)
+        fclose(fp);
 
     *all = filesize;
     return OV_FILE_SUCCESS;
@@ -423,23 +415,24 @@ error:
         *buffer = NULL;
     }
 
-    if (fp) fclose(fp);
+    if (fp)
+        fclose(fp);
     return state;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_file_handle_state ov_file_write(const char *path,
-                                   const uint8_t *buffer,
-                                   size_t size,
-                                   const char *mode) {
+ov_file_handle_state ov_file_write(const char *path, const uint8_t *buffer,
+                                   size_t size, const char *mode) {
 
     ov_file_handle_state state = OV_FILE_ERROR;
     FILE *fp = NULL;
 
-    if (!path || !buffer || size < 1) goto error;
+    if (!path || !buffer || size < 1)
+        goto error;
 
-    if (!mode) mode = "w";
+    if (!mode)
+        mode = "w";
 
     fp = fopen(path, mode);
 
@@ -451,54 +444,52 @@ ov_file_handle_state ov_file_write(const char *path,
 
         if (count == size) {
 
-            ov_log_debug(
-                "WRITE, file (%s), "
-                "wrote %jd bytes.",
-                path,
-                count);
+            ov_log_debug("WRITE, file (%s), "
+                         "wrote %jd bytes.",
+                         path, count);
 
             state = OV_FILE_SUCCESS;
 
         } else {
 
-            ov_log_error(
-                "WRITE, file (%s), "
-                "could not write all bytes, wrote %i/%i",
-                path,
-                count,
-                size);
+            ov_log_error("WRITE, file (%s), "
+                         "could not write all bytes, wrote %i/%i",
+                         path, count, size);
 
             state = OV_FILE_FAILURE;
         }
 
     } else {
 
-        ov_log_error(
-            "WRITE, file (%s), "
-            "could not open path for write",
-            path);
+        ov_log_error("WRITE, file (%s), "
+                     "could not open path for write",
+                     path);
 
         state = OV_FILE_FAILURE;
     }
 
     //  current state
 error:
-    if (fp) fclose(fp);
+    if (fp)
+        fclose(fp);
     return state;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_file_get_16(uint16_t *out,
-                    uint8_t **rd_ptr,
-                    size_t *length,
+bool ov_file_get_16(uint16_t *out, uint8_t **rd_ptr, size_t *length,
                     ov_file_byteorder byte_order) {
 
-    if (0 == out) return false;
-    if (0 == rd_ptr) return false;
-    if (0 == *rd_ptr) return false;
-    if (0 == length) return false;
-    if (2 > *length) return false;
+    if (0 == out)
+        return false;
+    if (0 == rd_ptr)
+        return false;
+    if (0 == *rd_ptr)
+        return false;
+    if (0 == length)
+        return false;
+    if (2 > *length)
+        return false;
 
     uint16_t read_16 = *((uint16_t *)(*rd_ptr));
 
@@ -507,27 +498,27 @@ bool ov_file_get_16(uint16_t *out,
 
     switch (byte_order) {
 
-        case OV_FILE_RAW:
+    case OV_FILE_RAW:
 
-            break;
+        break;
 
-        case OV_FILE_SWAP_BYTES:
-            read_16 = OV_SWAP_16(read_16);
-            break;
+    case OV_FILE_SWAP_BYTES:
+        read_16 = OV_SWAP_16(read_16);
+        break;
 
-        case OV_FILE_LITTLE_ENDIAN:
+    case OV_FILE_LITTLE_ENDIAN:
 
-            read_16 = OV_LE16TOH(read_16);
-            break;
+        read_16 = OV_LE16TOH(read_16);
+        break;
 
-        case OV_FILE_BIG_ENDIAN:
+    case OV_FILE_BIG_ENDIAN:
 
-            read_16 = OV_BE16TOH(read_16);
-            break;
+        read_16 = OV_BE16TOH(read_16);
+        break;
 
-        default:
+    default:
 
-            OV_ASSERT(!"MUST NEVER HAPPEN");
+        OV_ASSERT(!"MUST NEVER HAPPEN");
     };
 
     *out = read_16;
@@ -537,16 +528,19 @@ bool ov_file_get_16(uint16_t *out,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_file_get_32(uint32_t *out,
-                    uint8_t **rd_ptr,
-                    size_t *length,
+bool ov_file_get_32(uint32_t *out, uint8_t **rd_ptr, size_t *length,
                     ov_file_byteorder byte_order) {
 
-    if (0 == out) return false;
-    if (0 == rd_ptr) return false;
-    if (0 == *rd_ptr) return false;
-    if (0 == length) return false;
-    if (4 > *length) return false;
+    if (0 == out)
+        return false;
+    if (0 == rd_ptr)
+        return false;
+    if (0 == *rd_ptr)
+        return false;
+    if (0 == length)
+        return false;
+    if (4 > *length)
+        return false;
 
     uint32_t read_32 = *((uint32_t *)(*rd_ptr));
 
@@ -555,26 +549,26 @@ bool ov_file_get_32(uint32_t *out,
 
     switch (byte_order) {
 
-        case OV_FILE_RAW:
-            break;
+    case OV_FILE_RAW:
+        break;
 
-        case OV_FILE_SWAP_BYTES:
-            read_32 = OV_SWAP_32(read_32);
-            break;
+    case OV_FILE_SWAP_BYTES:
+        read_32 = OV_SWAP_32(read_32);
+        break;
 
-        case OV_FILE_LITTLE_ENDIAN:
+    case OV_FILE_LITTLE_ENDIAN:
 
-            read_32 = OV_LE32TOH(read_32);
-            break;
+        read_32 = OV_LE32TOH(read_32);
+        break;
 
-        case OV_FILE_BIG_ENDIAN:
+    case OV_FILE_BIG_ENDIAN:
 
-            read_32 = OV_BE32TOH(read_32);
-            break;
+        read_32 = OV_BE32TOH(read_32);
+        break;
 
-        default:
+    default:
 
-            OV_ASSERT(!"MUST NEVER HAPPEN");
+        OV_ASSERT(!"MUST NEVER HAPPEN");
     };
 
     *out = read_32;
@@ -586,9 +580,12 @@ bool ov_file_get_32(uint32_t *out,
 
 bool ov_file_write_16(uint8_t **write_ptr, size_t *length, uint16_t value) {
 
-    if (0 == write_ptr) return false;
-    if (0 == length) return false;
-    if (2 > *length) return false;
+    if (0 == write_ptr)
+        return false;
+    if (0 == length)
+        return false;
+    if (2 > *length)
+        return false;
 
     *(uint16_t *)(*write_ptr) = value;
 
@@ -602,9 +599,12 @@ bool ov_file_write_16(uint8_t **write_ptr, size_t *length, uint16_t value) {
 
 bool ov_file_write_32(uint8_t **write_ptr, size_t *length, uint32_t value) {
 
-    if (0 == write_ptr) return false;
-    if (0 == length) return false;
-    if (2 > *length) return false;
+    if (0 == write_ptr)
+        return false;
+    if (0 == length)
+        return false;
+    if (2 > *length)
+        return false;
 
     *(uint32_t *)(*write_ptr) = value;
 

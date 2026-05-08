@@ -58,7 +58,8 @@ void *cache_worker(void *arg) {
     while (true) {
 
         size_t *value = ov_cache_get(cache);
-        if (0 != value) ov_cache_put(cache, value);
+        if (0 != value)
+            ov_cache_put(cache, value);
 
         nanosleep(&time_to_wait, 0);
     }
@@ -151,7 +152,8 @@ int test_ov_cache_extend() {
 
 static void *dummy_free(void *item) {
 
-    if (item) free(item);
+    if (item)
+        free(item);
     return NULL;
 }
 

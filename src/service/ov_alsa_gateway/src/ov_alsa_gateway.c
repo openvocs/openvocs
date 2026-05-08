@@ -25,6 +25,7 @@
 */
 
 #include "ov_alsa_audio_app.h"
+#include "ov_base/ov_config_keys.h"
 #include "ov_base/ov_socket.h"
 #include <ov_backend/ov_minion_app.h>
 #include <ov_base/ov_mc_socket.h>
@@ -89,8 +90,7 @@ static bool startup_configuration_from_json(configuration *cfg,
 
         ov_json_value_copy((void **)&cfg->original_config, jcfg);
         cfg->alsa = ov_alsa_audio_app_config_from_json(
-            ov_json_get(jcfg, "/" OV_KEY_ALSA),
-            default_configuration.alsa,
+            ov_json_get(jcfg, "/" OV_KEY_ALSA), default_configuration.alsa,
             &ok);
 
         return ok;
@@ -99,8 +99,7 @@ static bool startup_configuration_from_json(configuration *cfg,
 
 /*----------------------------------------------------------------------------*/
 
-static ProcessResult get_startup_configuration(int argc,
-                                               char **argv,
+static ProcessResult get_startup_configuration(int argc, char **argv,
                                                configuration *cfg) {
 
     ov_json_value *json_cfg = 0;
@@ -148,18 +147,15 @@ static ProcessResult run_gateway(ov_event_loop *loop, configuration cfg) {
 
     ov_alsa_audio_app *audio = ov_alsa_audio_app_create(loop, cfg.alsa);
 
-    bool succeeded = ov_alsa_audio_app_start_playbacks(
-                         audio,
-                         (char const **)cfg.alsa.static_loops.output,
-                         cfg.alsa.static_loops.output_ports,
-                         OV_ALSA_MAX_DEVICES) &&
-                     ov_alsa_audio_app_start_recordings(
-                         audio,
-                         (char const **)cfg.alsa.static_loops.input,
-                         cfg.alsa.static_loops.input_ports,
-                         OV_ALSA_MAX_DEVICES) &&
-                     ov_alsa_audio_app_start_playback_thread(audio) &&
-                     ov_event_loop_run(loop, OV_RUN_MAX);
+    bool succeeded =
+        ov_alsa_audio_app_start_playbacks(
+            audio, (char const **)cfg.alsa.static_loops.output,
+            cfg.alsa.static_loops.output_ports, OV_ALSA_MAX_DEVICES) &&
+        ov_alsa_audio_app_start_recordings(
+            audio, (char const **)cfg.alsa.static_loops.input,
+            cfg.alsa.static_loops.input_ports, OV_ALSA_MAX_DEVICES) &&
+        ov_alsa_audio_app_start_playback_thread(audio) &&
+        ov_event_loop_run(loop, OV_RUN_MAX);
 
     opus_json = ov_json_value_free(opus_json);
 

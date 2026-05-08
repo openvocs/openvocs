@@ -806,9 +806,7 @@ int test_ov_convert_to_vol_percent() {
 
     for (uint8_t i = 10; i <= 100; i += 10) {
         fprintf(
-            stderr,
-            "%" PRIu8 ": %" PRIu8 " => %" PRIu8 "\n",
-            i,
+            stderr, "%" PRIu8 ": %" PRIu8 " => %" PRIu8 "\n", i,
             ov_convert_from_vol_percent(i, 0),
             ov_convert_to_vol_percent(ov_convert_from_vol_percent(i, 0), 0));
 
@@ -821,21 +819,14 @@ int test_ov_convert_to_vol_percent() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_convert",
-            test_ov_convert_msecs_to_samples,
-            test_ov_convert_samples_to_msecs,
-            test_ov_convert_string_to_uint64,
-            test_ov_convert_string_to_int64,
-            test_ov_convert_string_to_double,
-            test_ov_convert_double_to_string,
-            test_ov_convert_int64_to_string,
+OV_TEST_RUN("ov_convert", test_ov_convert_msecs_to_samples,
+            test_ov_convert_samples_to_msecs, test_ov_convert_string_to_uint64,
+            test_ov_convert_string_to_int64, test_ov_convert_string_to_double,
+            test_ov_convert_double_to_string, test_ov_convert_int64_to_string,
             test_ov_convert_uint64_to_string,
-            test_ov_convert_hex_string_to_uint64,
-            test_ov_convert_binary_to_hex,
-            test_ov_convert_hex_to_binary,
-            test_ov_convert_from_db,
-            test_ov_convert_to_db,
-            test_ov_convert_from_vol_percent,
+            test_ov_convert_hex_string_to_uint64, test_ov_convert_binary_to_hex,
+            test_ov_convert_hex_to_binary, test_ov_convert_from_db,
+            test_ov_convert_to_db, test_ov_convert_from_vol_percent,
             test_ov_convert_to_vol_percent);
 
 /*----------------------------------------------------------------------------*/

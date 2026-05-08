@@ -62,11 +62,8 @@ static void print_usage() {
 
 /*----------------------------------------------------------------------------*/
 
-bool read_user_input(int argc,
-                     char *argv[],
-                     ov_password_hash_parameter *params,
-                     char **password,
-                     size_t *length) {
+bool read_user_input(int argc, char *argv[], ov_password_hash_parameter *params,
+                     char **password, size_t *length) {
 
     int c = 0;
     int option_index = 0;
@@ -91,50 +88,52 @@ bool read_user_input(int argc,
         c = getopt_long(argc, argv, "p:w:b:l:?h", long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1) break;
+        if (c == -1)
+            break;
 
         switch (c) {
 
-            case 0:
+        case 0:
 
-                printf("option %s", long_options[option_index].name);
-                if (optarg) printf(" with arg %s", optarg);
-                printf("\n");
-                *password = optarg;
-                break;
+            printf("option %s", long_options[option_index].name);
+            if (optarg)
+                printf(" with arg %s", optarg);
+            printf("\n");
+            *password = optarg;
+            break;
 
-            case 'h':
-                print_usage();
-                goto error;
-                break;
+        case 'h':
+            print_usage();
+            goto error;
+            break;
 
-            case '?':
-                print_usage();
-                goto error;
-                break;
+        case '?':
+            print_usage();
+            goto error;
+            break;
 
-            case 'p':
-                ov_convert_string_to_uint16(
-                    optarg, strlen(optarg), &params->parallel);
-                break;
+        case 'p':
+            ov_convert_string_to_uint16(optarg, strlen(optarg),
+                                        &params->parallel);
+            break;
 
-            case 'l':
-                ov_convert_string_to_uint16(optarg, strlen(optarg), &len);
-                break;
+        case 'l':
+            ov_convert_string_to_uint16(optarg, strlen(optarg), &len);
+            break;
 
-            case 'w':
-                ov_convert_string_to_uint16(
-                    optarg, strlen(optarg), &params->workfactor);
-                break;
+        case 'w':
+            ov_convert_string_to_uint16(optarg, strlen(optarg),
+                                        &params->workfactor);
+            break;
 
-            case 'b':
-                ov_convert_string_to_uint16(
-                    optarg, strlen(optarg), &params->blocksize);
-                break;
+        case 'b':
+            ov_convert_string_to_uint16(optarg, strlen(optarg),
+                                        &params->blocksize);
+            break;
 
-            default:
-                print_usage();
-                goto error;
+        default:
+            print_usage();
+            goto error;
         }
     }
 
@@ -158,7 +157,8 @@ int main(int argc, char *argv[]) {
     char *encryption = "PKDS2";
     size_t length = 0;
 
-    if (!read_user_input(argc, argv, &params, &password, &length)) goto error;
+    if (!read_user_input(argc, argv, &params, &password, &length))
+        goto error;
 
     if ((0 != params.workfactor) || (0 != params.blocksize) ||
         (0 != params.parallel))
@@ -166,15 +166,10 @@ int main(int argc, char *argv[]) {
 
     fprintf(stdout,
             "... using %s encryption\n"
-            "    parallel   : %" PRIu16
-            "\n"
-            "    workfactor : %" PRIu16
-            "\n"
+            "    parallel   : %" PRIu16 "\n"
+            "    workfactor : %" PRIu16 "\n"
             "    blocksize  : %" PRIu16 "\n",
-            encryption,
-            params.parallel,
-            params.workfactor,
-            params.blocksize);
+            encryption, params.parallel, params.workfactor, params.blocksize);
 
     ov_json_value *hashed = ov_password_hash(password, params, length);
     char *str = ov_json_value_to_string(hashed);

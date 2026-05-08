@@ -46,17 +46,20 @@ bool ov_sdp_is_text(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_username(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     // MUST be a valid SDP text sequence
-    if (!ov_sdp_is_text(buffer, length)) return false;
+    if (!ov_sdp_is_text(buffer, length))
+        return false;
 
     // MUST be without whitespaces
     uint64_t i = 0;
 
     for (i = 0; i < length; i++) {
 
-        if (isspace(buffer[i])) return false;
+        if (isspace(buffer[i]))
+            return false;
     }
 
     return true;
@@ -66,23 +69,25 @@ bool ov_sdp_is_username(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_key(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 5) return false;
+    if (!buffer || length < 5)
+        return false;
 
-    if (strncmp("prompt", (char *)buffer, length) == 0) return true;
+    if (strncmp("prompt", (char *)buffer, length) == 0)
+        return true;
 
     switch (buffer[0]) {
 
-        case 'c':
-            return ov_sdp_check_clear(buffer, length);
-            break;
+    case 'c':
+        return ov_sdp_check_clear(buffer, length);
+        break;
 
-        case 'b':
-            return ov_sdp_check_base64(buffer, length);
-            break;
+    case 'b':
+        return ov_sdp_check_base64(buffer, length);
+        break;
 
-        case 'u':
-            return ov_sdp_check_uri(buffer, length);
-            break;
+    case 'u':
+        return ov_sdp_check_uri(buffer, length);
+        break;
     }
 
     return false;
@@ -92,7 +97,8 @@ bool ov_sdp_is_key(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_base64(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     uint8_t *ptr = NULL;
     size_t size = 0;
@@ -109,9 +115,11 @@ bool ov_sdp_is_base64(const char *buffer, uint64_t length) {
 
 bool ov_sdp_check_base64(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 8) return false;
+    if (!buffer || length < 8)
+        return false;
 
-    if (strncmp(buffer, "base64:", 7) != 0) return false;
+    if (strncmp(buffer, "base64:", 7) != 0)
+        return false;
 
     return ov_sdp_is_base64(buffer + 7, length - 7);
 }
@@ -120,9 +128,11 @@ bool ov_sdp_check_base64(const char *buffer, uint64_t length) {
 
 bool ov_sdp_check_clear(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 7) return false;
+    if (!buffer || length < 7)
+        return false;
 
-    if (strncmp(buffer, "clear:", 6) != 0) return false;
+    if (strncmp(buffer, "clear:", 6) != 0)
+        return false;
 
     return ov_sdp_is_text(buffer + 6, length - 6);
 }
@@ -131,9 +141,11 @@ bool ov_sdp_check_clear(const char *buffer, uint64_t length) {
 
 bool ov_sdp_check_uri(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 5) return false;
+    if (!buffer || length < 5)
+        return false;
 
-    if (strncmp(buffer, "uri:", 4) != 0) return false;
+    if (strncmp(buffer, "uri:", 4) != 0)
+        return false;
 
     return ov_sdp_is_uri(buffer + 4, length - 4);
 }
@@ -149,13 +161,15 @@ bool ov_sdp_is_uri(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_digit(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     uint64_t i = 0;
 
     for (i = 0; i < length; i++) {
 
-        if (buffer[i] > '9' || buffer[i] < '0') return false;
+        if (buffer[i] > '9' || buffer[i] < '0')
+            return false;
     }
 
     return true;
@@ -165,9 +179,11 @@ bool ov_sdp_is_digit(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_integer(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
-    if ('0' == buffer[0]) return false;
+    if ('0' == buffer[0])
+        return false;
 
     return ov_sdp_is_digit(buffer, length);
 }
@@ -176,12 +192,14 @@ bool ov_sdp_is_integer(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_port(const char *buffer, uint64_t length) {
 
-    if (!ov_sdp_is_integer(buffer, length)) return false;
+    if (!ov_sdp_is_integer(buffer, length))
+        return false;
 
     char *ptr = NULL;
     int64_t number = strtoll(buffer, &ptr, 10);
 
-    if ((number < 0) || (number > 65535)) return false;
+    if ((number < 0) || (number > 65535))
+        return false;
 
     return true;
 }
@@ -190,23 +208,26 @@ bool ov_sdp_is_port(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_typed_time(const char *buffer, uint64_t length, bool negative) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     switch (buffer[length - 1]) {
 
-        case 'd':
-        case 'h':
-        case 'm':
-        case 's':
-            length--;
-            break;
+    case 'd':
+    case 'h':
+    case 'm':
+    case 's':
+        length--;
+        break;
     }
 
     if (length == 1)
-        if (buffer[0] == '0') return true;
+        if (buffer[0] == '0')
+            return true;
 
     if (negative)
-        if (buffer[0] == '-') return ov_sdp_is_integer(buffer + 1, length - 1);
+        if (buffer[0] == '-')
+            return ov_sdp_is_integer(buffer + 1, length - 1);
 
     return ov_sdp_is_integer(buffer, length);
 }
@@ -215,12 +236,15 @@ bool ov_sdp_is_typed_time(const char *buffer, uint64_t length, bool negative) {
 
 bool ov_sdp_is_time(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     if (length == 1)
-        if (buffer[0] == '0') return true;
+        if (buffer[0] == '0')
+            return true;
 
-    if (length < 10) return false;
+    if (length < 10)
+        return false;
 
     return ov_sdp_is_integer(buffer, length);
 }
@@ -229,43 +253,51 @@ bool ov_sdp_is_time(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_token(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     uint64_t i = 0;
 
     for (i = 0; i < length; i++) {
 
         if (buffer[i] >= 0x5E) {
-            if (buffer[i] <= 0x7E) continue;
+            if (buffer[i] <= 0x7E)
+                continue;
             return false;
         }
 
         if (buffer[i] >= 0x41) {
-            if (buffer[i] <= 0x5A) continue;
+            if (buffer[i] <= 0x5A)
+                continue;
             return false;
         }
 
         if (buffer[i] >= 0x30) {
-            if (buffer[i] <= 0x39) continue;
+            if (buffer[i] <= 0x39)
+                continue;
             return false;
         }
 
         if (buffer[i] >= 0x2D) {
-            if (buffer[i] <= 0x2E) continue;
+            if (buffer[i] <= 0x2E)
+                continue;
             return false;
         }
 
         if (buffer[i] >= 0x2A) {
-            if (buffer[i] <= 0x2B) continue;
+            if (buffer[i] <= 0x2B)
+                continue;
             return false;
         }
 
         if (buffer[i] >= 0x23) {
-            if (buffer[i] <= 0x27) continue;
+            if (buffer[i] <= 0x27)
+                continue;
             return false;
         }
 
-        if (buffer[i] == 0x21) continue;
+        if (buffer[i] == 0x21)
+            continue;
 
         return false;
     }
@@ -277,7 +309,8 @@ bool ov_sdp_is_token(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_address(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     /*
      * Weeeeeell, RFC 4566 specifies more or less anything except chars
@@ -306,9 +339,11 @@ bool ov_sdp_is_address(const char *buffer, uint64_t length) {
 
     for (size_t i = 0; i < length; i++) {
 
-        if (0x7f <= buffer[i]) return false;
+        if (0x7f <= buffer[i])
+            return false;
 
-        if (0x21 > buffer[i]) return false;
+        if (0x21 > buffer[i])
+            return false;
     }
 
     return true;
@@ -318,14 +353,16 @@ bool ov_sdp_is_address(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_proto(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     char *token = NULL;
     uint64_t size = 0;
     size_t items = 0;
 
     ov_list *tokens = ov_string_pointer((char *)buffer, length, "/", 1);
-    if (!tokens) return false;
+    if (!tokens)
+        return false;
 
     items = tokens->count(tokens);
 
@@ -342,13 +379,15 @@ bool ov_sdp_is_proto(const char *buffer, uint64_t length) {
             size = tokens->get(tokens, i + 1) - tokens->get(tokens, i) - 1;
         }
 
-        if (!ov_sdp_is_token(token, size)) goto error;
+        if (!ov_sdp_is_token(token, size))
+            goto error;
     }
 
     tokens->free(tokens);
     return true;
 error:
-    if (tokens) tokens->free(tokens);
+    if (tokens)
+        tokens->free(tokens);
     return false;
 }
 
@@ -356,18 +395,19 @@ error:
 
 bool ov_sdp_is_byte_string(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     for (size_t i = 0; i < length; i++) {
 
         switch (buffer[i]) {
 
-            case 0x00:
-            case '\r':
-            case '\n':
-                return false;
-            default:
-                break;
+        case 0x00:
+        case '\r':
+        case '\n':
+            return false;
+        default:
+            break;
         }
     }
 
@@ -378,7 +418,8 @@ bool ov_sdp_is_byte_string(const char *buffer, uint64_t length) {
 
 bool ov_sdp_verify_phone_buffer(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     /*
             phone = ["+"] DIGIT 1*(SP / "-" / DIGIT)
@@ -392,10 +433,12 @@ bool ov_sdp_verify_phone_buffer(const char *buffer, uint64_t length) {
         length--;
     }
 
-    if (length < 2) return false;
+    if (length < 2)
+        return false;
 
     // MUST be a digit
-    if (!isdigit(ptr[0])) return false;
+    if (!isdigit(ptr[0]))
+        return false;
 
     ptr++;
     length--;
@@ -404,23 +447,23 @@ bool ov_sdp_verify_phone_buffer(const char *buffer, uint64_t length) {
 
         switch (*ptr) {
 
-            case 0x20: // SP
-            case 0x2D: // -
-            case 0x30: // 0
-            case 0x31: // 1
-            case 0x32: // 2
-            case 0x33: // 3
-            case 0x34: // 4
-            case 0x35: // 5
-            case 0x36: // 6
-            case 0x37: // 7
-            case 0x38: // 8
-            case 0x39: // 9
-                ptr++;
-                length--;
-                break;
-            default:
-                return false;
+        case 0x20: // SP
+        case 0x2D: // -
+        case 0x30: // 0
+        case 0x31: // 1
+        case 0x32: // 2
+        case 0x33: // 3
+        case 0x34: // 4
+        case 0x35: // 5
+        case 0x36: // 6
+        case 0x37: // 7
+        case 0x38: // 8
+        case 0x39: // 9
+            ptr++;
+            length--;
+            break;
+        default:
+            return false;
         }
     }
 
@@ -431,7 +474,8 @@ bool ov_sdp_verify_phone_buffer(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_phone(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     /*
             ; sub-rules of 'p='
@@ -443,7 +487,8 @@ bool ov_sdp_is_phone(const char *buffer, uint64_t length) {
 
     */
 
-    if (!ov_sdp_is_text(buffer, length)) return false;
+    if (!ov_sdp_is_text(buffer, length))
+        return false;
 
     char *ptr = NULL;
     char *in = memchr(buffer, '(', length);
@@ -452,16 +497,19 @@ bool ov_sdp_is_phone(const char *buffer, uint64_t length) {
 
     if (in) {
 
-        if (buffer[length - 1] != ')') return false;
+        if (buffer[length - 1] != ')')
+            return false;
 
         len = in - buffer;
         ptr = (char *)buffer;
 
-        if (!ov_sdp_verify_phone_buffer(ptr, len)) return false;
+        if (!ov_sdp_verify_phone_buffer(ptr, len))
+            return false;
 
         ptr = in + 1;
         len = length - len - 2;
-        if (!ov_sdp_is_email_safe(ptr, len)) return false;
+        if (!ov_sdp_is_email_safe(ptr, len))
+            return false;
 
         return true;
     }
@@ -470,21 +518,25 @@ bool ov_sdp_is_phone(const char *buffer, uint64_t length) {
 
     if (in) {
 
-        if (buffer[length - 1] != '>') return false;
+        if (buffer[length - 1] != '>')
+            return false;
 
         len = in - buffer;
         ptr = (char *)buffer;
 
-        if (!ov_sdp_is_email_safe(ptr, len)) return false;
+        if (!ov_sdp_is_email_safe(ptr, len))
+            return false;
 
         ptr = in + 1;
         len = length - len - 2;
-        if (!ov_sdp_verify_phone_buffer(ptr, len)) return false;
+        if (!ov_sdp_verify_phone_buffer(ptr, len))
+            return false;
 
         return true;
     }
 
-    if (ov_sdp_verify_phone_buffer(buffer, length)) return true;
+    if (ov_sdp_verify_phone_buffer(buffer, length))
+        return true;
 
     return false;
 }
@@ -493,7 +545,8 @@ bool ov_sdp_is_phone(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_addr_spec(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     /* TBD FULL RFC 5322 implementation check required.
 
@@ -517,11 +570,14 @@ bool ov_sdp_is_addr_spec(const char *buffer, uint64_t length) {
     */
 
     char *ptr = memchr(buffer, '@', length);
-    if (!ptr) return false;
+    if (!ptr)
+        return false;
 
-    if (ptr == buffer) return false;
+    if (ptr == buffer)
+        return false;
 
-    if ((uint64_t)(ptr - buffer) == length - 1) return false;
+    if ((uint64_t)(ptr - buffer) == length - 1)
+        return false;
 
     return true;
 }
@@ -542,7 +598,8 @@ bool ov_sdp_is_email(const char *buffer, uint64_t length) {
 
     */
 
-    if (!ov_sdp_is_text(buffer, length)) return false;
+    if (!ov_sdp_is_text(buffer, length))
+        return false;
 
     char *ptr = NULL;
     char *in = memchr(buffer, '(', length);
@@ -551,21 +608,26 @@ bool ov_sdp_is_email(const char *buffer, uint64_t length) {
 
     if (in) {
 
-        if (buffer[length - 1] != ')') return false;
+        if (buffer[length - 1] != ')')
+            return false;
 
-        if ((in - buffer) < 2) return false;
+        if ((in - buffer) < 2)
+            return false;
 
-        if (in[-1] != 0x20) return false;
+        if (in[-1] != 0x20)
+            return false;
 
         len = in - buffer - 1;
         ptr = (char *)buffer;
 
-        if (!ov_sdp_is_addr_spec(ptr, length)) return false;
+        if (!ov_sdp_is_addr_spec(ptr, length))
+            return false;
 
         ptr = in + 1;
         len = length - len - 3;
 
-        if (!ov_sdp_is_email_safe(ptr, len)) return false;
+        if (!ov_sdp_is_email_safe(ptr, len))
+            return false;
 
         return true;
     }
@@ -574,25 +636,31 @@ bool ov_sdp_is_email(const char *buffer, uint64_t length) {
 
     if (in) {
 
-        if (buffer[length - 1] != '>') return false;
+        if (buffer[length - 1] != '>')
+            return false;
 
-        if ((in - buffer) < 2) return false;
+        if ((in - buffer) < 2)
+            return false;
 
-        if (in[-1] != 0x20) return false;
+        if (in[-1] != 0x20)
+            return false;
 
         len = in - buffer;
         ptr = (char *)buffer;
 
-        if (!ov_sdp_is_email_safe(ptr, len)) return false;
+        if (!ov_sdp_is_email_safe(ptr, len))
+            return false;
 
         ptr = in + 1;
         len = length - len - 3;
-        if (!ov_sdp_is_addr_spec(ptr, len)) return false;
+        if (!ov_sdp_is_addr_spec(ptr, len))
+            return false;
 
         return true;
     }
 
-    if (ov_sdp_is_addr_spec(buffer, length)) return true;
+    if (ov_sdp_is_addr_spec(buffer, length))
+        return true;
 
     return false;
 }
@@ -601,7 +669,8 @@ bool ov_sdp_is_email(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_email_safe(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     /*
             email-safe =
@@ -614,16 +683,16 @@ bool ov_sdp_is_email_safe(const char *buffer, uint64_t length) {
 
         switch (buffer[i]) {
 
-            case 0x00:
-            case 0x0A:
-            case 0x0D:
-            case 0x28:
-            case 0x29:
-            case 0x3C:
-            case 0x3E:
-                return false;
-            default:
-                break;
+        case 0x00:
+        case 0x0A:
+        case 0x0D:
+        case 0x28:
+        case 0x29:
+        case 0x3C:
+        case 0x3E:
+            return false;
+        default:
+            break;
         }
     }
 
@@ -634,7 +703,8 @@ bool ov_sdp_is_email_safe(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_ip6(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 2) return false;
+    if (!buffer || length < 2)
+        return false;
 
     struct sockaddr_storage sa;
     char buf[length + 1];
@@ -642,9 +712,11 @@ bool ov_sdp_is_ip6(const char *buffer, uint64_t length) {
     memset(buf, 0, length + 1);
 
     // ensure /0 terminated string
-    if (!memcpy(buf, buffer, length)) return false;
+    if (!memcpy(buf, buffer, length))
+        return false;
 
-    if (1 == inet_pton(AF_INET6, buf, &sa)) return true;
+    if (1 == inet_pton(AF_INET6, buf, &sa))
+        return true;
 
     return false;
 }
@@ -653,7 +725,8 @@ bool ov_sdp_is_ip6(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_ip4(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     struct sockaddr_storage sa;
     char buf[length + 1];
@@ -661,9 +734,11 @@ bool ov_sdp_is_ip4(const char *buffer, uint64_t length) {
     memset(buf, 0, length + 1);
 
     // ensure /0 terminated string
-    if (!memcpy(buf, buffer, length)) return false;
+    if (!memcpy(buf, buffer, length))
+        return false;
 
-    if (1 == inet_pton(AF_INET, buf, &sa)) return true;
+    if (1 == inet_pton(AF_INET, buf, &sa))
+        return true;
 
     return false;
 }
@@ -672,21 +747,26 @@ bool ov_sdp_is_ip4(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_ip6_multicast(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 2) return false;
+    if (!buffer || length < 2)
+        return false;
 
     // IP6-multicast = hexpart [ "/" integer ]
 
-    if (tolower(buffer[0]) != 'f') return false;
+    if (tolower(buffer[0]) != 'f')
+        return false;
 
-    if (tolower(buffer[1]) != 'f') return false;
+    if (tolower(buffer[1]) != 'f')
+        return false;
 
     size_t len = 0;
     char *slash = memchr(buffer, '/', length);
 
-    if (!slash) return ov_sdp_is_ip6(buffer, length);
+    if (!slash)
+        return ov_sdp_is_ip6(buffer, length);
 
     len = slash - buffer;
-    if (!ov_sdp_is_ip6(buffer, len)) return false;
+    if (!ov_sdp_is_ip6(buffer, len))
+        return false;
 
     len = length - len - 1;
     return ov_sdp_is_port(slash + 1, len);
@@ -696,9 +776,11 @@ bool ov_sdp_is_ip6_multicast(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_ip4_multicast(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 7) return false;
+    if (!buffer || length < 7)
+        return false;
 
-    if (buffer[0] != '2') return false;
+    if (buffer[0] != '2')
+        return false;
 
     char *slash = NULL;
     char *ttl = NULL;
@@ -707,27 +789,32 @@ bool ov_sdp_is_ip4_multicast(const char *buffer, uint64_t length) {
 
     switch (buffer[1]) {
 
-        case '2':
+    case '2':
 
-            if (buffer[2] < 0x34) return false;
-
-            if (buffer[2] > 0x39) return false;
-
-            break;
-
-        case '3':
-
-            if (buffer[2] < 0x30) return false;
-
-            if (buffer[2] > 0x39) return false;
-
-            break;
-        default:
+        if (buffer[2] < 0x34)
             return false;
+
+        if (buffer[2] > 0x39)
+            return false;
+
+        break;
+
+    case '3':
+
+        if (buffer[2] < 0x30)
+            return false;
+
+        if (buffer[2] > 0x39)
+            return false;
+
+        break;
+    default:
+        return false;
     }
 
     slash = memchr(buffer, '/', length);
-    if (!slash) return false;
+    if (!slash)
+        return false;
 
     ip_len = slash - buffer;
 
@@ -745,9 +832,11 @@ bool ov_sdp_is_ip4_multicast(const char *buffer, uint64_t length) {
 
     if (ttl_len == 1) {
 
-        if (ttl[0] < 0x30) return false;
+        if (ttl[0] < 0x30)
+            return false;
 
-        if (ttl[0] > 0x39) return false;
+        if (ttl[0] > 0x39)
+            return false;
 
     } else if (ttl_len > 3) {
 
@@ -760,9 +849,11 @@ bool ov_sdp_is_ip4_multicast(const char *buffer, uint64_t length) {
 
     // TTL is int of max length 3
 
-    if (!ov_sdp_is_ip4(buffer, ip_len)) return false;
+    if (!ov_sdp_is_ip4(buffer, ip_len))
+        return false;
 
-    if (!slash) return true;
+    if (!slash)
+        return true;
 
     return ov_sdp_is_port(slash + 1, length - ip_len - 1 - ttl_len - 1);
 }
@@ -771,13 +862,15 @@ bool ov_sdp_is_ip4_multicast(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_fqdn(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 4) return false;
+    if (!buffer || length < 4)
+        return false;
 
     for (uint64_t i = 0; i < length; i++) {
 
         if (!isalnum(buffer[i]))
             if (buffer[i] != '-')
-                if (buffer[i] != '.') return false;
+                if (buffer[i] != '.')
+                    return false;
     }
 
     return true;
@@ -787,7 +880,8 @@ bool ov_sdp_is_fqdn(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_extn_addr(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     return ov_sdp_is_address(buffer, length);
 }
@@ -796,7 +890,8 @@ bool ov_sdp_is_extn_addr(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_multicast_address(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     /*
 
@@ -830,7 +925,8 @@ bool ov_sdp_is_multicast_address(const char *buffer, uint64_t length) {
             if (ov_sdp_is_fqdn(buffer, length))
                     return true;
     */
-    if (ov_sdp_is_extn_addr(buffer, length)) return true;
+    if (ov_sdp_is_extn_addr(buffer, length))
+        return true;
 
     return false;
 }
@@ -839,7 +935,8 @@ bool ov_sdp_is_multicast_address(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_unicast_address(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
     /*
             if (ov_sdp_is_ip6(buffer, length))
                     return true;
@@ -850,7 +947,8 @@ bool ov_sdp_is_unicast_address(const char *buffer, uint64_t length) {
             if (ov_sdp_is_fqdn(buffer, length))
                     return true;
     */
-    if (ov_sdp_is_extn_addr(buffer, length)) return true;
+    if (ov_sdp_is_extn_addr(buffer, length))
+        return true;
 
     return false;
 }
@@ -859,18 +957,22 @@ bool ov_sdp_is_unicast_address(const char *buffer, uint64_t length) {
 
 bool ov_sdp_is_bandwidth(const char *buffer, uint64_t length) {
 
-    if (!buffer || length < 3) goto error;
+    if (!buffer || length < 3)
+        goto error;
 
     char *colon = NULL;
     char *ptr = NULL;
 
     colon = memchr(buffer, ':', length);
-    if (!colon) goto error;
+    if (!colon)
+        goto error;
 
-    if (!ov_sdp_is_token(buffer, (colon - buffer))) goto error;
+    if (!ov_sdp_is_token(buffer, (colon - buffer)))
+        goto error;
 
     ptr = colon + 1;
-    if (!ov_sdp_is_digit(ptr, length - (ptr - buffer))) goto error;
+    if (!ov_sdp_is_digit(ptr, length - (ptr - buffer)))
+        goto error;
 
     return true;
 error:

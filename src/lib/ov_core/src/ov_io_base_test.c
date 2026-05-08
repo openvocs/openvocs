@@ -100,9 +100,8 @@ int domains_init() {
 
     test_resource_dir = ov_test_get_resource_path("/resources");
 
-    domain_config_file = ov_test_get_resource_path(
-        "resources"
-        "/" TEST_DOMAIN_NAME);
+    domain_config_file = ov_test_get_resource_path("resources"
+                                                   "/" TEST_DOMAIN_NAME);
     domain_config_file_one =
         ov_test_get_resource_path("resources/" TEST_DOMAIN_NAME_ONE);
     domain_config_file_two =
@@ -114,9 +113,8 @@ int domains_init() {
     /* Since strings have been freed, reinit */
     test_resource_dir = ov_test_get_resource_path("/resources");
 
-    domain_config_file = ov_test_get_resource_path(
-        "resources"
-        "/" TEST_DOMAIN_NAME);
+    domain_config_file = ov_test_get_resource_path("resources"
+                                                   "/" TEST_DOMAIN_NAME);
     domain_config_file_one =
         ov_test_get_resource_path("resources/" TEST_DOMAIN_NAME_ONE);
     domain_config_file_two =
@@ -188,24 +186,21 @@ static bool dummy_accept(void *userdata, int listener, int connection) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool dummy_io(void *userdata,
-                     int connection,
+static bool dummy_io(void *userdata, int connection,
                      const ov_memory_pointer buffer) {
 
     struct dummy_userdata *data = (struct dummy_userdata *)userdata;
 
     data->connection = connection;
-    if (!data->buffer) data->buffer = ov_buffer_create(buffer.length);
+    if (!data->buffer)
+        data->buffer = ov_buffer_create(buffer.length);
 
-    if (!ov_buffer_set(data->buffer, buffer.start, buffer.length)) goto error;
+    if (!ov_buffer_set(data->buffer, buffer.start, buffer.length))
+        goto error;
 
     if (test_debug_log)
-        fprintf(stdout,
-                "dummy_io at %i bytes %zu content\n%.*s\n",
-                connection,
-                buffer.length,
-                (int)buffer.length,
-                buffer.start);
+        fprintf(stdout, "dummy_io at %i bytes %zu content\n%.*s\n", connection,
+                buffer.length, (int)buffer.length, buffer.start);
 
     return true;
 error:
@@ -219,7 +214,8 @@ static void dummy_close(void *userdata, int connection) {
     struct dummy_userdata *data = (struct dummy_userdata *)userdata;
     data->connection = connection;
 
-    if (test_debug_log) fprintf(stdout, "dummy_close at %i\n", connection);
+    if (test_debug_log)
+        fprintf(stdout, "dummy_close at %i\n", connection);
 
     return;
 }
@@ -247,7 +243,8 @@ static int dummy_client_hello_cb(SSL *s, int *al, void *arg) {
      *      so we add some dummy callback, to resume
      *      standard SSL operation.
      */
-    if (!s) return SSL_CLIENT_HELLO_ERROR;
+    if (!s)
+        return SSL_CLIENT_HELLO_ERROR;
 
     if (al || arg) { /* ignored */
     };
@@ -256,9 +253,7 @@ static int dummy_client_hello_cb(SSL *s, int *al, void *arg) {
 
 /*----------------------------------------------------------------------------*/
 
-static int run_client_handshake(ov_event_loop *loop,
-                                SSL *ssl,
-                                int *err,
+static int run_client_handshake(ov_event_loop *loop, SSL *ssl, int *err,
                                 int *errorcode) {
 
     testrun(loop);
@@ -279,51 +274,51 @@ static int run_client_handshake(ov_event_loop *loop,
 
         switch (r) {
 
-            case 1:
-                /* SUCCESS */
+        case 1:
+            /* SUCCESS */
+            run = false;
+            break;
+
+        default:
+
+            n = SSL_get_error(ssl, r);
+
+            switch (n) {
+
+            case SSL_ERROR_NONE:
+                /* SHOULD not be returned in 0 */
+                break;
+
+            case SSL_ERROR_ZERO_RETURN:
+                /* close */
                 run = false;
                 break;
 
-            default:
-
-                n = SSL_get_error(ssl, r);
-
-                switch (n) {
-
-                    case SSL_ERROR_NONE:
-                        /* SHOULD not be returned in 0 */
-                        break;
-
-                    case SSL_ERROR_ZERO_RETURN:
-                        /* close */
-                        run = false;
-                        break;
-
-                    case SSL_ERROR_WANT_READ:
-                    case SSL_ERROR_WANT_WRITE:
-                    case SSL_ERROR_WANT_CONNECT:
-                    case SSL_ERROR_WANT_X509_LOOKUP:
-                    case SSL_ERROR_WANT_ASYNC:
-                    case SSL_ERROR_WANT_ASYNC_JOB:
-                    case SSL_ERROR_WANT_CLIENT_HELLO_CB:
-                        /* try async again */
-                        break;
-
-                    case SSL_ERROR_SYSCALL:
-                        /* nonrecoverable IO error */
-                        *errorcode = ERR_get_error();
-                        run = false;
-                        break;
-
-                    case SSL_ERROR_SSL:
-                        run = false;
-                        break;
-
-                    case SSL_ERROR_WANT_ACCEPT:
-                        run = false;
-                        break;
-                }
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+            case SSL_ERROR_WANT_CONNECT:
+            case SSL_ERROR_WANT_X509_LOOKUP:
+            case SSL_ERROR_WANT_ASYNC:
+            case SSL_ERROR_WANT_ASYNC_JOB:
+            case SSL_ERROR_WANT_CLIENT_HELLO_CB:
+                /* try async again */
                 break;
+
+            case SSL_ERROR_SYSCALL:
+                /* nonrecoverable IO error */
+                *errorcode = ERR_get_error();
+                run = false;
+                break;
+
+            case SSL_ERROR_SSL:
+                run = false;
+                break;
+
+            case SSL_ERROR_WANT_ACCEPT:
+                run = false;
+                break;
+            }
+            break;
         }
 
         fprintf(stdout, "\nr %i n %i\n", r, n);
@@ -353,7 +348,8 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
     char *fingerprint = NULL;
 
-    if (!source) return NULL;
+    if (!source)
+        return NULL;
 
     size_t hex_len = 2 * length + 1;
     char hex[hex_len + 1];
@@ -370,13 +366,15 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
         fingerprint[(i * 3) + 0] = toupper(hex[(i * 2) + 0]);
         fingerprint[(i * 3) + 1] = toupper(hex[(i * 2) + 1]);
-        if (i < length - 1) fingerprint[(i * 3) + 2] = ':';
+        if (i < length - 1)
+            fingerprint[(i * 3) + 2] = ':';
     }
 
     return fingerprint;
 
 error:
-    if (fingerprint) free(fingerprint);
+    if (fingerprint)
+        free(fingerprint);
     return NULL;
 }
 
@@ -384,12 +382,14 @@ error:
 
 static char *fingerprint_from_cert(const X509 *cert, const EVP_MD *func) {
 
-    if (!cert || !func) return NULL;
+    if (!cert || !func)
+        return NULL;
 
     unsigned char mdigest[EVP_MAX_MD_SIZE] = {0};
     unsigned int mdigest_size = 0;
 
-    if (0 == X509_digest(cert, func, mdigest, &mdigest_size)) return NULL;
+    if (0 == X509_digest(cert, func, mdigest, &mdigest_size))
+        return NULL;
 
     return fingerprint_format_RFC8122((char *)mdigest, mdigest_size);
 }
@@ -402,11 +402,13 @@ static char *fingerprint_from_path(const char *path, const EVP_MD *func) {
     FILE *fp = NULL;
     X509 *x = NULL;
 
-    if (!path || !func) goto error;
+    if (!path || !func)
+        goto error;
 
     fp = fopen(path, "r");
 
-    if (!PEM_read_X509(fp, &x, NULL, NULL)) goto error;
+    if (!PEM_read_X509(fp, &x, NULL, NULL))
+        goto error;
 
     fingerprint = fingerprint_from_cert(x, func);
 
@@ -414,10 +416,13 @@ static char *fingerprint_from_path(const char *path, const EVP_MD *func) {
     X509_free(x);
     return fingerprint;
 error:
-    if (x) X509_free(x);
-    if (fp) fclose(fp);
+    if (x)
+        X509_free(x);
+    if (fp)
+        fclose(fp);
 
-    if (fingerprint) ov_data_pointer_free(fingerprint);
+    if (fingerprint)
+        ov_data_pointer_free(fingerprint);
     return NULL;
 }
 
@@ -425,26 +430,32 @@ error:
 
 static bool check_cert(SSL *ssl, const EVP_MD *func, const char *fingerprint) {
 
-    if (!ssl || !func || !fingerprint) return false;
+    if (!ssl || !func || !fingerprint)
+        return false;
 
     char *finger = NULL;
 
     X509 *cert = SSL_get_peer_certificate(ssl);
-    if (!cert) goto error;
+    if (!cert)
+        goto error;
 
     finger = fingerprint_from_cert(cert, func);
-    if (!finger) goto error;
+    if (!finger)
+        goto error;
 
-    if (0 != strcmp(finger, fingerprint)) goto error;
+    if (0 != strcmp(finger, fingerprint))
+        goto error;
 
     finger = ov_data_pointer_free(finger);
     X509_free(cert);
 
     return true;
 error:
-    if (cert) X509_free(cert);
+    if (cert)
+        X509_free(cert);
 
-    if (finger) ov_data_pointer_free(finger);
+    if (finger)
+        ov_data_pointer_free(finger);
     return false;
 }
 
@@ -570,12 +581,12 @@ int test_ov_io_base_load_ssl_config() {
     testrun(0 != base->domain.size);
     testrun(NULL != base->domain.array);
 
-    testrun(find_domain(
-        base, (uint8_t *)TEST_DOMAIN_NAME, strlen(TEST_DOMAIN_NAME)));
-    testrun(find_domain(
-        base, (uint8_t *)TEST_DOMAIN_NAME_ONE, strlen(TEST_DOMAIN_NAME_ONE)));
-    testrun(find_domain(
-        base, (uint8_t *)TEST_DOMAIN_NAME_TWO, strlen(TEST_DOMAIN_NAME_TWO)));
+    testrun(find_domain(base, (uint8_t *)TEST_DOMAIN_NAME,
+                        strlen(TEST_DOMAIN_NAME)));
+    testrun(find_domain(base, (uint8_t *)TEST_DOMAIN_NAME_ONE,
+                        strlen(TEST_DOMAIN_NAME_ONE)));
+    testrun(find_domain(base, (uint8_t *)TEST_DOMAIN_NAME_TWO,
+                        strlen(TEST_DOMAIN_NAME_TWO)));
 
     testrun(NULL == ov_io_base_free(base));
     testrun(NULL == ov_event_loop_free(loop));
@@ -617,10 +628,7 @@ int test_ov_io_base_create_listener() {
             ov_io_base_create_listener(base, (ov_io_base_listener_config){0}));
     testrun(-1 == ov_io_base_create_listener(NULL, config));
 
-    fprintf(stdout,
-            "Check %s:%i|%i\n",
-            config.socket.host,
-            config.socket.port,
+    fprintf(stdout, "Check %s:%i|%i\n", config.socket.host, config.socket.port,
             config.socket.type);
     int tcp = ov_io_base_create_listener(base, config);
     testrun(-1 != tcp);
@@ -844,8 +852,7 @@ int test_ov_io_base_create_connection() {
 
     // check recv over dummy io
     testrun(client_userdata.connection == client);
-    testrun(0 == memcmp("test",
-                        client_userdata.buffer->start,
+    testrun(0 == memcmp("test", client_userdata.buffer->start,
                         client_userdata.buffer->length));
     client_userdata.buffer = ov_buffer_free(client_userdata.buffer);
 
@@ -1041,8 +1048,7 @@ int test_ov_io_base_create_connection() {
 
     // check recv over dummy io
     testrun(client_userdata.connection == client);
-    testrun(0 == memcmp("test",
-                        client_userdata.buffer->start,
+    testrun(0 == memcmp("test", client_userdata.buffer->start,
                         client_userdata.buffer->length));
     client_userdata.buffer = ov_buffer_free(client_userdata.buffer);
 
@@ -1514,19 +1520,19 @@ int test_ov_io_base_close() {
 
         switch (i) {
 
-            case 0:
-                testrun(conn->fd == -1);
-                testrun(conn->listener.fd == -1);
-                testrun(conn->config.connection.callback.userdata == NULL);
-                testrun(conn->config.connection.callback.close == NULL);
-                testrun(conn->config.connection.callback.io == NULL);
-                break;
-            default:
-                testrun(conn->fd == c);
-                testrun(conn->listener.fd == server);
-                testrun(conn->config.connection.callback.userdata == &userdata);
-                testrun(conn->config.connection.callback.close == dummy_close);
-                testrun(conn->config.connection.callback.io == dummy_io);
+        case 0:
+            testrun(conn->fd == -1);
+            testrun(conn->listener.fd == -1);
+            testrun(conn->config.connection.callback.userdata == NULL);
+            testrun(conn->config.connection.callback.close == NULL);
+            testrun(conn->config.connection.callback.io == NULL);
+            break;
+        default:
+            testrun(conn->fd == c);
+            testrun(conn->listener.fd == server);
+            testrun(conn->config.connection.callback.userdata == &userdata);
+            testrun(conn->config.connection.callback.close == dummy_close);
+            testrun(conn->config.connection.callback.io == dummy_io);
         }
     }
 
@@ -1540,12 +1546,12 @@ int test_ov_io_base_close() {
 
         switch (i) {
 
-            case 0:
-            case 1:
-                testrun(bytes == 0);
-                break;
-            default:
-                testrun(bytes == -1);
+        case 0:
+        case 1:
+            testrun(bytes == 0);
+            break;
+        default:
+            testrun(bytes == -1);
         }
     }
 
@@ -1557,20 +1563,20 @@ int test_ov_io_base_close() {
 
         switch (i) {
 
-            case 0:
-            case 1:
-                testrun(conn->fd == -1);
-                testrun(conn->listener.fd == -1);
-                testrun(conn->config.connection.callback.userdata == NULL);
-                testrun(conn->config.connection.callback.close == NULL);
-                testrun(conn->config.connection.callback.io == NULL);
-                break;
-            default:
-                testrun(conn->fd == c);
-                testrun(conn->listener.fd == server);
-                testrun(conn->config.connection.callback.userdata == &userdata);
-                testrun(conn->config.connection.callback.close == dummy_close);
-                testrun(conn->config.connection.callback.io == dummy_io);
+        case 0:
+        case 1:
+            testrun(conn->fd == -1);
+            testrun(conn->listener.fd == -1);
+            testrun(conn->config.connection.callback.userdata == NULL);
+            testrun(conn->config.connection.callback.close == NULL);
+            testrun(conn->config.connection.callback.io == NULL);
+            break;
+        default:
+            testrun(conn->fd == c);
+            testrun(conn->listener.fd == server);
+            testrun(conn->config.connection.callback.userdata == &userdata);
+            testrun(conn->config.connection.callback.close == dummy_close);
+            testrun(conn->config.connection.callback.io == dummy_io);
         }
     }
 
@@ -1588,21 +1594,21 @@ int test_ov_io_base_close() {
 
         switch (i) {
 
-            case 0:
-            case 1:
-            case 2:
-                testrun(conn->fd == -1);
-                testrun(conn->listener.fd == -1);
-                testrun(conn->config.connection.callback.userdata == NULL);
-                testrun(conn->config.connection.callback.close == NULL);
-                testrun(conn->config.connection.callback.io == NULL);
-                break;
-            default:
-                testrun(conn->fd == c);
-                testrun(conn->listener.fd == server);
-                testrun(conn->config.connection.callback.userdata == &userdata);
-                testrun(conn->config.connection.callback.close == dummy_close);
-                testrun(conn->config.connection.callback.io == dummy_io);
+        case 0:
+        case 1:
+        case 2:
+            testrun(conn->fd == -1);
+            testrun(conn->listener.fd == -1);
+            testrun(conn->config.connection.callback.userdata == NULL);
+            testrun(conn->config.connection.callback.close == NULL);
+            testrun(conn->config.connection.callback.io == NULL);
+            break;
+        default:
+            testrun(conn->fd == c);
+            testrun(conn->listener.fd == server);
+            testrun(conn->config.connection.callback.userdata == &userdata);
+            testrun(conn->config.connection.callback.close == dummy_close);
+            testrun(conn->config.connection.callback.io == dummy_io);
         }
     }
 
@@ -1615,7 +1621,8 @@ int test_ov_io_base_close() {
     for (size_t i = 0; i < items; i++) {
 
         // we closed client 2 above
-        if (i == 2) continue;
+        if (i == 2)
+            continue;
 
         bytes = recv(client[i], buf, size, 0);
         testrun(bytes == 0);
@@ -1751,8 +1758,7 @@ int test_ov_io_base_get_statistics() {
 
         int c = conn[i];
 
-        testrun(ov_io_base_send(base,
-                                c,
+        testrun(ov_io_base_send(base, c,
                                 (ov_memory_pointer){.start = (uint8_t *)str,
                                                     .length = strlen(str)}));
 
@@ -1831,10 +1837,8 @@ int test_ov_io_base_send() {
     ov_socket_configuration local_socket_config =
         (ov_socket_configuration){.type = LOCAL};
 
-    ssize_t bytes = snprintf(local_socket_config.host,
-                             OV_HOST_NAME_MAX,
-                             "%s/local12313",
-                             test_resource_dir);
+    ssize_t bytes = snprintf(local_socket_config.host, OV_HOST_NAME_MAX,
+                             "%s/local12313", test_resource_dir);
     unlink(local_socket_config.host);
 
     testrun(bytes > 0);
@@ -1876,8 +1880,7 @@ int test_ov_io_base_send() {
 
     // send
     testrun(ov_io_base_send(
-        base,
-        conn,
+        base, conn,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(loop->run(loop, TEST_RUNTIME_USECS));
 
@@ -1890,14 +1893,12 @@ int test_ov_io_base_send() {
 
     // send on unkown socket
     testrun(!ov_io_base_send(
-        base,
-        client,
+        base, client,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // send on listener socket
     testrun(!ov_io_base_send(
-        base,
-        tcp,
+        base, tcp,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // close tcp conn
@@ -1918,8 +1919,7 @@ int test_ov_io_base_send() {
 
     // send
     testrun(ov_io_base_send(
-        base,
-        conn,
+        base, conn,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(loop->run(loop, TEST_RUNTIME_USECS));
 
@@ -1932,14 +1932,12 @@ int test_ov_io_base_send() {
 
     // send on unkown socket
     testrun(!ov_io_base_send(
-        base,
-        client,
+        base, client,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // send on listener socket
     testrun(!ov_io_base_send(
-        base,
-        tcp,
+        base, tcp,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // close local conn
@@ -1960,8 +1958,7 @@ int test_ov_io_base_send() {
 
     // send not handshaked (ignore)
     testrun(!ov_io_base_send(
-        base,
-        conn,
+        base, conn,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(loop->run(loop, TEST_RUNTIME_USECS));
 
@@ -1995,8 +1992,7 @@ int test_ov_io_base_send() {
 
     // send handshaked
     testrun(ov_io_base_send(
-        base,
-        conn,
+        base, conn,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(loop->run(loop, TEST_RUNTIME_USECS));
 
@@ -2009,20 +2005,17 @@ int test_ov_io_base_send() {
 
     // send on unkown socket
     testrun(!ov_io_base_send(
-        base,
-        client,
+        base, client,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // send on listener socket
     testrun(!ov_io_base_send(
-        base,
-        tcp,
+        base, tcp,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
 
     // repeat send
     testrun(ov_io_base_send(
-        base,
-        conn,
+        base, conn,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(loop->run(loop, TEST_RUNTIME_USECS));
 
@@ -2038,8 +2031,7 @@ int test_ov_io_base_send() {
 
     // repeat send
     testrun(ov_io_base_send(
-        base,
-        conn,
+        base, conn,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = strlen(str)}));
     testrun(loop->run(loop, TEST_RUNTIME_USECS));
 
@@ -2103,12 +2095,12 @@ int check_sni() {
 
     fprintf(stdout, "Domains %zu\n", base->domain.size);
 
-    testrun(find_domain(
-        base, (uint8_t *)TEST_DOMAIN_NAME, strlen(TEST_DOMAIN_NAME)));
-    testrun(find_domain(
-        base, (uint8_t *)TEST_DOMAIN_NAME_ONE, strlen(TEST_DOMAIN_NAME_ONE)));
-    testrun(find_domain(
-        base, (uint8_t *)TEST_DOMAIN_NAME_TWO, strlen(TEST_DOMAIN_NAME_TWO)));
+    testrun(find_domain(base, (uint8_t *)TEST_DOMAIN_NAME,
+                        strlen(TEST_DOMAIN_NAME)));
+    testrun(find_domain(base, (uint8_t *)TEST_DOMAIN_NAME_ONE,
+                        strlen(TEST_DOMAIN_NAME_ONE)));
+    testrun(find_domain(base, (uint8_t *)TEST_DOMAIN_NAME_TWO,
+                        strlen(TEST_DOMAIN_NAME_TWO)));
 
     ov_io_base_listener_config config = (ov_io_base_listener_config){
 
@@ -2281,7 +2273,8 @@ int check_sni() {
 
     testrun(check_cert(ssl, digest_func, fingerprint[1]));
 
-    if (test_debug_log) fprintf(stdout, "request with header one.test - done");
+    if (test_debug_log)
+        fprintf(stdout, "request with header one.test - done");
 
     // reset
     SSL_CTX_free(ctx);
@@ -2314,7 +2307,8 @@ int check_sni() {
 
     testrun(check_cert(ssl, digest_func, fingerprint[2]));
 
-    if (test_debug_log) fprintf(stdout, "request with header two.test - done");
+    if (test_debug_log)
+        fprintf(stdout, "request with header two.test - done");
 
     // reset
     SSL_CTX_free(ctx);
@@ -2431,16 +2425,9 @@ int check_sni() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_io_base",
-            domains_init,
-            test_ov_io_base_create,
-            test_ov_io_base_free,
-            test_ov_io_base_debug,
-            test_ov_io_base_load_ssl_config,
-            test_ov_io_base_create_listener,
-            test_ov_io_base_create_connection,
-            test_ov_io_base_close,
-            test_ov_io_base_get_statistics,
-            test_ov_io_base_send,
-            check_sni,
+OV_TEST_RUN("ov_io_base", domains_init, test_ov_io_base_create,
+            test_ov_io_base_free, test_ov_io_base_debug,
+            test_ov_io_base_load_ssl_config, test_ov_io_base_create_listener,
+            test_ov_io_base_create_connection, test_ov_io_base_close,
+            test_ov_io_base_get_statistics, test_ov_io_base_send, check_sni,
             domains_deinit);

@@ -212,8 +212,8 @@ static int test_ov_frame_data_list_free() {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_frame_data_list *get_frame_data_list_with_exactly_num_entries(
-    size_t n) {
+static ov_frame_data_list *
+get_frame_data_list_with_exactly_num_entries(size_t n) {
 
     ov_frame_data_list *list = ov_frame_data_list_create(n);
 
@@ -334,12 +334,9 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_frame_data_list",
-            test_ov_frame_data_list_enable_caching,
-            test_ov_frame_data_list_create,
-            test_ov_frame_data_list_free,
-            test_ov_frame_data_list_push_data,
-            test_ov_frame_data_list_pop_data,
+OV_TEST_RUN("ov_frame_data_list", test_ov_frame_data_list_enable_caching,
+            test_ov_frame_data_list_create, test_ov_frame_data_list_free,
+            test_ov_frame_data_list_push_data, test_ov_frame_data_list_pop_data,
             tear_down);
 
 /*----------------------------------------------------------------------------*/

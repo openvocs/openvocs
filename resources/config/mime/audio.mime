@@ -9,6 +9,11 @@
         "extension" : [ "wav"]
     },
 
+    "opus" : {
+        "mime" : "audio/opus",
+        "extension" : [ "opus"]
+    },
+
     "mp3" : {
         "mime" : "audio/mpeg",
         "extension" : [ "mp3"]

@@ -91,8 +91,7 @@ void ov_test_tcp_server_loopback(int fd, void *userdata);
  * in the config.
  *
  */
-bool ov_test_tcp_server(pid_t *server_pid,
-                        int *server_port,
+bool ov_test_tcp_server(pid_t *server_pid, int *server_port,
                         ov_test_tcp_server_config cfg);
 
 /*----------------------------------------------------------------------------*/

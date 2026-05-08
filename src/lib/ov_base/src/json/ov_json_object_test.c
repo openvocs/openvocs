@@ -95,7 +95,8 @@ int test_ov_json_object() {
 
 static bool dummy_clear(void *data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
     return true;
 }
 
@@ -422,7 +423,8 @@ int test_ov_json_object_is_empty() {
 
 static bool dummy_for_each(const void *key, void *item, void *data) {
 
-    if (key || item || data) return true;
+    if (key || item || data)
+        return true;
     return true;
 }
 

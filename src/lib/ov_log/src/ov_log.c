@@ -47,17 +47,8 @@
 
 static char const *level_strings[] = {
 
-    "emergency",
-    "alert",
-    "critical",
-    "error",
-    "warning",
-    "notice",
-    "info",
-    "debug",
-    "dev",
-    "invalid",
-    0
+    "emergency", "alert", "critical", "error",   "warning", "notice",
+    "info",      "debug", "dev",      "invalid", 0
 
 };
 
@@ -106,14 +97,10 @@ char const *ov_log_level_to_string(ov_log_level level) {
                                MESSAGE FORMATTERS
  ****************************************************************************/
 
-typedef bool (*format_message_func)(char **msg_out,
-                                    size_t *msg_len_out,
-                                    int level,
-                                    char const *const file,
-                                    char const *const function,
-                                    int line,
-                                    char const *const format,
-                                    va_list ap);
+typedef bool (*format_message_func)(char **msg_out, size_t *msg_len_out,
+                                    int level, char const *const file,
+                                    char const *const function, int line,
+                                    char const *const format, va_list ap);
 
 /*----------------------------------------------------------------------------*/
 
@@ -144,14 +131,9 @@ static int print_timestamp_nocheck(FILE *msg_out) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool format_as_json(char **msg,
-                           size_t *msg_len,
-                           int level,
-                           char const *const file,
-                           char const *const function,
-                           int line,
-                           char const *const format,
-                           va_list ap) {
+static bool format_as_json(char **msg, size_t *msg_len, int level,
+                           char const *const file, char const *const function,
+                           int line, char const *const format, va_list ap) {
 
     LOG_ASSERT(0 != msg);
     LOG_ASSERT(0 != msg_len);
@@ -181,9 +163,7 @@ static bool format_as_json(char **msg,
                     " \"FUNC\" : \"%s\",\n"
                     " \"LINE\" : %d,\n"
                     " \"INFO\" : \"",
-                    file,
-                    function,
-                    line)) {
+                    file, function, line)) {
         goto error;
     }
 
@@ -214,14 +194,10 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool format_as_plain_text(char **msg,
-                                 size_t *msg_len,
-                                 int level,
+static bool format_as_plain_text(char **msg, size_t *msg_len, int level,
                                  char const *const file,
-                                 char const *const function,
-                                 int line,
-                                 char const *const format,
-                                 va_list ap) {
+                                 char const *const function, int line,
+                                 char const *const format, va_list ap) {
 
     LOG_ASSERT(0 != msg);
     LOG_ASSERT(0 != msg_len);
@@ -241,12 +217,8 @@ static bool format_as_plain_text(char **msg,
         goto error;
     }
 
-    if (0 > fprintf(msg_out,
-                    " [%s] - %s:%d (%s): ",
-                    ov_log_level_to_string(level),
-                    file,
-                    line,
-                    function)) {
+    if (0 > fprintf(msg_out, " [%s] - %s:%d (%s): ",
+                    ov_log_level_to_string(level), file, line, function)) {
         goto error;
     }
 
@@ -381,7 +353,8 @@ static bool free_output(void const *key, void const *value, void *arg) {
     UNUSED(key);
     UNUSED(arg);
 
-    if (0 == value) return false;
+    if (0 == value)
+        return false;
 
     module_output *out = (module_output *)value;
 
@@ -450,13 +423,13 @@ static format_message_func formatter_for_format(ov_log_format fmt) {
 
     switch (fmt) {
 
-        case OV_LOG_JSON:
-            return format_as_json;
+    case OV_LOG_JSON:
+        return format_as_json;
 
-        case OV_LOG_TEXT:
-        default:
+    case OV_LOG_TEXT:
+    default:
 
-            return format_as_plain_text;
+        return format_as_plain_text;
     };
 
     return format_as_plain_text;
@@ -464,8 +437,7 @@ static format_message_func formatter_for_format(ov_log_format fmt) {
 
 /*----------------------------------------------------------------------------*/
 
-static int set_module_output(module_output *mout,
-                             const ov_log_output output,
+static int set_module_output(module_output *mout, const ov_log_output output,
                              ov_log_level level) {
 
     LOG_ASSERT(0 != mout);
@@ -490,10 +462,8 @@ static int set_module_output(module_output *mout,
 
 /*----------------------------------------------------------------------------*/
 
-int ov_log_set_output(char const *module_name,
-                      char const *function_name,
-                      ov_log_level level,
-                      const ov_log_output output) {
+int ov_log_set_output(char const *module_name, char const *function_name,
+                      ov_log_level level, const ov_log_output output) {
 
     if (0 == module_name) {
         return set_module_output(&g_default_output, output, level);
@@ -574,14 +544,10 @@ static module_output *output_for(char const *module, char const *func) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool log_to_stream_nocheck(int fh,
-                                  format_message_func formatter,
-                                  int level,
-                                  char const *const file,
-                                  char const *const function,
-                                  int line,
-                                  char const *const format,
-                                  va_list ap) {
+static bool log_to_stream_nocheck(int fh, format_message_func formatter,
+                                  int level, char const *const file,
+                                  char const *const function, int line,
+                                  char const *const format, va_list ap) {
 
     FILE *msg_out = 0;
 
@@ -632,13 +598,10 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool format_for_systemd(char **msg,
-                               size_t *msg_len,
+static bool format_for_systemd(char **msg, size_t *msg_len,
                                char const *const file,
-                               char const *const function,
-                               int line,
-                               char const *const format,
-                               va_list ap) {
+                               char const *const function, int line,
+                               char const *const format, va_list ap) {
 
     LOG_ASSERT(0 != msg);
     LOG_ASSERT(0 != msg_len);
@@ -685,12 +648,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool log_to_systemd(int level,
-                           char const *file,
-                           char const *func,
-                           size_t line,
-                           char const *const format,
-                           va_list ap) {
+static bool log_to_systemd(int level, char const *file, char const *func,
+                           size_t line, char const *const format, va_list ap) {
 
 #ifdef foosdjournalhfoo
 
@@ -702,8 +661,8 @@ static bool log_to_systemd(int level,
     char *msg = 0;
     size_t msg_len_bytes = 0;
 
-    if (format_for_systemd(
-            &msg, &msg_len_bytes, file, func, line, format, ap)) {
+    if (format_for_systemd(&msg, &msg_len_bytes, file, func, line, format,
+                           ap)) {
 
         bool result = sd_journal_print(level, "%s", msg) >= 0;
         free(msg);
@@ -737,7 +696,8 @@ static bool log_to_systemd(int level,
 
 static int create_log_file(char const *path) {
 
-    if (0 == path) return -1;
+    if (0 == path)
+        return -1;
 
     int fh = open(path, O_RDWR | O_CREAT | O_APPEND, S_IRWXU);
 
@@ -785,12 +745,8 @@ static bool rotate_log_if_required(module_output *mout) {
                                       LOG
  ****************************************************************************/
 
-bool ov_log_ng(ov_log_level level,
-               char const *file,
-               char const *function,
-               size_t line,
-               char const *format,
-               ...) {
+bool ov_log_ng(ov_log_level level, char const *file, char const *function,
+               size_t line, char const *format, ...) {
 
     va_list ap;
 
@@ -823,14 +779,9 @@ bool ov_log_ng(ov_log_level level,
 
     if (should_log_to_stream) {
 
-        logged_to_stream = log_to_stream_nocheck(fout->output.filehandle,
-                                                 fout->formatter,
-                                                 level,
-                                                 file,
-                                                 function,
-                                                 line,
-                                                 format,
-                                                 ap);
+        logged_to_stream =
+            log_to_stream_nocheck(fout->output.filehandle, fout->formatter,
+                                  level, file, function, line, format, ap);
     }
 
     if (should_log_to_stream && (!logged_to_stream)) {

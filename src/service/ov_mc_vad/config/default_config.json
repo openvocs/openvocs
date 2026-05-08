@@ -20,10 +20,7 @@
 		"limits" : 
 		{
 			"activate" : 3,
-			"deactivate" : 25,
-			"threads" : 0,
-			"threadlock timeout (usec)" : 0,
-			"message_queue_capacity" : 0
+			"deactivate" : 25
 		}
 	}
 }

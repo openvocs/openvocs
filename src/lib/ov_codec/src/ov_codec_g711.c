@@ -72,17 +72,11 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
 static ov_codec *impl_free(ov_codec *self);
 
-static int32_t impl_encode(ov_codec *self,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
-                           size_t max_out_length);
+static int32_t impl_encode(ov_codec *self, const uint8_t *input, size_t length,
+                           uint8_t *output, size_t max_out_length);
 
-static int32_t impl_decode(ov_codec *self,
-                           uint64_t seq_number,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
+static int32_t impl_decode(ov_codec *self, uint64_t seq_number,
+                           const uint8_t *input, size_t length, uint8_t *output,
                            size_t max_out_length);
 
 static ov_json_value *impl_get_parameters(const ov_codec *);
@@ -108,10 +102,11 @@ const char *ov_codec_g711_id() { return "G.711"; }
 
 ov_codec_generator ov_codec_g711_install(ov_codec_factory *factory) {
 
-    if (0 == factory) goto error;
+    if (0 == factory)
+        goto error;
 
-    return ov_codec_factory_install_codec(
-        factory, ov_codec_g711_id(), impl_codec_create);
+    return ov_codec_factory_install_codec(factory, ov_codec_g711_id(),
+                                          impl_codec_create);
 
 error:
 
@@ -122,6 +117,20 @@ error:
  *                             PRIVATE FUNCTIONS
  ******************************************************************************/
 
+static int8_t impl_rtp_payload_type_alaw(ov_codec const *codec) {
+    UNUSED(codec);
+    return 8;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static int8_t impl_rtp_payload_type_ulaw(ov_codec const *codec) {
+    UNUSED(codec);
+    return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static ov_codec *impl_codec_create(uint32_t ssid,
                                    const ov_json_value *parameters) {
 
@@ -131,7 +140,8 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
     Law law = law_from_parameters(parameters);
 
-    if (INVALID == law) goto error;
+    if (INVALID == law)
+        goto error;
 
     g711 = calloc(1, sizeof(struct codec_g711_struct));
 
@@ -150,26 +160,29 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
     switch (law) {
 
-        case ULAW:
-            g711->expand = ulaw_expand;
-            g711->compress = ulaw_compress;
-            break;
+    case ULAW:
+        g711->expand = ulaw_expand;
+        g711->compress = ulaw_compress;
+        g711->codec.rtp_payload_type = impl_rtp_payload_type_ulaw;
+        break;
 
-        case ALAW:
-            g711->expand = alaw_expand;
-            g711->compress = alaw_compress;
-            break;
+    case ALAW:
+        g711->expand = alaw_expand;
+        g711->compress = alaw_compress;
+        g711->codec.rtp_payload_type = impl_rtp_payload_type_alaw;
+        break;
 
-        default:
+    default:
 
-            goto error;
+        goto error;
     };
 
     return (ov_codec *)g711;
 
 error:
 
-    if (0 != g711) impl_free((ov_codec *)g711);
+    if (0 != g711)
+        impl_free((ov_codec *)g711);
 
     return 0;
 }
@@ -178,7 +191,8 @@ error:
 
 static ov_codec *impl_free(ov_codec *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     free(self);
 
@@ -191,15 +205,15 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_encode(ov_codec *self,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
-                           size_t max_out_length) {
+static int32_t impl_encode(ov_codec *self, const uint8_t *input, size_t length,
+                           uint8_t *output, size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
     if ((0 == length) || (2 * (unsigned)INT_MAX < length)) {
 
@@ -251,20 +265,21 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_decode(ov_codec *self,
-                           uint64_t seq_number,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
+static int32_t impl_decode(ov_codec *self, uint64_t seq_number,
+                           const uint8_t *input, size_t length, uint8_t *output,
                            size_t max_out_length) {
 
     UNUSED(seq_number);
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -320,7 +335,8 @@ error:
 
 static ov_json_value *impl_get_parameters(const ov_codec *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
     if (MAGIC_NUMBER != self->type) {
 
         ov_log_error("Called on invalid codec");
@@ -369,12 +385,14 @@ static uint32_t impl_get_samplerate_hertz(const ov_codec *self) {
 
 static Law law_from_parameters(const ov_json_value *parameters) {
 
-    if (0 == parameters) return ULAW;
+    if (0 == parameters)
+        return ULAW;
 
     char const *law_string =
         ov_json_string_get(ov_json_get(parameters, "/" CONFIG_KEY_G711_LAW));
 
-    if (0 == law_string) return ULAW;
+    if (0 == law_string)
+        return ULAW;
 
     Law law = INVALID;
 
@@ -411,7 +429,7 @@ static Law law_from_parameters(const ov_json_value *parameters) {
 #define REMOVE_HIGH_ORDER_BIT(x) ((x) & ~HIGH_ORDER_BIT)
 
 #define A_LAW_SIGN(x)                                                          \
-    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t)1 : (int8_t) - 1)
+    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t)1 : (int8_t)-1)
 
 /*----------------------------------------------------------------------------*
  *                                   A-Law
@@ -427,9 +445,11 @@ static int16_t alaw_expand(uint8_t x) {
     uint16_t exponent = intermediate & EXPONENT_MASK;
     exponent = exponent >> 4;
 
-    if (0 < exponent) mantissa += 0x10;
+    if (0 < exponent)
+        mantissa += 0x10;
 
-    if (0 == exponent) exponent = 1;
+    if (0 == exponent)
+        exponent = 1;
 
     uint16_t result_abs = mantissa << exponent;
 
@@ -446,8 +466,10 @@ static int16_t alaw_expand(uint8_t x) {
 
 static uint8_t alaw_compress(int16_t x) {
 
-    if (x > 4032) return INVERT_EVEN_BITS(0xff);
-    if (x < -4032) return INVERT_EVEN_BITS(0x7f);
+    if (x > 4032)
+        return INVERT_EVEN_BITS(0xff);
+    if (x < -4032)
+        return INVERT_EVEN_BITS(0x7f);
 
     int s = 1;
 
@@ -465,7 +487,8 @@ static uint8_t alaw_compress(int16_t x) {
     uint8_t exp = alaw_get_exponent(abs);
     uint8_t shift = exp;
 
-    if (0 == exp) shift = 1;
+    if (0 == exp)
+        shift = 1;
 
     OV_ASSERT(1 << 4 > exp);
     OV_ASSERT(8 > shift);
@@ -476,7 +499,8 @@ static uint8_t alaw_compress(int16_t x) {
     uint8_t compressed = (uint8_t)abs;
     compressed |= exp << 4;
 
-    if (0 < s) compressed |= HIGH_ORDER_BIT;
+    if (0 < s)
+        compressed |= HIGH_ORDER_BIT;
 
     return INVERT_EVEN_BITS(compressed);
 }
@@ -505,7 +529,7 @@ static uint8_t alaw_get_exponent(uint16_t x) {
  *----------------------------------------------------------------------------*/
 
 #define U_LAW_SIGN(x)                                                          \
-    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t) - 1 : (int8_t)1)
+    (((x & HIGH_ORDER_BIT) == HIGH_ORDER_BIT) ? (int8_t)-1 : (int8_t)1)
 
 /*---------------------------------------------------------------------------*/
 
@@ -534,8 +558,10 @@ static int16_t ulaw_expand(uint8_t x) {
 
 static uint8_t ulaw_compress(int16_t x) {
 
-    if (8158 < x) return 0x80;
-    if (-8158 > x) return 0x00;
+    if (8158 < x)
+        return 0x80;
+    if (-8158 > x)
+        return 0x00;
 
     int8_t s = 1;
 
@@ -580,7 +606,8 @@ static uint8_t ulaw_compress(int16_t x) {
     uint8_t result = u | (exp << 4);
 
     /* Set the SIGN bit if negative */
-    if (0 > s) result |= HIGH_ORDER_BIT;
+    if (0 > s)
+        result |= HIGH_ORDER_BIT;
 
     /* And invert */
     return result ^ 0xff;

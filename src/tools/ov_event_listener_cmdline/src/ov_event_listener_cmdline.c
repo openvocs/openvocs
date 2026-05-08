@@ -85,34 +85,35 @@ bool read_user_input(int argc, char *argv[], ov_socket_configuration *config) {
         c = getopt_long(argc, argv, "p:i:h", long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1) break;
+        if (c == -1)
+            break;
 
         switch (c) {
 
-            case 0:
+        case 0:
 
-                printf("option %s", long_options[option_index].name);
-                if (optarg) printf(" with arg %s", optarg);
-                printf("\n");
-                break;
+            printf("option %s", long_options[option_index].name);
+            if (optarg)
+                printf(" with arg %s", optarg);
+            printf("\n");
+            break;
 
-            case 'h':
-                print_usage();
-                goto error;
-                break;
+        case 'h':
+            print_usage();
+            goto error;
+            break;
 
-            case 'p':
-                ov_convert_string_to_uint16(
-                    optarg, strlen(optarg), &config->port);
-                break;
+        case 'p':
+            ov_convert_string_to_uint16(optarg, strlen(optarg), &config->port);
+            break;
 
-            case 'i':
-                strncpy(config->host, optarg, OV_HOST_NAME_MAX);
-                break;
+        case 'i':
+            strncpy(config->host, optarg, OV_HOST_NAME_MAX);
+            break;
 
-            default:
-                print_usage();
-                goto error;
+        default:
+            print_usage();
+            goto error;
         }
     }
 
@@ -154,16 +155,15 @@ static void cb_connected(void *userdata, int socket, bool result) {
             ov_event_api_message_create(OV_KEY_REGISTER, NULL, 0);
         ov_json_value *par = ov_event_api_set_parameter(out);
         ov_json_object_set(par, OV_KEY_UUID, ov_json_string(self->uuid));
-        ov_json_object_set(
-            par, OV_KEY_TYPE, ov_json_string("commandline logger"));
+        ov_json_object_set(par, OV_KEY_TYPE,
+                           ov_json_string("commandline logger"));
 
         char *str = ov_json_value_to_string(out);
         out = ov_json_value_free(out);
 
-        ov_io_base_send(self->base,
-                        socket,
-                        (ov_memory_pointer){
-                            .start = (uint8_t *)str, .length = strlen(str)});
+        ov_io_base_send(self->base, socket,
+                        (ov_memory_pointer){.start = (uint8_t *)str,
+                                            .length = strlen(str)});
 
         str = ov_data_pointer_free(str);
     }
@@ -187,8 +187,7 @@ static void cb_close(void *userdata, int connection) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_io(void *userdata,
-                  int connection,
+static bool cb_io(void *userdata, int connection,
                   const ov_memory_pointer buffer) {
 
     struct userdata *self = (struct userdata *)userdata;
@@ -234,14 +233,17 @@ int main(int argc, char *argv[]) {
     self.loop = loop;
     ov_id_fill_with_uuid(self.uuid);
 
-    if (!read_user_input(argc, argv, &config)) goto error;
+    if (!read_user_input(argc, argv, &config))
+        goto error;
 
-    if (0 == config.port) config.port = 44444;
+    if (0 == config.port)
+        config.port = 44444;
 
-    if (0 == config.host[0]) strcat(config.host, "127.0.0.1");
+    if (0 == config.host[0])
+        strcat(config.host, "127.0.0.1");
 
-    fprintf(
-        stdout, "connecting to host:port %s:%i\n", config.host, config.port);
+    fprintf(stdout, "connecting to host:port %s:%i\n", config.host,
+            config.port);
 
     self.socket = ov_io_base_create_connection(
         base,

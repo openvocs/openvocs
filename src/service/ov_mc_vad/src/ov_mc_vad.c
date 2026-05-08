@@ -56,9 +56,11 @@ int main(int argc, char **argv) {
         .max.timers = ov_socket_get_max_supported_runtime_sockets(0)};
 
     const char *path = ov_config_path_from_command_line(argc, argv);
-    if (!path) path = CONFIG_PATH;
+    if (!path)
+        path = CONFIG_PATH;
 
-    if (path == VERSION_REQUEST_ONLY) goto error;
+    if (path == VERSION_REQUEST_ONLY)
+        goto error;
 
     json_config = ov_config_load(path);
     if (!json_config) {
@@ -68,7 +70,8 @@ int main(int argc, char **argv) {
         ov_log_debug("Config load from PATH %s", path);
     }
 
-    if (!ov_config_log_from_json(json_config)) goto error;
+    if (!ov_config_log_from_json(json_config))
+        goto error;
 
     loop = ov_os_event_loop(loop_config);
 
@@ -77,7 +80,8 @@ int main(int argc, char **argv) {
         goto error;
     }
 
-    if (!ov_event_loop_setup_signals(loop)) goto error;
+    if (!ov_event_loop_setup_signals(loop))
+        goto error;
 
     ov_io_config io_config = ov_io_config_from_json(json_config);
     io_config.loop = loop;

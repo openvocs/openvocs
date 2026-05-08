@@ -70,8 +70,7 @@ size_t ov_turn_attr_dont_fragment_encoding_length();
         @param next     (optional) pointer to next (after write)
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_dont_fragment_encode(uint8_t *buffer,
-                                       size_t length,
+bool ov_turn_attr_dont_fragment_encode(uint8_t *buffer, size_t length,
                                        uint8_t **next);
 
 // NOTE no decode ov_turn_attr_is_dont_fragment is sufficiant

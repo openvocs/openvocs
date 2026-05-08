@@ -87,16 +87,14 @@ ov_json_value *ov_json_array_get(ov_json_value *array, size_t position);
 
 ov_json_value *ov_json_array_remove(ov_json_value *array, size_t position);
 
-bool ov_json_array_insert(ov_json_value *array,
-                          size_t position,
+bool ov_json_array_insert(ov_json_value *array, size_t position,
                           ov_json_value *value);
 
 size_t ov_json_array_count(const ov_json_value *array);
 
 bool ov_json_array_is_empty(const ov_json_value *array);
 
-bool ov_json_array_for_each(ov_json_value *array,
-                            void *data,
+bool ov_json_array_for_each(ov_json_value *array, void *data,
                             bool (*function)(void *value, void *data));
 
 bool ov_json_array_remove_child(ov_json_value *array, ov_json_value *child);

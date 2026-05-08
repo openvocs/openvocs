@@ -59,17 +59,11 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
 static ov_codec *impl_free(ov_codec *self);
 
-static int32_t impl_encode(ov_codec *self,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
-                           size_t max_out_length);
+static int32_t impl_encode(ov_codec *self, const uint8_t *input, size_t length,
+                           uint8_t *output, size_t max_out_length);
 
-static int32_t impl_decode(ov_codec *self,
-                           uint64_t seq_number,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
+static int32_t impl_decode(ov_codec *self, uint64_t seq_number,
+                           const uint8_t *input, size_t length, uint8_t *output,
                            size_t max_out_length);
 
 static ov_json_value *impl_get_parameters(const ov_codec *self);
@@ -84,10 +78,11 @@ const char *ov_codec_raw_id() { return (char *)MAGIC_NUMBER_CHARS; }
 
 ov_codec_generator ov_codec_raw_install(ov_codec_factory *factory) {
 
-    if (0 == factory) goto error;
+    if (0 == factory)
+        goto error;
 
-    return ov_codec_factory_install_codec(
-        factory, ov_codec_raw_id(), impl_codec_create);
+    return ov_codec_factory_install_codec(factory, ov_codec_raw_id(),
+                                          impl_codec_create);
 
 error:
 
@@ -122,7 +117,8 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
 static ov_codec *impl_free(ov_codec *self) {
 
-    if (0 == self) return 0;
+    if (0 == self)
+        return 0;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -139,17 +135,18 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_encode(ov_codec *self,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
-                           size_t max_out_length) {
+static int32_t impl_encode(ov_codec *self, const uint8_t *input, size_t length,
+                           uint8_t *output, size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -159,19 +156,16 @@ static int32_t impl_encode(ov_codec *self,
 
     if (length > max_out_length) {
 
-        ov_log_error(
-            "Output buffer not large enough. Input is %zu, "
-            "output %zu",
-            length,
-            max_out_length);
+        ov_log_error("Output buffer not large enough. Input is %zu, "
+                     "output %zu",
+                     length, max_out_length);
         goto error;
     }
 
     if (output != memcpy(output, input, length)) {
 
-        ov_log_error(
-            "Severe error: Could not copy input to output "
-            "buffer");
+        ov_log_error("Severe error: Could not copy input to output "
+                     "buffer");
         goto error;
     }
 
@@ -184,18 +178,19 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_decode(ov_codec *self,
-                           uint64_t seq_number,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
+static int32_t impl_decode(ov_codec *self, uint64_t seq_number,
+                           const uint8_t *input, size_t length, uint8_t *output,
                            size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -229,7 +224,8 @@ error:
 
 static ov_json_value *impl_get_parameters(const ov_codec *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
     if (MAGIC_NUMBER != self->type) {
 
         ov_log_error("Called on invalid codec");

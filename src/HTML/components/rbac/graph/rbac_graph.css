@@ -12,8 +12,8 @@ button,
 #graph {
     --touch: 0;
     display: grid;
-    grid-template-columns: 10rem 9.6rem 10rem 9.6rem 10rem;
-    grid-template-rows: 2.5rem repeat(var(--rowNum), 2rem);
+    grid-template-columns: 15rem 9.6rem 15rem 9.6rem 15rem;
+    grid-template-rows: 2.5rem repeat(var(--rowNum), 2.8rem);
     grid-template-areas: "user_header . role_header . loop_header";
     justify-items: center;
     grid-row-gap: 0.15rem;
@@ -66,6 +66,10 @@ button,
     margin: 0.3rem 0.2rem 0.2rem -3rem;
 }
 
+:host([no_new_users]) #user_header .add_entry {
+    display: none;
+}
+
 ov-rbac-node {
     padding: 0 0.15rem;
 }
@@ -112,7 +116,7 @@ ov-rbac-node[type=loop] {
     top: -0.15rem;
     left: 0;
     height: 0.15rem;
-    width: 10rem;
+    width: 15rem;
     content: '';
     background-color: var(--white_transparent_50);
 }

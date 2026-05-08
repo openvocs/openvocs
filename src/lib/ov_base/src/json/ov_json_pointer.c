@@ -42,12 +42,14 @@ static ov_json_value *json_object_get_with_length(ov_json_value *object,
                                                   const char *key,
                                                   size_t length) {
 
-    if (!object || !key || length < 1) return NULL;
+    if (!object || !key || length < 1)
+        return NULL;
 
     char buffer[length + 1];
     memset(buffer, 0, length + 1);
 
-    if (!strncat(buffer, key, length)) goto error;
+    if (!strncat(buffer, key, length))
+        goto error;
 
     return ov_json_object_get(object, buffer);
 error:
@@ -56,14 +58,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool json_pointer_parse_token(const char *start,
-                                     size_t size,
-                                     char **token,
-                                     size_t *length) {
+static bool json_pointer_parse_token(const char *start, size_t size,
+                                     char **token, size_t *length) {
 
-    if (!start || size < 1 || !token || !length) return false;
+    if (!start || size < 1 || !token || !length)
+        return false;
 
-    if (start[0] != '/') goto error;
+    if (start[0] != '/')
+        goto error;
 
     if (size == 1) {
         *token = (char *)start;
@@ -78,13 +80,13 @@ static bool json_pointer_parse_token(const char *start,
 
         switch ((*token + len)[0]) {
 
-            case '/':
-            case '\0':
-                goto done;
-                break;
+        case '/':
+        case '\0':
+            goto done;
+            break;
 
-            default:
-                len++;
+        default:
+            len++;
         }
     }
 
@@ -100,8 +102,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool json_pointer_replace_special_encoding(char *result,
-                                                  size_t size,
+static bool json_pointer_replace_special_encoding(char *result, size_t size,
                                                   char *source,
                                                   char *to_replace,
                                                   char *replacement) {
@@ -124,13 +125,16 @@ static bool json_pointer_replace_special_encoding(char *result,
             continue;
         }
 
-        if ((i + length_replace) > size) goto error;
+        if ((i + length_replace) > size)
+            goto error;
 
-        if ((i + length_replacement) > size) goto error;
+        if ((i + length_replacement) > size)
+            goto error;
 
         for (k = 0; k < length_replace; k++) {
 
-            if (source[i + k] != to_replace[k]) break;
+            if (source[i + k] != to_replace[k])
+                break;
         }
 
         if (k == (length_replace)) {
@@ -160,24 +164,23 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool json_pointer_escape_token(char *start,
-                                      size_t size,
-                                      char *token,
+static bool json_pointer_escape_token(char *start, size_t size, char *token,
                                       size_t length) {
 
-    if (!start || size < 1 || !token || length < size) return false;
+    if (!start || size < 1 || !token || length < size)
+        return false;
 
     // replacements ~1 -> \  and ~0 -> ~ (both smaller then source)
 
     char replace1[size + 1];
     memset(replace1, '\0', size + 1);
 
-    if (!json_pointer_replace_special_encoding(
-            replace1, size, (char *)start, "~1", "\\"))
+    if (!json_pointer_replace_special_encoding(replace1, size, (char *)start,
+                                               "~1", "\\"))
         return false;
 
-    if (!json_pointer_replace_special_encoding(
-            (char *)token, size, replace1, "~0", "~"))
+    if (!json_pointer_replace_special_encoding((char *)token, size, replace1,
+                                               "~0", "~"))
         return false;
 
     return true;
@@ -189,9 +192,11 @@ static ov_json_value *json_pointer_get_token_in_parent(ov_json_value *parent,
                                                        char *token,
                                                        size_t length) {
 
-    if (!parent || !token) return NULL;
+    if (!parent || !token)
+        return NULL;
 
-    if (length == 0) return parent;
+    if (length == 0)
+        return parent;
 
     ov_json_value *result = NULL;
     char *ptr = NULL;
@@ -199,39 +204,40 @@ static ov_json_value *json_pointer_get_token_in_parent(ov_json_value *parent,
 
     switch (parent->type) {
 
-        case OV_JSON_OBJECT:
+    case OV_JSON_OBJECT:
 
-            // token is the keyname
-            result = json_object_get_with_length(parent, token, length);
+        // token is the keyname
+        result = json_object_get_with_length(parent, token, length);
 
-            break;
+        break;
 
-        case OV_JSON_ARRAY:
+    case OV_JSON_ARRAY:
 
-            if (token[0] == '-') {
+        if (token[0] == '-') {
 
-                // new array member after last array element
-                if (strnlen((char *)token, length) == 1) {
+            // new array member after last array element
+            if (strnlen((char *)token, length) == 1) {
 
-                    result = ov_json_null();
+                result = ov_json_null();
 
-                    if (!ov_json_array_push(parent, result))
-                        result = ov_json_value_free(result);
-                }
-
-            } else {
-
-                // parse for INT64
-                number = strtoll((char *)token, &ptr, 10);
-                if (ptr[0] != '\0') return NULL;
-
-                result = ov_json_array_get(parent, number + 1);
+                if (!ov_json_array_push(parent, result))
+                    result = ov_json_value_free(result);
             }
 
-            break;
+        } else {
 
-        default:
-            return NULL;
+            // parse for INT64
+            number = strtoll((char *)token, &ptr, 10);
+            if (ptr[0] != '\0')
+                return NULL;
+
+            result = ov_json_array_get(parent, number + 1);
+        }
+
+        break;
+
+    default:
+        return NULL;
     }
 
     return result;
@@ -240,13 +246,14 @@ static ov_json_value *json_pointer_get_token_in_parent(ov_json_value *parent,
 /*----------------------------------------------------------------------------*/
 
 static ov_json_value *ov_json_get_pointer(const ov_json_value *root,
-                                          const char *buffer,
-                                          size_t size) {
+                                          const char *buffer, size_t size) {
 
-    if (!root || !buffer) return NULL;
+    if (!root || !buffer)
+        return NULL;
 
     // empty buffer is the root document
-    if (size < 1) return (ov_json_value *)root;
+    if (size < 1)
+        return (ov_json_value *)root;
 
     ov_json_value *result = NULL;
 
@@ -265,7 +272,8 @@ static ov_json_value *ov_json_get_pointer(const ov_json_value *root,
 
     while (json_pointer_parse_token(ptr, size, &parse, &length)) {
 
-        if (length == 0) break;
+        if (length == 0)
+            break;
 
         parsed = true;
         ptr = ptr + length + 1;
@@ -278,10 +286,12 @@ static ov_json_value *ov_json_get_pointer(const ov_json_value *root,
 
         result = json_pointer_get_token_in_parent(result, token_ptr, length);
 
-        if (!result) goto error;
+        if (!result)
+            goto error;
     }
 
-    if (!parsed) goto error;
+    if (!parsed)
+        goto error;
 
     return result;
 
@@ -294,7 +304,8 @@ error:
 ov_json_value const *ov_json_get(const ov_json_value *value,
                                  const char *pointer) {
 
-    if (!value || !pointer) return NULL;
+    if (!value || !pointer)
+        return NULL;
 
     return ov_json_get_pointer(value, pointer, strlen(pointer));
 }

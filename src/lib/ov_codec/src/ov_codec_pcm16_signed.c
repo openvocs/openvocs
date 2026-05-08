@@ -64,31 +64,21 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
 static ov_codec *impl_free(ov_codec *self);
 
-static int32_t impl_encode_be(ov_codec *self,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
+static int32_t impl_encode_be(ov_codec *self, const uint8_t *input,
+                              size_t length, uint8_t *output,
                               size_t max_out_length);
 
-static int32_t impl_decode_be(ov_codec *self,
-                              uint64_t seq_number,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
+static int32_t impl_decode_be(ov_codec *self, uint64_t seq_number,
+                              const uint8_t *input, size_t length,
+                              uint8_t *output, size_t max_out_length);
+
+static int32_t impl_encode_le(ov_codec *self, const uint8_t *input,
+                              size_t length, uint8_t *output,
                               size_t max_out_length);
 
-static int32_t impl_encode_le(ov_codec *self,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
-                              size_t max_out_length);
-
-static int32_t impl_decode_le(ov_codec *self,
-                              uint64_t seq_number,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
-                              size_t max_out_length);
+static int32_t impl_decode_le(ov_codec *self, uint64_t seq_number,
+                              const uint8_t *input, size_t length,
+                              uint8_t *output, size_t max_out_length);
 
 static ov_json_value *impl_get_parameters(const ov_codec *self);
 
@@ -102,10 +92,11 @@ const char *ov_codec_pcm16_signed_id() { return "pcm16_signed"; }
 
 ov_codec_generator ov_codec_pcm16_signed_install(ov_codec_factory *factory) {
 
-    if (0 == factory) goto error;
+    if (0 == factory)
+        goto error;
 
-    return ov_codec_factory_install_codec(
-        factory, ov_codec_pcm16_signed_id(), impl_codec_create);
+    return ov_codec_factory_install_codec(factory, ov_codec_pcm16_signed_id(),
+                                          impl_codec_create);
 
 error:
 
@@ -166,7 +157,8 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
 static ov_codec *impl_free(ov_codec *self) {
 
-    if (0 == self) return 0;
+    if (0 == self)
+        return 0;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -183,17 +175,19 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_encode_be(ov_codec *self,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
+static int32_t impl_encode_be(ov_codec *self, const uint8_t *input,
+                              size_t length, uint8_t *output,
                               size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -203,11 +197,9 @@ static int32_t impl_encode_be(ov_codec *self,
 
     if (length > max_out_length) {
 
-        ov_log_error(
-            "Output buffer not large enough. Input is %zu, "
-            "output %zu",
-            length,
-            max_out_length);
+        ov_log_error("Output buffer not large enough. Input is %zu, "
+                     "output %zu",
+                     length, max_out_length);
         goto error;
     }
 
@@ -215,17 +207,15 @@ static int32_t impl_encode_be(ov_codec *self,
 
     if (2 * length_16bit != length) {
 
-        ov_log_error(
-            "Need an array of 16 bit values - "
-            "but array has odd number of bytes");
+        ov_log_error("Need an array of 16 bit values - "
+                     "but array has odd number of bytes");
         goto error;
     }
 
     if (output != memcpy(output, input, length)) {
 
-        ov_log_error(
-            "Severe error: Could not copy input to output "
-            "buffer");
+        ov_log_error("Severe error: Could not copy input to output "
+                     "buffer");
         goto error;
     }
 
@@ -244,18 +234,19 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_decode_be(ov_codec *self,
-                              uint64_t seq_number,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
-                              size_t max_out_length) {
+static int32_t impl_decode_be(ov_codec *self, uint64_t seq_number,
+                              const uint8_t *input, size_t length,
+                              uint8_t *output, size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -265,11 +256,9 @@ static int32_t impl_decode_be(ov_codec *self,
 
     if (length > max_out_length) {
 
-        ov_log_error(
-            "Output buffer not large enough. Input is %zu, "
-            "output %zu",
-            length,
-            max_out_length);
+        ov_log_error("Output buffer not large enough. Input is %zu, "
+                     "output %zu",
+                     length, max_out_length);
         goto error;
     }
 
@@ -277,9 +266,8 @@ static int32_t impl_decode_be(ov_codec *self,
 
     if (2 * length_16bit != length) {
 
-        ov_log_error(
-            "Need an array of 16 bit values - "
-            "but array has odd number of bytes");
+        ov_log_error("Need an array of 16 bit values - "
+                     "but array has odd number of bytes");
         goto error;
     }
 
@@ -295,9 +283,8 @@ static int32_t impl_decode_be(ov_codec *self,
 
     if (output != memcpy(output, input, length)) {
 
-        ov_log_error(
-            "Severe error: Could not copy input to output "
-            "buffer");
+        ov_log_error("Severe error: Could not copy input to output "
+                     "buffer");
         goto error;
     }
 
@@ -316,17 +303,19 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_encode_le(ov_codec *self,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
+static int32_t impl_encode_le(ov_codec *self, const uint8_t *input,
+                              size_t length, uint8_t *output,
                               size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -336,11 +325,9 @@ static int32_t impl_encode_le(ov_codec *self,
 
     if (length > max_out_length) {
 
-        ov_log_error(
-            "Output buffer not large enough. Input is %zu, "
-            "output %zu",
-            length,
-            max_out_length);
+        ov_log_error("Output buffer not large enough. Input is %zu, "
+                     "output %zu",
+                     length, max_out_length);
         goto error;
     }
 
@@ -348,22 +335,20 @@ static int32_t impl_encode_le(ov_codec *self,
 
     if (2 * length_16bit != length) {
 
-        ov_log_error(
-            "Need an array of 16 bit values - "
-            "but array has odd number of bytes");
+        ov_log_error("Need an array of 16 bit values - "
+                     "but array has odd number of bytes");
         goto error;
     }
 
     if (output != memcpy(output, input, length)) {
 
-        ov_log_error(
-            "Severe error: Could not copy input to output "
-            "buffer");
+        ov_log_error("Severe error: Could not copy input to output "
+                     "buffer");
         goto error;
     }
 
-    if (!ov_byteorder_to_little_endian_16_bit(
-            (int16_t *)output, length_16bit)) {
+    if (!ov_byteorder_to_little_endian_16_bit((int16_t *)output,
+                                              length_16bit)) {
 
         ov_log_error("Could not encode to big endian");
         goto error;
@@ -378,18 +363,19 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_decode_le(ov_codec *self,
-                              uint64_t seq_number,
-                              const uint8_t *input,
-                              size_t length,
-                              uint8_t *output,
-                              size_t max_out_length) {
+static int32_t impl_decode_le(ov_codec *self, uint64_t seq_number,
+                              const uint8_t *input, size_t length,
+                              uint8_t *output, size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -399,11 +385,9 @@ static int32_t impl_decode_le(ov_codec *self,
 
     if (length > max_out_length) {
 
-        ov_log_error(
-            "Output buffer not large enough. Input is %zu, "
-            "output %zu",
-            length,
-            max_out_length);
+        ov_log_error("Output buffer not large enough. Input is %zu, "
+                     "output %zu",
+                     length, max_out_length);
         goto error;
     }
 
@@ -411,9 +395,8 @@ static int32_t impl_decode_le(ov_codec *self,
 
     if (2 * length_16bit != length) {
 
-        ov_log_error(
-            "Need an array of 16 bit values - "
-            "but array has odd number of bytes");
+        ov_log_error("Need an array of 16 bit values - "
+                     "but array has odd number of bytes");
         goto error;
     }
 
@@ -429,14 +412,13 @@ static int32_t impl_decode_le(ov_codec *self,
 
     if (output != memcpy(output, input, length)) {
 
-        ov_log_error(
-            "Severe error: Could not copy input to output "
-            "buffer");
+        ov_log_error("Severe error: Could not copy input to output "
+                     "buffer");
         goto error;
     }
 
-    if (!ov_byteorder_from_little_endian_16_bit(
-            (int16_t *)output, length_16bit)) {
+    if (!ov_byteorder_from_little_endian_16_bit((int16_t *)output,
+                                                length_16bit)) {
 
         ov_log_error("Could not decode from big endian");
         goto error;
@@ -452,7 +434,8 @@ error:
 
 static ov_json_value *impl_get_parameters(const ov_codec *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
     if (MAGIC_NUMBER != self->type) {
 
         ov_log_error("Called on invalid codec");

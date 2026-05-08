@@ -42,12 +42,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_hmac(ov_hash_function type,
-             const uint8_t *buffer,
-             size_t size,
-             const void *key,
-             size_t key_len,
-             uint8_t *result,
+bool ov_hmac(ov_hash_function type, const uint8_t *buffer, size_t size,
+             const void *key, size_t key_len, uint8_t *result,
              size_t *result_len);
 
 #endif /* ov_hmac_h */

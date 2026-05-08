@@ -137,10 +137,13 @@ static bool set_csrc_array_to_little_endian(ov_rtp_frame *frame,
                                             const uint32_t *csrcs,
                                             uint8_t num) {
 
-    if (0 == num) return true;
+    if (0 == num)
+        return true;
 
-    if (0 == frame) goto error;
-    if (0 == csrcs) goto error;
+    if (0 == frame)
+        goto error;
+    if (0 == csrcs)
+        goto error;
 
     internal_frame *internal = (internal_frame *)frame;
 
@@ -337,7 +340,8 @@ ov_rtp_frame *ov_rtp_frame_encode(const ov_rtp_frame_expansion *rtp_data) {
 
     /* Calculate bytes required to encode frame */
 
-    if (csrc_count > 15) goto error;
+    if (csrc_count > 15)
+        goto error;
 
     volatile size_t length = RTP_HEADER_MIN_LENGTH;
     length += csrc_count * sizeof(uint32_t);
@@ -402,16 +406,19 @@ ov_rtp_frame *ov_rtp_frame_encode(const ov_rtp_frame_expansion *rtp_data) {
     u8 = rtp_data->version << 6;
     u8 |= (rtp_data->csrc_count & 0x0F);
 
-    if (rtp_data->padding_bit) u8 |= 0x20;
+    if (rtp_data->padding_bit)
+        u8 |= 0x20;
 
-    if (rtp_data->extension_bit) u8 |= 0x10;
+    if (rtp_data->extension_bit)
+        u8 |= 0x10;
 
     bytes[0] = u8;
 
     u8 = 0;
 
     /* SET BYTE 1 */
-    if (rtp_data->marker_bit) u8 = 0x80;
+    if (rtp_data->marker_bit)
+        u8 = 0x80;
 
     u8 |= rtp_data->payload_type & 0x7F;
 
@@ -457,7 +464,8 @@ ov_rtp_frame *ov_rtp_frame_encode(const ov_rtp_frame_expansion *rtp_data) {
 
         if (0 != ext) {
 
-            if (0 == extension_len) goto error;
+            if (0 == extension_len)
+                goto error;
 
             memcpy(next, ext, extension_len);
 
@@ -470,7 +478,8 @@ ov_rtp_frame *ov_rtp_frame_encode(const ov_rtp_frame_expansion *rtp_data) {
     /* ADD PAYLOAD */
     if (0 < payload_length) {
 
-        if (0 == exp->payload.data) goto error;
+        if (0 == exp->payload.data)
+            goto error;
 
         memcpy(next, exp->payload.data, payload_length);
         exp->payload.data = next;
@@ -481,11 +490,13 @@ ov_rtp_frame *ov_rtp_frame_encode(const ov_rtp_frame_expansion *rtp_data) {
     /* ADD PADDING */
     if (0 < padding_length) {
 
-        if (!rtp_data->padding_bit) goto error;
+        if (!rtp_data->padding_bit)
+            goto error;
 
         uint8_t *pad = rtp_data->padding.data;
 
-        if (0 == pad) goto error;
+        if (0 == pad)
+            goto error;
 
         memcpy(next, pad, padding_length);
         exp->padding.data = next;
@@ -502,7 +513,8 @@ ov_rtp_frame *ov_rtp_frame_encode(const ov_rtp_frame_expansion *rtp_data) {
 
 error:
 
-    if (0 != frame) frame->free(frame);
+    if (0 != frame)
+        frame->free(frame);
 
     return 0;
 }
@@ -557,10 +569,12 @@ ov_rtp_frame *ov_rtp_frame_decode(const uint8_t *input, const size_t length) {
     }
 
     byte &= 0x0f;
-    if (0x0e < byte) goto error;
+    if (0x0e < byte)
+        goto error;
 
     expected_length += byte * sizeof(uint32_t);
-    if (length < expected_length) goto error;
+    if (length < expected_length)
+        goto error;
 
     exp->csrc_count = byte;
 
@@ -599,7 +613,8 @@ ov_rtp_frame *ov_rtp_frame_decode(const uint8_t *input, const size_t length) {
     }
 
     expected_length += exp->extension.length;
-    if (length < expected_length) goto error;
+    if (length < expected_length)
+        goto error;
 
     if (0 < exp->extension.length) {
 
@@ -620,8 +635,10 @@ ov_rtp_frame *ov_rtp_frame_decode(const uint8_t *input, const size_t length) {
     if (exp->padding_bit) {
 
         byte = bytes[length - 1];
-        if (0 == byte) goto error;
-        if (byte > exp->payload.length) goto error;
+        if (0 == byte)
+            goto error;
+        if (byte > exp->payload.length)
+            goto error;
 
         exp->padding.length = byte - 1;
         exp->payload.length -= byte;
@@ -677,26 +694,23 @@ bool ov_rtp_frame_dump(const ov_rtp_frame_expansion *frame, FILE *stream) {
 
     fprintf(stream, "\nRTP Frame dump\n\n");
     fprintf(stream, "RTP Version         %5u\n", frame->version),
-        fprintf(stream,
-                "RTP Padding bit     %5s\n",
+        fprintf(stream, "RTP Padding bit     %5s\n",
                 BOOL_TO_STRING(frame->padding_bit));
-    fprintf(stream,
-            "RTP Extension bit   %5s\n",
+    fprintf(stream, "RTP Extension bit   %5s\n",
             BOOL_TO_STRING(frame->extension_bit));
-    fprintf(
-        stream, "RTP Marker bit      %5s\n", BOOL_TO_STRING(frame->marker_bit));
+    fprintf(stream, "RTP Marker bit      %5s\n",
+            BOOL_TO_STRING(frame->marker_bit));
     fprintf(stream, "RTP Payload type    %5" PRIu8 "\n", frame->payload_type);
-    fprintf(
-        stream, "RTP Sequence number %5" PRIu16 "\n", frame->sequence_number);
-    fprintf(
-        stream, "RTP Timestamp (SR Units) %22" PRIu32 "\n", frame->timestamp);
+    fprintf(stream, "RTP Sequence number %5" PRIu16 "\n",
+            frame->sequence_number);
+    fprintf(stream, "RTP Timestamp (SR Units) %22" PRIu32 "\n",
+            frame->timestamp);
     fprintf(stream, "RTP SSRC ID              %22" PRIu32 "\n", frame->ssrc);
-    fprintf(
-        stream, "RTP CSRC IDs             %22" PRIu8 "\n", frame->csrc_count);
+    fprintf(stream, "RTP CSRC IDs             %22" PRIu8 "\n",
+            frame->csrc_count);
 
     for (size_t i = 0; i < frame->csrc_count; i++) {
-        fprintf(stream,
-                "     CSRC ID             %22" PRIu32 "\n",
+        fprintf(stream, "     CSRC ID             %22" PRIu32 "\n",
                 frame->csrc_ids[i]);
     }
 
@@ -708,11 +722,11 @@ bool ov_rtp_frame_dump(const ov_rtp_frame_expansion *frame, FILE *stream) {
 
     } else {
 
-        fprintf(
-            stream, "RTP Payload Length       %6zd\n", frame->payload.length);
+        fprintf(stream, "RTP Payload Length       %6zd\n",
+                frame->payload.length);
 
-        ov_dump_binary_as_hex(
-            stream, frame->payload.data, frame->payload.length);
+        ov_dump_binary_as_hex(stream, frame->payload.data,
+                              frame->payload.length);
 
         fprintf(stream, "\n\n");
     }
@@ -723,12 +737,11 @@ bool ov_rtp_frame_dump(const ov_rtp_frame_expansion *frame, FILE *stream) {
 
     } else {
 
-        fprintf(stream,
-                "RTP Padding Length       %6zd\n",
+        fprintf(stream, "RTP Padding Length       %6zd\n",
                 frame->padding.length + 1);
 
-        ov_dump_binary_as_hex(
-            stream, frame->padding.data, frame->padding.length);
+        ov_dump_binary_as_hex(stream, frame->padding.data,
+                              frame->padding.length);
 
         fprintf(stream, "\n\n");
     }
@@ -739,15 +752,14 @@ bool ov_rtp_frame_dump(const ov_rtp_frame_expansion *frame, FILE *stream) {
 
     } else {
 
-        fprintf(stream,
-                "RTP Extension type       %6" PRIu16 "\n",
+        fprintf(stream, "RTP Extension type       %6" PRIu16 "\n",
                 frame->extension.type);
 
-        fprintf(
-            stream, "RTP Extension Length     %6zd\n", frame->extension.length);
+        fprintf(stream, "RTP Extension Length     %6zd\n",
+                frame->extension.length);
 
-        ov_dump_binary_as_hex(
-            stream, frame->extension.data, frame->extension.length);
+        ov_dump_binary_as_hex(stream, frame->extension.data,
+                              frame->extension.length);
     }
 
     fprintf(stream, "\n");

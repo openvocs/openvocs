@@ -140,9 +140,8 @@ int test_ov_uri_string_is_valid() {
     string = "crid://broadcaster.com/movies/BestActionMovieEver";
     testrun(ov_uri_string_is_valid(string, strlen(string)));
 
-    string =
-        "http://nobody:password@example.org:8080/cgi-bin/"
-        "script.php?action=submit&pageid=86392001#section_2";
+    string = "http://nobody:password@example.org:8080/cgi-bin/"
+             "script.php?action=submit&pageid=86392001#section_2";
     testrun(ov_uri_string_is_valid(string, strlen(string)));
 
     string = "http://user@host:1234/path?query#fragment";
@@ -250,14 +249,12 @@ int test_ov_uri_string_is_valid() {
     string = "crid://broadcaster.com/movies/BestActionMovieEver";
     testrun(ov_uri_string_is_valid(string, strlen(string)));
 
-    string =
-        "http://nobody:password@example.org:8080/cgi-bin/"
-        "script.php?action=submit&pageid=86392001#section_2";
+    string = "http://nobody:password@example.org:8080/cgi-bin/"
+             "script.php?action=submit&pageid=86392001#section_2";
     testrun(ov_uri_string_is_valid(string, strlen(string)));
 
-    string =
-        "http://nobody:password@example.org:8080/cgi-bin/"
-        "script.php?action=submit&pageid=86392001#section_2";
+    string = "http://nobody:password@example.org:8080/cgi-bin/"
+             "script.php?action=submit&pageid=86392001#section_2";
     testrun(ov_uri_string_is_valid(string, strlen(string)));
 
     // negative tests

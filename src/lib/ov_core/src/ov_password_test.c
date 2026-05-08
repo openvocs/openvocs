@@ -62,8 +62,8 @@ int test_ov_password_hash_scrypt() {
     size_t len = 64;
 
     uint64_t start = ov_time_get_current_time_usecs();
-    testrun(ov_password_hash_scrypt(
-        out, &len, "password", "NaCl", (ov_password_hash_parameter){0}));
+    testrun(ov_password_hash_scrypt(out, &len, "password", "NaCl",
+                                    (ov_password_hash_parameter){0}));
     uint64_t end = ov_time_get_current_time_usecs();
 
     testrun(len == 64);
@@ -76,10 +76,7 @@ int test_ov_password_hash_scrypt() {
     start = ov_time_get_current_time_usecs();
     memset(buffer, 0, size);
     testrun(ov_password_hash_scrypt(
-        out,
-        &len,
-        "password",
-        "NaCl",
+        out, &len, "password", "NaCl",
         (ov_password_hash_parameter){
             .workfactor = 2048, .blocksize = 16, .parallel = 32}));
     end = ov_time_get_current_time_usecs();
@@ -93,10 +90,7 @@ int test_ov_password_hash_scrypt() {
     start = ov_time_get_current_time_usecs();
     memset(buffer, 0, size);
     testrun(ov_password_hash_scrypt(
-        out,
-        &len,
-        "password",
-        "NaCl",
+        out, &len, "password", "NaCl",
         (ov_password_hash_parameter){
             .workfactor = 2048, .blocksize = 16, .parallel = 32}));
     end = ov_time_get_current_time_usecs();
@@ -110,10 +104,7 @@ int test_ov_password_hash_scrypt() {
     start = ov_time_get_current_time_usecs();
     memset(buffer, 0, size);
     testrun(ov_password_hash_scrypt(
-        out,
-        &len,
-        "password",
-        "NaCl",
+        out, &len, "password", "NaCl",
         (ov_password_hash_parameter){
             .workfactor = 1024, .blocksize = 8, .parallel = 1}));
     end = ov_time_get_current_time_usecs();
@@ -127,10 +118,7 @@ int test_ov_password_hash_scrypt() {
     start = ov_time_get_current_time_usecs();
     memset(buffer, 0, size);
     testrun(ov_password_hash_scrypt(
-        out,
-        &len,
-        "password",
-        "NaCl",
+        out, &len, "password", "NaCl",
         (ov_password_hash_parameter){
             .workfactor = 2, .blocksize = 2, .parallel = 1}));
     end = ov_time_get_current_time_usecs();
@@ -154,8 +142,8 @@ int test_ov_password_hash_pdkdf2() {
     size_t len = 64;
 
     uint64_t start = ov_time_get_current_time_usecs();
-    testrun(ov_password_hash_pdkdf2(
-        out, &len, "password", "NaCl", (ov_password_hash_parameter){0}));
+    testrun(ov_password_hash_pdkdf2(out, &len, "password", "NaCl",
+                                    (ov_password_hash_parameter){0}));
     uint64_t end = ov_time_get_current_time_usecs();
 
     fprintf(stdout, "HASH time %" PRIu64 " usec\n", end - start);
@@ -164,10 +152,7 @@ int test_ov_password_hash_pdkdf2() {
 
     start = ov_time_get_current_time_usecs();
     testrun(
-        ov_password_hash_pdkdf2(out,
-                                &len,
-                                "password",
-                                "NaCl",
+        ov_password_hash_pdkdf2(out, &len, "password", "NaCl",
                                 (ov_password_hash_parameter){.workfactor = 1}));
     end = ov_time_get_current_time_usecs();
 
@@ -261,19 +246,17 @@ int test_ov_password_is_valid() {
 
     uint8_t buffer[64] = {0};
     size_t len = 64;
-    testrun(ov_password_hash_pdkdf2(
-        buffer, &len, pass, salt, (ov_password_hash_parameter){0}));
+    testrun(ov_password_hash_pdkdf2(buffer, &len, pass, salt,
+                                    (ov_password_hash_parameter){0}));
 
     uint8_t *base64_hash_buffer = NULL;
     size_t base64_hash_buffer_length = 0;
-    testrun(ov_base64_encode(
-        buffer, len, &base64_hash_buffer, &base64_hash_buffer_length));
+    testrun(ov_base64_encode(buffer, len, &base64_hash_buffer,
+                             &base64_hash_buffer_length));
 
     uint8_t *base64_salt_buffer = NULL;
     size_t base64_salt_buffer_length = 0;
-    testrun(ov_base64_encode((uint8_t *)salt,
-                             strlen(salt),
-                             &base64_salt_buffer,
+    testrun(ov_base64_encode((uint8_t *)salt, strlen(salt), &base64_salt_buffer,
                              &base64_salt_buffer_length));
 
     ov_json_value *json = ov_json_object();
@@ -348,12 +331,12 @@ int test_ov_password_is_valid() {
     // check scrypt
 
     memset(buffer, 0, 64);
-    testrun(ov_password_hash_scrypt(
-        buffer, &len, pass, salt, (ov_password_hash_parameter){0}));
+    testrun(ov_password_hash_scrypt(buffer, &len, pass, salt,
+                                    (ov_password_hash_parameter){0}));
 
     base64_hash_buffer = ov_data_pointer_free(base64_hash_buffer);
-    testrun(ov_base64_encode(
-        buffer, len, &base64_hash_buffer, &base64_hash_buffer_length));
+    testrun(ov_base64_encode(buffer, len, &base64_hash_buffer,
+                             &base64_hash_buffer_length));
 
     json = ov_json_object();
     val = ov_json_string((char *)base64_salt_buffer);
@@ -445,8 +428,8 @@ int test_ov_password_hash() {
     out = ov_json_value_free(out);
 
     // set explicit length and iteration
-    out = ov_password_hash(
-        pass, (ov_password_hash_parameter){.workfactor = 2048}, 0);
+    out = ov_password_hash(pass,
+                           (ov_password_hash_parameter){.workfactor = 2048}, 0);
 
     testrun(out);
     str = ov_json_value_to_string(out);
@@ -462,8 +445,8 @@ int test_ov_password_hash() {
     out = ov_json_value_free(out);
 
     // set explicit blocksize
-    out = ov_password_hash(
-        pass, (ov_password_hash_parameter){.blocksize = 16}, 0);
+    out = ov_password_hash(pass, (ov_password_hash_parameter){.blocksize = 16},
+                           0);
 
     testrun(out);
     str = ov_json_value_to_string(out);

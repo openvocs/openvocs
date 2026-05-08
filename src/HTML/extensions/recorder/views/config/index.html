@@ -14,58 +14,67 @@
 
 <body>
     <div class="container" id="view_container"></div>
+    <script type="text/javascript" src="/app/vocs/views/loops/js/default_config.js"></script>
+    <!-- default loop config -->
+    <script type="text/javascript" src="/app/vocs_admin/views/auth/js/default_config.js"></script>
+    <!-- default login config -->
     <script>
-        SIGNALING_SERVERS = [{ NAME: "stub" }];
-        SIGNALING_REQUEST_TIMEOUT = 10000;
-        TEMP_ERROR_TIMEOUT = 4000;
-
-        DEBUG_LOG_INCOMING_EVENTS = true;
-        DEBUG_LOG_OUTGOING_EVENTS = true;
-        SIP = true;
+        USERNAME = "";
+        PASSWORD = "";
+        PROJECT = ""
+        SIGNALING_SERVERS = [{
+            NAME: "",
+            WEBSOCKET_URL: "",
+            RECORD: true
+        }];
+        RECORDER = true;
     </script>
     <script type="module">
         import * as Recorder_Config from "./js/recorder_config.js";
+        import ov_Websocket from "/lib/ov_websocket.js";
+        import * as ov_Websockets from "/lib/ov_websocket_list.js";
+        import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
+        import * as ov_Auth from "/lib/ov_auth.js";
+        import * as ov_DB from "/lib/ov_db.js";
 
         document.addEventListener("DOMContentLoaded", async function () {
             let view_container = document.getElementById("view_container");
+            let loading_screen = document.getElementById("loading_screen");
 
-            await SIP_config.init(view_container);
+            await ov_Websockets.setup_connections(ov_Websocket);
+            if (ov_Websockets.auto_login)
+                await ov_Auth.relogin(ov_Websockets.prime_websocket);
+            else
+                await ov_Auth.login("admin", "admin");
 
-            let loops = {
-                loop1: {
-                    name: "Loop 1",
-                    roles: {
-                        role1: true,
-                        role2: false,
-                        role3: true
-                    }
-                },
-                loop2: {
-                    name: "Loop 2",
-                    roles: {
-                        role1: true,
-                        role2: true
-                    }
-                }
-            };
+            await Recorder_Config.init(view_container);
 
-            let roles = {
-                role1 : {
-                    id: "role1",
-                    name: "Role 1"
-                },
-                role2 : {
-                    id: "role2",
-                    name: "Role 2"
-                },
-                role3 : {
-                    id: "role3",
-                    name: "Role 3"
-                }
+            let user = ov_Websockets.user();
+            let domain_config = await ov_DB.get_config("domain", user.domain);
+
+            user.admin = "domain";
+            user.project = PROJECT;
+            // mark domain level loops
+            if (domain_config.users)
+                for (let user_id of Object.keys(domain_config.users))
+                    domain_config.users[user_id].global = true;
+
+            if (domain_config.roles)
+                for (let role_id of Object.keys(domain_config.roles))
+                    domain_config.roles[role_id].global = true;
+
+            if (domain_config.loops)
+                for (let loop_id of Object.keys(domain_config.loops))
+                    domain_config.loops[loop_id].global = true;
+
+            // get project  
+            let project_config;       
+            if (user.project && domain_config.projects) {
+                project_config = domain_config.projects[user.project];
+                project_config.domain = user.domain;
             }
 
-            Recorder_Config.render(loops, roles);
-            console.log(Recorder_Config.collect());
+            Recorder_Config.render(project_config.loops);
         });
     </script>
 </body>

@@ -104,9 +104,7 @@ bool ov_signaling_app_set_userdata(ov_app *app, void *userdata);
         app->socket.open(app, app_socket_config, NULL, NULL) to use the
         opened socket as signaling socket.
  */
-bool ov_signaling_app_io_signaling(ov_app *app,
-                                   int socket,
-                                   const char *uuid,
+bool ov_signaling_app_io_signaling(ov_app *app, int socket, const char *uuid,
                                    const ov_socket_data *remote,
                                    void **parsed_io_data);
 
@@ -123,13 +121,9 @@ bool ov_signaling_app_io_signaling(ov_app *app,
         @returns true if the event was set.
 */
 bool ov_signaling_app_register_command(
-    ov_app *app,
-    const char *name,
-    const char *description,
-    ov_json_value *(*callback)(ov_app *app,
-                               const char *name,
-                               const ov_json_value *value,
-                               int socket,
+    ov_app *app, const char *name, const char *description,
+    ov_json_value *(*callback)(ov_app *app, const char *name,
+                               const ov_json_value *value, int socket,
                                const ov_socket_data *remote));
 
 /*----------------------------------------------------------------------------*/
@@ -148,9 +142,7 @@ const ov_json_value *ov_signaling_app_get_commands(const ov_app *app);
  * @return Old monitor if it was set.
  */
 bool ov_signaling_app_set_monitor(ov_app *,
-                                  void (*monitor)(void *,
-                                                  ov_direction,
-                                                  int,
+                                  void (*monitor)(void *, ov_direction, int,
                                                   const ov_socket_data *,
                                                   const ov_json_value *),
                                   void *userdata);

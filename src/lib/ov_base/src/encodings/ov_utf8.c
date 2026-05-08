@@ -40,11 +40,11 @@
 
 /*----------------------------------------------------------------------------*/
 
-uint8_t *ov_utf8_last_valid(const uint8_t *start,
-                            uint64_t length,
+uint8_t *ov_utf8_last_valid(const uint8_t *start, uint64_t length,
                             bool character_start) {
 
-    if (!start) return NULL;
+    if (!start)
+        return NULL;
 
     uint8_t *p = (uint8_t *)start;
     uint8_t *c = NULL;
@@ -69,9 +69,11 @@ uint8_t *ov_utf8_last_valid(const uint8_t *start,
 
             /* 110xxxxx 10xxxxxx */
 
-            if (open < 2) break;
+            if (open < 2)
+                break;
 
-            if ((p[1] >> 6) != 0x02) break;
+            if ((p[1] >> 6) != 0x02)
+                break;
 
             c = p;
             p += 2;
@@ -87,16 +89,21 @@ uint8_t *ov_utf8_last_valid(const uint8_t *start,
             */
 
             /* 1110xxxx 10xxxxxx 10xxxxxx*/
-            if (open < 3) break;
+            if (open < 3)
+                break;
 
             if (p[0] == 0xE0)
-                if (p[1] < 0xA0) break;
+                if (p[1] < 0xA0)
+                    break;
 
             if (p[0] == 0xED)
-                if (p[1] > 0x9F) break;
+                if (p[1] > 0x9F)
+                    break;
 
-            if ((p[1] >> 6) != 0x02) break;
-            if ((p[2] >> 6) != 0x02) break;
+            if ((p[1] >> 6) != 0x02)
+                break;
+            if ((p[2] >> 6) != 0x02)
+                break;
 
             c = p;
             p += 3;
@@ -111,17 +118,23 @@ uint8_t *ov_utf8_last_valid(const uint8_t *start,
             */
 
             /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx*/
-            if (open < 4) break;
+            if (open < 4)
+                break;
 
             if (p[0] == 0xf0)
-                if (p[1] < 0x90) break;
+                if (p[1] < 0x90)
+                    break;
 
             if (p[0] == 0xf4)
-                if (p[1] > 0x8f) break;
+                if (p[1] > 0x8f)
+                    break;
 
-            if ((p[1] >> 6) != 0x02) break;
-            if ((p[2] >> 6) != 0x02) break;
-            if ((p[3] >> 6) != 0x02) break;
+            if ((p[1] >> 6) != 0x02)
+                break;
+            if ((p[2] >> 6) != 0x02)
+                break;
+            if ((p[3] >> 6) != 0x02)
+                break;
 
             c = p;
             p += 4;
@@ -133,7 +146,8 @@ uint8_t *ov_utf8_last_valid(const uint8_t *start,
         }
     }
 
-    if (character_start) return c;
+    if (character_start)
+        return c;
 
     return p;
 }
@@ -142,24 +156,26 @@ uint8_t *ov_utf8_last_valid(const uint8_t *start,
 
 bool ov_utf8_validate_sequence(const uint8_t *start, uint64_t length) {
 
-    if (!start || length < 1) return false;
+    if (!start || length < 1)
+        return false;
 
     uint8_t *result = ov_utf8_last_valid(start, length, false);
-    if (!result) return false;
+    if (!result)
+        return false;
 
-    if ((uint64_t)(result - start) != length) return false;
+    if ((uint64_t)(result - start) != length)
+        return false;
 
     return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_utf8_encode_code_point(uint64_t number,
-                               uint8_t **start,
-                               uint64_t open,
+bool ov_utf8_encode_code_point(uint64_t number, uint8_t **start, uint64_t open,
                                uint64_t *used) {
 
-    if (!start || !used) return false;
+    if (!start || !used)
+        return false;
 
     uint8_t *array = *start;
     *used = 0;
@@ -252,11 +268,11 @@ bool ov_utf8_encode_code_point(uint64_t number,
 
 /*----------------------------------------------------------------------------*/
 
-uint64_t ov_utf8_decode_code_point(const uint8_t *p,
-                                   uint64_t open,
+uint64_t ov_utf8_decode_code_point(const uint8_t *p, uint64_t open,
                                    uint64_t *bytes) {
 
-    if (!p || open < 1 || !bytes) return 0;
+    if (!p || open < 1 || !bytes)
+        return 0;
 
     *bytes = 0;
 
@@ -273,9 +289,11 @@ uint64_t ov_utf8_decode_code_point(const uint8_t *p,
     } else if (p[0] <= 0xDF) {
 
         /* 110xxxxx 10xxxxxx */
-        if (open < 2) return 0;
+        if (open < 2)
+            return 0;
 
-        if ((p[1] >> 6) != 0x02) return 0;
+        if ((p[1] >> 6) != 0x02)
+            return 0;
 
         /*
          *      110aaaaa10bbbbbb
@@ -291,16 +309,21 @@ uint64_t ov_utf8_decode_code_point(const uint8_t *p,
     } else if (p[0] < 0xF0) {
 
         /* 1110xxxx 10xxxxxx 10xxxxxx*/
-        if (open < 3) return 0;
+        if (open < 3)
+            return 0;
 
         if (p[0] == 0xE0)
-            if (p[1] < 0xA0) return 0;
+            if (p[1] < 0xA0)
+                return 0;
 
         if (p[0] == 0xED)
-            if (p[1] > 0x9F) return 0;
+            if (p[1] > 0x9F)
+                return 0;
 
-        if ((p[1] >> 6) != 0x02) return 0;
-        if ((p[2] >> 6) != 0x02) return 0;
+        if ((p[1] >> 6) != 0x02)
+            return 0;
+        if ((p[2] >> 6) != 0x02)
+            return 0;
         ;
 
         /*
@@ -320,17 +343,23 @@ uint64_t ov_utf8_decode_code_point(const uint8_t *p,
     } else if (p[0] <= 0xF4) {
 
         /* 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx*/
-        if (open < 4) return 0;
+        if (open < 4)
+            return 0;
 
         if (p[0] == 0xf0)
-            if (p[1] < 0x90) return 0;
+            if (p[1] < 0x90)
+                return 0;
 
         if (p[0] == 0xf4)
-            if (p[1] > 0x8f) return 0;
+            if (p[1] > 0x8f)
+                return 0;
 
-        if ((p[1] >> 6) != 0x02) return 0;
-        if ((p[2] >> 6) != 0x02) return 0;
-        if ((p[3] >> 6) != 0x02) return 0;
+        if ((p[1] >> 6) != 0x02)
+            return 0;
+        if ((p[2] >> 6) != 0x02)
+            return 0;
+        if ((p[3] >> 6) != 0x02)
+            return 0;
 
         /*
          *      11110aaa10bbbbbb10cccccc10dddddd
@@ -349,20 +378,21 @@ uint64_t ov_utf8_decode_code_point(const uint8_t *p,
                 ((p[2] << 6) & 0x0FC0) | (p[3] & 0x3F));
     }
 
-    if (bytes) *bytes = 0;
+    if (bytes)
+        *bytes = 0;
 
     return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_utf8_generate_random_buffer(uint8_t **buffer,
-                                    size_t *size,
+bool ov_utf8_generate_random_buffer(uint8_t **buffer, size_t *size,
                                     uint16_t unicode_chars) {
 
     bool created = false;
 
-    if (!buffer || !size || unicode_chars < 1) goto error;
+    if (!buffer || !size || unicode_chars < 1)
+        goto error;
 
     if (!*buffer) {
 
@@ -372,7 +402,8 @@ bool ov_utf8_generate_random_buffer(uint8_t **buffer,
 
     } else {
 
-        if (*size < 4 * unicode_chars) goto error;
+        if (*size < 4 * unicode_chars)
+            goto error;
     }
 
     uint64_t number = 0;
@@ -380,7 +411,8 @@ bool ov_utf8_generate_random_buffer(uint8_t **buffer,
     size_t open = *size;
     uint64_t used = 0;
 
-    if (!pointer) goto error;
+    if (!pointer)
+        goto error;
 
     bool done = false;
 

@@ -120,8 +120,8 @@ static int test_ov_value_free() {
     testrun(0 != v);
 
     /* Must work with nested lists as well */
-    v = ov_value_list(
-        ov_value_number(42), ov_value_true(), v, ov_value_string("Surtr"));
+    v = ov_value_list(ov_value_number(42), ov_value_true(), v,
+                      ov_value_string("Surtr"));
     testrun(0 != v);
 
     v = ov_value_free(v);
@@ -147,8 +147,7 @@ static int test_ov_value_free() {
 
     ov_value_object_set(top, "reparations", v);
 
-    v = ov_value_list(ov_value_string("laeding"),
-                      ov_value_string("droma"),
+    v = ov_value_list(ov_value_string("laeding"), ov_value_string("droma"),
                       ov_value_string("gleipnir"));
 
     ov_value_object_set(top, "fetters", v);
@@ -301,16 +300,13 @@ static int test_ov_value_copy() {
     v = ov_value_free(v);
     c = ov_value_free(c);
 
-    v = ov_value_list(
-        ov_value_null(), ov_value_string("Ratatoskr"), ov_value_number(42));
+    v = ov_value_list(ov_value_null(), ov_value_string("Ratatoskr"),
+                      ov_value_number(42));
 
     testrun(0 != v);
 
-    v = ov_value_list(ov_value_true(),
-                      ov_value_string("Heimdall"),
-                      v,
-                      ov_value_false(),
-                      ov_value_number(7887));
+    v = ov_value_list(ov_value_true(), ov_value_string("Heimdall"), v,
+                      ov_value_false(), ov_value_number(7887));
 
     testrun(0 != v);
 
@@ -365,8 +361,7 @@ static int test_ov_value_copy() {
     // Objects
 
     v = OBJECT(
-        0,
-        PAIR("key1", ov_value_number(12)),
+        0, PAIR("key1", ov_value_number(12)),
         PAIR("object1", OBJECT(0, PAIR("key2", ov_value_string("Here I am")))));
 
     testrun(0 != v);
@@ -437,16 +432,13 @@ int test_ov_value_count() {
     testrun(0 == ov_value_count(v));
     v = ov_value_free(v);
 
-    v = ov_value_list(
-        ov_value_null(), ov_value_string("Ratatoskr"), ov_value_number(42));
+    v = ov_value_list(ov_value_null(), ov_value_string("Ratatoskr"),
+                      ov_value_number(42));
 
     testrun(0 != v);
 
-    v = ov_value_list(ov_value_true(),
-                      ov_value_string("Heimdall"),
-                      v,
-                      ov_value_false(),
-                      ov_value_number(12));
+    v = ov_value_list(ov_value_true(), ov_value_string("Heimdall"), v,
+                      ov_value_false(), ov_value_number(12));
 
     testrun(0 != v);
 
@@ -496,7 +488,8 @@ static char *dump_to_string(ov_value const *v) {
 
     FILE *string_stream = 0;
 
-    if (0 == v) return false;
+    if (0 == v)
+        return false;
 
     char *dumped = 0;
     size_t length = 0;
@@ -504,7 +497,8 @@ static char *dump_to_string(ov_value const *v) {
     string_stream = open_memstream(&dumped, &length);
     OV_ASSERT(0 != string_stream);
 
-    if (!ov_value_dump(string_stream, v)) goto error;
+    if (!ov_value_dump(string_stream, v))
+        goto error;
 
     fflush(string_stream);
 
@@ -525,8 +519,10 @@ static bool check_dump_and_free(ov_value *v, char const *expected) {
 
     bool successful_p = false;
 
-    if (0 == v) return false;
-    if (0 == expected) return false;
+    if (0 == v)
+        return false;
+    if (0 == expected)
+        return false;
 
     char *dumped = dump_to_string(v);
 
@@ -578,12 +574,12 @@ static int test_ov_value_dump() {
 
     testrun(check_dump_and_free(ov_value_list(0), "[]"));
 
-    ov_value *list = ov_value_list(
-        ov_value_true(), ov_value_string("Heimdall"), ov_value_null());
+    ov_value *list = ov_value_list(ov_value_true(), ov_value_string("Heimdall"),
+                                   ov_value_null());
     testrun(0 != list);
 
-    list = ov_value_list(
-        ov_value_number(1337), list, ov_value_string("This is the end"));
+    list = ov_value_list(ov_value_number(1337), list,
+                         ov_value_string("This is the end"));
     testrun(0 != list);
 
     testrun(check_dump_and_free(
@@ -603,8 +599,8 @@ static int test_ov_value_dump() {
     testrun(check_dump_and_free(object, "{\"true\":true}"));
 
     object = ov_value_object();
-    ov_value_object_set(
-        object, "list", ov_value_list(ov_value_number(17), ov_value_number(4)));
+    ov_value_object_set(object, "list",
+                        ov_value_list(ov_value_number(17), ov_value_number(4)));
 
     testrun(check_dump_and_free(object, "{\"list\":[17,4]}"));
     object = 0;
@@ -621,9 +617,11 @@ static bool check_to_string(ov_value *value, char const *expected) {
 
     char *str = ov_value_to_string(value);
 
-    if (0 == str) return (0 == expected);
+    if (0 == str)
+        return (0 == expected);
 
-    if (0 == expected) goto error;
+    if (0 == expected)
+        goto error;
 
     value = ov_value_free(value);
     OV_ASSERT(0 == value);
@@ -670,12 +668,12 @@ static int test_ov_value_to_string() {
 
     testrun(check_to_string(ov_value_list(0), "[]"));
 
-    ov_value *list = ov_value_list(
-        ov_value_true(), ov_value_string("Heimdall"), ov_value_null());
+    ov_value *list = ov_value_list(ov_value_true(), ov_value_string("Heimdall"),
+                                   ov_value_null());
     testrun(0 != list);
 
-    list = ov_value_list(
-        ov_value_number(1337), list, ov_value_string("This is the end"));
+    list = ov_value_list(ov_value_number(1337), list,
+                         ov_value_string("This is the end"));
     testrun(0 != list);
 
     testrun(check_to_string(
@@ -719,8 +717,7 @@ struct list_check_func_arg {
     size_t elements_first_empty;
 };
 
-static bool list_check_func(char const *key,
-                            ov_value const *value,
+static bool list_check_func(char const *key, ov_value const *value,
                             void *userdata) {
 
     OV_ASSERT(0 == key);
@@ -743,8 +740,7 @@ struct object_check_func_arg {
     bool *keys_seen;
 };
 
-static bool object_check_func(char const *key,
-                              ov_value const *value,
+static bool object_check_func(char const *key, ov_value const *value,
                               void *arg) {
 
     OV_ASSERT(0 != key);
@@ -759,9 +755,11 @@ static bool object_check_func(char const *key,
 
         OV_ASSERT(!matches || !object_arg->keys_seen[i]);
 
-        if (matches) object_arg->keys_seen[i] = true;
+        if (matches)
+            object_arg->keys_seen[i] = true;
 
-        if (matches) break;
+        if (matches)
+            break;
     }
 
     return true;
@@ -893,10 +891,8 @@ static int test_ov_value_for_each() {
 
     /* Several elements list */
 
-    val = ov_value_list(ov_value_null(),
-                        ov_value_number(7887),
-                        ov_value_false(),
-                        ov_value_string("Raswidr"));
+    val = ov_value_list(ov_value_null(), ov_value_number(7887),
+                        ov_value_false(), ov_value_string("Raswidr"));
     testrun(0 != val);
 
     ov_value const *found_elements[5] = {0};
@@ -1015,8 +1011,8 @@ static int test_ov_value_match() {
 
     testrun(check_match(ov_value_list(0), ov_value_list(0)));
 
-    testrun(check_match(
-        ov_value_list(ov_value_number(1)), ov_value_list(ov_value_number(1))));
+    testrun(check_match(ov_value_list(ov_value_number(1)),
+                        ov_value_list(ov_value_number(1))));
 
     testrun(!check_match(ov_value_list(ov_value_list(ov_value_string("yggdrassi"
                                                                      "l"),
@@ -1055,23 +1051,19 @@ static int test_ov_value_match() {
     testrun(check_match(OBJECT(0, PAIR(0, 0)), OBJECT(0, PAIR(0, 0))));
 
     testrun(!check_match(
-        OBJECT(0,
-               PAIR("key1", ov_value_number(12)),
+        OBJECT(0, PAIR("key1", ov_value_number(12)),
                PAIR("object1",
                     OBJECT(0, PAIR("key2", ov_value_string("Here I am"))))),
         OBJECT(
-            0,
-            PAIR("key1", ov_value_number(12)),
+            0, PAIR("key1", ov_value_number(12)),
             PAIR("object1",
                  OBJECT(0, PAIR("key2", ov_value_string("Here I am not")))))));
 
     testrun(check_match(
-        OBJECT(0,
-               PAIR("key1", ov_value_number(12)),
+        OBJECT(0, PAIR("key1", ov_value_number(12)),
                PAIR("object1",
                     OBJECT(0, PAIR("key2", ov_value_string("Here I am"))))),
-        OBJECT(0,
-               PAIR("key1", ov_value_number(12)),
+        OBJECT(0, PAIR("key1", ov_value_number(12)),
                PAIR("object1",
                     OBJECT(0, PAIR("key2", ov_value_string("Here I am")))))));
 
@@ -1218,10 +1210,9 @@ static int test_ov_value_is_number() {
     v = ov_value_free(v);
     testrun(0 == v);
 
-    v = ov_value_string(
-        "MeierDoedel und DoodleDoedel fressen Weihnachten den "
-        "Baum auf - Dein bruenftig roechelnder Sohn, Koenigin "
-        "Victoria");
+    v = ov_value_string("MeierDoedel und DoodleDoedel fressen Weihnachten den "
+                        "Baum auf - Dein bruenftig roechelnder Sohn, Koenigin "
+                        "Victoria");
 
     testrun(0 != v);
     testrun(!ov_value_is_number(v));
@@ -1358,9 +1349,7 @@ static int test_ov_value_list() {
 
     testrun(0 == v);
 
-    v = ov_value_list(ov_value_null(),
-                      ov_value_number(13),
-                      ov_value_null(),
+    v = ov_value_list(ov_value_null(), ov_value_number(13), ov_value_null(),
                       ov_value_string("Audumbla"));
 
     testrun(0 != v);
@@ -1536,7 +1525,8 @@ static int test_ov_value_enable_caching() {
 
         ov_value *n = ov_value_number(i);
 
-        if (0 != old) testrun(old == n);
+        if (0 != old)
+            testrun(old == n);
 
         testrun(i == ov_value_get_number(n));
 
@@ -1556,7 +1546,8 @@ static int test_ov_value_enable_caching() {
 
         ov_value *n = ov_value_string(test_string);
 
-        if (0 != old) testrun(old == n);
+        if (0 != old)
+            testrun(old == n);
 
         testrun(0 == strcmp(test_string, ov_value_get_string(n)));
 
@@ -1574,7 +1565,8 @@ static int test_ov_value_enable_caching() {
         ov_value *n = ov_value_list(0);
         testrun(0 != n);
 
-        if (0 != old) testrun(old == n);
+        if (0 != old)
+            testrun(old == n);
 
         old = n;
         n = ov_value_free(n);
@@ -1590,7 +1582,8 @@ static int test_ov_value_enable_caching() {
         ov_value *n = ov_value_object();
         testrun(0 != n);
 
-        if (0 != old) testrun(old == n);
+        if (0 != old)
+            testrun(old == n);
 
         old = n;
         n = ov_value_free(n);
@@ -1715,30 +1708,14 @@ static int test_ov_value_object_get() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_value",
-            test_ov_value_free,
-            test_ov_value_copy,
-            test_ov_value_count,
-            test_ov_value_dump,
-            test_ov_value_to_string,
-            test_ov_value_for_each,
-            test_ov_value_match,
-            test_ov_value_null,
-            test_ov_value_is_null,
-            test_ov_value_true,
-            test_ov_value_is_true,
-            test_ov_value_false,
-            test_ov_value_is_false,
-            test_ov_value_number,
-            test_ov_value_is_number,
-            test_ov_value_get_number,
-            test_ov_value_string,
-            test_ov_value_get_string,
-            test_ov_value_list,
-            test_ov_value_list_set,
-            test_ov_value_list_get,
-            test_ov_value_list_push,
-            test_ov_value_object,
-            test_ov_value_object_set,
-            test_ov_value_object_get,
+OV_TEST_RUN("ov_value", test_ov_value_free, test_ov_value_copy,
+            test_ov_value_count, test_ov_value_dump, test_ov_value_to_string,
+            test_ov_value_for_each, test_ov_value_match, test_ov_value_null,
+            test_ov_value_is_null, test_ov_value_true, test_ov_value_is_true,
+            test_ov_value_false, test_ov_value_is_false, test_ov_value_number,
+            test_ov_value_is_number, test_ov_value_get_number,
+            test_ov_value_string, test_ov_value_get_string, test_ov_value_list,
+            test_ov_value_list_set, test_ov_value_list_get,
+            test_ov_value_list_push, test_ov_value_object,
+            test_ov_value_object_set, test_ov_value_object_get,
             test_ov_value_enable_caching);

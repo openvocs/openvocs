@@ -98,8 +98,7 @@ const char *ov_sdp_attribute_get(const ov_sdp_list *attributes,
         NEVER EVER use like this:
         while(ov_sdp_attributes_iterate(&session->attributes, &value))
 */
-bool ov_sdp_attributes_iterate(ov_sdp_list **attributes,
-                               const char *name,
+bool ov_sdp_attributes_iterate(ov_sdp_list **attributes, const char *name,
                                const char **out);
 
 /*----------------------------------------------------------------------------*/
@@ -153,8 +152,7 @@ bool ov_sdp_attributes_iterate(ov_sdp_list **attributes,
         on reusage. ov_sdp_session is intendet to be used with the
         stringify/parse approach.
 */
-bool ov_sdp_attribute_add(ov_sdp_list **attributes,
-                          const char *key,
+bool ov_sdp_attribute_add(ov_sdp_list **attributes, const char *key,
                           const char *value);
 
 /*

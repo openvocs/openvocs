@@ -55,19 +55,21 @@ struct ov_rtp_buffering_io {
 
 static ov_rtp_buffering_io *as_rtp_io(void *vptr) {
 
-    if (0 == vptr) return 0;
+    if (0 == vptr)
+        return 0;
 
     ov_rtp_buffering_io *rtp_io = vptr;
 
-    if (MAGIC_BYTES != rtp_io->magic_bytes) return 0;
+    if (MAGIC_BYTES != rtp_io->magic_bytes)
+        return 0;
 
     return rtp_io;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_rtp_buffering_io *ov_rtp_buffering_io_create(
-    ov_rtp_buffering_io_config config) {
+ov_rtp_buffering_io *
+ov_rtp_buffering_io_create(ov_rtp_buffering_io_config config) {
 
     ov_rtp_buffering_io *io = 0;
 
@@ -222,11 +224,8 @@ bool ov_rtp_buffering_io_register_socket(ov_rtp_buffering_io *io, int fd) {
     OV_ASSERT(0 != io->loop);
 
     if (!io->loop->callback.set(
-            io->loop,
-            fd,
-            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-            io,
-            cb_io_udp_media)) {
+            io->loop, fd, OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
+            io, cb_io_udp_media)) {
 
         ov_log_error("Could not regsiter socket with loop");
         goto error;

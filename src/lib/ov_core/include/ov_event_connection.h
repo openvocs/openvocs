@@ -53,8 +53,8 @@ typedef struct ov_event_connection_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_event_connection *ov_event_connection_create(
-    ov_event_connection_config config);
+ov_event_connection *
+ov_event_connection_create(ov_event_connection_config config);
 
 /*----------------------------------------------------------------------------*/
 
@@ -85,8 +85,7 @@ int ov_event_connection_get_socket(ov_event_connection *self);
  *      ------------------------------------------------------------------------
  */
 
-bool ov_event_connection_set(ov_event_connection *self,
-                             const char *key,
+bool ov_event_connection_set(ov_event_connection *self, const char *key,
                              const char *value);
 
 /*----------------------------------------------------------------------------*/
@@ -95,8 +94,7 @@ const char *ov_event_connection_get(ov_event_connection *self, const char *key);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_connection_set_json(ov_event_connection *self,
-                                  const char *key,
+bool ov_event_connection_set_json(ov_event_connection *self, const char *key,
                                   const ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/

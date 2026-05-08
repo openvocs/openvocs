@@ -258,7 +258,8 @@ static bool cb(int socket, uint8_t events, void *data) {
 
     char *buffer = (char *)data;
 
-    if (buffer) recv(socket, buffer, 512, 0);
+    if (buffer)
+        recv(socket, buffer, 512, 0);
 
     return true;
 }
@@ -303,10 +304,10 @@ int test_ov_event_add_default_connection_accept() {
     testrun(!ov_event_add_default_connection_accept(NULL, 0, 0, NULL, NULL));
     testrun(!ov_event_add_default_connection_accept(
         NULL, socketTCP, OV_EVENT_IO_IN, &buffer, cb));
-    testrun(!ov_event_add_default_connection_accept(
-        loop, 0, OV_EVENT_IO_IN, &buffer, cb));
-    testrun(!ov_event_add_default_connection_accept(
-        loop, socketTCP, 0, &buffer, cb));
+    testrun(!ov_event_add_default_connection_accept(loop, 0, OV_EVENT_IO_IN,
+                                                    &buffer, cb));
+    testrun(!ov_event_add_default_connection_accept(loop, socketTCP, 0, &buffer,
+                                                    cb));
     testrun(!ov_event_add_default_connection_accept(
         loop, socketTCP, OV_EVENT_IO_IN, NULL, NULL));
 

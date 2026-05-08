@@ -46,9 +46,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-static int delete_node(char const *path,
-                       const struct stat *sb,
-                       int typeflag,
+static int delete_node(char const *path, const struct stat *sb, int typeflag,
                        struct FTW *ftwbuf) {
 
     UNUSED(sb);
@@ -67,10 +65,12 @@ bool ov_dir_tree_remove(const char *path) {
     struct stat statbuf = {0};
     errno = 0;
 
-    if (0 == path) return false;
+    if (0 == path)
+        return false;
 
     // no stat not existing
-    if (0 != stat(path, &statbuf)) return true;
+    if (0 != stat(path, &statbuf))
+        return true;
 
     if (0 !=
         nftw(path, delete_node, FOPEN_MAX, FTW_DEPTH | FTW_MOUNT | FTW_PHYS)) {
@@ -99,7 +99,7 @@ static mode_t get_path_mode(char const *path) {
 
 static bool our_mkdir(char const *path) {
 
-    return 0 == mkdir(path, S_IRWXU | S_IRWXG);
+    return 0 == mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -109,7 +109,8 @@ static bool mkdir_recursive(char *path) {
 
     bool result = false;
 
-    if (0 == path) goto error;
+    if (0 == path)
+        goto error;
 
     mode_t path_mode = get_path_mode(path);
 
@@ -168,14 +169,17 @@ error:
 
 bool ov_dir_tree_create(char const *path) {
 
-    if (0 == path) goto error;
+    if (0 == path)
+        goto error;
 
     char clean[PATH_MAX] = {0};
 
-    if (!ov_uri_path_remove_dot_segments(path, clean)) goto error;
+    if (!ov_uri_path_remove_dot_segments(path, clean))
+        goto error;
 
     size_t len = strlen(clean);
-    if ('/' == clean[len - 1]) clean[len - 1] = 0;
+    if ('/' == clean[len - 1])
+        clean[len - 1] = 0;
 
     char *path_copy = strdup(clean);
     len = strlen(path_copy);
@@ -198,15 +202,19 @@ bool ov_dir_access_to_path(const char *path) {
     struct stat statbuf = {0};
     errno = 0;
 
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
-    if (0 != stat(path, &statbuf)) goto error;
+    if (0 != stat(path, &statbuf))
+        goto error;
 
     mode_t mode = statbuf.st_mode & S_IFMT;
 
-    if (mode != S_IFDIR) goto error;
+    if (mode != S_IFDIR)
+        goto error;
 
-    if (0 != access(path, F_OK)) goto error;
+    if (0 != access(path, F_OK))
+        goto error;
 
     return true;
 error:

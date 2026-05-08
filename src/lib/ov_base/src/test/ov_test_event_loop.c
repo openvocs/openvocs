@@ -45,7 +45,8 @@ static void *run_loop(void *varg) {
 
 bool ov_test_event_loop_run_in_thread(ov_event_loop *loop, pthread_t *tid) {
 
-    if (0 == loop) return false;
+    if (0 == loop)
+        return false;
 
     OV_ASSERT(0 != loop);
 
@@ -63,7 +64,8 @@ bool ov_test_event_loop_run_in_thread(ov_event_loop *loop, pthread_t *tid) {
 
 bool ov_test_event_loop_stop_thread(ov_event_loop *loop, pthread_t tid) {
 
-    if (0 == loop) return false;
+    if (0 == loop)
+        return false;
 
     OV_ASSERT(0 != loop);
 
@@ -88,7 +90,8 @@ bool ov_test_event_loop_stop_thread(ov_event_loop *loop, pthread_t tid) {
 
 bool ov_test_event_loop_run_for_secs(ov_event_loop *loop, unsigned int secs) {
 
-    if (0 == loop) return false;
+    if (0 == loop)
+        return false;
 
     pthread_t minions_loop_tid;
     ov_test_event_loop_run_in_thread(loop, &minions_loop_tid);

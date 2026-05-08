@@ -39,8 +39,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-static ov_rtp_frame *create_test_frame(uint32_t ssid,
-                                       uint32_t sequence_number,
+static ov_rtp_frame *create_test_frame(uint32_t ssid, uint32_t sequence_number,
                                        ov_list *frame_list) {
 
     uint8_t input_bytes[1024] = {0};
@@ -65,7 +64,8 @@ static ov_rtp_frame *create_test_frame(uint32_t ssid,
 
 void *free_frame_list(ov_list *list) {
 
-    if (0 == list) return 0;
+    if (0 == list)
+        return 0;
 
     list->for_each(list, 0, free_rtp_frame);
 
@@ -96,8 +96,8 @@ bool fill_buffer(ov_rtp_frame_buffer *buffer, uint32_t const data[][2]) {
 
     while ((0 != data[i][1]) || (0 != data[i][0])) {
 
-        ov_rtp_frame_buffer_add(
-            buffer, create_test_frame(data[i][0], data[i][1], 0));
+        ov_rtp_frame_buffer_add(buffer,
+                                create_test_frame(data[i][0], data[i][1], 0));
 
         ++i;
     };
@@ -116,7 +116,8 @@ bool fill_buffer(ov_rtp_frame_buffer *buffer, uint32_t const data[][2]) {
 
 bool list_contains(ov_list *list, uint32_t const expected[][2]) {
 
-    if (0 == list) return false;
+    if (0 == list)
+        return false;
 
     size_t i = 0;
 
@@ -143,7 +144,8 @@ bool list_contains(ov_list *list, uint32_t const expected[][2]) {
             }
         }
 
-        if (!found) return false;
+        if (!found)
+            return false;
 
         ++i;
     }
@@ -412,6 +414,9 @@ int test_ov_rtp_frame_buffer_get_current_frames() {
 
     current = free_frame_list(current);
 
+    current = ov_rtp_frame_buffer_get_current_frames(buffer);
+    testrun(0 == current);
+
     buffer = buffer->free(buffer);
 
     /**********************************************************************
@@ -544,23 +549,9 @@ int test_impl_free() {
         .num_frames_to_buffer_per_stream = 5,
     });
 
-    FILL_BUFFER(buffer,
-                {2, 15},
-                {1, 11},
-                {6, 14},
-                {41, 15},
-                {19, 3},
-                {19, 1},
-                {6, 11},
-                {6, 999},
-                {999, 1},
-                {2, 1},
-                {1, 4},
-                {6, 2},
-                {6, 13},
-                {2, 2},
-                {7, 15},
-                {1, 1});
+    FILL_BUFFER(buffer, {2, 15}, {1, 11}, {6, 14}, {41, 15}, {19, 3}, {19, 1},
+                {6, 11}, {6, 999}, {999, 1}, {2, 1}, {1, 4}, {6, 2}, {6, 13},
+                {2, 2}, {7, 15}, {1, 1});
     testrun(0 == buffer->free(buffer));
 
     return testrun_log_success();
@@ -594,9 +585,7 @@ int test_ov_rtp_frame_buffer_print() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_rtp_frame_buffer",
-            test_ov_rtp_frame_buffer_create,
+OV_TEST_RUN("ov_rtp_frame_buffer", test_ov_rtp_frame_buffer_create,
             test_ov_rtp_frame_buffer_add,
-            test_ov_rtp_frame_buffer_get_current_frames,
-            test_impl_free,
+            test_ov_rtp_frame_buffer_get_current_frames, test_impl_free,
             test_ov_rtp_frame_buffer_print);

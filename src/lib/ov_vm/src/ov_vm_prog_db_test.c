@@ -147,8 +147,7 @@ static char *strdup_if_demanded(char *str, bool allocate) {
 
 /*----------------------------------------------------------------------------*/
 
-static void insert_random_entries(ov_vm_prog_db *db,
-                                  size_t num,
+static void insert_random_entries(ov_vm_prog_db *db, size_t num,
                                   bool allocate_data) {
 
     char ids[num][OV_VM_PROG_ID_MAX_LEN];
@@ -156,8 +155,8 @@ static void insert_random_entries(ov_vm_prog_db *db,
 
     for (size_t i = 0; i < num; ++i) {
         random_unique_id_at(ids, i);
-        ov_vm_prog_db_insert(
-            db, ids[i], test_instr, strdup_if_demanded("aha", allocate_data));
+        ov_vm_prog_db_insert(db, ids[i], test_instr,
+                             strdup_if_demanded("aha", allocate_data));
     }
 }
 
@@ -306,8 +305,8 @@ static int test_ov_vm_prog_db_get() {
 
         testrun(0 == ov_vm_prog_db_get(store, id_string[i]));
 
-        prog[i] = ov_vm_prog_db_insert(
-            store, id_string[i], test_instr, strdup("useless"));
+        prog[i] = ov_vm_prog_db_insert(store, id_string[i], test_instr,
+                                       strdup("useless"));
 
         testrun(0 != prog[i]);
 
@@ -380,8 +379,8 @@ static int test_ov_vm_prog_db_remove() {
 
     for (size_t i = 0; i < NO_IDS; ++i) {
 
-        prog[i] = ov_vm_prog_db_insert(
-            store, id_string[i], test_instr, strdup("abc"));
+        prog[i] = ov_vm_prog_db_insert(store, id_string[i], test_instr,
+                                       strdup("abc"));
         testrun(0 != prog[i]);
     }
 
@@ -406,8 +405,7 @@ static int test_ov_vm_prog_db_remove() {
         /* Now check whether not removed entries are still accessible */
 
         for (size_t remi = 1 + i;
-             remi < sizeof(indices_to_remove) / sizeof(size_t);
-             ++remi) {
+             remi < sizeof(indices_to_remove) / sizeof(size_t); ++remi) {
 
             size_t mapped_index = indices_to_remove[remi];
 
@@ -769,14 +767,9 @@ static int test_ov_vm_prog_db_alias() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_vm_prog_db",
-            test_ov_vm_prog_db_create,
-            test_ov_vm_prog_db_free,
-            test_ov_vm_prog_db_insert,
-            test_ov_vm_prog_db_get,
-            test_ov_vm_prog_db_remove,
-            test_ov_vm_prog_db_update_time,
-            test_ov_vm_prog_db_next_due,
-            test_ov_vm_prog_db_alias);
+OV_TEST_RUN("ov_vm_prog_db", test_ov_vm_prog_db_create, test_ov_vm_prog_db_free,
+            test_ov_vm_prog_db_insert, test_ov_vm_prog_db_get,
+            test_ov_vm_prog_db_remove, test_ov_vm_prog_db_update_time,
+            test_ov_vm_prog_db_next_due, test_ov_vm_prog_db_alias);
 
 /*----------------------------------------------------------------------------*/

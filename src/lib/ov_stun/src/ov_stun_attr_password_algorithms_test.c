@@ -47,8 +47,8 @@ int test_ov_stun_attr_is_password_algorithms() {
     memset(buf, 'a', size);
 
     // prepare valid frame
-    testrun(ov_stun_attribute_set_type(
-        buffer, size, STUN_ATTR_PASSWORD_ALGORITHMS));
+    testrun(ov_stun_attribute_set_type(buffer, size,
+                                       STUN_ATTR_PASSWORD_ALGORITHMS));
     testrun(ov_stun_attribute_set_length(buffer, size, 1));
 
     testrun(ov_stun_attr_is_password_algorithms(buffer, size));
@@ -68,8 +68,8 @@ int test_ov_stun_attr_is_password_algorithms() {
     // type not nonce
     testrun(ov_stun_attribute_set_type(buffer, size, 0));
     testrun(!ov_stun_attr_is_password_algorithms(buffer, size));
-    testrun(ov_stun_attribute_set_type(
-        buffer, size, STUN_ATTR_PASSWORD_ALGORITHMS));
+    testrun(ov_stun_attribute_set_type(buffer, size,
+                                       STUN_ATTR_PASSWORD_ALGORITHMS));
     testrun(ov_stun_attr_is_password_algorithms(buffer, size));
 
     return testrun_log_success();

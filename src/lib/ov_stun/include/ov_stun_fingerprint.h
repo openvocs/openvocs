@@ -90,9 +90,7 @@ size_t ov_stun_fingerprint_encoding_length();
         @param next             (optional) pointer to next (after write)
         @returns true           if attribute was written to position
 */
-bool ov_stun_add_fingerprint(uint8_t *head,
-                             size_t length,
-                             uint8_t *start,
+bool ov_stun_add_fingerprint(uint8_t *head, size_t length, uint8_t *start,
                              uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -110,10 +108,7 @@ bool ov_stun_add_fingerprint(uint8_t *head,
                                 @NOTE all following attribute pointers will be
                                 removed from the list.
 */
-bool ov_stun_check_fingerprint(uint8_t *head,
-                               size_t length,
-                               uint8_t *attr[],
-                               size_t attr_size,
-                               bool must_be_set);
+bool ov_stun_check_fingerprint(uint8_t *head, size_t length, uint8_t *attr[],
+                               size_t attr_size, bool must_be_set);
 
 #endif /* ov_stun_fingerprint_h */

@@ -73,9 +73,8 @@ int test_ov_file_read() {
 
     free(path);
 
-    path = ov_test_get_resource_path(
-        "resources/"
-        "not_existing12131134524124124315");
+    path = ov_test_get_resource_path("resources/"
+                                     "not_existing12131134524124124315");
 
     free(buffer);
     buffer = NULL;
@@ -146,9 +145,8 @@ int test_ov_file_read_check_bytes() {
     free(p);
 
     // check -1 on non existing
-    p = ov_test_get_resource_path(
-        "resources/"
-        "this_file_shall_not_exists_fajfnafnf");
+    p = ov_test_get_resource_path("resources/"
+                                  "this_file_shall_not_exists_fajfnafnf");
     unlink(p);
     testrun(-1 == ov_file_read_check_get_bytes(p));
 
@@ -183,9 +181,8 @@ static int test_ov_file_exists() {
 
     testrun(!ov_file_exists(test_file));
 
-    testrun(
-        OV_FILE_SUCCESS ==
-        ov_file_write(test_file, (uint8_t *)test_file, strlen(test_file), 0));
+    testrun(OV_FILE_SUCCESS == ov_file_write(test_file, (uint8_t *)test_file,
+                                             strlen(test_file), 0));
 
     testrun(ov_file_exists(test_file));
 
@@ -679,14 +676,9 @@ static int test_ov_file_write_32() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_file",
-            test_ov_file_exists,
-            test_ov_file_write,
-            test_ov_file_read,
-            test_ov_file_read_check_bytes,
-            test_ov_file_get_16,
-            test_ov_file_get_32,
-            test_ov_file_write_16,
+OV_TEST_RUN("ov_file", test_ov_file_exists, test_ov_file_write,
+            test_ov_file_read, test_ov_file_read_check_bytes,
+            test_ov_file_get_16, test_ov_file_get_32, test_ov_file_write_16,
             test_ov_file_write_32);
 
 /*----------------------------------------------------------------------------*/

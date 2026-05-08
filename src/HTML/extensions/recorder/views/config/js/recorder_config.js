@@ -31,10 +31,10 @@ import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Recorder from "/extensions/recorder/ov_recorder.js";
 import * as View from "./view.js";
 
+export { collect } from "./view.js";
+
 export const VIEW_ID = "vocs_admin_recorder";
 var view_container;
-
-export { collect } from "./view.js";
 
 export async function init(container) {
     view_container = container;
@@ -43,31 +43,43 @@ export async function init(container) {
 }
 
 export async function render(loops) {
-    let recorded_loops = await ov_Recorder.get_recorded_loops();
-    let first_loop;
-
-    View.clear_loops();
-
-    if (loops)
-        for (let id of Object.keys(loops)) {
-            let active = recorded_loops.includes(id)
-            let loop = View.add_loop(id, loops[id], active);
-            if (!first_loop)
-                first_loop = loop;
+    let websocket;
+    for (let ws of ov_Websockets.list) {
+        if (ws.record === true) {
+            websocket = ws;
+            break;
         }
-
-    if (first_loop)
-        View.select_loop(first_loop);
-
-    /*if (!await ov_DB.domains() || !await ov_DB.projects()){
-        ov_Websockets.prime_websocket.disconnect();
     }
 
-    View.draw(ov_Websockets.user());
+    if (websocket) {
+        let recorded_loops = await ov_Recorder.get_recorded_loops(websocket);
+        if (recorded_loops)
+            recorded_loops = recorded_loops.map((x) => x.loop);
 
-    console.log("(overview) View rendered");
+        let first_loop;
 
-    ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);*/
+        View.clear_loops();
+        if (loops)
+            for (let id of Object.keys(loops)) {
+                let active = recorded_loops.includes(id)
+                let loop = View.add_loop(id, loops[id], active);
+                if (!first_loop)
+                    first_loop = loop;
+            }
+
+        if (first_loop)
+            View.select_loop(first_loop);
+
+        /*if (!await ov_DB.domains() || !await ov_DB.projects()){
+            ov_Websockets.prime_websocket.disconnect();
+        }
+    
+        View.draw(ov_Websockets.user());
+    
+        console.log("(overview) View rendered");
+    
+        ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);*/
+    }
 }
 
 export function remove() {

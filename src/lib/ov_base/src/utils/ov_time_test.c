@@ -560,11 +560,6 @@ static int test_ov_timestamp_from_data() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_time",
-            test_ov_timestamp,
-            test_ov_timestamp_write_to,
-            test_ov_timestamp_parse,
-            test_ov_timestamp_from_data,
-            test_ov_time_string,
-            test_ov_time_write_to,
-            test_ov_time_to_string);
+OV_TEST_RUN("ov_time", test_ov_timestamp, test_ov_timestamp_write_to,
+            test_ov_timestamp_parse, test_ov_timestamp_from_data,
+            test_ov_time_string, test_ov_time_write_to, test_ov_time_to_string);

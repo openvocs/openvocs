@@ -33,6 +33,7 @@
 #define OV_VAD_APP_MAGIC_BYTES 0xf345
 
 #include <ov_base/ov_config_keys.h>
+#include <ov_base/ov_vad_config.h>
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_event_app.h>
 
@@ -76,15 +77,20 @@ static void cb_socket_connected(void *userdata, int socket) {
 
 /*---------------------------------------------------------------------------*/
 
-static void cb_register_response(ov_vad_app *self,
-                                 int socket,
+static void cb_register_response(ov_vad_app *self, int socket,
                                  ov_json_value *input) {
 
-    if (!self || !socket || !input) goto error;
+    if (!self || !socket || !input)
+        goto error;
 
     ov_json_value *out = ov_vad_app_msg_loops();
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
+
+    ov_json_value *par = ov_event_api_get_response(input);
+    ov_vad_config conf = ov_vad_config_from_json(par);
+
+    ov_vad_core_set_vad(self->vad, conf);
 
 error:
     ov_json_value_free(input);
@@ -93,13 +99,12 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static void cb_register(void *userdata,
-                        const char *name,
-                        int socket,
+static void cb_register(void *userdata, const char *name, int socket,
                         ov_json_value *input) {
 
     ov_vad_app *self = ov_vad_app_cast(userdata);
-    if (!self || !name || !socket || !input) goto error;
+    if (!self || !name || !socket || !input)
+        goto error;
 
     if (ov_event_api_get_response(input))
         return cb_register_response(self, socket, input);
@@ -115,7 +120,8 @@ error:
 
 static bool add_loop_vad(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     ov_vad_app *self = ov_vad_app_cast(data);
 
     const char *id = ov_json_string_get(ov_json_object_get(val, OV_KEY_ID));
@@ -133,16 +139,16 @@ static bool add_loop_vad(const void *key, void *val, void *data) {
 
 /*---------------------------------------------------------------------------*/
 
-static void cb_loops(void *userdata,
-                     const char *name,
-                     int socket,
+static void cb_loops(void *userdata, const char *name, int socket,
                      ov_json_value *input) {
 
     ov_vad_app *self = ov_vad_app_cast(userdata);
-    if (!self || !name || !socket || !input) goto error;
+    if (!self || !name || !socket || !input)
+        goto error;
 
     ov_json_value *res = ov_event_api_get_response(input);
-    if (!res) goto error;
+    if (!res)
+        goto error;
 
     ov_json_value *loops = ov_json_object_get(res, OV_KEY_LOOPS);
 
@@ -157,7 +163,8 @@ error:
 
 static bool register_callbacks(ov_vad_app *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (!ov_event_app_register(self->app, OV_KEY_REGISTER, self, cb_register))
         goto error;
@@ -201,11 +208,14 @@ ov_vad_app *ov_vad_app_create(ov_vad_app_config config) {
 
     ov_vad_app *self = NULL;
 
-    if (!config.loop) goto error;
-    if (!config.io) goto error;
+    if (!config.loop)
+        goto error;
+    if (!config.io)
+        goto error;
 
     self = calloc(1, sizeof(ov_vad_app));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_bytes = OV_VAD_APP_MAGIC_BYTES;
     self->config = config;
@@ -221,14 +231,15 @@ ov_vad_app *ov_vad_app_create(ov_vad_app_config config) {
                               .callbacks.close = cb_socket_close,
                               .callbacks.connected = cb_socket_connected});
 
-    if (!self->app) goto error;
+    if (!self->app)
+        goto error;
 
     ov_event_app_open_connection(
-        self->app,
-        (ov_io_socket_config){
-            .auto_reconnect = true, .socket = config.manager});
+        self->app, (ov_io_socket_config){.auto_reconnect = true,
+                                         .socket = config.manager});
 
-    if (!register_callbacks(self)) goto error;
+    if (!register_callbacks(self))
+        goto error;
 
     return self;
 error:
@@ -240,7 +251,8 @@ error:
 
 ov_vad_app *ov_vad_app_free(ov_vad_app *self) {
 
-    if (!ov_vad_app_cast(self)) return self;
+    if (!ov_vad_app_cast(self))
+        return self;
 
     self->vad = ov_vad_core_free(self->vad);
     self->app = ov_event_app_free(self->app);
@@ -253,9 +265,11 @@ ov_vad_app *ov_vad_app_free(ov_vad_app *self) {
 
 ov_vad_app *ov_vad_app_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_VAD_APP_MAGIC_BYTES) return NULL;
+    if (*(uint16_t *)data != OV_VAD_APP_MAGIC_BYTES)
+        return NULL;
 
     return (ov_vad_app *)data;
 }
@@ -266,7 +280,8 @@ ov_vad_app_config ov_vad_app_config_from_json(const ov_json_value *v) {
 
     ov_vad_app_config config = {0};
     const ov_json_value *conf = ov_json_object_get(v, OV_KEY_VAD);
-    if (!conf) conf = v;
+    if (!conf)
+        conf = v;
 
     config.manager = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET), (ov_socket_configuration){0});

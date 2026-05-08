@@ -28,7 +28,6 @@
         ------------------------------------------------------------------------
 */
 #include "../include/ov_vocs_db.h"
-#include "../include/ov_vocs_db_app.h"
 #include "../include/ov_vocs_db_persistance.h"
 
 #include <limits.h>
@@ -84,17 +83,23 @@ struct ov_vocs_db {
 
 static bool index_clear(ov_vocs_db *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_dict_clear(self->index.domains)) goto error;
+    if (!ov_dict_clear(self->index.domains))
+        goto error;
 
-    if (!ov_dict_clear(self->index.projects)) goto error;
+    if (!ov_dict_clear(self->index.projects))
+        goto error;
 
-    if (!ov_dict_clear(self->index.users)) goto error;
+    if (!ov_dict_clear(self->index.users))
+        goto error;
 
-    if (!ov_dict_clear(self->index.roles)) goto error;
+    if (!ov_dict_clear(self->index.roles))
+        goto error;
 
-    if (!ov_dict_clear(self->index.loops)) goto error;
+    if (!ov_dict_clear(self->index.loops))
+        goto error;
 
     return true;
 error:
@@ -105,7 +110,8 @@ error:
 
 static bool vocs_db_clear(ov_vocs_db *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     index_clear(self);
 
@@ -127,9 +133,11 @@ error:
 
 ov_vocs_db *ov_vocs_db_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (*(uint16_t *)self == OV_VOCS_DB_MAGIC_BYTE) return (ov_vocs_db *)self;
+    if (*(uint16_t *)self == OV_VOCS_DB_MAGIC_BYTE)
+        return (ov_vocs_db *)self;
 error:
     return NULL;
 }
@@ -139,7 +147,8 @@ error:
 static void process_trigger(void *userdata, ov_json_value *input) {
 
     ov_vocs_db *db = ov_vocs_db_cast(userdata);
-    if (!db || !input) goto error;
+    if (!db || !input)
+        goto error;
 
     ov_log_debug("Received event %s", ov_event_api_get_event(input));
 
@@ -162,7 +171,8 @@ ov_vocs_db *ov_vocs_db_create(ov_vocs_db_config config) {
         config.password.length = IMPL_DEFAULT_PASSWORD_LENGTH;
 
     self = calloc(1, sizeof(ov_vocs_db));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_byte = OV_VOCS_DB_MAGIC_BYTE;
     self->config = config;
@@ -184,10 +194,9 @@ ov_vocs_db *ov_vocs_db_create(ov_vocs_db_config config) {
 
     if (config.trigger)
         ov_event_trigger_register_listener(
-            config.trigger,
-            "DB",
-            (ov_event_trigger_data){
-                .userdata = self, .process = process_trigger});
+            config.trigger, "DB",
+            (ov_event_trigger_data){.userdata = self,
+                                    .process = process_trigger});
 
     return self;
 error:
@@ -199,14 +208,16 @@ error:
 
 ov_vocs_db *ov_vocs_db_free(ov_vocs_db *self) {
 
-    if (!self || !ov_vocs_db_cast(self)) return self;
+    if (!self || !ov_vocs_db_cast(self))
+        return self;
 
     int i = 0;
     int max = 100;
 
     for (i = 0; i < max; i++) {
 
-        if (ov_thread_lock_try_lock(&self->lock)) break;
+        if (ov_thread_lock_try_lock(&self->lock))
+            break;
     }
 
     if (i == max) {
@@ -242,8 +253,10 @@ ov_vocs_db *ov_vocs_db_free(ov_vocs_db *self) {
 
 bool ov_vocs_db_dump(FILE *stream, ov_vocs_db *self) {
 
-    if (!stream || !self) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!stream || !self)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     char *str = ov_json_value_to_string(self->data.domains);
     fprintf(stream, "DOMAINS ----->\n%s\n", str);
@@ -285,7 +298,8 @@ ov_vocs_db_config ov_vocs_db_config_from_json(const ov_json_value *value) {
     ov_vocs_db_config config = {0};
 
     const ov_json_value *conf = ov_json_object_get(value, OV_KEY_DB);
-    if (!conf) conf = value;
+    if (!conf)
+        conf = value;
 
     config.timeout.thread_lock_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_TIMEOUT "/" OV_KEY_THREAD_LOCK_TIMEOUT));
@@ -309,7 +323,8 @@ ov_vocs_db_config ov_vocs_db_config_from_json(const ov_json_value *value) {
 
 ov_vocs_db_entity ov_vocs_db_entity_from_string(const char *string) {
 
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     if (0 == strcmp(string, OV_KEY_USER)) {
 
@@ -352,28 +367,28 @@ static ov_dict *get_index_dict(ov_vocs_db *self, ov_vocs_db_entity entity) {
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
-            dict = self->index.domains;
-            break;
+    case OV_VOCS_DB_DOMAIN:
+        dict = self->index.domains;
+        break;
 
-        case OV_VOCS_DB_PROJECT:
-            dict = self->index.projects;
-            break;
+    case OV_VOCS_DB_PROJECT:
+        dict = self->index.projects;
+        break;
 
-        case OV_VOCS_DB_LOOP:
-            dict = self->index.loops;
-            break;
+    case OV_VOCS_DB_LOOP:
+        dict = self->index.loops;
+        break;
 
-        case OV_VOCS_DB_ROLE:
-            dict = self->index.roles;
-            break;
+    case OV_VOCS_DB_ROLE:
+        dict = self->index.roles;
+        break;
 
-        case OV_VOCS_DB_USER:
-            dict = self->index.users;
-            break;
+    case OV_VOCS_DB_USER:
+        dict = self->index.users;
+        break;
 
-        default:
-            dict = NULL;
+    default:
+        dict = NULL;
     }
 
     return dict;
@@ -383,14 +398,17 @@ static ov_dict *get_index_dict(ov_vocs_db *self, ov_vocs_db_entity entity) {
 
 static bool unindex_users(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     UNUSED(val);
 
     ov_vocs_db *self = ov_vocs_db_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_dict_del(self->index.users, key)) goto error;
+    if (!ov_dict_del(self->index.users, key))
+        goto error;
 
     return true;
 error:
@@ -401,14 +419,17 @@ error:
 
 static bool unindex_roles(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     UNUSED(val);
 
     ov_vocs_db *self = ov_vocs_db_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_dict_del(self->index.roles, key)) goto error;
+    if (!ov_dict_del(self->index.roles, key))
+        goto error;
 
     return true;
 error:
@@ -419,14 +440,17 @@ error:
 
 static bool unindex_loops(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     UNUSED(val);
 
     ov_vocs_db *self = ov_vocs_db_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_dict_del(self->index.loops, key)) goto error;
+    if (!ov_dict_del(self->index.loops, key))
+        goto error;
 
     return true;
 error:
@@ -441,7 +465,8 @@ static bool unindex_project(ov_vocs_db *self, const char *id) {
     OV_ASSERT(id);
 
     ov_json_value *v = ov_dict_get(self->index.projects, id);
-    if (!v) goto done;
+    if (!v)
+        goto done;
 
     ov_json_value const *old = ov_json_get(v, "/" OV_KEY_USERS);
     if (old &&
@@ -458,7 +483,8 @@ static bool unindex_project(ov_vocs_db *self, const char *id) {
         !ov_json_object_for_each((ov_json_value *)old, self, unindex_loops))
         goto error;
 
-    if (!ov_dict_del(self->index.projects, id)) goto error;
+    if (!ov_dict_del(self->index.projects, id))
+        goto error;
 
 done:
     return true;
@@ -470,12 +496,14 @@ error:
 
 static bool unindex_projects(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     UNUSED(val);
 
     ov_vocs_db *self = ov_vocs_db_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     const char *id = (const char *)key;
     return unindex_project(self, id);
@@ -491,7 +519,8 @@ static bool unindex_domain(ov_vocs_db *self, const char *id) {
     OV_ASSERT(id);
 
     ov_json_value const *domain = ov_json_object_get(self->data.domains, id);
-    if (!domain) goto done;
+    if (!domain)
+        goto done;
 
     ov_json_value const *data = ov_json_get(domain, "/" OV_KEY_PROJECTS);
 
@@ -537,10 +566,12 @@ static bool reindex(const void *key, void *val, ov_dict *dict) {
 
 static bool reindex_users(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_vocs_db *db = ov_vocs_db_cast(data);
-    if (!db) goto error;
+    if (!db)
+        goto error;
 
     // ov_log_debug("Reindex user %s", (char*) key);
     return reindex(key, val, db->index.users);
@@ -552,10 +583,12 @@ error:
 
 static bool reindex_roles(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_vocs_db *db = ov_vocs_db_cast(data);
-    if (!db) goto error;
+    if (!db)
+        goto error;
 
     // ov_log_debug("Reindex role %s", (char*) key);
     return reindex(key, val, db->index.roles);
@@ -567,10 +600,12 @@ error:
 
 static bool reindex_loops(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_vocs_db *db = ov_vocs_db_cast(data);
-    if (!db) goto error;
+    if (!db)
+        goto error;
 
     // ov_log_debug("Reindex loop %s", (char*) key);
     return reindex(key, val, db->index.loops);
@@ -582,10 +617,12 @@ error:
 
 static bool reindex_projects(const void *key, void *val, void *d) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_vocs_db *db = ov_vocs_db_cast(d);
-    if (!db) goto error;
+    if (!db)
+        goto error;
 
     ov_json_value const *data = ov_json_get(val, "/" OV_KEY_LOOPS);
     if (data &&
@@ -611,10 +648,12 @@ error:
 
 static bool reindex_domains(const void *key, void *val, void *d) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_vocs_db *db = ov_vocs_db_cast(d);
-    if (!db) goto error;
+    if (!db)
+        goto error;
 
     ov_json_value const *data = ov_json_get(val, "/" OV_KEY_LOOPS);
     if (data &&
@@ -661,7 +700,8 @@ static bool reindex_auth(ov_vocs_db *db) {
 
 static bool delete_password_for_export(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     UNUSED(data);
     return ov_json_object_del(val, OV_KEY_PASSWORD);
@@ -671,50 +711,52 @@ static bool delete_password_for_export(const void *key, void *val, void *data) {
 
 static bool delete_password_in_project(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     UNUSED(data);
 
     ov_json_value const *users = ov_json_get(val, "/" OV_KEY_USERS);
 
     if (users)
-        return ov_json_object_for_each(
-            (ov_json_value *)users, NULL, delete_password_for_export);
+        return ov_json_object_for_each((ov_json_value *)users, NULL,
+                                       delete_password_for_export);
 
     return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *lock_db_get(ov_vocs_db *self,
-                                  const char *id,
+static ov_json_value *lock_db_get(ov_vocs_db *self, const char *id,
                                   ov_dict *index) {
 
     ov_json_value *cpy = NULL;
 
-    if (!self || !id || !index) goto error;
+    if (!self || !id || !index)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *src = ov_dict_get(index, id);
-    if (!src) goto done;
+    if (!src)
+        goto done;
 
     ov_json_value_copy((void **)&cpy, src);
 
 done:
-    if (!ov_thread_lock_unlock(&self->lock)) OV_ASSERT(1 == 0);
+    if (!ov_thread_lock_unlock(&self->lock))
+        OV_ASSERT(1 == 0);
 
     /* cleanup passwords for export in user domain or project export */
 
     ov_json_object_del(cpy, OV_KEY_PASSWORD);
 
     ov_json_object_for_each((ov_json_value *)ov_json_get(cpy, "/" OV_KEY_USERS),
-                            NULL,
-                            delete_password_for_export);
+                            NULL, delete_password_for_export);
 
     ov_json_object_for_each(
-        (ov_json_value *)ov_json_get(cpy, "/" OV_KEY_PROJECTS),
-        NULL,
+        (ov_json_value *)ov_json_get(cpy, "/" OV_KEY_PROJECTS), NULL,
         delete_password_in_project);
 
     return cpy;
@@ -725,52 +767,53 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool db_delete(ov_vocs_db *self,
-                      const char *id,
+static bool db_delete(ov_vocs_db *self, const char *id,
                       ov_vocs_db_entity entity) {
 
     bool result = false;
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
 
     ov_dict *index = get_index_dict(self, entity);
 
     ov_json_value *src = ov_dict_get(index, id);
-    if (!src) return true;
+    if (!src)
+        return true;
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            result = unindex_domain(self, id);
-            break;
+        result = unindex_domain(self, id);
+        break;
 
-        case OV_VOCS_DB_PROJECT:
+    case OV_VOCS_DB_PROJECT:
 
-            result = unindex_project(self, id);
+        result = unindex_project(self, id);
 
-            break;
+        break;
 
-        case OV_VOCS_DB_LOOP:
+    case OV_VOCS_DB_LOOP:
 
-            result = unindex_loops(id, NULL, self);
+        result = unindex_loops(id, NULL, self);
 
-            break;
+        break;
 
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_ROLE:
 
-            result = unindex_roles(id, NULL, self);
+        result = unindex_roles(id, NULL, self);
 
-            break;
+        break;
 
-        case OV_VOCS_DB_USER:
+    case OV_VOCS_DB_USER:
 
-            result = unindex_users(id, NULL, self);
+        result = unindex_users(id, NULL, self);
 
-            break;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     if (!result) {
@@ -798,12 +841,15 @@ ov_vocs_db_parent ov_vocs_db_get_parent(ov_vocs_db *self,
 
     ov_vocs_db_parent result = {0};
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_dict *index = get_index_dict(self, entity);
-    if (!index) goto done;
+    if (!index)
+        goto done;
     /*
         {
             "users": {},
@@ -819,7 +865,8 @@ ov_vocs_db_parent ov_vocs_db_get_parent(ov_vocs_db *self,
         }
     */
     ov_json_value *item = ov_dict_get(index, id);
-    if (!item) goto done;
+    if (!item)
+        goto done;
 
     if (entity == OV_VOCS_DB_DOMAIN) {
         result.scope = OV_VOCS_DB_SCOPE_DOMAIN;
@@ -835,12 +882,14 @@ ov_vocs_db_parent ov_vocs_db_get_parent(ov_vocs_db *self,
         result.scope = OV_VOCS_DB_SCOPE_DOMAIN;
         const char *id =
             ov_json_string_get(ov_json_get(second_up, "/" OV_KEY_ID));
-        if (id) result.id = strdup(id);
+        if (id)
+            result.id = strdup(id);
     } else {
         result.scope = OV_VOCS_DB_SCOPE_PROJECT;
         const char *id =
             ov_json_string_get(ov_json_get(second_up, "/" OV_KEY_ID));
-        if (id) result.id = strdup(id);
+        if (id)
+            result.id = strdup(id);
     }
 done:
 
@@ -858,7 +907,8 @@ error:
 
 bool ov_vocs_db_parent_clear(ov_vocs_db_parent *parent) {
 
-    if (!parent) goto error;
+    if (!parent)
+        goto error;
 
     parent->id = ov_data_pointer_free(parent->id);
     parent->scope = 0;
@@ -869,11 +919,11 @@ error:
 }
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_vocs_db_get_entity(ov_vocs_db *self,
-                                     ov_vocs_db_entity entity,
+ov_json_value *ov_vocs_db_get_entity(ov_vocs_db *self, ov_vocs_db_entity entity,
                                      const char *id) {
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
     ov_dict *index = get_index_dict(self, entity);
 
     return lock_db_get(self, id, index);
@@ -889,26 +939,32 @@ ov_json_value *ov_vocs_db_get_entity_domain(ov_vocs_db *self,
 
     ov_json_value *out = NULL;
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
 
     const char *domain_id = NULL;
     const char *project_id = NULL;
 
     ov_dict *index = get_index_dict(self, entity);
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *src = ov_dict_get(index, id);
-    if (!src) goto done;
+    if (!src)
+        goto done;
 
     ov_json_value *parent = src->parent;
-    if (!parent) goto done;
+    if (!parent)
+        goto done;
 
     ov_json_value *project_or_domain = parent->parent;
-    if (!project_or_domain) goto done;
+    if (!project_or_domain)
+        goto done;
 
     ov_json_value *projects_or_root = project_or_domain->parent;
-    if (!projects_or_root) goto done;
+    if (!projects_or_root)
+        goto done;
 
     ov_json_value *root = projects_or_root->parent;
 
@@ -926,14 +982,16 @@ ov_json_value *ov_vocs_db_get_entity_domain(ov_vocs_db *self,
     }
 
     out = ov_json_object();
-    if (!out) goto done;
+    if (!out)
+        goto done;
 
     ov_json_object_set(out, OV_KEY_DOMAIN, ov_json_string(domain_id));
     if (project_id)
         ov_json_object_set(out, OV_KEY_PROJECT, ov_json_string(project_id));
 
 done:
-    if (!ov_thread_lock_unlock(&self->lock)) OV_ASSERT(1 == 0);
+    if (!ov_thread_lock_unlock(&self->lock))
+        OV_ASSERT(1 == 0);
 
     return out;
 error:
@@ -945,21 +1003,24 @@ error:
 
 ov_json_value *ov_vocs_db_get_entity_key(ov_vocs_db *self,
                                          ov_vocs_db_entity entity,
-                                         const char *id,
-                                         const char *key) {
+                                         const char *id, const char *key) {
 
     ov_json_value *result = ov_json_null();
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
     ov_dict *index = get_index_dict(self, entity);
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     // never return a password
-    if (0 == strcmp(key, OV_KEY_PASSWORD)) goto done;
+    if (0 == strcmp(key, OV_KEY_PASSWORD))
+        goto done;
 
     ov_json_value *item = ov_dict_get(index, id);
-    if (!item) goto done;
+    if (!item)
+        goto done;
     ov_json_value *data = ov_json_object_get(item, key);
     if (data) {
         result = ov_json_value_free(result);
@@ -980,20 +1041,21 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool delete_in_parent(const void *key,
-                             void *val,
-                             void *data,
+static bool delete_in_parent(const void *key, void *val, void *data,
                              const char *item) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     const char *id = (const char *)data;
     ov_json_value *v = ov_json_value_cast(val);
-    if (!id || !v) goto error;
+    if (!id || !v)
+        goto error;
 
     ov_json_value *entry = ov_json_object_get(v, item);
 
-    if (entry) return ov_json_object_del(entry, id);
+    if (entry)
+        return ov_json_object_del(entry, id);
 
     return true;
 error:
@@ -1030,61 +1092,62 @@ static bool delete_project_in_parent(const void *key, void *val, void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_delete_entity(ov_vocs_db *self,
-                              ov_vocs_db_entity entity,
+bool ov_vocs_db_delete_entity(ov_vocs_db *self, ov_vocs_db_entity entity,
                               const char *id) {
 
     bool result = false;
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     result = db_delete(self, id, entity);
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            result &= unindex_domain(self, id);
-            break;
+        result &= unindex_domain(self, id);
+        break;
 
-        case OV_VOCS_DB_PROJECT:
+    case OV_VOCS_DB_PROJECT:
 
-            result &= ov_dict_for_each(
-                self->index.domains, (void *)id, delete_project_in_parent);
+        result &= ov_dict_for_each(self->index.domains, (void *)id,
+                                   delete_project_in_parent);
 
-            break;
+        break;
 
-        case OV_VOCS_DB_LOOP:
+    case OV_VOCS_DB_LOOP:
 
-            result &= ov_dict_for_each(
-                self->index.domains, (void *)id, delete_loop_in_parent);
+        result &= ov_dict_for_each(self->index.domains, (void *)id,
+                                   delete_loop_in_parent);
 
-            result &= ov_dict_for_each(
-                self->index.projects, (void *)id, delete_loop_in_parent);
+        result &= ov_dict_for_each(self->index.projects, (void *)id,
+                                   delete_loop_in_parent);
 
-            break;
+        break;
 
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_ROLE:
 
-            result &= ov_dict_for_each(
-                self->index.domains, (void *)id, delete_role_in_parent);
+        result &= ov_dict_for_each(self->index.domains, (void *)id,
+                                   delete_role_in_parent);
 
-            result &= ov_dict_for_each(
-                self->index.projects, (void *)id, delete_role_in_parent);
+        result &= ov_dict_for_each(self->index.projects, (void *)id,
+                                   delete_role_in_parent);
 
-            break;
+        break;
 
-        case OV_VOCS_DB_USER:
+    case OV_VOCS_DB_USER:
 
-            result &= ov_dict_for_each(
-                self->index.roles, (void *)id, delete_user_in_parent);
+        result &= ov_dict_for_each(self->index.roles, (void *)id,
+                                   delete_user_in_parent);
 
-            break;
+        break;
 
-        default:
-            result = false;
+    default:
+        result = false;
     }
 
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -1122,10 +1185,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *get_parent(ov_vocs_db *self,
-                                 ov_vocs_db_entity entity,
-                                 ov_vocs_db_scope scope,
-                                 const char *scope_id) {
+static ov_json_value *get_parent(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                 ov_vocs_db_scope scope, const char *scope_id) {
 
     OV_ASSERT(self);
 
@@ -1134,71 +1195,76 @@ static ov_json_value *get_parent(ov_vocs_db *self,
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            if (scope != OV_VOCS_DB_SCOPE_DOMAIN) goto error;
+        if (scope != OV_VOCS_DB_SCOPE_DOMAIN)
+            goto error;
 
-            if (NULL == self->data.domains)
-                self->data.domains = ov_json_object();
+        if (NULL == self->data.domains)
+            self->data.domains = ov_json_object();
 
-            parent = self->data.domains;
+        parent = self->data.domains;
 
-            goto done;
-            break;
+        goto done;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     switch (scope) {
 
-        case OV_VOCS_DB_SCOPE_PROJECT:
+    case OV_VOCS_DB_SCOPE_PROJECT:
 
-            data = ov_dict_get(self->index.projects, scope_id);
-            if (!data) goto error;
-            break;
+        data = ov_dict_get(self->index.projects, scope_id);
+        if (!data)
+            goto error;
+        break;
 
-        case OV_VOCS_DB_SCOPE_DOMAIN:
+    case OV_VOCS_DB_SCOPE_DOMAIN:
 
-            data = ov_json_object_get(self->data.domains, scope_id);
-            if (!data) goto error;
-            break;
+        data = ov_json_object_get(self->data.domains, scope_id);
+        if (!data)
+            goto error;
+        break;
     }
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            if (scope != OV_VOCS_DB_SCOPE_DOMAIN) goto error;
-            parent = self->data.domains;
-            break;
+        if (scope != OV_VOCS_DB_SCOPE_DOMAIN)
+            goto error;
+        parent = self->data.domains;
+        break;
 
-        case OV_VOCS_DB_PROJECT:
+    case OV_VOCS_DB_PROJECT:
 
-            if (scope != OV_VOCS_DB_SCOPE_DOMAIN) goto error;
-            OV_ASSERT(data);
-            parent = get_create_parent(data, OV_KEY_PROJECTS);
-            break;
+        if (scope != OV_VOCS_DB_SCOPE_DOMAIN)
+            goto error;
+        OV_ASSERT(data);
+        parent = get_create_parent(data, OV_KEY_PROJECTS);
+        break;
 
-        case OV_VOCS_DB_USER:
+    case OV_VOCS_DB_USER:
 
-            OV_ASSERT(data);
-            parent = get_create_parent(data, OV_KEY_USERS);
-            break;
+        OV_ASSERT(data);
+        parent = get_create_parent(data, OV_KEY_USERS);
+        break;
 
-        case OV_VOCS_DB_LOOP:
+    case OV_VOCS_DB_LOOP:
 
-            OV_ASSERT(data);
-            parent = get_create_parent(data, OV_KEY_LOOPS);
-            break;
+        OV_ASSERT(data);
+        parent = get_create_parent(data, OV_KEY_LOOPS);
+        break;
 
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_ROLE:
 
-            parent = get_create_parent(data, OV_KEY_ROLES);
-            break;
+        parent = get_create_parent(data, OV_KEY_ROLES);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
 done:
@@ -1209,17 +1275,17 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_create_entity(ov_vocs_db *self,
-                              ov_vocs_db_entity entity,
-                              const char *id,
-                              ov_vocs_db_scope scope,
+bool ov_vocs_db_create_entity(ov_vocs_db *self, ov_vocs_db_entity entity,
+                              const char *id, ov_vocs_db_scope scope,
                               const char *scope_id) {
 
     bool result = false;
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     /* check if id is already in use for the entity type */
 
@@ -1227,19 +1293,23 @@ bool ov_vocs_db_create_entity(ov_vocs_db *self,
 
     switch (entity) {
 
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_ROLE:
 
-            if (0 == strcmp(id, OV_KEY_ADMIN)) break;
-            if (ov_dict_is_set(dict, id)) goto done;
-
+        if (0 == strcmp(id, OV_KEY_ADMIN))
             break;
+        if (ov_dict_is_set(dict, id))
+            goto done;
 
-        default:
-            if (ov_dict_is_set(dict, id)) goto done;
+        break;
+
+    default:
+        if (ov_dict_is_set(dict, id))
+            goto done;
     }
 
     ov_json_value *parent = get_parent(self, entity, scope, scope_id);
-    if (!parent) goto done;
+    if (!parent)
+        goto done;
 
     ov_json_value *out = ov_json_object();
     ov_json_value *val = ov_json_string(id);
@@ -1257,18 +1327,18 @@ bool ov_vocs_db_create_entity(ov_vocs_db *self,
 
     switch (entity) {
 
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_ROLE:
 
-            if (0 == strcmp(id, OV_KEY_ADMIN)) {
-                result = true;
-                break;
-            }
-
-            result = reindex(id, out, dict);
+        if (0 == strcmp(id, OV_KEY_ADMIN)) {
+            result = true;
             break;
+        }
 
-        default:
-            result = reindex(id, out, dict);
+        result = reindex(id, out, dict);
+        break;
+
+    default:
+        result = reindex(id, out, dict);
     }
 
 done:
@@ -1277,6 +1347,8 @@ done:
         OV_ASSERT(1 == 0);
         goto error;
     }
+
+    // ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 error:
@@ -1295,7 +1367,8 @@ struct container_parent {
 
 static bool user_already_set(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     struct container_parent *c = (struct container_parent *)data;
@@ -1310,7 +1383,8 @@ static bool user_already_set(const void *key, void *val, void *data) {
 
     if (ov_dict_is_set(c->db->index.users, key)) {
 
-        if (!ov_json_object_get(c->parent, key)) goto error;
+        if (!ov_json_object_get(c->parent, key))
+            goto error;
     }
 
     return true;
@@ -1330,11 +1404,13 @@ struct container_users {
 
 static bool add_user_to_drop(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
     struct container_users *container = (struct container_users *)data;
 
-    if (ov_json_object_get(container->users, key)) return true;
+    if (ov_json_object_get(container->users, key))
+        return true;
 
     return ov_list_push(container->list, (void *)key);
 }
@@ -1351,17 +1427,21 @@ static bool drop_user(void *val, void *data) {
 
 static bool add_new_user(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     ov_json_value *users = ov_json_value_cast(data);
 
-    if (ov_json_object_get(users, key)) return true;
+    if (ov_json_object_get(users, key))
+        return true;
 
     ov_json_value *copy = NULL;
 
-    if (!ov_json_value_copy((void **)&copy, val)) goto error;
-    if (!ov_json_object_set(users, key, copy)) goto error;
+    if (!ov_json_value_copy((void **)&copy, val))
+        goto error;
+    if (!ov_json_object_set(users, key, copy))
+        goto error;
 
     return true;
 error:
@@ -1370,8 +1450,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_users(ov_vocs_db *self,
-                         ov_json_value *parent,
+static bool update_users(ov_vocs_db *self, ov_json_value *parent,
                          const ov_json_value *users) {
 
     bool result = false;
@@ -1382,7 +1461,8 @@ static bool update_users(ov_vocs_db *self,
     OV_ASSERT(parent);
     OV_ASSERT(users);
 
-    if (!ov_json_is_object(users)) goto error;
+    if (!ov_json_is_object(users))
+        goto error;
 
     ov_json_value *data =
         (ov_json_value *)ov_json_get(parent, "/" OV_KEY_USERS);
@@ -1398,7 +1478,8 @@ static bool update_users(ov_vocs_db *self,
     if (!ov_json_object_for_each((ov_json_value *)users, &c, user_already_set))
         goto error;
 
-    if (data && !ov_json_object_for_each(data, self, unindex_users)) goto error;
+    if (data && !ov_json_object_for_each(data, self, unindex_users))
+        goto error;
 
     list = ov_linked_list_create((ov_list_config){0});
 
@@ -1408,7 +1489,8 @@ static bool update_users(ov_vocs_db *self,
     if (!ov_json_object_for_each(data, &container, add_user_to_drop))
         goto error;
 
-    if (!ov_list_for_each(list, data, drop_user)) goto error;
+    if (!ov_list_for_each(list, data, drop_user))
+        goto error;
 
     if (!ov_json_object_for_each((ov_json_value *)users, data, add_new_user))
         goto error;
@@ -1424,16 +1506,19 @@ error:
 
 static bool role_already_set(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     struct container_parent *c = (struct container_parent *)data;
 
-    if (0 == strcmp(key, OV_KEY_ADMIN)) goto done;
+    if (0 == strcmp(key, OV_KEY_ADMIN))
+        goto done;
 
     if (ov_dict_is_set(c->db->index.roles, key)) {
 
-        if (!ov_json_object_get(c->parent, key)) goto error;
+        if (!ov_json_object_get(c->parent, key))
+            goto error;
     }
 
 done:
@@ -1444,8 +1529,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_roles(ov_vocs_db *self,
-                         ov_json_value *parent,
+static bool update_roles(ov_vocs_db *self, ov_json_value *parent,
                          const ov_json_value *roles) {
 
     bool result = false;
@@ -1455,7 +1539,8 @@ static bool update_roles(ov_vocs_db *self,
     OV_ASSERT(parent);
     OV_ASSERT(roles);
 
-    if (!ov_json_is_object(roles)) goto error;
+    if (!ov_json_is_object(roles))
+        goto error;
 
     ov_json_value *data =
         (ov_json_value *)ov_json_get(parent, "/" OV_KEY_ROLES);
@@ -1470,10 +1555,13 @@ static bool update_roles(ov_vocs_db *self,
     if (!ov_json_object_for_each((ov_json_value *)roles, &c, role_already_set))
         goto error;
 
-    if (!ov_json_value_copy((void **)&cpy, roles)) goto error;
+    if (!ov_json_value_copy((void **)&cpy, roles))
+        goto error;
 
-    if (data && !ov_json_object_for_each(data, self, unindex_roles)) goto error;
-    if (!ov_json_object_set(parent, OV_KEY_ROLES, cpy)) goto error;
+    if (data && !ov_json_object_for_each(data, self, unindex_roles))
+        goto error;
+    if (!ov_json_object_set(parent, OV_KEY_ROLES, cpy))
+        goto error;
 
     result = ov_json_object_for_each(cpy, self, reindex_roles);
     cpy = NULL;
@@ -1487,14 +1575,16 @@ error:
 
 static bool loop_already_set(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     struct container_parent *c = (struct container_parent *)data;
 
     if (ov_dict_is_set(c->db->index.loops, key)) {
 
-        if (!ov_json_object_get(c->parent, key)) goto error;
+        if (!ov_json_object_get(c->parent, key))
+            goto error;
     }
 
     return true;
@@ -1519,8 +1609,10 @@ static bool push_to_whitelist(void *item, void *data) {
     ov_json_value *value = ov_json_value_cast(item);
     ov_json_value *array = ov_json_value_cast(data);
 
-    if (!ov_json_value_copy((void **)&new, value)) goto error;
-    if (!ov_json_array_push(array, new)) goto error;
+    if (!ov_json_value_copy((void **)&new, value))
+        goto error;
+    if (!ov_json_array_push(array, new))
+        goto error;
 
     return true;
 error:
@@ -1530,11 +1622,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_sip_permission_for_loop(const void *key,
-                                        void *val,
+static bool add_sip_permission_for_loop(const void *key, void *val,
                                         void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *loop = ov_json_value_cast(val);
     ov_json_value **out = (ov_json_value **)data;
@@ -1542,9 +1634,11 @@ static bool add_sip_permission_for_loop(const void *key,
     ov_json_value *sip = ov_json_object_get(loop, OV_KEY_SIP);
     ov_json_value *whitelist = ov_json_object_get(sip, OV_KEY_WHITELIST);
 
-    if (!whitelist) return true;
+    if (!whitelist)
+        return true;
 
-    if (!*out) *out = ov_json_object();
+    if (!*out)
+        *out = ov_json_object();
 
     ov_json_value *loopdata = ov_json_object_get(*out, key);
 
@@ -1562,179 +1656,48 @@ static bool add_sip_permission_for_loop(const void *key,
 
 /*----------------------------------------------------------------------------*/
 
-struct container_wl {
+static bool revoke_calls(void *item, void *data) {
 
-    const ov_json_value *list;
-    ov_json_value *out;
-};
+    ov_json_value *loopdata = data;
+    ov_json_value *new_whitelist = ov_json_object_get(loopdata, OV_KEY_PERMIT);
 
-/*----------------------------------------------------------------------------*/
+    size_t count = ov_json_array_count(new_whitelist);
+    bool found = false;
 
-static bool permit_call_in_whitelist(void *item, void *data) {
+    for (size_t i = 1; i <= count; i++) {
 
-    const ov_json_value *call = ov_json_value_cast(item);
-    struct container_wl *container = (struct container_wl *)data;
+        bool ok = true;
 
-    size_t items = ov_json_array_count(container->list);
+        ov_json_value *new = ov_json_array_get(new_whitelist, i);
 
-    const char *callee_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLEE));
-
-    const char *caller_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLEE));
-
-    bool matched = false;
-
-    for (size_t i = 1; i <= items; i++) {
-
-        const ov_json_value *curr =
-            ov_json_array_get((ov_json_value *)container->list, i);
-        if (!curr) break;
-
-        const char *callee_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLEE));
-
-        const char *caller_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLEE));
-
-        if ((0 == ov_string_compare(callee_of_call, callee_of_curr)) &&
-            (0 == ov_string_compare(caller_of_call, caller_of_curr))) {
-
-            // match found
-            matched = true;
-            break;
-        }
-    }
-
-    if (!matched) {
-
-        // new CALL to permit list
-
-        ov_json_value *permit_list =
-            ov_json_object_get(container->out, OV_KEY_PERMIT);
-        if (!permit_list) {
-
-            permit_list = ov_json_array();
-            ov_json_object_set(container->out, OV_KEY_PERMIT, permit_list);
-        }
-
-        ov_json_value *new = NULL;
-        if (!ov_json_value_copy((void **)&new, call)) goto error;
-        if (!ov_json_array_push(permit_list, new)) {
-            new = ov_json_value_free(new);
+        ov_sip_permission old_permission =
+            ov_sip_permission_from_json(item, &ok);
+        if (!ok)
             goto error;
-        }
-    }
 
-    return true;
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool revoke_call_in_whitelist(void *item, void *data) {
-
-    const ov_json_value *call = ov_json_value_cast(item);
-    struct container_wl *container = (struct container_wl *)data;
-
-    size_t items = ov_json_array_count(container->list);
-
-    const char *callee_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLEE));
-
-    const char *caller_of_call =
-        ov_json_string_get(ov_json_object_get(call, OV_KEY_CALLER));
-
-    bool matched = false;
-
-    for (size_t i = 1; i <= items; i++) {
-
-        const ov_json_value *curr =
-            ov_json_array_get((ov_json_value *)container->list, i);
-        if (!curr) break;
-
-        const char *callee_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLEE));
-
-        const char *caller_of_curr =
-            ov_json_string_get(ov_json_object_get(curr, OV_KEY_CALLER));
-
-        if ((0 == ov_string_compare(callee_of_call, callee_of_curr)) &&
-            (0 == ov_string_compare(caller_of_call, caller_of_curr))) {
-
-            // match found
-            matched = true;
-            break;
-        }
-    }
-
-    if (!matched) {
-
-        // new CALL to revoke list
-
-        ov_json_value *list = ov_json_object_get(container->out, OV_KEY_REVOKE);
-        if (!list) {
-
-            list = ov_json_array();
-            ov_json_object_set(container->out, OV_KEY_REVOKE, list);
-        }
-
-        ov_json_value *new = NULL;
-        if (!ov_json_value_copy((void **)&new, call)) goto error;
-        if (!ov_json_array_push(list, new)) {
-            new = ov_json_value_free(new);
+        ov_sip_permission new_permission =
+            ov_sip_permission_from_json(new, &ok);
+        if (!ok)
             goto error;
-        }
+
+        if (ov_sip_permission_equals(old_permission, new_permission))
+            found = true;
     }
 
+    if (found)
+        return true;
+
+    ov_json_value *revoke = ov_json_object_get(data, OV_KEY_REVOKE);
+    if (!revoke) {
+        revoke = ov_json_array();
+        ov_json_object_set(data, OV_KEY_REVOKE, revoke);
+    }
+
+    ov_json_value *out = NULL;
+    ov_json_value_copy((void **)&out, item);
+
+    ov_json_array_push(revoke, out);
     return true;
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool permit_calls(ov_json_value *loopdata,
-                         const ov_json_value *old_whitelist,
-                         const ov_json_value *new_whitelist) {
-
-    // if call of new whitelist is not contained in old whitelist,
-    // add call to permit processing.
-
-    struct container_wl container = (struct container_wl){
-        .list = (ov_json_value *)old_whitelist, .out = loopdata};
-
-    if (!ov_json_array_for_each((ov_json_value *)new_whitelist,
-                                &container,
-                                permit_call_in_whitelist))
-        goto error;
-
-    return true;
-
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool revoke_calls(ov_json_value *loopdata,
-                         const ov_json_value *old_whitelist,
-                         const ov_json_value *new_whitelist) {
-
-    // if call in old whitelist is not found in new whitelist,
-    // add call to revoke processing.
-
-    struct container_wl container = (struct container_wl){
-        .list = (ov_json_value *)new_whitelist, .out = loopdata};
-
-    if (!ov_json_array_for_each((ov_json_value *)old_whitelist,
-                                &container,
-                                revoke_call_in_whitelist))
-        goto error;
-
-    return true;
-
 error:
     return false;
 }
@@ -1749,26 +1712,25 @@ static bool update_sip_parameter_processing(const char *loop_id,
     ov_json_value *old_whitelist = ov_json_object_get(old, OV_KEY_WHITELIST);
     ov_json_value *new_whitelist = ov_json_object_get(new, OV_KEY_WHITELIST);
 
-    if (!*out) *out = ov_json_object();
+    if (!*out)
+        *out = ov_json_object();
 
     ov_json_value *loopdata = ov_json_object();
-    if (!ov_json_object_set(*out, loop_id, loopdata)) goto error;
+    if (!ov_json_object_set(*out, loop_id, loopdata))
+        goto error;
 
-    if (!old_whitelist) {
+    ov_json_value *cpy = NULL;
+    if (!ov_json_value_copy((void **)&cpy, new_whitelist))
+        goto error;
 
-        // copy whitelist to processing new whitelisting
-        ov_json_value *cpy = NULL;
-        if (!ov_json_value_copy((void **)&cpy, new_whitelist)) goto error;
+    if (!ov_json_object_set(loopdata, OV_KEY_PERMIT, cpy))
+        goto error;
 
-        if (!ov_json_object_set(loopdata, OV_KEY_PERMIT, cpy)) goto error;
+    if (old_whitelist) {
 
-        goto done;
+        ov_json_array_for_each(old_whitelist, loopdata, revoke_calls);
     }
 
-    permit_calls(loopdata, old_whitelist, new_whitelist);
-    revoke_calls(loopdata, old_whitelist, new_whitelist);
-
-done:
     return true;
 error:
     return false;
@@ -1776,11 +1738,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_old_loop_in_new_loops(const void *key,
-                                        void *val,
+static bool check_old_loop_in_new_loops(const void *key, void *val,
                                         void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *loop = ov_json_value_cast(val);
     struct container_sip *container = (struct container_sip *)data;
@@ -1790,24 +1752,25 @@ static bool check_old_loop_in_new_loops(const void *key,
     ov_json_value *old_sip = ov_json_object_get(loop, OV_KEY_SIP);
     ov_json_value *new_sip = ov_json_object_get(new_loop, OV_KEY_SIP);
 
-    return update_sip_parameter_processing(
-        key, old_sip, new_sip, container->out);
+    return update_sip_parameter_processing(key, old_sip, new_sip,
+                                           container->out);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_new_loop_in_old_loops(const void *key,
-                                        void *val,
+static bool check_new_loop_in_old_loops(const void *key, void *val,
                                         void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *loop = ov_json_value_cast(val);
     struct container_sip *container = (struct container_sip *)data;
 
     ov_json_value *old_loop = ov_json_object_get(container->parent, key);
 
-    if (old_loop) return true;
+    if (old_loop)
+        return true;
 
     return add_sip_permission_for_loop(key, loop, container->out);
 }
@@ -1816,7 +1779,8 @@ static bool check_new_loop_in_old_loops(const void *key,
 
 static bool check_for_sip_update(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *new_loop = ov_json_value_cast(val);
     ov_json_value *new_loops = new_loop->parent;
@@ -1828,8 +1792,8 @@ static bool check_for_sip_update(const void *key, void *val, void *data) {
 
         // we need to add all SIP permission of new_loops
 
-        if (!ov_json_object_for_each(
-                new_loops, container->out, add_sip_permission_for_loop))
+        if (!ov_json_object_for_each(new_loops, container->out,
+                                     add_sip_permission_for_loop))
             goto error;
 
     } else {
@@ -1841,14 +1805,14 @@ static bool check_for_sip_update(const void *key, void *val, void *data) {
         struct container_sip container2 =
             (struct container_sip){.out = container->out, .parent = new_loops};
 
-        ov_json_object_for_each(
-            old_loops, &container2, check_old_loop_in_new_loops);
+        ov_json_object_for_each(old_loops, &container2,
+                                check_old_loop_in_new_loops);
 
         container2 =
             (struct container_sip){.out = container->out, .parent = old_loops};
 
-        ov_json_object_for_each(
-            new_loops, &container2, check_new_loop_in_old_loops);
+        ov_json_object_for_each(new_loops, &container2,
+                                check_new_loop_in_old_loops);
     }
 
     return true;
@@ -1888,8 +1852,8 @@ static bool check_sip_processing(const ov_json_value *old,
         }
     */
 
-    if (!ov_json_object_for_each(
-            (ov_json_value *)new, &container, check_for_sip_update))
+    if (!ov_json_object_for_each((ov_json_value *)new, &container,
+                                 check_for_sip_update))
         goto error;
 
     return true;
@@ -1899,8 +1863,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_domain_projects(ov_vocs_db *self,
-                                   ov_json_value *domain,
+static bool update_domain_projects(ov_vocs_db *self, ov_json_value *domain,
                                    const ov_json_value *projects,
                                    ov_json_value **out) {
 
@@ -1911,9 +1874,11 @@ static bool update_domain_projects(ov_vocs_db *self,
     OV_ASSERT(domain);
     OV_ASSERT(projects);
 
-    if (!ov_json_is_object(projects)) goto error;
+    if (!ov_json_is_object(projects))
+        goto error;
 
-    if (!ov_json_value_copy((void **)&cpy, projects)) goto error;
+    if (!ov_json_value_copy((void **)&cpy, projects))
+        goto error;
 
     ov_json_value *old =
         (ov_json_value *)ov_json_get(domain, "/" OV_KEY_PROJECTS);
@@ -1921,9 +1886,11 @@ static bool update_domain_projects(ov_vocs_db *self,
     if (old && !ov_json_object_for_each(old, self, unindex_projects))
         goto error;
 
-    if (!check_sip_processing(old, projects, out)) goto error;
+    if (!check_sip_processing(old, projects, out))
+        goto error;
 
-    if (!ov_json_object_set(domain, OV_KEY_PROJECTS, cpy)) goto error;
+    if (!ov_json_object_set(domain, OV_KEY_PROJECTS, cpy))
+        goto error;
 
     result = ov_json_object_for_each(cpy, self, reindex_projects);
     cpy = NULL;
@@ -1935,10 +1902,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_loops(ov_vocs_db *self,
-                         ov_json_value *parent,
-                         const ov_json_value *loops,
-                         ov_json_value **out) {
+static bool update_loops(ov_vocs_db *self, ov_json_value *parent,
+                         const ov_json_value *loops, ov_json_value **out) {
 
     bool result = false;
     ov_json_value *cpy = NULL;
@@ -1947,7 +1912,8 @@ static bool update_loops(ov_vocs_db *self,
     OV_ASSERT(parent);
     OV_ASSERT(loops);
 
-    if (!ov_json_is_object(loops)) goto error;
+    if (!ov_json_is_object(loops))
+        goto error;
 
     ov_json_value *data =
         (ov_json_value *)ov_json_get(parent, "/" OV_KEY_LOOPS);
@@ -1962,12 +1928,16 @@ static bool update_loops(ov_vocs_db *self,
     if (!ov_json_object_for_each((ov_json_value *)loops, &c, loop_already_set))
         goto error;
 
-    if (!check_sip_processing(data, loops, out)) goto error;
+    if (!check_sip_processing(data, loops, out))
+        goto error;
 
-    if (!ov_json_value_copy((void **)&cpy, loops)) goto error;
+    if (!ov_json_value_copy((void **)&cpy, loops))
+        goto error;
 
-    if (data && !ov_json_object_for_each(data, self, unindex_loops)) goto error;
-    if (!ov_json_object_set(parent, OV_KEY_LOOPS, cpy)) goto error;
+    if (data && !ov_json_object_for_each(data, self, unindex_loops))
+        goto error;
+    if (!ov_json_object_set(parent, OV_KEY_LOOPS, cpy))
+        goto error;
 
     result = ov_json_object_for_each(cpy, self, reindex_loops);
     cpy = NULL;
@@ -1979,11 +1949,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_domain(ov_vocs_db *self,
-                          ov_json_value *src,
-                          const char *id,
-                          const char *key,
-                          const ov_json_value *val,
+static bool update_domain(ov_vocs_db *self, ov_json_value *src, const char *id,
+                          const char *key, const ov_json_value *val,
                           ov_json_value **out) {
 
     OV_ASSERT(self);
@@ -2019,7 +1986,8 @@ static bool update_domain(ov_vocs_db *self,
     } else {
 
         ov_json_value *data = NULL;
-        if (!ov_json_value_copy((void **)&data, val)) goto done;
+        if (!ov_json_value_copy((void **)&data, val))
+            goto done;
 
         if (!ov_json_object_set(src, key, data)) {
             data = ov_json_value_free(data);
@@ -2035,11 +2003,8 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_project(ov_vocs_db *self,
-                           ov_json_value *src,
-                           const char *id,
-                           const char *key,
-                           const ov_json_value *val,
+static bool update_project(ov_vocs_db *self, ov_json_value *src, const char *id,
+                           const char *key, const ov_json_value *val,
                            ov_json_value **out) {
 
     OV_ASSERT(self);
@@ -2071,7 +2036,8 @@ static bool update_project(ov_vocs_db *self,
     } else {
 
         ov_json_value *data = NULL;
-        if (!ov_json_value_copy((void **)&data, val)) goto done;
+        if (!ov_json_value_copy((void **)&data, val))
+            goto done;
 
         if (!ov_json_object_set(src, key, data)) {
             data = ov_json_value_free(data);
@@ -2087,11 +2053,8 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_entity(ov_vocs_db *self,
-                          ov_json_value *data,
-                          const char *id,
-                          const char *key,
-                          const ov_json_value *val,
+static bool update_entity(ov_vocs_db *self, ov_json_value *data, const char *id,
+                          const char *key, const ov_json_value *val,
                           ov_json_value **out) {
 
     OV_ASSERT(self);
@@ -2105,7 +2068,8 @@ static bool update_entity(ov_vocs_db *self,
     ov_json_value *old = ov_json_object_get(data, key);
 
     ov_json_value *new = NULL;
-    if (!ov_json_value_copy((void **)&new, val)) goto done;
+    if (!ov_json_value_copy((void **)&new, val))
+        goto done;
 
     if (0 == ov_string_compare(key, OV_KEY_SIP)) {
 
@@ -2113,7 +2077,8 @@ static bool update_entity(ov_vocs_db *self,
     }
 
     result = ov_json_object_set(data, key, new);
-    if (!result) new = ov_json_value_free(new);
+    if (!result)
+        new = ov_json_value_free(new);
 
 done:
     return result;
@@ -2121,56 +2086,58 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_update_entity_key(ov_vocs_db *self,
-                                  ov_vocs_db_entity entity,
-                                  const char *id,
-                                  const char *key,
+bool ov_vocs_db_update_entity_key(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                  const char *id, const char *key,
                                   const ov_json_value *val) {
 
     bool result = false;
 
-    if (!self || !id || !key || !val) goto error;
+    if (!self || !id || !key || !val)
+        goto error;
 
-    if (0 == strcmp(key, OV_KEY_ID)) goto error;
+    if (0 == strcmp(key, OV_KEY_ID))
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_dict *dict = get_index_dict(self, entity);
 
     ov_json_value *data = ov_dict_get(dict, id);
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
     ov_json_value *out = NULL;
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            result = update_domain(self, data, id, key, val, &out);
-            break;
+        result = update_domain(self, data, id, key, val, &out);
+        break;
 
-        case OV_VOCS_DB_PROJECT:
+    case OV_VOCS_DB_PROJECT:
 
-            result = update_project(self, data, id, key, val, &out);
-            break;
+        result = update_project(self, data, id, key, val, &out);
+        break;
 
-        case OV_VOCS_DB_USER:
+    case OV_VOCS_DB_USER:
 
-            result = update_entity(self, data, id, key, val, &out);
-            break;
+        result = update_entity(self, data, id, key, val, &out);
+        break;
 
-        case OV_VOCS_DB_LOOP:
+    case OV_VOCS_DB_LOOP:
 
-            result = update_entity(self, data, id, key, val, &out);
-            break;
+        result = update_entity(self, data, id, key, val, &out);
+        break;
 
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_ROLE:
 
-            result = update_entity(self, data, id, key, val, &out);
-            break;
+        result = update_entity(self, data, id, key, val, &out);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
 done:
@@ -2181,12 +2148,12 @@ done:
     }
 
     ov_json_value *msg =
-        ov_event_api_message_create(OV_VOCS_DB_UPDATE_DB, NULL, 0);
+        ov_event_api_message_create("update_db", NULL, 0);
 
     if (!ov_event_trigger_send(self->config.trigger, "VOCS", msg))
         msg = ov_json_value_free(msg);
 
-    ov_vocs_db_persistance_persist(self->persistance);
+    // ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 error:
@@ -2195,22 +2162,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_send_vocs_trigger(ov_vocs_db *self, const ov_json_value *msg){
+bool ov_vocs_db_send_vocs_trigger(ov_vocs_db *self, const ov_json_value *msg) {
 
-    if (!self || !msg) return false;
+    if (!self || !msg)
+        return false;
 
     ov_json_value *copy = NULL;
-    ov_json_value_copy((void**)&copy, msg);
+    ov_json_value_copy((void **)&copy, msg);
 
     return ov_event_trigger_send(self->config.trigger, "VOCS", copy);
-
 }
 /*----------------------------------------------------------------------------*/
 
-static bool delete_domain_key(ov_vocs_db *self,
-                              ov_json_value *data,
-                              const char *id,
-                              const char *key) {
+static bool delete_domain_key(ov_vocs_db *self, ov_json_value *data,
+                              const char *id, const char *key) {
 
     bool result = false;
 
@@ -2248,10 +2213,8 @@ static bool delete_domain_key(ov_vocs_db *self,
 
 /*----------------------------------------------------------------------------*/
 
-static bool delete_project_key(ov_vocs_db *self,
-                               ov_json_value *data,
-                               const char *id,
-                               const char *key) {
+static bool delete_project_key(ov_vocs_db *self, ov_json_value *data,
+                               const char *id, const char *key) {
 
     bool result = false;
 
@@ -2285,45 +2248,47 @@ static bool delete_project_key(ov_vocs_db *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_delete_entity_key(ov_vocs_db *self,
-                                  ov_vocs_db_entity entity,
-                                  const char *id,
-                                  const char *key) {
+bool ov_vocs_db_delete_entity_key(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                  const char *id, const char *key) {
 
     bool result = false;
 
-    if (!self || !id || !key) goto error;
+    if (!self || !id || !key)
+        goto error;
 
-    if (0 == strcmp(key, OV_KEY_ID)) goto error;
+    if (0 == strcmp(key, OV_KEY_ID))
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_dict *dict = get_index_dict(self, entity);
 
     ov_json_value *data = ov_dict_get(dict, id);
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            result = delete_domain_key(self, data, id, key);
-            break;
+        result = delete_domain_key(self, data, id, key);
+        break;
 
-        case OV_VOCS_DB_PROJECT:
+    case OV_VOCS_DB_PROJECT:
 
-            result = delete_project_key(self, data, id, key);
-            break;
+        result = delete_project_key(self, data, id, key);
+        break;
 
-        case OV_VOCS_DB_USER:
-        case OV_VOCS_DB_LOOP:
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_USER:
+    case OV_VOCS_DB_LOOP:
+    case OV_VOCS_DB_ROLE:
 
-            result = ov_json_object_del(data, key);
-            break;
+        result = ov_json_object_del(data, key);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
 done:
@@ -2333,6 +2298,8 @@ done:
         goto error;
     }
 
+    // ov_vocs_db_persistance_persist(self->persistance);
+
     return result;
 
 error:
@@ -2341,10 +2308,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool verify_user(ov_vocs_db *self,
-                        const char *id,
-                        const ov_json_value *value,
-                        ov_json_value **errors) {
+static bool verify_user(ov_vocs_db *self, const char *id,
+                        const ov_json_value *value, ov_json_value **errors) {
 
     bool result = false;
     ov_json_value *out = NULL;
@@ -2401,10 +2366,8 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-static bool verify_role(ov_vocs_db *self,
-                        const char *id,
-                        const ov_json_value *value,
-                        ov_json_value **errors) {
+static bool verify_role(ov_vocs_db *self, const char *id,
+                        const ov_json_value *value, ov_json_value **errors) {
 
     bool result = false;
     ov_json_value *err = NULL;
@@ -2448,10 +2411,8 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-static bool verify_loop(ov_vocs_db *self,
-                        const char *id,
-                        const ov_json_value *value,
-                        ov_json_value **errors) {
+static bool verify_loop(ov_vocs_db *self, const char *id,
+                        const ov_json_value *value, ov_json_value **errors) {
 
     bool result = false;
     ov_json_value *err = NULL;
@@ -2504,10 +2465,8 @@ struct container_verify {
 
 /*----------------------------------------------------------------------------*/
 
-static bool verify_id(struct container_verify *container,
-                      const char *key,
-                      ov_dict *index,
-                      const char *error_msg) {
+static bool verify_id(struct container_verify *container, const char *key,
+                      ov_dict *index, const char *error_msg) {
 
     OV_ASSERT(container);
     OV_ASSERT(key);
@@ -2515,12 +2474,14 @@ static bool verify_id(struct container_verify *container,
     OV_ASSERT(error_msg);
 
     /* 1 check if id is some self owned id */
-    if (ov_json_object_get(container->data, key)) goto done;
+    if (ov_json_object_get(container->data, key))
+        goto done;
 
     /* 2 check if id is in use somewhere else */
     if (ov_dict_is_set(index, key)) {
 
-        if (!container->err) container->err = ov_json_object();
+        if (!container->err)
+            container->err = ov_json_object();
 
         ov_json_value *err = ov_json_string(error_msg);
         if (!ov_json_object_set(container->err, key, err))
@@ -2539,14 +2500,13 @@ error:
 
 static bool verify_user_id(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     struct container_verify *container = (struct container_verify *)data;
 
-    return verify_id(container,
-                     (const char *)key,
-                     container->db->index.users,
+    return verify_id(container, (const char *)key, container->db->index.users,
                      "user id already in use.");
 }
 
@@ -2554,14 +2514,13 @@ static bool verify_user_id(const void *key, void *val, void *data) {
 
 static bool verify_role_id(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     struct container_verify *container = (struct container_verify *)data;
 
-    return verify_id(container,
-                     (const char *)key,
-                     container->db->index.roles,
+    return verify_id(container, (const char *)key, container->db->index.roles,
                      "role id already in use.");
 }
 
@@ -2569,23 +2528,20 @@ static bool verify_role_id(const void *key, void *val, void *data) {
 
 static bool verify_loop_id(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     struct container_verify *container = (struct container_verify *)data;
 
-    return verify_id(container,
-                     (const char *)key,
-                     container->db->index.loops,
+    return verify_id(container, (const char *)key, container->db->index.loops,
                      "loop id already in use.");
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool verify_project(ov_vocs_db *self,
-                           const char *id,
-                           const ov_json_value *value,
-                           ov_json_value **errors) {
+static bool verify_project(ov_vocs_db *self, const char *id,
+                           const ov_json_value *value, ov_json_value **errors) {
 
     bool result = false;
     OV_ASSERT(self);
@@ -2607,20 +2563,20 @@ static bool verify_project(ov_vocs_db *self,
 
     data = ov_json_get(value, "/" OV_KEY_USERS);
     container.data = ov_json_get(project, "/" OV_KEY_USERS);
-    if (data && !ov_json_object_for_each(
-                    (ov_json_value *)data, &container, verify_user_id))
+    if (data && !ov_json_object_for_each((ov_json_value *)data, &container,
+                                         verify_user_id))
         goto error;
 
     data = ov_json_get(value, "/" OV_KEY_ROLES);
     container.data = ov_json_get(project, "/" OV_KEY_ROLES);
-    if (data && !ov_json_object_for_each(
-                    (ov_json_value *)data, &container, verify_role_id))
+    if (data && !ov_json_object_for_each((ov_json_value *)data, &container,
+                                         verify_role_id))
         goto error;
 
     data = ov_json_get(value, "/" OV_KEY_LOOPS);
     container.data = ov_json_get(project, "/" OV_KEY_LOOPS);
-    if (data && !ov_json_object_for_each(
-                    (ov_json_value *)data, &container, verify_loop_id))
+    if (data && !ov_json_object_for_each((ov_json_value *)data, &container,
+                                         verify_loop_id))
         goto error;
 
     result = true;
@@ -2638,7 +2594,8 @@ error:
 
 static bool verify_project_id(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     UNUSED(val);
 
     struct container_verify *container = (struct container_verify *)data;
@@ -2646,18 +2603,14 @@ static bool verify_project_id(const void *key, void *val, void *data) {
     if (!verify_project(container->db, (const char *)key, val, &container->err))
         return false;
 
-    return verify_id(container,
-                     (const char *)key,
-                     container->db->index.loops,
+    return verify_id(container, (const char *)key, container->db->index.loops,
                      "project id already in use.");
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool verify_domain(ov_vocs_db *self,
-                          const char *id,
-                          const ov_json_value *value,
-                          ov_json_value **errors) {
+static bool verify_domain(ov_vocs_db *self, const char *id,
+                          const ov_json_value *value, ov_json_value **errors) {
 
     bool result = false;
 
@@ -2680,27 +2633,27 @@ static bool verify_domain(ov_vocs_db *self,
 
     data = ov_json_get(value, "/" OV_KEY_USERS);
     container.data = ov_json_get(domain, "/" OV_KEY_USERS);
-    if (data && !ov_json_object_for_each(
-                    (ov_json_value *)data, &container, verify_user_id))
+    if (data && !ov_json_object_for_each((ov_json_value *)data, &container,
+                                         verify_user_id))
         goto error;
 
     data = ov_json_get(value, "/" OV_KEY_ROLES);
     container.data = ov_json_get(domain, "/" OV_KEY_ROLES);
-    if (data && !ov_json_object_for_each(
-                    (ov_json_value *)data, &container, verify_role_id))
+    if (data && !ov_json_object_for_each((ov_json_value *)data, &container,
+                                         verify_role_id))
         goto error;
 
     data = ov_json_get(value, "/" OV_KEY_LOOPS);
     container.data = ov_json_get(domain, "/" OV_KEY_LOOPS);
-    if (data && !ov_json_object_for_each(
-                    (ov_json_value *)data, &container, verify_loop_id))
+    if (data && !ov_json_object_for_each((ov_json_value *)data, &container,
+                                         verify_loop_id))
         goto error;
 
     data = ov_json_get(value, "/" OV_KEY_PROJECTS);
     container.data = ov_json_get(domain, "/" OV_KEY_PROJECTS);
 
-    if (data && !ov_json_object_for_each(
-                    (ov_json_value *)data, &container, verify_project_id))
+    if (data && !ov_json_object_for_each((ov_json_value *)data, &container,
+                                         verify_project_id))
         goto error;
 
     result = true;
@@ -2716,47 +2669,47 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_verify_entity_item(ov_vocs_db *self,
-                                   ov_vocs_db_entity entity,
-                                   const char *id,
-                                   const ov_json_value *val,
+bool ov_vocs_db_verify_entity_item(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                   const char *id, const ov_json_value *val,
                                    ov_json_value **errors) {
 
     bool result = false;
 
-    if (!self || !id || !val) goto error;
+    if (!self || !id || !val)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            result = verify_domain(self, id, val, errors);
-            break;
+        result = verify_domain(self, id, val, errors);
+        break;
 
-        case OV_VOCS_DB_PROJECT:
+    case OV_VOCS_DB_PROJECT:
 
-            result = verify_project(self, id, val, errors);
-            break;
+        result = verify_project(self, id, val, errors);
+        break;
 
-        case OV_VOCS_DB_USER:
+    case OV_VOCS_DB_USER:
 
-            result = verify_user(self, id, val, errors);
-            break;
+        result = verify_user(self, id, val, errors);
+        break;
 
-        case OV_VOCS_DB_LOOP:
+    case OV_VOCS_DB_LOOP:
 
-            result = verify_loop(self, id, val, errors);
-            break;
+        result = verify_loop(self, id, val, errors);
+        break;
 
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_ROLE:
 
-            result = verify_role(self, id, val, errors);
-            break;
+        result = verify_role(self, id, val, errors);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -2776,11 +2729,8 @@ struct container_db {
     ov_vocs_db *db;
     const char *id;
     ov_json_value *data;
-    bool (*func)(ov_vocs_db *db,
-                 ov_json_value *data,
-                 const char *id,
-                 const char *key,
-                 const ov_json_value *val,
+    bool (*func)(ov_vocs_db *db, ov_json_value *data, const char *id,
+                 const char *key, const ov_json_value *val,
                  ov_json_value **out);
     ov_json_value *out;
 };
@@ -2789,22 +2739,20 @@ struct container_db {
 
 static bool update_key_val(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     struct container_db *c = (struct container_db *)data;
-    if (!c || !val) goto error;
+    if (!c || !val)
+        goto error;
 
     OV_ASSERT(c->db);
     OV_ASSERT(c->id);
     OV_ASSERT(c->data);
     OV_ASSERT(c->func);
 
-    return c->func(c->db,
-                   c->data,
-                   c->id,
-                   (const char *)key,
-                   ov_json_value_cast(val),
-                   &c->out);
+    return c->func(c->db, c->data, c->id, (const char *)key,
+                   ov_json_value_cast(val), &c->out);
 
 error:
     return false;
@@ -2812,10 +2760,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_update_entity_item(ov_vocs_db *self,
-                                   ov_vocs_db_entity entity,
-                                   const char *id,
-                                   const ov_json_value *val,
+bool ov_vocs_db_update_entity_item(ov_vocs_db *self, ov_vocs_db_entity entity,
+                                   const char *id, const ov_json_value *val,
                                    ov_json_value **errors) {
 
     bool result = false;
@@ -2825,7 +2771,8 @@ bool ov_vocs_db_update_entity_item(ov_vocs_db *self,
     if (!ov_vocs_db_verify_entity_item(self, entity, id, val, errors))
         goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_dict *dict = get_index_dict(self, entity);
 
@@ -2850,31 +2797,31 @@ bool ov_vocs_db_update_entity_item(ov_vocs_db *self,
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
+    case OV_VOCS_DB_DOMAIN:
 
-            c.func = update_domain;
-            result = ov_json_object_for_each(
-                (ov_json_value *)val, &c, update_key_val);
-            break;
+        c.func = update_domain;
+        result =
+            ov_json_object_for_each((ov_json_value *)val, &c, update_key_val);
+        break;
 
-        case OV_VOCS_DB_PROJECT:
+    case OV_VOCS_DB_PROJECT:
 
-            c.func = update_project;
-            result = ov_json_object_for_each(
-                (ov_json_value *)val, &c, update_key_val);
-            break;
+        c.func = update_project;
+        result =
+            ov_json_object_for_each((ov_json_value *)val, &c, update_key_val);
+        break;
 
-        case OV_VOCS_DB_USER:
-        case OV_VOCS_DB_LOOP:
-        case OV_VOCS_DB_ROLE:
+    case OV_VOCS_DB_USER:
+    case OV_VOCS_DB_LOOP:
+    case OV_VOCS_DB_ROLE:
 
-            c.func = update_entity;
-            result = ov_json_object_for_each(
-                (ov_json_value *)val, &c, update_key_val);
-            break;
+        c.func = update_entity;
+        result =
+            ov_json_object_for_each((ov_json_value *)val, &c, update_key_val);
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     out = c.out;
@@ -2887,7 +2834,7 @@ done:
     }
 
     ov_json_value *msg =
-        ov_event_api_message_create(OV_VOCS_DB_UPDATE_DB, NULL, 0);
+        ov_event_api_message_create("update_db", NULL, 0);
 
     if (out) {
 
@@ -2896,7 +2843,7 @@ done:
     }
 
     ov_event_trigger_send(self->config.trigger, "VOCS", msg);
-    ov_vocs_db_persistance_persist(self->persistance);
+    // ov_vocs_db_persistance_persist(self->persistance);
 
     return result;
 
@@ -2913,7 +2860,8 @@ static bool inject_auth(ov_vocs_db *self, ov_json_value *data) {
 
     bool result = false;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_log_info("DB inject new auth dataset");
     self->data.domains = ov_json_value_free(self->data.domains);
@@ -2941,7 +2889,8 @@ static bool inject_state(ov_vocs_db *self, ov_json_value *data) {
     OV_ASSERT(self);
     OV_ASSERT(data);
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_log_info("DB inject new state dataset");
     self->data.state = ov_json_value_free(self->data.state);
@@ -2960,19 +2909,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_inject(ov_vocs_db *self,
-                       ov_vocs_db_type type,
+bool ov_vocs_db_inject(ov_vocs_db *self, ov_vocs_db_type type,
                        ov_json_value *data) {
 
-    if (!self || !data) goto error;
+    if (!self || !data)
+        goto error;
 
     switch (type) {
 
-        case OV_VOCS_DB_TYPE_AUTH:
-            return inject_auth(self, data);
+    case OV_VOCS_DB_TYPE_AUTH:
+        return inject_auth(self, data);
 
-        case OV_VOCS_DB_TYPE_STATE:
-            return inject_state(self, data);
+    case OV_VOCS_DB_TYPE_STATE:
+        return inject_state(self, data);
     }
 
 error:
@@ -2985,19 +2934,21 @@ ov_json_value *ov_vocs_db_eject(ov_vocs_db *self, ov_vocs_db_type type) {
 
     ov_json_value *out = NULL;
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     switch (type) {
 
-        case OV_VOCS_DB_TYPE_AUTH:
-            ov_json_value_copy((void **)&out, self->data.domains);
-            break;
+    case OV_VOCS_DB_TYPE_AUTH:
+        ov_json_value_copy((void **)&out, self->data.domains);
+        break;
 
-        case OV_VOCS_DB_TYPE_STATE:
-            ov_json_value_copy((void **)&out, self->data.state);
-            break;
+    case OV_VOCS_DB_TYPE_STATE:
+        ov_json_value_copy((void **)&out, self->data.state);
+        break;
     }
 
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -3019,24 +2970,27 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-bool ov_vocs_db_set_password(ov_vocs_db *self,
-                             const char *user,
+bool ov_vocs_db_set_password(ov_vocs_db *self, const char *user,
                              const char *pass) {
 
     bool result = false;
 
-    if (!self || !user || !pass) goto error;
+    if (!self || !user || !pass)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *data = ov_dict_get(self->index.users, user);
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
-    ov_json_value *val = ov_password_hash(
-        pass, self->config.password.params, self->config.password.length);
+    ov_json_value *val = ov_password_hash(pass, self->config.password.params,
+                                          self->config.password.length);
 
     result = ov_json_object_set(data, OV_KEY_PASSWORD, val);
-    if (!result) val = ov_json_value_free(val);
+    if (!result)
+        val = ov_json_value_free(val);
 
 done:
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -3052,13 +3006,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_authenticate(ov_vocs_db *self,
-                             const char *user,
+bool ov_vocs_db_authenticate(ov_vocs_db *self, const char *user,
                              const char *pass) {
 
     bool result = false;
 
-    if (!self || !user || !pass) goto error;
+    if (!self || !user || !pass)
+        goto error;
 
     if (!ov_thread_lock_try_lock(&self->lock)) {
         ov_log_error("Could not lock to authenticate.");
@@ -3066,7 +3020,8 @@ bool ov_vocs_db_authenticate(ov_vocs_db *self,
     }
 
     ov_json_value *data = ov_dict_get(self->index.users, user);
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
     /* Verify password */
 
@@ -3087,23 +3042,27 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_authorize(ov_vocs_db *self,
-                          const char *user,
+bool ov_vocs_db_authorize(ov_vocs_db *self, const char *user,
                           const char *role) {
 
     bool result = false;
 
-    if (!self || !user || !role) goto error;
+    if (!self || !user || !role)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *user_data = ov_dict_get(self->index.users, user);
-    if (!user_data) goto done;
+    if (!user_data)
+        goto done;
     ov_json_value *role_data = ov_dict_get(self->index.roles, role);
-    if (!role_data) goto done;
+    if (!role_data)
+        goto done;
 
     ov_json_value const *users = ov_json_get(role_data, "/" OV_KEY_USERS);
-    if (ov_json_object_get(users, user)) result = true;
+    if (ov_json_object_get(users, user))
+        result = true;
 
 done:
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -3119,22 +3078,25 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_vocs_permission ov_vocs_db_get_permission(ov_vocs_db *self,
-                                             const char *role,
+ov_vocs_permission ov_vocs_db_get_permission(ov_vocs_db *self, const char *role,
                                              const char *loop) {
 
     ov_vocs_permission result = OV_VOCS_NONE;
 
-    if (!self || !role || !loop) goto error;
+    if (!self || !role || !loop)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *loop_data = ov_dict_get(self->index.loops, loop);
-    if (!loop_data) goto done;
+    if (!loop_data)
+        goto done;
 
     ov_json_value const *roles = ov_json_get(loop_data, "/" OV_KEY_ROLES);
     ov_json_value *data = ov_json_object_get(roles, role);
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
     if (ov_json_is_true(data)) {
         result = OV_VOCS_SEND;
@@ -3162,8 +3124,7 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static bool authorize_domain_admin(ov_vocs_db *self,
-                                   const char *user,
+static bool authorize_domain_admin(ov_vocs_db *self, const char *user,
                                    const char *id) {
 
     OV_ASSERT(self);
@@ -3175,15 +3136,16 @@ static bool authorize_domain_admin(ov_vocs_db *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_authorize_domain_admin(ov_vocs_db *self,
-                                       const char *user,
+bool ov_vocs_db_authorize_domain_admin(ov_vocs_db *self, const char *user,
                                        const char *id) {
 
     bool result = false;
 
-    if (!self || !user || !id) goto error;
+    if (!self || !user || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     result = authorize_domain_admin(self, user, id);
 
@@ -3200,23 +3162,26 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool authorize_project_admin(ov_vocs_db *self,
-                                    const char *user,
+static bool authorize_project_admin(ov_vocs_db *self, const char *user,
                                     const char *id) {
 
     bool result = false;
 
     ov_json_value *project = ov_dict_get(self->index.projects, id);
-    if (!project) goto done;
+    if (!project)
+        goto done;
 
     result = ov_vocs_json_is_admin_user(project, user);
-    if (result) goto done;
+    if (result)
+        goto done;
 
     ov_json_value *projects = project->parent;
-    if (!projects) goto done;
+    if (!projects)
+        goto done;
 
     ov_json_value *domain = projects->parent;
-    if (!domain) goto done;
+    if (!domain)
+        goto done;
 
     result = authorize_domain_admin(self, user, ov_vocs_json_get_id(domain));
 
@@ -3226,15 +3191,16 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_authorize_project_admin(ov_vocs_db *self,
-                                        const char *user,
+bool ov_vocs_db_authorize_project_admin(ov_vocs_db *self, const char *user,
                                         const char *id) {
 
     bool result = false;
 
-    if (!self || !user || !id) goto error;
+    if (!self || !user || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     result = authorize_project_admin(self, user, id);
 
@@ -3251,18 +3217,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_add_project_admin(ov_vocs_db *self,
-                                  const char *project,
+bool ov_vocs_db_add_project_admin(ov_vocs_db *self, const char *project,
                                   const char *id) {
 
     bool result = false;
 
-    if (!self || !project || !id) goto error;
+    if (!self || !project || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *project_obj = ov_dict_get(self->index.projects, project);
-    if (!project_obj) goto done;
+    if (!project_obj)
+        goto done;
 
     ov_json_value *roles = ov_json_object_get(project_obj, OV_KEY_ROLES);
     if (!roles) {
@@ -3297,18 +3265,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_add_domain_admin(ov_vocs_db *self,
-                                 const char *domain,
+bool ov_vocs_db_add_domain_admin(ov_vocs_db *self, const char *domain,
                                  const char *id) {
 
     bool result = false;
 
-    if (!self || !domain || !id) goto error;
+    if (!self || !domain || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *domain_obj = ov_dict_get(self->index.domains, domain);
-    if (!domain_obj) goto done;
+    if (!domain_obj)
+        goto done;
 
     ov_json_value *roles = ov_json_object_get(domain_obj, OV_KEY_ROLES);
     if (!roles) {
@@ -3356,7 +3326,8 @@ struct container_id {
 
 static bool get_admin_domains(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     const char *id = (const char *)key;
     UNUSED(val);
@@ -3382,11 +3353,13 @@ static bool get_admin_domains(const void *key, void *val, void *data) {
 ov_json_value *ov_vocs_db_get_admin_domains(ov_vocs_db *self,
                                             const char *user) {
 
-    if (!self || !user) goto error;
+    if (!self || !user)
+        goto error;
 
     ov_json_value *out = ov_json_array();
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     struct container_id c =
         (struct container_id){.id = user, .db = self, .out = out};
@@ -3411,7 +3384,8 @@ static bool get_admin_projects(const void *key, void *value, void *data) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     const char *id = (const char *)key;
 
@@ -3436,24 +3410,28 @@ static bool get_admin_projects(const void *key, void *value, void *data) {
         } else {
             val = ov_json_null();
         }
-        if (!ov_json_object_set(out, OV_KEY_ID, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_ID, val))
+            goto error;
 
         if (domain_id) {
             val = ov_json_string(domain_id);
         } else {
             val = ov_json_null();
         }
-        if (!ov_json_object_set(out, OV_KEY_DOMAIN, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_DOMAIN, val))
+            goto error;
 
         if (project_name) {
             val = ov_json_string(project_name);
         } else {
             val = ov_json_null();
         }
-        if (!ov_json_object_set(out, OV_KEY_NAME, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_NAME, val))
+            goto error;
         val = NULL;
 
-        if (!ov_json_object_set(c->out, id, out)) goto error;
+        if (!ov_json_object_set(c->out, id, out))
+            goto error;
     }
 
     return true;
@@ -3468,11 +3446,13 @@ error:
 ov_json_value *ov_vocs_db_get_admin_projects(ov_vocs_db *self,
                                              const char *user) {
 
-    if (!self || !user) goto error;
+    if (!self || !user)
+        goto error;
 
     ov_json_value *out = ov_json_object();
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     struct container_id c =
         (struct container_id){.id = user, .db = self, .out = out};
@@ -3500,18 +3480,22 @@ error:
 
 static bool add_role_for_export(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *role_data = ov_json_value_cast(value);
     struct container_id *c = (struct container_id *)data;
 
     ov_json_value const *users = ov_json_get(role_data, "/" OV_KEY_USERS);
-    if (!users) goto done;
+    if (!users)
+        goto done;
 
-    if (!ov_json_object_get(users, c->id)) goto done;
+    if (!ov_json_object_get(users, c->id))
+        goto done;
 
     ov_json_value *copy = NULL;
-    if (!ov_json_value_copy((void **)&copy, role_data)) goto error;
+    if (!ov_json_value_copy((void **)&copy, role_data))
+        goto error;
 
     ov_json_object_del(copy, OV_KEY_USERS);
 
@@ -3522,11 +3506,13 @@ static bool add_role_for_export(const void *key, void *value, void *data) {
 
     ov_json_value *roles = role_data->parent;
     OV_ASSERT(roles);
-    if (!roles) goto done;
+    if (!roles)
+        goto done;
 
     ov_json_value *project = roles->parent;
     OV_ASSERT(project);
-    if (!project) goto done;
+    if (!project)
+        goto done;
 
     ov_json_value *v = ov_json_string(ov_vocs_json_get_id(project));
     if (!ov_json_object_set(copy, OV_KEY_PROJECT, v)) {
@@ -3561,8 +3547,10 @@ static ov_json_value *get_user_roles(ov_vocs_db *self, const char *user) {
 
 ov_json_value *ov_vocs_db_get_user_roles(ov_vocs_db *self, const char *user) {
 
-    if (!self || !user) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !user)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *out = get_user_roles(self, user);
 
@@ -3581,7 +3569,8 @@ error:
 
 static bool add_loop_for_export(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *copy = NULL;
     ov_json_value *itm = NULL;
@@ -3591,9 +3580,11 @@ static bool add_loop_for_export(const void *key, void *value, void *data) {
 
     ov_json_value *roles = ov_json_object_get(loop_data, OV_KEY_ROLES);
     ov_json_value *role = ov_json_object_get(roles, c->id);
-    if (!roles || !role) goto done;
+    if (!roles || !role)
+        goto done;
 
-    if (!ov_json_value_copy((void **)&copy, loop_data)) goto error;
+    if (!ov_json_value_copy((void **)&copy, loop_data))
+        goto error;
 
     ov_json_object_del(copy, OV_KEY_USERS);
     ov_json_object_del(copy, OV_KEY_ROLES);
@@ -3627,7 +3618,8 @@ static bool add_loop_for_export(const void *key, void *value, void *data) {
         }
     }
 
-    if (!ov_json_object_set(c->out, key, copy)) goto error;
+    if (!ov_json_object_set(c->out, key, copy))
+        goto error;
 
 done:
     return true;
@@ -3657,8 +3649,10 @@ static ov_json_value *get_role_loops(ov_vocs_db *self, const char *role) {
 
 ov_json_value *ov_vocs_db_get_role_loops(ov_vocs_db *self, const char *role) {
 
-    if (!self || !role) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !role)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *out = get_role_loops(self, role);
 
@@ -3677,19 +3671,22 @@ error:
 
 static bool add_loop_for_loop_export(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *copy = NULL;
 
     ov_json_value *loop_data = ov_json_value_cast(value);
     ov_json_value *base = ov_json_value_cast(data);
 
-    if (!ov_json_value_copy((void **)&copy, loop_data)) goto error;
+    if (!ov_json_value_copy((void **)&copy, loop_data))
+        goto error;
 
     ov_json_object_del(copy, OV_KEY_USERS);
     ov_json_object_del(copy, OV_KEY_ROLES);
 
-    if (!ov_json_object_set(base, key, copy)) goto error;
+    if (!ov_json_object_set(base, key, copy))
+        goto error;
 
     return true;
 error:
@@ -3701,8 +3698,10 @@ error:
 
 ov_json_value *ov_vocs_db_get_loops(ov_vocs_db *self) {
 
-    if (!self) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *out = ov_json_object();
 
@@ -3721,12 +3720,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *get_loop_settings(ov_vocs_db *self,
-                                        const char *user,
-                                        const char *role,
-                                        const char *loop) {
+static ov_json_value *get_loop_settings(ov_vocs_db *self, const char *user,
+                                        const char *role, const char *loop) {
 
-    if (!self || !user || !role || !loop) goto error;
+    if (!self || !user || !role || !loop)
+        goto error;
 
     ov_json_value *u = ov_json_object_get(self->data.state, user);
     ov_json_value *r = ov_json_object_get(u, role);
@@ -3741,7 +3739,8 @@ error:
 
 static bool add_user_loop_for_export(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *copy = NULL;
     ov_json_value *itm = NULL;
@@ -3754,9 +3753,11 @@ static bool add_user_loop_for_export(const void *key, void *value, void *data) {
 
     ov_json_value *roles = ov_json_object_get(loop_data, OV_KEY_ROLES);
     ov_json_value *role = ov_json_object_get(roles, c->id);
-    if (!roles || !role) goto done;
+    if (!roles || !role)
+        goto done;
 
-    if (!ov_json_value_copy((void **)&copy, loop_data)) goto error;
+    if (!ov_json_value_copy((void **)&copy, loop_data))
+        goto error;
 
     ov_json_object_del(copy, OV_KEY_USERS);
     ov_json_object_del(copy, OV_KEY_ROLES);
@@ -3800,7 +3801,8 @@ static bool add_user_loop_for_export(const void *key, void *value, void *data) {
 
     if (state) {
 
-        if (!ov_json_value_copy((void **)&v, state)) goto error;
+        if (!ov_json_value_copy((void **)&v, state))
+            goto error;
 
     } else {
 
@@ -3816,7 +3818,8 @@ static bool add_user_loop_for_export(const void *key, void *value, void *data) {
 
     if (volume) {
 
-        if (!ov_json_value_copy((void **)&v, volume)) goto error;
+        if (!ov_json_value_copy((void **)&v, volume))
+            goto error;
 
     } else {
 
@@ -3845,7 +3848,8 @@ static bool add_user_loop_for_export(const void *key, void *value, void *data) {
         }
     }
 
-    if (!ov_json_object_set(c->out, key, copy)) goto error;
+    if (!ov_json_object_set(c->out, key, copy))
+        goto error;
 
 done:
     return true;
@@ -3856,8 +3860,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *get_user_role_loops(ov_vocs_db *self,
-                                          const char *user,
+static ov_json_value *get_user_role_loops(ov_vocs_db *self, const char *user,
                                           const char *role) {
 
     OV_ASSERT(self);
@@ -3880,8 +3883,10 @@ ov_json_value *ov_vocs_db_get_user_role_loops(ov_vocs_db *self,
                                               const char *user,
                                               const char *role) {
 
-    if (!self || !role || !user) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !role || !user)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *out = get_user_role_loops(self, user, role);
 
@@ -3904,16 +3909,17 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static ov_json_value *get_set_loop(ov_vocs_db *self,
-                                   const char *user,
-                                   const char *role,
-                                   const char *loop) {
+static ov_json_value *get_set_loop(ov_vocs_db *self, const char *user,
+                                   const char *role, const char *loop) {
 
-    if (!self || !user || !role || !loop) goto error;
+    if (!self || !user || !role || !loop)
+        goto error;
 
-    if (!self->data.state) self->data.state = ov_json_object();
+    if (!self->data.state)
+        self->data.state = ov_json_object();
 
-    if (!self->data.state) goto error;
+    if (!self->data.state)
+        goto error;
 
     ov_json_value *u = ov_json_object_get(self->data.state, user);
 
@@ -3959,24 +3965,25 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_state(ov_vocs_db *self,
-                          const char *user,
-                          const char *role,
-                          const char *loop,
-                          ov_vocs_permission state) {
+bool ov_vocs_db_set_state(ov_vocs_db *self, const char *user, const char *role,
+                          const char *loop, ov_vocs_permission state) {
 
     bool result = false;
 
-    if (!self || !user || !role || !loop) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !user || !role || !loop)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *obj = get_set_loop(self, user, role, loop);
-    if (!obj) goto done;
+    if (!obj)
+        goto done;
 
     ov_json_value *val = ov_json_string(ov_vocs_permission_to_string(state));
     result = ov_json_object_set(obj, OV_KEY_STATE, val);
 
-    if (!result) val = ov_json_value_free(val);
+    if (!result)
+        val = ov_json_value_free(val);
 
 done:
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -3992,18 +3999,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_vocs_permission ov_vocs_db_get_state(ov_vocs_db *self,
-                                        const char *user,
-                                        const char *role,
-                                        const char *loop) {
+ov_vocs_permission ov_vocs_db_get_state(ov_vocs_db *self, const char *user,
+                                        const char *role, const char *loop) {
 
     ov_vocs_permission result = OV_VOCS_NONE;
 
-    if (!self || !user || !role || !loop) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !user || !role || !loop)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *obj = get_loop_settings(self, user, role, loop);
-    if (!obj) goto done;
+    if (!obj)
+        goto done;
 
     ov_json_value *state = ov_json_object_get(obj, OV_KEY_STATE);
     result = ov_vocs_permission_from_json(state);
@@ -4025,8 +4033,10 @@ error:
 ov_socket_configuration ov_vocs_db_get_multicast_group(ov_vocs_db *self,
                                                        const char *loop) {
 
-    if (!self || !loop) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !loop)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *l = ov_dict_get(self->index.loops, loop);
     const ov_json_value *mc = ov_json_get(l, "/" OV_KEY_MULTICAST);
@@ -4049,24 +4059,26 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_volume(ov_vocs_db *self,
-                           const char *user,
-                           const char *role,
-                           const char *loop,
-                           uint8_t volume) {
+bool ov_vocs_db_set_volume(ov_vocs_db *self, const char *user, const char *role,
+                           const char *loop, uint8_t volume) {
     bool result = false;
 
-    if (volume > 100) goto error;
-    if (!self || !user || !role || !loop) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (volume > 100)
+        goto error;
+    if (!self || !user || !role || !loop)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *obj = get_set_loop(self, user, role, loop);
-    if (!obj) goto done;
+    if (!obj)
+        goto done;
 
     ov_json_value *val = ov_json_number(volume);
     result = ov_json_object_set(obj, OV_KEY_VOLUME, val);
 
-    if (!result) val = ov_json_value_free(val);
+    if (!result)
+        val = ov_json_value_free(val);
 
 done:
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -4082,18 +4094,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-uint8_t ov_vocs_db_get_volume(ov_vocs_db *self,
-                              const char *user,
-                              const char *role,
-                              const char *loop) {
+uint8_t ov_vocs_db_get_volume(ov_vocs_db *self, const char *user,
+                              const char *role, const char *loop) {
 
     uint8_t result = 0;
 
-    if (!self || !user || !role || !loop) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !user || !role || !loop)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *obj = get_loop_settings(self, user, role, loop);
-    if (!obj) goto done;
+    if (!obj)
+        goto done;
 
     ov_json_value *vol = ov_json_object_get(obj, OV_KEY_VOLUME);
     result = ov_json_number_get(vol);
@@ -4116,11 +4129,14 @@ ov_json_value *ov_vocs_db_get_layout(ov_vocs_db *self, const char *role) {
 
     ov_json_value *out = NULL;
 
-    if (!self || !role) goto error;
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!self || !role)
+        goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *role_data = ov_dict_get(self->index.roles, role);
-    if (!role_data) goto done;
+    if (!role_data)
+        goto done;
 
     ov_json_value *layout = ov_json_object_get(role_data, OV_KEY_LAYOUT);
 
@@ -4145,18 +4161,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_layout(ov_vocs_db *self,
-                           const char *role,
+bool ov_vocs_db_set_layout(ov_vocs_db *self, const char *role,
                            const ov_json_value *layout) {
 
     bool result = false;
 
     ov_json_value *val = NULL;
-    if (!self || !role || !layout) goto error;
+    if (!self || !role || !layout)
+        goto error;
 
-    if (!ov_json_value_copy((void **)&val, layout)) goto error;
+    if (!ov_json_value_copy((void **)&val, layout))
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *role_data = ov_dict_get(self->index.roles, role);
     if (!role_data) {
@@ -4165,7 +4183,8 @@ bool ov_vocs_db_set_layout(ov_vocs_db *self,
     }
 
     result = ov_json_object_set(role_data, OV_KEY_LAYOUT, val);
-    if (!result) val = ov_json_value_free(val);
+    if (!result)
+        val = ov_json_value_free(val);
 
 done:
 
@@ -4183,9 +4202,11 @@ error:
 
 bool ov_vocs_db_check_id_exists(ov_vocs_db *self, const char *id) {
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     bool exists = false;
 
@@ -4237,34 +4258,37 @@ bool ov_vocs_db_check_entity_id_exists(ov_vocs_db *self,
                                        ov_vocs_db_entity entity,
                                        const char *id) {
 
-    if (!self || !id) goto error;
+    if (!self || !id)
+        goto error;
 
     ov_dict *dict = NULL;
 
     switch (entity) {
 
-        case OV_VOCS_DB_DOMAIN:
-            dict = self->index.domains;
-            break;
-        case OV_VOCS_DB_PROJECT:
-            dict = self->index.projects;
-            break;
-        case OV_VOCS_DB_LOOP:
-            dict = self->index.loops;
-            break;
-        case OV_VOCS_DB_ROLE:
-            dict = self->index.roles;
-            break;
-        case OV_VOCS_DB_USER:
-            dict = self->index.users;
-            break;
-        default:
-            break;
+    case OV_VOCS_DB_DOMAIN:
+        dict = self->index.domains;
+        break;
+    case OV_VOCS_DB_PROJECT:
+        dict = self->index.projects;
+        break;
+    case OV_VOCS_DB_LOOP:
+        dict = self->index.loops;
+        break;
+    case OV_VOCS_DB_ROLE:
+        dict = self->index.roles;
+        break;
+    case OV_VOCS_DB_USER:
+        dict = self->index.users;
+        break;
+    default:
+        break;
     }
 
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     bool exists = false;
 
@@ -4287,7 +4311,8 @@ error:
 
 static ov_json_value *get_set_layout(ov_json_value *domain) {
 
-    if (!domain) goto error;
+    if (!domain)
+        goto error;
 
     ov_json_value *layout = ov_json_object_get(domain, OV_KEY_LAYOUT);
     if (!layout) {
@@ -4307,25 +4332,29 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_keyset_layout(ov_vocs_db *self,
-                                  const char *domain,
+bool ov_vocs_db_set_keyset_layout(ov_vocs_db *self, const char *domain,
                                   const char *name,
                                   const ov_json_value *layout) {
 
     bool result = false;
 
-    if (!self || !domain || !name || !layout) goto error;
+    if (!self || !domain || !name || !layout)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *root = ov_dict_get(self->index.domains, domain);
-    if (!root) goto done;
+    if (!root)
+        goto done;
 
     ov_json_value *layout_container = get_set_layout(root);
-    if (!layout_container) goto done;
+    if (!layout_container)
+        goto done;
 
     ov_json_value *copy = NULL;
-    if (!ov_json_value_copy((void **)&copy, layout)) goto done;
+    if (!ov_json_value_copy((void **)&copy, layout))
+        goto done;
 
     if (!ov_json_object_set(layout_container, name, copy)) {
         copy = ov_json_value_free(copy);
@@ -4354,22 +4383,28 @@ static ov_json_value *create_default_layout() {
     ov_json_value *val = NULL;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_number(1.0);
-    if (!ov_json_object_set(out, "site_scaling", val)) goto error;
+    if (!ov_json_object_set(out, "site_scaling", val))
+        goto error;
 
     val = ov_json_number(1.5);
-    if (!ov_json_object_set(out, "name_scaling", val)) goto error;
+    if (!ov_json_object_set(out, "name_scaling", val))
+        goto error;
 
     val = ov_json_number(1.0);
-    if (!ov_json_object_set(out, "font_scaling", val)) goto error;
+    if (!ov_json_object_set(out, "font_scaling", val))
+        goto error;
 
     val = ov_json_string("auto_grid");
-    if (!ov_json_object_set(out, "layout", val)) goto error;
+    if (!ov_json_object_set(out, "layout", val))
+        goto error;
 
     val = ov_json_string("15.625rem");
-    if (!ov_json_object_set(out, "loop_size", val)) goto error;
+    if (!ov_json_object_set(out, "loop_size", val))
+        goto error;
 
     return out;
 
@@ -4387,15 +4422,19 @@ ov_json_value *ov_vocs_db_get_keyset_layout(ov_vocs_db *self,
 
     ov_json_value *out = NULL;
 
-    if (!self || !domain || !name) goto error;
+    if (!self || !domain || !name)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *root = ov_dict_get(self->index.domains, domain);
-    if (!root) goto done;
+    if (!root)
+        goto done;
 
     ov_json_value *layout_container = get_set_layout(root);
-    if (!layout_container) goto done;
+    if (!layout_container)
+        goto done;
 
     ov_json_value *layout = ov_json_object_get(layout_container, name);
     if (!layout) {
@@ -4404,7 +4443,8 @@ ov_json_value *ov_vocs_db_get_keyset_layout(ov_vocs_db *self,
 
     } else {
 
-        if (!ov_json_value_copy((void **)&out, layout)) goto done;
+        if (!ov_json_value_copy((void **)&out, layout))
+            goto done;
     }
 
 done:
@@ -4425,11 +4465,14 @@ error:
 
 static ov_json_value *get_set_user(ov_vocs_db *self, const char *user) {
 
-    if (!self || !user) goto error;
+    if (!self || !user)
+        goto error;
 
-    if (!self->data.state) self->data.state = ov_json_object();
+    if (!self->data.state)
+        self->data.state = ov_json_object();
 
-    if (!self->data.state) goto error;
+    if (!self->data.state)
+        goto error;
 
     ov_json_value *u = ov_json_object_get(self->data.state, user);
 
@@ -4455,12 +4498,15 @@ ov_json_value *ov_vocs_db_get_user_data(ov_vocs_db *self, const char *user) {
 
     ov_json_value *out = NULL;
 
-    if (!self || !user) goto error;
+    if (!self || !user)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *root = get_set_user(self, user);
-    if (!root) goto done;
+    if (!root)
+        goto done;
 
     ov_json_value *data = ov_json_object_get(root, OV_KEY_DATA);
     if (!data) {
@@ -4482,21 +4528,24 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_user_data(ov_vocs_db *self,
-                              const char *user,
+bool ov_vocs_db_set_user_data(ov_vocs_db *self, const char *user,
                               const ov_json_value *data) {
 
     bool result = false;
 
-    if (!self || !user || !data) goto error;
+    if (!self || !user || !data)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *root = get_set_user(self, user);
-    if (!root) goto done;
+    if (!root)
+        goto done;
 
     ov_json_value *copy = NULL;
-    if (!ov_json_value_copy((void **)&copy, data)) goto done;
+    if (!ov_json_value_copy((void **)&copy, data))
+        goto done;
 
     if (!ov_json_object_set(root, OV_KEY_DATA, copy)) {
         copy = ov_json_value_free(copy);
@@ -4520,14 +4569,16 @@ error:
 
 static bool add_recorded_loop(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     ov_json_value *value = ov_json_value_cast(val);
     ov_json_value *array = ov_json_value_cast(data);
 
     ov_json_value *rec = ov_json_object_get(value, OV_KEY_RECORDED);
     ov_json_value *mc = ov_json_object_get(value, OV_KEY_MULTICAST);
 
-    if (!rec || !mc) return true;
+    if (!rec || !mc)
+        return true;
 
     if (ov_json_is_true(rec)) {
 
@@ -4565,12 +4616,15 @@ ov_json_value *ov_vocs_db_get_recorded_loops(ov_vocs_db *self) {
 
     ov_json_value *out = NULL;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     out = ov_json_array();
-    if (!out) goto done;
+    if (!out)
+        goto done;
 
     if (!ov_dict_for_each(self->index.loops, out, add_recorded_loop)) {
 
@@ -4594,12 +4648,15 @@ bool ov_vocs_db_set_recorded(ov_vocs_db *self, const char *loop, bool on) {
 
     bool result = false;
 
-    if (!self || !loop) goto error;
+    if (!self || !loop)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *data = ov_dict_get(self->index.loops, loop);
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
     ov_json_value *val = NULL;
     if (on) {
@@ -4609,7 +4666,8 @@ bool ov_vocs_db_set_recorded(ov_vocs_db *self, const char *loop, bool on) {
     }
 
     result = ov_json_object_set(data, OV_KEY_RECORDED, val);
-    if (!result) val = ov_json_value_free(val);
+    if (!result)
+        val = ov_json_value_free(val);
 
 done:
 
@@ -4626,13 +4684,15 @@ error:
 
 static bool get_sip_information(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *arr = ov_json_value_cast(data);
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *sip = ov_json_object_get(value, OV_KEY_SIP);
-    if (!sip) return true;
+    if (!sip)
+        return true;
 
     val = ov_json_string(key);
 
@@ -4648,9 +4708,11 @@ ov_json_value *ov_vocs_db_get_sip(ov_vocs_db *self) {
 
     ov_json_value *array = NULL;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     array = ov_json_array();
 
@@ -4668,18 +4730,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_sip_allow_callout(ov_vocs_db *self,
-                                  const char *loop,
+bool ov_vocs_db_sip_allow_callout(ov_vocs_db *self, const char *loop,
                                   const char *role) {
 
     bool result = false;
 
-    if (!self || !loop || !role) goto error;
+    if (!self || !loop || !role)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *data = ov_dict_get(self->index.loops, loop);
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
     ov_json_value *sip = (ov_json_value *)ov_json_get(data, "/" OV_KEY_SIP);
     if (!sip) {
@@ -4694,9 +4758,11 @@ bool ov_vocs_db_sip_allow_callout(ov_vocs_db *self,
     }
 
     ov_json_value *permission = ov_json_object_get(roles, role);
-    if (!permission) goto done;
+    if (!permission)
+        goto done;
 
-    if (ov_json_is_true(permission)) result = true;
+    if (ov_json_is_true(permission))
+        result = true;
 
 done:
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -4709,15 +4775,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_sip_allow_callend(ov_vocs_db *self,
-                                  const char *loop,
+bool ov_vocs_db_sip_allow_callend(ov_vocs_db *self, const char *loop,
                                   const char *role) {
 
     bool result = false;
 
-    if (!self || !loop || !role) goto error;
+    if (!self || !loop || !role)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *data = ov_dict_get(self->index.loops, loop);
     if (!data) {
@@ -4738,7 +4805,8 @@ bool ov_vocs_db_sip_allow_callend(ov_vocs_db *self,
     }
 
     ov_json_value *permission = ov_json_object_get(roles, role);
-    if (permission) result = true;
+    if (permission)
+        result = true;
 
 done:
     if (!ov_thread_lock_unlock(&self->lock)) {
@@ -4753,7 +4821,8 @@ error:
 
 static bool add_loop_to_result(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *value = NULL;
 
@@ -4773,9 +4842,11 @@ static bool add_loop_to_result(const void *key, void *val, void *data) {
 ov_json_value *ov_vocs_db_get_all_loops(ov_vocs_db *self) {
 
     ov_json_value *result = NULL;
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     result = ov_json_object();
 
@@ -4791,9 +4862,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_loop_and_domain_to_result(const void *key, void *val, void *data) {
+static bool add_loop_and_domain_to_result(const void *key, void *val,
+                                          void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *copy = NULL;
     const ov_json_value *project = NULL;
@@ -4811,10 +4884,12 @@ static bool add_loop_and_domain_to_result(const void *key, void *val, void *data
     ov_json_value *loop = ov_json_value_cast(val);
 
     ov_json_value *loops = loop->parent;
-    if (!loops) goto done;
+    if (!loops)
+        goto done;
 
     ov_json_value *project_or_domain = loops->parent;
-    if (!project_or_domain) goto done;
+    if (!project_or_domain)
+        goto done;
 
     ov_json_value *project_or_domain_parent = project_or_domain->parent;
 
@@ -4823,7 +4898,8 @@ static bool add_loop_and_domain_to_result(const void *key, void *val, void *data
         project = project_or_domain;
 
         ov_json_value *domain_projects = project->parent;
-        if (!domain_projects) goto error;
+        if (!domain_projects)
+            goto error;
 
         domain = domain_projects->parent;
 
@@ -4836,7 +4912,7 @@ static bool add_loop_and_domain_to_result(const void *key, void *val, void *data
     if (domain) {
 
         ov_json_value *dom = NULL;
-        ov_json_value_copy((void**)&dom, domain);
+        ov_json_value_copy((void **)&dom, domain);
 
         ov_json_object_del(dom, OV_KEY_PROJECTS);
         ov_json_object_del(dom, OV_KEY_LOOPS);
@@ -4844,13 +4920,12 @@ static bool add_loop_and_domain_to_result(const void *key, void *val, void *data
         ov_json_object_del(dom, OV_KEY_USERS);
 
         ov_json_object_set(copy, OV_KEY_DOMAIN, dom);
-    
     }
 
     if (project) {
 
         ov_json_value *pro = NULL;
-        ov_json_value_copy((void**)&pro, project);
+        ov_json_value_copy((void **)&pro, project);
 
         ov_json_object_del(pro, OV_KEY_PROJECTS);
         ov_json_object_del(pro, OV_KEY_LOOPS);
@@ -4858,7 +4933,6 @@ static bool add_loop_and_domain_to_result(const void *key, void *val, void *data
         ov_json_object_del(pro, OV_KEY_USERS);
 
         ov_json_object_set(copy, OV_KEY_PROJECT, pro);
-    
     }
 
 done:
@@ -4872,9 +4946,11 @@ error:
 ov_json_value *ov_vocs_db_get_all_loops_incl_domain(ov_vocs_db *self) {
 
     ov_json_value *result = NULL;
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     result = ov_json_object();
 
@@ -4890,41 +4966,46 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_remove_permission(ov_vocs_db *self, 
-    ov_sip_permission permission){
+bool ov_vocs_db_remove_permission(ov_vocs_db *self,
+                                  ov_sip_permission permission) {
 
     bool result = false;
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     ov_json_value *loop = ov_dict_get(self->index.loops, permission.loop);
-    if (!loop) goto done;
+    if (!loop)
+        goto done;
 
     ov_json_value *sip = ov_json_object_get(loop, "/" OV_KEY_SIP);
-    if (!sip) goto done;
+    if (!sip)
+        goto done;
 
     ov_json_value *whitelist = ov_json_object_get(sip, OV_KEY_WHITELIST);
-    if (!whitelist) goto done;
+    if (!whitelist)
+        goto done;
 
     size_t count = ov_json_array_count(whitelist);
     size_t del = 0;
 
     bool ok = true;
 
-    for (size_t i = 1; i <= count; i++){
+    for (size_t i = 1; i <= count; i++) {
 
         ov_json_value *obj = ov_json_array_get(whitelist, i);
 
         ov_sip_permission perm = ov_sip_permission_from_json(obj, &ok);
 
-        if (ov_sip_permission_equals(permission, perm)){
+        if (ov_sip_permission_equals(permission, perm)) {
             del = i;
             break;
         }
     }
 
-    if (0 != del){
+    if (0 != del) {
         result = ov_json_array_del(whitelist, del);
     }
 
@@ -4939,11 +5020,113 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_set_persistance(ov_vocs_db *self, ov_vocs_db_persistance *persistance){
+bool ov_vocs_db_add_permission(ov_vocs_db *self, ov_sip_permission permission) {
+
+    if (!self)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
+
+    ov_json_value *loop = ov_dict_get(self->index.loops, permission.loop);
+    if (!loop)
+        goto done;
+
+    ov_json_value *sip = ov_json_object_get(loop, "/" OV_KEY_SIP);
+    if (!sip) {
+
+        sip = ov_json_object();
+        ov_json_object_set(loop, OV_KEY_SIP, sip);
+    }
+
+    ov_json_value *whitelist = ov_json_object_get(sip, OV_KEY_WHITELIST);
+    if (!whitelist) {
+
+        whitelist = ov_json_array();
+        ov_json_object_set(sip, OV_KEY_WHITELIST, whitelist);
+    }
+
+    size_t count = ov_json_array_count(whitelist);
+    size_t active = 0;
+
+    bool ok = true;
+
+    for (size_t i = 1; i <= count; i++) {
+
+        ov_json_value *obj = ov_json_array_get(whitelist, i);
+
+        ov_sip_permission perm = ov_sip_permission_from_json(obj, &ok);
+
+        if (ov_sip_permission_equals(permission, perm)) {
+            active = i;
+            break;
+        }
+    }
+
+    if (0 == active) {
+
+        ov_json_value *perm = ov_sip_permission_to_json(permission);
+        ov_json_array_push(whitelist, perm);
+    }
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_db_set_persistance(ov_vocs_db *self,
+                                ov_vocs_db_persistance *persistance) {
 
     if (!self || !persistance)
         return false;
 
     self->persistance = persistance;
     return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool get_highest_port(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+
+    ov_json_value *loop = ov_json_value_cast(val);
+    uint32_t *high = (uint32_t *)data;
+
+    const ov_json_value *mc = ov_json_get(loop, "/" OV_KEY_MULTICAST);
+    uint32_t port = ov_json_number_get(ov_json_get(mc, "/" OV_KEY_PORT));
+
+    if (port > *high)
+        *high = port;
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+uint32_t ov_vocs_db_get_highest_port(ov_vocs_db *self) {
+
+    if (!self)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
+
+    uint32_t result = 0;
+
+    ov_dict_for_each(self->index.loops, &result, get_highest_port);
+
+    if (!ov_thread_lock_unlock(&self->lock)) {
+        OV_ASSERT(1 == 0);
+        goto error;
+    }
+
+    return (uint32_t)result;
+
+error:
+    return 0;
 }

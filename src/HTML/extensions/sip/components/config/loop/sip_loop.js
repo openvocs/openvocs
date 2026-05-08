@@ -35,7 +35,9 @@ export default class ov_SIP_Loop extends HTMLElement {
     #name;
     #whitelist = [];
     #roles = {};
+    #selected = false;
     #disabled = false;
+    #global = false;
 
     constructor() {
         super();
@@ -43,6 +45,7 @@ export default class ov_SIP_Loop extends HTMLElement {
     }
 
     static get observedAttributes() {
+        return ["disabled", "global", "selected"]
     }
 
     #update_name() {
@@ -82,53 +85,89 @@ export default class ov_SIP_Loop extends HTMLElement {
 
     clear_roles() {
         this.#roles = {};
+        this.#update_sip_indicator();
     }
 
-    add_role(role, value, name) {
-        this.#roles[role] = { value: value, name: name };
+    add_role(role, value, name, hidden) {
+        this.#roles[role] = { value: value, name: name, hidden: !!hidden };
+        this.#update_sip_indicator();
     }
 
     get roles() {
         return this.#roles;
     }
 
-    #update_disabled() {
+    #update_selected() {
         let button = this.shadowRoot.querySelector("button");
         if (button)
-            button.disabled = this.#disabled;
+            button.disabled = this.#selected;
+    }
+
+    set selected(value) {
+        if (!value)
+            this.removeAttribute("selected")
+        else
+            this.setAttribute("selected", value);
+    }
+
+    get selected() {
+        return this.#selected;
     }
 
     set disabled(value) {
-        this.#disabled = value;
-        this.#update_disabled();
+        if (!value)
+            this.removeAttribute("disabled")
+        else
+            this.setAttribute("disabled", value);
     }
 
     get disabled() {
         return this.#disabled;
     }
 
+    set global(value) {
+        if (!value)
+            this.removeAttribute("global")
+        else
+            this.setAttribute("global", value);
+    }
+
+    get global() {
+        return this.#global;
+    }
+
     attributeChangedCallback(name, old_value, new_value) {
         if (old_value === new_value)
             return;
-
+        if (name === "selected") {
+            this.#selected = new_value;
+            this.#update_selected();
+        }
+        if (name === "disabled") {
+            this.#disabled = new_value;
+        }
+        if (name === "global") {
+            this.#global = new_value;
+        }
     }
 
     async connectedCallback() {
         await this.#render();
         this.#update_name();
-        this.#update_disabled();
+        this.#update_selected();
         this.#update_sip_indicator();
     }
 
     #update_sip_indicator() {
-        if (this.#whitelist.length === 0) {
-            let element = this.shadowRoot.querySelector(".calls_allowed");
-            if (element)
-                element.classList.remove("calls_allowed");
-        } else {
+        let roles_set = Object.values(this.#roles).some(role => role.value !== undefined && !role.hidden);
+        if (this.#whitelist.length !== 0 || roles_set) {
             let element = this.shadowRoot.querySelector("#loop:not(.calls_allowed)");
             if (element)
                 element.classList.add("calls_allowed");
+        } else {
+            let element = this.shadowRoot.querySelector(".calls_allowed");
+            if (element)
+                element.classList.remove("calls_allowed");
         }
     }
 

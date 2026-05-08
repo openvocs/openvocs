@@ -273,28 +273,28 @@ int test_ov_stun_check_message_integrity() {
     testrun(ov_stun_attribute_frame_is_message_integrity(arr[0], 30));
 
     testrun(!ov_stun_check_message_integrity(NULL, 0, NULL, 0, NULL, 0, true));
-    testrun(!ov_stun_check_message_integrity(
-        NULL, length, arr, az, key, len, true));
+    testrun(!ov_stun_check_message_integrity(NULL, length, arr, az, key, len,
+                                             true));
     testrun(!ov_stun_check_message_integrity(head, 0, arr, az, key, len, true));
-    testrun(!ov_stun_check_message_integrity(
-        head, length, NULL, az, key, len, true));
+    testrun(!ov_stun_check_message_integrity(head, length, NULL, az, key, len,
+                                             true));
     testrun(
         !ov_stun_check_message_integrity(head, length, arr, 0, key, len, true));
-    testrun(!ov_stun_check_message_integrity(
-        head, length, arr, az, NULL, len, true));
+    testrun(!ov_stun_check_message_integrity(head, length, arr, az, NULL, len,
+                                             true));
     testrun(
         !ov_stun_check_message_integrity(head, length, arr, az, key, 0, true));
 
     testrun(ov_stun_check_message_integrity(head, 44, arr, az, key, len, true));
 
     // different key
-    testrun(!ov_stun_check_message_integrity(
-        head, length, arr, az, key, len - 1, true));
+    testrun(!ov_stun_check_message_integrity(head, length, arr, az, key,
+                                             len - 1, true));
 
     // different content
     buffer[10] = 0x00;
-    testrun(!ov_stun_check_message_integrity(
-        head, length, arr, az, key, len, true));
+    testrun(!ov_stun_check_message_integrity(head, length, arr, az, key, len,
+                                             true));
 
     buffer[10] = 0x11;
     testrun(
@@ -304,10 +304,10 @@ int test_ov_stun_check_message_integrity() {
     ptr[0] = 0x00; // attribute type username
     ptr[1] = 0x06; // attribute type username
 
-    testrun(!ov_stun_check_message_integrity(
-        head, length, arr, az, key, len, true));
-    testrun(ov_stun_check_message_integrity(
-        head, length, arr, az, key, len, false));
+    testrun(!ov_stun_check_message_integrity(head, length, arr, az, key, len,
+                                             true));
+    testrun(ov_stun_check_message_integrity(head, length, arr, az, key, len,
+                                            false));
 
     ptr[0] = 0x00;
     ptr[1] = 0x08;
@@ -316,8 +316,8 @@ int test_ov_stun_check_message_integrity() {
 
     // integrity length failure
     ptr[2] = 0x20;
-    testrun(!ov_stun_check_message_integrity(
-        head, length, arr, az, key, len, true));
+    testrun(!ov_stun_check_message_integrity(head, length, arr, az, key, len,
+                                             true));
     ptr[2] = 0x00;
     testrun(
         ov_stun_check_message_integrity(head, length, arr, az, key, len, true));

@@ -58,13 +58,20 @@ typedef struct ov_sip_app ov_sip_app;
                                 CREATE / DESTROY
  ****************************************************************************/
 
-ov_sip_app *ov_sip_app_create(char const *name,
-                              ov_event_loop *loop,
+ov_sip_app *ov_sip_app_create(char const *name, ov_event_loop *loop,
                               ov_sip_app_configuration cfg);
 
 ov_sip_app *ov_sip_app_free(ov_sip_app *app);
 
+/*****************************************************************************
+                                    Logging
+ ****************************************************************************/
+
+bool ov_sip_app_enable_logging(ov_sip_app *self, char const *path);
+
 /*----------------------------------------------------------------------------*/
+
+bool ov_sip_app_disable_logging(ov_sip_app *self);
 
 /**
  * Registers a handler to be called whenever there is parsed data ready,
@@ -74,11 +81,9 @@ ov_sip_app *ov_sip_app_free(ov_sip_app *app);
  * types of Serde data is not supported.
  * If the parsed data does not fit `data_type` , the parsed data is dropped.
  */
-bool ov_sip_app_register_handler(ov_sip_app *self,
-                                 char const *method,
+bool ov_sip_app_register_handler(ov_sip_app *self, char const *method,
                                  void (*handler)(ov_sip_message const *message,
-                                                 int socket,
-                                                 void *additional));
+                                                 int socket, void *additional));
 
 /*----------------------------------------------------------------------------*/
 
@@ -87,10 +92,8 @@ bool ov_sip_app_register_handler(ov_sip_app *self,
  * arrives
  */
 bool ov_sip_app_register_response_handler(
-    ov_sip_app *self,
-    void (*handler)(ov_sip_message const *message,
-                    int socket,
-                    void *additional));
+    ov_sip_app *self, void (*handler)(ov_sip_message const *message, int socket,
+                                      void *additional));
 
 /*----------------------------------------------------------------------------*/
 

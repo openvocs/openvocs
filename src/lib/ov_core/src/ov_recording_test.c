@@ -91,6 +91,5 @@ static int test_ov_recording_from_json() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_recording",
-            test_ov_recording_to_json,
+OV_TEST_RUN("ov_recording", test_ov_recording_to_json,
             test_ov_recording_from_json);

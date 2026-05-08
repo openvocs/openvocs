@@ -122,7 +122,8 @@ int test_ov_json_array_set_head() {
 
 static bool dummy_clear(void *data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
     return true;
 }
 
@@ -168,7 +169,8 @@ int test_ov_json_array_clear() {
 
 static void *dummy_free(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
     return NULL;
 }
 
@@ -686,7 +688,8 @@ int test_ov_json_array_is_empty() {
 
 static bool dummy_for_each(void *item, void *data) {
 
-    if (item || data) return true;
+    if (item || data)
+        return true;
     return true;
 }
 

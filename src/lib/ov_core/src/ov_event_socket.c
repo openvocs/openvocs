@@ -48,8 +48,7 @@ struct ov_event_socket {
 
 /*----------------------------------------------------------------------------*/
 
-static bool event_socket_send(void *userdata,
-                              int socket,
+static bool event_socket_send(void *userdata, int socket,
                               const ov_json_value *v) {
 
     ov_event_socket *app = ov_event_socket_cast(userdata);
@@ -69,10 +68,12 @@ static void json_success(void *userdata, int socket, ov_json_value *value) {
     OV_ASSERT(userdata);
     OV_ASSERT(value);
 
-    if (!userdata || !value) goto error;
+    if (!userdata || !value)
+        goto error;
 
     ov_event_socket *app = (ov_event_socket *)userdata;
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     if (app->debug) {
 
@@ -82,11 +83,9 @@ static void json_success(void *userdata, int socket, ov_json_value *value) {
     }
 
     if (!ov_event_engine_push(
-            app->config.engine,
-            app->config.callback.userdata,
-            socket,
-            (ov_event_parameter){
-                .send.instance = app, .send.send = event_socket_send
+            app->config.engine, socket,
+            (ov_event_parameter){.send.instance = app,
+                                 .send.send = event_socket_send
 
             },
             value))
@@ -107,7 +106,8 @@ static void json_failure(void *userdata, int socket) {
     OV_ASSERT(socket >= 0);
 
     ov_event_socket *app = (ov_event_socket *)userdata;
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     ov_event_socket_close(app, socket);
 
@@ -121,11 +121,14 @@ ov_event_socket *ov_event_socket_create(ov_event_socket_config config) {
 
     ov_event_socket *self = NULL;
 
-    if (!config.loop) goto error;
-    if (!config.engine) goto error;
+    if (!config.loop)
+        goto error;
+    if (!config.engine)
+        goto error;
 
     self = calloc(1, sizeof(ov_event_socket));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_bytes = OV_EVENT_SOCKET_MAGIC_BYTES;
 
@@ -143,7 +146,8 @@ ov_event_socket *ov_event_socket_create(ov_event_socket_config config) {
     };
 
     self->io = ov_io_base_create(base_config);
-    if (!self->io) goto error;
+    if (!self->io)
+        goto error;
 
     self->io_buffer = ov_json_io_buffer_create(
         (ov_json_io_buffer_config){.objects_only = true,
@@ -151,7 +155,8 @@ ov_event_socket *ov_event_socket_create(ov_event_socket_config config) {
                                    .callback.success = json_success,
                                    .callback.failure = json_failure});
 
-    if (!self->io_buffer) goto error;
+    if (!self->io_buffer)
+        goto error;
 
     self->config = config;
 
@@ -164,7 +169,8 @@ error:
 
 ov_event_socket *ov_event_socket_free(ov_event_socket *self) {
 
-    if (!ov_event_socket_cast(self)) goto error;
+    if (!ov_event_socket_cast(self))
+        goto error;
 
     self->io = ov_io_base_free(self->io);
     self->io_buffer = ov_json_io_buffer_free(self->io_buffer);
@@ -178,7 +184,8 @@ error:
 
 ov_event_socket *ov_event_socket_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
     if (*(uint16_t *)data == OV_EVENT_SOCKET_MAGIC_BYTES)
         return (ov_event_socket *)data;
@@ -190,7 +197,8 @@ ov_event_socket *ov_event_socket_cast(const void *data) {
 
 bool ov_event_socket_load_ssl_config(ov_event_socket *self, const char *path) {
 
-    if (!self || !path) goto error;
+    if (!self || !path)
+        goto error;
 
     return ov_io_base_load_ssl_config(self->io, path);
 error:
@@ -202,7 +210,8 @@ error:
 static bool event_app_accept_cb(void *userdata, int listener, int connection) {
 
     ov_event_socket *app = (ov_event_socket *)userdata;
-    if (!app) return false;
+    if (!app)
+        return false;
 
     UNUSED(listener);
     UNUSED(connection);
@@ -221,7 +230,8 @@ static bool event_app_accept_cb(void *userdata, int listener, int connection) {
 static void event_app_close_cb(void *userdata, int connection) {
 
     ov_event_socket *app = (ov_event_socket *)userdata;
-    if (!app) return;
+    if (!app)
+        return;
 
     if (app->config.callback.close)
         app->config.callback.close(app->config.callback.userdata, connection);
@@ -231,14 +241,15 @@ static void event_app_close_cb(void *userdata, int connection) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool event_app_io_cb(void *userdata,
-                            int connection,
+static bool event_app_io_cb(void *userdata, int connection,
                             const ov_memory_pointer input) {
 
     ov_event_socket *app = (ov_event_socket *)userdata;
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
-    if (ov_json_io_buffer_push(app->io_buffer, connection, input)) return true;
+    if (ov_json_io_buffer_push(app->io_buffer, connection, input))
+        return true;
 
 error:
 
@@ -252,7 +263,8 @@ error:
 int ov_event_socket_create_listener(ov_event_socket *self,
                                     ov_event_socket_server_config config) {
 
-    if (!self || !self->io) goto error;
+    if (!self || !self->io)
+        goto error;
 
     ov_io_base_listener_config listener = (ov_io_base_listener_config){
 
@@ -274,11 +286,12 @@ error:
 static void event_app_connected_cb(void *userdata, int socket, bool result) {
 
     ov_event_socket *app = (ov_event_socket *)userdata;
-    if (!app) return;
+    if (!app)
+        return;
 
     if (app->config.callback.connected)
-        app->config.callback.connected(
-            app->config.callback.userdata, socket, result);
+        app->config.callback.connected(app->config.callback.userdata, socket,
+                                       result);
 
     return;
 }
@@ -288,7 +301,8 @@ static void event_app_connected_cb(void *userdata, int socket, bool result) {
 int ov_event_socket_create_connection(ov_event_socket *self,
                                       ov_event_socket_client_config config) {
 
-    if (!self || !self->io) goto error;
+    if (!self || !self->io)
+        goto error;
 
     ov_io_base_connection_config connection = (ov_io_base_connection_config){
 
@@ -325,7 +339,8 @@ error:
 
 bool ov_event_socket_close(ov_event_socket *self, int socket) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     return ov_io_base_close(self->io, socket);
 error:
@@ -334,22 +349,22 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_socket_send(ov_event_socket *self,
-                          int socket,
+bool ov_event_socket_send(ov_event_socket *self, int socket,
                           const ov_json_value *value) {
 
     bool result = false;
 
-    if (!self || !value) goto error;
+    if (!self || !value)
+        goto error;
 
     char *str = ov_json_value_to_string(value);
-    if (!str) return false;
+    if (!str)
+        return false;
 
     size_t size = strlen(str);
 
     result = ov_io_base_send(
-        self->io,
-        socket,
+        self->io, socket,
         (ov_memory_pointer){.start = (uint8_t *)str, .length = size});
 
     str = ov_data_pointer_free(str);
@@ -362,7 +377,8 @@ error:
 
 bool ov_event_socket_set_debug(ov_event_socket *self, bool on) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
     self->debug = on;
     return true;
 }

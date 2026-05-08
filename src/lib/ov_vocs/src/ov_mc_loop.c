@@ -51,10 +51,8 @@ static bool io_multicast(int sfd, uint8_t events, void *userdata) {
     ov_mc_loop *loop = ov_mc_loop_cast(userdata);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
-        ov_log_error("Socket close at %i loop %s|%s:%i",
-                     sfd,
-                     loop->config.data.name,
-                     loop->config.data.socket.host,
+        ov_log_error("Socket close at %i loop %s|%s:%i", sfd,
+                     loop->config.data.name, loop->config.data.socket.host,
                      loop->config.data.socket.port);
         goto error;
     }
@@ -62,23 +60,17 @@ static bool io_multicast(int sfd, uint8_t events, void *userdata) {
     ov_socket_data in = {0};
     socklen_t in_len = 0;
 
-    ssize_t bytes = recvfrom(sfd,
-                             buffer,
-                             OV_UDP_PAYLOAD_OCTETS,
-                             0,
-                             (struct sockaddr *)&in.sa,
-                             &in_len);
+    ssize_t bytes = recvfrom(sfd, buffer, OV_UDP_PAYLOAD_OCTETS, 0,
+                             (struct sockaddr *)&in.sa, &in_len);
 
-    if (-1 == bytes) goto done;
+    if (-1 == bytes)
+        goto done;
 
     in = ov_socket_data_from_sockaddr_storage(&in.sa);
 
     if (loop->config.callback.io)
         loop->config.callback.io(loop->config.callback.userdata,
-                                 &loop->config.data,
-                                 buffer,
-                                 bytes,
-                                 &in);
+                                 &loop->config.data, buffer, bytes, &in);
 
 done:
     return true;
@@ -99,8 +91,7 @@ static int open_mc_udp_socket(char const *interface, int port) {
 
     if (0 > s) {
 
-        ov_log_error("Failed to open Multicast socket %s:%i",
-                     s_config.host,
+        ov_log_error("Failed to open Multicast socket %s:%i", s_config.host,
                      s_config.port);
     }
 
@@ -113,16 +104,21 @@ ov_mc_loop *ov_mc_loop_create(ov_mc_loop_config config) {
 
     ov_mc_loop *loop = NULL;
 
-    if (!config.loop) goto error;
-    if (0 == config.data.socket.host[0]) goto error;
-    if (0 == config.data.name[0]) goto error;
+    if (!config.loop)
+        goto error;
+    if (0 == config.data.socket.host[0])
+        goto error;
+    if (0 == config.data.name[0])
+        goto error;
 
     loop = calloc(1, sizeof(ov_mc_loop));
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     loop->magic_byte = OV_MC_LOOP_MAGIC_BYTES;
     loop->config = config;
-    if (0 == loop->config.data.volume) loop->config.data.volume = 50;
+    if (0 == loop->config.data.volume)
+        loop->config.data.volume = 50;
 
     loop->rtp_fhd =
         open_mc_udp_socket(config.data.socket.host, config.data.socket.port);
@@ -168,7 +164,8 @@ static void close_mc_sfh(ov_event_loop *loop, int sfh) {
 
 ov_mc_loop *ov_mc_loop_free(ov_mc_loop *self) {
 
-    if (!ov_mc_loop_cast(self)) return self;
+    if (!ov_mc_loop_cast(self))
+        return self;
 
     close_mc_sfh(self->config.loop, self->rtp_fhd);
     // close_mc_sfh(self->config.loop, self->rtcp_fhd);
@@ -181,9 +178,11 @@ ov_mc_loop *ov_mc_loop_free(ov_mc_loop *self) {
 
 ov_mc_loop *ov_mc_loop_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_MC_LOOP_MAGIC_BYTES) return NULL;
+    if (*(uint16_t *)data != OV_MC_LOOP_MAGIC_BYTES)
+        return NULL;
 
     return (ov_mc_loop *)data;
 }
@@ -200,7 +199,8 @@ void *ov_mc_loop_free_void(void *self) {
 
 bool ov_mc_loop_set_volume(ov_mc_loop *self, uint8_t volume) {
 
-    if (!self || volume > 100) goto error;
+    if (!self || volume > 100)
+        goto error;
 
     self->config.data.volume = volume;
     return true;
@@ -212,7 +212,8 @@ error:
 
 uint8_t ov_mc_loop_get_volume(ov_mc_loop *self) {
 
-    if (!self) return 0;
+    if (!self)
+        return 0;
     return self->config.data.volume;
 }
 
@@ -223,14 +224,17 @@ ov_json_value *ov_mc_loop_to_json(ov_mc_loop *self) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     out = ov_json_object();
     val = ov_mc_loop_data_to_json(self->config.data);
-    if (!ov_json_object_set(out, OV_KEY_DATA, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_DATA, val))
+        goto error;
 
     val = ov_json_number(self->rtp_fhd);
-    if (!ov_json_object_set(out, OV_KEY_SOCKET, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_SOCKET, val))
+        goto error;
 
     return out;
 error:

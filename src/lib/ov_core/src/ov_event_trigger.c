@@ -53,7 +53,8 @@ ov_event_trigger *ov_event_trigger_create(ov_event_trigger_config config) {
     ov_event_trigger *trigger = NULL;
 
     trigger = calloc(1, sizeof(ov_event_trigger));
-    if (!trigger) goto error;
+    if (!trigger)
+        goto error;
 
     trigger->magic_bytes = OV_EVENT_TRIGGER_MAGIC_BYTES;
     trigger->config = config;
@@ -62,7 +63,8 @@ ov_event_trigger *ov_event_trigger_create(ov_event_trigger_config config) {
     d_config.value.data_function.free = ov_data_pointer_free;
 
     trigger->events = ov_dict_create(d_config);
-    if (!trigger->events) goto error;
+    if (!trigger->events)
+        goto error;
 
     return trigger;
 error:
@@ -74,7 +76,8 @@ error:
 
 ov_event_trigger *ov_event_trigger_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == OV_EVENT_TRIGGER_MAGIC_BYTES)
         return (ov_event_trigger *)self;
@@ -87,7 +90,8 @@ error:
 void *ov_event_trigger_free(void *self) {
 
     ov_event_trigger *trigger = ov_event_trigger_cast(self);
-    if (!trigger) return self;
+    if (!trigger)
+        return self;
 
     trigger->events = ov_dict_free(trigger->events);
     trigger = ov_data_pointer_free(trigger);
@@ -96,11 +100,11 @@ void *ov_event_trigger_free(void *self) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_trigger_register_listener(ov_event_trigger *self,
-                                        const char *key,
+bool ov_event_trigger_register_listener(ov_event_trigger *self, const char *key,
                                         ov_event_trigger_data data) {
 
-    if (!self || !key || !data.userdata || !data.process) goto error;
+    if (!self || !key || !data.userdata || !data.process)
+        goto error;
 
     char *k = ov_string_dup(key);
     ov_event_trigger_data *val = calloc(1, sizeof(ov_event_trigger_data));
@@ -121,16 +125,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_trigger_send(ov_event_trigger *self,
-                           const char *key,
+bool ov_event_trigger_send(ov_event_trigger *self, const char *key,
                            ov_json_value *event) {
 
-    if (!self || !key || !event) goto error;
+    if (!self || !key || !event)
+        goto error;
 
     ov_event_trigger_data *data = ov_dict_get(self->events, key);
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
-    if (!data->process) goto error;
+    if (!data->process)
+        goto error;
 
     data->process(data->userdata, event);
     return true;

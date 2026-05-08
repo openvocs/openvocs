@@ -143,8 +143,8 @@ int main(int argc, char **argv) {
     size_t remainder = fsize % sizeof(int16_t);
 
     if (0 != remainder) {
-        fprintf(
-            stderr, "File size %zu no multiple of %zu", fsize, sizeof(int16_t));
+        fprintf(stderr, "File size %zu no multiple of %zu", fsize,
+                sizeof(int16_t));
     }
 
     fsize -= remainder;

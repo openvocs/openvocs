@@ -1,0 +1,3 @@
+#players:not(:empty)+#list_empty_warning {
+    display: none;
+}

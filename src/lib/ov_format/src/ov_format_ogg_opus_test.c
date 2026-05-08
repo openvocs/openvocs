@@ -78,8 +78,7 @@ static bool strings_equal(char const *s1, char const *s2) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool string_arrays_equal(size_t num_strings,
-                                char const **a1,
+static bool string_arrays_equal(size_t num_strings, char const **a1,
                                 char const **a2) {
 
     for (size_t i = 0; i < num_strings; ++i) {
@@ -96,8 +95,7 @@ static bool string_arrays_equal(size_t num_strings,
  ****************************************************************************/
 
 static char *decode_string_with_len(uint8_t const **read_ptr,
-                                    size_t *available_octets,
-                                    size_t str_len) {
+                                    size_t *available_octets, size_t str_len) {
 
     if (ov_ptr_valid(read_ptr, "Cannot read string - no data") &&
         ov_ptr_valid(*read_ptr, "Cannot read string - no data") &&
@@ -130,8 +128,8 @@ static char *decode_string(uint8_t const **read_ptr, size_t *available_octets) {
 
         *available_octets -= 4;
 
-        return decode_string_with_len(
-            read_ptr, available_octets, decode32(read_ptr));
+        return decode_string_with_len(read_ptr, available_octets,
+                                      decode32(read_ptr));
 
     } else {
 
@@ -147,8 +145,8 @@ static size_t read_comment_header_from(uint8_t const *read_ptr,
 
     if (ov_cond_valid(MIN_COMMENT_HEADER_SIZE <= available_octets,
                       "Cannot read COMMENT header - header incomplete") &&
-        ov_ptr_valid(
-            read_ptr, "Cannot read COMMENT Header - no input (0 pointer)") &&
+        ov_ptr_valid(read_ptr,
+                     "Cannot read COMMENT Header - no input (0 pointer)") &&
         ov_ptr_valid(header,
                      "Cannot read COMMENT Header - no id header object to "
                      "store data") &&
@@ -185,8 +183,7 @@ static bool comment_headers_equal(const CommentHeader h1,
 
     return strings_equal(h1.vendor, h2.vendor) &&
            (h1.num_comments == h2.num_comments) &&
-           string_arrays_equal(h1.num_comments,
-                               (char const **)h1.comments,
+           string_arrays_equal(h1.num_comments, (char const **)h1.comments,
                                (char const **)h2.comments);
 }
 
@@ -414,9 +411,7 @@ int test_impl_write_chunk() {
 
     ov_format *oggopus = ogg_opus_format(
         format(OV_WRITE, .filepath = "/tmp/ogg_opus_test_impl_write_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
     testrun(0 > impl_write_chunk(0, 0, 0));
     testrun(0 > impl_write_chunk(oggopus, 0, 0));
@@ -437,8 +432,7 @@ int test_impl_write_chunk() {
 
 /*----------------------------------------------------------------------------*/
 
-static bool comment_is(ov_format *f,
-                       char const *comment_key,
+static bool comment_is(ov_format *f, char const *comment_key,
                        char const *expected_value) {
 
     char const *c = ov_format_ogg_opus_comment(f, comment_key);
@@ -460,9 +454,7 @@ int test_impl_next_chunk() {
 
     ov_format *oggopus = ogg_opus_format(
         format(OV_WRITE, .filepath = "/tmp/ogg_opus_test_impl_next_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
     testrun(ov_buffer_len(data) ==
             ov_format_payload_write_chunk(oggopus, data));
@@ -475,9 +467,7 @@ int test_impl_next_chunk() {
 
     oggopus = ogg_opus_format(
         format(OV_READ, .filepath = "/tmp/ogg_opus_test_impl_next_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
     ov_buffer chunk = ov_format_payload_read_chunk_nocopy(oggopus, 0);
 
@@ -501,14 +491,11 @@ int test_impl_next_chunk() {
 
     oggopus = ogg_opus_format(
         format(OV_WRITE, .filepath = "/tmp/ogg_opus_test_impl_next_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
     testrun(0 != oggopus);
 
-    ov_format_ogg_opus_comment_set(oggopus,
-                                   "albatross",
+    ov_format_ogg_opus_comment_set(oggopus, "albatross",
                                    "Soll das Werk den Meister loben, doch der "
                                    "Segen kommt von oben");
 
@@ -523,8 +510,7 @@ int test_impl_next_chunk() {
 
     testrun(0 != oggopus);
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -536,8 +522,7 @@ int test_impl_next_chunk() {
     testrun(comment_is(oggopus, "b", 0));
     testrun(comment_is(oggopus, "beta", 0));
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -561,22 +546,19 @@ int test_impl_next_chunk() {
 
     oggopus = ogg_opus_format(
         format(OV_WRITE, .filepath = "/tmp/ogg_opus_test_impl_next_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
     testrun(0 != oggopus);
 
-    ov_format_ogg_opus_comment_set(
-        oggopus, "gamma", "Es ist was faul im Staate Daenemark");
+    ov_format_ogg_opus_comment_set(oggopus, "gamma",
+                                   "Es ist was faul im Staate Daenemark");
 
     ov_format_ogg_opus_comment_set(oggopus, "epsilon", "Soll das");
     ov_format_ogg_opus_comment_set(oggopus, "zeta", "Werk");
     ov_format_ogg_opus_comment_set(oggopus, "eta", "den Meister");
     ov_format_ogg_opus_comment_set(oggopus, "theta", "loben");
 
-    ov_format_ogg_opus_comment_set(oggopus,
-                                   "albatross",
+    ov_format_ogg_opus_comment_set(oggopus, "albatross",
                                    "Soll das Werk den Meister loben, doch der "
                                    "Segen kommt von oben");
 
@@ -590,12 +572,9 @@ int test_impl_next_chunk() {
 
     oggopus = ogg_opus_format(
         format(OV_READ, .filepath = "/tmp/ogg_opus_test_impl_next_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -608,8 +587,7 @@ int test_impl_next_chunk() {
     testrun(comment_is(oggopus, "eta", "den Meister"));
     ov_format_ogg_opus_comment_set(oggopus, "theta", "loben");
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -622,8 +600,7 @@ int test_impl_next_chunk() {
     testrun(comment_is(oggopus, "epsilon", "Soll das"));
     testrun(comment_is(oggopus, "zeta", "Werk"));
     testrun(comment_is(oggopus, "eta", "den Meister"));
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -633,8 +610,7 @@ int test_impl_next_chunk() {
         comment_is(oggopus, "gamma", "Es ist was faul im Staate Daenemark"));
     ov_format_ogg_opus_comment_set(oggopus, "theta", "loben");
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -658,258 +634,255 @@ int test_impl_next_chunk() {
     /*------------------------------------------------------------------------*/
     // With several comments & giant comment
 
-    char const *die_glocke =
-        "Fest gemauert in der Erden"
-        " Steht die Form aus Lehm gebrannt."
-        " Heute muß die Glocke werden!"
-        " Frisch, Gesellen, seid zur Hand!"
-        "5Von der Stirne heiß"
-        " Rinnen muß der Schweiß,"
-        " Soll das Werk den Meister loben;"
-        " Doch der Segen kommt von oben."
-        ""
-        " Zum Werke, das wir ernst bereiten,"
-        "10Geziemt sich wohl ein ernstes Wort;"
-        " Wenn gute Reden sie begleiten,"
-        " Dann fließt die Arbeit munter fort."
-        " So laßt uns jetzt mit Fleiß betrachten,"
-        " Was durch die schwache Kraft entspringt;"
-        "15Den schlechten Mann muss man verachten,"
-        " Der nie bedacht, was er vollbringt."
-        " Das ist’s ja, was den Menschen zieret,"
-        " Und dazu ward ihm der Verstand,"
-        " Daß er im innern Herzen spüret,"
-        "20Was er erschafft mit seiner Hand."
-        ""
-        " Nehmet Holz vom Fichtenstamme,"
-        " Doch recht trocken laßt es sein,"
-        " Daß die eingepresste Flamme"
-        " Schlage zu dem Schwalch hinein!"
-        "25Kocht des Kupfers Brei!"
-        " Schnell das Zinn herbei,"
-        " Daß die zähe Glockenspeise"
-        " Fließe nach der rechten Weise!"
-        ""
-        " Was in des Dammes tiefer Grube"
-        "30Die Hand mit Feuers Hülfe baut,"
-        " Hoch auf des Turmes Glockenstube,"
-        " Da wird es von uns zeugen laut."
-        " Noch dauern wird’s in späten Tagen"
-        " Und rühren vieler Menschen Ohr,"
-        "35Und wird mit den Betrübten klagen"
-        " Und stimmen zu der Andacht Chor."
-        " Was unten tief dem Erdensohne"
-        " Das wechselnde Verhängnis bringt,"
-        " Das schlägt an die metallne Krone,"
-        "40Die es erbaulich weiter klingt."
-        ""
-        " Weiße Blasen seh’ ich springen;"
-        " Wohl! Die Massen sind im Fluß."
-        " Laßt’s mit Aschenfalz durchdringen,"
-        " Das befördert schnell den Guss."
-        "45Auch vom Schaume rein"
-        " Muß die Mischung sein,"
-        " Daß vom reinlichen Metalle"
-        " Rein und voll die Stimme schalle."
-        ""
-        " Denn mit der Freude Feierklange"
-        "50Begrüßt sie das geliebte Kind"
-        " Auf seines Lebens erstem Gange,"
-        " Den es in Schlafes Arm beginnt;"
-        " Ihm ruhen noch im Zeitenschoße"
-        " Die schwarzen und die heitern Lose;"
-        "55Der Mutterliebe zarte Sorgen"
-        " Bewachen seinen goldnen Morgen –"
-        " Die Jahre fliehen pfeilgeschwind."
-        " Vom Mädchen reißt sich stolz der Knabe,"
-        " Er stürmt ins Leben wild hinaus,"
-        "60Durchmisst die Welt am Wanderstabe,"
-        " Fremd kehrt er heim ins Vaterhaus."
-        " Und herrlich in der Jugend Prangen,"
-        " Wie ein Gebild aus Himmelshöhn,"
-        " Mit züchtigen, verschämten Wangen"
-        "65Sieht er die Jungfrau vor sich stehn."
-        " Da faßt ein namenloses Sehnen"
-        " Des Jünglings Herz, er irrt allein,"
-        " Aus seinen Augen brechen Tränen,"
-        " Er flieht der Brüder wilden Reihn."
-        "70Errötend folgt er ihren Spuren"
-        " Und ist von ihrem Gruß beglückt,"
-        " Das Schönste sucht er auf den Fluren,"
-        " Womit er seine Liebe schmückt."
-        " O zarte Sehnsucht, süßes Hoffen,"
-        "75Der ersten Liebe goldne Zeit,"
-        " Das Auge sieht den Himmel offen,"
-        " Es schwelgt das Herz in Seligkeit;"
-        " O dass sie ewig grünen bleibe,"
-        " Die schöne Zeit der jungen Liebe!"
-        ""
-        "80Wie sich schon die Pfeifen bräunen!"
-        " Dieses Stäbchen tauch’ ich ein,"
-        " Sehn wir’s überglast erscheinen,"
-        " Wird’s zum Gusse zeitig sein,"
-        " Jetzt, Gesellen, frisch!"
-        "85Prüft mir das Gemisch,"
-        " Ob das Spröde mit dem Weichen"
-        " Sich vereint zum guten Zeichen."
-        ""
-        " Denn wo das Strenge mit dem Zarten,"
-        " Wo Starkes sich und Mildes paarten,"
-        "90Da gibt es einen guten Klang."
-        " Drum prüfe, wer sich ewig bindet,"
-        " Ob sich das Herz zum Herzen findet!"
-        " Der Wahn ist kurz, die Reu ist lang."
-        " Lieblich in der Bräute Locken"
-        "95Spielt der jungfräuliche Kranz,"
-        " Wenn die hellen Kirchenglocken"
-        " Laden zu des Festes Glanz."
-        " Ach! des Lebens schönste Feier"
-        " Endigt auch den Lebensmai,"
-        "100Mit dem Gürtel, mit dem Schleier"
-        " Reißt der schöne Wahn entzwei"
-        " Die Leidenschaft flieht,"
-        " Die Liebe muß bleiben;"
-        " Die Blume verblüht,"
-        "105Die Frucht muß treiben."
-        " Der Mann muß hinaus"
-        " Ins feindliche Leben,"
-        " Muss wirken und streben"
-        " Und pflanzen und schaffen,"
-        "110Erlisten, erraffen,"
-        " Muss wetten und wagen,"
-        " Das Glück zu erjagen."
-        " Da strömet herbei die unendliche Gabe,"
-        " Es füllt sich der Speicher mit köstlicher Habe,"
-        "115Die Räume wachsen, es dehnt sich das Haus."
-        " Und drinnen waltet"
-        " Die züchtige Hausfrau,"
-        " Die Mutter der Kinder,"
-        " Und herrschet weise"
-        "120Im häuslichen Kreise,"
-        " Und lehret die Mädchen"
-        " Und wehret den Knaben,"
-        " Und reget ohn’ Ende"
-        " Die fleißigen Hände,"
-        "125Und mehrt den Gewinn"
-        " Mit ordnendem Sinn,"
-        " Und füllet mit Schätzen die duftenden Laden,"
-        " Und dreht um die schnurrende Spindel den Faden,"
-        " Und sammelt im reinlich geglätteten Schrein"
-        "130Die schimmernde Wolle, den schneeigten Lein,"
-        " Und füget zum Guten den Glanz und den Schimmer"
-        " Und ruhet nimmer."
-        ""
-        " Und der Vater mit frohem Blick"
-        " Von des Hauses weitschauendem Giebel"
-        "135Überzählet sein blühend Glück."
-        " Siehet der Pfosten ragende Bäume"
-        " Und der Scheunen gefüllte Räume,"
-        " Und die Speicher, vom Segen gebogen,"
-        " Und des Kornes bewegte Wogen,"
-        "140Rühmt sich mit stolzem Mund:"
-        " Fest, wie der Erde Grund,"
-        " Gegen des Unglücks Macht"
-        " Steht mir des Hauses Pracht!"
-        " Doch mit des Geschickes Mächten"
-        "145Ist kein ew’ger Bund zu flechten,"
-        " Und das Unglück schreitet schnell."
-        ""
-        " Wohl! nun kann der Guss beginnen,"
-        " Schön gezacket ist der Bruch."
-        " Doch bevor wir’s lassen rinnen,"
-        "150Betet einen frommen Spruch!"
-        " Stoßt den Zapfen aus!"
-        " Gott bewahr’ das Haus!"
-        " Rauchend in des Henkels Bogen"
-        " Schießt’s mit feuerbraunen Wogen."
-        ""
-        "155Wohltätig ist des Feuers Macht,"
-        " Wenn sie der Mensch bezähmt, bewacht,"
-        " Und was er bildet, was er schafft,"
-        " Das dankt er dieser Himmelskraft;"
-        " Doch furchtbar wird die Himmelskraft,"
-        "160Wenn sie der Fessel sich entrafft,"
-        " Einhertritt auf der eignen Spur,"
-        " Die freie Tochter der Natur."
-        " Wehe, wenn sie losgelassen,"
-        " Wachsend ohne Widerstand,"
-        "165Durch die volkbelebten Gassen"
-        " Wälzt den ungeheuren Brand!"
-        " Denn die Elemente hassen"
-        " Das Gebild der Menschenhand."
-        " Aus der Wolke"
-        "170Quillt der Segen,"
-        " Strömt der Regen;"
-        " Aus der Wolke, ohne Wahl,"
-        " Zuckt der Strahl."
-        " Hört ihr’s wimmern hoch vom Turm?"
-        "175Das ist Sturm!"
-        " Rot, wie Blut,"
-        " Ist der Himmel;"
-        " Das ist nicht des Tages Glut!"
-        " Welch Getümmel"
-        "180Straßen auf!"
-        " Dampf wallt auf!"
-        " Flackernd steigt die Feuersäule,"
-        " Durch der Straße lange Zeile"
-        " Wächst es fort mit Windeseile;"
-        "185Kochend, wie aus Ofens Rachen,"
-        " Glühn die Lüfte, Balken krachen,"
-        " Pfosten stürzen, Fenster klirren,"
-        " Kinder jammern, Mütter irren,"
-        " Tiere wimmern"
-        "190Unter Trümmern;"
-        " Alles rennet, rettet, flüchtet,"
-        " Taghell ist die Nacht gelichtet;"
-        " Durch der Hände lange Kette"
-        " Um die Wette"
-        "195Fliegt der Eimer; hoch im Bogen"
-        " Spritzen Quellen Wasserwogen."
-        " Heulend kommt der Sturm geflogen,"
-        " Der die Flamme brausend sucht;"
-        " Prasselnd in die dürre Frucht"
-        "200Fällt sie, in des Speichers Räume,"
-        " In der Sparren dürre Bäume,"
-        " Und als wollte sie im Wehen"
-        " Mit sich fort der Erde Wucht"
-        " Reißen in gewalt’ger Flucht,"
-        "205Wächst sie in des Himmels Höhen"
-        " Riesengroß!"
-        " Hoffnungslos"
-        " Weicht der Mensch der Götterstärke,"
-        " Müßig sieht er seine Werke"
-        "210Und bewundernd untergehn."
-        ""
-        " Leergebrannt"
-        " Ist die Stätte,"
-        " Wilder Stürme rauhes Bette."
-        " In den öden Fensterhöhlen"
-        "215Wohnt das Grauen,"
-        " Und des Himmels Wolken schauen"
-        " Hoch hinein."
-        ""
-        " Einen Blick"
-        " Nach dem Grabe"
-        "220Seiner Habe"
-        " Sendet noch der Mensch zurück –"
-        " Greift fröhlich dann zum Wanderstabe."
-        " Was Feuers Wut ihm auch geraubt,"
-        " Ein süßer Trost ist ihm geblieben,"
-        "225Er zählt die Häupter seiner Lieben,"
-        " Und sieh! ihm fehlt kein teures Haupt.";
+    char const *die_glocke = "Fest gemauert in der Erden"
+                             " Steht die Form aus Lehm gebrannt."
+                             " Heute muß die Glocke werden!"
+                             " Frisch, Gesellen, seid zur Hand!"
+                             "5Von der Stirne heiß"
+                             " Rinnen muß der Schweiß,"
+                             " Soll das Werk den Meister loben;"
+                             " Doch der Segen kommt von oben."
+                             ""
+                             " Zum Werke, das wir ernst bereiten,"
+                             "10Geziemt sich wohl ein ernstes Wort;"
+                             " Wenn gute Reden sie begleiten,"
+                             " Dann fließt die Arbeit munter fort."
+                             " So laßt uns jetzt mit Fleiß betrachten,"
+                             " Was durch die schwache Kraft entspringt;"
+                             "15Den schlechten Mann muss man verachten,"
+                             " Der nie bedacht, was er vollbringt."
+                             " Das ist’s ja, was den Menschen zieret,"
+                             " Und dazu ward ihm der Verstand,"
+                             " Daß er im innern Herzen spüret,"
+                             "20Was er erschafft mit seiner Hand."
+                             ""
+                             " Nehmet Holz vom Fichtenstamme,"
+                             " Doch recht trocken laßt es sein,"
+                             " Daß die eingepresste Flamme"
+                             " Schlage zu dem Schwalch hinein!"
+                             "25Kocht des Kupfers Brei!"
+                             " Schnell das Zinn herbei,"
+                             " Daß die zähe Glockenspeise"
+                             " Fließe nach der rechten Weise!"
+                             ""
+                             " Was in des Dammes tiefer Grube"
+                             "30Die Hand mit Feuers Hülfe baut,"
+                             " Hoch auf des Turmes Glockenstube,"
+                             " Da wird es von uns zeugen laut."
+                             " Noch dauern wird’s in späten Tagen"
+                             " Und rühren vieler Menschen Ohr,"
+                             "35Und wird mit den Betrübten klagen"
+                             " Und stimmen zu der Andacht Chor."
+                             " Was unten tief dem Erdensohne"
+                             " Das wechselnde Verhängnis bringt,"
+                             " Das schlägt an die metallne Krone,"
+                             "40Die es erbaulich weiter klingt."
+                             ""
+                             " Weiße Blasen seh’ ich springen;"
+                             " Wohl! Die Massen sind im Fluß."
+                             " Laßt’s mit Aschenfalz durchdringen,"
+                             " Das befördert schnell den Guss."
+                             "45Auch vom Schaume rein"
+                             " Muß die Mischung sein,"
+                             " Daß vom reinlichen Metalle"
+                             " Rein und voll die Stimme schalle."
+                             ""
+                             " Denn mit der Freude Feierklange"
+                             "50Begrüßt sie das geliebte Kind"
+                             " Auf seines Lebens erstem Gange,"
+                             " Den es in Schlafes Arm beginnt;"
+                             " Ihm ruhen noch im Zeitenschoße"
+                             " Die schwarzen und die heitern Lose;"
+                             "55Der Mutterliebe zarte Sorgen"
+                             " Bewachen seinen goldnen Morgen –"
+                             " Die Jahre fliehen pfeilgeschwind."
+                             " Vom Mädchen reißt sich stolz der Knabe,"
+                             " Er stürmt ins Leben wild hinaus,"
+                             "60Durchmisst die Welt am Wanderstabe,"
+                             " Fremd kehrt er heim ins Vaterhaus."
+                             " Und herrlich in der Jugend Prangen,"
+                             " Wie ein Gebild aus Himmelshöhn,"
+                             " Mit züchtigen, verschämten Wangen"
+                             "65Sieht er die Jungfrau vor sich stehn."
+                             " Da faßt ein namenloses Sehnen"
+                             " Des Jünglings Herz, er irrt allein,"
+                             " Aus seinen Augen brechen Tränen,"
+                             " Er flieht der Brüder wilden Reihn."
+                             "70Errötend folgt er ihren Spuren"
+                             " Und ist von ihrem Gruß beglückt,"
+                             " Das Schönste sucht er auf den Fluren,"
+                             " Womit er seine Liebe schmückt."
+                             " O zarte Sehnsucht, süßes Hoffen,"
+                             "75Der ersten Liebe goldne Zeit,"
+                             " Das Auge sieht den Himmel offen,"
+                             " Es schwelgt das Herz in Seligkeit;"
+                             " O dass sie ewig grünen bleibe,"
+                             " Die schöne Zeit der jungen Liebe!"
+                             ""
+                             "80Wie sich schon die Pfeifen bräunen!"
+                             " Dieses Stäbchen tauch’ ich ein,"
+                             " Sehn wir’s überglast erscheinen,"
+                             " Wird’s zum Gusse zeitig sein,"
+                             " Jetzt, Gesellen, frisch!"
+                             "85Prüft mir das Gemisch,"
+                             " Ob das Spröde mit dem Weichen"
+                             " Sich vereint zum guten Zeichen."
+                             ""
+                             " Denn wo das Strenge mit dem Zarten,"
+                             " Wo Starkes sich und Mildes paarten,"
+                             "90Da gibt es einen guten Klang."
+                             " Drum prüfe, wer sich ewig bindet,"
+                             " Ob sich das Herz zum Herzen findet!"
+                             " Der Wahn ist kurz, die Reu ist lang."
+                             " Lieblich in der Bräute Locken"
+                             "95Spielt der jungfräuliche Kranz,"
+                             " Wenn die hellen Kirchenglocken"
+                             " Laden zu des Festes Glanz."
+                             " Ach! des Lebens schönste Feier"
+                             " Endigt auch den Lebensmai,"
+                             "100Mit dem Gürtel, mit dem Schleier"
+                             " Reißt der schöne Wahn entzwei"
+                             " Die Leidenschaft flieht,"
+                             " Die Liebe muß bleiben;"
+                             " Die Blume verblüht,"
+                             "105Die Frucht muß treiben."
+                             " Der Mann muß hinaus"
+                             " Ins feindliche Leben,"
+                             " Muss wirken und streben"
+                             " Und pflanzen und schaffen,"
+                             "110Erlisten, erraffen,"
+                             " Muss wetten und wagen,"
+                             " Das Glück zu erjagen."
+                             " Da strömet herbei die unendliche Gabe,"
+                             " Es füllt sich der Speicher mit köstlicher Habe,"
+                             "115Die Räume wachsen, es dehnt sich das Haus."
+                             " Und drinnen waltet"
+                             " Die züchtige Hausfrau,"
+                             " Die Mutter der Kinder,"
+                             " Und herrschet weise"
+                             "120Im häuslichen Kreise,"
+                             " Und lehret die Mädchen"
+                             " Und wehret den Knaben,"
+                             " Und reget ohn’ Ende"
+                             " Die fleißigen Hände,"
+                             "125Und mehrt den Gewinn"
+                             " Mit ordnendem Sinn,"
+                             " Und füllet mit Schätzen die duftenden Laden,"
+                             " Und dreht um die schnurrende Spindel den Faden,"
+                             " Und sammelt im reinlich geglätteten Schrein"
+                             "130Die schimmernde Wolle, den schneeigten Lein,"
+                             " Und füget zum Guten den Glanz und den Schimmer"
+                             " Und ruhet nimmer."
+                             ""
+                             " Und der Vater mit frohem Blick"
+                             " Von des Hauses weitschauendem Giebel"
+                             "135Überzählet sein blühend Glück."
+                             " Siehet der Pfosten ragende Bäume"
+                             " Und der Scheunen gefüllte Räume,"
+                             " Und die Speicher, vom Segen gebogen,"
+                             " Und des Kornes bewegte Wogen,"
+                             "140Rühmt sich mit stolzem Mund:"
+                             " Fest, wie der Erde Grund,"
+                             " Gegen des Unglücks Macht"
+                             " Steht mir des Hauses Pracht!"
+                             " Doch mit des Geschickes Mächten"
+                             "145Ist kein ew’ger Bund zu flechten,"
+                             " Und das Unglück schreitet schnell."
+                             ""
+                             " Wohl! nun kann der Guss beginnen,"
+                             " Schön gezacket ist der Bruch."
+                             " Doch bevor wir’s lassen rinnen,"
+                             "150Betet einen frommen Spruch!"
+                             " Stoßt den Zapfen aus!"
+                             " Gott bewahr’ das Haus!"
+                             " Rauchend in des Henkels Bogen"
+                             " Schießt’s mit feuerbraunen Wogen."
+                             ""
+                             "155Wohltätig ist des Feuers Macht,"
+                             " Wenn sie der Mensch bezähmt, bewacht,"
+                             " Und was er bildet, was er schafft,"
+                             " Das dankt er dieser Himmelskraft;"
+                             " Doch furchtbar wird die Himmelskraft,"
+                             "160Wenn sie der Fessel sich entrafft,"
+                             " Einhertritt auf der eignen Spur,"
+                             " Die freie Tochter der Natur."
+                             " Wehe, wenn sie losgelassen,"
+                             " Wachsend ohne Widerstand,"
+                             "165Durch die volkbelebten Gassen"
+                             " Wälzt den ungeheuren Brand!"
+                             " Denn die Elemente hassen"
+                             " Das Gebild der Menschenhand."
+                             " Aus der Wolke"
+                             "170Quillt der Segen,"
+                             " Strömt der Regen;"
+                             " Aus der Wolke, ohne Wahl,"
+                             " Zuckt der Strahl."
+                             " Hört ihr’s wimmern hoch vom Turm?"
+                             "175Das ist Sturm!"
+                             " Rot, wie Blut,"
+                             " Ist der Himmel;"
+                             " Das ist nicht des Tages Glut!"
+                             " Welch Getümmel"
+                             "180Straßen auf!"
+                             " Dampf wallt auf!"
+                             " Flackernd steigt die Feuersäule,"
+                             " Durch der Straße lange Zeile"
+                             " Wächst es fort mit Windeseile;"
+                             "185Kochend, wie aus Ofens Rachen,"
+                             " Glühn die Lüfte, Balken krachen,"
+                             " Pfosten stürzen, Fenster klirren,"
+                             " Kinder jammern, Mütter irren,"
+                             " Tiere wimmern"
+                             "190Unter Trümmern;"
+                             " Alles rennet, rettet, flüchtet,"
+                             " Taghell ist die Nacht gelichtet;"
+                             " Durch der Hände lange Kette"
+                             " Um die Wette"
+                             "195Fliegt der Eimer; hoch im Bogen"
+                             " Spritzen Quellen Wasserwogen."
+                             " Heulend kommt der Sturm geflogen,"
+                             " Der die Flamme brausend sucht;"
+                             " Prasselnd in die dürre Frucht"
+                             "200Fällt sie, in des Speichers Räume,"
+                             " In der Sparren dürre Bäume,"
+                             " Und als wollte sie im Wehen"
+                             " Mit sich fort der Erde Wucht"
+                             " Reißen in gewalt’ger Flucht,"
+                             "205Wächst sie in des Himmels Höhen"
+                             " Riesengroß!"
+                             " Hoffnungslos"
+                             " Weicht der Mensch der Götterstärke,"
+                             " Müßig sieht er seine Werke"
+                             "210Und bewundernd untergehn."
+                             ""
+                             " Leergebrannt"
+                             " Ist die Stätte,"
+                             " Wilder Stürme rauhes Bette."
+                             " In den öden Fensterhöhlen"
+                             "215Wohnt das Grauen,"
+                             " Und des Himmels Wolken schauen"
+                             " Hoch hinein."
+                             ""
+                             " Einen Blick"
+                             " Nach dem Grabe"
+                             "220Seiner Habe"
+                             " Sendet noch der Mensch zurück –"
+                             " Greift fröhlich dann zum Wanderstabe."
+                             " Was Feuers Wut ihm auch geraubt,"
+                             " Ein süßer Trost ist ihm geblieben,"
+                             "225Er zählt die Häupter seiner Lieben,"
+                             " Und sieh! ihm fehlt kein teures Haupt.";
 
     data = ov_buffer_from_string("Das ist das Hexeneinmaleins");
 
     oggopus = ogg_opus_format(
         format(OV_WRITE, .filepath = "/tmp/ogg_opus_test_impl_next_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
     testrun(0 != oggopus);
 
-    ov_format_ogg_opus_comment_set(
-        oggopus, "gamma", "Es ist was faul im Staate Daenemark");
+    ov_format_ogg_opus_comment_set(oggopus, "gamma",
+                                   "Es ist was faul im Staate Daenemark");
 
     ov_format_ogg_opus_comment_set(oggopus, "epsilon", "Soll das");
     ov_format_ogg_opus_comment_set(oggopus, "zeta", "Werk");
@@ -917,8 +890,7 @@ int test_impl_next_chunk() {
     ov_format_ogg_opus_comment_set(oggopus, "eta", "den Meister");
     ov_format_ogg_opus_comment_set(oggopus, "theta", "loben");
 
-    ov_format_ogg_opus_comment_set(oggopus,
-                                   "albatross",
+    ov_format_ogg_opus_comment_set(oggopus, "albatross",
                                    "Soll das Werk den Meister loben, doch der "
                                    "Segen kommt von oben");
 
@@ -932,12 +904,9 @@ int test_impl_next_chunk() {
 
     oggopus = ogg_opus_format(
         format(OV_READ, .filepath = "/tmp/ogg_opus_test_impl_next_chunk.ogg"),
-        .preskip_samples = 132,
-        .output_gain_db = 0.2,
-        .samplerate_hz = 41289);
+        .preskip_samples = 132, .output_gain_db = 0.2, .samplerate_hz = 41289);
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -952,8 +921,7 @@ int test_impl_next_chunk() {
     testrun(comment_is(oggopus, "eta", "den Meister"));
     ov_format_ogg_opus_comment_set(oggopus, "theta", "loben");
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -966,8 +934,7 @@ int test_impl_next_chunk() {
     testrun(comment_is(oggopus, "epsilon", "Soll das"));
     testrun(comment_is(oggopus, "zeta", "Werk"));
     testrun(comment_is(oggopus, "eta", "den Meister"));
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -978,8 +945,7 @@ int test_impl_next_chunk() {
         comment_is(oggopus, "gamma", "Es ist was faul im Staate Daenemark"));
     ov_format_ogg_opus_comment_set(oggopus, "theta", "loben");
 
-    testrun(comment_is(oggopus,
-                       "albatross",
+    testrun(comment_is(oggopus, "albatross",
                        "Soll das Werk den Meister loben, doch der "
                        "Segen kommt von oben"));
 
@@ -1014,13 +980,8 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_ogg_opus",
-            initialize,
-            test_id_header,
-            test_comment_header,
-            test_ov_format_ogg_opus_create,
-            test_impl_write_chunk,
-            test_impl_next_chunk,
-            tear_down);
+OV_TEST_RUN("ov_format_ogg_opus", initialize, test_id_header,
+            test_comment_header, test_ov_format_ogg_opus_create,
+            test_impl_write_chunk, test_impl_next_chunk, tear_down);
 
 /*----------------------------------------------------------------------------*/

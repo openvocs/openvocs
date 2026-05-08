@@ -32,20 +32,19 @@ import * as ov_DB from "/lib/ov_db.js";
 import * as ov_Auth from "/lib/ov_auth.js";
 import * as View from "./view.js";
 
-export const VIEW_ID = "vocs_admin_config";
+export const VIEW_ID = VIEW.CONFIG;
 var view_container;
 
-var logout_triggered = false;
-
-export async function render_project(container, user) {
+export async function render_project(container, user, page) {
     const PROJECT = "project";
     const DOMAIN = "domain";
     await render(container);
 
     await View.init(VIEW_ID, view_container, PROJECT);
 
+    ov_Websockets.on_disconnect(on_disconnect);
     reconnect();
-
+    
     let domain_config;
     let project_config = {
         domain: user.domain
@@ -54,6 +53,7 @@ export async function render_project(container, user) {
     domain_config = await ov_DB.get_config(DOMAIN, user.domain);
 
     if (!user.domains.has(user.domain)) {
+        user.admin = "project";
         if (domain_config.users)
             for (let user_id of Object.keys(domain_config.users))
                 domain_config.users[user_id].frozen = true;
@@ -65,6 +65,19 @@ export async function render_project(container, user) {
         if (domain_config.loops)
             for (let loop_id of Object.keys(domain_config.loops))
                 domain_config.loops[loop_id].frozen = true;
+    } else {
+        user.admin = "domain";
+        if (domain_config.users)
+            for (let user_id of Object.keys(domain_config.users))
+                domain_config.users[user_id].global = true;
+
+        if (domain_config.roles)
+            for (let role_id of Object.keys(domain_config.roles))
+                domain_config.roles[role_id].global = true;
+
+        if (domain_config.loops)
+            for (let loop_id of Object.keys(domain_config.loops))
+                domain_config.loops[loop_id].global = true;
     }
 
     if (user.project && domain_config.projects) {
@@ -73,17 +86,18 @@ export async function render_project(container, user) {
     }
 
     View.render_user(user);
-    await View.render_project(project_config, domain_config);
+    await View.render_project(project_config, domain_config, undefined, undefined, page);
 
     console.log("(project config) View rendered");
 }
 
-export async function render_domain(container, user) {
+export async function render_domain(container, user, page) {
     const DOMAIN = "domain";
     await render(container);
 
     await View.init(VIEW_ID, view_container, DOMAIN);
 
+    ov_Websockets.on_disconnect(on_disconnect);
     reconnect();
 
     let domain_config = {};
@@ -93,7 +107,7 @@ export async function render_domain(container, user) {
     }
 
     View.render_user(user);
-    await View.render_domain(domain_config);
+    await View.render_domain(domain_config, undefined, page);
 
     console.log("(domain config) View rendered");
 }
@@ -104,28 +118,24 @@ async function render(container) {
     view_container.appendChild(await loadHtml());
 }
 
-async function reconnect() {
-    ov_Websockets.on_disconnect(async (websocket) => {
-        if (View.logout_triggered) {
-            ov_Websockets.reload_page();
-            return;
-        }
-        View.offline_mode(true);
-        if (await ov_Auth.relogin(websocket)) {
-            if (ov_Websockets.disconnected_websockets.size === 0)
-                View.offline_mode(false);
-        }
-    });
-
-    if (ov_Websockets.disconnected_websockets.size !== 0) {
-        View.offline_mode(true);
-        for (let websocket of ov_Websockets.disconnected_websockets.values()) {
-            if (await ov_Auth.relogin(websocket)) {
-                if (ov_Websockets.disconnected_websockets.size === 0)
-                    View.offline_mode(false);
-            }
-        }
+async function on_disconnect(ws) {
+    if (View.logout_triggered) {
+        ov_Websockets.reload_page();
+        return;
     }
+    console.warn("Disconnected from one or several servers. Trying to reconnect...");
+    View.offline_mode(true);
+    View.display_loading_screen(true, "Disconnected from one or several servers. Trying to reconnect...");
+    if (await ov_Auth.relogin(ws) && ov_Websockets.disconnected_websockets.size === 0) {
+        View.display_loading_screen(false);
+        View.offline_mode(false);
+    }
+}
+
+async function reconnect() {
+    if (ov_Websockets.disconnected_websockets.size !== 0) 
+        for (let websocket of ov_Websockets.disconnected_websockets.values()) 
+            on_disconnect(websocket);
 }
 
 export function remove() {

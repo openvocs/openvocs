@@ -74,19 +74,13 @@ typedef struct {
      * independent of the fragmentation mode used. It will callback, once
      * some frame is completed. */
 
-    bool (*callback)(void *userdata,
-                     int socket,
-                     const ov_memory_pointer domain,
-                     const char *uri,
-                     ov_memory_pointer content,
-                     bool text);
+    bool (*callback)(void *userdata, int socket, const ov_memory_pointer domain,
+                     const char *uri, ov_memory_pointer content, bool text);
 
     /* This callback may be used to deliver any non control frame as received */
 
-    bool (*fragmented)(void *userdata,
-                       int socket,
-                       const ov_memory_pointer domain,
-                       const char *uri,
+    bool (*fragmented)(void *userdata, int socket,
+                       const ov_memory_pointer domain, const char *uri,
                        ov_websocket_frame *frame);
 
     /* This callback will forward the close calls to userdata */
@@ -105,8 +99,7 @@ typedef struct {
 
     @return upgrade message or null on error
 */
-ov_http_message *ov_websocket_upgrade_request(const char *host,
-                                              const char *uri,
+ov_http_message *ov_websocket_upgrade_request(const char *host, const char *uri,
                                               ov_memory_pointer sec_key);
 
 /*----------------------------------------------------------------------------*/

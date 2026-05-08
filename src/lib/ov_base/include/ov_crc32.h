@@ -38,8 +38,7 @@
  * If reveted_in is true, the table will be calculated for a crc32 that
  * expects its input bits to be reverted.
  */
-bool ov_crc32_generate_table_for(uint32_t polynomial,
-                                 bool reverted_in,
+bool ov_crc32_generate_table_for(uint32_t polynomial, bool reverted_in,
                                  uint32_t lookup[0x100]);
 
 /**
@@ -81,12 +80,8 @@ bool ov_crc32_generate_table_for(uint32_t polynomial,
  * Needless to say once you did the xor, you cannot update the crc further.
  *
  */
-uint32_t ov_crc32_sum(uint32_t crc,
-                      uint8_t const *data,
-                      size_t len_octets,
-                      bool rfin,
-                      bool rfout,
-                      uint32_t lookup[0x100]);
+uint32_t ov_crc32_sum(uint32_t crc, uint8_t const *data, size_t len_octets,
+                      bool rfin, bool rfout, uint32_t lookup[0x100]);
 
 /*----------------------------------------------------------------------------*/
 

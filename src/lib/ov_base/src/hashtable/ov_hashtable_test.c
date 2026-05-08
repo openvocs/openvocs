@@ -50,7 +50,8 @@ bool count_value(void const *key, void const *value, void *additional_arg) {
 
     size_t *value_counter = additional_arg;
 
-    if (0 == value) return false;
+    if (0 == value)
+        return false;
 
     uint8_t const *index = value;
 
@@ -107,11 +108,10 @@ int test_ov_hashtable_create() {
     testrun(0 == ov_hashtable_create(0, (ov_hashtable_funcs){0}));
 
     ov_hashtable *table =
-        ov_hashtable_create(1,
-                            (ov_hashtable_funcs){.key_free = free,
-                                                 .key_copy = dummy_copy,
-                                                 .key_cmp = scmp,
-                                                 .hash = shash});
+        ov_hashtable_create(1, (ov_hashtable_funcs){.key_free = free,
+                                                    .key_copy = dummy_copy,
+                                                    .key_cmp = scmp,
+                                                    .hash = shash});
 
     testrun(table);
     testrun(free == table->funcs.key_free);
@@ -303,10 +303,9 @@ static int test_ov_hashtable_contains() {
     }
 
     ov_hashtable *table = ov_hashtable_create(
-        1,
-        (ov_hashtable_funcs){
-            .key_cmp = (int (*)(const void *, const void *))strcmp,
-            .hash = shash});
+        1, (ov_hashtable_funcs){.key_cmp =
+                                    (int (*)(const void *, const void *))strcmp,
+                                .hash = shash});
 
     testrun(!ov_hashtable_contains(table, 0));
 
@@ -420,10 +419,9 @@ int test_ov_hashtable_get() {
     testrun(0 == ov_hashtable_get(0, 0));
 
     ov_hashtable *table = ov_hashtable_create(
-        1,
-        (ov_hashtable_funcs){
-            .key_cmp = (int (*)(const void *, const void *))strcmp,
-            .hash = shash});
+        1, (ov_hashtable_funcs){.key_cmp =
+                                    (int (*)(const void *, const void *))strcmp,
+                                .hash = shash});
 
     testrun(0 == ov_hashtable_get(table, 0));
     testrun(0 == ov_hashtable_get(table, keys[0]));
@@ -444,10 +442,9 @@ int test_ov_hashtable_get() {
 
     /* Repeat but with more buckets */
     table = ov_hashtable_create(
-        3,
-        (ov_hashtable_funcs){
-            .key_cmp = (int (*)(const void *, const void *))strcmp,
-            .hash = shash});
+        3, (ov_hashtable_funcs){.key_cmp =
+                                    (int (*)(const void *, const void *))strcmp,
+                                .hash = shash});
 
     testrun(0 == ov_hashtable_get(table, 0));
     testrun(0 == ov_hashtable_get(table, keys[0]));
@@ -492,9 +489,9 @@ int test_ov_hashtable_set() {
 
     ov_hashtable *table = ov_hashtable_create(
         NUM_ELEMENTS,
-        (ov_hashtable_funcs){
-            .key_cmp = (int (*)(const void *, const void *))strcmp,
-            .hash = shash});
+        (ov_hashtable_funcs){.key_cmp =
+                                 (int (*)(const void *, const void *))strcmp,
+                             .hash = shash});
 
     testrun(0 == ov_hashtable_set(table, key[0], &value[0]));
 
@@ -597,10 +594,9 @@ int test_ov_hashtable_remove() {
     testrun(0 == ov_hashtable_remove(0, 0));
 
     ov_hashtable *table = ov_hashtable_create(
-        1,
-        (ov_hashtable_funcs){
-            .key_cmp = (int (*)(const void *, const void *))strcmp,
-            .hash = shash});
+        1, (ov_hashtable_funcs){.key_cmp =
+                                    (int (*)(const void *, const void *))strcmp,
+                                .hash = shash});
 
     testrun(0 == ov_hashtable_remove(table, 0));
     testrun(0 == ov_hashtable_remove(table, keys[0]));
@@ -650,10 +646,9 @@ int test_ov_hashtable_remove() {
 
     /* Repeat but with more buckets */
     table = ov_hashtable_create(
-        3,
-        (ov_hashtable_funcs){
-            .key_cmp = (int (*)(const void *, const void *))strcmp,
-            .hash = shash});
+        3, (ov_hashtable_funcs){.key_cmp =
+                                    (int (*)(const void *, const void *))strcmp,
+                                .hash = shash});
 
     testrun(0 == ov_hashtable_remove(table, 0));
     testrun(0 == ov_hashtable_remove(table, keys[0]));
@@ -705,12 +700,11 @@ int test_ov_hashtable_remove() {
      * key mem management */
 
     table = ov_hashtable_create(
-        3,
-        (ov_hashtable_funcs){
-            .key_free = free,
-            .key_copy = (void *(*)(const void *))strdup,
-            .key_cmp = (int (*)(const void *, const void *))strcmp,
-            .hash = shash});
+        3, (ov_hashtable_funcs){.key_free = free,
+                                .key_copy = (void *(*)(const void *))strdup,
+                                .key_cmp =
+                                    (int (*)(const void *, const void *))strcmp,
+                                .hash = shash});
 
     testrun(0 == ov_hashtable_remove(table, 0));
     testrun(0 == ov_hashtable_remove(table, keys[0]));
@@ -917,14 +911,8 @@ int test_ov_hashtable_create_c_string() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_hashtable",
-            test_ov_hashtable_create,
-            check_get_entry_for,
-            test_ov_hashtable_contains,
-            test_ov_hashtable_get,
-            test_ov_hashtable_set,
-            test_ov_hashtable_remove,
-            test_ov_hashtable_for_each,
-            test_ov_hashtable_free,
-            check_hashtable_clear,
-            test_ov_hashtable_create_c_string);
+OV_TEST_RUN("ov_hashtable", test_ov_hashtable_create, check_get_entry_for,
+            test_ov_hashtable_contains, test_ov_hashtable_get,
+            test_ov_hashtable_set, test_ov_hashtable_remove,
+            test_ov_hashtable_for_each, test_ov_hashtable_free,
+            check_hashtable_clear, test_ov_hashtable_create_c_string);

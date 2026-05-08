@@ -51,8 +51,7 @@ ov_vad_config ov_vad_config_from_json(ov_json_value const *json) {
 
     if (!ov_json_is_number(xcross)) {
         ov_log_error("/" OV_KEY_ZERO_CROSSINGS_RATE_HERTZ
-                     " in config is not a "
-                     "number");
+                     " in config is not a number");
     } else {
         cfg.zero_crossings_rate_threshold_hertz = ov_json_number_get(xcross);
     }
@@ -62,8 +61,7 @@ ov_vad_config ov_vad_config_from_json(ov_json_value const *json) {
 
     if (!ov_json_is_number(power_density)) {
         ov_log_error("/" OV_KEY_POWERLEVEL_DENSITY_DB
-                     " in config is not a "
-                     "number");
+                     " in config is not a number");
     } else {
         cfg.powerlevel_density_threshold_db = ov_json_number_get(power_density);
     }
@@ -98,8 +96,8 @@ ov_json_value *ov_vad_config_to_json(ov_vad_config vad_cfg,
     ov_json_value *vad = ov_json_object();
     ov_json_object_set(jval, OV_KEY_VAD, vad);
 
-    ov_json_object_set(
-        vad, OV_KEY_ZERO_CROSSINGS_RATE_HERTZ, ov_json_number(zcr));
+    ov_json_object_set(vad, OV_KEY_ZERO_CROSSINGS_RATE_HERTZ,
+                       ov_json_number(zcr));
 
     ov_json_object_set(vad, OV_KEY_POWERLEVEL_DENSITY_DB, ov_json_number(pwr));
 

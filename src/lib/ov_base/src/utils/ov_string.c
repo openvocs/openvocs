@@ -59,8 +59,7 @@ char const *ov_string_chr(char const *str, char c) {
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_string_copy(char *restrict target,
-                     char const *restrict source,
+char *ov_string_copy(char *restrict target, char const *restrict source,
                      size_t max_len) {
 
     if (0 == source) {
@@ -99,7 +98,8 @@ error:
 
 char *ov_string_dup(char const *to_dup) {
 
-    if (0 == to_dup) goto error;
+    if (0 == to_dup)
+        goto error;
 
     size_t len = strnlen(to_dup, OV_STRING_DEFAULT_SIZE);
 
@@ -350,7 +350,8 @@ error:
 
 bool ov_string_to_uint64(const char *string, uint64_t size, uint64_t *number) {
 
-    if (!string || size < 1 || !number) return false;
+    if (!string || size < 1 || !number)
+        return false;
 
     return ov_convert_string_to_uint64(string, size, number);
 }
@@ -359,7 +360,8 @@ bool ov_string_to_uint64(const char *string, uint64_t size, uint64_t *number) {
 
 bool ov_string_to_int64(const char *string, uint64_t size, int64_t *number) {
 
-    if (!string || size < 1 || !number) return false;
+    if (!string || size < 1 || !number)
+        return false;
 
     return ov_convert_string_to_int64(string, size, number);
 }
@@ -368,7 +370,8 @@ bool ov_string_to_int64(const char *string, uint64_t size, int64_t *number) {
 
 bool ov_string_to_double(const char *string, uint64_t size, double *number) {
 
-    if (!string || size < 1 || !number) return false;
+    if (!string || size < 1 || !number)
+        return false;
 
     return ov_convert_string_to_double(string, size, number);
 }
@@ -430,10 +433,8 @@ static ov_buffer *get_tag_value(char *s, char const *key, char separator) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_buffer *ov_string_value_for_key(char const *s,
-                                   char const *key,
-                                   char assigner,
-                                   char const *separator) {
+ov_buffer *ov_string_value_for_key(char const *s, char const *key,
+                                   char assigner, char const *separator) {
 
     if (ov_ptr_valid(s, "Invalid token") && ov_ptr_valid(key, "Invalid key") &&
         ov_ptr_valid(separator, "No separator to split key-value list given")) {
@@ -477,7 +478,8 @@ ov_data_function ov_string_data_functions() {
 
 bool ov_string_data_clear(void *data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
 
     char *string = (char *)data;
 
@@ -490,7 +492,8 @@ bool ov_string_data_clear(void *data) {
 
 void *ov_string_data_free(void *data) {
 
-    if (data) free(data);
+    if (data)
+        free(data);
 
     return NULL;
 }
@@ -499,9 +502,11 @@ void *ov_string_data_free(void *data) {
 
 void *ov_string_data_copy(void **destination, const void *string) {
 
-    if (!destination || !string) return NULL;
+    if (!destination || !string)
+        return NULL;
 
-    if (*destination) ov_string_data_free(*destination);
+    if (*destination)
+        ov_string_data_free(*destination);
 
     *destination = (void *)strndup((char *)string, SIZE_MAX);
     return *destination;
@@ -511,9 +516,11 @@ void *ov_string_data_copy(void **destination, const void *string) {
 
 bool ov_string_data_dump(FILE *stream, const void *string) {
 
-    if (!stream || !string) return false;
+    if (!stream || !string)
+        return false;
 
-    if (fprintf(stream, "%s \n", (char *)string)) return true;
+    if (fprintf(stream, "%s \n", (char *)string))
+        return true;
 
     return false;
 }
@@ -526,12 +533,11 @@ bool ov_string_data_dump(FILE *stream, const void *string) {
  *      ------------------------------------------------------------------------
  */
 
-const char *ov_string_find(const char *source,
-                           size_t sc_len,
-                           const char *delim,
+const char *ov_string_find(const char *source, size_t sc_len, const char *delim,
                            size_t dm_len) {
 
-    if (!source || !delim || sc_len < 1 || dm_len < 1) goto error;
+    if (!source || !delim || sc_len < 1 || dm_len < 1)
+        goto error;
 
     size_t i = 0;
     size_t k = 0;
@@ -539,10 +545,12 @@ const char *ov_string_find(const char *source,
 
     for (i = 0; i < sc_len; i++) {
 
-        if (source[i] != delim[0]) continue;
+        if (source[i] != delim[0])
+            continue;
 
         valid = true;
-        if (dm_len + i > sc_len) goto error;
+        if (dm_len + i > sc_len)
+            goto error;
 
         for (k = 0; k < dm_len; k++) {
 
@@ -554,7 +562,8 @@ const char *ov_string_find(const char *source,
 
         if (valid) {
 
-            if ((i + dm_len) > sc_len) break;
+            if ((i + dm_len) > sc_len)
+                break;
 
             return source + i;
         }
@@ -566,37 +575,43 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_list *ov_string_pointer(const char *source,
-                           size_t sc_len,
-                           const char *delim,
+ov_list *ov_string_pointer(const char *source, size_t sc_len, const char *delim,
                            size_t dm_len) {
 
-    if (!source || !delim) return NULL;
+    if (!source || !delim)
+        return NULL;
 
     ov_list *list = ov_list_create((ov_list_config){0});
-    if (!list) return NULL;
+    if (!list)
+        return NULL;
 
-    if ((sc_len < 1) || (dm_len < 1)) goto error;
+    if ((sc_len < 1) || (dm_len < 1))
+        goto error;
 
-    if (dm_len > sc_len) goto error;
+    if (dm_len > sc_len)
+        goto error;
 
     char *start = (char *)source;
     char *pointer = (char *)ov_string_find(source, sc_len, delim, dm_len);
 
-    if (!list->push(list, (void *)start)) goto error;
+    if (!list->push(list, (void *)start))
+        goto error;
 
     while (pointer) {
 
         start = pointer + dm_len;
 
-        if ((start - source) >= (int64_t)sc_len) break;
+        if ((start - source) >= (int64_t)sc_len)
+            break;
 
-        if (start[0] == 0) break;
+        if (start[0] == 0)
+            break;
 
-        if (!list->push(list, start)) goto error;
+        if (!list->push(list, start))
+            goto error;
 
-        pointer = (char *)ov_string_find(
-            start, sc_len - (start - source), delim, dm_len);
+        pointer = (char *)ov_string_find(start, sc_len - (start - source),
+                                         delim, dm_len);
     }
 
     return list;
@@ -608,15 +623,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_list *ov_string_split(const char *source,
-                         size_t sc_len,
-                         const char *delim,
-                         size_t dm_len,
-                         bool copy_delimiter) {
+ov_list *ov_string_split(const char *source, size_t sc_len, const char *delim,
+                         size_t dm_len, bool copy_delimiter) {
 
-    if (!source || !delim) return NULL;
+    if (!source || !delim)
+        return NULL;
 
-    if ((sc_len < 1) || (dm_len < 1)) return NULL;
+    if ((sc_len < 1) || (dm_len < 1))
+        return NULL;
 
     void *ptr1 = NULL;
     void *ptr2 = NULL;
@@ -628,29 +642,34 @@ ov_list *ov_string_split(const char *source,
     ov_list *list_copies = NULL;
 
     list_pointer = ov_string_pointer(source, sc_len, delim, dm_len);
-    if (!list_pointer) goto error;
+    if (!list_pointer)
+        goto error;
 
     list_copies = ov_list_create((ov_list_config){
         .item = ov_data_string_data_functions(),
     });
 
-    if (!list_copies) goto error;
+    if (!list_copies)
+        goto error;
 
     items = list_pointer->count(list_pointer);
 
     for (size_t i = 1; i <= items; i++) {
 
         ptr1 = list_pointer->get(list_pointer, i);
-        if (!ptr1) goto error;
+        if (!ptr1)
+            goto error;
 
         if (i < items) {
 
             ptr2 = list_pointer->get(list_pointer, i + 1);
-            if (!ptr2) goto error;
+            if (!ptr2)
+                goto error;
 
             length = ptr2 - ptr1;
 
-            if (!copy_delimiter) length -= dm_len;
+            if (!copy_delimiter)
+                length -= dm_len;
 
         } else {
 
@@ -658,10 +677,12 @@ ov_list *ov_string_split(const char *source,
             length = ptr2 - ptr1;
 
             if (ov_string_find(ptr1, length, delim, dm_len))
-                if (!copy_delimiter) length -= dm_len;
+                if (!copy_delimiter)
+                    length -= dm_len;
         }
 
-        if (length < 0) goto error;
+        if (length < 0)
+            goto error;
 
         if (length == 0) {
             list_copies->set(list_copies, i, NULL, NULL);
@@ -669,9 +690,11 @@ ov_list *ov_string_split(const char *source,
         }
 
         string = strndup(ptr1, length);
-        if (!string) goto error;
+        if (!string)
+            goto error;
 
-        if (!list_copies->set(list_copies, i, string, NULL)) goto error;
+        if (!list_copies->set(list_copies, i, string, NULL))
+            goto error;
     }
 
     list_pointer = list_pointer->free(list_pointer);
@@ -699,8 +722,7 @@ static size_t str_size(char const *str, size_t maxlen) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool ensure_capacity(char **in,
-                            size_t *current_capacity,
+static bool ensure_capacity(char **in, size_t *current_capacity,
                             size_t required_capacity) {
 
     if ((0 == in) || (0 == current_capacity)) {
@@ -719,9 +741,7 @@ static bool ensure_capacity(char **in,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_string_append(char **dest,
-                      size_t *const size,
-                      const char *source,
+bool ov_string_append(char **dest, size_t *const size, const char *source,
                       size_t len) {
 
     if ((0 == dest) || (0 == size) || (0 == source) || (0 == len)) {
@@ -750,11 +770,8 @@ bool ov_string_append(char **dest,
 
 /*----------------------------------------------------------------------------*/
 
-static bool str_append(char **result,
-                       size_t *result_capacity,
-                       size_t *write_index,
-                       char const *str2,
-                       size_t str2_len) {
+static bool str_append(char **result, size_t *result_capacity,
+                       size_t *write_index, char const *str2, size_t str2_len) {
 
     if ((0 == result) || (0 == result_capacity) || (0 == write_index) ||
         (0 == str2)) {
@@ -781,15 +798,9 @@ static bool str_append(char **result,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_string_replace_all(char **result,
-                           size_t *size,
-                           const char *source,
-                           size_t sc_len,
-                           const char *delim1,
-                           size_t d1_len,
-                           const char *delim2,
-                           size_t d2_len,
-                           bool set_last) {
+bool ov_string_replace_all(char **result, size_t *size, const char *source,
+                           size_t sc_len, const char *delim1, size_t d1_len,
+                           const char *delim2, size_t d2_len, bool set_last) {
 
     UNUSED(set_last);
 
@@ -829,14 +840,12 @@ bool ov_string_replace_all(char **result,
 
                 // We found the entire delimiter in source
 
-                str_append(result,
-                           &result_capacity,
-                           &write_index,
+                str_append(result, &result_capacity, &write_index,
                            start_last_token,
                            start_delim_in_source - start_last_token);
 
-                str_append(
-                    result, &result_capacity, &write_index, delim2, delim2_len);
+                str_append(result, &result_capacity, &write_index, delim2,
+                           delim2_len);
 
                 start_delim_in_source = 1 + source + i;
                 start_last_token = 1 + source + i;
@@ -848,10 +857,7 @@ bool ov_string_replace_all(char **result,
             (start_last_token - source) < (ptrdiff_t)true_sc_len;
 
         if (does_not_end_in_delimiter) {
-            str_append(result,
-                       &result_capacity,
-                       &write_index,
-                       start_last_token,
+            str_append(result, &result_capacity, &write_index, start_last_token,
                        1 + true_sc_len - (start_last_token - source));
         }
 
@@ -867,30 +873,33 @@ bool ov_string_replace_all(char **result,
 
 /*----------------------------------------------------------------------------*/
 
-int64_t ov_string_parse_hex_digits(const char *start,
-                                   uint64_t size,
+int64_t ov_string_parse_hex_digits(const char *start, uint64_t size,
                                    char **next) {
 
     int64_t number = 0;
 
-    if (!start || (0 == size)) goto error;
+    if (!start || (0 == size))
+        goto error;
 
     int64_t i = 0;
 
     /* MAX int64_t digits is 16 HEX */
 
     int max = 16;
-    if (size < 16) max = size;
+    if (size < 16)
+        max = size;
 
     for (i = 0; i < max; i++) {
 
-        if (!isxdigit(start[i])) break;
+        if (!isxdigit(start[i]))
+            break;
     }
 
     char *end = NULL;
     number = strtoll(start, &end, 16);
 
-    if (end != start + i) goto error;
+    if (end != start + i)
+        goto error;
 
     if (i == 16) {
 
@@ -898,19 +907,22 @@ int64_t ov_string_parse_hex_digits(const char *start,
 
             /* int64_t overflow  */
 
-            if (next) *next = (char *)start;
+            if (next)
+                *next = (char *)start;
 
             goto error;
         }
     }
 
-    if (next) *next = (char *)(start + i);
+    if (next)
+        *next = (char *)(start + i);
 
     return number;
 
 error:
 
-    if ((0 == size) && (next)) *next = (char *)start;
+    if ((0 == size) && (next))
+        *next = (char *)start;
 
     return 0;
 }

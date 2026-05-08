@@ -53,9 +53,7 @@ static bool is_id_valid(char const *id) {
     } else if (OV_VM_PROG_ID_MAX_LEN <= len) {
 
         ov_log_warning("ID too long: %*s ... (continues with '%*s') ",
-                       OV_VM_PROG_ID_MAX_LEN,
-                       id,
-                       10,
+                       OV_VM_PROG_ID_MAX_LEN, id, 10,
                        id + OV_VM_PROG_ID_MAX_LEN);
         return false;
 
@@ -166,8 +164,7 @@ static ov_hashtable *get_aliases(ov_vm_prog_db *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static void release_data(void *data,
-                         void *additional,
+static void release_data(void *data, void *additional,
                          void (*releaser)(void *, void *)) {
 
     if ((0 != releaser) && (0 != data)) {
@@ -177,8 +174,7 @@ static void release_data(void *data,
 
 /*----------------------------------------------------------------------------*/
 
-static void clear_state(ProgState *state,
-                        void *additional,
+static void clear_state(ProgState *state, void *additional,
                         void (*releaser)(void *, void *)) {
 
     if (0 != state) {
@@ -238,8 +234,7 @@ static ProgState *prog_for_id(ov_vm_prog_db *self, char const *id) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_vm_prog_db *ov_vm_prog_db_create(size_t slots,
-                                    void *additional,
+ov_vm_prog_db *ov_vm_prog_db_create(size_t slots, void *additional,
                                     void (*release_data)(void *, void *)) {
 
     ov_vm_prog_db *db = calloc(1, sizeof(ov_vm_prog_db));
@@ -280,8 +275,7 @@ static void free_db_states_unsafe(ov_vm_prog_db *self) {
     if (0 != self->pool.states) {
 
         for (size_t i = 0; i < self->pool.capacity; ++i) {
-            clear_state(self->pool.states + i,
-                        self->release.additional,
+            clear_state(self->pool.states + i, self->release.additional,
                         self->release.release);
         }
 
@@ -376,8 +370,7 @@ static ProgState *fresh_prog_state_unsafe(ov_vm_prog_db *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ProgState *init_prog_state_unsafe(ProgState *prog_state,
-                                         char const *id,
+static ProgState *init_prog_state_unsafe(ProgState *prog_state, char const *id,
                                          ov_vm_instr const *instructions,
                                          void *data) {
 
@@ -413,10 +406,8 @@ static bool already_registered(ov_vm_prog_db *self, char const *id) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_vm_prog *insert_prog(ProgState *prog,
-                               ov_hashtable *store,
-                               char const *id,
-                               ov_vm_instr const *instructions,
+static ov_vm_prog *insert_prog(ProgState *prog, ov_hashtable *store,
+                               char const *id, ov_vm_instr const *instructions,
                                void *data) {
 
     OV_ASSERT((0 != store) && (0 != id) && (0 != instructions));
@@ -432,30 +423,27 @@ static ov_vm_prog *insert_prog(ProgState *prog,
 
 /*----------------------------------------------------------------------------*/
 
-ov_vm_prog *ov_vm_prog_db_insert(ov_vm_prog_db *self,
-                                 char const *id,
-                                 ov_vm_instr const *instructions,
-                                 void *data) {
+ov_vm_prog *ov_vm_prog_db_insert(ov_vm_prog_db *self, char const *id,
+                                 ov_vm_instr const *instructions, void *data) {
 
     ov_hashtable *store = get_store_mut(self);
 
     if ((0 == store) ||
-        (!ov_cond_valid(
-            is_id_valid(id), "Cannot register program - ID invalid")) ||
+        (!ov_cond_valid(is_id_valid(id),
+                        "Cannot register program - ID invalid")) ||
         (!are_inst_valid(instructions)) || already_registered(self, id)) {
 
         return 0;
 
     } else {
-        return insert_prog(
-            fresh_prog_state_unsafe(self), store, id, instructions, data);
+        return insert_prog(fresh_prog_state_unsafe(self), store, id,
+                           instructions, data);
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vm_prog_db_alias(ov_vm_prog_db *self,
-                         char const *id,
+bool ov_vm_prog_db_alias(ov_vm_prog_db *self, char const *id,
                          char const *alias) {
 
     ov_hashtable *aliases = get_aliases(self);
@@ -470,23 +458,21 @@ bool ov_vm_prog_db_alias(ov_vm_prog_db *self,
 
     } else if (0 == prog_of_id) {
 
-        ov_log_error(
-            "Cannot alias program %s: No such program", ov_string_sanitize(id));
+        ov_log_error("Cannot alias program %s: No such program",
+                     ov_string_sanitize(id));
         return false;
 
     } else if (prog_of_id == prog_of_alias) {
 
         ov_log_warning("Program %s already aliased with %s",
-                       ov_string_sanitize(id),
-                       ov_string_sanitize(alias));
+                       ov_string_sanitize(id), ov_string_sanitize(alias));
         return true;
 
     } else if (0 != prog_of_alias) {
 
         ov_log_error(
             "Cannot alias program %s: Alias %s already used by program %s",
-            ov_string_sanitize(id),
-            ov_string_sanitize(alias),
+            ov_string_sanitize(id), ov_string_sanitize(alias),
             ov_string_sanitize(unaliased_id));
         return false;
 
@@ -516,15 +502,15 @@ ov_vm_prog *ov_vm_prog_db_get(ov_vm_prog_db *self, char const *id) {
 
 static bool release_prog(ov_vm_prog_db *self, ProgState *prog) {
 
-    if (!ov_ptr_valid(
-            self, "Cannot remove program from Prog DB: No DB given")) {
+    if (!ov_ptr_valid(self,
+                      "Cannot remove program from Prog DB: No DB given")) {
 
         return false;
 
     } else {
 
-        if (ov_ptr_valid(
-                prog, "Cannot remove program from Prog DB: No program")) {
+        if (ov_ptr_valid(prog,
+                         "Cannot remove program from Prog DB: No program")) {
 
             size_t capacity = self->available.capacity;
             size_t ti = self->available.topmost_usable_slot_index;
@@ -619,10 +605,8 @@ static void remove_aliases_for(ov_hashtable *aliases, char const *id) {
 
             if (0 != ga_arg.aliases[i]) {
 
-                ov_log_debug("Removing %zu alias %s for %s",
-                             i,
-                             ga_arg.aliases[i],
-                             ov_string_sanitize(id));
+                ov_log_debug("Removing %zu alias %s for %s", i,
+                             ga_arg.aliases[i], ov_string_sanitize(id));
 
                 ov_free(ov_hashtable_remove(aliases, ga_arg.aliases[i]));
                 ++aliases_removed;
@@ -673,8 +657,8 @@ bool ov_vm_prog_db_update_time(ov_vm_prog_db *self, char const *id) {
 
     if ((!is_db_valid(self)) || (!is_id_valid(id)) || (0 == state)) {
 
-        ov_log_warning(
-            "Cannot update time for VM prog '%s'", ov_string_sanitize(id));
+        ov_log_warning("Cannot update time for VM prog '%s'",
+                       ov_string_sanitize(id));
         return false;
 
     } else {
@@ -690,8 +674,7 @@ bool ov_vm_prog_db_update_time(ov_vm_prog_db *self, char const *id) {
                                     NEXT_DUE
  ****************************************************************************/
 
-static char const *next_due_unsafe(ProgState *progs,
-                                   size_t capacity,
+static char const *next_due_unsafe(ProgState *progs, size_t capacity,
                                    uint64_t time_limit_epoch_usecs) {
 
     OV_ASSERT(0 != progs);
@@ -721,8 +704,8 @@ char const *ov_vm_prog_db_next_due(ov_vm_prog_db *self,
 
     } else {
 
-        return next_due_unsafe(
-            self->pool.states, self->pool.capacity, time_limit_epoch_usecs);
+        return next_due_unsafe(self->pool.states, self->pool.capacity,
+                               time_limit_epoch_usecs);
     }
 }
 
@@ -751,9 +734,7 @@ static size_t dump_state_unsafe(FILE *out, size_t i, ProgState const *prog) {
 
         fprintf(out,
                 "IN USE. %s    Timestamp: %10" PRIu64 "s, %7" PRIu64 "us\n",
-                ov_vm_prog_id((ov_vm_prog *)prog),
-                ts_secs,
-                ts_remainder_usecs);
+                ov_vm_prog_id((ov_vm_prog *)prog), ts_secs, ts_remainder_usecs);
 
         return 1;
     }
@@ -761,8 +742,7 @@ static size_t dump_state_unsafe(FILE *out, size_t i, ProgState const *prog) {
 
 /*----------------------------------------------------------------------------*/
 
-static size_t dump_states_unsafe(FILE *out,
-                                 ProgState const *progs,
+static size_t dump_states_unsafe(FILE *out, ProgState const *progs,
                                  size_t capacity) {
 
     OV_ASSERT(0 != out);
@@ -795,9 +775,7 @@ void ov_vm_prog_db_dump(FILE *out, ov_vm_prog_db *self) {
                 "\nCapacity: %5zu   Entries used: %5zu   Entries unused: "
                 "%5zu  "
                 " in available pool: %5zu\n\n",
-                self->pool.capacity,
-                in_use,
-                self->pool.capacity - in_use,
+                self->pool.capacity, in_use, self->pool.capacity - in_use,
                 self->available.topmost_usable_slot_index);
     }
 }
@@ -809,10 +787,8 @@ void ov_vm_prog_db_dump(FILE *out, ov_vm_prog_db *self) {
 typedef struct process_wrapper_arg {
     uint32_t magic_bytes;
     void *original_arg;
-    bool (*process)(char const *id,
-                    ov_vm_prog const *prog,
-                    uint64_t start_time_epoch_usecs,
-                    void *data);
+    bool (*process)(char const *id, ov_vm_prog const *prog,
+                    uint64_t start_time_epoch_usecs, void *data);
 } ProcessArg;
 
 #define PROCESS_ARG_MAGIC_BYTES 0x12a2b321
@@ -847,8 +823,7 @@ static bool process_wrapper(void const *key, void const *value, void *arg) {
 
         return parg->process((char const *)key,
                              (ov_vm_prog const *)state->public,
-                             state->start_time_epoch_usecs,
-                             parg->original_arg);
+                             state->start_time_epoch_usecs, parg->original_arg);
     } else {
         return false;
     }
@@ -872,8 +847,8 @@ bool ov_vm_prog_db_for_each(ov_vm_prog_db const *self,
     ov_hashtable const *store = get_store(self);
 
     if (ov_ptr_valid(store, "Cannot iterate over programs - no Program DB") &&
-        ov_ptr_valid(
-            process, "Cannot iterate over programs - no processing function")) {
+        ov_ptr_valid(process,
+                     "Cannot iterate over programs - no processing function")) {
 
         ov_hashtable_for_each(store, process_wrapper, &parg);
         return true;

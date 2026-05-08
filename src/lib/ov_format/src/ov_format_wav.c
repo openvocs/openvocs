@@ -110,11 +110,13 @@ typedef struct {
 
 static wave_data *as_wave_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     wave_data *wdata = data;
 
-    if (WAV_MAGIC_BYTES != wdata->magic_bytes) return wdata;
+    if (WAV_MAGIC_BYTES != wdata->magic_bytes)
+        return wdata;
 
     return wdata;
 }
@@ -131,8 +133,7 @@ struct riff_chunk {
     uint8_t *data;
 };
 
-static bool riff_chunk_header_read(uint8_t **in,
-                                   size_t *length_octets,
+static bool riff_chunk_header_read(uint8_t **in, size_t *length_octets,
                                    struct riff_chunk *chunk) {
 
     OV_ASSERT(0 != in);
@@ -269,30 +270,23 @@ static bool set_wdata_from_fmt_chunk(ov_format *f,
     uint8_t *ptr = fmt_chunk.start;
     size_t len = fmt_chunk.length;
 
-    bool ok = ov_file_get_16(
-        &wdata->parameters.format, &ptr, &len, OV_FILE_LITTLE_ENDIAN);
+    bool ok = ov_file_get_16(&wdata->parameters.format, &ptr, &len,
+                             OV_FILE_LITTLE_ENDIAN);
 
-    ok = ok &&
-         ov_file_get_16(
-             &wdata->parameters.channels, &ptr, &len, OV_FILE_LITTLE_ENDIAN);
+    ok = ok && ov_file_get_16(&wdata->parameters.channels, &ptr, &len,
+                              OV_FILE_LITTLE_ENDIAN);
 
-    ok = ok && ov_file_get_32(&wdata->parameters.samplerate_hz,
-                              &ptr,
-                              &len,
+    ok = ok && ov_file_get_32(&wdata->parameters.samplerate_hz, &ptr, &len,
                               OV_FILE_LITTLE_ENDIAN);
 
     uint32_t data_rate = 0;
 
     ok = ok && ov_file_get_32(&data_rate, &ptr, &len, OV_FILE_LITTLE_ENDIAN);
 
-    ok = ok && ov_file_get_16(&wdata->parameters.blockAlignmentBytes,
-                              &ptr,
-                              &len,
-                              OV_FILE_LITTLE_ENDIAN);
+    ok = ok && ov_file_get_16(&wdata->parameters.blockAlignmentBytes, &ptr,
+                              &len, OV_FILE_LITTLE_ENDIAN);
 
-    ok = ok && ov_file_get_16(&wdata->parameters.bitsPerSample,
-                              &ptr,
-                              &len,
+    ok = ok && ov_file_get_16(&wdata->parameters.bitsPerSample, &ptr, &len,
                               OV_FILE_LITTLE_ENDIAN);
 
     if (data_rate != wdata->parameters.blockAlignmentBytes *
@@ -305,9 +299,8 @@ static bool set_wdata_from_fmt_chunk(ov_format *f,
     if (wdata->parameters.blockAlignmentBytes <
         (wdata->parameters.channels * wdata->parameters.bitsPerSample) / 8) {
 
-        ov_log_error(
-            "Malformed fmt chunk: calculated block size does not "
-            "fit");
+        ov_log_error("Malformed fmt chunk: calculated block size does not "
+                     "fit");
         goto error;
     }
 
@@ -360,9 +353,8 @@ static bool read_wave(ov_format *f, wave_data *wdata) {
 
             if (!fmt_chunk_read) {
 
-                ov_log_error(
-                    "Encountered 'data' chunk before 'fmt ' "
-                    "chunk");
+                ov_log_error("Encountered 'data' chunk before 'fmt ' "
+                             "chunk");
                 goto error;
             }
 
@@ -388,8 +380,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -427,8 +418,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     if (0 == f) {
@@ -503,8 +493,7 @@ error:
 #define PAYLOAD_SIZE_OFFSET                                                    \
     ((size_t)MASTER_RIFF_CHUNK_LENGTH + FMT_CHUNK_LENGTH + 4)
 
-static bool write_wav_headers(ov_format *f,
-                              ov_format_wav_options *opts,
+static bool write_wav_headers(ov_format *f, ov_format_wav_options *opts,
                               size_t *bytes_written_ptr) {
 
     OV_ASSERT(0 != f);
@@ -529,23 +518,23 @@ static bool write_wav_headers(ov_format *f,
     ptr += 16;
     out_length_remaining -= 16;
 
-    ov_file_write_32(
-        &ptr, &out_length_remaining, OV_H32TOLE(FMT_CHUNK_LENGTH - 8));
+    ov_file_write_32(&ptr, &out_length_remaining,
+                     OV_H32TOLE(FMT_CHUNK_LENGTH - 8));
 
     ov_file_write_16(&ptr, &out_length_remaining, OV_H16TOLE(opts->format));
 
     ov_file_write_16(&ptr, &out_length_remaining, OV_H16TOLE(opts->channels));
 
-    ov_file_write_32(
-        &ptr, &out_length_remaining, OV_H32TOLE(opts->samplerate_hz));
+    ov_file_write_32(&ptr, &out_length_remaining,
+                     OV_H32TOLE(opts->samplerate_hz));
 
     ov_file_write_32(&ptr, &out_length_remaining, OV_H32TOLE(data_rate));
 
-    ov_file_write_16(
-        &ptr, &out_length_remaining, OV_H16TOLE(opts->blockAlignmentBytes));
+    ov_file_write_16(&ptr, &out_length_remaining,
+                     OV_H16TOLE(opts->blockAlignmentBytes));
 
-    ov_file_write_16(
-        &ptr, &out_length_remaining, OV_H16TOLE(opts->bitsPerSample));
+    ov_file_write_16(&ptr, &out_length_remaining,
+                     OV_H16TOLE(opts->bitsPerSample));
 
     /* XXXX will be replaced by payload length upon closure */
     memcpy(ptr, "dataXXXX", 8);
@@ -674,9 +663,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t impl_overwrite(ov_format *f,
-                       size_t offset,
-                       ov_buffer const *chunk,
+ssize_t impl_overwrite(ov_format *f, size_t offset, ov_buffer const *chunk,
                        void *data) {
 
     wave_data *wdata = as_wave_data(data);
@@ -687,8 +674,8 @@ ssize_t impl_overwrite(ov_format *f,
         goto error;
     }
 
-    return ov_format_payload_overwrite(
-        f, offset + wdata->payload.offset, chunk);
+    return ov_format_payload_overwrite(f, offset + wdata->payload.offset,
+                                       chunk);
 
 error:
 
@@ -732,7 +719,8 @@ static void *impl_free_data(void *data) {
 
     wave_data *wdata = as_wave_data(data);
 
-    if (0 == wdata) return data;
+    if (0 == wdata)
+        return data;
 
     free(wdata);
 
@@ -754,8 +742,8 @@ bool ov_format_wav_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_WAV_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_WAV_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/

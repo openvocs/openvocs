@@ -54,11 +54,13 @@ typedef struct {
 
 static ipv6_data *as_ipv6_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     ipv6_data *ipv6_data = data;
 
-    if (IPV6_MAGIC_BYTES != ipv6_data->magic_bytes) return 0;
+    if (IPV6_MAGIC_BYTES != ipv6_data->magic_bytes)
+        return 0;
 
     return ipv6_data;
 }
@@ -69,14 +71,14 @@ static size_t get_next_header_length(uint8_t type) {
 
     switch (type) {
 
-        case 6:
-            return 0; // TCP
+    case 6:
+        return 0; // TCP
 
-        case 17:
-            return 0; // UDP
+    case 17:
+        return 0; // UDP
 
-        case 58:
-            return 0; // ICMPv6
+    case 58:
+        return 0; // ICMPv6
     };
 
     /* We do not support any other types right now ... */
@@ -85,8 +87,7 @@ static size_t get_next_header_length(uint8_t type) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool skip_extension_headers(uint8_t **rd_ptr,
-                                   size_t *length,
+static bool skip_extension_headers(uint8_t **rd_ptr, size_t *length,
                                    uint8_t next_header_type,
                                    uint8_t *payload_type_out) {
 
@@ -97,7 +98,8 @@ static bool skip_extension_headers(uint8_t **rd_ptr,
 
     /* We just discard any packet carrying one or more  extension header -
      * too complex to handle right now */
-    if (0 != next_header_length) goto error;
+    if (0 != next_header_length)
+        goto error;
 
     *payload_type_out = next_header_type;
 
@@ -110,8 +112,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool get_ipv6_header_unsafe(ov_format_ipv6_header *out,
-                                   uint8_t **rd_ptr,
+static bool get_ipv6_header_unsafe(ov_format_ipv6_header *out, uint8_t **rd_ptr,
                                    size_t *length) {
 
     OV_ASSERT(0 != out);
@@ -139,8 +140,8 @@ static bool get_ipv6_header_unsafe(ov_format_ipv6_header *out,
     /* Right shift portable because we deal with unsigned type here */
     if ((byte >> 4) != 6) {
 
-        ov_log_error(
-            "Wrong version in IPv6 header. Expected 6, got %" PRIu8, byte >> 4);
+        ov_log_error("Wrong version in IPv6 header. Expected 6, got %" PRIu8,
+                     byte >> 4);
         goto error;
     }
 
@@ -189,8 +190,8 @@ static bool get_ipv6_header_unsafe(ov_format_ipv6_header *out,
     *length -= read_octets;
     *rd_ptr = ptr;
 
-    if (!skip_extension_headers(
-            rd_ptr, length, next_header, &hdr.next_header)) {
+    if (!skip_extension_headers(rd_ptr, length, next_header,
+                                &hdr.next_header)) {
 
         goto error;
     }
@@ -208,8 +209,7 @@ error:
                                    Interface
  ****************************************************************************/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -240,11 +240,9 @@ static ov_buffer impl_next_chunk(ov_format *f,
      * of the ipv6 header */
     if (buf.length != rdata->header.payload_length) {
 
-        ov_log_error(
-            "IPv6 paket corrupt - header payload length "
-            "(%zu) do not match actual paylaod length (%" PRIu16,
-            rdata->header.payload_length,
-            buf.length);
+        ov_log_error("IPv6 paket corrupt - header payload length "
+                     "(%zu) do not match actual paylaod length (%" PRIu16,
+                     rdata->header.payload_length, buf.length);
 
         goto error;
     }
@@ -258,8 +256,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     UNUSED(f);
@@ -292,9 +289,8 @@ static void *impl_free_data(void *data) {
 
     if (0 == as_ipv6_data(data)) {
 
-        ov_log_error(
-            "Internal error: Expected to be called with format "
-            "ipv6");
+        ov_log_error("Internal error: Expected to be called with format "
+                     "ipv6");
         goto error;
     }
 
@@ -319,8 +315,8 @@ bool ov_format_ipv6_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_IPV6_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_IPV6_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -352,13 +348,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_format_ipv6_ip_to_string(uint8_t *ip,
-                                  char *out_buf,
+char *ov_format_ipv6_ip_to_string(uint8_t *ip, char *out_buf,
                                   size_t out_buf_len) {
 
     static char ip_string[2 * 16 + 7 + 1] = {0};
 
-    if (0 == ip) goto error;
+    if (0 == ip)
+        goto error;
 
     if (0 == out_buf) {
 
@@ -368,32 +364,16 @@ char *ov_format_ipv6_ip_to_string(uint8_t *ip,
 
     if (sizeof(ip_string) > out_buf_len) {
 
-        ov_log_warning(
-            "out buffer too small to keep entire ipv6 address - "
-            "could be cut off");
+        ov_log_warning("out buffer too small to keep entire ipv6 address - "
+                       "could be cut off");
     }
 
-    snprintf(out_buf,
-             out_buf_len,
+    snprintf(out_buf, out_buf_len,
              "%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8
              ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8
              ":%" PRIu8 "%" PRIu8 ":%" PRIu8 "%" PRIu8,
-             ip[0],
-             ip[1],
-             ip[2],
-             ip[3],
-             ip[4],
-             ip[5],
-             ip[6],
-             ip[7],
-             ip[8],
-             ip[9],
-             ip[10],
-             ip[11],
-             ip[12],
-             ip[13],
-             ip[14],
-             ip[15]);
+             ip[0], ip[1], ip[2], ip[3], ip[4], ip[5], ip[6], ip[7], ip[8],
+             ip[9], ip[10], ip[11], ip[12], ip[13], ip[14], ip[15]);
 
     return out_buf;
 

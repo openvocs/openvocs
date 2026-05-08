@@ -43,9 +43,11 @@
 bool ov_event_api_event_is(const ov_json_value *val, const char *event) {
 
     const char *check = ov_event_api_get_event(val);
-    if (!check || !event) goto error;
+    if (!check || !event)
+        goto error;
 
-    if (0 == strcmp(check, event)) return true;
+    if (0 == strcmp(check, event))
+        return true;
 
 error:
     return false;
@@ -117,11 +119,19 @@ uint64_t ov_event_api_get_error_code(const ov_json_value *val) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_api_get_error_parameter(const ov_json_value *val,
-                                      uint64_t *code,
+const char *ov_event_api_get_error_desc(const ov_json_value *val) {
+
+    return ov_json_string_get(ov_json_object_get(ov_event_api_get_error(val),
+                                                 OV_EVENT_API_KEY_DESCRIPTION));
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_event_api_get_error_parameter(const ov_json_value *val, uint64_t *code,
                                       const char **desc) {
 
-    if (!val || !code || !desc) goto error;
+    if (!val || !code || !desc)
+        goto error;
 
     ov_json_value const *error = ov_json_get(val, "/" OV_EVENT_API_KEY_ERROR);
 
@@ -148,7 +158,8 @@ error:
 bool ov_event_api_set_event(ov_json_value *val, const char *str) {
 
     ov_json_value *data = ov_json_string(str);
-    if (ov_json_object_set(val, OV_EVENT_API_KEY_EVENT, data)) return true;
+    if (ov_json_object_set(val, OV_EVENT_API_KEY_EVENT, data))
+        return true;
     data = ov_json_value_free(data);
     return false;
 }
@@ -158,7 +169,8 @@ bool ov_event_api_set_event(ov_json_value *val, const char *str) {
 bool ov_event_api_set_type(ov_json_value *val, const char *str) {
 
     ov_json_value *data = ov_json_string(str);
-    if (ov_json_object_set(val, OV_EVENT_API_KEY_TYPE, data)) return true;
+    if (ov_json_object_set(val, OV_EVENT_API_KEY_TYPE, data))
+        return true;
     data = ov_json_value_free(data);
     return false;
 }
@@ -167,7 +179,8 @@ bool ov_event_api_set_type(ov_json_value *val, const char *str) {
 bool ov_event_api_set_uuid(ov_json_value *val, const char *str) {
 
     ov_json_value *data = ov_json_string(str);
-    if (ov_json_object_set(val, OV_EVENT_API_KEY_UUID, data)) return true;
+    if (ov_json_object_set(val, OV_EVENT_API_KEY_UUID, data))
+        return true;
     data = ov_json_value_free(data);
     return false;
 }
@@ -177,7 +190,8 @@ bool ov_event_api_set_uuid(ov_json_value *val, const char *str) {
 bool ov_event_api_set_channel(ov_json_value *val, const char *str) {
 
     ov_json_value *data = ov_json_string(str);
-    if (ov_json_object_set(val, OV_EVENT_API_KEY_CHANNEL, data)) return true;
+    if (ov_json_object_set(val, OV_EVENT_API_KEY_CHANNEL, data))
+        return true;
     data = ov_json_value_free(data);
     return false;
 }
@@ -187,7 +201,8 @@ bool ov_event_api_set_channel(ov_json_value *val, const char *str) {
 bool ov_event_api_set_version(ov_json_value *val, double version) {
 
     ov_json_value *data = ov_json_number(version);
-    if (ov_json_object_set(val, OV_EVENT_API_KEY_VERSION, data)) return true;
+    if (ov_json_object_set(val, OV_EVENT_API_KEY_VERSION, data))
+        return true;
     data = ov_json_value_free(data);
     return false;
 }
@@ -197,7 +212,8 @@ bool ov_event_api_set_version(ov_json_value *val, double version) {
 ov_json_value *ov_event_api_set_parameter(ov_json_value *val) {
 
     ov_json_value *data = ov_json_object();
-    if (ov_json_object_set(val, OV_EVENT_API_KEY_PARAMETER, data)) return data;
+    if (ov_json_object_set(val, OV_EVENT_API_KEY_PARAMETER, data))
+        return data;
 
     data = ov_json_value_free(data);
     return NULL;
@@ -205,8 +221,7 @@ ov_json_value *ov_event_api_set_parameter(ov_json_value *val) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_event_api_message_create(const char *name,
-                                           const char *id,
+ov_json_value *ov_event_api_message_create(const char *name, const char *id,
                                            double version) {
 
     ov_json_value *out = NULL;
@@ -215,24 +230,29 @@ ov_json_value *ov_event_api_message_create(const char *name,
     ov_id uuid = {0};
     ov_id_fill_with_uuid(uuid);
 
-    if (!name) goto error;
+    if (!name)
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_string(name);
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_EVENT, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_EVENT, val))
+        goto error;
 
     if (!id) {
         id = uuid;
     }
 
     val = ov_json_string(id);
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_UUID, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_UUID, val))
+        goto error;
 
     if (0 != version) {
         val = ov_json_number(version);
-        if (!ov_json_object_set(out, OV_EVENT_API_KEY_VERSION, val)) goto error;
+        if (!ov_json_object_set(out, OV_EVENT_API_KEY_VERSION, val))
+            goto error;
     }
 
     return out;
@@ -244,13 +264,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_event_api_create_success_response(
-    const ov_json_value *input) {
+ov_json_value *
+ov_event_api_create_success_response(const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!input) goto error;
+    if (!input)
+        goto error;
 
     const char *event = ov_event_api_get_event(input);
     const char *id = ov_event_api_get_uuid(input);
@@ -258,22 +279,28 @@ ov_json_value *ov_event_api_create_success_response(
     const char *client =
         ov_json_string_get(ov_json_object_get(input, OV_EVENT_API_KEY_CLIENT));
 
-    if (!event) goto error;
+    if (!event)
+        goto error;
 
     out = ov_event_api_message_create(event, id, version);
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
-    if (!ov_json_value_copy((void **)&val, input)) goto error;
+    if (!ov_json_value_copy((void **)&val, input))
+        goto error;
 
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_REQUEST, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_REQUEST, val))
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_RESPONSE, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_RESPONSE, val))
+        goto error;
 
     if (client) {
 
         val = ov_json_string(client);
-        if (!ov_json_object_set(out, OV_EVENT_API_KEY_CLIENT, val)) goto error;
+        if (!ov_json_object_set(out, OV_EVENT_API_KEY_CLIENT, val))
+            goto error;
     }
     return out;
 error:
@@ -292,21 +319,26 @@ ov_json_value *ov_event_api_create_error_response(const ov_json_value *input,
     ov_json_value *val = NULL;
     ov_json_value *obj = NULL;
 
-    if (!input) return ov_event_api_create_error(code, desc);
+    if (!input)
+        return ov_event_api_create_error(code, desc);
 
     out = ov_event_api_create_success_response(input);
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_ERROR, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_ERROR, val))
+        goto error;
 
     obj = val;
 
     val = ov_json_number(code);
-    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_CODE, val)) goto error;
+    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_CODE, val))
+        goto error;
 
     val = ov_json_string(desc);
-    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_DESCRIPTION, val)) goto error;
+    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_DESCRIPTION, val))
+        goto error;
 
     return out;
 error:
@@ -323,18 +355,22 @@ ov_json_value *ov_event_api_create_error(uint64_t code, const char *desc) {
     ov_json_value *obj = NULL;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_ERROR, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_ERROR, val))
+        goto error;
 
     obj = val;
 
     val = ov_json_number(code);
-    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_CODE, val)) goto error;
+    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_CODE, val))
+        goto error;
 
     val = ov_json_string(desc);
-    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_DESCRIPTION, val)) goto error;
+    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_DESCRIPTION, val))
+        goto error;
 
     return out;
 error:
@@ -344,8 +380,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_api_add_error(ov_json_value *msg,
-                            uint64_t code,
+bool ov_event_api_add_error(ov_json_value *msg, uint64_t code,
                             const char *desc) {
 
     ov_json_value *out = NULL;
@@ -353,18 +388,22 @@ bool ov_event_api_add_error(ov_json_value *msg,
     ov_json_value *obj = NULL;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(msg, OV_EVENT_API_KEY_ERROR, val)) goto error;
+    if (!ov_json_object_set(msg, OV_EVENT_API_KEY_ERROR, val))
+        goto error;
 
     obj = val;
 
     val = ov_json_number(code);
-    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_CODE, val)) goto error;
+    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_CODE, val))
+        goto error;
 
     val = ov_json_string(desc);
-    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_DESCRIPTION, val)) goto error;
+    if (!ov_json_object_set(obj, OV_EVENT_API_KEY_DESCRIPTION, val))
+        goto error;
 
     return true;
 error:
@@ -379,13 +418,16 @@ ov_json_value *ov_event_api_create_error_code(uint64_t code, const char *desc) {
     ov_json_value *val = NULL;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_number(code);
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_CODE, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_CODE, val))
+        goto error;
 
     val = ov_json_string(desc);
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_DESCRIPTION, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_DESCRIPTION, val))
+        goto error;
 
     return out;
 error:
@@ -405,7 +447,8 @@ ov_json_value *ov_event_api_create_ping() {
 
     ov_json_value *out = ov_json_object();
     ov_json_value *val = ov_json_string(OV_EVENT_API_PING);
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_EVENT, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_EVENT, val))
+        goto error;
 
     return out;
 error:
@@ -422,10 +465,12 @@ ov_json_value *ov_event_api_create_pong() {
 
     ov_json_value *out = ov_json_object();
     ov_json_value *val = ov_json_string(OV_EVENT_API_PONG);
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_EVENT, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_EVENT, val))
+        goto error;
 
     val = ov_json_string(timestamp);
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_TIMESTAMP, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_TIMESTAMP, val))
+        goto error;
 
     timestamp = ov_data_pointer_free(timestamp);
     return out;
@@ -440,12 +485,14 @@ error:
 
 bool ov_event_api_set_current_timestamp(ov_json_value *value) {
 
-    if (!value) return false;
+    if (!value)
+        return false;
 
     char *timestamp = ov_timestamp(true);
 
     ov_json_value *val = ov_json_string(timestamp);
-    if (ov_json_object_set(value, OV_EVENT_API_KEY_TIMESTAMP, val)) return true;
+    if (ov_json_object_set(value, OV_EVENT_API_KEY_TIMESTAMP, val))
+        return true;
 
     val = ov_json_value_free(val);
     return false;
@@ -455,12 +502,14 @@ bool ov_event_api_set_current_timestamp(ov_json_value *value) {
 
 ov_json_value *ov_event_api_create_path(const char *path) {
 
-    if (!path) return NULL;
+    if (!path)
+        return NULL;
 
     ov_json_value *out = ov_json_object();
     ov_json_value *val = ov_json_string(path);
 
-    if (!ov_json_object_set(out, OV_EVENT_API_KEY_PATH, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_API_KEY_PATH, val))
+        goto error;
 
     return out;
 error:

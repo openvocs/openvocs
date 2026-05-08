@@ -57,10 +57,8 @@ static ov_codec *test_codec_free(ov_codec *codec) {
 
 /*----------------------------------------------------------------------------*/
 
-static int32_t test_codec_encode(ov_codec *codec,
-                                 const uint8_t *input,
-                                 size_t length,
-                                 uint8_t *output,
+static int32_t test_codec_encode(ov_codec *codec, const uint8_t *input,
+                                 size_t length, uint8_t *output,
                                  size_t max_out_length) {
 
     if ((0 == codec) || (0 == input) || (0 == output)) {
@@ -85,12 +83,9 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static int32_t test_codec_decode(ov_codec *codec,
-                                 uint64_t seq_number,
-                                 const uint8_t *input,
-                                 size_t length,
-                                 uint8_t *output,
-                                 size_t max_out_length) {
+static int32_t test_codec_decode(ov_codec *codec, uint64_t seq_number,
+                                 const uint8_t *input, size_t length,
+                                 uint8_t *output, size_t max_out_length) {
 
     UNUSED(seq_number);
 
@@ -120,7 +115,8 @@ static ov_json_value const *TEST_PARAMETERS =
 
 static ov_json_value *test_codec_get_parameters(const ov_codec *codec) {
 
-    if (0 == codec) return 0;
+    if (0 == codec)
+        return 0;
 
     return (ov_json_value *)TEST_PARAMETERS;
 }
@@ -305,11 +301,9 @@ static int test_ov_codec_encode() {
     testrun(ov_codec_enable_resampling(c));
 
     // 12 samples, from 48k to 16k => 12/3 = 4 samples aka 4 * 2 bytes
-    testrun((2 * test_input_len) / 3 == ov_codec_encode(c,
-                                                        (uint8_t *)test_input,
-                                                        sizeof(test_input),
-                                                        output,
-                                                        sizeof(output)));
+    testrun((2 * test_input_len) / 3 ==
+            ov_codec_encode(c, (uint8_t *)test_input, sizeof(test_input),
+                            output, sizeof(output)));
 
     c = ov_codec_free(c);
     testrun(0 == c);
@@ -364,12 +358,11 @@ static int test_ov_codec_decode() {
             ov_codec_decode(0, 0, 0, input_len, resample_output, output_len));
     testrun(0 >
             ov_codec_decode(c, 0, 0, input_len, resample_output, output_len));
-    testrun(0 > ov_codec_decode(
-                    0, 0, input, input_len, resample_output, output_len));
+    testrun(0 > ov_codec_decode(0, 0, input, input_len, resample_output,
+                                output_len));
 
-    testrun(
-        sizeof(input) ==
-        ov_codec_decode(c, 0, input, input_len, resample_output, output_len));
+    testrun(sizeof(input) == ov_codec_decode(c, 0, input, input_len,
+                                             resample_output, output_len));
 
     for (size_t i = 0; i < sizeof(input); ++i) {
 
@@ -411,12 +404,9 @@ static int test_ov_codec_decode() {
     testrun(ov_codec_enable_resampling(c));
 
     // 4 samples, from 16k to 48k => 4*3 = 12 samples aka 12 * 2 bytes
-    int32_t result = ov_codec_decode(c,
-                                     0,
-                                     (uint8_t *)test_input,
-                                     sizeof(test_input),
-                                     resample_output,
-                                     sizeof(resample_output));
+    int32_t result =
+        ov_codec_decode(c, 0, (uint8_t *)test_input, sizeof(test_input),
+                        resample_output, sizeof(resample_output));
 
     testrun((test_input_len * 3) == result);
 
@@ -553,13 +543,9 @@ static int test_ov_codec_enable_resampling() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_codec",
-            test_ov_codec_free,
-            test_ov_codec_type_id,
-            test_ov_codec_encode,
-            test_ov_codec_decode,
-            test_ov_codec_get_parameters,
-            test_ov_codec_get_samplerate_hertz,
+OV_TEST_RUN("ov_codec", test_ov_codec_free, test_ov_codec_type_id,
+            test_ov_codec_encode, test_ov_codec_decode,
+            test_ov_codec_get_parameters, test_ov_codec_get_samplerate_hertz,
             test_ov_codec_to_json,
             test_ov_codec_parameters_get_sample_rate_hertz,
             test_ov_codec_parameters_set_sample_rate_hertz,

@@ -95,10 +95,13 @@ static bool hashtable_clear(log_hashtable *table);
 
 static int string_compare(void const *s1, void const *s2) {
 
-    if (s1 == s2) return 0;
+    if (s1 == s2)
+        return 0;
 
-    if (0 == s1) return -1;
-    if (0 == s2) return 1;
+    if (0 == s1)
+        return -1;
+    if (0 == s2)
+        return 1;
 
     return strcmp(s1, s2);
 }
@@ -107,7 +110,8 @@ static int string_compare(void const *s1, void const *s2) {
 
 static void *string_copy(void const *s) {
 
-    if (0 == s) return 0;
+    if (0 == s)
+        return 0;
 
     return strdup(s);
 }
@@ -116,7 +120,8 @@ static void *string_copy(void const *s) {
 
 static uint64_t hash_c_string(const void *c_string) {
 
-    if (0 == c_string) return 0;
+    if (0 == c_string)
+        return 0;
 
     const char *s = c_string;
 
@@ -172,8 +177,10 @@ void *log_hashtable_get(const log_hashtable *table, const void *key) {
 
     struct table_entry *entry = get_entry_for(table, key);
 
-    if (0 == entry) goto error;
-    if (0 == entry->next) goto error;
+    if (0 == entry)
+        goto error;
+    if (0 == entry->next)
+        goto error;
 
     return entry->next->value;
 
@@ -188,7 +195,8 @@ void *log_hashtable_set(log_hashtable *table, const void *key, void *value) {
 
     struct table_entry *entry = get_entry_for(table, key);
 
-    if (0 == entry) goto error;
+    if (0 == entry)
+        goto error;
 
     void *old_value = 0;
 
@@ -218,13 +226,16 @@ error:
 
 log_hashtable *log_hashtable_free(log_hashtable *table) {
 
-    if (!table) goto error;
+    if (!table)
+        goto error;
 
     LOG_ASSERT(TYPE_ID == table->type);
 
-    if (!hashtable_clear(table)) goto error;
+    if (!hashtable_clear(table))
+        goto error;
 
-    if (0 == table->entries) goto error;
+    if (0 == table->entries)
+        goto error;
 
     free(table->entries);
     free(table);
@@ -243,15 +254,18 @@ error:
 static struct table_entry *get_entry_for(const log_hashtable *table,
                                          const void *key) {
 
-    if (0 == table) goto error;
+    if (0 == table)
+        goto error;
 
     LOG_ASSERT(TYPE_ID == table->type);
 
     LOG_ASSERT(table->funcs.hash);
     LOG_ASSERT(table->funcs.key_cmp);
 
-    if (0 == table->entries) goto error;
-    if (0 == key) goto error;
+    if (0 == table->entries)
+        goto error;
+    if (0 == key)
+        goto error;
 
     unsigned hash = table->funcs.hash(key) % table->number_of_buckets;
 
@@ -266,7 +280,8 @@ static struct table_entry *get_entry_for(const log_hashtable *table,
 
         entry = entry->next;
 
-        if (0 == compare(entry->key, key)) return c;
+        if (0 == compare(entry->key, key))
+            return c;
     };
 
     return entry;
@@ -280,7 +295,8 @@ error:
 
 static bool hashtable_clear(log_hashtable *table) {
 
-    if (!table) goto error;
+    if (!table)
+        goto error;
 
     LOG_ASSERT(TYPE_ID == table->type);
 
@@ -292,7 +308,8 @@ static bool hashtable_clear(log_hashtable *table) {
 
         entry = &table->entries[i];
 
-        if (0 == entry->next) continue;
+        if (0 == entry->next)
+            continue;
 
         entry = entry->next;
 
@@ -323,13 +340,17 @@ size_t log_hashtable_for_each(const log_hashtable *table,
                                                    void *arg),
                               void *arg) {
 
-    if (0 == table) goto error;
+    if (0 == table)
+        goto error;
 
     LOG_ASSERT(TYPE_ID == table->type);
 
-    if (0 == table->entries) goto error;
-    if (0 == table->number_of_buckets) goto error;
-    if (0 == process_func) goto error;
+    if (0 == table->entries)
+        goto error;
+    if (0 == table->number_of_buckets)
+        goto error;
+    if (0 == process_func)
+        goto error;
 
     size_t count = 0;
 
@@ -339,7 +360,8 @@ size_t log_hashtable_for_each(const log_hashtable *table,
 
         entry = &table->entries[i];
 
-        if (0 == entry->next) continue;
+        if (0 == entry->next)
+            continue;
 
         entry = entry->next;
 
@@ -347,7 +369,8 @@ size_t log_hashtable_for_each(const log_hashtable *table,
 
             ++count;
 
-            if (!process_func(entry->key, entry->value, arg)) goto finish;
+            if (!process_func(entry->key, entry->value, arg))
+                goto finish;
 
             entry = entry->next;
         }

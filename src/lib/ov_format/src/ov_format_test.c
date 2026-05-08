@@ -60,8 +60,7 @@ static ov_buffer dummy_next_chunk(ov_format *f, size_t req_bytes, void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t dummy_write_chunk(ov_format *f,
-                                 ov_buffer const *chunk,
+static ssize_t dummy_write_chunk(ov_format *f, ov_buffer const *chunk,
                                  void *data) {
 
     UNUSED(data);
@@ -71,10 +70,8 @@ static ssize_t dummy_write_chunk(ov_format *f,
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t dummy_overwrite(ov_format *f,
-                               size_t offset,
-                               ov_buffer const *chunk,
-                               void *data) {
+static ssize_t dummy_overwrite(ov_format *f, size_t offset,
+                               ov_buffer const *chunk, void *data) {
 
     UNUSED(data);
 
@@ -114,8 +111,9 @@ static void *dummy_free_data(void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool dummy_handler_format_check_reset_internals(
-    ov_format *lower_layer_expected, void *custom_data_expected) {
+static bool
+dummy_handler_format_check_reset_internals(ov_format *lower_layer_expected,
+                                           void *custom_data_expected) {
 
     bool ok = dummy_ready_format_lower_layer == lower_layer_expected;
     ok = ok && (dummy_ready_format_data == custom_data_expected);
@@ -145,8 +143,7 @@ static ov_format_handler dummy_handler = {
                     Dummy 2 format - just passes data through 2nd tier
  ****************************************************************************/
 
-static ov_buffer dummy_2_next_chunk(ov_format *f,
-                                    size_t req_bytes,
+static ov_buffer dummy_2_next_chunk(ov_format *f, size_t req_bytes,
                                     void *data) {
     UNUSED(data);
 
@@ -155,8 +152,7 @@ static ov_buffer dummy_2_next_chunk(ov_format *f,
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t dummy_2_write_chunk(ov_format *f,
-                                   ov_buffer const *chunk,
+static ssize_t dummy_2_write_chunk(ov_format *f, ov_buffer const *chunk,
                                    void *data) {
 
     UNUSED(data);
@@ -166,10 +162,8 @@ static ssize_t dummy_2_write_chunk(ov_format *f,
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t dummy_2_overwrite(ov_format *f,
-                                 size_t offset,
-                                 ov_buffer const *chunk,
-                                 void *data) {
+static ssize_t dummy_2_overwrite(ov_format *f, size_t offset,
+                                 ov_buffer const *chunk, void *data) {
 
     UNUSED(data);
 
@@ -209,8 +203,9 @@ static void *dummy_2_free_data(void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool dummy_2_handler_format_check_reset_internals(
-    ov_format *lower_layer_expected, void *custom_data_expected) {
+static bool
+dummy_2_handler_format_check_reset_internals(ov_format *lower_layer_expected,
+                                             void *custom_data_expected) {
 
     bool ok = dummy_2_ready_format_lower_layer == lower_layer_expected;
     ok = ok && (dummy_2_ready_format_data == custom_data_expected);
@@ -249,16 +244,15 @@ static int test_ov_format_open() {
      *                                    READ
      **************************************************************************/
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
     char file_path[OV_TEST_FILE_TMP_PATH_LEN] = {0};
 
-    int fd = ov_test_file_tmp_write(
-        (uint8_t *)test_string, test_string_len, file_path);
+    int fd = ov_test_file_tmp_write((uint8_t *)test_string, test_string_len,
+                                    file_path);
 
     OV_ASSERT(0 < fd);
 
@@ -289,8 +283,8 @@ static int test_ov_format_open() {
 
 static int test_ov_format_from_memory() {
 
-    uint8_t test_data[] = {
-        1, 2, 3, 4, 5, 6, 7, 8, 9, 'h', 'e', 'i', 'm', 'd', 'a', 'l', 'l'};
+    uint8_t test_data[] = {1,   2,   3,   4,   5,   6,   7,   8,  9,
+                           'h', 'e', 'i', 'm', 'd', 'a', 'l', 'l'};
 
     const size_t test_data_len = sizeof(test_data);
 
@@ -821,8 +815,8 @@ static int test_ov_format_get_memory() {
     testrun(0 != mem.start);
     testrun(0 == mem.length);
 
-    testrun(dummy_2_handler_format_check_reset_internals(
-        stacked_tier_1, &test_int_2));
+    testrun(dummy_2_handler_format_check_reset_internals(stacked_tier_1,
+                                                         &test_int_2));
     testrun(dummy_handler_format_check_reset_internals(fmt, &test_int));
 
     write_buf = (ov_buffer){
@@ -842,8 +836,8 @@ static int test_ov_format_get_memory() {
 
     testrun(0 == memcmp(mem.start, write_buf.start, write_buf.length));
 
-    testrun(dummy_2_handler_format_check_reset_internals(
-        stacked_tier_1, &test_int_2));
+    testrun(dummy_2_handler_format_check_reset_internals(stacked_tier_1,
+                                                         &test_int_2));
     testrun(dummy_handler_format_check_reset_internals(fmt, &test_int));
 
     /* Write remainder - entire buffer should be returned */
@@ -865,8 +859,8 @@ static int test_ov_format_get_memory() {
 
     testrun(0 == memcmp(mem.start, ref_data, ref_len));
 
-    testrun(dummy_2_handler_format_check_reset_internals(
-        stacked_tier_1, &test_int_2));
+    testrun(dummy_2_handler_format_check_reset_internals(stacked_tier_1,
+                                                         &test_int_2));
     testrun(dummy_handler_format_check_reset_internals(fmt, &test_int));
 
     stacked_tier_1 = 0;
@@ -936,7 +930,8 @@ const uint32_t interrupting_magic_bytes = 0x11ff22ee;
 
 static bool is_interrupting_data(void *data) {
 
-    if (0 == data) return false;
+    if (0 == data)
+        return false;
 
     interrupting_data *tdata = data;
 
@@ -945,8 +940,7 @@ static bool is_interrupting_data(void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer interrupting_next_chunk(ov_format *f,
-                                         size_t req_bytes,
+static ov_buffer interrupting_next_chunk(ov_format *f, size_t req_bytes,
                                          void *data) {
 
     ov_buffer buf = {0};
@@ -954,7 +948,8 @@ static ov_buffer interrupting_next_chunk(ov_format *f,
     OV_ASSERT(0 != data);
     interrupting_data *idata = data;
 
-    if (!is_interrupting_data(idata)) goto error;
+    if (!is_interrupting_data(idata))
+        goto error;
 
     if (idata->faulty) {
         idata->faulty = false;
@@ -1001,9 +996,8 @@ static int test_ov_format_has_more_data() {
 
     testrun(!ov_format_has_more_data(0));
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
@@ -1059,16 +1053,15 @@ static int test_ov_format_payload_read_chunk() {
      *                             Prepare test file
      **************************************************************************/
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
     char file_path[OV_TEST_FILE_TMP_PATH_LEN] = {0};
 
-    int fd = ov_test_file_tmp_write(
-        (uint8_t *)test_string, test_string_len, file_path);
+    int fd = ov_test_file_tmp_write((uint8_t *)test_string, test_string_len,
+                                    file_path);
 
     OV_ASSERT(0 < fd);
 
@@ -1127,7 +1120,8 @@ static int test_ov_format_payload_read_chunk() {
 
         read = ov_format_payload_read_chunk(f, 5);
 
-        if (0 == read) break;
+        if (0 == read)
+            break;
 
         print_buffer_as_string(stderr, read);
 
@@ -1157,16 +1151,15 @@ static int test_ov_format_payload_read_chunk_nocopy() {
      *                             Prepare test file
      **************************************************************************/
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
     char file_path[OV_TEST_FILE_TMP_PATH_LEN] = {0};
 
-    int fd = ov_test_file_tmp_write(
-        (uint8_t *)test_string, test_string_len, file_path);
+    int fd = ov_test_file_tmp_write((uint8_t *)test_string, test_string_len,
+                                    file_path);
 
     OV_ASSERT(0 < fd);
 
@@ -1208,7 +1201,8 @@ static int test_ov_format_payload_read_chunk_nocopy() {
 
         read = ov_format_payload_read_chunk_nocopy(f, 5);
 
-        if (0 == read.length) break;
+        if (0 == read.length)
+            break;
 
         print_buffer_as_string(stderr, &read);
 
@@ -1249,7 +1243,8 @@ const uint32_t tokenizer_magic_bytes = 0x11ff22ee;
 
 static bool is_tokenizer_data(void *data) {
 
-    if (0 == data) return false;
+    if (0 == data)
+        return false;
 
     ft_tokenizer_data *tdata = data;
 
@@ -1258,8 +1253,7 @@ static bool is_tokenizer_data(void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer ft_tokenizer_next_token(ov_format *f,
-                                         size_t req_bytes,
+static ov_buffer ft_tokenizer_next_token(ov_format *f, size_t req_bytes,
                                          void *data) {
     UNUSED(req_bytes);
 
@@ -1271,7 +1265,8 @@ static ov_buffer ft_tokenizer_next_token(ov_format *f,
     OV_ASSERT(0 != data);
     ft_tokenizer_data *ftd = data;
 
-    if (0 == data) goto error;
+    if (0 == data)
+        goto error;
 
     if (0 == ftd->in.start) {
         ftd->in = ov_format_payload_read_chunk_nocopy(f, 255);
@@ -1361,7 +1356,8 @@ static void *ft_get_tokenizer_options(ov_format *f) {
 
     ft_tokenizer_data *tdata = ov_format_get_custom_data(f);
 
-    if (0 == tdata) return 0;
+    if (0 == tdata)
+        return 0;
 
     return tdata->options;
 }
@@ -1372,8 +1368,7 @@ static void *ft_get_tokenizer_options(ov_format *f) {
 
 static void *ft_dummy_data_seen = 0;
 
-static ov_buffer ft_dummy_next_chunk(ov_format *f,
-                                     size_t req_bytes,
+static ov_buffer ft_dummy_next_chunk(ov_format *f, size_t req_bytes,
                                      void *data) {
 
     ft_dummy_data_seen = data;
@@ -1407,13 +1402,11 @@ static void *ft_dummy_free_data(void *data) {
 
 static int test_ov_format_payload_write_chunk() {
 
-    char const *TEST_WRITE_FILE =
-        "/tmp/"
-        "test_ov_format_payload_write_chunk.data";
+    char const *TEST_WRITE_FILE = "/tmp/"
+                                  "test_ov_format_payload_write_chunk.data";
 
-    char const *TEST_DATA_STR =
-        "Der Tod ist besser als ein bitteres Leben und "
-        "ewige Ruhe besser als stete Krankheit.";
+    char const *TEST_DATA_STR = "Der Tod ist besser als ein bitteres Leben und "
+                                "ewige Ruhe besser als stete Krankheit.";
 
     const size_t TEST_DATA_LENGTH = sizeof(TEST_DATA_STR);
 
@@ -1534,8 +1527,8 @@ static int test_ov_format_payload_overwrite() {
     testrun(0 == memcmp(mem_buffer.start, "zyxdzyxhi", ref_data.length));
 
     /* Totally out-of-bounds -> failure */
-    testrun(-1 == ov_format_payload_overwrite(
-                      mem_fmt, ref_data.length, &overwrite_data));
+    testrun(-1 == ov_format_payload_overwrite(mem_fmt, ref_data.length,
+                                              &overwrite_data));
 
     mem_buffer = ov_format_get_memory(mem_fmt);
     testrun(0 != mem_buffer.start);
@@ -1604,8 +1597,8 @@ static int test_ov_format_payload_overwrite() {
     testrun(-1 == ov_format_payload_overwrite(file_fmt, 8, &overwrite_data));
 
     /* Totally out-of-bounds -> failure */
-    testrun(-1 == ov_format_payload_overwrite(
-                      file_fmt, ref_data.length, &overwrite_data));
+    testrun(-1 == ov_format_payload_overwrite(file_fmt, ref_data.length,
+                                              &overwrite_data));
 
     /* Check that we did not mess up just appending */
 
@@ -1684,8 +1677,8 @@ static int test_ov_format_payload_overwrite() {
     testrun(0 == memcmp(mem_buffer.start, "zyxdefghi", ref_data.length));
 
     /* Totally 'in-bounds' - somewhere in the middle */
-    testrun(3 == (size_t)ov_format_payload_overwrite(
-                     stacked_fmt, 4, &overwrite_data));
+    testrun(3 == (size_t)ov_format_payload_overwrite(stacked_fmt, 4,
+                                                     &overwrite_data));
 
     mem_buffer = ov_format_get_memory(stacked_fmt);
     testrun(0 != mem_buffer.start);
@@ -1701,8 +1694,8 @@ static int test_ov_format_payload_overwrite() {
     testrun(0 == memcmp(mem_buffer.start, "zyxdzyxhi", ref_data.length));
 
     /* Totally out-of-bounds -> failure */
-    testrun(-1 == ov_format_payload_overwrite(
-                      stacked_fmt, ref_data.length, &overwrite_data));
+    testrun(-1 == ov_format_payload_overwrite(stacked_fmt, ref_data.length,
+                                              &overwrite_data));
 
     mem_buffer = ov_format_get_memory(stacked_fmt);
     testrun(0 != mem_buffer.start);
@@ -1735,16 +1728,15 @@ static int test_ov_format_wrap() {
      *                             Prepare test file
      **************************************************************************/
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
     char file_path[OV_TEST_FILE_TMP_PATH_LEN] = {0};
 
-    int fd = ov_test_file_tmp_write(
-        (uint8_t *)test_string, test_string_len, file_path);
+    int fd = ov_test_file_tmp_write((uint8_t *)test_string, test_string_len,
+                                    file_path);
 
     OV_ASSERT(0 < fd);
 
@@ -1906,9 +1898,8 @@ static int test_ov_format_wrap() {
 
 int test_ov_format_get_custom_data() {
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
@@ -1952,9 +1943,8 @@ int test_ov_format_get() {
 
     testrun(0 == ov_format_get(0, 0));
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
@@ -2069,8 +2059,8 @@ static int test_ov_format_buffered_update() {
     testrun(data.length == strlen(ref_data));
     testrun(0 == strcmp((char const *)data.start, ref_data));
 
-    testrun(ov_format_buffered_update(
-        buffered, (uint8_t *)ref_data_2, strlen(ref_data_2)));
+    testrun(ov_format_buffered_update(buffered, (uint8_t *)ref_data_2,
+                                      strlen(ref_data_2)));
 
     data = ov_format_payload_read_chunk_nocopy(buffered, 0);
 
@@ -2091,18 +2081,11 @@ static int test_ov_format_buffered_update() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format",
-            test_ov_format_open,
-            test_ov_format_from_memory,
-            test_ov_format_get_memory,
-            test_ov_format_close,
-            test_ov_format_has_more_data,
-            test_ov_format_payload_read_chunk,
+OV_TEST_RUN("ov_format", test_ov_format_open, test_ov_format_from_memory,
+            test_ov_format_get_memory, test_ov_format_close,
+            test_ov_format_has_more_data, test_ov_format_payload_read_chunk,
             test_ov_format_payload_read_chunk_nocopy,
             test_ov_format_payload_write_chunk,
-            test_ov_format_payload_overwrite,
-            test_ov_format_wrap,
-            test_ov_format_get_custom_data,
-            test_ov_format_get,
-            test_ov_format_buffered,
-            test_ov_format_buffered_update);
+            test_ov_format_payload_overwrite, test_ov_format_wrap,
+            test_ov_format_get_custom_data, test_ov_format_get,
+            test_ov_format_buffered, test_ov_format_buffered_update);

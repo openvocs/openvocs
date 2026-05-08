@@ -62,8 +62,7 @@ bool ov_format_ipv4_get_header(ov_format const *f, ov_format_ipv4_header *ext);
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_format_ipv4_ip_to_string(uint8_t *ip,
-                                  char *out_buf,
+char *ov_format_ipv4_ip_to_string(uint8_t *ip, char *out_buf,
                                   size_t out_buf_len);
 
 /*----------------------------------------------------------------------------*/

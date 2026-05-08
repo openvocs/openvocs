@@ -26,6 +26,7 @@
 */
 
 #include "ov_base/ov_socket.h"
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <ov_base/ov_mc_socket.h>
 #include <ov_base/ov_rtp_frame.h>
@@ -64,8 +65,7 @@ static ov_codec *get_codec(char const *codec_json_str) {
 
     if (0 == codec) {
 
-        fprintf(stderr,
-                "Could not create codec for %s\n",
+        fprintf(stderr, "Could not create codec for %s\n",
                 ov_string_sanitize(codec_json_str));
     }
 
@@ -80,9 +80,7 @@ static bool print_rtp_characteristics(ov_rtp_frame const *frame, FILE *out) {
         fprintf(stderr, "Received UDP data could not be decoded as RTP");
         return false;
     } else {
-        fprintf(out,
-                "SSRC %" PRIu32 "  SEQ  %" PRIu16,
-                frame->expanded.ssrc,
+        fprintf(out, "SSRC %" PRIu32 "  SEQ  %" PRIu16, frame->expanded.ssrc,
                 frame->expanded.sequence_number);
         return true;
     }
@@ -90,10 +88,8 @@ static bool print_rtp_characteristics(ov_rtp_frame const *frame, FILE *out) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool decode_to_pcm(ov_rtp_frame const *frame,
-                          ov_codec *codec,
-                          uint8_t *pcm,
-                          ssize_t *pcm_octets) {
+static bool decode_to_pcm(ov_rtp_frame const *frame, ov_codec *codec,
+                          uint8_t *pcm, ssize_t *pcm_octets) {
 
     if (0 == frame) {
         return false;
@@ -104,12 +100,10 @@ static bool decode_to_pcm(ov_rtp_frame const *frame,
 
         OV_ASSERT(0 != pcm_octets);
 
-        *pcm_octets = ov_codec_decode(codec,
-                                      frame->expanded.sequence_number,
-                                      frame->expanded.payload.data,
-                                      frame->expanded.payload.length,
-                                      pcm,
-                                      *pcm_octets);
+        *pcm_octets =
+            ov_codec_decode(codec, frame->expanded.sequence_number,
+                            frame->expanded.payload.data,
+                            frame->expanded.payload.length, pcm, *pcm_octets);
 
         if (0 > *pcm_octets) {
 
@@ -123,8 +117,7 @@ static bool decode_to_pcm(ov_rtp_frame const *frame,
 
 /*----------------------------------------------------------------------------*/
 
-static bool check__plausibility(FILE *out,
-                                ov_vad_parameters params,
+static bool check__plausibility(FILE *out, ov_vad_parameters params,
                                 double zero_crossings_hz_ref,
                                 double powerlevel_density_db_ref) {
 
@@ -162,10 +155,8 @@ static bool check__plausibility(FILE *out,
 
 /*----------------------------------------------------------------------------*/
 
-static bool print_audio_characteristics(uint8_t *pcm,
-                                        size_t pcm_octets,
-                                        ov_vad_config vad,
-                                        FILE *out) {
+static bool print_audio_characteristics(uint8_t *pcm, size_t pcm_octets,
+                                        ov_vad_config vad, FILE *out) {
 
     OV_ASSERT(0 != pcm);
 
@@ -178,10 +169,8 @@ static bool print_audio_characteristics(uint8_t *pcm,
 
     double zero_crossings_hz = params.zero_crossings_per_sample * 48000;
 
-    fprintf(out,
-            "   Powerlevel density %f   zero crossing rate %f Hz",
-            powerlevel_density_db,
-            zero_crossings_hz);
+    fprintf(out, "   Powerlevel density %f   zero crossing rate %f Hz",
+            powerlevel_density_db, zero_crossings_hz);
 
     check__plausibility(out, params, zero_crossings_hz, powerlevel_density_db);
 
@@ -202,24 +191,68 @@ static bool print_audio_characteristics(uint8_t *pcm,
 
 /*----------------------------------------------------------------------------*/
 
-static void receive_from(int fd,
-                         char const *mc_ip,
-                         char const *mc_port,
-                         ov_codec *codec,
-                         ov_vad_config vad,
-                         FILE *out) {
+static void sockaddr_address(struct sockaddr *addr, char *target,
+                             size_t target_len) {
+    switch (addr->sa_family) {
+    case AF_INET:
 
+        inet_ntop(AF_INET, &(((struct sockaddr_in *)addr)->sin_addr), target,
+                  target_len);
+        break;
+
+    case AF_INET6:
+
+        inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)addr)->sin6_addr), target,
+                  target_len);
+        break;
+
+    default:
+
+        strncpy(target, "unknown", target_len);
+        target[target_len - 1] = 0;
+        break;
+    };
+}
+
+/*----------------------------------------------------------------------------*/
+
+static uint16_t sockaddr_port(struct sockaddr *addr) {
+
+    switch (addr->sa_family) {
+    case AF_INET:
+
+        return ((struct sockaddr_in *)addr)->sin_port;
+
+    case AF_INET6:
+
+        return ((struct sockaddr_in6 *)addr)->sin6_port;
+
+    default:
+
+        return 0;
+    };
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void receive_from(int fd, char const *mc_ip, char const *mc_port,
+                         ov_codec *codec, ov_vad_config vad, FILE *out) {
     // One UDP frame wont exceed 1500 bytes in 'our' ethernet world
     // In linux, it's likely even less than 768 (the minimum required
     // supported UDP frame length - 2000 and we are safe for the near future
     uint8_t buf[2000] = {0};
 
-    while (true) {
+    struct sockaddr_storage srcaddr = {0};
+    socklen_t srcaddr_len = sizeof(srcaddr);
 
-        ssize_t read_octets = recv(fd, buf, sizeof(buf) - 1, 0);
+    char srcaddr_str[1000] = {0};
+
+    while (true) {
+        ssize_t read_octets =
+            recvfrom(fd, buf, sizeof(buf) - 1, 0, (struct sockaddr *)&srcaddr,
+                     &srcaddr_len);
 
         if (read_octets >= 0) {
-
             buf[(size_t)read_octets] = 0;
 
             ov_rtp_frame *frame = ov_rtp_frame_decode(buf, read_octets);
@@ -230,10 +263,12 @@ static void receive_from(int fd,
 
             ssize_t pcm_octets = sizeof(pcm);
 
-            fprintf(out,
-                    "From %s:%s  ",
-                    ov_string_sanitize(mc_ip),
-                    ov_string_sanitize(mc_port));
+            sockaddr_address((struct sockaddr *)&srcaddr, srcaddr_str,
+                             sizeof(srcaddr_str));
+
+            fprintf(out, "%s:%s  From %s:%" PRIu16 " ",
+                    ov_string_sanitize(mc_ip), ov_string_sanitize(mc_port),
+                    srcaddr_str, sockaddr_port((struct sockaddr *)&srcaddr));
 
             if (print_rtp_characteristics(frame, out) &&
                 decode_to_pcm(frame, codec, pcm, &pcm_octets)) {
@@ -245,9 +280,8 @@ static void receive_from(int fd,
             frame = ov_rtp_frame_free(frame);
 
         } else if (EAGAIN != errno) {
-
-            fprintf(
-                stderr, "Could not read from socket: %s\n", strerror(errno));
+            fprintf(stderr, "Could not read from socket: %s\n",
+                    strerror(errno));
         }
     }
 }
@@ -255,9 +289,7 @@ static void receive_from(int fd,
 /*----------------------------------------------------------------------------*/
 
 int main(int argc, char const **argv) {
-
     if (3 > argc) {
-
         fprintf(stderr,
                 " Multicast test client\n\n"
                 " Joins multicast group, tries to decode as RTP/OPUS and "
@@ -274,13 +306,11 @@ int main(int argc, char const **argv) {
         return EXIT_FAILURE;
 
     } else {
-
         bool detect_voice = !(argc < 5);
 
         ov_vad_config vad_config = {0};
 
         if (detect_voice) {
-
             vad_config.powerlevel_density_threshold_db = atof(argv[3]);
             vad_config.zero_crossings_rate_threshold_hertz = atof(argv[4]);
         }
@@ -291,11 +321,9 @@ int main(int argc, char const **argv) {
         int retval = EXIT_FAILURE;
 
         if (0 > recv_fd) {
-
             fprintf(stderr, "Could not open socket: %s\n", strerror(errno));
 
         } else {
-
             receive_from(recv_fd, argv[1], argv[2], codec, vad_config, stdout);
             close(recv_fd);
             retval = EXIT_SUCCESS;

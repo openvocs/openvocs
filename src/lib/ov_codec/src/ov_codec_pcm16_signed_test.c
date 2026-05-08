@@ -414,13 +414,7 @@ static int test_impl_get_samplerate_hertz() {
 }
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_codec_pcm16_signed",
-            test_ov_codec_pcm16_signed_id,
-            test_impl_codec_create,
-            test_impl_free,
-            test_impl_encode_be,
-            test_impl_decode_be,
-            test_impl_encode_le,
-            test_impl_decode_le,
-            test_impl_get_parameters,
-            test_impl_get_samplerate_hertz);
+OV_TEST_RUN("ov_codec_pcm16_signed", test_ov_codec_pcm16_signed_id,
+            test_impl_codec_create, test_impl_free, test_impl_encode_be,
+            test_impl_decode_be, test_impl_encode_le, test_impl_decode_le,
+            test_impl_get_parameters, test_impl_get_samplerate_hertz);

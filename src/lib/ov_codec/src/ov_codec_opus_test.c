@@ -42,8 +42,7 @@ Copyright   2018        German Aerospace Center DLR e.V.,
  *                         MANUAL encoding / decoding
  ******************************************************************************/
 
-static ov_buffer *generate_pcm_sin(double freq_hz,
-                                   double samplerate_hz,
+static ov_buffer *generate_pcm_sin(double freq_hz, double samplerate_hz,
                                    uint64_t frame_length_usecs) {
 
     /* Code taken from ov_pcm_gen.c - could not use their functions directly
@@ -93,10 +92,8 @@ static ov_buffer *generate_pcm_sin(double freq_hz,
 
 /*----------------------------------------------------------------------------*/
 
-static int16_t *interleave(size_t num_samples,
-                           int16_t const *in_1,
-                           int16_t const *in_2,
-                           int16_t *out) {
+static int16_t *interleave(size_t num_samples, int16_t const *in_1,
+                           int16_t const *in_2, int16_t *out) {
 
     OV_ASSERT(0 != num_samples);
     OV_ASSERT(0 != num_samples);
@@ -122,12 +119,12 @@ static ov_buffer *encode(ov_buffer const *in, int samplerate_hz, int channels) {
 
     int error = OPUS_OK;
 
-    OpusEncoder *encoder = opus_encoder_create(
-        samplerate_hz, channels, OPUS_APPLICATION_VOIP, &error);
+    OpusEncoder *encoder = opus_encoder_create(samplerate_hz, channels,
+                                               OPUS_APPLICATION_VOIP, &error);
 
     if (OPUS_OK != error) {
-        testrun_log_failure(
-            "Opus encoder: Error %i (OK = %i)\n", error, OPUS_OK);
+        testrun_log_failure("Opus encoder: Error %i (OK = %i)\n", error,
+                            OPUS_OK);
         return 0;
     }
 
@@ -135,11 +132,8 @@ static ov_buffer *encode(ov_buffer const *in, int samplerate_hz, int channels) {
 
     ov_buffer *out = ov_buffer_create(out_max_len);
 
-    int retval = opus_encode(encoder,
-                             (int16_t *)in->start,
-                             samples_per_frame,
-                             (unsigned char *)out->start,
-                             out->capacity);
+    int retval = opus_encode(encoder, (int16_t *)in->start, samples_per_frame,
+                             (unsigned char *)out->start, out->capacity);
 
     opus_encoder_destroy(encoder);
 
@@ -329,12 +323,8 @@ static int test_impl_decode() {
     testrun(enc_bytes_written <= input_length);
 
     int32_t dec_bytes_written =
-        impl_decode(codec,
-                    1 + ((ov_codec_opus *)codec)->last_seq_number,
-                    output,
-                    enc_bytes_written,
-                    decoded,
-                    BUFFER_SIZE_BYTES);
+        impl_decode(codec, 1 + ((ov_codec_opus *)codec)->last_seq_number,
+                    output, enc_bytes_written, decoded, BUFFER_SIZE_BYTES);
 
     testrun(input_length == dec_bytes_written);
 
@@ -363,8 +353,7 @@ static int test_impl_decode() {
 
     const size_t samples_in_packet =
         opus_decoder_get_nb_samples(((ov_codec_opus *)codec)->decoder,
-                                    channel_1_encoded->start,
-                                    samplerate_hz);
+                                    channel_1_encoded->start, samplerate_hz);
 
     ov_buffer *decoded_result = ov_buffer_create(2 * channel_1->length);
     testrun(0 != decoded_result);
@@ -375,31 +364,24 @@ static int test_impl_decode() {
     testrun(1 == opus_packet_get_nb_channels(channel_1_encoded->start));
     testrun(samples_in_channel_1 == samples_in_packet);
 
-    testrun_log(
-        "Opus packet contains %i channels, %zu samples per "
-        "frame&channel, %zu samples in packet\n",
-        opus_packet_get_nb_channels(channel_1_encoded->start),
-        samples_in_frame,
-        samples_in_packet);
+    testrun_log("Opus packet contains %i channels, %zu samples per "
+                "frame&channel, %zu samples in packet\n",
+                opus_packet_get_nb_channels(channel_1_encoded->start),
+                samples_in_frame, samples_in_packet);
 
     /* And decode */
 
     memset(decoded_result->start, 0, decoded_result->capacity);
 
     decoded_result->length =
-        impl_decode(codec,
-                    1 + ((ov_codec_opus *)codec)->last_seq_number,
-                    channel_1_encoded->start,
-                    channel_1_encoded->length,
-                    decoded_result->start,
-                    decoded_result->capacity);
+        impl_decode(codec, 1 + ((ov_codec_opus *)codec)->last_seq_number,
+                    channel_1_encoded->start, channel_1_encoded->length,
+                    decoded_result->start, decoded_result->capacity);
 
     testrun_log("Decoded %zu samples, expected %zu samples\n",
-                decoded_result->length / 2,
-                samples_in_packet);
+                decoded_result->length / 2, samples_in_packet);
     testrun_log("Decoded to %zu bytes, expected %zu bytes\n",
-                decoded_result->length,
-                channel_1->length);
+                decoded_result->length, channel_1->length);
 
     testrun(decoded_result->length == channel_1->length);
 
@@ -418,8 +400,7 @@ static int test_impl_decode() {
     testrun(2 * channel_1->length <= interleaved->capacity);
 
     testrun((int16_t *)interleaved->start ==
-            interleave(samples_in_channel_1,
-                       (int16_t *)channel_1->start,
+            interleave(samples_in_channel_1, (int16_t *)channel_1->start,
                        (int16_t *)channel_2->start,
                        (int16_t *)interleaved->start));
 
@@ -436,38 +417,30 @@ static int test_impl_decode() {
 
     const size_t samples_in_packet_stereo =
         opus_decoder_get_nb_samples(((ov_codec_opus *)codec)->decoder,
-                                    interleaved_encoded->start,
-                                    samplerate_hz);
+                                    interleaved_encoded->start, samplerate_hz);
 
     /* Check some parameters of encoded signal */
 
     testrun(2 == opus_packet_get_nb_channels(interleaved_encoded->start));
 
-    testrun_log(
-        "Opus packet contains %i channels, %zu samples per "
-        "frame&channel, %zu samples in packet\n",
-        opus_packet_get_nb_channels(interleaved_encoded->start),
-        samples_in_frame_stereo,
-        samples_in_packet_stereo);
+    testrun_log("Opus packet contains %i channels, %zu samples per "
+                "frame&channel, %zu samples in packet\n",
+                opus_packet_get_nb_channels(interleaved_encoded->start),
+                samples_in_frame_stereo, samples_in_packet_stereo);
 
     /* And decode */
 
     memset(decoded_result->start, 0, decoded_result->capacity);
 
     decoded_result->length =
-        impl_decode(codec,
-                    1 + ((ov_codec_opus *)codec)->last_seq_number,
-                    interleaved_encoded->start,
-                    interleaved_encoded->length,
-                    decoded_result->start,
-                    decoded_result->capacity);
+        impl_decode(codec, 1 + ((ov_codec_opus *)codec)->last_seq_number,
+                    interleaved_encoded->start, interleaved_encoded->length,
+                    decoded_result->start, decoded_result->capacity);
 
     testrun_log("Decoded %zu samples, expected %zu samples\n",
-                decoded_result->length / 2,
-                samples_in_packet);
+                decoded_result->length / 2, samples_in_packet);
     testrun_log("Decoded to %zu bytes, expected %zu bytes\n",
-                decoded_result->length,
-                channel_1->length);
+                decoded_result->length, channel_1->length);
 
     testrun(decoded_result->length == channel_1->length);
 
@@ -578,13 +551,8 @@ static int test_impl_get_samplesrate_hertz() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_codec_opus",
-            test_ov_codec_opus_id,
-            test_impl_codec_create,
-            test_impl_free,
-            test_impl_encode,
-            test_impl_decode,
-            test_impl_get_parameters,
-            test_impl_get_samplesrate_hertz);
+OV_TEST_RUN("ov_codec_opus", test_ov_codec_opus_id, test_impl_codec_create,
+            test_impl_free, test_impl_encode, test_impl_decode,
+            test_impl_get_parameters, test_impl_get_samplesrate_hertz);
 
 /*----------------------------------------------------------------------------*/

@@ -74,8 +74,8 @@ static int ov_vad_config_from_json_test() {
 
     ov_json_object_set(jval, OV_KEY_VAD, j_vad_cfg);
 
-    testrun(ov_json_object_set(
-        j_vad_cfg, OV_KEY_POWERLEVEL_DENSITY_DB, ov_json_number(2)));
+    testrun(ov_json_object_set(j_vad_cfg, OV_KEY_POWERLEVEL_DENSITY_DB,
+                               ov_json_number(2)));
 
     cfg = ov_vad_config_from_json(jval);
 
@@ -83,8 +83,8 @@ static int ov_vad_config_from_json_test() {
 
     testrun(DEQUALS(0, cfg.zero_crossings_rate_threshold_hertz));
 
-    testrun(ov_json_object_set(
-        j_vad_cfg, OV_KEY_ZERO_CROSSINGS_RATE_HERTZ, ov_json_number(17)));
+    testrun(ov_json_object_set(j_vad_cfg, OV_KEY_ZERO_CROSSINGS_RATE_HERTZ,
+                               ov_json_number(17)));
 
     cfg = ov_vad_config_from_json(jval);
 
@@ -150,6 +150,5 @@ static int ov_vad_config_to_json_test() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_vad_config",
-            ov_vad_config_from_json_test,
+OV_TEST_RUN("ov_vad_config", ov_vad_config_from_json_test,
             ov_vad_config_to_json_test);

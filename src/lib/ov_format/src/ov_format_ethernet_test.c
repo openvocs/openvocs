@@ -37,20 +37,17 @@
 /*----------------------------------------------------------------------------*/
 
 char const *TEST_PCAP_FILE = "resources/pcap/test_ipv4_tcp.pcap";
-char const *TEST_IP_PCAP_FILE =
-    "resources/pcap/"
-    "test_ethernet_ipv4_ipv6_udp.pcap";
+char const *TEST_IP_PCAP_FILE = "resources/pcap/"
+                                "test_ethernet_ipv4_ipv6_udp.pcap";
 
 /*----------------------------------------------------------------------------*/
 
-static const unsigned char ref_dst_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS] =
-    "Fr"
-    "ey"
-    "r";
-static const unsigned char ref_src_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS] =
-    "Yn"
-    "gv"
-    "i";
+static const unsigned char ref_dst_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS] = "Fr"
+                                                                            "ey"
+                                                                            "r";
+static const unsigned char ref_src_mac[OV_FORMAT_ETHERNET_MAC_LEN_OCTETS] = "Yn"
+                                                                            "gv"
+                                                                            "i";
 
 static const uint16_t ref_ethertype = 1636;
 
@@ -63,10 +60,8 @@ static const uint32_t ref_crc32 = 20304050;
 
 static ov_buffer *get_ethernet_frame(uint8_t const *dst_mac, /* 6 octets */
                                      uint8_t const *src_mac, /* 6 octets */
-                                     uint16_t ethertype,
-                                     uint8_t const *payload,
-                                     size_t payload_len,
-                                     uint32_t crc32) {
+                                     uint16_t ethertype, uint8_t const *payload,
+                                     size_t payload_len, uint32_t crc32) {
 
     if (0 == dst_mac) {
 
@@ -161,8 +156,8 @@ static int test_impl_next_chunk() {
 
     ov_buffer *ethernet_frame = get_ethernet_frame(0, 0, 0, 0, 0, 0);
 
-    ov_format *mem_fmt = ov_format_from_memory(
-        ethernet_frame->start, ethernet_frame->length, OV_READ);
+    ov_format *mem_fmt = ov_format_from_memory(ethernet_frame->start,
+                                               ethernet_frame->length, OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -198,8 +193,8 @@ static int test_impl_next_chunk() {
 
     ethernet_frame = get_ethernet_frame(0, 0, 0, 0, 0, 0);
 
-    mem_fmt = ov_format_from_memory(
-        ethernet_frame->start, ethernet_frame->length, OV_READ);
+    mem_fmt = ov_format_from_memory(ethernet_frame->start,
+                                    ethernet_frame->length, OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -265,16 +260,12 @@ static int test_impl_next_chunk() {
 
         uint32_t crc32_calc = ov_format_ethernet_calculate_crc32(ethernet_fmt);
 
-        testrun_log(
-            "Got another frame: src mac: %s dst_mad: %s, CRC32: "
-            "%" PRIu32 ", calculated %" PRIu32
-            " ethertype: %i"
-            "\n ",
-            ov_format_ethernet_mac_to_string(hdr.src_mac, 0, 0),
-            ov_format_ethernet_mac_to_string(hdr.dst_mac, 0, 0),
-            crc32,
-            crc32_calc,
-            hdr.type_set ? hdr.type : hdr.length);
+        testrun_log("Got another frame: src mac: %s dst_mad: %s, CRC32: "
+                    "%" PRIu32 ", calculated %" PRIu32 " ethertype: %i"
+                    "\n ",
+                    ov_format_ethernet_mac_to_string(hdr.src_mac, 0, 0),
+                    ov_format_ethernet_mac_to_string(hdr.dst_mac, 0, 0), crc32,
+                    crc32_calc, hdr.type_set ? hdr.type : hdr.length);
 
         payload = ov_format_payload_read_chunk_nocopy(ethernet_fmt, 0);
     };
@@ -331,11 +322,9 @@ static int test_ov_format_ethernet_get_header() {
     testrun(0 == hdr.length);
     testrun(ref_ethertype == hdr.type);
     testrun(hdr.type_set);
-    testrun(0 == memcmp(ref_dst_mac,
-                        hdr.dst_mac,
+    testrun(0 == memcmp(ref_dst_mac, hdr.dst_mac,
                         OV_FORMAT_ETHERNET_MAC_LEN_OCTETS));
-    testrun(0 == memcmp(ref_src_mac,
-                        hdr.src_mac,
+    testrun(0 == memcmp(ref_src_mac, hdr.src_mac,
                         OV_FORMAT_ETHERNET_MAC_LEN_OCTETS));
 
     testrun(ref_crc32 == ov_format_ethernet_get_crc32(ethernet_fmt));
@@ -459,16 +448,8 @@ int test_ov_format_ethernet_mac_to_string() {
 
 static char const *ref_payload_dispatcher_test[] = {
 
-    "adfsdafsdf\n",
-    "crucial\n",
-    "renowned\n",
-    "Pimping\n",
-    "noodle\n",
-    "dump\n",
-    "cooker\n",
-    "in\n",
-    "the\n",
-    "fields\n"};
+    "adfsdafsdf\n", "crucial\n", "renowned\n", "Pimping\n", "noodle\n",
+    "dump\n",       "cooker\n",  "in\n",       "the\n",     "fields\n"};
 
 static int test_ov_format_ethernet_dispatcher_install() {
 
@@ -521,8 +502,8 @@ static int test_ov_format_ethernet_dispatcher_install() {
 
     };
 
-    dispatcher = ov_format_as(
-        fmt, OV_FORMAT_ETHERNET_DISPATCHER_TYPE_STRING, &fo_ether, 0);
+    dispatcher = ov_format_as(fmt, OV_FORMAT_ETHERNET_DISPATCHER_TYPE_STRING,
+                              &fo_ether, 0);
     fmt = 0;
 
     testrun(0 != dispatcher);
@@ -546,8 +527,7 @@ static int test_ov_format_ethernet_dispatcher_install() {
         testrun(chunk.length == strlen(ref_payload_dispatcher_test[num_frame]));
 
         testrun(0 == memcmp(ref_payload_dispatcher_test[num_frame++],
-                            chunk.start,
-                            chunk.length));
+                            chunk.start, chunk.length));
 
         if (0 != ov_format_get(udp, "ipv4")) {
             ipv4 = true;
@@ -560,8 +540,7 @@ static int test_ov_format_ethernet_dispatcher_install() {
         }
     };
 
-    testrun_log("IPv4 seen: %zu     IPv6 seen: %zu\n",
-                num_ipv4_frames_seen,
+    testrun_log("IPv4 seen: %zu     IPv6 seen: %zu\n", num_ipv4_frames_seen,
                 num_ipv6_frames_seen);
 
     testrun(6 == num_ipv4_frames_seen);
@@ -577,10 +556,8 @@ static int test_ov_format_ethernet_dispatcher_install() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_ethernet",
-            test_ov_format_ethernet_install,
-            test_impl_next_chunk,
-            test_ov_format_ethernet_get_header,
+OV_TEST_RUN("ov_format_ethernet", test_ov_format_ethernet_install,
+            test_impl_next_chunk, test_ov_format_ethernet_get_header,
             test_ov_format_ethernet_get_crc32_checksum,
             test_ov_format_ethernet_calculate_crc32,
             test_ov_format_ethernet_mac_to_string,

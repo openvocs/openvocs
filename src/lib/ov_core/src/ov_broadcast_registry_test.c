@@ -188,7 +188,8 @@ int test_ov_broadcast_registry_get() {
 
 static bool dummy_send(void *instance, int socket, const ov_json_value *val) {
 
-    if (!instance) return false;
+    if (!instance)
+        return false;
 
     ov_dict *dict = ov_dict_cast(instance);
     intptr_t key = socket;
@@ -233,8 +234,8 @@ int test_ov_broadcast_registry_send() {
         ov_broadcast_registry_send(reg, "1", &p, msg, OV_PROJECT_BROADCAST));
     testrun(0 == ov_dict_count(dict));
 
-    testrun(ov_broadcast_registry_set(
-        reg, "1", 1, OV_BROADCAST | OV_PROJECT_BROADCAST));
+    testrun(ov_broadcast_registry_set(reg, "1", 1,
+                                      OV_BROADCAST | OV_PROJECT_BROADCAST));
     testrun(
         ov_broadcast_registry_send(reg, "1", &p, msg, OV_PROJECT_BROADCAST));
     testrun(1 == ov_dict_count(dict));
@@ -386,8 +387,8 @@ int test_ov_broadcast_registry_state() {
     out = ov_json_value_free(out);
 
     // broadcast type change does ot change output
-    testrun(ov_broadcast_registry_set(
-        reg, "2", 2, OV_ROLE_BROADCAST | OV_BROADCAST));
+    testrun(ov_broadcast_registry_set(reg, "2", 2,
+                                      OV_ROLE_BROADCAST | OV_BROADCAST));
     out = ov_broadcast_registry_state(reg);
     testrun(out);
     testrun(2 == ov_json_object_count(out));

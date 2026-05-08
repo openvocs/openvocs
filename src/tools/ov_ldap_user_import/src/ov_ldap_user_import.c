@@ -54,7 +54,8 @@ static LDAP *ldap_bind(const char *host, const char *user, const char *pass) {
 
     char *dn = NULL;
 
-    if (!host || !user || !pass) goto error;
+    if (!host || !user || !pass)
+        goto error;
 
     char server[OV_HOST_NAME_MAX] = {0};
     snprintf(server, OV_HOST_NAME_MAX, "ldap://%s", host);
@@ -76,8 +77,7 @@ static LDAP *ldap_bind(const char *host, const char *user, const char *pass) {
 
     if (err != LDAP_SUCCESS) {
 
-        fprintf(stderr,
-                "ldap_set_option(PROTOCOL_VERSION): %s\n",
+        fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
                 ldap_err2string(err));
         goto error;
     };
@@ -87,8 +87,8 @@ static LDAP *ldap_bind(const char *host, const char *user, const char *pass) {
     err = ldap_set_option(ld, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
     if (err != LDAP_SUCCESS) {
 
-        fprintf(
-            stderr, "ldap_set_option(SIZELIMIT): %s\n", ldap_err2string(err));
+        fprintf(stderr, "ldap_set_option(SIZELIMIT): %s\n",
+                ldap_err2string(err));
         goto error;
     };
 
@@ -103,20 +103,20 @@ static LDAP *ldap_bind(const char *host, const char *user, const char *pass) {
     err = ldap_result(ld, msgid, 0, &timeout, &res);
 
     switch (err) {
-        case -1:
+    case -1:
 
-            ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
-            fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
-            goto error;
+        ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
+        fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
+        goto error;
 
-        case 0:
+    case 0:
 
-            fprintf(stderr, "ldap_result(): timeout expired\n");
-            ldap_abandon_ext(ld, msgid, NULL, NULL);
-            goto error;
+        fprintf(stderr, "ldap_result(): timeout expired\n");
+        ldap_abandon_ext(ld, msgid, NULL, NULL);
+        goto error;
 
-        default:
-            break;
+    default:
+        break;
     };
 
     ldap_parse_result(ld, res, &err, &dn, NULL, NULL, NULL, 0);
@@ -130,16 +130,15 @@ static LDAP *ldap_bind(const char *host, const char *user, const char *pass) {
 
     return ld;
 error:
-    if (ld) ldap_unbind_ext_s(ld, NULL, NULL);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
     return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ldap_get_users(const char *host,
-                              const char *base,
-                              const char *user,
-                              const char *pass,
+ov_json_value *ldap_get_users(const char *host, const char *base,
+                              const char *user, const char *pass,
                               uint64_t timeout_usec) {
 
     ov_json_value *out = NULL;
@@ -154,7 +153,8 @@ ov_json_value *ldap_get_users(const char *host,
     LDAP *ld = NULL;
     LDAPMessage *res = NULL;
 
-    if (!base || !user || !host || !pass) goto error;
+    if (!base || !user || !host || !pass)
+        goto error;
 
     char *filter = "(&(objectClass=posixAccount))";
 
@@ -165,12 +165,13 @@ ov_json_value *ldap_get_users(const char *host,
     attrs[3] = NULL;
 
     ld = ldap_bind(host, user, pass);
-    if (!ld) goto error;
+    if (!ld)
+        goto error;
 
     int err = 0;
 
-    struct timeval timeout = {
-        .tv_sec = timeout_usec / 1000000, .tv_usec = timeout_usec % 1000000};
+    struct timeval timeout = {.tv_sec = timeout_usec / 1000000,
+                              .tv_usec = timeout_usec % 1000000};
 
     err = ldap_search_ext_s(ld,                 // LDAP            * ld
                             base,               // char            * base
@@ -211,12 +212,14 @@ ov_json_value *ldap_get_users(const char *host,
                 // printf("%i %s: %s\n", pos, attribute, vals[pos]->bv_val);
             }
 
-            if (0 == strcmp(attribute, "sn")) surname = strdup(vals[0]->bv_val);
+            if (0 == strcmp(attribute, "sn"))
+                surname = strdup(vals[0]->bv_val);
 
             if (0 == strcmp(attribute, "cn"))
                 forename = strdup(vals[0]->bv_val);
 
-            if (0 == strcmp(attribute, "uid")) uid = strdup(vals[0]->bv_val);
+            if (0 == strcmp(attribute, "uid"))
+                uid = strdup(vals[0]->bv_val);
 
             attribute = ldap_next_attribute(ld, entry, ber);
             ldap_value_free_len(vals);
@@ -233,7 +236,8 @@ ov_json_value *ldap_get_users(const char *host,
             userid = ov_json_string(uid);
             val = ov_json_object();
 
-            if (!ov_json_object_set(val, OV_KEY_ID, userid)) goto error;
+            if (!ov_json_object_set(val, OV_KEY_ID, userid))
+                goto error;
 
             userid = NULL;
 
@@ -242,7 +246,8 @@ ov_json_value *ldap_get_users(const char *host,
                 // snprintf(name, 1000, "%s %s", forename, surname);
                 username = ov_json_string(forename);
 
-                if (!ov_json_object_set(val, OV_KEY_NAME, username)) goto error;
+                if (!ov_json_object_set(val, OV_KEY_NAME, username))
+                    goto error;
 
                 username = NULL;
             }
@@ -256,7 +261,8 @@ ov_json_value *ldap_get_users(const char *host,
 
             } else {
 
-                if (!ov_json_object_set(out, uid, val)) goto error;
+                if (!ov_json_object_set(out, uid, val))
+                    goto error;
 
                 val = NULL;
             }
@@ -280,36 +286,41 @@ error:
     ov_json_value_free(userid);
     ov_json_value_free(val);
     ov_json_value_free(out);
-    if (ld) ldap_unbind_ext_s(ld, NULL, NULL);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
     return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_new_config(const ov_json_value *users,
-                             const char *domain,
+static bool write_new_config(const ov_json_value *users, const char *domain,
                              const char *path) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!users || !domain || !path) goto error;
+    if (!users || !domain || !path)
+        goto error;
 
     val = NULL;
-    if (!ov_json_value_copy((void **)&val, users)) goto error;
+    if (!ov_json_value_copy((void **)&val, users))
+        goto error;
 
     out = ov_json_object();
-    if (!ov_json_object_set(out, OV_KEY_USERS, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_USERS, val))
+        goto error;
 
     val = ov_json_string(domain);
-    if (!ov_json_object_set(out, OV_KEY_ID, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ID, val))
+        goto error;
 
-    if (!ov_json_write_file(path, out)) goto error;
+    if (!ov_json_write_file(path, out))
+        goto error;
 
     out = ov_json_value_free(out);
 
-    ov_log_debug(
-        "Created config of users for domain %s at path %s", domain, path);
+    ov_log_debug("Created config of users for domain %s at path %s", domain,
+                 path);
 
     return true;
 error:
@@ -330,7 +341,8 @@ struct users_search {
 
 static bool add_new_user(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     char *user_id = (char *)key;
     ov_json_value *user = ov_json_value_cast(val);
@@ -347,7 +359,8 @@ static bool add_new_user(const void *key, void *val, void *data) {
 
     ov_json_value *out = NULL;
 
-    if (!ov_json_value_copy((void **)&out, user)) goto error;
+    if (!ov_json_value_copy((void **)&out, user))
+        goto error;
 
     if (!ov_json_object_set(active_users, user_id, out)) {
         out = ov_json_value_free(out);
@@ -370,8 +383,7 @@ static bool drop_outdated(void *item, void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_users_object(const ov_json_value *users,
-                               const char *domain,
+static bool write_users_object(const ov_json_value *users, const char *domain,
                                const char *path) {
 
     ov_list *list = NULL;
@@ -379,43 +391,42 @@ static bool write_users_object(const ov_json_value *users,
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!users || !domain || !path) goto error;
+    if (!users || !domain || !path)
+        goto error;
 
     ov_json_value *current = ov_json_read_file(path);
-    if (!current) return write_new_config(users, domain, path);
+    if (!current)
+        return write_new_config(users, domain, path);
 
     const char *domain_id =
         ov_json_string_get(ov_json_get(current, "/" OV_KEY_ID));
     if (!domain_id) {
 
-        ov_log_error(
-            "Update for domain %s, "
-            "but no domain included in file at path %s",
-            domain,
-            path);
+        ov_log_error("Update for domain %s, "
+                     "but no domain included in file at path %s",
+                     domain, path);
 
         goto error;
     }
 
     if (0 != strcmp(domain_id, domain)) {
 
-        ov_log_error(
-            "Update for domain %s, "
-            "but config of domain %s at path %s",
-            domain,
-            domain_id,
-            path);
+        ov_log_error("Update for domain %s, "
+                     "but config of domain %s at path %s",
+                     domain, domain_id, path);
 
         goto error;
     }
 
-    ov_json_value const *active_users = ov_json_get(current, OV_KEY_USERS);
+    ov_json_value const *active_users = ov_json_get(current, "/"OV_KEY_USERS);
     if (!active_users) {
 
         out = NULL;
-        if (!ov_json_value_copy((void **)&out, users)) goto error;
+        if (!ov_json_value_copy((void **)&out, users))
+            goto error;
 
-        if (!ov_json_object_set(current, OV_KEY_USERS, out)) goto error;
+        if (!ov_json_object_set(current, OV_KEY_USERS, out))
+            goto error;
 
     } else {
 
@@ -424,8 +435,8 @@ static bool write_users_object(const ov_json_value *users,
         struct users_search container = (struct users_search){
             .active_users = active_users, .outdated = list};
 
-        if (!ov_json_object_for_each(
-                (ov_json_value *)users, &container, add_new_user))
+        if (!ov_json_object_for_each((ov_json_value *)users, &container,
+                                     add_new_user))
             goto error;
 
         if (!ov_list_for_each(list, (void *)active_users, drop_outdated))
@@ -434,10 +445,11 @@ static bool write_users_object(const ov_json_value *users,
         list = ov_list_free(list);
     }
 
-    if (!ov_json_write_file(path, current)) goto error;
+    if (!ov_json_write_file(path, current))
+        goto error;
 
-    ov_log_debug(
-        "Update of users for domain %s at path %s - done", domain, path);
+    ov_log_debug("Update of users for domain %s at path %s - done", domain,
+                 path);
 
     return true;
 
@@ -456,12 +468,15 @@ int main(int argc, char **argv) {
     ov_json_value *users = NULL;
 
     const char *config_path = ov_config_path_from_command_line(argc, argv);
-    if (!config_path) config_path = CONFIG_PATH;
+    if (!config_path)
+        config_path = CONFIG_PATH;
 
-    if (config_path == VERSION_REQUEST_ONLY) goto error;
+    if (config_path == VERSION_REQUEST_ONLY)
+        goto error;
 
     config = ov_config_load(config_path);
-    if (!config) goto error;
+    if (!config)
+        goto error;
 
     const char *host = ov_json_string_get(
         ov_json_get(config, "/" OV_KEY_LDAP "/" OV_KEY_HOST));
@@ -484,13 +499,10 @@ int main(int argc, char **argv) {
     uint64_t timeout = ov_json_number_get(
         ov_json_get(config, "/" OV_KEY_LDAP "/" OV_KEY_TIMEOUT_USEC));
 
-    if (0 == timeout) timeout = 5000000;
+    if (0 == timeout)
+        timeout = 5000000;
 
-    fprintf(stdout,
-            "using host %s user %s pass %s path %s\n",
-            host,
-            user,
-            pass,
+    fprintf(stdout, "using host %s user %s pass %s path %s\n", host, user, pass,
             target_path);
 
     users = ldap_get_users(host, base, user, pass, timeout);
@@ -499,7 +511,8 @@ int main(int argc, char **argv) {
         goto error;
     }
 
-    if (!write_users_object(users, domain, target_path)) goto error;
+    if (!write_users_object(users, domain, target_path))
+        goto error;
 
     ov_json_value_free(config);
     return EXIT_SUCCESS;

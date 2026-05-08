@@ -46,7 +46,8 @@ int main(int argc, char **argv) {
     errno = 0;
 
     const char *path = ov_config_path_from_command_line(argc, argv);
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
     if (access(path, F_OK) == -1) {
         fprintf(stdout, "access failed errno %i|%s", errno, strerror(errno));

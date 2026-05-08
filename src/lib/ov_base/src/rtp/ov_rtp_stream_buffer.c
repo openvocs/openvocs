@@ -166,8 +166,7 @@ static void reset_stream(ov_rtp_stream_buffer *self,
 /*----------------------------------------------------------------------------*/
 
 bool ov_rtp_stream_buffer_accept(ov_rtp_stream_buffer *self,
-                                 uint32_t bottom_ssid,
-                                 uint32_t top_ssid) {
+                                 uint32_t bottom_ssid, uint32_t top_ssid) {
 
     if (bottom_ssid > top_ssid) {
         uint32_t temp = top_ssid;
@@ -248,20 +247,18 @@ static insertion_result insert_into_frames_array(ov_rtp_frame *frame,
     size_t index =
         index_for(frame->expanded.sequence_number, sliding_window_start);
 
-    if (!ov_cond_valid(
-            index < capacity, "Frame outside sliding window - dropping")) {
+    if (!ov_cond_valid(index < capacity,
+                       "Frame outside sliding window - dropping")) {
 
         ov_log_debug("Frame outside sliding window: %" PRIu32 " Seq %" PRIu16
                      "  sliding window %" PRIu16 " to %" PRIu16,
-                     frame->expanded.ssrc,
-                     frame->expanded.sequence_number,
-                     sliding_window_start,
-                     sliding_window_start + capacity);
+                     frame->expanded.ssrc, frame->expanded.sequence_number,
+                     sliding_window_start, sliding_window_start + capacity);
 
         return IR_OUT_OF_RANGE;
 
-    } else if (!ov_cond_valid(
-                   0 == frames[index], "Cannot insert frame: Doublette")) {
+    } else if (!ov_cond_valid(0 == frames[index],
+                              "Cannot insert frame: Doublette")) {
 
         return IR_DOUBLETTE;
 
@@ -280,9 +277,7 @@ static bool is_frame_accepted(ov_rtp_stream_buffer const *self, uint32_t ssrc) {
 
     ov_log_debug("Got another frame SSRC: % " PRIu32 " (blocked SSRC: %" PRIu32
                  ", accpt range: %" PRIu32 " - %" PRIu32 ")",
-                 ssrc,
-                 self->blocked_ssid,
-                 self->lowest_acceptable_ssid,
+                 ssrc, self->blocked_ssid, self->lowest_acceptable_ssid,
                  self->top_acceptable_ssid);
 
     return (ssrc != self->blocked_ssid) &&
@@ -322,10 +317,9 @@ bool ov_rtp_stream_buffer_put(ov_rtp_stream_buffer *self, ov_rtp_frame *frame) {
 
                 OV_ASSERT(0 == frames[0]);
 
-                ov_log_debug("Starting new stream SSRC: %" PRIu32
-                             " - Seq: %" PRIu16,
-                             frame->expanded.ssrc,
-                             frame->expanded.sequence_number);
+                ov_log_debug(
+                    "Starting new stream SSRC: %" PRIu32 " - Seq: %" PRIu16,
+                    frame->expanded.ssrc, frame->expanded.sequence_number);
 
                 self->stream_started = true;
                 self->sliding_window_start = frame->expanded.sequence_number;
@@ -337,43 +331,39 @@ bool ov_rtp_stream_buffer_put(ov_rtp_stream_buffer *self, ov_rtp_frame *frame) {
                 switch (insert_into_frames_array(
                     frame, self->sliding_window_start, frames, capacity)) {
 
-                    case IR_OK:
-                        ok = true;
-                        self->sliding_window_misses = 0;
-                        ov_log_debug("Accepted frame SSRC %" PRIu32
-                                     " - Seq %" PRIu16,
-                                     frame->expanded.ssrc,
-                                     frame->expanded.sequence_number);
-                        break;
+                case IR_OK:
+                    ok = true;
+                    self->sliding_window_misses = 0;
+                    ov_log_debug(
+                        "Accepted frame SSRC %" PRIu32 " - Seq %" PRIu16,
+                        frame->expanded.ssrc, frame->expanded.sequence_number);
+                    break;
 
-                    case IR_DOUBLETTE:
-                        ov_log_debug("Got doublette SSRC %" PRIu32
-                                     " - Seq %" PRIu16,
-                                     frame->expanded.ssrc,
-                                     frame->expanded.sequence_number);
-                        ok = false;
-                        break;
+                case IR_DOUBLETTE:
+                    ov_log_debug(
+                        "Got doublette SSRC %" PRIu32 " - Seq %" PRIu16,
+                        frame->expanded.ssrc, frame->expanded.sequence_number);
+                    ok = false;
+                    break;
 
-                    case IR_OUT_OF_RANGE:
-                        treat_out_of_range_frame(
-                            self, frame->expanded.sequence_number);
-                        ov_log_debug("Out of sliding window: SSRC %" PRIu32
-                                     " - Seq %" PRIu16,
-                                     frame->expanded.ssrc,
-                                     frame->expanded.sequence_number);
-                        break;
+                case IR_OUT_OF_RANGE:
+                    treat_out_of_range_frame(self,
+                                             frame->expanded.sequence_number);
+                    ov_log_debug("Out of sliding window: SSRC %" PRIu32
+                                 " - Seq %" PRIu16,
+                                 frame->expanded.ssrc,
+                                 frame->expanded.sequence_number);
+                    break;
                 };
             }
 
         } else {
 
-            ov_log_error("Received wrong SSRC - expected between :%" PRIu32
-                         " and %" PRIu32 " - blocked %" PRIu32 ", got %" PRIu32
-                         "\n",
-                         self->lowest_acceptable_ssid,
-                         self->top_acceptable_ssid,
-                         self->blocked_ssid,
-                         frame->expanded.ssrc);
+            ov_log_error(
+                "Received wrong SSRC - expected between :%" PRIu32
+                " and %" PRIu32 " - blocked %" PRIu32 ", got %" PRIu32 "\n",
+                self->lowest_acceptable_ssid, self->top_acceptable_ssid,
+                self->blocked_ssid, frame->expanded.ssrc);
         }
 
         unlock(self);
@@ -414,8 +404,8 @@ static ssize_t high_index_of_current_chunk(ov_rtp_frame const *const *frames,
 
 /*----------------------------------------------------------------------------*/
 
-ov_rtp_stream_buffer_lookahead_info ov_rtp_stream_buffer_lookahead(
-    ov_rtp_stream_buffer const *self) {
+ov_rtp_stream_buffer_lookahead_info
+ov_rtp_stream_buffer_lookahead(ov_rtp_stream_buffer const *self) {
 
     ov_rtp_stream_buffer_lookahead_info lai = {0};
 
@@ -439,8 +429,7 @@ ov_rtp_stream_buffer_lookahead_info ov_rtp_stream_buffer_lookahead(
 /*----------------------------------------------------------------------------*/
 
 static void shift_frames_to_start(ov_rtp_frame **array,
-                                  size_t offset_from_start,
-                                  size_t capacity) {
+                                  size_t offset_from_start, size_t capacity) {
 
     if ((0 < offset_from_start) && (0 != array)) {
 
@@ -477,8 +466,8 @@ ssize_t ov_rtp_stream_buffer_get(ov_rtp_stream_buffer *self,
                 self->frames[i] = 0;
             }
 
-            shift_frames_to_start(
-                self->frames, number_of_returned_frames, self->max_num_frames);
+            shift_frames_to_start(self->frames, number_of_returned_frames,
+                                  self->max_num_frames);
 
             /* Might and is totally fine to overflow */
             self->sliding_window_start += number_of_returned_frames;
@@ -497,8 +486,8 @@ ssize_t ov_rtp_stream_buffer_get(ov_rtp_stream_buffer *self,
 void ov_rtp_stream_buffer_print(ov_rtp_stream_buffer const *self, FILE *out) {
 
     if (ov_ptr_valid(self, "RTP stream buffer is invalid") &&
-        ov_ptr_valid(
-            out, "Cannot print RTP stream buffer - no output stream") &&
+        ov_ptr_valid(out,
+                     "Cannot print RTP stream buffer - no output stream") &&
         ov_cond_valid(self->max_num_frames > 0,
                       "RTP stream buffer invalid: has capacity of 0")) {
 
@@ -509,8 +498,7 @@ void ov_rtp_stream_buffer_print(ov_rtp_stream_buffer const *self, FILE *out) {
             if (0 != self->frames[i]) {
 
                 fprintf(out,
-                        "Slot %zu:   SSID: %" PRIu32 "   SEQ %" PRIu16 "\n",
-                        i,
+                        "Slot %zu:   SSID: %" PRIu32 "   SEQ %" PRIu16 "\n", i,
                         self->frames[i]->expanded.ssrc,
                         self->frames[i]->expanded.sequence_number);
             }

@@ -53,6 +53,7 @@ typedef struct ov_event_session_config {
     struct {
 
         uint64_t max_lifetime_usec;
+        uint64_t threadlock_timeout_usec;
 
     } limit;
 
@@ -72,8 +73,7 @@ ov_event_session *ov_event_session_cast(const void *data);
 
 /*----------------------------------------------------------------------------*/
 
-const char *ov_event_session_init(ov_event_session *self,
-                                  const char *client,
+const char *ov_event_session_init(ov_event_session *self, const char *client,
                                   const char *user);
 
 /*----------------------------------------------------------------------------*/
@@ -82,10 +82,8 @@ bool ov_event_session_delete(ov_event_session *self, const char *client);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_session_update(ov_event_session *self,
-                             const char *client,
-                             const char *user,
-                             const char *id);
+bool ov_event_session_update(ov_event_session *self, const char *client,
+                             const char *user, const char *id);
 
 /*----------------------------------------------------------------------------*/
 
@@ -94,10 +92,8 @@ const char *ov_event_session_get_user(ov_event_session *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_session_verify(ov_event_session *self,
-                             const char *client,
-                             const char *user,
-                             const char *id);
+bool ov_event_session_verify(ov_event_session *self, const char *client,
+                             const char *user, const char *id);
 
 /*----------------------------------------------------------------------------*/
 

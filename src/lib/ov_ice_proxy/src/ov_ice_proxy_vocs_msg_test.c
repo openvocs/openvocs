@@ -62,8 +62,8 @@ int test_ov_ice_proxy_vocs_msg_session_failed() {
         msg = ov_ice_proxy_vocs_msg_session_failed("1");
     testrun(ov_event_api_event_is(msg, OV_KEY_ICE_SESSION_FAILED));
     testrun(ov_json_get(msg, "/" OV_KEY_UUID));
-    testrun(0 == strcmp("1",
-                        ov_json_string_get(ov_json_get(
+    testrun(0 ==
+            strcmp("1", ov_json_string_get(ov_json_get(
                             msg, "/" OV_KEY_PARAMETER "/" OV_KEY_SESSION))));
 
     msg = ov_json_value_free(msg);
@@ -82,8 +82,8 @@ int test_ov_ice_proxy_vocs_msg_drop_session() {
         msg = ov_ice_proxy_vocs_msg_drop_session("1");
     testrun(ov_event_api_event_is(msg, OV_KEY_ICE_SESSION_DROP));
     testrun(ov_json_get(msg, "/" OV_KEY_UUID));
-    testrun(0 == strcmp("1",
-                        ov_json_string_get(ov_json_get(
+    testrun(0 ==
+            strcmp("1", ov_json_string_get(ov_json_get(
                             msg, "/" OV_KEY_PARAMETER "/" OV_KEY_SESSION))));
 
     msg = ov_json_value_free(msg);
@@ -148,15 +148,14 @@ int test_ov_ice_proxy_vocs_msg_client_response_from_ice_session_create() {
 
     testrun(ov_event_api_event_is(msg, OV_EVENT_API_MEDIA));
     testrun(ov_json_get(msg, "/" OV_KEY_UUID));
-    testrun(0 == strcmp("1",
-                        ov_json_string_get(ov_json_get(
+    testrun(0 ==
+            strcmp("1", ov_json_string_get(ov_json_get(
                             msg, "/" OV_KEY_RESPONSE "/" OV_KEY_SESSION))));
-    testrun(0 == strcmp("sdp",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_RESPONSE "/" OV_KEY_SDP))));
+    testrun(0 == strcmp("sdp", ov_json_string_get(ov_json_get(
+                                   msg, "/" OV_KEY_RESPONSE "/" OV_KEY_SDP))));
     testrun(0 == strcmp("offer",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_RESPONSE "/" OV_KEY_TYPE))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_RESPONSE
+                                                            "/" OV_KEY_TYPE))));
 
     msg = ov_json_value_free(msg);
 
@@ -174,9 +173,8 @@ int test_ov_ice_proxy_vocs_msg_register() {
         msg = ov_ice_proxy_vocs_msg_register("1");
     testrun(ov_event_api_event_is(msg, OV_EVENT_API_REGISTER));
     testrun(ov_json_get(msg, "/" OV_KEY_UUID));
-    testrun(0 == strcmp("1",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_UUID))));
+    testrun(0 == strcmp("1", ov_json_string_get(ov_json_get(
+                                 msg, "/" OV_KEY_PARAMETER "/" OV_KEY_UUID))));
 
     msg = ov_json_value_free(msg);
 
@@ -228,12 +226,11 @@ int test_ov_ice_proxy_vocs_msg_get_response_session_id() {
 int test_ov_ice_proxy_vocs_msg_forward_stream() {
 
     ov_json_value *msg = ov_ice_proxy_vocs_msg_forward_stream(
-        "1",
-        (ov_ice_proxy_vocs_stream_forward_data){.id = 2,
-                                                .ssrc = 3,
-                                                .socket.type = UDP,
-                                                .socket.host = "127.0.0.1",
-                                                .socket.port = 12345});
+        "1", (ov_ice_proxy_vocs_stream_forward_data){.id = 2,
+                                                     .ssrc = 3,
+                                                     .socket.type = UDP,
+                                                     .socket.host = "127.0.0.1",
+                                                     .socket.port = 12345});
 
     testrun(msg);
     testrun(ov_event_api_event_is(msg, OV_KEY_ICE_SESSION_FORWARD_STREAM));
@@ -252,11 +249,10 @@ int test_ov_ice_proxy_vocs_msg_forward_stream() {
     testrun(12345 ==
             ov_json_number_get(ov_json_get(
                 par, "/" OV_KEY_STREAM "/" OV_KEY_SOCKET "/" OV_KEY_PORT)));
-    testrun(
-        0 ==
-        strcmp("127.0.0.1",
-               ov_json_string_get(ov_json_get(
-                   par, "/" OV_KEY_STREAM "/" OV_KEY_SOCKET "/" OV_KEY_HOST))));
+    testrun(0 == strcmp("127.0.0.1",
+                        ov_json_string_get(ov_json_get(par, "/" OV_KEY_STREAM
+                                                            "/" OV_KEY_SOCKET
+                                                            "/" OV_KEY_HOST))));
 
     msg = ov_json_value_free(msg);
 
@@ -282,8 +278,8 @@ int test_ov_ice_proxy_vocs_msg_candidate() {
     testrun(0 == strcmp(id, "1"));
 
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MID));
-    testrun(ov_json_get(
-        msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MLINEINDEX));
+    testrun(ov_json_get(msg,
+                        "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_SDP_MLINEINDEX));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_UFRAG));
     testrun(ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_ICE_STRING_CANDIDATE));
 

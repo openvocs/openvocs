@@ -70,9 +70,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_test_message_ok(char const *msg,
-                           size_t msglen,
-                           char const *event,
+ssize_t ov_test_message_ok(char const *msg, size_t msglen, char const *event,
                            bool error_expected) {
 
     if ((0 == msg) || (0 == event)) {
@@ -96,49 +94,49 @@ ssize_t ov_test_message_ok(char const *msg,
     for (size_t pos = 0; pos < msglen; ++pos) {
 
         switch (msg[pos]) {
-            case ' ':
+        case ' ':
+            break;
+
+        case '{':
+            ++count;
+            break;
+
+        case '}':
+            if (0 == --count) {
+                trailing_junk = false;
+            }
+
+            break;
+
+        default:
+
+            trailing_junk = true;
+
+            if (msg[pos] != event[rt_pos++]) {
+                rt_pos = 0;
+            }
+
+            if (msg[pos] != error_indicator[err_pos++]) {
+                err_pos = 0;
+            }
+
+            if (0 == count) {
+                /* Outside of valid json does not count ;) */
                 break;
+            }
 
-            case '{':
-                ++count;
-                break;
+            if (0 == event[rt_pos]) {
+                ov_log_info("Found event: %s", msg + pos - rt_pos);
 
-            case '}':
-                if (0 == --count) {
-                    trailing_junk = false;
-                }
+                required_token_found = true;
+            }
 
-                break;
+            if (0 == error_indicator[err_pos]) {
 
-            default:
+                ov_log_info("Error indicator found: %s", error_indicator);
 
-                trailing_junk = true;
-
-                if (msg[pos] != event[rt_pos++]) {
-                    rt_pos = 0;
-                }
-
-                if (msg[pos] != error_indicator[err_pos++]) {
-                    err_pos = 0;
-                }
-
-                if (0 == count) {
-                    /* Outside of valid json does not count ;) */
-                    break;
-                }
-
-                if (0 == event[rt_pos]) {
-                    ov_log_info("Found event: %s", msg + pos - rt_pos);
-
-                    required_token_found = true;
-                }
-
-                if (0 == error_indicator[err_pos]) {
-
-                    ov_log_info("Error indicator found: %s", error_indicator);
-
-                    error_found = true;
-                }
+                error_found = true;
+            }
         };
     }
 
@@ -154,8 +152,7 @@ ssize_t ov_test_message_ok(char const *msg,
 
     if (error_expected != error_found) {
         ov_log_error("Error: Expected: %s, found %s",
-                     error_expected ? "yes" : "no",
-                     error_found ? "yes" : "no");
+                     error_expected ? "yes" : "no", error_found ? "yes" : "no");
         goto error;
     }
 
@@ -190,7 +187,7 @@ bool ov_test_expect(int fd, char const *event_name, bool error_expected) {
 
     ov_log_info("Received %s", buffer);
 
-    return 0 == ov_test_message_ok(
-                    buffer, (size_t)recvd, event_name, error_expected);
+    return 0 == ov_test_message_ok(buffer, (size_t)recvd, event_name,
+                                   error_expected);
 }
 /*----------------------------------------------------------------------------*/

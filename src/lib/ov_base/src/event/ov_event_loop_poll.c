@@ -122,33 +122,27 @@ static bool impl_poll_event_loop_is_running(const ov_event_loop *self);
 static bool impl_poll_event_loop_stop(ov_event_loop *self);
 static bool impl_poll_event_loop_run(ov_event_loop *self, uint64_t max_runtime);
 
-static bool impl_poll_event_loop_callback_set(ov_event_loop *self,
-                                              int socket_fd,
-                                              uint8_t events,
-                                              void *data,
-                                              bool (*callback)(int socket_fd,
-                                                               uint8_t events,
-                                                               void *data));
+static bool impl_poll_event_loop_callback_set(
+    ov_event_loop *self, int socket_fd, uint8_t events, void *data,
+    bool (*callback)(int socket_fd, uint8_t events, void *data));
 
 static bool impl_poll_event_loop_callback_unset(ov_event_loop *self,
-                                                int socket_fd,
-                                                void **userdata);
+                                                int socket_fd, void **userdata);
 
-static uint32_t impl_poll_event_loop_timer_set(ov_event_loop *self,
-                                               uint64_t relative_usec,
-                                               void *data,
-                                               bool (*callback)(uint32_t id,
-                                                                void *data));
+static uint32_t
+impl_poll_event_loop_timer_set(ov_event_loop *self, uint64_t relative_usec,
+                               void *data,
+                               bool (*callback)(uint32_t id, void *data));
 
-static bool impl_poll_event_loop_timer_unset(ov_event_loop *self,
-                                             uint32_t id,
+static bool impl_poll_event_loop_timer_unset(ov_event_loop *self, uint32_t id,
                                              void **userdata);
 
 /*---------------------------------------------------------------------------*/
 
 bool flags_ov_to_poll(uint8_t *ov_flag, short *poll_event) {
 
-    if (!ov_flag || !poll_event) goto error;
+    if (!ov_flag || !poll_event)
+        goto error;
 
     short flag = 0;
 
@@ -180,19 +174,21 @@ error:
 
 bool poll_loop_init(PollLoop *loop, ov_event_loop_config config) {
 
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    if (!memset(loop, 0, sizeof(PollLoop))) goto error;
+    if (!memset(loop, 0, sizeof(PollLoop)))
+        goto error;
 
-    if (!ov_event_loop_set_type(&loop->public, IMPL_POLL_LOOP_TYPE)) goto error;
+    if (!ov_event_loop_set_type(&loop->public, IMPL_POLL_LOOP_TYPE))
+        goto error;
 
     config = ov_event_loop_config_adapt_to_runtime(config);
 
     if (config.max.sockets < IMPL_SOCKETS_MIN) {
-        ov_log_error(
-            "Eventloop config with less then minimum sockets "
-            "%i",
-            IMPL_SOCKETS_MIN);
+        ov_log_error("Eventloop config with less then minimum sockets "
+                     "%i",
+                     IMPL_SOCKETS_MIN);
         goto error;
     }
 
@@ -202,25 +198,22 @@ bool poll_loop_init(PollLoop *loop, ov_event_loop_config config) {
 
     loop->fds = calloc(loop->config.max.sockets, sizeof(struct pollfd));
     if (!loop->fds) {
-        ov_log_error(
-            "Failed to allocate bytes"
-            " for poll fds.");
+        ov_log_error("Failed to allocate bytes"
+                     " for poll fds.");
         goto error;
     }
 
     loop->cb.socket = calloc(loop->config.max.sockets, sizeof(DataSocket));
     if (!loop->cb.socket) {
-        ov_log_error(
-            "Failed to allocate bytes"
-            " for socket callbacks.");
+        ov_log_error("Failed to allocate bytes"
+                     " for socket callbacks.");
         goto error;
     }
 
     loop->cb.timer = calloc(loop->config.max.timers, sizeof(DataTimer));
     if (!loop->cb.timer) {
-        ov_log_error(
-            "Failed to allocate bytes"
-            " for timer callbacks.");
+        ov_log_error("Failed to allocate bytes"
+                     " for timer callbacks.");
         goto error;
     }
 
@@ -269,21 +262,20 @@ bool poll_loop_init(PollLoop *loop, ov_event_loop_config config) {
      *
      */
 
-    if (0 != socketpair(AF_UNIX, SOCK_STREAM, 0, loop->wakeup)) goto error;
+    if (0 != socketpair(AF_UNIX, SOCK_STREAM, 0, loop->wakeup))
+        goto error;
 
     if (loop->wakeup[0] >= (int)loop->config.max.sockets) {
-        ov_log_error(
-            "Cannot create eventloop, socket index to small "
-            "increase config.max.socket at least to %i",
-            loop->wakeup[0]);
+        ov_log_error("Cannot create eventloop, socket index to small "
+                     "increase config.max.socket at least to %i",
+                     loop->wakeup[0]);
         goto error;
     }
 
     if (loop->wakeup[1] >= (int)loop->config.max.sockets) {
-        ov_log_error(
-            "Cannot create eventloop, socket index to small "
-            "increase config.max.socket at least to %i",
-            loop->wakeup[1]);
+        ov_log_error("Cannot create eventloop, socket index to small "
+                     "increase config.max.socket at least to %i",
+                     loop->wakeup[1]);
         goto error;
     }
 
@@ -324,9 +316,11 @@ error:
 
 ov_event_loop *ov_event_loop_poll(ov_event_loop_config config) {
 
-    if (0 == config.max.sockets) config.max.sockets = IMPL_SOCKETS_MIN;
+    if (0 == config.max.sockets)
+        config.max.sockets = IMPL_SOCKETS_MIN;
 
-    if (0 == config.max.timers) config.max.timers = IMPL_TIMERS_MIN;
+    if (0 == config.max.timers)
+        config.max.timers = IMPL_TIMERS_MIN;
 
     config = ov_event_loop_config_adapt_to_runtime(config);
 
@@ -336,7 +330,8 @@ ov_event_loop *ov_event_loop_poll(ov_event_loop_config config) {
     }
 
     PollLoop *loop = calloc(1, sizeof(PollLoop));
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     if (poll_loop_init(loop, config)) {
         return (ov_event_loop *)loop;
@@ -351,7 +346,8 @@ error:
 
 bool close_all_sockets(PollLoop *loop) {
 
-    if (!loop || !loop->fds) return false;
+    if (!loop || !loop->fds)
+        return false;
 
     for (uint32_t i = 0; i < loop->config.max.sockets; i++) {
 
@@ -369,17 +365,20 @@ bool close_all_sockets(PollLoop *loop) {
 ov_event_loop *impl_poll_event_loop_free(ov_event_loop *self) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     loop->running = false;
     close_all_sockets(loop);
 
-    if (loop->fds) loop->fds = ov_data_pointer_free(loop->fds);
+    if (loop->fds)
+        loop->fds = ov_data_pointer_free(loop->fds);
 
     if (loop->cb.socket)
         loop->cb.socket = ov_data_pointer_free(loop->cb.socket);
 
-    if (loop->cb.timer) loop->cb.timer = ov_data_pointer_free(loop->cb.timer);
+    if (loop->cb.timer)
+        loop->cb.timer = ov_data_pointer_free(loop->cb.timer);
 
     free(loop);
     return NULL;
@@ -392,7 +391,8 @@ error:
 bool impl_poll_event_loop_is_running(const ov_event_loop *self) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop) return false;
+    if (!loop)
+        return false;
 
     return loop->running;
 }
@@ -402,41 +402,47 @@ bool impl_poll_event_loop_is_running(const ov_event_loop *self) {
 bool impl_poll_event_loop_stop(ov_event_loop *self) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop) return false;
+    if (!loop)
+        return false;
 
     loop->running = false;
 
     // wakeup poll eventloop
-    if (-1 != send(loop->wakeup[0], "stop", 4, 0)) return true;
+    if (-1 != send(loop->wakeup[0], "stop", 4, 0))
+        return true;
 
     return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
-static int calculate_timeout_msec(PollLoop *loop,
-                                  uint64_t start_usec,
-                                  uint64_t max_usec,
-                                  uint64_t now_usec) {
+static int calculate_timeout_msec(PollLoop *loop, uint64_t start_usec,
+                                  uint64_t max_usec, uint64_t now_usec) {
 
-    if (max_usec == OV_RUN_ONCE) return 0;
+    if (max_usec == OV_RUN_ONCE)
+        return 0;
 
-    if (now_usec - start_usec >= max_usec) return 0;
+    if (now_usec - start_usec >= max_usec)
+        return 0;
 
-    if (max_usec > INT_MAX) max_usec = INT_MAX;
+    if (max_usec > INT_MAX)
+        max_usec = INT_MAX;
 
     uint64_t next_usec = max_usec;
     uint64_t next_elapse = 0;
 
     for (uint32_t i = 0; i < loop->config.max.timers; i++) {
 
-        if (!loop->cb.timer[i].enabled) continue;
+        if (!loop->cb.timer[i].enabled)
+            continue;
 
-        if (loop->cb.timer[i].absolute_usec <= now_usec) return 0;
+        if (loop->cb.timer[i].absolute_usec <= now_usec)
+            return 0;
 
         next_elapse = loop->cb.timer[i].absolute_usec - now_usec;
 
-        if (next_elapse < next_usec) next_usec = next_elapse;
+        if (next_elapse < next_usec)
+            next_usec = next_elapse;
     }
 
     // ov_log_debug("next_usec %zu", next_usec);
@@ -448,14 +454,17 @@ static int calculate_timeout_msec(PollLoop *loop,
 static void call_timer_callbacks(PollLoop *loop) {
 
     OV_ASSERT(loop);
-    if (!loop) return;
+    if (!loop)
+        return;
 
     uint64_t now = ov_time_get_current_time_usecs();
     for (uint32_t i = 0; i < loop->config.max.timers; i++) {
 
-        if (!loop->cb.timer[i].enabled) continue;
+        if (!loop->cb.timer[i].enabled)
+            continue;
 
-        if (now < loop->cb.timer[i].absolute_usec) continue;
+        if (now < loop->cb.timer[i].absolute_usec)
+            continue;
 
         loop->cb.timer[i].callback(i, loop->cb.timer[i].userdata);
         memset(&loop->cb.timer[i], 0, sizeof(DataTimer));
@@ -469,14 +478,16 @@ static void call_timer_callbacks(PollLoop *loop) {
 bool impl_poll_event_loop_run(ov_event_loop *self, uint64_t max) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop || !loop->cb.socket || !loop->cb.timer || !loop->fds) goto error;
+    if (!loop || !loop->cb.socket || !loop->cb.timer || !loop->fds)
+        goto error;
 
     uint64_t i = 0, event = 0;
     int timeout = 0, result = 0;
 
     loop->running = true;
 
-    if (max == OV_RUN_ONCE) loop->running = false;
+    if (max == OV_RUN_ONCE)
+        loop->running = false;
 
     uint64_t start = ov_time_get_current_time_usecs();
     uint64_t now = 0;
@@ -493,7 +504,8 @@ bool impl_poll_event_loop_run(ov_event_loop *self, uint64_t max) {
             for (i = 0; i < loop->config.max.sockets; i++) {
 
                 // check if callback is set
-                if (!loop->cb.socket[i].func) continue;
+                if (!loop->cb.socket[i].func)
+                    continue;
 
                 // POLL to OV EVENTS
                 event = 0;
@@ -520,18 +532,20 @@ bool impl_poll_event_loop_run(ov_event_loop *self, uint64_t max) {
                 }
 
                 // check if event interest is set
-                if (event == 0) continue;
+                if (event == 0)
+                    continue;
 
                 loop->cb.socket[i].func(i, event, loop->cb.socket[i].data);
             }
 
         } else if (result < 0) {
-            ov_log_error(
-                "Could not run poll errno %i|%s", errno, strerror(errno));
+            ov_log_error("Could not run poll errno %i|%s", errno,
+                         strerror(errno));
             goto error;
         }
 
-        if (max <= now - start) loop->running = false;
+        if (max <= now - start)
+            loop->running = false;
 
     } while (loop->running);
 
@@ -542,37 +556,33 @@ error:
 
 /*------------------------------------------------------------------*/
 
-bool impl_poll_event_loop_callback_set(ov_event_loop *self,
-                                       int socket,
-                                       uint8_t events,
-                                       void *data,
-                                       bool (*callback)(int socket_fd,
-                                                        uint8_t events,
-                                                        void *data)) {
+bool impl_poll_event_loop_callback_set(
+    ov_event_loop *self, int socket, uint8_t events, void *data,
+    bool (*callback)(int socket_fd, uint8_t events, void *data)) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop || !callback) goto error;
+    if (!loop || !callback)
+        goto error;
 
     short poll_event = 0;
-    if (!flags_ov_to_poll(&events, &poll_event)) goto error;
+    if (!flags_ov_to_poll(&events, &poll_event))
+        goto error;
 
     int so_opt;
     socklen_t so_len = sizeof(so_opt);
 
     // check if socket is without error
     if (0 != getsockopt(socket, SOL_SOCKET, SO_ERROR, &so_opt, &so_len)) {
-        ov_log_error(
-            "FAILURE callback listening "
-            "on socket with error "
-            "is NOT SUPPORTED.");
+        ov_log_error("FAILURE callback listening "
+                     "on socket with error "
+                     "is NOT SUPPORTED.");
         goto error;
     }
 
     if (0 == poll_event) {
-        ov_log_error(
-            "FAILURE callback listening "
-            "without events "
-            "is NOT SUPPORTED.");
+        ov_log_error("FAILURE callback listening "
+                     "without events "
+                     "is NOT SUPPORTED.");
         goto error;
     }
 
@@ -625,16 +635,18 @@ error:
 
 /*------------------------------------------------------------------*/
 
-bool impl_poll_event_loop_callback_unset(ov_event_loop *self,
-                                         int socket,
+bool impl_poll_event_loop_callback_unset(ov_event_loop *self, int socket,
                                          void **userdata) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop || !loop->cb.socket || socket < 0) goto error;
+    if (!loop || !loop->cb.socket || socket < 0)
+        goto error;
 
-    if (userdata) *userdata = loop->cb.socket[socket].data;
+    if (userdata)
+        *userdata = loop->cb.socket[socket].data;
 
-    if ((uint32_t)socket >= loop->config.max.sockets) goto error;
+    if ((uint32_t)socket >= loop->config.max.sockets)
+        goto error;
 
     // close poll listening at the socket
     loop->fds[socket].fd = -1;
@@ -673,19 +685,20 @@ error:
 /*------------------------------------------------------------------*/
 
 uint32_t impl_poll_event_loop_timer_set(ov_event_loop *self,
-                                        uint64_t relative_usec,
-                                        void *data,
+                                        uint64_t relative_usec, void *data,
                                         bool (*callback)(uint32_t id,
                                                          void *data)) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop || !callback || (relative_usec == IMPL_TIMER_INVALID)) goto error;
+    if (!loop || !callback || (relative_usec == IMPL_TIMER_INVALID))
+        goto error;
 
     uint64_t now = ov_time_get_current_time_usecs();
 
     DataTimer *timer = NULL;
 
-    if (0 == relative_usec) relative_usec = 1;
+    if (0 == relative_usec)
+        relative_usec = 1;
 
     uint32_t i = 0;
 
@@ -697,7 +710,8 @@ uint32_t impl_poll_event_loop_timer_set(ov_event_loop *self,
         }
     }
 
-    if (!timer) goto error;
+    if (!timer)
+        goto error;
 
     timer->enabled = true;
     timer->absolute_usec = now + relative_usec;
@@ -730,18 +744,21 @@ error:
 
 /*------------------------------------------------------------------*/
 
-bool impl_poll_event_loop_timer_unset(ov_event_loop *self,
-                                      uint32_t id,
+bool impl_poll_event_loop_timer_unset(ov_event_loop *self, uint32_t id,
                                       void **userdata) {
 
     PollLoop *loop = AS_POLL_LOOP(self);
-    if (!loop || (id == 0)) goto error;
+    if (!loop || (id == 0))
+        goto error;
 
-    if (userdata) *userdata = NULL;
+    if (userdata)
+        *userdata = NULL;
 
-    if (false == loop->cb.timer[id].enabled) return true;
+    if (false == loop->cb.timer[id].enabled)
+        return true;
 
-    if (userdata) *userdata = loop->cb.timer[id].userdata;
+    if (userdata)
+        *userdata = loop->cb.timer[id].userdata;
 
     memset(&loop->cb.timer[id], 0, sizeof(DataTimer));
 
@@ -775,7 +792,8 @@ error:
 
 bool just_read_empty(int socket, uint8_t events, void *data) {
 
-    if (socket < 0 || !events || !data) goto error;
+    if (socket < 0 || !events || !data)
+        goto error;
 
     char buf[100];
     read(socket, buf, 100);

@@ -33,6 +33,7 @@ export default class ov_SIP_Whitelist extends HTMLElement {
 
     #caller;
     #callee;
+    #disabled = false;
 
     constructor() {
         super();
@@ -87,11 +88,33 @@ export default class ov_SIP_Whitelist extends HTMLElement {
         return this.#callee;
     }
 
+    #update_disabled() {
+        let callee = this.shadowRoot.querySelector("#callee");
+        if (callee)
+            callee.disabled = this.#disabled;
+        let caller = this.shadowRoot.querySelector("#caller");
+        if (caller)
+            caller.disabled = this.#disabled;
+        let button = this.shadowRoot.querySelector("#delete_whitelist_entry");
+        if (button)
+            button.disabled = this.#disabled;
+    }
+
+    set disabled(value) {
+        this.#disabled = value;
+        this.#update_disabled();
+    }
+
+    get disabled() {
+        return this.#disabled;
+    }
+
     async connectedCallback() {
         await this.#render();
 
         this.#update_caller();
         this.#update_callee();
+        this.#update_disabled();
 
         this.shadowRoot.querySelector("#delete_whitelist_entry").addEventListener("click", () => {
             this.dispatchEvent(new CustomEvent("delete_entry"));

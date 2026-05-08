@@ -33,6 +33,7 @@
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_dict.h>
 #include <ov_base/ov_event_loop.h>
+#include <ov_base/ov_vad_config.h>
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_io.h>
 #include <ov_vocs_db/ov_vocs_db.h>
@@ -50,6 +51,8 @@ typedef struct ov_mc_backend_vad_config {
     ov_vocs_db *db;
 
     ov_socket_configuration socket;
+
+    ov_vad_config vad;
 
     struct {
 
@@ -73,7 +76,7 @@ ov_mc_backend_vad *ov_mc_backend_vad_create(ov_mc_backend_vad_config config);
 ov_mc_backend_vad *ov_mc_backend_vad_free(ov_mc_backend_vad *self);
 ov_mc_backend_vad *ov_mc_backend_vad_cast(const void *data);
 
-ov_mc_backend_vad_config ov_mc_backend_vad_config_from_json(
-    const ov_json_value *in);
+ov_mc_backend_vad_config
+ov_mc_backend_vad_config_from_json(const ov_json_value *in);
 
 #endif /* ov_mc_backend_vad_h */

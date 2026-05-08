@@ -72,8 +72,7 @@ char const *ov_notify_type_to_string(ov_notify_type type);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_notify_message(char const *uuid,
-                                 ov_notify_type notify_type,
+ov_json_value *ov_notify_message(char const *uuid, ov_notify_type notify_type,
                                  ov_notify_parameters parameters);
 
 /*----------------------------------------------------------------------------*/

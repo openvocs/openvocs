@@ -70,19 +70,19 @@ typedef struct ov_ice_proxy_vocs_app_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_vocs_app *ov_ice_proxy_vocs_app_create(
-    ov_ice_proxy_vocs_app_config config);
+ov_ice_proxy_vocs_app *
+ov_ice_proxy_vocs_app_create(ov_ice_proxy_vocs_app_config config);
 ov_ice_proxy_vocs_app *ov_ice_proxy_vocs_app_free(ov_ice_proxy_vocs_app *self);
 ov_ice_proxy_vocs_app *ov_ice_proxy_vocs_app_cast(const void *userdata);
 
 /*----------------------------------------------------------------------------*/
 
-ov_ice_proxy_vocs_app_config ov_ice_proxy_vocs_app_config_from_json(
-    const ov_json_value *v);
+ov_ice_proxy_vocs_app_config
+ov_ice_proxy_vocs_app_config_from_json(const ov_json_value *v);
 
 /*----------------------------------------------------------------------------*/
 
-ov_event_io_config ov_ice_proxy_vocs_app_io_uri_config(
-    ov_ice_proxy_vocs_app *self);
+ov_event_io_config
+ov_ice_proxy_vocs_app_io_uri_config(ov_ice_proxy_vocs_app *self);
 
 #endif /* ov_ice_proxy_vocs_app_h */

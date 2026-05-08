@@ -42,6 +42,7 @@ typedef struct ov_callback {
 
     void *userdata;
     void *function;
+    int socket;
 
 } ov_callback;
 
@@ -67,15 +68,14 @@ typedef struct ov_callback_registry_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_callback_registry *ov_callback_registry_create(
-    ov_callback_registry_config c);
+ov_callback_registry *
+ov_callback_registry_create(ov_callback_registry_config config);
 ov_callback_registry *ov_callback_registry_free(ov_callback_registry *self);
 ov_callback_registry *ov_callback_registry_cast(const void *data);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_callback_registry_register(ov_callback_registry *self,
-                                   const char *key,
+bool ov_callback_registry_register(ov_callback_registry *self, const char *key,
                                    const ov_callback callback,
                                    uint64_t timeout);
 

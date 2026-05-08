@@ -75,20 +75,18 @@ static const ov_file_format_registry init_reg = (ov_file_format_registry){
  *      ------------------------------------------------------------------------
  */
 
-ov_format *ov_file_format_as(ov_format *f,
-                             char const *file_type,
-                             void *options,
+ov_format *ov_file_format_as(ov_format *f, char const *file_type, void *options,
                              ov_file_format_registry *registry) {
 
-    if (!registry || !registry->format_handler) return NULL;
+    if (!registry || !registry->format_handler)
+        return NULL;
 
     return ov_format_as(f, file_type, options, registry->format_handler);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_extensions(ov_file_desc *desc,
-                             const char *restrict path,
+static bool parse_extensions(ov_file_desc *desc, const char *restrict path,
                              const char stop) {
 
     /*
@@ -101,7 +99,8 @@ static bool parse_extensions(ov_file_desc *desc,
      *  whatever other OS is using.
      */
 
-    if (!desc || !path) goto error;
+    if (!desc || !path)
+        goto error;
 
     /* (1) clean extensions */
 
@@ -120,21 +119,26 @@ static bool parse_extensions(ov_file_desc *desc,
     for (size_t i = size; i > 0; i--) {
 
         if (0 != stop)
-            if (start[i] == stop) break;
+            if (start[i] == stop)
+                break;
 
-        if (start[i] != '.') continue;
+        if (start[i] != '.')
+            continue;
 
         if (i > 0)
-            if (start[i - 1] == '.') break;
+            if (start[i - 1] == '.')
+                break;
 
         ptr = start + i + 1;
         len = last - ptr;
 
-        if ((0 == len) && item > 0) goto error;
+        if ((0 == len) && item > 0)
+            goto error;
 
         OV_ASSERT(len < OV_FILE_EXT_STRING_MAX);
 
-        if (len > OV_FILE_EXT_STRING_MAX) goto error;
+        if (len > OV_FILE_EXT_STRING_MAX)
+            goto error;
         /*
          *  Alternative char based copy?
          *
@@ -145,7 +149,8 @@ static bool parse_extensions(ov_file_desc *desc,
          *      desc->ext[item][j] = ptr[j];
          */
 
-        if (!memcpy(desc->ext[item], ptr, len)) goto error;
+        if (!memcpy(desc->ext[item], ptr, len))
+            goto error;
 
         for (size_t x = 0; x < len; x++) {
 
@@ -159,7 +164,8 @@ static bool parse_extensions(ov_file_desc *desc,
 
     return true;
 error:
-    if (desc) memset(desc->ext, 0, sizeof(desc->ext));
+    if (desc)
+        memset(desc->ext, 0, sizeof(desc->ext));
     return false;
 }
 
@@ -169,14 +175,17 @@ ov_file_desc ov_file_desc_from_path(const char *restrict path) {
 
     ov_file_desc desc = (ov_file_desc){0};
 
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
     desc.bytes = ov_file_read_check_get_bytes(path);
-    if (desc.bytes < 0) goto error;
+    if (desc.bytes < 0)
+        goto error;
 
     /* valid and readable file */
 
-    if (!parse_extensions(&desc, path, OV_PATH_DELIMITER)) goto error;
+    if (!parse_extensions(&desc, path, OV_PATH_DELIMITER))
+        goto error;
 
     return desc;
 error:
@@ -199,7 +208,8 @@ bool ov_file_encoding_is_utf8(const char *restrict path) {
      *  just to check if the encoding is some valid UTF-8 sequence.
      */
 
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
     fd = open(path, O_RDONLY | O_CLOEXEC);
     if (0 > fd) {
@@ -250,9 +260,11 @@ bool ov_file_encoding_is_utf8(const char *restrict path) {
     return true;
 error:
 
-    if (start) munmap(start, size);
+    if (start)
+        munmap(start, size);
 
-    if (0 > fd) close(fd);
+    if (0 > fd)
+        close(fd);
 
     return false;
 }
@@ -267,7 +279,8 @@ error:
 
 ov_file_format_registry *ov_file_format_registry_cast(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
     if (*(uint16_t *)data == OV_FILE_FORMAT_REGISTRY_MAGIC_BYTE)
         return (ov_file_format_registry *)data;
@@ -280,7 +293,8 @@ ov_file_format_registry *ov_file_format_registry_cast(void *data) {
 static void *free_registry(void *data) {
 
     ov_file_format_registry *reg = ov_file_format_registry_cast(data);
-    if (!reg) return data;
+    if (!reg)
+        return data;
 
     reg->format = ov_dict_free(reg->format);
     reg->format_handler = ov_format_registry_clear(reg->format_handler);
@@ -294,7 +308,8 @@ static void *free_registry(void *data) {
 static ov_file_format_registry *create_registry() {
 
     ov_file_format_registry *reg = calloc(1, sizeof(ov_file_format_registry));
-    if (!reg) goto error;
+    if (!reg)
+        goto error;
 
     if (!memcpy(reg, &init_reg, sizeof(ov_file_format_registry))) {
         reg = ov_data_pointer_free(reg);
@@ -310,7 +325,8 @@ static ov_file_format_registry *create_registry() {
     config.value.data_function.free = NULL;
     reg->extensions = ov_dict_create(config);
 
-    if (!reg->format || !reg->extensions) goto error;
+    if (!reg->format || !reg->extensions)
+        goto error;
 
     OV_ASSERT(ov_file_format_registry_cast(reg));
     OV_ASSERT(ov_dict_cast(reg->format));
@@ -333,30 +349,33 @@ bool ov_file_format_register(ov_file_format_registry **registry,
     ov_file_format_parameter *val = NULL;
     char *key = 0;
 
-    if (!registry) goto error;
+    if (!registry)
+        goto error;
 
     ov_file_format_registry *reg = *registry;
 
-    if (0 == parameter.name[0]) goto error;
+    if (0 == parameter.name[0])
+        goto error;
 
     if (!reg) {
 
         reg = create_registry();
 
-        if (!reg) goto error;
+        if (!reg)
+            goto error;
 
         *registry = reg;
     }
 
-    if (!ov_format_registry_unregister_type(
-            parameter.name, 0, reg->format_handler)) {
+    if (!ov_format_registry_unregister_type(parameter.name, 0,
+                                            reg->format_handler)) {
 
         ov_log_error("Could not unregister format %s", parameter.name);
         goto error;
     }
 
-    if (!ov_format_registry_register_type(
-            parameter.name, parameter.handler, reg->format_handler)) {
+    if (!ov_format_registry_register_type(parameter.name, parameter.handler,
+                                          reg->format_handler)) {
 
         ov_log_error("%s failed to register as format", parameter.name);
 
@@ -368,13 +387,14 @@ bool ov_file_format_register(ov_file_format_registry **registry,
 
     if (ov_dict_is_set(reg->format, parameter.name)) {
 
-        ov_log_debug(
-            "%s already registered as format - overriding", parameter.name);
+        ov_log_debug("%s already registered as format - overriding",
+                     parameter.name);
     }
 
     key = strndup(parameter.name, OV_FILE_FORMAT_PARAMETER_NAME_MAX + 1);
 
-    if (0 == key) goto error;
+    if (0 == key)
+        goto error;
 
     val = calloc(1, sizeof(ov_file_format_parameter));
     OV_ASSERT(0 != val);
@@ -398,16 +418,18 @@ bool ov_file_format_register(ov_file_format_registry **registry,
 
     for (size_t i = 0; i < file_extension_size; i++) {
 
-        if (0 == file_extension_array[i]) break;
+        if (0 == file_extension_array[i])
+            break;
 
         char const *name = file_extension_array[i];
 
-        if (strlen(name) > OV_FILE_EXT_STRING_MAX) goto error;
+        if (strlen(name) > OV_FILE_EXT_STRING_MAX)
+            goto error;
 
         if (name[0] == '.') {
 
-            ov_log_debug(
-                "%s starts with . (dot) - ignoring as extension", name);
+            ov_log_debug("%s starts with . (dot) - ignoring as extension",
+                         name);
 
             continue;
         }
@@ -416,20 +438,23 @@ bool ov_file_format_register(ov_file_format_registry **registry,
          * format desc parser for some extension. */
 
         key = strndup(name, OV_FILE_EXT_STRING_MAX + 1);
-        if (!key) goto error;
+        if (!key)
+            goto error;
 
         for (size_t i = 0; i < strlen(key); i++) {
 
-            if (isalpha(key[i])) key[i] = tolower(key[i]);
+            if (isalpha(key[i]))
+                key[i] = tolower(key[i]);
         }
 
         if (ov_dict_is_set(reg->extensions, key)) {
 
-            ov_log_debug(
-                "%s already registered as extension - overriding", key);
+            ov_log_debug("%s already registered as extension - overriding",
+                         key);
         }
 
-        if (!ov_dict_set(reg->extensions, key, val, 0)) goto error;
+        if (!ov_dict_set(reg->extensions, key, val, 0))
+            goto error;
     }
 
     return true;
@@ -448,11 +473,14 @@ error:
 
 bool ov_file_format_free_registry(ov_file_format_registry **registry) {
 
-    if (!registry) return true;
+    if (!registry)
+        return true;
 
-    if (!*registry) return true;
+    if (!*registry)
+        return true;
 
-    if (!ov_file_format_registry_cast(*registry)) return false;
+    if (!ov_file_format_registry_cast(*registry))
+        return false;
 
     ov_file_format_registry *reg = *registry;
     *registry = NULL;
@@ -463,35 +491,40 @@ bool ov_file_format_free_registry(ov_file_format_registry **registry) {
 
 /*----------------------------------------------------------------------------*/
 
-const ov_file_format_parameter *ov_file_format_get(
-    const ov_file_format_registry *registry, const char *name) {
+const ov_file_format_parameter *
+ov_file_format_get(const ov_file_format_registry *registry, const char *name) {
 
-    if (!registry || !name) return NULL;
+    if (!registry || !name)
+        return NULL;
 
-    return (const ov_file_format_parameter *)ov_dict_get(
-        registry->format, name);
+    return (const ov_file_format_parameter *)ov_dict_get(registry->format,
+                                                         name);
 }
 
 /*----------------------------------------------------------------------------*/
 
-const ov_file_format_parameter *ov_file_format_get_ext(
-    const ov_file_format_registry *registry, const char *name) {
+const ov_file_format_parameter *
+ov_file_format_get_ext(const ov_file_format_registry *registry,
+                       const char *name) {
 
-    if (!registry || !name) return NULL;
+    if (!registry || !name)
+        return NULL;
 
-    return (const ov_file_format_parameter *)ov_dict_get(
-        registry->extensions, name);
+    return (const ov_file_format_parameter *)ov_dict_get(registry->extensions,
+                                                         name);
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_file_format_desc ov_file_format_get_desc(
-    const ov_file_format_registry *registry, const char *restrict path) {
+ov_file_format_desc
+ov_file_format_get_desc(const ov_file_format_registry *registry,
+                        const char *restrict path) {
 
     ov_file_format_desc format = (ov_file_format_desc){0};
 
     format.desc = ov_file_desc_from_path(path);
-    if (-1 == format.desc.bytes) goto error;
+    if (-1 == format.desc.bytes)
+        goto error;
 
     if (0 == format.desc.ext[0][0]) {
 
@@ -528,7 +561,8 @@ error:
 
 static bool check_is_json_string(void *val, void *data) {
 
-    if (ov_json_is_string(val)) return true;
+    if (ov_json_is_string(val))
+        return true;
 
     ov_log_error("NOT a json string");
     if (data) { /* unused */
@@ -562,8 +596,8 @@ static bool check_mime_object(void *val) {
     value = ov_json_object_get(val, OV_KEY_EXTENSION);
 
     if (!value || !ov_json_is_array(value)) {
-        ov_log_error(
-            "... pair content %s not array or not set", OV_KEY_EXTENSION);
+        ov_log_error("... pair content %s not array or not set",
+                     OV_KEY_EXTENSION);
         goto error;
     }
 
@@ -582,7 +616,8 @@ error:
 
 static bool check_pairs(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     if (data) { /* unused */
     }
@@ -598,39 +633,42 @@ static bool check_pairs(const void *key, void *val, void *data) {
 /*----------------------------------------------------------------------------*/
 
 bool ov_file_format_register_values_from_json(
-    const ov_json_value *input,
-    const char *name,
-    ov_file_format_parameter *parameter,
-    size_t *size,
-    char *array[]) {
+    const ov_json_value *input, const char *name,
+    ov_file_format_parameter *parameter, size_t *size, char *array[]) {
 
-    if (!input || !size || !array || !parameter) goto error;
+    if (!input || !size || !array || !parameter)
+        goto error;
 
     /* Use desired input data */
 
     const ov_json_value *data = ov_json_object_get(input, name);
-    if (!data) data = input;
+    if (!data)
+        data = input;
 
-    if (!check_mime_object((void *)data)) goto error;
+    if (!check_mime_object((void *)data))
+        goto error;
 
     const char *mime =
         ov_json_string_get(ov_json_object_get(data, OV_KEY_MIME));
-    if (!mime) goto error;
+    if (!mime)
+        goto error;
 
     memset(parameter->mime, 0, OV_FILE_FORMAT_MIME_MAX);
     memset(parameter->name, 0, OV_FILE_FORMAT_TYPE_NAME_MAX);
 
-    if (strlen(mime) > OV_FILE_FORMAT_MIME_MAX) goto error;
+    if (strlen(mime) > OV_FILE_FORMAT_MIME_MAX)
+        goto error;
 
     if (!snprintf(parameter->mime, OV_FILE_FORMAT_MIME_MAX, "%s", mime))
         goto error;
 
     if (name) {
 
-        if (strlen(name) > OV_FILE_FORMAT_TYPE_NAME_MAX) goto error;
+        if (strlen(name) > OV_FILE_FORMAT_TYPE_NAME_MAX)
+            goto error;
 
-        if (!snprintf(
-                parameter->name, OV_FILE_FORMAT_TYPE_NAME_MAX, "%s", name))
+        if (!snprintf(parameter->name, OV_FILE_FORMAT_TYPE_NAME_MAX, "%s",
+                      name))
             goto error;
     }
 
@@ -638,13 +676,15 @@ bool ov_file_format_register_values_from_json(
 
     size_t count = ov_json_array_count(arr);
 
-    if (*size < count) goto error;
+    if (*size < count)
+        goto error;
 
     *size = count;
 
     for (size_t i = 0; i < count; i++) {
         array[i] = (char *)ov_json_string_get(ov_json_array_get(arr, i + 1));
-        if (NULL == array[i]) goto error;
+        if (NULL == array[i])
+            goto error;
     }
 
     return true;
@@ -654,22 +694,27 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_file_format_register_values_to_json(
-    ov_file_format_parameter parameter, size_t size, char const *array[]) {
+ov_json_value *
+ov_file_format_register_values_to_json(ov_file_format_parameter parameter,
+                                       size_t size, char const *array[]) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *arr = NULL;
 
-    if ((0 == size) || (!array)) goto error;
+    if ((0 == size) || (!array))
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_array();
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
-    if (!ov_json_object_set(out, OV_KEY_EXTENSION, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_EXTENSION, val))
+        goto error;
 
     arr = val;
     val = NULL;
@@ -678,15 +723,18 @@ ov_json_value *ov_file_format_register_values_to_json(
 
         val = ov_json_string(parameter.mime);
 
-        if (!ov_json_object_set(out, OV_KEY_MIME, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_MIME, val))
+            goto error;
     }
 
     for (size_t i = 0; i < size; i++) {
 
-        if (array[i] == 0) break;
+        if (array[i] == 0)
+            break;
 
         val = ov_json_string(array[i]);
-        if (!ov_json_array_push(arr, val)) goto error;
+        if (!ov_json_array_push(arr, val))
+            goto error;
     }
 
     return out;
@@ -698,11 +746,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool validate_file_content_is_mime_format(const void *key,
-                                                 void *val,
+static bool validate_file_content_is_mime_format(const void *key, void *val,
                                                  void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     /* INPUT will be:
      *
@@ -717,11 +765,13 @@ static bool validate_file_content_is_mime_format(const void *key,
      *  }
      */
 
-    if (!ov_json_object_for_each(val, NULL, check_pairs)) goto error;
+    if (!ov_json_object_for_each(val, NULL, check_pairs))
+        goto error;
 
     return true;
 error:
-    if (key) ov_log_error("Failure in file %s", (char *)key);
+    if (key)
+        ov_log_error("Failure in file %s", (char *)key);
 
     if (data) { /* ignore */
     };
@@ -741,7 +791,8 @@ static bool register_pairs(const void *key, void *val, void *data) {
      *  }
      */
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     if (!data) {
         OV_ASSERT(data);
@@ -762,11 +813,13 @@ static bool register_pairs(const void *key, void *val, void *data) {
 
     char const *items[size];
 
-    if (size < 1) goto error;
+    if (size < 1)
+        goto error;
 
     for (size_t i = 0; i < size; i++) {
         items[i] = (char *)ov_json_string_get(ov_json_array_get(arr, i + 1));
-        if (NULL == items[i]) goto error;
+        if (NULL == items[i])
+            goto error;
     }
 
     ov_file_format_parameter param = {0};
@@ -791,14 +844,15 @@ static bool register_pairs(const void *key, void *val, void *data) {
         goto error;
     }
 
-    if (!ov_file_format_register(
-            (ov_file_format_registry **)data, param, size, items))
+    if (!ov_file_format_register((ov_file_format_registry **)data, param, size,
+                                 items))
         goto error;
 
     // ov_log_debug("registered format |%s|\n", name);
     return true;
 error:
-    if (key) ov_log_error("Failed to register %s", (char *)key);
+    if (key)
+        ov_log_error("Failed to register %s", (char *)key);
 
     return false;
 }
@@ -807,9 +861,11 @@ error:
 
 static bool register_file_content(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    if (!val || !data) return false;
+    if (!val || !data)
+        return false;
 
     /* INPUT will be:
      *
@@ -830,13 +886,13 @@ static bool register_file_content(const void *key, void *val, void *data) {
 /*----------------------------------------------------------------------------*/
 
 bool ov_file_format_register_from_json_from_path(
-    ov_file_format_registry **registry,
-    const char *restrict path,
+    ov_file_format_registry **registry, const char *restrict path,
     const char *ext) {
 
     ov_json_value *data = NULL;
 
-    if (!registry || !path) goto error;
+    if (!registry || !path)
+        goto error;
 
     data = ov_json_read_dir(path, ext);
     if (!data) {
@@ -844,8 +900,8 @@ bool ov_file_format_register_from_json_from_path(
         goto error;
     }
 
-    if (!ov_json_object_for_each(
-            data, NULL, validate_file_content_is_mime_format)) {
+    if (!ov_json_object_for_each(data, NULL,
+                                 validate_file_content_is_mime_format)) {
         ov_log_error("Validate file content failed for %s | %s", path, ext);
         goto error;
     }
@@ -857,8 +913,8 @@ bool ov_file_format_register_from_json_from_path(
 
     ov_json_value_free(data);
 
-    ov_log_debug(
-        "registered formats with ext |%s| from path |%s|\n", ext, path);
+    ov_log_debug("registered formats with ext |%s| from path |%s|\n", ext,
+                 path);
     return true;
 error:
     ov_json_value_free(data);

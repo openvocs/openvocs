@@ -60,8 +60,7 @@ struct ov_value {
     bool (*dump)(FILE *stream, ov_value const *);
 
     bool (*for_each)(ov_value const *,
-                     bool (*func)(char const *key,
-                                  ov_value const *,
+                     bool (*func)(char const *key, ov_value const *,
                                   void *userdata),
                      void *userdata);
 
@@ -72,7 +71,8 @@ struct ov_value {
 
 static bool is_value(ov_value const *val) {
 
-    if (0 == val) return false;
+    if (0 == val)
+        return false;
 
     return MAGIC_BYTES == val->magic_bytes;
 }
@@ -83,7 +83,8 @@ static bool is_value(ov_value const *val) {
 
 ov_value *ov_value_free(ov_value *value) {
 
-    if ((0 == value) || (0 == value->free)) goto error;
+    if ((0 == value) || (0 == value->free))
+        goto error;
 
     return value->free(value);
 
@@ -96,7 +97,8 @@ error:
 
 ov_value *ov_value_copy(ov_value const *value) {
 
-    if ((0 == value) || (0 == value->copy)) goto error;
+    if ((0 == value) || (0 == value->copy))
+        goto error;
 
     return value->copy(value);
 
@@ -108,7 +110,8 @@ error:
 /*----------------------------------------------------------------------------*/
 
 size_t ov_value_count(ov_value const *value) {
-    if ((0 == value) || (0 == value->count)) goto error;
+    if ((0 == value) || (0 == value->count))
+        goto error;
 
     return value->count(value);
 
@@ -121,7 +124,8 @@ error:
 
 bool ov_value_dump(FILE *stream, ov_value const *value) {
 
-    if ((0 == value) || (0 == value->dump)) goto error;
+    if ((0 == value) || (0 == value->dump))
+        goto error;
 
     return value->dump(stream, value);
 
@@ -137,7 +141,8 @@ char *ov_value_to_string(ov_value const *value) {
     char *dumped = 0;
     size_t length = 0;
 
-    if (0 == value) goto error;
+    if (0 == value)
+        goto error;
 
     FILE *string_stream = open_memstream(&dumped, &length);
     OV_ASSERT(0 != string_stream);
@@ -166,13 +171,14 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_value_for_each(ov_value const *value,
-                       bool (*func)(char const *key,
-                                    ov_value const *,
+                       bool (*func)(char const *key, ov_value const *,
                                     void *userdata),
                        void *userdata) {
 
-    if (0 == value) goto error;
-    if (0 == value->for_each) goto error;
+    if (0 == value)
+        goto error;
+    if (0 == value->for_each)
+        goto error;
 
     return value->for_each(value, func, userdata);
 
@@ -185,9 +191,11 @@ error:
 
 bool ov_value_match(ov_value const *v1, ov_value const *v2) {
 
-    if (v1 == v2) return true;
+    if (v1 == v2)
+        return true;
 
-    if ((0 == v1) || (0 == v2)) return false;
+    if ((0 == v1) || (0 == v2))
+        return false;
 
     OV_ASSERT(0 != v1);
     OV_ASSERT(0 != v1->match);
@@ -201,7 +209,8 @@ bool ov_value_match(ov_value const *v1, ov_value const *v2) {
 
 static void *vptr_free(void *vptr) {
 
-    if (!is_value(vptr)) return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
     return ov_value_free(vptr);
 }
@@ -220,7 +229,8 @@ static bool vptr_clear(void *vptr) {
 
 void *vptr_copy(void **destination, const void *source) {
 
-    if (!is_value(source)) goto error;
+    if (!is_value(source))
+        goto error;
 
     ov_value *copy = ov_value_copy(source);
 
@@ -240,7 +250,8 @@ error:
 
 static bool vptr_dump(FILE *stream, void const *vptr) {
 
-    if (!is_value(vptr)) goto error;
+    if (!is_value(vptr))
+        goto error;
 
     return ov_value_dump(stream, vptr);
 
@@ -317,7 +328,8 @@ static bool null_dump(FILE *stream, ov_value const *value) {
 
     UNUSED(value);
 
-    if (0 == stream) return false;
+    if (0 == stream)
+        return false;
 
     fprintf(stream, "null");
 
@@ -354,7 +366,8 @@ bool ov_value_is_null(ov_value const *value) { return &g_null == value; }
 static bool true_dump(FILE *stream, ov_value const *value) {
 
     UNUSED(value);
-    if (0 == stream) return false;
+    if (0 == stream)
+        return false;
     fprintf(stream, "true");
 
     return true;
@@ -390,7 +403,8 @@ bool ov_value_is_true(ov_value const *value) { return &g_true == value; }
 static bool false_dump(FILE *stream, ov_value const *value) {
 
     UNUSED(value);
-    if (0 == stream) return false;
+    if (0 == stream)
+        return false;
     fprintf(stream, "false");
 
     return true;
@@ -419,7 +433,7 @@ bool ov_value_is_false(ov_value const *value) { return &g_false == value; }
                                      Number
  ****************************************************************************/
 
-ov_registered_cache *g_number_cache = 0;
+static ov_registered_cache *g_number_cache = 0;
 
 const uint16_t NUMBER_TYPE = 16;
 
@@ -443,7 +457,8 @@ static void *number_free_for_good(void *vptr) {
 
 static ov_value *number_free(ov_value *val) {
 
-    if (0 == val) return val;
+    if (0 == val)
+        return val;
 
     if (0 != ov_registered_cache_put(g_number_cache, val)) {
 
@@ -457,7 +472,8 @@ static ov_value *number_free(ov_value *val) {
 
 static ov_value *number_copy(ov_value const *val) {
 
-    if (!ov_value_is_number(val)) goto error;
+    if (!ov_value_is_number(val))
+        goto error;
 
     double data = ov_value_get_number(val);
 
@@ -488,7 +504,8 @@ static char const *get_format_string(double x) {
 
 static bool number_dump(FILE *stream, ov_value const *val) {
 
-    if ((0 == stream) || (!ov_value_is_number(val))) return false;
+    if ((0 == stream) || (!ov_value_is_number(val)))
+        return false;
 
     Number *number = (Number *)val;
 
@@ -509,8 +526,10 @@ error:
 
 static bool match_number(ov_value const *v1, ov_value const *v2) {
 
-    if (!ov_value_is_number(v1)) return false;
-    if (!ov_value_is_number(v2)) return false;
+    if (!ov_value_is_number(v1))
+        return false;
+    if (!ov_value_is_number(v2))
+        return false;
 
     double d1 = ov_value_get_number(v1);
     double d2 = ov_value_get_number(v2);
@@ -550,9 +569,11 @@ ov_value *ov_value_number(double number) {
 
 bool ov_value_is_number(ov_value const *value) {
 
-    if (!is_value(value)) goto error;
+    if (!is_value(value))
+        goto error;
 
-    if (NUMBER_TYPE != value->type) goto error;
+    if (NUMBER_TYPE != value->type)
+        goto error;
 
     return true;
 
@@ -565,7 +586,8 @@ error:
 
 double ov_value_get_number(ov_value const *value) {
 
-    if (!ov_value_is_number(value)) goto error;
+    if (!ov_value_is_number(value))
+        goto error;
 
     Number *number = (Number *)value;
 
@@ -580,7 +602,7 @@ error:
                                      string
  ****************************************************************************/
 
-ov_registered_cache *g_string_cache = 0;
+static ov_registered_cache *g_string_cache = 0;
 
 const uint16_t STRING_TYPE = 16 + 4;
 
@@ -595,13 +617,16 @@ typedef struct {
 
 static void *string_free_for_good(void *vptr) {
 
-    if (!is_value(vptr)) return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
     String *s = vptr;
 
-    if (STRING_TYPE != s->pub.type) return vptr;
+    if (STRING_TYPE != s->pub.type)
+        return vptr;
 
-    if (0 != s->data) free(s->data);
+    if (0 != s->data)
+        free(s->data);
 
     free(s);
 
@@ -645,7 +670,8 @@ error:
 
 static ov_value *string_copy(ov_value const *val) {
 
-    if (0 == val) return 0;
+    if (0 == val)
+        return 0;
 
     String *s = (String *)val;
 
@@ -695,7 +721,8 @@ static bool string_match(ov_value const *v1, ov_value const *v2) {
     char const *s1 = ov_value_get_string(v1);
     char const *s2 = ov_value_get_string(v2);
 
-    if ((0 == s1) || (0 == s2)) return false;
+    if ((0 == s1) || (0 == s2))
+        return false;
 
     return 0 == strcmp(s1, s2);
 }
@@ -704,7 +731,8 @@ static bool string_match(ov_value const *v1, ov_value const *v2) {
 
 ov_value *ov_value_string(char const *string) {
 
-    if (0 == string) goto error;
+    if (0 == string)
+        goto error;
 
     String *val = ov_registered_cache_get(g_string_cache);
 
@@ -774,11 +802,13 @@ typedef struct {
 
 static void *list_free_for_good(void *vptr) {
 
-    if (!is_value(vptr)) return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
     List *l = vptr;
 
-    if (LIST_TYPE != l->pub.type) return vptr;
+    if (LIST_TYPE != l->pub.type)
+        return vptr;
 
     OV_ASSERT(0 != l->data);
 
@@ -825,8 +855,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool copy_element_to_list(char const *key,
-                                 ov_value const *value,
+static bool copy_element_to_list(char const *key, ov_value const *value,
                                  void *userdata) {
 
     UNUSED(key);
@@ -908,8 +937,7 @@ struct dump_element_arg {
     bool write_leading_comma;
 };
 
-static bool dump_list_element(char const *key,
-                              ov_value const *value,
+static bool dump_list_element(char const *key, ov_value const *value,
                               void *userdata) {
 
     UNUSED(key);
@@ -966,8 +994,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool list_for_each(ov_value const *value,
-                          bool (*func)(char const *key,
-                                       ov_value const *value,
+                          bool (*func)(char const *key, ov_value const *value,
                                        void *userdata),
                           void *userdata) {
 
@@ -1003,11 +1030,13 @@ error:
 
 static bool list_match(ov_value const *v1, ov_value const *v2) {
 
-    if (0 == v1) return false;
+    if (0 == v1)
+        return false;
 
     const size_t len = ov_value_count(v1);
 
-    if (ov_value_count(v2) != len) return false;
+    if (ov_value_count(v2) != len)
+        return false;
 
     for (size_t i = 0; i < len; ++i) {
 
@@ -1054,7 +1083,8 @@ ov_value *internal_ov_value_list(ov_value **values) {
         val->data = ov_list_create(list_cfg);
     }
 
-    if (0 == val->data) goto error;
+    if (0 == val->data)
+        goto error;
 
     if (0 == values) {
         goto finish;
@@ -1083,9 +1113,11 @@ error:
 
 bool ov_value_is_list(ov_value const *value) {
 
-    if (!is_value(value)) goto error;
+    if (!is_value(value))
+        goto error;
 
-    if (LIST_TYPE != value->type) goto error;
+    if (LIST_TYPE != value->type)
+        goto error;
 
     return true;
 
@@ -1163,7 +1195,7 @@ error:
                                      Object
  ****************************************************************************/
 
-ov_registered_cache *g_object_cache = 0;
+static ov_registered_cache *g_object_cache = 0;
 
 const uint16_t OBJECT_TYPE = 64;
 
@@ -1178,9 +1210,11 @@ typedef struct {
 
 bool ov_value_is_object(ov_value const *value) {
 
-    if (!is_value(value)) goto error;
+    if (!is_value(value))
+        goto error;
 
-    if (OBJECT_TYPE != value->type) goto error;
+    if (OBJECT_TYPE != value->type)
+        goto error;
 
     return true;
 
@@ -1214,11 +1248,13 @@ static ov_hashtable *free_hashtable(ov_hashtable *ht) {
 
 static void *object_free_for_good(void *vptr) {
 
-    if (!is_value(vptr)) return vptr;
+    if (!is_value(vptr))
+        return vptr;
 
     Object *o = vptr;
 
-    if (OBJECT_TYPE != o->pub.type) return vptr;
+    if (OBJECT_TYPE != o->pub.type)
+        return vptr;
 
     o->data = free_hashtable(o->data);
     OV_ASSERT(0 == o->data);
@@ -1262,13 +1298,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool object_entry_copy(char const *key,
-                              ov_value const *value,
+static bool object_entry_copy(char const *key, ov_value const *value,
                               void *varg) {
 
     ov_value *copy = ov_value_copy(value);
 
-    if (0 == copy) return false;
+    if (0 == copy)
+        return false;
 
     ov_value_object_set(varg, key, copy);
 
@@ -1320,8 +1356,7 @@ static size_t object_count(ov_value const *value) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool dump_object_element(char const *key,
-                                ov_value const *value,
+static bool dump_object_element(char const *key, ov_value const *value,
                                 void *userdata) {
 
     UNUSED(key);
@@ -1380,8 +1415,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool object_for_each(ov_value const *value,
-                            bool (*func)(char const *key,
-                                         ov_value const *,
+                            bool (*func)(char const *key, ov_value const *,
                                          void *userdata),
                             void *userdata) {
 
@@ -1414,8 +1448,7 @@ struct object_entry_match_arg {
 
 /*----------------------------------------------------------------------------*/
 
-static bool object_entry_match(char const *key,
-                               ov_value const *value,
+static bool object_entry_match(char const *key, ov_value const *value,
                                void *varg) {
 
     struct object_entry_match_arg *arg = varg;
@@ -1437,7 +1470,8 @@ static bool object_entry_match(char const *key,
 
 static bool object_match(ov_value const *v1, ov_value const *v2) {
 
-    if (0 == v1) return false;
+    if (0 == v1)
+        return false;
 
     struct object_entry_match_arg arg = {
 
@@ -1538,8 +1572,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_value *ov_value_object_set(ov_value *value,
-                              char const *key,
+ov_value *ov_value_object_set(ov_value *value, char const *key,
                               ov_value *content) {
 
     if ((0 == value) || (OBJECT_TYPE != value->type) || (0 == content)) {
@@ -1559,9 +1592,7 @@ error:
                                     CACHING
  ****************************************************************************/
 
-void ov_value_enable_caching(size_t numbers,
-                             size_t strings,
-                             size_t lists,
+void ov_value_enable_caching(size_t numbers, size_t strings, size_t lists,
                              size_t objects) {
 
     // Occasionally, we require a buffer for string manipulations,

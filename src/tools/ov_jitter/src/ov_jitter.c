@@ -198,10 +198,9 @@ _Noreturn static void usage(char const *cmd) {
             "      -t use TCP instead of UDP\n",
             cmd);
 
-    fprintf(stderr,
-            "\n"
-            "\n"
-            "\n");
+    fprintf(stderr, "\n"
+                    "\n"
+                    "\n");
 
     exit(EXIT_FAILURE);
 }
@@ -219,8 +218,7 @@ static char *strchr_safe(char *s, int c) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool split_prob_span_destructively(char *str,
-                                          float *prob,
+static bool split_prob_span_destructively(char *str, float *prob,
                                           size_t *span) {
 
     char *endofprob = strchr_safe(str, ',');
@@ -232,8 +230,8 @@ static bool split_prob_span_destructively(char *str,
         ov_ptr_valid(span,
                      "Cannot parse probability & span: No span variable to "
                      "store result to") &&
-        ov_ptr_valid(
-            endofprob, "Cannot parse probability & span: No '.' found")) {
+        ov_ptr_valid(endofprob,
+                     "Cannot parse probability & span: No '.' found")) {
 
         *endofprob = 0;
 
@@ -302,52 +300,51 @@ struct configuration_t parse_arguments(int argc, char const **argv) {
 
         switch (c) {
 
-            case '?':
+        case '?':
+            usage(argv[0]);
+
+        case 't':
+
+            args.recv.type = TCP;
+            args.send.type = TCP;
+            break;
+
+        case 'm':
+            args.multicast = true;
+            break;
+
+        case 'r':
+
+            if (!split_prob_span(optarg, &args.reorder.probability,
+                                 &args.reorder.span)) {
+                fprintf(stderr, "Invalid arguments to 'reorder' option\n");
                 usage(argv[0]);
+            }
 
-            case 't':
+            break;
 
-                args.recv.type = TCP;
-                args.send.type = TCP;
-                break;
+        case 'd':
 
-            case 'm':
-                args.multicast = true;
-                break;
+            if (!split_prob_span(optarg, &args.delay.probability,
+                                 &args.delay.span)) {
+                fprintf(stderr, "Invalid arguments to 'reorder' option\n");
+                usage(argv[0]);
+            }
 
-            case 'r':
+            break;
 
-                if (!split_prob_span(optarg,
-                                     &args.reorder.probability,
-                                     &args.reorder.span)) {
-                    fprintf(stderr, "Invalid arguments to 'reorder' option\n");
-                    usage(argv[0]);
-                }
+        case 'D':
 
-                break;
+            args.drop_single_packet.probability = strtof(optarg, &endptr);
 
-            case 'd':
-
-                if (!split_prob_span(
-                        optarg, &args.delay.probability, &args.delay.span)) {
-                    fprintf(stderr, "Invalid arguments to 'reorder' option\n");
-                    usage(argv[0]);
-                }
-
-                break;
-
-            case 'D':
-
-                args.drop_single_packet.probability = strtof(optarg, &endptr);
-
-                break;
+            break;
         };
     };
 
     if (optind + 4 > argc) {
 
-        fprintf(
-            stderr, "Missing LISTENIF, LISTENPORT, TARGETIP or TARGETOPRT\n");
+        fprintf(stderr,
+                "Missing LISTENIF, LISTENPORT, TARGETIP or TARGETOPRT\n");
         usage(argv[0]);
     }
 
@@ -401,8 +398,7 @@ static ov_event_loop *get_loop() {
 
 /*----------------------------------------------------------------------------*/
 
-static void senddata(struct jitter_app_t app,
-                     uint8_t const *data,
+static void senddata(struct jitter_app_t app, uint8_t const *data,
                      size_t num_octets) {
 
     ssize_t bytes_sent = 0;
@@ -415,12 +411,9 @@ static void senddata(struct jitter_app_t app,
 
     } else {
 
-        bytes_sent = sendto(app.send.sd,
-                            data,
-                            num_octets,
-                            0,
-                            (struct sockaddr *)&app.send.dest,
-                            app.send.dest_len);
+        bytes_sent =
+            sendto(app.send.sd, data, num_octets, 0,
+                   (struct sockaddr *)&app.send.dest, app.send.dest_len);
     }
 
     if ((bytes_sent < 0) || ((size_t)bytes_sent != num_octets)) {
@@ -431,10 +424,8 @@ static void senddata(struct jitter_app_t app,
 
 /*----------------------------------------------------------------------------*/
 
-static void insert_past(ov_buffer **array,
-                        size_t array_capacity,
-                        size_t lowest_index,
-                        ov_buffer *to_insert) {
+static void insert_past(ov_buffer **array, size_t array_capacity,
+                        size_t lowest_index, ov_buffer *to_insert) {
 
     for (size_t i = lowest_index; i < array_capacity; ++i) {
 
@@ -481,10 +472,8 @@ static bool trigger_sending() {
                 reorder_index /= (float)UINT32_MAX;
                 reorder_index *= reordered_capacity;
 
-                insert_past(reordered,
-                            reordered_capacity,
-                            (size_t)reorder_index,
-                            buffer);
+                insert_past(reordered, reordered_capacity,
+                            (size_t)reorder_index, buffer);
 
             } else {
 
@@ -610,10 +599,7 @@ static bool cb_io(int fd, uint8_t events, void *userdata) {
 static bool register_socket(int s, ov_event_loop *loop) {
 
     return ov_event_loop_set(
-        loop,
-        s,
-        OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-        0,
+        loop, s, OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE, 0,
         cb_io);
 }
 
@@ -634,8 +620,8 @@ static int open_send_socket(struct configuration_t cfg) {
         fd = ov_socket_create(send_cfg, true, 0);
     }
 
-    printf(
-        "%s:%" PRIu16 "\n", ov_string_sanitize(send_cfg.host), send_cfg.port);
+    printf("%s:%" PRIu16 "\n", ov_string_sanitize(send_cfg.host),
+           send_cfg.port);
 
     return fd;
 }
@@ -647,8 +633,8 @@ static bool initialize_sockaddr_if_udp(ov_socket_configuration send_cfg) {
     jitter_app.send.dest_len = sizeof(struct sockaddr_in);
 
     return (UDP != send_cfg.type) ||
-           ov_socket_fill_sockaddr_storage(
-               &jitter_app.send.dest, AF_INET, send_cfg.host, send_cfg.port);
+           ov_socket_fill_sockaddr_storage(&jitter_app.send.dest, AF_INET,
+                                           send_cfg.host, send_cfg.port);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -670,11 +656,11 @@ int main(int argc, char const **argv) {
 
     int retval = EXIT_FAILURE;
 
-    if (ov_cond_valid(
-            listen_socket > -1, "Could not open socket for receiving") &&
+    if (ov_cond_valid(listen_socket > -1,
+                      "Could not open socket for receiving") &&
         register_socket(listen_socket, jitter_app.loop) &&
-        ov_cond_valid(
-            jitter_app.send.sd > -1, "Could not open socket for sending") &&
+        ov_cond_valid(jitter_app.send.sd > -1,
+                      "Could not open socket for sending") &&
         ov_event_loop_run(jitter_app.loop, OV_RUN_MAX)) {
 
         retval = EXIT_SUCCESS;

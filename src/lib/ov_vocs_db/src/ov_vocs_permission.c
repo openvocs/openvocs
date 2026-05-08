@@ -35,14 +35,14 @@ const char *ov_vocs_permission_to_string(ov_vocs_permission self) {
 
     switch (self) {
 
-        case OV_VOCS_RECV:
-            return OV_KEY_RECV;
+    case OV_VOCS_RECV:
+        return OV_KEY_RECV;
 
-        case OV_VOCS_SEND:
-            return OV_KEY_SEND;
+    case OV_VOCS_SEND:
+        return OV_KEY_SEND;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     return OV_KEY_NONE;
@@ -52,14 +52,18 @@ const char *ov_vocs_permission_to_string(ov_vocs_permission self) {
 
 ov_vocs_permission ov_vocs_permission_from_string(const char *str) {
 
-    if (!str) goto error;
+    if (!str)
+        goto error;
 
     size_t len = strlen(str);
-    if (len != 4) goto error;
+    if (len != 4)
+        goto error;
 
-    if (0 == strcmp(str, OV_KEY_RECV)) return OV_VOCS_RECV;
+    if (0 == strcmp(str, OV_KEY_RECV))
+        return OV_VOCS_RECV;
 
-    if (0 == strcmp(str, OV_KEY_SEND)) return OV_VOCS_SEND;
+    if (0 == strcmp(str, OV_KEY_SEND))
+        return OV_VOCS_SEND;
 
 error:
     return OV_VOCS_NONE;
@@ -78,20 +82,22 @@ bool ov_vocs_permission_granted(ov_vocs_permission reference,
 
     switch (check) {
 
-        case OV_VOCS_NONE:
-            break;
+    case OV_VOCS_NONE:
+        break;
 
-        case OV_VOCS_RECV:
+    case OV_VOCS_RECV:
 
-            if (OV_VOCS_NONE == reference) goto error;
+        if (OV_VOCS_NONE == reference)
+            goto error;
 
-            break;
+        break;
 
-        case OV_VOCS_SEND:
+    case OV_VOCS_SEND:
 
-            if (OV_VOCS_SEND != reference) goto error;
+        if (OV_VOCS_SEND != reference)
+            goto error;
 
-            break;
+        break;
     }
 
     return true;

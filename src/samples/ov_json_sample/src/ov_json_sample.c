@@ -40,13 +40,12 @@ int main(int argc, char **argv) {
 
     */
 
-    char const *json_string =
-        "{"
-        "   \"l1key1\" : {"
-        "      \"l2key1\" : 2"
-        "    },"
-        "    \"l1key2\" : \"ratatoskr\""
-        "}";
+    char const *json_string = "{"
+                              "   \"l1key1\" : {"
+                              "      \"l2key1\" : 2"
+                              "    },"
+                              "    \"l1key2\" : \"ratatoskr\""
+                              "}";
 
     // Parse JSON from string
     ov_json_value *main_value =

@@ -120,7 +120,8 @@ typedef struct {
 
 static inline internal_pool *as_internal_pool(void *pool) {
 
-    if ((0 == pool) || (MAGIC_BYTES != *(uint32_t *)pool)) goto error;
+    if ((0 == pool) || (MAGIC_BYTES != *(uint32_t *)pool))
+        goto error;
 
     return (internal_pool *)pool;
 
@@ -213,8 +214,8 @@ static bool spawn_threads(internal_pool *restrict pool) {
     /* Spawn the threads */
     for (size_t i = 0; i < pool->config.num_threads; ++i) {
         pool->threads[i].state = STARTING;
-        int status = pthread_create(
-            &pool->threads[i].id, 0, thread_run, &pool->threads[i]);
+        int status = pthread_create(&pool->threads[i].id, 0, thread_run,
+                                    &pool->threads[i]);
 
         if (0 != status) {
 
@@ -239,7 +240,8 @@ static bool spawn_threads(internal_pool *restrict pool) {
         for (size_t i = 0; i < pool->config.num_threads; ++i) {
 
             sched_yield();
-            if (STOPPED == pool->threads[i].state) goto error;
+            if (STOPPED == pool->threads[i].state)
+                goto error;
             if (RUNNING != pool->threads[i].state) {
                 nanosleep(&t, 0);
             }
@@ -273,28 +275,27 @@ static bool thread_start(ov_thread_pool *self) {
 
     switch (atomic_load(&pool->pool_state)) {
 
-        case TO_STOP:
-        case RUNNING:
+    case TO_STOP:
+    case RUNNING:
 
-            ov_log_error(
-                "Thread already running - not going to "
-                "start");
+        ov_log_error("Thread already running - not going to "
+                     "start");
+        goto error;
+
+    case STOPPED:
+
+        atomic_store(&pool->pool_state, RUNNING);
+
+        if (!spawn_threads(pool)) {
+            ov_log_error("Could not spawn threads");
             goto error;
+        }
 
-        case STOPPED:
+        break;
 
-            atomic_store(&pool->pool_state, RUNNING);
+    default:
 
-            if (!spawn_threads(pool)) {
-                ov_log_error("Could not spawn threads");
-                goto error;
-            }
-
-            break;
-
-        default:
-
-            OV_ASSERT("! NEVER TO HAPPEN!");
+        OV_ASSERT("! NEVER TO HAPPEN!");
     };
 
     return true;
@@ -317,7 +318,8 @@ error:
 
 static bool thread_stop(ov_thread_pool *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     /* Simpler would be:
      * Enqueue a special pointer into incoming queue.
@@ -326,7 +328,8 @@ static bool thread_stop(ov_thread_pool *self) {
     internal_pool *internal = (internal_pool *)self;
     int old_state = atomic_load(&internal->pool_state);
 
-    if (RUNNING != old_state) goto error;
+    if (RUNNING != old_state)
+        goto error;
 
     atomic_store(&internal->pool_state, TO_STOP);
 
@@ -358,16 +361,16 @@ error:
 
 static ov_thread_pool *thread_free(ov_thread_pool *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     internal_pool *internal = (internal_pool *)self;
 
     if ((RUNNING == atomic_load(&internal->pool_state)) &&
         (!self->stop(self))) {
 
-        ov_log_error(
-            "Could not free thread pool - "
-            " still running");
+        ov_log_error("Could not free thread pool - "
+                     " still running");
         goto error;
     }
 
@@ -396,9 +399,8 @@ static void *thread_run(void *arg) {
 
     if (!thread) {
 
-        ov_log_error(
-            "Did not receive a proper thread object (0 "
-            "pointer)");
+        ov_log_error("Did not receive a proper thread object (0 "
+                     "pointer)");
         goto error;
     }
 
@@ -406,9 +408,8 @@ static void *thread_run(void *arg) {
 
     if (!pool) {
 
-        ov_log_error(
-            "Did not receive a proper pool object (0 "
-            "pointer)");
+        ov_log_error("Did not receive a proper pool object (0 "
+                     "pointer)");
         goto error;
     }
 
@@ -432,8 +433,7 @@ static void *thread_run(void *arg) {
 
     thread->state = RUNNING;
 
-    if (!try_lock_until_stop(in_lock,
-                             &pool->pool_state,
+    if (!try_lock_until_stop(in_lock, &pool->pool_state,
                              &pool->statistics.lock_blocked.incoming)) {
 
         goto finish;
@@ -475,12 +475,14 @@ static void *thread_run(void *arg) {
 
         /* in_lock:locked */
 
-        if (!element) continue;
+        if (!element)
+            continue;
 
         /* in_lock:locked */
         /* element != 0 */
 
-        if (in_lock) ov_thread_lock_unlock(in_lock);
+        if (in_lock)
+            ov_thread_lock_unlock(in_lock);
 
         /* in_lock:released */
         /* element != 0 */
@@ -495,8 +497,7 @@ static void *thread_run(void *arg) {
         /* in_lock:released */
         /* element == 0 */
 
-        if (!try_lock_until_stop(in_lock,
-                                 &pool->pool_state,
+        if (!try_lock_until_stop(in_lock, &pool->pool_state,
                                  &pool->statistics.lock_blocked.incoming)) {
 
             goto finish;

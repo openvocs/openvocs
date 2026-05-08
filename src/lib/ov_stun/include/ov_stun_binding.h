@@ -91,8 +91,7 @@ bool ov_stun_method_is_binding(const uint8_t *frame, size_t length);
         @param fingerprint      if true fingerprint will be written
         @returns true           if all attributes are written to start.
 */
-bool ov_stun_generate_binding_request_plain(uint8_t *start,
-                                            size_t length,
+bool ov_stun_generate_binding_request_plain(uint8_t *start, size_t length,
                                             uint8_t **next,
                                             const uint8_t *transaction_id,
                                             const uint8_t *software,
@@ -117,17 +116,11 @@ bool ov_stun_generate_binding_request_plain(uint8_t *start,
         @param fingerprint      if true fingerprint will be written
         @returns true           if all attributes are written to start.
 */
-bool ov_stun_generate_binding_request_short_term(uint8_t *start,
-                                                 size_t length,
-                                                 uint8_t **next,
-                                                 const uint8_t *transaction_id,
-                                                 const uint8_t *software,
-                                                 size_t software_length,
-                                                 const uint8_t *username,
-                                                 size_t username_length,
-                                                 const uint8_t *key,
-                                                 size_t key_length,
-                                                 bool fingerprint);
+bool ov_stun_generate_binding_request_short_term(
+    uint8_t *start, size_t length, uint8_t **next,
+    const uint8_t *transaction_id, const uint8_t *software,
+    size_t software_length, const uint8_t *username, size_t username_length,
+    const uint8_t *key, size_t key_length, bool fingerprint);
 
 /*----------------------------------------------------------------------------*/
 
@@ -147,17 +140,11 @@ bool ov_stun_generate_binding_request_short_term(uint8_t *start,
         @param fingerprint      if true fingerprint will be written
         @returns true           if all attributes are written to start.
 */
-bool ov_stun_generate_binding_request_short_term(uint8_t *start,
-                                                 size_t length,
-                                                 uint8_t **next,
-                                                 const uint8_t *transaction_id,
-                                                 const uint8_t *software,
-                                                 size_t software_length,
-                                                 const uint8_t *username,
-                                                 size_t username_length,
-                                                 const uint8_t *key,
-                                                 size_t key_length,
-                                                 bool fingerprint);
+bool ov_stun_generate_binding_request_short_term(
+    uint8_t *start, size_t length, uint8_t **next,
+    const uint8_t *transaction_id, const uint8_t *software,
+    size_t software_length, const uint8_t *username, size_t username_length,
+    const uint8_t *key, size_t key_length, bool fingerprint);
 
 /*----------------------------------------------------------------------------*/
 
@@ -181,21 +168,13 @@ bool ov_stun_generate_binding_request_short_term(uint8_t *start,
         @param fingerprint      if true fingerprint will be written
         @returns true           if all attributes are written to start.
 */
-bool ov_stun_generate_binding_request_long_term(uint8_t *start,
-                                                size_t length,
-                                                uint8_t **next,
-                                                const uint8_t *transaction_id,
-                                                const uint8_t *software,
-                                                size_t software_length,
-                                                const uint8_t *username,
-                                                size_t username_length,
-                                                const uint8_t *realm,
-                                                size_t realm_length,
-                                                const uint8_t *nonce,
-                                                size_t nonce_length,
-                                                const uint8_t *key,
-                                                size_t key_length,
-                                                bool fingerprint);
+bool ov_stun_generate_binding_request_long_term(
+    uint8_t *start, size_t length, uint8_t **next,
+    const uint8_t *transaction_id, const uint8_t *software,
+    size_t software_length, const uint8_t *username, size_t username_length,
+    const uint8_t *realm, size_t realm_length, const uint8_t *nonce,
+    size_t nonce_length, const uint8_t *key, size_t key_length,
+    bool fingerprint);
 
 /*----------------------------------------------------------------------------*/
 
@@ -222,21 +201,12 @@ bool ov_stun_generate_binding_request_long_term(uint8_t *start,
         @param fingerprint      if true fingerprint will be written
         @returns true           if all attributes are written to start.
 */
-bool ov_stun_generate_binding_request(uint8_t *start,
-                                      size_t length,
-                                      uint8_t **next,
-                                      const uint8_t *transaction_id,
-                                      const uint8_t *software,
-                                      size_t software_length,
-                                      const uint8_t *username,
-                                      size_t username_length,
-                                      const uint8_t *realm,
-                                      size_t realm_length,
-                                      const uint8_t *nonce,
-                                      size_t nonce_length,
-                                      const uint8_t *key,
-                                      size_t key_length,
-                                      bool integrity,
-                                      bool fingerprint);
+bool ov_stun_generate_binding_request(
+    uint8_t *start, size_t length, uint8_t **next,
+    const uint8_t *transaction_id, const uint8_t *software,
+    size_t software_length, const uint8_t *username, size_t username_length,
+    const uint8_t *realm, size_t realm_length, const uint8_t *nonce,
+    size_t nonce_length, const uint8_t *key, size_t key_length, bool integrity,
+    bool fingerprint);
 
 #endif /* ov_stun_binding_h */

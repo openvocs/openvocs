@@ -44,29 +44,29 @@ int check_http_is_separator() {
 
         switch (i) {
 
-            case '(':
-            case ')':
-            case '<':
-            case '>':
-            case '@':
-            case ',':
-            case ';':
-            case ':':
-            case 0x5C:
-            case 0x22:
-            case '/':
-            case '[':
-            case ']':
-            case '?':
-            case '=':
-            case '{':
-            case '}':
-            case 0x20:
-            case 0x09:
-                testrun(http_is_separator(i));
-                break;
-            default:
-                testrun(!http_is_separator(i));
+        case '(':
+        case ')':
+        case '<':
+        case '>':
+        case '@':
+        case ',':
+        case ';':
+        case ':':
+        case 0x5C:
+        case 0x22:
+        case '/':
+        case '[':
+        case ']':
+        case '?':
+        case '=':
+        case '{':
+        case '}':
+        case 0x20:
+        case 0x09:
+            testrun(http_is_separator(i));
+            break;
+        default:
+            testrun(!http_is_separator(i));
         }
     }
 
@@ -104,12 +104,12 @@ int check_http_is_whitespace() {
 
         switch (i) {
 
-            case 0x20:
-            case 0x09:
-                testrun(http_is_whitespace(i));
-                break;
-            default:
-                testrun(!http_is_whitespace(i));
+        case 0x20:
+        case 0x09:
+            testrun(http_is_whitespace(i));
+            break;
+        default:
+            testrun(!http_is_whitespace(i));
         }
     }
 
@@ -439,27 +439,27 @@ int test_ov_http_pointer_parse_status_line() {
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_status_line(
                                         NULL, len, &line, &version, NULL));
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_status_line(
-                (uint8_t *)buf, len, &line, NULL, NULL));
+            ov_http_pointer_parse_status_line((uint8_t *)buf, len, &line, NULL,
+                                              NULL));
     testrun(OV_HTTP_PARSER_PROGRESS ==
-            ov_http_pointer_parse_status_line(
-                (uint8_t *)buf, 0, &line, &version, NULL));
+            ov_http_pointer_parse_status_line((uint8_t *)buf, 0, &line,
+                                              &version, NULL));
 
     for (size_t i = 0; i < 16; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 16; i < len; i++) {
         testrun(OV_HTTP_PARSER_SUCCESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_status_line(
-                (uint8_t *)buf, len, &line, &version, NULL));
+            ov_http_pointer_parse_status_line((uint8_t *)buf, len, &line,
+                                              &version, NULL));
     testrun(1 == version.major);
     testrun(1 == version.minor);
     testrun(200 == line.code);
@@ -470,19 +470,19 @@ int test_ov_http_pointer_parse_status_line() {
 
     for (size_t i = 0; i < 17; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 17; i < len; i++) {
         testrun(OV_HTTP_PARSER_SUCCESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_status_line(
-                (uint8_t *)buf, len, &line, &version, NULL));
+            ov_http_pointer_parse_status_line((uint8_t *)buf, len, &line,
+                                              &version, NULL));
     testrun(5 == version.major);
     testrun(6 == version.minor);
     testrun(201 == line.code);
@@ -494,19 +494,19 @@ int test_ov_http_pointer_parse_status_line() {
 
     for (size_t i = 0; i < 17; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 17; i < len; i++) {
         testrun(OV_HTTP_PARSER_SUCCESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_status_line(
-                (uint8_t *)buf, len, &line, &version, NULL));
+            ov_http_pointer_parse_status_line((uint8_t *)buf, len, &line,
+                                              &version, NULL));
     testrun(5 == version.major);
     testrun(6 == version.minor);
     testrun(201 == line.code);
@@ -518,14 +518,14 @@ int test_ov_http_pointer_parse_status_line() {
 
     for (size_t i = 0; i < 9; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 9; i < len; i++) {
         testrun(OV_HTTP_PARSER_ERROR ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     // 2 digit code
@@ -534,14 +534,14 @@ int test_ov_http_pointer_parse_status_line() {
 
     for (size_t i = 0; i < 12; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 12; i < len; i++) {
         testrun(OV_HTTP_PARSER_ERROR ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     // 4 digit code
@@ -550,14 +550,14 @@ int test_ov_http_pointer_parse_status_line() {
 
     for (size_t i = 0; i < 13; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 13; i < len; i++) {
         testrun(OV_HTTP_PARSER_ERROR ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     // no reason
@@ -566,14 +566,14 @@ int test_ov_http_pointer_parse_status_line() {
 
     for (size_t i = 0; i < 14; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 14; i < len; i++) {
         testrun(OV_HTTP_PARSER_ERROR ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     // version error
@@ -582,14 +582,14 @@ int test_ov_http_pointer_parse_status_line() {
 
     for (size_t i = 0; i < 5; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     for (size_t i = 5; i < len; i++) {
         testrun(OV_HTTP_PARSER_ERROR ==
-                ov_http_pointer_parse_status_line(
-                    (uint8_t *)buf, i, &line, &version, NULL));
+                ov_http_pointer_parse_status_line((uint8_t *)buf, i, &line,
+                                                  &version, NULL));
     }
 
     return testrun_log_success();
@@ -608,106 +608,106 @@ int test_ov_http_pointer_parse_request_line() {
     testrun(OV_HTTP_PARSER_ERROR ==
             ov_http_pointer_parse_request_line(NULL, 0, NULL, NULL, 0, NULL));
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, NULL, NULL, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, NULL, NULL,
+                                               0, NULL));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_request_line(
                                         NULL, len, &line, NULL, 0, NULL));
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, NULL, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line, NULL,
+                                               0, NULL));
     testrun(OV_HTTP_PARSER_PROGRESS ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, 0, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, 0, &line,
+                                               &version, 0, NULL));
 
     for (size_t i = 0; i < 16; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_request_line(
-                    (uint8_t *)buf, i, &line, &version, 0, NULL));
+                ov_http_pointer_parse_request_line((uint8_t *)buf, i, &line,
+                                                   &version, 0, NULL));
     }
 
     for (size_t i = 16; i < len; i++) {
         testrun(OV_HTTP_PARSER_SUCCESS ==
-                ov_http_pointer_parse_request_line(
-                    (uint8_t *)buf, i, &line, &version, 0, NULL));
+                ov_http_pointer_parse_request_line((uint8_t *)buf, i, &line,
+                                                   &version, 0, NULL));
     }
 
     // check method length
     for (size_t i = 1; i < 3; i++) {
         testrun(OV_HTTP_PARSER_ERROR ==
-                ov_http_pointer_parse_request_line(
-                    (uint8_t *)buf, len, &line, &version, i, NULL));
+                ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                                   &version, i, NULL));
     }
 
     for (size_t i = 4; i < 10; i++) {
 
         testrun(OV_HTTP_PARSER_SUCCESS ==
-                ov_http_pointer_parse_request_line(
-                    (uint8_t *)buf, len, &line, &version, i, NULL));
+                ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                                   &version, i, NULL));
     }
 
     buf = "whatever /wherever/subever HTTP/1.1\r\n";
     len = strlen(buf);
 
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
     // method to long
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 4, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 4, NULL));
 
     // early lineend
     buf = "what\r\never /wherever/subever HTTP/1.1\r\n";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     // early lineend
     buf = "whatever /whe\r\nrever/subever HTTP/1.1\r\n";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     // early lineend
     buf = "what\r\never /wherever/subever HTTP\r\n/1.1\r\n";
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     buf = "whatever/wherever/subever HTTP/1.1\r\n";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     buf = "whatever /wherever/subeverHTTP/1.1\r\n";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     // invalid token in method
     buf = "what;ever /wherever/subever HTTP/1.1\r\n";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     // invalid uri
     buf = "whatever scheme:error\%path HTTP/1.1\r\n";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     // invalid version
     buf = "whatever /wherever/subever HTTP1.1\r\n";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_ERROR ==
-            ov_http_pointer_parse_request_line(
-                (uint8_t *)buf, len, &line, &version, 0, NULL));
+            ov_http_pointer_parse_request_line((uint8_t *)buf, len, &line,
+                                               &version, 0, NULL));
 
     return testrun_log_success();
 }
@@ -732,21 +732,21 @@ int test_ov_http_pointer_parse_header_line() {
 
     for (size_t i = 0; i < 13; i++) {
         testrun(OV_HTTP_PARSER_PROGRESS ==
-                ov_http_pointer_parse_header_line(
-                    (uint8_t *)buf, i, &line, 0, NULL));
+                ov_http_pointer_parse_header_line((uint8_t *)buf, i, &line, 0,
+                                                  NULL));
     }
 
     for (size_t i = 13; i < len; i++) {
         testrun(OV_HTTP_PARSER_SUCCESS ==
-                ov_http_pointer_parse_header_line(
-                    (uint8_t *)buf, i, &line, 0, NULL));
+                ov_http_pointer_parse_header_line((uint8_t *)buf, i, &line, 0,
+                                                  NULL));
     }
 
     uint8_t *next = NULL;
 
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, len, &line, 0, &next));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, len, &line, 0,
+                                              &next));
     testrun(next == (uint8_t *)buf + 13);
     testrun(0 == strncmp("field", (char *)line.name.start, line.name.length));
     testrun(0 == strncmp("value", (char *)line.value.start, line.value.length));
@@ -755,8 +755,8 @@ int test_ov_http_pointer_parse_header_line() {
     buf = "\t field:   \t   value   \t \r\nnext";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, len, &line, 0, &next));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, len, &line, 0,
+                                              &next));
     testrun(next[0] == 'n');
     testrun(0 == strncmp("field", (char *)line.name.start, line.name.length));
     testrun(0 == strncmp("value", (char *)line.value.start, line.value.length));
@@ -765,12 +765,11 @@ int test_ov_http_pointer_parse_header_line() {
     buf = "\t field:   \t   value\r\n 1\r\n 2\r\nnext";
     len = strlen(buf);
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, len, &line, 0, &next));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, len, &line, 0,
+                                              &next));
     testrun(next[0] == 'n');
     testrun(0 == strncmp("field", (char *)line.name.start, line.name.length));
-    testrun(0 == strncmp("value\r\n 1\r\n 2\r\n",
-                         (char *)line.value.start,
+    testrun(0 == strncmp("value\r\n 1\r\n 2\r\n", (char *)line.value.start,
                          line.value.length));
 
     // error name
@@ -788,8 +787,8 @@ int test_ov_http_pointer_parse_header_line() {
     testrun(OV_HTTP_PARSER_PROGRESS == ov_http_pointer_parse_header_line(
                                            (uint8_t *)buf, 8, &line, 0, &next));
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, len, &line, 0, &next));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, len, &line, 0,
+                                              &next));
 
     buf = "field:val\rue\r\nnext";
     len = strlen(buf);
@@ -812,18 +811,18 @@ int test_ov_http_header_get() {
 
     char *buf = "x:0\r\n";
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, strlen(buf), &array[0], 0, NULL));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, strlen(buf),
+                                              &array[0], 0, NULL));
 
     buf = "y:2\r\n";
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, strlen(buf), &array[2], 0, NULL));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, strlen(buf),
+                                              &array[2], 0, NULL));
 
     buf = "xz:4\r\n";
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, strlen(buf), &array[4], 0, NULL));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, strlen(buf),
+                                              &array[4], 0, NULL));
 
     testrun(!ov_http_header_get(NULL, 0, NULL));
 
@@ -863,23 +862,23 @@ int test_ov_http_header_get_next() {
 
     char *buf = "x:0\r\n";
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, strlen(buf), &array[0], 0, NULL));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, strlen(buf),
+                                              &array[0], 0, NULL));
 
     buf = "x:1\r\n";
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, strlen(buf), &array[1], 0, NULL));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, strlen(buf),
+                                              &array[1], 0, NULL));
 
     buf = "x:2\r\n";
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, strlen(buf), &array[2], 0, NULL));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, strlen(buf),
+                                              &array[2], 0, NULL));
 
     buf = "x:4\r\n";
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_header_line(
-                (uint8_t *)buf, strlen(buf), &array[4], 0, NULL));
+            ov_http_pointer_parse_header_line((uint8_t *)buf, strlen(buf),
+                                              &array[4], 0, NULL));
 
     size_t i = 0;
     testrun(!ov_http_header_get_next(NULL, 0, 0, NULL));
@@ -1017,8 +1016,8 @@ int test_ov_http_message_create() {
     msg3 = NULL;
     msg4 = NULL;
 
-    config = (ov_http_message_config){
-        .header.capacity = 10, .buffer.default_size = 100};
+    config = (ov_http_message_config){.header.capacity = 10,
+                                      .buffer.default_size = 100};
 
     msg = ov_http_message_create(config);
     testrun(msg);
@@ -1113,20 +1112,16 @@ int test_ov_http_message_clear() {
     testrun(msg->body.start == NULL);
     testrun(msg->version.major == 1);
     testrun(msg->version.minor == 1);
-    testrun(0 == strncmp("GET",
-                         (char *)msg->request.method.start,
+    testrun(0 == strncmp("GET", (char *)msg->request.method.start,
                          msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(msg->status.phrase.start == NULL);
     testrun(msg->status.phrase.length == 0);
     testrun(msg->status.code == 0);
-    testrun(0 == strncmp("field",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("field", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("value",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("value", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
     testrun(0 == msg->header[1].name.start);
     testrun(0 == msg->header[1].value.start);
@@ -1294,9 +1289,8 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     testrun(OV_HTTP_PARSER_ABSENT ==
             ov_http_pointer_parse_transfer_encodings(msg, array, 0));
 
-    string =
-        "GET / HTTP/1.1\r\nTransfer-Encoding:chunked\r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\nTransfer-Encoding:chunked\r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
@@ -1316,9 +1310,8 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     }
 
     // check whitespace
-    string =
-        "GET / HTTP/1.1\r\nTransfer-Encoding:  \t  chunked \t  \r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\nTransfer-Encoding:  \t  chunked \t  \r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
@@ -1336,18 +1329,16 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     }
 
     // check whitespace multiple (chunked not last)
-    string =
-        "GET / HTTP/1.1\r\nTransfer-Encoding:  \t  chunked \t , gzip \t  "
-        "\r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\nTransfer-Encoding:  \t  chunked \t , gzip \t  "
+             "\r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, NULL));
 
-    string =
-        "GET / HTTP/1.1\r\nTransfer-Encoding:  \t  gzip \t,chunked \t  "
-        "\r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\nTransfer-Encoding:  \t  gzip \t,chunked \t  "
+             "\r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
@@ -1367,9 +1358,8 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     }
 
     // check non whitespace multiple
-    string =
-        "GET / HTTP/1.1\r\nTransfer-Encoding:gzip,undef,chunked\r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\nTransfer-Encoding:gzip,undef,chunked\r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
@@ -1392,12 +1382,11 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     }
 
     // check multiple headers
-    string =
-        "GET / "
-        "HTTP/"
-        "1.1\r\nTransfer-Encoding:gzip\r\nTransfer-Encoding:"
-        "undef\r\nTransfer-Encoding:chunked\r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / "
+             "HTTP/"
+             "1.1\r\nTransfer-Encoding:gzip\r\nTransfer-Encoding:"
+             "undef\r\nTransfer-Encoding:chunked\r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
@@ -1419,12 +1408,11 @@ int test_ov_http_pointer_parse_transfer_encodings() {
         testrun(0 == array[i].length);
     }
 
-    string =
-        "GET / "
-        "HTTP/"
-        "1.1\r\nTransfer-Encoding:chunked\r\nTransfer-Encoding:"
-        "undef\r\nTransfer-Encoding:gzip\r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / "
+             "HTTP/"
+             "1.1\r\nTransfer-Encoding:chunked\r\nTransfer-Encoding:"
+             "undef\r\nTransfer-Encoding:gzip\r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, NULL));
@@ -1432,18 +1420,16 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     // multple chunked not last
 
     // check mix of headers and , separated whitespace multiple
-    string =
-        "GET / HTTP/1.1\r\nTransfer-Encoding: chunked , gzip  "
-        "\r\nTransfer-Encoding: undef \r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\nTransfer-Encoding: chunked , gzip  "
+             "\r\nTransfer-Encoding: undef \r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, NULL));
 
     // check array cleanup (NOTE MUST be >= 3 to clean up previous set values)
-    string =
-        "GET / HTTP/1.1\r\nTransfer-Encoding:chunked\r\n\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\nTransfer-Encoding:chunked\r\n\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
@@ -1461,16 +1447,15 @@ int test_ov_http_pointer_parse_transfer_encodings() {
 
     // check mix of headers with , separated whitespace multiple and double
     // entries
-    string =
-        "GET / HTTP/1.1\r\n"
-        "Transfer-Encoding: chunked , gzip  \r\n"
-        "Transfer-Encoding: undef \r\n"
-        "Transfer-Encoding: chunked , gzip  \r\n"
-        "Transfer-Encoding: something; key=val  \r\n"
-        "Transfer-Encoding: next; key = val , other; key = val  \r\n"
-        "Transfer-Encoding: chunked\r\n"
-        "\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\n"
+             "Transfer-Encoding: chunked , gzip  \r\n"
+             "Transfer-Encoding: undef \r\n"
+             "Transfer-Encoding: chunked , gzip  \r\n"
+             "Transfer-Encoding: something; key=val  \r\n"
+             "Transfer-Encoding: next; key = val , other; key = val  \r\n"
+             "Transfer-Encoding: chunked\r\n"
+             "\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
@@ -1501,14 +1486,11 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     testrun(0 == strncmp("undef", (char *)array[2].start, array[2].length));
     testrun(0 == strncmp("chunked", (char *)array[3].start, array[3].length));
     testrun(0 == strncmp("gzip", (char *)array[4].start, array[4].length));
-    testrun(0 == strncmp("something; key=val",
-                         (char *)array[5].start,
+    testrun(0 == strncmp("something; key=val", (char *)array[5].start,
                          array[5].length));
-    testrun(0 == strncmp("next; key = val",
-                         (char *)array[6].start,
+    testrun(0 == strncmp("next; key = val", (char *)array[6].start,
                          array[6].length));
-    testrun(0 == strncmp("other; key = val",
-                         (char *)array[7].start,
+    testrun(0 == strncmp("other; key = val", (char *)array[7].start,
                          array[7].length));
     testrun(0 == strncmp("chunked", (char *)array[8].start, array[8].length));
     for (size_t i = 9; i < 10; i++) {
@@ -1517,41 +1499,37 @@ int test_ov_http_pointer_parse_transfer_encodings() {
     }
 
     // check comma only
-    string =
-        "GET / HTTP/1.1\r\n"
-        "Transfer-Encoding: ,\r\n"
-        "\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\n"
+             "Transfer-Encoding: ,\r\n"
+             "\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, NULL));
 
     // check comma failures
-    string =
-        "GET / HTTP/1.1\r\n"
-        "Transfer-Encoding: ,chunked\r\n"
-        "\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\n"
+             "Transfer-Encoding: ,chunked\r\n"
+             "\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, NULL));
 
     // check comma failures
-    string =
-        "GET / HTTP/1.1\r\n"
-        "Transfer-Encoding: test,\r\n"
-        "\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\n"
+             "Transfer-Encoding: test,\r\n"
+             "\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, NULL));
 
     // check comma failures
-    string =
-        "GET / HTTP/1.1\r\n"
-        "Transfer-Encoding: test, ,chunked\r\n"
-        "\r\n"
-        "4\r\nbody\r\n0\r\n";
+    string = "GET / HTTP/1.1\r\n"
+             "Transfer-Encoding: test, ,chunked\r\n"
+             "\r\n"
+             "4\r\nbody\r\n0\r\n";
 
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, NULL));
@@ -1572,101 +1550,101 @@ int check_validate_tranfer_encoding_grammar() {
     testrun(!validate_tranfer_encoding_grammar((uint8_t *)string, 0, NULL));
     testrun(!validate_tranfer_encoding_grammar(NULL, strlen(string), NULL));
 
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), &ptr));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              NULL));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              &ptr));
     testrun(0 == strncmp(string, (char *)ptr.start, ptr.length));
 
     string = "compress";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              NULL));
 
     string = "deflate";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              NULL));
 
     string = "gzip";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              NULL));
 
     // non token
     string = "gz{ip";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
 
     // unsupported whitespace
     string = " compress";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
     string = "compress ";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
 
     // extension
     string = "extension";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              NULL));
 
     // extension with parameter
     string = "extension;key=val";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              NULL));
 
     // extension with multiple parameter
     string = "extension;key=val;key=val;key=val;key=val";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), &ptr));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              &ptr));
     testrun(0 == strncmp("extension", (char *)ptr.start, ptr.length));
 
     // extension with multiple parameter and supported whitespace
     string = "extension  ;  key = val  ;  key =  val     ; key  = val";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), &ptr));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              &ptr));
     testrun(0 == strncmp("extension", (char *)ptr.start, ptr.length));
 
     // extension with wrong key value paring
     string = "extension;key=";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
     string = "extension;key= ";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
     string = "extension;=val";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
     string = "extension;key=val;";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
     string = "extension;";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
     string = "extension;k=v;;";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
 
     // extension with non token val
     string = "extension;key=val]ue";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
 
     // extension with non token key
     string = "extension;ke[y=value";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), NULL));
 
     // extension with quoted string val
     string = "extension;key=\"va[]lue\"";
-    testrun(validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), NULL));
+    testrun(validate_tranfer_encoding_grammar((uint8_t *)string, strlen(string),
+                                              NULL));
 
     // extension with multiple parameter and supported whitespace and non token
     string = "extension  ;  key=val  ;  key=v}al     ; key=val ;   key=val";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), &ptr));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), &ptr));
     string = "extension  ;  k}ey=val  ;  key=val     ; key=val ;   key=val";
-    testrun(!validate_tranfer_encoding_grammar(
-        (uint8_t *)string, strlen(string), &ptr));
+    testrun(!validate_tranfer_encoding_grammar((uint8_t *)string,
+                                               strlen(string), &ptr));
 
     return testrun_log_success();
 }
@@ -1699,18 +1677,18 @@ int check_http_is_qd_char() {
 
             switch (i) {
 
-                case 0x20: // space
-                case 0x09: // HTAB
-                case '!':
-                case '#':
-                case '-':
-                case '[':
-                case ']':
-                case '~':
-                    testrun(http_is_qd_char(i));
-                    break;
-                default:
-                    testrun(!http_is_qd_char(i));
+            case 0x20: // space
+            case 0x09: // HTAB
+            case '!':
+            case '#':
+            case '-':
+            case '[':
+            case ']':
+            case '~':
+                testrun(http_is_qd_char(i));
+                break;
+            default:
+                testrun(!http_is_qd_char(i));
             }
         }
     }
@@ -2040,11 +2018,9 @@ int test_ov_http_pointer_parse_message() {
     testrun(msg->chunk.length == 0);
     testrun(msg->version.major == 1);
     testrun(msg->version.minor == 1);
-    testrun(0 == strncasecmp("get",
-                             (char *)msg->request.method.start,
+    testrun(0 == strncasecmp("get", (char *)msg->request.method.start,
                              msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(msg->status.code == 0);
     testrun(msg->status.phrase.start == NULL);
@@ -2063,11 +2039,9 @@ int test_ov_http_pointer_parse_message() {
     testrun(msg->chunk.length == 0);
     testrun(msg->version.major == 1);
     testrun(msg->version.minor == 1);
-    testrun(0 == strncasecmp("get",
-                             (char *)msg->request.method.start,
+    testrun(0 == strncasecmp("get", (char *)msg->request.method.start,
                              msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(msg->status.code == 0);
     testrun(msg->status.phrase.start == NULL);
@@ -2091,17 +2065,14 @@ int test_ov_http_pointer_parse_message() {
     testrun(msg->chunk.length == 0);
     testrun(msg->version.major == 1);
     testrun(msg->version.minor == 1);
-    testrun(0 == strncasecmp("get",
-                             (char *)msg->request.method.start,
+    testrun(0 == strncasecmp("get", (char *)msg->request.method.start,
                              msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(msg->status.code == 0);
     testrun(msg->status.phrase.start == NULL);
     testrun(msg->status.phrase.length == 0);
-    testrun(0 == strncmp("Content-Length",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("Content-Length", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
     testrun(NULL == msg->header[1].name.start);
     testrun(NULL == msg->header[1].value.start);
@@ -2122,14 +2093,12 @@ int test_ov_http_pointer_parse_message() {
 
     // parse with transfer set
     //        012345678901234-5-67890123456789012345678901-2-3-4-56-7-89012-3-4
-    string =
-        "GET / "
-        "HTTP/1.1\r\nTransfer-Encoding:chunked\r\n\r\n4\r\nbody\r\nx";
+    string = "GET / "
+             "HTTP/1.1\r\nTransfer-Encoding:chunked\r\n\r\n4\r\nbody\r\nx";
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS ==
             ov_http_pointer_parse_message(msg, &next));
-    testrun(0 == strncmp("4\r\nbody\r\n",
-                         (char *)msg->body.start,
+    testrun(0 == strncmp("4\r\nbody\r\n", (char *)msg->body.start,
                          msg->body.length));
     testrun(msg->body.start == msg->buffer->start + 45);
     testrun(msg->body.length == 9);
@@ -2138,20 +2107,16 @@ int test_ov_http_pointer_parse_message() {
     testrun(msg->chunk.length == 4);
     testrun(msg->version.major == 1);
     testrun(msg->version.minor == 1);
-    testrun(0 == strncasecmp("get",
-                             (char *)msg->request.method.start,
+    testrun(0 == strncasecmp("get", (char *)msg->request.method.start,
                              msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(msg->status.code == 0);
     testrun(msg->status.phrase.start == NULL);
     testrun(msg->status.phrase.length == 0);
-    testrun(0 == strncmp("Transfer-Encoding",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("Transfer-Encoding", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("chunked",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("chunked", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
     testrun(NULL == msg->header[1].name.start);
     testrun(NULL == msg->header[1].value.start);
@@ -2172,11 +2137,10 @@ int test_ov_http_pointer_parse_message() {
 
     // parse with transfer and content length set
     //        012345678901234-5-67890123456789012345678901-2-34567890123456789-0-1-2-3
-    string =
-        "GET / "
-        "HTTP/"
-        "1.1\r\nTransfer-Encoding:chunked\r\nContent-Length:"
-        "4\r\n\r\n4\r\nbody\r\nx";
+    string = "GET / "
+             "HTTP/"
+             "1.1\r\nTransfer-Encoding:chunked\r\nContent-Length:"
+             "4\r\n\r\n4\r\nbody\r\nx";
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, &next));
     len = msg->buffer->length;
@@ -2192,11 +2156,10 @@ int test_ov_http_pointer_parse_message() {
     }
 
     // header order changed
-    string =
-        "GET / "
-        "HTTP/"
-        "1.1\r\nContent-Length:4\r\nTransfer-Encoding:"
-        "chunked\r\n\r\n4\r\nbody\r\nx";
+    string = "GET / "
+             "HTTP/"
+             "1.1\r\nContent-Length:4\r\nTransfer-Encoding:"
+             "chunked\r\n\r\n4\r\nbody\r\nx";
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(msg, &next));
     len = msg->buffer->length;
@@ -2213,17 +2176,15 @@ int test_ov_http_pointer_parse_message() {
 
     // parse with transfer and other headers set
     //        012345678901234-5-67890123456789012345678901-2-3456-7-8901-2-3-4-56-7-89012-3-4
-    string =
-        "GET / "
-        "HTTP/"
-        "1.1\r\nTransfer-Encoding:chunked\r\n1:1\r\n2:"
-        "2\r\n\r\n4\r\nbody\r\nx";
+    string = "GET / "
+             "HTTP/"
+             "1.1\r\nTransfer-Encoding:chunked\r\n1:1\r\n2:"
+             "2\r\n\r\n4\r\nbody\r\nx";
     testrun(ov_buffer_clear(msg->buffer));
     testrun(ov_buffer_set(msg->buffer, string, strlen(string)));
     testrun(OV_HTTP_PARSER_SUCCESS ==
             ov_http_pointer_parse_message(msg, &next));
-    testrun(0 == strncmp("4\r\nbody\r\n",
-                         (char *)msg->body.start,
+    testrun(0 == strncmp("4\r\nbody\r\n", (char *)msg->body.start,
                          msg->body.length));
     testrun(msg->body.start == msg->buffer->start + 55);
     testrun(msg->body.length == 9);
@@ -2232,26 +2193,20 @@ int test_ov_http_pointer_parse_message() {
     testrun(msg->chunk.length == 4);
     testrun(msg->version.major == 1);
     testrun(msg->version.minor == 1);
-    testrun(0 == strncasecmp("get",
-                             (char *)msg->request.method.start,
+    testrun(0 == strncasecmp("get", (char *)msg->request.method.start,
                              msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(msg->status.code == 0);
     testrun(msg->status.phrase.start == NULL);
     testrun(msg->status.phrase.length == 0);
-    testrun(0 == strncmp("Transfer-Encoding",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("Transfer-Encoding", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("chunked",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("chunked", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
-    testrun(0 == strncmp("1",
-                         (char *)msg->header[1].value.start,
+    testrun(0 == strncmp("1", (char *)msg->header[1].value.start,
                          msg->header[1].value.length));
-    testrun(0 == strncmp("2",
-                         (char *)msg->header[2].value.start,
+    testrun(0 == strncmp("2", (char *)msg->header[2].value.start,
                          msg->header[2].value.length));
     testrun(NULL == msg->header[3].name.start);
     testrun(NULL == msg->header[3].value.start);
@@ -2312,11 +2267,9 @@ int test_ov_http_message_shift_trailing_bytes() {
     testrun(dest->chunk.length == 0);
     testrun(dest->version.major == 2);
     testrun(dest->version.minor == 3);
-    testrun(0 == strncasecmp("put",
-                             (char *)dest->request.method.start,
+    testrun(0 == strncasecmp("put", (char *)dest->request.method.start,
                              dest->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)dest->request.uri.start,
+    testrun(0 == strncmp("/", (char *)dest->request.uri.start,
                          dest->request.uri.length));
     testrun(dest->status.code == 0);
     testrun(dest->status.phrase.start == NULL);
@@ -2361,8 +2314,7 @@ int test_ov_http_message_shift_trailing_bytes() {
     // complete
     strcat((char *)dest->buffer->start, "ified");
     dest->buffer->length = strlen("unspecified");
-    testrun(0 == strncmp("unspecified",
-                         (char *)dest->buffer->start,
+    testrun(0 == strncmp("unspecified", (char *)dest->buffer->start,
                          dest->buffer->length));
     testrun(OV_HTTP_PARSER_ERROR == ov_http_pointer_parse_message(dest, &next));
 
@@ -2575,16 +2527,14 @@ int test_ov_http_create_status() {
     ov_http_message *msg = NULL;
 
     testrun(!ov_http_create_status((ov_http_message_config){0},
-                                   (ov_http_version){0},
-                                   (ov_http_status){0}));
+                                   (ov_http_version){0}, (ov_http_status){0}));
 
     testrun(!ov_http_create_status((ov_http_message_config){0},
                                    (ov_http_version){0},
                                    (ov_http_status){.code = 1}));
 
     testrun(!ov_http_create_status(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_status){.phrase.start = (uint8_t *)"x"}));
 
     testrun(!ov_http_create_status((ov_http_message_config){0},
@@ -2592,26 +2542,22 @@ int test_ov_http_create_status() {
                                    (ov_http_status){.phrase.length = 1}));
 
     testrun(!ov_http_create_status(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_status){.phrase.start = (uint8_t *)"x", .phrase.length = 1}));
 
     testrun(!ov_http_create_status(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_status){
             .code = 99, .phrase.start = (uint8_t *)"x", .phrase.length = 1}));
 
     testrun(!ov_http_create_status(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_status){
             .code = 1000, .phrase.start = (uint8_t *)"x", .phrase.length = 1}));
 
     // min valid input
     msg = ov_http_create_status(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_status){
             .code = 100, .phrase.start = (uint8_t *)"x", .phrase.length = 1});
 
@@ -2619,20 +2565,16 @@ int test_ov_http_create_status() {
     uint8_t *next = NULL;
     testrun(OV_HTTP_PARSER_SUCCESS ==
             ov_http_pointer_parse_status_line(msg->buffer->start,
-                                              msg->buffer->length,
-                                              &msg->status,
-                                              &msg->version,
-                                              &next));
+                                              msg->buffer->length, &msg->status,
+                                              &msg->version, &next));
 
     testrun(next == msg->buffer->start + msg->buffer->length);
     testrun(100 == msg->status.code);
     testrun(0 == msg->version.major);
     testrun(0 == msg->version.minor);
-    testrun(0 == strncmp("x",
-                         (char *)msg->status.phrase.start,
+    testrun(0 == strncmp("x", (char *)msg->status.phrase.start,
                          msg->status.phrase.length));
-    testrun(0 == strncmp("HTTP/0.0 100 x\r\n",
-                         (char *)msg->buffer->start,
+    testrun(0 == strncmp("HTTP/0.0 100 x\r\n", (char *)msg->buffer->start,
                          msg->buffer->length));
     msg = ov_http_message_free(msg);
 
@@ -2646,33 +2588,30 @@ int test_ov_http_create_status() {
 
         if (i < 100) {
 
-            testrun(!ov_http_create_status(
-                (ov_http_message_config){0}, (ov_http_version){0}, status));
+            testrun(!ov_http_create_status((ov_http_message_config){0},
+                                           (ov_http_version){0}, status));
 
         } else if (i > 999) {
 
-            testrun(!ov_http_create_status(
-                (ov_http_message_config){0}, (ov_http_version){0}, status));
+            testrun(!ov_http_create_status((ov_http_message_config){0},
+                                           (ov_http_version){0}, status));
 
         } else {
 
-            msg = ov_http_create_status(
-                (ov_http_message_config){0}, (ov_http_version){0}, status);
+            msg = ov_http_create_status((ov_http_message_config){0},
+                                        (ov_http_version){0}, status);
 
             testrun(msg);
             testrun(OV_HTTP_PARSER_SUCCESS ==
-                    ov_http_pointer_parse_status_line(msg->buffer->start,
-                                                      msg->buffer->length,
-                                                      &msg->status,
-                                                      &msg->version,
-                                                      &next));
+                    ov_http_pointer_parse_status_line(
+                        msg->buffer->start, msg->buffer->length, &msg->status,
+                        &msg->version, &next));
 
             testrun(next == msg->buffer->start + msg->buffer->length);
             testrun(i == msg->status.code);
             testrun(0 == msg->version.major);
             testrun(0 == msg->version.minor);
-            testrun(0 == strncmp("test",
-                                 (char *)msg->status.phrase.start,
+            testrun(0 == strncmp("test", (char *)msg->status.phrase.start,
                                  msg->status.phrase.length));
             msg = ov_http_message_free(msg);
         }
@@ -2685,19 +2624,16 @@ int test_ov_http_create_status() {
 
 int test_ov_http_status_not_found() {
 
-    ov_http_message *in =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "method",
-                                      "uri");
+    ov_http_message *in = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "method", "uri");
 
     testrun(in);
 
     ov_http_message *out = ov_http_status_not_found(in);
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(out, NULL));
     testrun(out->status.code == 404);
-    testrun(0 == memcmp(OV_HTTP_NOT_FOUND,
-                        out->status.phrase.start,
+    testrun(0 == memcmp(OV_HTTP_NOT_FOUND, out->status.phrase.start,
                         out->status.phrase.length));
 
     in = ov_http_message_free(in);
@@ -2710,19 +2646,16 @@ int test_ov_http_status_not_found() {
 
 int test_ov_http_status_forbidden() {
 
-    ov_http_message *in =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "method",
-                                      "uri");
+    ov_http_message *in = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "method", "uri");
 
     testrun(in);
 
     ov_http_message *out = ov_http_status_forbidden(in);
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(out, NULL));
     testrun(out->status.code == 403);
-    testrun(0 == memcmp(OV_HTTP_FORBIDDEN,
-                        out->status.phrase.start,
+    testrun(0 == memcmp(OV_HTTP_FORBIDDEN, out->status.phrase.start,
                         out->status.phrase.length));
 
     in = ov_http_message_free(in);
@@ -2737,34 +2670,30 @@ int test_ov_http_create_status_string() {
 
     ov_http_message *msg = NULL;
 
-    testrun(!ov_http_create_status_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, 0, "test"));
+    testrun(!ov_http_create_status_string((ov_http_message_config){0},
+                                          (ov_http_version){0}, 0, "test"));
 
-    testrun(!ov_http_create_status_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, 100, NULL));
+    testrun(!ov_http_create_status_string((ov_http_message_config){0},
+                                          (ov_http_version){0}, 100, NULL));
 
     // min valid input
-    msg = ov_http_create_status_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, 100, "x");
+    msg = ov_http_create_status_string((ov_http_message_config){0},
+                                       (ov_http_version){0}, 100, "x");
 
     testrun(msg);
     uint8_t *next = NULL;
     testrun(OV_HTTP_PARSER_SUCCESS ==
             ov_http_pointer_parse_status_line(msg->buffer->start,
-                                              msg->buffer->length,
-                                              &msg->status,
-                                              &msg->version,
-                                              &next));
+                                              msg->buffer->length, &msg->status,
+                                              &msg->version, &next));
 
     testrun(next == msg->buffer->start + msg->buffer->length);
     testrun(100 == msg->status.code);
     testrun(0 == msg->version.major);
     testrun(0 == msg->version.minor);
-    testrun(0 == strncmp("x",
-                         (char *)msg->status.phrase.start,
+    testrun(0 == strncmp("x", (char *)msg->status.phrase.start,
                          msg->status.phrase.length));
-    testrun(0 == strncmp("HTTP/0.0 100 x\r\n",
-                         (char *)msg->buffer->start,
+    testrun(0 == strncmp("HTTP/0.0 100 x\r\n", (char *)msg->buffer->start,
                          msg->buffer->length));
     msg = ov_http_message_free(msg);
 
@@ -2783,23 +2712,20 @@ int test_ov_http_create_status_string() {
 
         } else {
 
-            msg = ov_http_create_status_string(
-                (ov_http_message_config){0}, (ov_http_version){0}, i, "test");
+            msg = ov_http_create_status_string((ov_http_message_config){0},
+                                               (ov_http_version){0}, i, "test");
 
             testrun(msg);
             testrun(OV_HTTP_PARSER_SUCCESS ==
-                    ov_http_pointer_parse_status_line(msg->buffer->start,
-                                                      msg->buffer->length,
-                                                      &msg->status,
-                                                      &msg->version,
-                                                      &next));
+                    ov_http_pointer_parse_status_line(
+                        msg->buffer->start, msg->buffer->length, &msg->status,
+                        &msg->version, &next));
 
             testrun(next == msg->buffer->start + msg->buffer->length);
             testrun(i == msg->status.code);
             testrun(0 == msg->version.major);
             testrun(0 == msg->version.minor);
-            testrun(0 == strncmp("test",
-                                 (char *)msg->status.phrase.start,
+            testrun(0 == strncmp("test", (char *)msg->status.phrase.start,
                                  msg->status.phrase.length));
             msg = ov_http_message_free(msg);
         }
@@ -2818,41 +2744,36 @@ int test_ov_http_create_request() {
                                     (ov_http_version){0},
                                     (ov_http_request){0}));
 
-    testrun(
-        !ov_http_create_request((ov_http_message_config){0},
-                                (ov_http_version){0},
-                                (ov_http_request){.method.start = NULL,
-                                                  .method.length = 6,
-                                                  .uri.start = (uint8_t *)"/",
-                                                  .uri.length = 1}));
+    testrun(!ov_http_create_request(
+        (ov_http_message_config){0}, (ov_http_version){0},
+        (ov_http_request){.method.start = NULL,
+                          .method.length = 6,
+                          .uri.start = (uint8_t *)"/",
+                          .uri.length = 1}));
 
     testrun(!ov_http_create_request(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_request){.method.start = (uint8_t *)"method",
                           .method.length = 0,
                           .uri.start = (uint8_t *)"/",
                           .uri.length = 1}));
 
     testrun(!ov_http_create_request(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_request){.method.start = (uint8_t *)"method",
                           .method.length = 6,
                           .uri.start = NULL,
                           .uri.length = 1}));
 
     testrun(!ov_http_create_request(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_request){.method.start = (uint8_t *)"method",
                           .method.length = 6,
                           .uri.start = (uint8_t *)"/",
                           .uri.length = 0}));
 
     testrun(!ov_http_create_request(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_request){.method.start = (uint8_t *)"methodislongerasmaxlength"
                                                      "default",
                           .method.length = IMPL_DEFAULT_MAX_METHOD_NAME + 1,
@@ -2861,8 +2782,7 @@ int test_ov_http_create_request() {
 
     // min valid input
     msg = ov_http_create_request(
-        (ov_http_message_config){0},
-        (ov_http_version){0},
+        (ov_http_message_config){0}, (ov_http_version){0},
         (ov_http_request){.method.start = (uint8_t *)"method",
                           .method.length = 6,
                           .uri.start = (uint8_t *)"/",
@@ -2871,22 +2791,16 @@ int test_ov_http_create_request() {
     testrun(msg);
     uint8_t *next = NULL;
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_request_line(msg->buffer->start,
-                                               msg->buffer->length,
-                                               &msg->request,
-                                               &msg->version,
-                                               IMPL_DEFAULT_MAX_METHOD_NAME,
-                                               &next));
+            ov_http_pointer_parse_request_line(
+                msg->buffer->start, msg->buffer->length, &msg->request,
+                &msg->version, IMPL_DEFAULT_MAX_METHOD_NAME, &next));
 
     testrun(next == msg->buffer->start + msg->buffer->length);
-    testrun(0 == strncmp("method",
-                         (char *)msg->request.method.start,
+    testrun(0 == strncmp("method", (char *)msg->request.method.start,
                          msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
-    testrun(0 == strncmp("method / HTTP/0.0\r\n",
-                         (char *)msg->buffer->start,
+    testrun(0 == strncmp("method / HTTP/0.0\r\n", (char *)msg->buffer->start,
                          msg->buffer->length));
     msg = ov_http_message_free(msg);
 
@@ -2899,43 +2813,36 @@ int test_ov_http_create_request_string() {
 
     ov_http_message *msg = NULL;
 
-    testrun(!ov_http_create_request_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, NULL, NULL));
+    testrun(!ov_http_create_request_string((ov_http_message_config){0},
+                                           (ov_http_version){0}, NULL, NULL));
 
     testrun(!ov_http_create_request_string(
         (ov_http_message_config){0}, (ov_http_version){0}, "method", NULL));
 
-    testrun(!ov_http_create_request_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, NULL, "/"));
-
     testrun(!ov_http_create_request_string((ov_http_message_config){0},
-                                           (ov_http_version){0},
-                                           "methodislongerasmaxlengthdefault",
-                                           "/"));
+                                           (ov_http_version){0}, NULL, "/"));
+
+    testrun(!ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){0},
+        "methodislongerasmaxlengthdefault", "/"));
 
     // min valid input
-    msg = ov_http_create_request_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, "method", "/");
+    msg = ov_http_create_request_string((ov_http_message_config){0},
+                                        (ov_http_version){0}, "method", "/");
 
     testrun(msg);
     uint8_t *next = NULL;
     testrun(OV_HTTP_PARSER_SUCCESS ==
-            ov_http_pointer_parse_request_line(msg->buffer->start,
-                                               msg->buffer->length,
-                                               &msg->request,
-                                               &msg->version,
-                                               IMPL_DEFAULT_MAX_METHOD_NAME,
-                                               &next));
+            ov_http_pointer_parse_request_line(
+                msg->buffer->start, msg->buffer->length, &msg->request,
+                &msg->version, IMPL_DEFAULT_MAX_METHOD_NAME, &next));
 
     testrun(next == msg->buffer->start + msg->buffer->length);
-    testrun(0 == strncmp("method",
-                         (char *)msg->request.method.start,
+    testrun(0 == strncmp("method", (char *)msg->request.method.start,
                          msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
-    testrun(0 == strncmp("method / HTTP/0.0\r\n",
-                         (char *)msg->buffer->start,
+    testrun(0 == strncmp("method / HTTP/0.0\r\n", (char *)msg->buffer->start,
                          msg->buffer->length));
     msg = ov_http_message_free(msg);
 
@@ -2975,185 +2882,152 @@ int test_ov_http_message_add_header() {
 
     // check empty msg (no startline)
     testrun(!ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"y",
-                         .value.length = 1}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"y",
+                              .value.length = 1}));
 
     msg = ov_http_message_free(msg);
-    msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     testrun(msg);
 
     testrun(!ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = NULL,
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"y",
-                         .value.length = 1}));
+        msg, (ov_http_header){.name.start = NULL,
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"y",
+                              .value.length = 1}));
 
     testrun(!ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 0,
-                         .value.start = (uint8_t *)"y",
-                         .value.length = 1}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 0,
+                              .value.start = (uint8_t *)"y",
+                              .value.length = 1}));
 
     testrun(!ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = NULL,
-                         .value.length = 1}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = NULL,
+                              .value.length = 1}));
 
     testrun(!ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"y",
-                         .value.length = 0}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"y",
+                              .value.length = 0}));
 
     testrun(ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"y",
-                         .value.length = 1}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"y",
+                              .value.length = 1}));
 
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
     testrun(0 == msg->header[1].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
     msg = ov_http_message_free(msg);
 
-    msg = ov_http_create_status_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, 100, "c");
+    msg = ov_http_create_status_string((ov_http_message_config){0},
+                                       (ov_http_version){0}, 100, "c");
 
     testrun(msg);
 
     testrun(ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"y",
-                         .value.length = 1}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"y",
+                              .value.length = 1}));
 
     testrun(0 == strncmp("HTTP/0.0 100 c\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
     msg = ov_http_message_free(msg);
 
     // check max bytes header line
-    msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     msg->config.header.max_bytes_line = 5;
     testrun(ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"y",
-                         .value.length = 1}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"y",
+                              .value.length = 1}));
 
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
 
     testrun(!ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"yz",
-                         .value.length = 2}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"yz",
+                              .value.length = 2}));
 
     // check buffer is unchanged
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
     testrun(0 == msg->header[1].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
 
     msg->config.header.max_bytes_line = 6;
     testrun(ov_http_message_add_header(
-        msg,
-        (ov_http_header){.name.start = (uint8_t *)"x",
-                         .name.length = 1,
-                         .value.start = (uint8_t *)"yz",
-                         .value.length = 2}));
+        msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                              .name.length = 1,
+                              .value.start = (uint8_t *)"yz",
+                              .value.length = 2}));
 
     // check buffer contains both headers
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\nx:yz\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
     testrun(0 != msg->header[1].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[1].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[1].name.start,
                          msg->header[1].name.length));
-    testrun(0 == strncmp("yz",
-                         (char *)msg->header[1].value.start,
+    testrun(0 == strncmp("yz", (char *)msg->header[1].value.start,
                          msg->header[1].value.length));
     msg = ov_http_message_free(msg);
 
     // check self extending of the msg->buffer in line with message config
 
     msg = ov_http_create_request_string(
-        (ov_http_message_config){
-            .header.capacity = 1000, .buffer.default_size = 50},
-        (ov_http_version){.major = 1, .minor = 1},
-        "GET",
-        "/");
+        (ov_http_message_config){.header.capacity = 1000,
+                                 .buffer.default_size = 50},
+        (ov_http_version){.major = 1, .minor = 1}, "GET", "/");
 
     testrun(msg->buffer->capacity == 50)
 
@@ -3161,11 +3035,10 @@ int test_ov_http_message_add_header() {
     while (msg->buffer->capacity < 250) {
 
         testrun(ov_http_message_add_header(
-            msg,
-            (ov_http_header){.name.start = (uint8_t *)"x",
-                             .name.length = 1,
-                             .value.start = (uint8_t *)"y",
-                             .value.length = 1}));
+            msg, (ov_http_header){.name.start = (uint8_t *)"x",
+                                  .name.length = 1,
+                                  .value.start = (uint8_t *)"y",
+                                  .value.length = 1}));
 
         count++;
     }
@@ -3187,14 +3060,11 @@ int test_ov_http_message_add_header() {
 
 int test_ov_http_message_add_content_type() {
 
-    ov_http_message *msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    ov_http_message *msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
-    testrun(0 == memcmp("GET / HTTP/1.1\r\n",
-                        msg->buffer->start,
+    testrun(0 == memcmp("GET / HTTP/1.1\r\n", msg->buffer->start,
                         msg->buffer->length));
 
     char *mime = "mime";
@@ -3205,15 +3075,13 @@ int test_ov_http_message_add_content_type() {
 
     testrun(ov_http_message_add_content_type(msg, mime, NULL));
     testrun(0 == memcmp("GET / HTTP/1.1\r\nContent-Type:mime\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     testrun(ov_http_message_add_content_type(msg, mime, "utf-8"));
     testrun(0 == memcmp("GET / HTTP/1.1\r\n"
                         "Content-Type:mime\r\n"
                         "Content-Type:mime;charset=utf-8\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     msg = ov_http_message_free(msg);
     return testrun_log_success();
@@ -3223,14 +3091,11 @@ int test_ov_http_message_add_content_type() {
 
 int test_ov_http_message_add_transfer_encodings() {
 
-    ov_http_message *msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    ov_http_message *msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
-    testrun(0 == memcmp("GET / HTTP/1.1\r\n",
-                        msg->buffer->start,
+    testrun(0 == memcmp("GET / HTTP/1.1\r\n", msg->buffer->start,
                         msg->buffer->length));
 
     ov_file_format_desc format = (ov_file_format_desc){0};
@@ -3242,16 +3107,14 @@ int test_ov_http_message_add_transfer_encodings() {
 
     testrun(0 == memcmp("GET / HTTP/1.1\r\n"
                         "Transfer-Encoding:chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     testrun(ov_http_message_add_transfer_encodings(msg, &format));
 
     testrun(0 == memcmp("GET / HTTP/1.1\r\n"
                         "Transfer-Encoding:chunked\r\n"
                         "Transfer-Encoding:gzip;chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     strcpy(format.desc.ext[0], "gzip");
     strcpy(format.desc.ext[1], "compress");
@@ -3264,8 +3127,7 @@ int test_ov_http_message_add_transfer_encodings() {
                         "Transfer-Encoding:chunked\r\n"
                         "Transfer-Encoding:gzip;chunked\r\n"
                         "Transfer-Encoding:gzip;compress;deflate;chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     strcpy(format.desc.ext[0], "compress");
     strcpy(format.desc.ext[1], "deflate");
@@ -3279,8 +3141,7 @@ int test_ov_http_message_add_transfer_encodings() {
                         "Transfer-Encoding:gzip;chunked\r\n"
                         "Transfer-Encoding:gzip;compress;deflate;chunked\r\n"
                         "Transfer-Encoding:compress;deflate;gzip;chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     strcpy(format.desc.ext[0], "compress");
     strcpy(format.desc.ext[1], "json");
@@ -3295,8 +3156,7 @@ int test_ov_http_message_add_transfer_encodings() {
                         "Transfer-Encoding:gzip;compress;deflate;chunked\r\n"
                         "Transfer-Encoding:compress;deflate;gzip;chunked\r\n"
                         "Transfer-Encoding:compress;chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     strcpy(format.desc.ext[0], "gzip");
     strcpy(format.desc.ext[1], "json");
@@ -3312,8 +3172,7 @@ int test_ov_http_message_add_transfer_encodings() {
                         "Transfer-Encoding:compress;deflate;gzip;chunked\r\n"
                         "Transfer-Encoding:compress;chunked\r\n"
                         "Transfer-Encoding:gzip;chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     strcpy(format.desc.ext[0], "gzip");
     strcpy(format.desc.ext[1], "gzip");
@@ -3330,8 +3189,7 @@ int test_ov_http_message_add_transfer_encodings() {
                         "Transfer-Encoding:compress;chunked\r\n"
                         "Transfer-Encoding:gzip;chunked\r\n"
                         "Transfer-Encoding:gzip;gzip;gzip;chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     strcpy(format.desc.ext[0], "Compress");
     strcpy(format.desc.ext[1], "deFLATE");
@@ -3349,8 +3207,7 @@ int test_ov_http_message_add_transfer_encodings() {
                         "Transfer-Encoding:gzip;chunked\r\n"
                         "Transfer-Encoding:gzip;gzip;gzip;chunked\r\n"
                         "Transfer-Encoding:compress;deflate;gzip;chunked\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     msg = ov_http_message_free(msg);
     return testrun_log_success();
@@ -3360,14 +3217,11 @@ int test_ov_http_message_add_transfer_encodings() {
 
 int test_ov_http_message_set_date() {
 
-    ov_http_message *msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    ov_http_message *msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
-    testrun(0 == memcmp("GET / HTTP/1.1\r\n",
-                        msg->buffer->start,
+    testrun(0 == memcmp("GET / HTTP/1.1\r\n", msg->buffer->start,
                         msg->buffer->length));
 
     testrun(!ov_http_message_set_date(NULL));
@@ -3385,14 +3239,11 @@ int test_ov_http_message_set_date() {
 
 int test_ov_http_message_set_content_length() {
 
-    ov_http_message *msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    ov_http_message *msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
-    testrun(0 == memcmp("GET / HTTP/1.1\r\n",
-                        msg->buffer->start,
+    testrun(0 == memcmp("GET / HTTP/1.1\r\n", msg->buffer->start,
                         msg->buffer->length));
 
     testrun(!ov_http_message_set_content_length(NULL, 0));
@@ -3400,23 +3251,20 @@ int test_ov_http_message_set_content_length() {
     testrun(ov_http_message_set_content_length(msg, 0));
     testrun(0 == memcmp("GET / HTTP/1.1\r\n"
                         "Content-Length:0\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     testrun(ov_http_message_set_content_length(msg, 100));
     testrun(0 == memcmp("GET / HTTP/1.1\r\n"
                         "Content-Length:0\r\n"
                         "Content-Length:100\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     testrun(ov_http_message_set_content_length(msg, 123456));
     testrun(0 == memcmp("GET / HTTP/1.1\r\n"
                         "Content-Length:0\r\n"
                         "Content-Length:100\r\n"
                         "Content-Length:123456\r\n",
-                        msg->buffer->start,
-                        msg->buffer->length));
+                        msg->buffer->start, msg->buffer->length));
 
     msg = ov_http_message_free(msg);
     return testrun_log_success();
@@ -3432,11 +3280,9 @@ int test_ov_http_message_add_header_string() {
     testrun(!ov_http_message_add_header_string(msg, "x", "y"));
 
     msg = ov_http_message_free(msg);
-    msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     testrun(msg);
 
@@ -3447,79 +3293,65 @@ int test_ov_http_message_add_header_string() {
     testrun(ov_http_message_add_header_string(msg, "x", "y"));
 
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
     testrun(0 == msg->header[1].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
     msg = ov_http_message_free(msg);
 
-    msg = ov_http_create_status_string(
-        (ov_http_message_config){0}, (ov_http_version){0}, 100, "c");
+    msg = ov_http_create_status_string((ov_http_message_config){0},
+                                       (ov_http_version){0}, 100, "c");
 
     testrun(msg);
 
     testrun(ov_http_message_add_header_string(msg, "x", "y"));
 
     testrun(0 == strncmp("HTTP/0.0 100 c\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
     msg = ov_http_message_free(msg);
 
     // check max bytes header line
-    msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     msg->config.header.max_bytes_line = 5;
     testrun(ov_http_message_add_header_string(msg, "x", "y"));
 
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
 
     testrun(!ov_http_message_add_header_string(msg, "x", "yz"));
 
     // check buffer is unchanged
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
     testrun(0 == msg->header[1].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
 
     msg->config.header.max_bytes_line = 6;
@@ -3527,34 +3359,27 @@ int test_ov_http_message_add_header_string() {
 
     // check buffer contains both headers
     testrun(0 == strncmp("GET / HTTP/1.1\r\nx:y\r\nx:yz\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_PROGRESS ==
             ov_http_pointer_parse_message(msg, NULL));
     testrun(0 != msg->header[0].name.start);
     testrun(0 != msg->header[1].name.start);
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("y",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("y", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
-    testrun(0 == strncmp("x",
-                         (char *)msg->header[1].name.start,
+    testrun(0 == strncmp("x", (char *)msg->header[1].name.start,
                          msg->header[1].name.length));
-    testrun(0 == strncmp("yz",
-                         (char *)msg->header[1].value.start,
+    testrun(0 == strncmp("yz", (char *)msg->header[1].value.start,
                          msg->header[1].value.length));
     msg = ov_http_message_free(msg);
 
     // check self extending of the msg->buffer in line with message config
 
     msg = ov_http_create_request_string(
-        (ov_http_message_config){
-            .header.capacity = 1000, .buffer.default_size = 50},
-        (ov_http_version){.major = 1, .minor = 1},
-        "GET",
-        "/");
+        (ov_http_message_config){.header.capacity = 1000,
+                                 .buffer.default_size = 50},
+        (ov_http_version){.major = 1, .minor = 1}, "GET", "/");
 
     testrun(msg->buffer->capacity == 50)
 
@@ -3589,11 +3414,9 @@ int test_ov_http_message_close_header() {
             strncmp("\r\n", (char *)msg->buffer->start, msg->buffer->length));
     msg = ov_http_message_free(msg);
 
-    msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     testrun(msg);
     testrun(ov_http_message_add_header_string(msg, "1", "1"));
@@ -3603,24 +3426,20 @@ int test_ov_http_message_close_header() {
 
     // 012345678901234-5-
     testrun(0 == strncmp("GET / HTTP/1.1\r\n1:1\r\n2:2\r\n3:3\r\n\r\n",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     msg = ov_http_message_free(msg);
 
     // check self extending of the msg->buffer in line with message config
 
     msg = ov_http_create_request_string(
-        (ov_http_message_config){
-            .header.capacity = 1000, .buffer.default_size = 17},
-        (ov_http_version){.major = 1, .minor = 1},
-        "GET",
-        "/");
+        (ov_http_message_config){.header.capacity = 1000,
+                                 .buffer.default_size = 17},
+        (ov_http_version){.major = 1, .minor = 1}, "GET", "/");
 
     testrun(msg->buffer->capacity == 17);
     testrun(msg->buffer->length == 16);
     testrun(ov_http_message_close_header(msg));
-    testrun(0 == strncmp("GET / HTTP/1.1\r\n\r\n",
-                         (char *)msg->buffer->start,
+    testrun(0 == strncmp("GET / HTTP/1.1\r\n\r\n", (char *)msg->buffer->start,
                          msg->buffer->length));
     testrun(msg->buffer->capacity == 34);
     msg = ov_http_message_free(msg);
@@ -3632,11 +3451,9 @@ int test_ov_http_message_close_header() {
 
 int test_ov_http_message_add_body() {
 
-    ov_http_message *msg = msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    ov_http_message *msg = msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     testrun(msg);
     testrun(ov_http_message_add_header_string(msg, "1", "1"));
@@ -3663,45 +3480,34 @@ int test_ov_http_message_add_body() {
         msg, (ov_memory_pointer){.start = (uint8_t *)"body", .length = 4}));
 
     testrun(0 == strncmp("GET / HTTP/1.1\r\n1:1\r\n2:2\r\n3:3\r\n\r\nbody",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
-    testrun(0 == strncmp("GET",
-                         (char *)msg->request.method.start,
+    testrun(0 == strncmp("GET", (char *)msg->request.method.start,
                          msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(1 == msg->version.major);
     testrun(1 == msg->version.minor);
     testrun(0 == strncmp("body", (char *)msg->body.start, msg->body.length));
-    testrun(0 == strncmp("1",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("1", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("1",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("1", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
-    testrun(0 == strncmp("2",
-                         (char *)msg->header[1].name.start,
+    testrun(0 == strncmp("2", (char *)msg->header[1].name.start,
                          msg->header[1].name.length));
-    testrun(0 == strncmp("2",
-                         (char *)msg->header[1].value.start,
+    testrun(0 == strncmp("2", (char *)msg->header[1].value.start,
                          msg->header[1].value.length));
-    testrun(0 == strncmp("3",
-                         (char *)msg->header[2].name.start,
+    testrun(0 == strncmp("3", (char *)msg->header[2].name.start,
                          msg->header[1].name.length));
-    testrun(0 == strncmp("3",
-                         (char *)msg->header[2].value.start,
+    testrun(0 == strncmp("3", (char *)msg->header[2].value.start,
                          msg->header[1].value.length));
     testrun(0 == msg->header[3].value.start);
     msg = ov_http_message_free(msg);
 
     // check adding body with unclosed header
-    msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     testrun(msg);
     testrun(ov_http_message_add_header_string(msg, "1", "1"));
@@ -3718,11 +3524,9 @@ int test_ov_http_message_add_body() {
     // check extending buffer
 
     msg = ov_http_create_request_string(
-        (ov_http_message_config){
-            .header.capacity = 100, .buffer.default_size = 20},
-        (ov_http_version){.major = 1, .minor = 1},
-        "GET",
-        "/");
+        (ov_http_message_config){.header.capacity = 100,
+                                 .buffer.default_size = 20},
+        (ov_http_version){.major = 1, .minor = 1}, "GET", "/");
 
     testrun(ov_http_message_close_header(msg));
     testrun(msg->buffer->capacity == 20);
@@ -3739,11 +3543,9 @@ int test_ov_http_message_add_body() {
 
 int test_ov_http_message_add_body_string() {
 
-    ov_http_message *msg = msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    ov_http_message *msg = msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     testrun(msg);
     testrun(ov_http_message_add_header_string(msg, "1", "1"));
@@ -3758,45 +3560,34 @@ int test_ov_http_message_add_body_string() {
     testrun(ov_http_message_add_body_string(msg, "body"));
 
     testrun(0 == strncmp("GET / HTTP/1.1\r\n1:1\r\n2:2\r\n3:3\r\n\r\nbody",
-                         (char *)msg->buffer->start,
-                         msg->buffer->length));
+                         (char *)msg->buffer->start, msg->buffer->length));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(msg, NULL));
-    testrun(0 == strncmp("GET",
-                         (char *)msg->request.method.start,
+    testrun(0 == strncmp("GET", (char *)msg->request.method.start,
                          msg->request.method.length));
-    testrun(0 == strncmp("/",
-                         (char *)msg->request.uri.start,
+    testrun(0 == strncmp("/", (char *)msg->request.uri.start,
                          msg->request.uri.length));
     testrun(1 == msg->version.major);
     testrun(1 == msg->version.minor);
     testrun(0 == strncmp("body", (char *)msg->body.start, msg->body.length));
-    testrun(0 == strncmp("1",
-                         (char *)msg->header[0].name.start,
+    testrun(0 == strncmp("1", (char *)msg->header[0].name.start,
                          msg->header[0].name.length));
-    testrun(0 == strncmp("1",
-                         (char *)msg->header[0].value.start,
+    testrun(0 == strncmp("1", (char *)msg->header[0].value.start,
                          msg->header[0].value.length));
-    testrun(0 == strncmp("2",
-                         (char *)msg->header[1].name.start,
+    testrun(0 == strncmp("2", (char *)msg->header[1].name.start,
                          msg->header[1].name.length));
-    testrun(0 == strncmp("2",
-                         (char *)msg->header[1].value.start,
+    testrun(0 == strncmp("2", (char *)msg->header[1].value.start,
                          msg->header[1].value.length));
-    testrun(0 == strncmp("3",
-                         (char *)msg->header[2].name.start,
+    testrun(0 == strncmp("3", (char *)msg->header[2].name.start,
                          msg->header[1].name.length));
-    testrun(0 == strncmp("3",
-                         (char *)msg->header[2].value.start,
+    testrun(0 == strncmp("3", (char *)msg->header[2].value.start,
                          msg->header[1].value.length));
     testrun(0 == msg->header[3].value.start);
     msg = ov_http_message_free(msg);
 
     // check adding body with unclosed header
-    msg =
-        ov_http_create_request_string((ov_http_message_config){0},
-                                      (ov_http_version){.major = 1, .minor = 1},
-                                      "GET",
-                                      "/");
+    msg = ov_http_create_request_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        "GET", "/");
 
     testrun(msg);
     testrun(ov_http_message_add_header_string(msg, "1", "1"));
@@ -3811,11 +3602,9 @@ int test_ov_http_message_add_body_string() {
     // check extending buffer
 
     msg = ov_http_create_request_string(
-        (ov_http_message_config){
-            .header.capacity = 100, .buffer.default_size = 20},
-        (ov_http_version){.major = 1, .minor = 1},
-        "GET",
-        "/");
+        (ov_http_message_config){.header.capacity = 100,
+                                 .buffer.default_size = 20},
+        (ov_http_version){.major = 1, .minor = 1}, "GET", "/");
 
     testrun(ov_http_message_close_header(msg));
     testrun(msg->buffer->capacity == 20);
@@ -3902,19 +3691,19 @@ int test_ov_http_pointer_parse_comma_list_item() {
     uint8_t *next = NULL;
 
     testrun(!ov_http_pointer_parse_comma_list_item(NULL, 0, NULL, NULL, NULL));
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        NULL, strlen(str), &out, &len, &next));
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, 0, &out, &len, &next));
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), NULL, &len, &next));
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, NULL, &next));
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, NULL));
+    testrun(!ov_http_pointer_parse_comma_list_item(NULL, strlen(str), &out,
+                                                   &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, 0, &out,
+                                                   &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   NULL, &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   &out, NULL, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   &out, &len, NULL));
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str);
     testrun(len == strlen(str));
@@ -3923,8 +3712,8 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     01-23456789012345678901234567890
     str = " \t whitespace front and back \t ";
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str + 3);
     testrun(len == 25);
@@ -3933,8 +3722,8 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     01-23456789012345678901234567890
     str = " \t whitespace , front and back \t ";
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str + 3);
     testrun(len == 10);
@@ -3943,8 +3732,8 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     0123456789012345678901234567890
     str = "a,b,c";
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str);
     testrun(len == 1);
@@ -3953,8 +3742,8 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     0123456789012345678901234567890
     str = "a, b,c";
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str);
     testrun(len == 1);
@@ -3963,8 +3752,8 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     0123456789012345678901234567890
     str = "a , b,c";
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str);
     testrun(len == 1);
@@ -3973,8 +3762,8 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     0123456789012345678901234567890
     str = " a , b,c";
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str + 1);
     testrun(len == 1);
@@ -3984,8 +3773,8 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     0123456789012345678901234567890
     str = "\ra , b,c";
 
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
 
     testrun(out == (uint8_t *)str);
     testrun(len == 2);
@@ -3995,29 +3784,29 @@ int test_ov_http_pointer_parse_comma_list_item() {
     //     0123456789012345678901234567890
     str = ",,b,c";
 
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   &out, &len, &next));
 
     str = "";
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   &out, &len, &next));
 
     str = " ";
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   &out, &len, &next));
 
     str = " ,";
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   &out, &len, &next));
 
     str = " \t    ,";
-    testrun(!ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(!ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                   &out, &len, &next));
 
     //     01-2345678
     str = " \t    a,";
-    testrun(ov_http_pointer_parse_comma_list_item(
-        (uint8_t *)str, strlen(str), &out, &len, &next));
+    testrun(ov_http_pointer_parse_comma_list_item((uint8_t *)str, strlen(str),
+                                                  &out, &len, &next));
     testrun(out == (uint8_t *)str + 6);
     testrun(len == 1);
     testrun(next == (uint8_t *)str + 8);
@@ -4064,12 +3853,12 @@ int test_ov_http_pointer_find_item_in_comma_list() {
     uint8_t *name = (uint8_t *)"test";
     size_t name_len = strlen((char *)name);
 
-    testrun(!ov_http_pointer_find_item_in_comma_list(
-        NULL, len, name, name_len, true));
+    testrun(!ov_http_pointer_find_item_in_comma_list(NULL, len, name, name_len,
+                                                     true));
     testrun(
         !ov_http_pointer_find_item_in_comma_list(str, 0, name, name_len, true));
-    testrun(!ov_http_pointer_find_item_in_comma_list(
-        str, len, NULL, name_len, true));
+    testrun(!ov_http_pointer_find_item_in_comma_list(str, len, NULL, name_len,
+                                                     true));
     testrun(!ov_http_pointer_find_item_in_comma_list(str, len, name, 0, true));
 
     const uint8_t *out = NULL;
@@ -4078,21 +3867,21 @@ int test_ov_http_pointer_find_item_in_comma_list() {
     testrun(out);
     testrun(out == str);
 
-    out = ov_http_pointer_find_item_in_comma_list(
-        str, len, name, name_len, false);
+    out = ov_http_pointer_find_item_in_comma_list(str, len, name, name_len,
+                                                  false);
     testrun(out);
     testrun(out == str);
 
-    testrun(!ov_http_pointer_find_item_in_comma_list(
-        str, len, name, name_len - 1, true));
-    testrun(!ov_http_pointer_find_item_in_comma_list(
-        str, len, name, name_len - 1, false));
+    testrun(!ov_http_pointer_find_item_in_comma_list(str, len, name,
+                                                     name_len - 1, true));
+    testrun(!ov_http_pointer_find_item_in_comma_list(str, len, name,
+                                                     name_len - 1, false));
 
     name = (uint8_t *)"Test";
     name_len = strlen((char *)name);
 
-    testrun(!ov_http_pointer_find_item_in_comma_list(
-        str, len, name, name_len, false));
+    testrun(!ov_http_pointer_find_item_in_comma_list(str, len, name, name_len,
+                                                     false));
     out =
         ov_http_pointer_find_item_in_comma_list(str, len, name, name_len, true);
     testrun(out);
@@ -4101,8 +3890,8 @@ int test_ov_http_pointer_find_item_in_comma_list() {
     str = (uint8_t *)" \t test";
     len = strlen((char *)str);
 
-    testrun(!ov_http_pointer_find_item_in_comma_list(
-        str, len, name, name_len, false));
+    testrun(!ov_http_pointer_find_item_in_comma_list(str, len, name, name_len,
+                                                     false));
     out =
         ov_http_pointer_find_item_in_comma_list(str, len, name, name_len, true);
     testrun(out);
@@ -4114,8 +3903,8 @@ int test_ov_http_pointer_find_item_in_comma_list() {
     str = (uint8_t *)" \tx, \t test, Test";
     len = strlen((char *)str);
 
-    out = ov_http_pointer_find_item_in_comma_list(
-        str, len, name, name_len, false);
+    out = ov_http_pointer_find_item_in_comma_list(str, len, name, name_len,
+                                                  false);
     testrun(out);
     testrun(out == str + 13);
 
@@ -4127,8 +3916,8 @@ int test_ov_http_pointer_find_item_in_comma_list() {
     str = (uint8_t *)" \tx, \t test, test";
     len = strlen((char *)str);
 
-    testrun(!ov_http_pointer_find_item_in_comma_list(
-        str, len, name, name_len, false));
+    testrun(!ov_http_pointer_find_item_in_comma_list(str, len, name, name_len,
+                                                     false));
     out =
         ov_http_pointer_find_item_in_comma_list(str, len, name, name_len, true);
     testrun(out);

@@ -603,14 +603,14 @@ int test_ov_sdp_is_byte_string() {
         buffer[1] = i;
         switch (i) {
 
-            case 0x00:
-            case '\r':
-            case '\n':
-                testrun(!ov_sdp_is_byte_string(buffer, 4));
-                break;
-            default:
-                testrun(ov_sdp_is_byte_string(buffer, 4));
-                break;
+        case 0x00:
+        case '\r':
+        case '\n':
+            testrun(!ov_sdp_is_byte_string(buffer, 4));
+            break;
+        default:
+            testrun(ov_sdp_is_byte_string(buffer, 4));
+            break;
         }
     }
 
@@ -682,18 +682,18 @@ int test_ov_sdp_is_email_safe() {
         buffer[1] = i;
         switch (i) {
 
-            case 0x00:
-            case 0x0A:
-            case 0x0D:
-            case 0x28:
-            case 0x29:
-            case 0x3C:
-            case 0x3E:
-                testrun(!ov_sdp_is_email_safe(buffer, 4));
-                break;
-            default:
-                testrun(ov_sdp_is_email_safe(buffer, 4));
-                break;
+        case 0x00:
+        case 0x0A:
+        case 0x0D:
+        case 0x28:
+        case 0x29:
+        case 0x3C:
+        case 0x3E:
+            testrun(!ov_sdp_is_email_safe(buffer, 4));
+            break;
+        default:
+            testrun(ov_sdp_is_email_safe(buffer, 4));
+            break;
         }
     }
 
@@ -967,13 +967,13 @@ int test_ov_sdp_is_ip4_multicast() {
 
         switch (i) {
 
-            case '2':
-            case '3':
-                testrun(ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
-                break;
+        case '2':
+        case '3':
+            testrun(ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
+            break;
 
-            default:
-                testrun(!ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
+        default:
+            testrun(!ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
         }
 
         buffer[0] = '2';
@@ -982,17 +982,17 @@ int test_ov_sdp_is_ip4_multicast() {
 
         switch (i) {
 
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                testrun(ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
-                break;
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            testrun(ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
+            break;
 
-            default:
-                testrun(!ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
+        default:
+            testrun(!ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
         }
 
         buffer[0] = '2';
@@ -1001,21 +1001,21 @@ int test_ov_sdp_is_ip4_multicast() {
 
         switch (i) {
 
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                testrun(ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
-                break;
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            testrun(ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
+            break;
 
-            default:
-                testrun(!ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
+        default:
+            testrun(!ov_sdp_is_ip4_multicast(buffer, strlen(buffer)));
         }
 
         buffer[0] = '2';

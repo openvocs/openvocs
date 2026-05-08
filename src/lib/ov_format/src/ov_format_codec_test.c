@@ -152,7 +152,5 @@ static int test_impl_write_chunk() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_codec",
-            test_ov_format_codec_install,
-            test_impl_next_chunk,
-            test_impl_write_chunk);
+OV_TEST_RUN("ov_format_codec", test_ov_format_codec_install,
+            test_impl_next_chunk, test_impl_write_chunk);

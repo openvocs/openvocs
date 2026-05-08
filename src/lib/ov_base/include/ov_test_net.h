@@ -41,9 +41,7 @@ bool ov_test_send_msg_to(int fd, ov_json_value *jmsg);
  * Checks whether its request name is 'event'.
  * Checks whether its an error response or not, depending on 'error_expected' .
  */
-ssize_t ov_test_message_ok(char const *msg,
-                           size_t msglen,
-                           char const *event,
+ssize_t ov_test_message_ok(char const *msg, size_t msglen, char const *event,
                            bool error_expected);
 
 /*----------------------------------------------------------------------------*/

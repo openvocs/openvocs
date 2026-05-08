@@ -78,8 +78,8 @@ ov_json_value *ov_db_events_get_participation_state_struct(
 
 bool ov_db_recordings_add(ov_database *self,
                           const char *id,
-                          const char *uri,
                           char const *loop,
+                          const char *uri,
                           time_t start_epoch_secs,
                           time_t end_epoch_secs);
 

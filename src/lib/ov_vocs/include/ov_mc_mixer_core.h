@@ -143,8 +143,7 @@ bool ov_mc_mixer_core_leave(ov_mc_mixer_core *self, const char *name);
  */
 bool ov_mc_mixer_core_release(ov_mc_mixer_core *self);
 
-bool ov_mc_mixer_core_set_volume(ov_mc_mixer_core *self,
-                                 const char *name,
+bool ov_mc_mixer_core_set_volume(ov_mc_mixer_core *self, const char *name,
                                  uint8_t vol);
 uint8_t ov_mc_mixer_core_get_volume(const ov_mc_mixer_core *self,
                                     const char *name);

@@ -61,18 +61,15 @@ int ov_rtp_app_get_rtp_sd(ov_rtp_app const *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_rtp_app_send_to_sockaddr(int sd_to_send_from,
-                                 ov_rtp_frame const *frame,
-                                 struct sockaddr *dest,
-                                 socklen_t dest_len);
+bool ov_rtp_app_send_to_sockaddr(int sd_to_send_from, ov_rtp_frame const *frame,
+                                 struct sockaddr *dest, socklen_t dest_len);
 
 typedef enum {
     IPV4 = AF_INET,
     IPV6 = AF_INET6,
 } ov_ip_version;
 
-bool ov_rtp_app_send_socket(int sd_to_send_from,
-                            ov_rtp_frame const *frame,
+bool ov_rtp_app_send_socket(int sd_to_send_from, ov_rtp_frame const *frame,
                             ov_socket_configuration target,
                             ov_ip_version ip_version);
 

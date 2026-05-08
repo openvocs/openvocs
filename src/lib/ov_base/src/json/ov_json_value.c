@@ -38,21 +38,22 @@
 
 bool ov_json_value_validate(const ov_json_value *self) {
 
-    if (!ov_json_value_cast(self)) goto error;
+    if (!ov_json_value_cast(self))
+        goto error;
 
     switch (self->type) {
 
-        case OV_JSON_OBJECT:
-        case OV_JSON_ARRAY:
-        case OV_JSON_STRING:
-        case OV_JSON_NUMBER:
-        case OV_JSON_NULL:
-        case OV_JSON_FALSE:
-        case OV_JSON_TRUE:
-            break;
+    case OV_JSON_OBJECT:
+    case OV_JSON_ARRAY:
+    case OV_JSON_STRING:
+    case OV_JSON_NUMBER:
+    case OV_JSON_NULL:
+    case OV_JSON_FALSE:
+    case OV_JSON_TRUE:
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     return true;
@@ -64,9 +65,11 @@ error:
 
 ov_json_value *ov_json_value_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_JSON_VALUE_MAGIC_BYTE) return NULL;
+    if (*(uint16_t *)data != OV_JSON_VALUE_MAGIC_BYTE)
+        return NULL;
 
     return (ov_json_value *)data;
 }
@@ -76,29 +79,30 @@ ov_json_value *ov_json_value_cast(const void *data) {
 bool ov_json_value_clear(void *data) {
 
     ov_json_value *value = ov_json_value_cast(data);
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     switch (value->type) {
 
-        case OV_JSON_OBJECT:
-            return ov_json_object_clear(value);
+    case OV_JSON_OBJECT:
+        return ov_json_object_clear(value);
 
-        case OV_JSON_ARRAY:
-            return ov_json_array_clear(value);
+    case OV_JSON_ARRAY:
+        return ov_json_array_clear(value);
 
-        case OV_JSON_STRING:
-            return ov_json_string_clear(value);
+    case OV_JSON_STRING:
+        return ov_json_string_clear(value);
 
-        case OV_JSON_NUMBER:
-            return ov_json_number_clear(value);
+    case OV_JSON_NUMBER:
+        return ov_json_number_clear(value);
 
-        case OV_JSON_NULL:
-        case OV_JSON_FALSE:
-        case OV_JSON_TRUE:
-            return ov_json_literal_clear(value);
+    case OV_JSON_NULL:
+    case OV_JSON_FALSE:
+    case OV_JSON_TRUE:
+        return ov_json_literal_clear(value);
 
-        default:
-            break;
+    default:
+        break;
     }
 
 error:
@@ -110,31 +114,33 @@ error:
 void *ov_json_value_free(void *data) {
 
     ov_json_value *value = ov_json_value_cast(data);
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
-    if (!ov_json_value_unset_parent(value)) goto error;
+    if (!ov_json_value_unset_parent(value))
+        goto error;
 
     switch (value->type) {
 
-        case OV_JSON_OBJECT:
-            return ov_json_object_free(value);
+    case OV_JSON_OBJECT:
+        return ov_json_object_free(value);
 
-        case OV_JSON_ARRAY:
-            return ov_json_array_free(value);
+    case OV_JSON_ARRAY:
+        return ov_json_array_free(value);
 
-        case OV_JSON_STRING:
-            return ov_json_string_free(value);
+    case OV_JSON_STRING:
+        return ov_json_string_free(value);
 
-        case OV_JSON_NUMBER:
-            return ov_json_number_free(value);
+    case OV_JSON_NUMBER:
+        return ov_json_number_free(value);
 
-        case OV_JSON_NULL:
-        case OV_JSON_FALSE:
-        case OV_JSON_TRUE:
-            return ov_json_literal_free(value);
+    case OV_JSON_NULL:
+    case OV_JSON_FALSE:
+    case OV_JSON_TRUE:
+        return ov_json_literal_free(value);
 
-        default:
-            break;
+    default:
+        break;
     }
 
 error:
@@ -146,34 +152,35 @@ error:
 void *ov_json_value_copy(void **dest, const void *data) {
 
     ov_json_value *value = ov_json_value_cast((void *)data);
-    if (!dest || !value) goto error;
+    if (!dest || !value)
+        goto error;
 
     switch (value->type) {
 
-        case OV_JSON_OBJECT:
+    case OV_JSON_OBJECT:
 
-            return ov_json_object_copy(dest, value);
+        return ov_json_object_copy(dest, value);
 
-        case OV_JSON_ARRAY:
+    case OV_JSON_ARRAY:
 
-            return ov_json_array_copy(dest, value);
+        return ov_json_array_copy(dest, value);
 
-        case OV_JSON_STRING:
+    case OV_JSON_STRING:
 
-            return ov_json_string_copy(dest, value);
+        return ov_json_string_copy(dest, value);
 
-        case OV_JSON_NUMBER:
+    case OV_JSON_NUMBER:
 
-            return ov_json_number_copy(dest, value);
+        return ov_json_number_copy(dest, value);
 
-        case OV_JSON_NULL:
-        case OV_JSON_FALSE:
-        case OV_JSON_TRUE:
+    case OV_JSON_NULL:
+    case OV_JSON_FALSE:
+    case OV_JSON_TRUE:
 
-            return ov_json_literal_copy(dest, value);
+        return ov_json_literal_copy(dest, value);
 
-        default:
-            break;
+    default:
+        break;
     }
 
     // run into error
@@ -186,29 +193,30 @@ error:
 bool ov_json_value_dump(FILE *stream, const void *data) {
 
     ov_json_value *value = ov_json_value_cast(data);
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     switch (value->type) {
 
-        case OV_JSON_OBJECT:
-            return ov_json_object_dump(stream, value);
+    case OV_JSON_OBJECT:
+        return ov_json_object_dump(stream, value);
 
-        case OV_JSON_ARRAY:
-            return ov_json_array_dump(stream, value);
+    case OV_JSON_ARRAY:
+        return ov_json_array_dump(stream, value);
 
-        case OV_JSON_STRING:
-            return ov_json_string_dump(stream, value);
+    case OV_JSON_STRING:
+        return ov_json_string_dump(stream, value);
 
-        case OV_JSON_NUMBER:
-            return ov_json_number_dump(stream, value);
+    case OV_JSON_NUMBER:
+        return ov_json_number_dump(stream, value);
 
-        case OV_JSON_NULL:
-        case OV_JSON_FALSE:
-        case OV_JSON_TRUE:
-            return ov_json_literal_dump(stream, value);
+    case OV_JSON_NULL:
+    case OV_JSON_FALSE:
+    case OV_JSON_TRUE:
+        return ov_json_literal_dump(stream, value);
 
-        default:
-            break;
+    default:
+        break;
     }
 
 error:
@@ -235,19 +243,21 @@ ov_data_function ov_json_value_data_functions() {
 bool ov_json_value_set_parent(ov_json_value *value,
                               const ov_json_value *parent) {
 
-    if (!value || !parent) return false;
+    if (!value || !parent)
+        return false;
 
     if (value->parent)
-        if (value->parent != parent) goto error;
+        if (value->parent != parent)
+            goto error;
 
     switch (parent->type) {
 
-        case OV_JSON_OBJECT:
-        case OV_JSON_ARRAY:
-            break;
+    case OV_JSON_OBJECT:
+    case OV_JSON_ARRAY:
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     value->parent = (ov_json_value *)parent;
@@ -260,26 +270,30 @@ error:
 
 bool ov_json_value_unset_parent(ov_json_value *value) {
 
-    if (!value) return false;
+    if (!value)
+        return false;
 
-    if (!value->parent) return true;
+    if (!value->parent)
+        return true;
 
     switch (value->parent->type) {
 
-        case OV_JSON_OBJECT:
+    case OV_JSON_OBJECT:
 
-            if (!ov_json_object_remove_child(value->parent, value)) goto error;
+        if (!ov_json_object_remove_child(value->parent, value))
+            goto error;
 
-            break;
+        break;
 
-        case OV_JSON_ARRAY:
+    case OV_JSON_ARRAY:
 
-            if (!ov_json_array_remove_child(value->parent, value)) goto error;
+        if (!ov_json_array_remove_child(value->parent, value))
+            goto error;
 
-            break;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     // forced unset of parent
@@ -300,10 +314,12 @@ char *ov_json_value_to_string(const ov_json_value *value) {
 
 ov_json_value *ov_json_value_from_string(const char *string, size_t length) {
 
-    if (!string || length < 1) goto error;
+    if (!string || length < 1)
+        goto error;
 
     ov_json_value *out = NULL;
-    if (0 > ov_json_parser_decode(&out, string, length)) goto error;
+    if (0 > ov_json_parser_decode(&out, string, length))
+        goto error;
 
     return out;
 error:

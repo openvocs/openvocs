@@ -6,7 +6,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 
 	<title>openvocs voice</title>
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=0">
 	<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 	<!-- Place favicon.ico in the root directory -->
 	<link rel="icon" type="image/x-icon" href="/favicon.ico" />
@@ -18,12 +18,20 @@
 <body>
 	<div class="container" id="view_container"></div>
 
+	<script type="text/javascript" src="/VERSION.js"></script>
 	<script type="text/javascript" src="./views/auth/js/default_config.js"></script> <!-- default login config -->
 	<script type="text/javascript" src="./views/loops/js/default_config.js"></script> <!-- default vocs config -->
 	<script type="text/javascript" src="/config_vocs.js"></script> <!-- user config -->
 
-	<script src="/plugin/simple-keyboard-3.8.0/index.modern.js"></script>
-  
+	<script>
+		var script = document.createElement('script');
+		script.type = 'text/javascript';
+		script.async = true;
+		script.src = "/plugin/simple-keyboard-3.8.0/index.modern.js";
+		var first_script = document.getElementsByTagName('script')[0];
+		first_script.parentNode.insertBefore(script, first_script);
+	</script>
+
 
 	<script>
 		if ('serviceWorker' in navigator) {
@@ -77,8 +85,6 @@
 
 		async function login(websocket) {
 			let result = await ov_Auth.relogin(websocket);
-			if (result)
-				result = await ov_Auth.collect_roles(websocket);
 			return result;
 		}
 	</script>

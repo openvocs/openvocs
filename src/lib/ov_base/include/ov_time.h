@@ -143,21 +143,13 @@ char *ov_time_string(ov_time_scope_t scope);
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_timestamp_from_data(uint16_t year,
-                             uint8_t month,
-                             uint8_t day,
-                             uint8_t hour,
-                             uint8_t minute,
-                             uint8_t second);
+char *ov_timestamp_from_data(uint16_t year, uint8_t month, uint8_t day,
+                             uint8_t hour, uint8_t minute, uint8_t second);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_timestamp_parse(const char *timestamp,
-                        uint16_t *year,
-                        uint8_t *month,
-                        uint8_t *day,
-                        uint8_t *hour,
-                        uint8_t *minute,
+bool ov_timestamp_parse(const char *timestamp, uint16_t *year, uint8_t *month,
+                        uint8_t *day, uint8_t *hour, uint8_t *minute,
                         uint8_t *second);
 
 /*----------------------------------------------------------------------------*/
@@ -195,9 +187,7 @@ uint64_t ov_time_get_current_time_usecs();
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_time_to_string(char *target,
-                       size_t size,
-                       uint64_t usecs,
+bool ov_time_to_string(char *target, size_t size, uint64_t usecs,
                        ov_time_unit unit);
 
 /*----------------------------------------------------------------------------*/

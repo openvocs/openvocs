@@ -368,10 +368,9 @@ int test_ov_json_parser_calculate() {
     expect = "{\"1\":1}";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
-    expect =
-        "{\n"
-        "\t\"1\":1\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":1\n"
+             "}";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_default));
     value = ov_json_value_free(value);
@@ -422,12 +421,11 @@ int test_ov_json_parser_calculate() {
     expect = "[1,2,3]";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
-    expect =
-        "[\n"
-        "\t1,\n"
-        "\t2,\n"
-        "\t3\n"
-        "]";
+    expect = "[\n"
+             "\t1,\n"
+             "\t2,\n"
+             "\t3\n"
+             "]";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_default));
     value = ov_json_value_free(value);
@@ -442,12 +440,11 @@ int test_ov_json_parser_calculate() {
     expect = "{\"1\":1,\"2\":2,\"3\":3}";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
-    expect =
-        "{\n"
-        "\t\"1\":1,\n"
-        "\t\"2\":2,\n"
-        "\t\"3\":3\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":1,\n"
+             "\t\"2\":2,\n"
+             "\t\"3\":3\n"
+             "}";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_default));
     value = ov_json_value_free(value);
@@ -463,12 +460,11 @@ int test_ov_json_parser_calculate() {
     expect = "{\"1\":{},\"2\":[],\"3\":{}}";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
-    expect =
-        "{\n"
-        "\t\"1\":{},\n"
-        "\t\"2\":[],\n"
-        "\t\"3\":{}\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":{},\n"
+             "\t\"2\":[],\n"
+             "\t\"3\":{}\n"
+             "}";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_default));
     ov_json_value *child = ov_json_object_get(value, "1");
@@ -476,17 +472,16 @@ int test_ov_json_parser_calculate() {
     testrun(ov_json_object_set(child, "1.1", ov_json_true()));
     testrun(ov_json_object_set(child, "1.2", ov_json_array()));
     testrun(ov_json_object_set(child, "1.3", ov_json_number(1)));
-    expect =
-        "{\n"
-        "\t\"1\":\n"
-        "\t{\n"
-        "\t\t\"1.1\":true,\n"
-        "\t\t\"1.2\":[],\n"
-        "\t\t\"1.3\":1\n"
-        "\t},\n"
-        "\t\"2\":[],\n"
-        "\t\"3\":{}\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":\n"
+             "\t{\n"
+             "\t\t\"1.1\":true,\n"
+             "\t\t\"1.2\":[],\n"
+             "\t\t\"1.3\":1\n"
+             "\t},\n"
+             "\t\"2\":[],\n"
+             "\t\"3\":{}\n"
+             "}";
 
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_default));
@@ -495,22 +490,21 @@ int test_ov_json_parser_calculate() {
     testrun(ov_json_array_push(child, ov_json_true()));
     testrun(ov_json_array_push(child, ov_json_array()));
     testrun(ov_json_array_push(child, ov_json_number(1)));
-    expect =
-        "{\n"
-        "\t\"1\":\n"
-        "\t{\n"
-        "\t\t\"1.1\":true,\n"
-        "\t\t\"1.2\":[],\n"
-        "\t\t\"1.3\":1\n"
-        "\t},\n"
-        "\t\"2\":\n"
-        "\t[\n"
-        "\t\ttrue,\n"
-        "\t\t[],\n"
-        "\t\t1\n"
-        "\t],\n"
-        "\t\"3\":{}\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":\n"
+             "\t{\n"
+             "\t\t\"1.1\":true,\n"
+             "\t\t\"1.2\":[],\n"
+             "\t\t\"1.3\":1\n"
+             "\t},\n"
+             "\t\"2\":\n"
+             "\t[\n"
+             "\t\ttrue,\n"
+             "\t\t[],\n"
+             "\t\t1\n"
+             "\t],\n"
+             "\t\"3\":{}\n"
+             "}";
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_default));
     value = ov_json_value_free(value);
@@ -546,11 +540,9 @@ int test_ov_json_parser_encode() {
 
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_default,
+            (size_t)ov_json_parser_encode(value, &conf_default,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          size));
+                                          buffer, size));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
 
     // check input error
@@ -564,15 +556,15 @@ int test_ov_json_parser_encode() {
     // no config (use minimal as default)
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
 
     // min buffer size
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
 
     // check object
@@ -580,19 +572,18 @@ int test_ov_json_parser_encode() {
     expect = "{\"1\":1}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
-    expect =
-        "{\n"
-        "\t\"1\":1\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":1\n"
+             "}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_default));
@@ -603,15 +594,15 @@ int test_ov_json_parser_encode() {
     expect = "[]";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     ov_json_array_push(value, ov_json_number(1));
     ov_json_array_push(value, ov_json_number(2));
@@ -619,21 +610,20 @@ int test_ov_json_parser_encode() {
     expect = "[1,2,3]";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
-    expect =
-        "[\n"
-        "\t1,\n"
-        "\t2,\n"
-        "\t3\n"
-        "]";
+    expect = "[\n"
+             "\t1,\n"
+             "\t2,\n"
+             "\t3\n"
+             "]";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     value = ov_json_value_free(value);
 
@@ -642,20 +632,20 @@ int test_ov_json_parser_encode() {
     expect = "1";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(ov_json_number_set(value, -1.23e1));
     expect = "-12.3";
@@ -667,13 +657,13 @@ int test_ov_json_parser_encode() {
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     value = ov_json_value_free(value);
 
@@ -682,20 +672,20 @@ int test_ov_json_parser_encode() {
     expect = "\"test\"";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     value = ov_json_value_free(value);
 
@@ -704,20 +694,20 @@ int test_ov_json_parser_encode() {
     expect = "null";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     value = ov_json_value_free(value);
 
@@ -726,20 +716,20 @@ int test_ov_json_parser_encode() {
     expect = "true";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     value = ov_json_value_free(value);
 
@@ -748,20 +738,20 @@ int test_ov_json_parser_encode() {
     expect = "false";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     testrun(strlen(expect) ==
             (size_t)ov_json_parser_calculate(value, &conf_minimal));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     value = ov_json_value_free(value);
 
@@ -772,18 +762,17 @@ int test_ov_json_parser_encode() {
     expect = "[1,2,3]";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
-    expect =
-        "[\n"
-        "\t1,\n"
-        "\t2,\n"
-        "\t3\n"
-        "]";
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
+    expect = "[\n"
+             "\t1,\n"
+             "\t2,\n"
+             "\t3\n"
+             "]";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     value = ov_json_value_free(value);
 
     value = ov_json_object();
@@ -793,40 +782,34 @@ int test_ov_json_parser_encode() {
     expect = "{\"1\":1,\"3\":3,\"2\":2}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
-    memset(buffer, 0, size);
-    testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_minimal,
-                                          ov_json_parser_collocate_ascending,
-                                          buffer,
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
                                           strlen(expect)));
-
-    expect =
-        "{\n"
-        "\t\"1\":1,\n"
-        "\t\"2\":2,\n"
-        "\t\"3\":3\n"
-        "}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_default,
+            (size_t)ov_json_parser_encode(value, &conf_minimal,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
+                                          buffer, strlen(expect)));
 
-    expect =
-        "{\n"
-        "\t\"1\":1,\n"
-        "\t\"3\":3,\n"
-        "\t\"2\":2\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":1,\n"
+             "\t\"2\":2,\n"
+             "\t\"3\":3\n"
+             "}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default,
+                                          ov_json_parser_collocate_ascending,
+                                          buffer, strlen(expect)));
+
+    expect = "{\n"
+             "\t\"1\":1,\n"
+             "\t\"3\":3,\n"
+             "\t\"2\":2\n"
+             "}";
+    memset(buffer, 0, size);
+    testrun(strlen(expect) ==
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     value = ov_json_value_free(value);
 
     // check with depth
@@ -837,94 +820,82 @@ int test_ov_json_parser_encode() {
     expect = "{\"1\":{},\"3\":[],\"2\":{}}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_minimal, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_minimal, NULL, buffer,
+                                          strlen(expect)));
     expect = "{\"1\":{},\"2\":[],\"3\":{}}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_minimal,
+            (size_t)ov_json_parser_encode(value, &conf_minimal,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
-    expect =
-        "{\n"
-        "\t\"1\":{},\n"
-        "\t\"3\":[],\n"
-        "\t\"2\":{}\n"
-        "}";
+                                          buffer, strlen(expect)));
+    expect = "{\n"
+             "\t\"1\":{},\n"
+             "\t\"3\":[],\n"
+             "\t\"2\":{}\n"
+             "}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
 
-    expect =
-        "{\n"
-        "\t\"1\":{},\n"
-        "\t\"2\":[],\n"
-        "\t\"3\":{}\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":{},\n"
+             "\t\"2\":[],\n"
+             "\t\"3\":{}\n"
+             "}";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_default,
+            (size_t)ov_json_parser_encode(value, &conf_default,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
+                                          buffer, strlen(expect)));
 
     ov_json_value *child = ov_json_object_get(value, "1");
     testrun(child);
     testrun(ov_json_object_set(child, "1.1", ov_json_true()));
     testrun(ov_json_object_set(child, "1.2", ov_json_array()));
     testrun(ov_json_object_set(child, "1.3", ov_json_number(1)));
-    expect =
-        "{\n"
-        "\t\"1\":\n"
-        "\t{\n"
-        "\t\t\"1.1\":true,\n"
-        "\t\t\"1.2\":[],\n"
-        "\t\t\"1.3\":1\n"
-        "\t},\n"
-        "\t\"2\":[],\n"
-        "\t\"3\":{}\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":\n"
+             "\t{\n"
+             "\t\t\"1.1\":true,\n"
+             "\t\t\"1.2\":[],\n"
+             "\t\t\"1.3\":1\n"
+             "\t},\n"
+             "\t\"2\":[],\n"
+             "\t\"3\":{}\n"
+             "}";
 
     memset(buffer, 0, size);
 
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_default,
+            (size_t)ov_json_parser_encode(value, &conf_default,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
+                                          buffer, strlen(expect)));
 
     child = ov_json_object_get(value, "2");
     testrun(ov_json_array_push(child, ov_json_true()));
     testrun(ov_json_array_push(child, ov_json_array()));
     testrun(ov_json_array_push(child, ov_json_number(1)));
-    expect =
-        "{\n"
-        "\t\"1\":\n"
-        "\t{\n"
-        "\t\t\"1.1\":true,\n"
-        "\t\t\"1.2\":[],\n"
-        "\t\t\"1.3\":1\n"
-        "\t},\n"
-        "\t\"2\":\n"
-        "\t[\n"
-        "\t\ttrue,\n"
-        "\t\t[],\n"
-        "\t\t1\n"
-        "\t],\n"
-        "\t\"3\":{}\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":\n"
+             "\t{\n"
+             "\t\t\"1.1\":true,\n"
+             "\t\t\"1.2\":[],\n"
+             "\t\t\"1.3\":1\n"
+             "\t},\n"
+             "\t\"2\":\n"
+             "\t[\n"
+             "\t\ttrue,\n"
+             "\t\t[],\n"
+             "\t\t1\n"
+             "\t],\n"
+             "\t\"3\":{}\n"
+             "}";
 
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_default,
+            (size_t)ov_json_parser_encode(value, &conf_default,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
+                                          buffer, strlen(expect)));
 
     child = (ov_json_value *)ov_json_get(value, "/1/1.2");
     testrun(child);
@@ -938,31 +909,30 @@ int test_ov_json_parser_encode() {
     testrun(ov_json_object_set(child, "B", ov_json_number(2)));
     testrun(ov_json_object_set(child, "C", ov_json_number(3)));
 
-    expect =
-        "{\n"
-        "\t\"1\":\n"
-        "\t{\n"
-        "\t\t\"1.1\":true,\n"
-        "\t\t\"1.2\":\n"
-        "\t\t[\n"
-        "\t\t\t{},\n"
-        "\t\t\t{\n"
-        "\t\t\t\t\"A\":1,\n"
-        "\t\t\t\t\"B\":2,\n"
-        "\t\t\t\t\"C\":3\n"
-        "\t\t\t},\n"
-        "\t\t\t{}\n"
-        "\t\t],\n"
-        "\t\t\"1.3\":1\n"
-        "\t},\n"
-        "\t\"2\":\n"
-        "\t[\n"
-        "\t\ttrue,\n"
-        "\t\t[],\n"
-        "\t\t1\n"
-        "\t],\n"
-        "\t\"3\":{}\n"
-        "}";
+    expect = "{\n"
+             "\t\"1\":\n"
+             "\t{\n"
+             "\t\t\"1.1\":true,\n"
+             "\t\t\"1.2\":\n"
+             "\t\t[\n"
+             "\t\t\t{},\n"
+             "\t\t\t{\n"
+             "\t\t\t\t\"A\":1,\n"
+             "\t\t\t\t\"B\":2,\n"
+             "\t\t\t\t\"C\":3\n"
+             "\t\t\t},\n"
+             "\t\t\t{}\n"
+             "\t\t],\n"
+             "\t\t\"1.3\":1\n"
+             "\t},\n"
+             "\t\"2\":\n"
+             "\t[\n"
+             "\t\ttrue,\n"
+             "\t\t[],\n"
+             "\t\t1\n"
+             "\t],\n"
+             "\t\"3\":{}\n"
+             "}";
 
     memset(buffer, 0, size);
     value = ov_json_value_free(value);
@@ -979,8 +949,8 @@ int test_ov_json_parser_encode() {
     expect = "\n{\"1\":{},\"3\":{},\"2\":[]}\r\n";
     memset(buffer, 0, size);
     size_t slen = strlen(expect);
-    testrun(slen == (size_t)ov_json_parser_encode(
-                        value, &conf_minimal, NULL, buffer, slen));
+    testrun(slen == (size_t)ov_json_parser_encode(value, &conf_minimal, NULL,
+                                                  buffer, slen));
     /*
     testrun_log(    "buffer %s|%"PRIu64"\n"
                     "expect %s|%"PRIu64"\n",
@@ -991,24 +961,21 @@ int test_ov_json_parser_encode() {
     expect = "\n{\"1\":{},\"2\":[],\"3\":{}}\r\n";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_minimal,
+            (size_t)ov_json_parser_encode(value, &conf_minimal,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
+                                          buffer, strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
 
-    expect =
-        "\n"
-        "{\n"
-        "\t\"1\":{},\n"
-        "\t\"3\":{},\n"
-        "\t\"2\":[]\n"
-        "}\r\n";
+    expect = "\n"
+             "{\n"
+             "\t\"1\":{},\n"
+             "\t\"3\":{},\n"
+             "\t\"2\":[]\n"
+             "}\r\n";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
     value = ov_json_value_free(value);
 
@@ -1024,30 +991,27 @@ int test_ov_json_parser_encode() {
     expect = "{\"1\":{},\"3\":{},\"2\":[]}\n";
     memset(buffer, 0, size);
     slen = strlen(expect);
-    testrun(slen == (size_t)ov_json_parser_encode(
-                        value, &conf_minimal, NULL, buffer, slen));
+    testrun(slen == (size_t)ov_json_parser_encode(value, &conf_minimal, NULL,
+                                                  buffer, slen));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
 
     expect = "{\"1\":{},\"2\":[],\"3\":{}}\n";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_minimal,
+            (size_t)ov_json_parser_encode(value, &conf_minimal,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
+                                          buffer, strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
 
-    expect =
-        "{\n"
-        "\t\"1\":{},\n"
-        "\t\"3\":{},\n"
-        "\t\"2\":[]\n"
-        "}\n";
+    expect = "{\n"
+             "\t\"1\":{},\n"
+             "\t\"3\":{},\n"
+             "\t\"2\":[]\n"
+             "}\n";
     memset(buffer, 0, size);
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(
-                value, &conf_default, NULL, buffer, strlen(expect)));
+            (size_t)ov_json_parser_encode(value, &conf_default, NULL, buffer,
+                                          strlen(expect)));
     testrun(0 == strncmp(buffer, expect, strlen(expect)));
 
     /*
@@ -1060,11 +1024,9 @@ int test_ov_json_parser_encode() {
             testrun_log("%s\n|\n%s", buffer, expect);
     */
     testrun(strlen(expect) ==
-            (size_t)ov_json_parser_encode(value,
-                                          &conf_default,
+            (size_t)ov_json_parser_encode(value, &conf_default,
                                           ov_json_parser_collocate_ascending,
-                                          buffer,
-                                          strlen(expect)));
+                                          buffer, strlen(expect)));
 
     value = ov_json_value_free(value);
     ov_json_value_free(value);

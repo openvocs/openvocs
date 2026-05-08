@@ -171,12 +171,9 @@ struct ov_event_loop {
          *      @NOTE           access over socket_fd number
          *
          */
-        bool (*set)(ov_event_loop *self,
-                    int socket,
-                    uint8_t events,
+        bool (*set)(ov_event_loop *self, int socket, uint8_t events,
                     void *userdata,
-                    bool (*callback)(int socket_fd,
-                                     uint8_t events,
+                    bool (*callback)(int socket_fd, uint8_t events,
                                      void *userdata));
 
         /*
@@ -221,9 +218,7 @@ struct ov_event_loop {
          *
          */
 
-        uint32_t (*set)(ov_event_loop *self,
-                        uint64_t relative_usec,
-                        void *data,
+        uint32_t (*set)(ov_event_loop *self, uint64_t relative_usec, void *data,
                         bool (*callback)(uint32_t id, void *data));
 
         /*
@@ -275,23 +270,18 @@ void *ov_event_loop_free(void *eventloop);
 
 /*----------------------------------------------------------------------------*/
 
-uint32_t ov_event_loop_timer_set(ov_event_loop *self,
-                                 uint64_t relative_usec,
+uint32_t ov_event_loop_timer_set(ov_event_loop *self, uint64_t relative_usec,
                                  void *data,
                                  bool (*callback)(uint32_t id, void *data));
 
-bool ov_event_loop_timer_unset(ov_event_loop *self,
-                               uint32_t id,
+bool ov_event_loop_timer_unset(ov_event_loop *self, uint32_t id,
                                void **userdata);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_loop_set(ov_event_loop *self,
-                       int socket,
-                       uint8_t events,
+bool ov_event_loop_set(ov_event_loop *self, int socket, uint8_t events,
                        void *userdata,
-                       bool (*callback)(int socket_fd,
-                                        uint8_t events,
+                       bool (*callback)(int socket_fd, uint8_t events,
                                         void *userdata));
 
 bool ov_event_loop_unset(ov_event_loop *self, int socket, void **userdata);
@@ -339,8 +329,8 @@ bool ov_event_loop_set_type(ov_event_loop *self, uint16_t type);
 /**
         Adapt the eventloop config to the runtime environment.
 */
-ov_event_loop_config ov_event_loop_config_adapt_to_runtime(
-    ov_event_loop_config config);
+ov_event_loop_config
+ov_event_loop_config_adapt_to_runtime(ov_event_loop_config config);
 
 /*---------------------------------------------------------------------------*/
 
@@ -371,12 +361,8 @@ ov_event_loop_config ov_event_loop_config_adapt_to_runtime(
         @returns true if the accept callback was set at the listener socket.
 */
 bool ov_event_add_default_connection_accept(
-    ov_event_loop *loop,
-    int socket,
-    uint8_t events,
-    void *data,
-    bool (*callback)(int connection_socket,
-                     uint8_t connection_events,
+    ov_event_loop *loop, int socket, uint8_t events, void *data,
+    bool (*callback)(int connection_socket, uint8_t connection_events,
                      void *data));
 
 /*---------------------------------------------------------------------------*/

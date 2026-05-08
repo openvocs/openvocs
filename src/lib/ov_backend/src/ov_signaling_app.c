@@ -54,18 +54,13 @@ typedef struct {
 
     ov_app *(*free)(ov_app *self);
 
-    void (*monitor)(void *,
-                    ov_direction direction,
-                    int local_socket,
-                    const ov_socket_data *remote,
-                    const ov_json_value *value);
+    void (*monitor)(void *, ov_direction direction, int local_socket,
+                    const ov_socket_data *remote, const ov_json_value *value);
 
     void *monitor_userdata;
 
-    bool (*original_send)(ov_app *self,
-                          int socket,
-                          const ov_socket_data *remote,
-                          void *data);
+    bool (*original_send)(ov_app *self, int socket,
+                          const ov_socket_data *remote, void *data);
 
 } SignalingApp;
 
@@ -73,7 +68,8 @@ typedef struct {
 
 static SignalingApp *signaling_app_cast(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
     if (*(uint16_t *)data == IMPL_SIGNALING_APP_MAGIC_BYTES)
         return (SignalingApp *)data;
 
@@ -85,25 +81,22 @@ static SignalingApp *signaling_app_cast(void *data) {
 static ov_app *impl_signaling_app_free(ov_app *self);
 
 /* Beware: Works only with JSON data ! */
-static bool impl_signaling_app_send(ov_app *app,
-                                    int socket,
-                                    const ov_socket_data *remote,
-                                    void *data);
+static bool impl_signaling_app_send(ov_app *app, int socket,
+                                    const ov_socket_data *remote, void *data);
 
 /*----------------------------------------------------------------------------*/
 
-static void default_monitor(void *userdata,
-                            ov_direction direction,
-                            int local_socket,
-                            const ov_socket_data *remote,
+static void default_monitor(void *userdata, ov_direction direction,
+                            int local_socket, const ov_socket_data *remote,
                             const ov_json_value *value) {
 
     UNUSED(userdata);
+    UNUSED(direction);
     UNUSED(local_socket);
     UNUSED(remote);
     UNUSED(value);
 
-    ov_log_info("IO %s", (direction == OV_IN) ? "IN" : "OUT");
+    // ov_log_info("IO %s", (direction == OV_IN) ? "IN" : "OUT");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -113,13 +106,16 @@ ov_app *ov_signaling_app_create(ov_app_config config) {
     SignalingApp *custom = NULL;
     ov_app *app = NULL;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
 
     app = ov_app_create(config);
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     custom = calloc(1, sizeof(SignalingApp));
-    if (!custom) goto error;
+    if (!custom)
+        goto error;
 
     custom->magic_bytes = IMPL_SIGNALING_APP_MAGIC_BYTES;
 
@@ -130,11 +126,13 @@ ov_app *ov_signaling_app_create(ov_app_config config) {
     app->free = impl_signaling_app_free;
 
     custom->command.functions = ov_dict_create(ov_dict_string_key_config(255));
-    if (!custom->command.functions) goto error;
+    if (!custom->command.functions)
+        goto error;
 
     custom->command.descriptions = ov_json_object();
 
-    if (!custom->command.descriptions) goto error;
+    if (!custom->command.descriptions)
+        goto error;
 
     custom->monitor = default_monitor;
     custom->monitor_userdata = 0;
@@ -144,7 +142,8 @@ ov_app *ov_signaling_app_create(ov_app_config config) {
 
     return app;
 error:
-    if (app) ov_app_free(app);
+    if (app)
+        ov_app_free(app);
     return NULL;
 }
 
@@ -152,10 +151,12 @@ error:
 
 void *ov_signaling_app_get_userdata(ov_app *app) {
 
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     SignalingApp *custom = signaling_app_cast(app->config.userdata);
-    if (custom) return custom->userdata;
+    if (custom)
+        return custom->userdata;
 error:
     return NULL;
 }
@@ -164,10 +165,12 @@ error:
 
 bool ov_signaling_app_set_userdata(ov_app *app, void *userdata) {
 
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     SignalingApp *custom = signaling_app_cast(app->config.userdata);
-    if (!custom) goto error;
+    if (!custom)
+        goto error;
 
     custom->userdata = userdata;
     return true;
@@ -180,10 +183,12 @@ error:
 ov_app *impl_signaling_app_free(ov_app *self) {
 
     ov_app *app = ov_app_cast(self);
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     SignalingApp *custom = signaling_app_cast(app->config.userdata);
-    if (!custom) goto error;
+    if (!custom)
+        goto error;
 
     app->free = custom->free;
 
@@ -204,36 +209,31 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void invoke_monitor(SignalingApp *custom,
-                           ov_direction direction,
-                           int socket,
-                           const ov_socket_data *remote,
+static void invoke_monitor(SignalingApp *custom, ov_direction direction,
+                           int socket, const ov_socket_data *remote,
                            ov_json_value const *value) {
 
     if ((0 != custom) && (0 != custom->monitor)) {
-        custom->monitor(
-            custom->monitor_userdata, direction, socket, remote, value);
+        custom->monitor(custom->monitor_userdata, direction, socket, remote,
+                        value);
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_signaling_app_io_signaling(ov_app *app,
-                                   int socket,
-                                   const char *uuid,
+bool ov_signaling_app_io_signaling(ov_app *app, int socket, const char *uuid,
                                    const ov_socket_data *remote,
                                    void **parsed_io_data) {
 
-    if (!app || !remote || !parsed_io_data || !*parsed_io_data) goto error;
+    if (!app || !remote || !parsed_io_data || !*parsed_io_data)
+        goto error;
 
-    ov_log_debug("io signaling at %i|%s from %s:%i",
-                 socket,
-                 uuid,
-                 remote->host,
+    ov_log_debug("io signaling at %i|%s from %s:%i", socket, uuid, remote->host,
                  remote->port);
 
     SignalingApp *custom = signaling_app_cast(app->config.userdata);
-    if (!custom) goto error;
+    if (!custom)
+        goto error;
 
     ov_json_value *value = ov_json_value_cast(*parsed_io_data);
     invoke_monitor(custom, OV_IN, socket, remote, value);
@@ -250,10 +250,12 @@ bool ov_signaling_app_io_signaling(ov_app *app,
      */
 
     ov_json_value const *jstring = ov_json_get(value, "/" OV_EVENT_KEY_EVENT);
-    if (!jstring) goto error;
+    if (!jstring)
+        goto error;
 
     const char *event_key = ov_json_string_get(jstring);
-    if (!event_key) goto error;
+    if (!event_key)
+        goto error;
 
     /*
      *      Get the event handler out of the registered handlers.
@@ -261,11 +263,8 @@ bool ov_signaling_app_io_signaling(ov_app *app,
 
     void *val = ov_dict_get(custom->command.functions, event_key);
     if (!val) {
-        ov_log_info("%s event |%s| not found for %i|%s",
-                    app->config.name,
-                    event_key,
-                    socket,
-                    uuid);
+        ov_log_info("%s event |%s| not found for %i|%s", app->config.name,
+                    event_key, socket, uuid);
         goto done;
     }
 
@@ -273,59 +272,38 @@ bool ov_signaling_app_io_signaling(ov_app *app,
      *      Perform event handling
      */
 
-    ov_json_value *(*callback)(ov_app *,
-                               const char *,
-                               const ov_json_value *,
-                               int,
-                               const ov_socket_data *) = val;
+    ov_json_value *(*callback)(ov_app *, const char *, const ov_json_value *,
+                               int, const ov_socket_data *) = val;
 
     ov_json_value *result = callback(app, event_key, value, socket, remote);
 
     if (FAILURE_CLOSE_SOCKET == result) {
 
-        ov_log_error(
-            "%s event |%s| with result close at "
-            "%i|%s from %s:%i",
-            app->config.name,
-            event_key,
-            socket,
-            uuid,
-            remote->host,
-            remote->port);
+        ov_log_error("%s event |%s| with result close at "
+                     "%i|%s from %s:%i",
+                     app->config.name, event_key, socket, uuid, remote->host,
+                     remote->port);
         goto error;
 
     } else {
 
-        ov_log_debug("%s event |%s| at %i|%s from %s:%i",
-                     app->config.name,
-                     event_key,
-                     socket,
-                     uuid,
-                     remote->host,
-                     remote->port);
+        ov_log_debug("%s event |%s| at %i|%s from %s:%i", app->config.name,
+                     event_key, socket, uuid, remote->host, remote->port);
 
         if (result) {
 
             if (!ov_json_value_cast(result)) {
                 ov_log_error("%s event |%s| non JSON at %i|%s",
-                             app->config.name,
-                             event_key,
-                             socket,
-                             uuid);
+                             app->config.name, event_key, socket, uuid);
                 goto error;
             }
 
             if (!ov_app_send(app, socket, remote, result)) {
 
-                ov_log_error(
-                    "%s event |%s| send with result "
-                    "close socket at %i|%s from %s:%i",
-                    app->config.name,
-                    event_key,
-                    socket,
-                    uuid,
-                    remote->host,
-                    remote->port);
+                ov_log_error("%s event |%s| send with result "
+                             "close socket at %i|%s from %s:%i",
+                             app->config.name, event_key, socket, uuid,
+                             remote->host, remote->port);
 
                 result = ov_json_value_free(result);
                 goto error;
@@ -344,21 +322,19 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_signaling_app_register_command(
-    ov_app *app,
-    const char *name,
-    const char *description,
-    ov_json_value *(*callback)(ov_app *app,
-                               const char *name,
-                               const ov_json_value *value,
-                               int socket,
+    ov_app *app, const char *name, const char *description,
+    ov_json_value *(*callback)(ov_app *app, const char *name,
+                               const ov_json_value *value, int socket,
                                const ov_socket_data *remote)) {
 
     char *key = NULL;
 
-    if (!ov_app_cast(app)) goto error;
+    if (!ov_app_cast(app))
+        goto error;
 
     SignalingApp *custom = signaling_app_cast(app->config.userdata);
-    if (!custom) goto error;
+    if (!custom)
+        goto error;
 
     if (!name || !callback) {
         ov_log_error("%s event name or callback missing.", app->config.name);
@@ -368,8 +344,8 @@ bool ov_signaling_app_register_command(
     key = strdup(name);
 
     if (!ov_dict_set(custom->command.functions, key, callback, NULL)) {
-        ov_log_error(
-            "%s failed to set event callback %s", app->config.name, name);
+        ov_log_error("%s failed to set event callback %s", app->config.name,
+                     name);
         goto error;
     }
 
@@ -386,7 +362,8 @@ bool ov_signaling_app_register_command(
         content = ov_json_null();
     }
 
-    if (!content) goto error;
+    if (!content)
+        goto error;
 
     if (!ov_json_object_set(custom->command.descriptions, name, content)) {
         ov_json_value_free(content);
@@ -395,7 +372,8 @@ bool ov_signaling_app_register_command(
 
     return true;
 error:
-    if (key) free(key);
+    if (key)
+        free(key);
     return false;
 }
 
@@ -403,10 +381,12 @@ error:
 
 const ov_json_value *ov_signaling_app_get_commands(const ov_app *app) {
 
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     SignalingApp *custom = signaling_app_cast(app->config.userdata);
-    if (!custom) goto error;
+    if (!custom)
+        goto error;
 
     return custom->command.descriptions;
 error:
@@ -416,19 +396,20 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_signaling_app_set_monitor(ov_app *app,
-                                  void (*monitor)(void *,
-                                                  ov_direction,
-                                                  int,
+                                  void (*monitor)(void *, ov_direction, int,
                                                   const ov_socket_data *,
                                                   const ov_json_value *),
                                   void *userdata) {
 
-    if (0 == app) goto error;
+    if (0 == app)
+        goto error;
 
     SignalingApp *sapp = signaling_app_cast(app->config.userdata);
-    if (0 == sapp) goto error;
+    if (0 == sapp)
+        goto error;
 
-    if (0 == monitor) monitor = default_monitor;
+    if (0 == monitor)
+        monitor = default_monitor;
 
     sapp->monitor = monitor;
     sapp->monitor_userdata = userdata;
@@ -442,20 +423,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_signaling_app_send(ov_app *app,
-                                    int socket,
-                                    const ov_socket_data *remote,
-                                    void *data) {
+static bool impl_signaling_app_send(ov_app *app, int socket,
+                                    const ov_socket_data *remote, void *data) {
 
     ov_socket_data remote_extracted;
     memset(&remote_extracted, 0, sizeof(remote_extracted));
 
     ov_socket_data const *remote_to_log = remote;
 
-    if (0 == app) goto error;
+    if (0 == app)
+        goto error;
 
     SignalingApp *sapp = signaling_app_cast(app->config.userdata);
-    if (0 == sapp) goto error;
+    if (0 == sapp)
+        goto error;
 
     if (0 == remote_to_log) {
 
@@ -474,18 +455,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *cb_help(ov_app *app,
-                              const char *name,
-                              const ov_json_value *input,
-                              int socket,
+static ov_json_value *cb_help(ov_app *app, const char *name,
+                              const ov_json_value *input, int socket,
                               const ov_socket_data *remote) {
 
-    if (!app || !name || !input || !remote || (0 == socket)) goto error;
+    if (!app || !name || !input || !remote || (0 == socket))
+        goto error;
 
     ov_json_value *out = NULL;
     const ov_json_value *commands = ov_signaling_app_get_commands(app);
     if (commands) {
-        if (!ov_json_value_copy((void **)&out, commands)) goto error;
+        if (!ov_json_value_copy((void **)&out, commands))
+            goto error;
     }
 
     return out;
@@ -497,8 +478,7 @@ error:
 
 bool ov_signaling_app_enable_help(ov_app *app) {
 
-    if (!ov_signaling_app_register_command(app,
-                                           OV_EVENT_HELP,
+    if (!ov_signaling_app_register_command(app, OV_EVENT_HELP,
                                            "get a list of all commands and "
                                            "descriptions",
                                            cb_help))
@@ -517,7 +497,8 @@ static bool delayed_shutdown(uint32_t timer_id, void *data) {
 
     ov_event_loop *loop = ov_event_loop_cast(data);
 
-    if (!loop || !loop->stop) goto error;
+    if (!loop || !loop->stop)
+        goto error;
 
     loop->stop(loop);
 
@@ -530,23 +511,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *cb_shutdown(ov_app *app,
-                                  const char *name,
-                                  const ov_json_value *input,
-                                  int socket,
+static ov_json_value *cb_shutdown(ov_app *app, const char *name,
+                                  const ov_json_value *input, int socket,
                                   const ov_socket_data *remote) {
 
-    if (!app || !name || !input || !remote || (0 == socket)) goto error;
+    if (!app || !name || !input || !remote || (0 == socket))
+        goto error;
 
     ov_event_loop *loop = app->config.loop;
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    ov_log_info("%s received %s at %i from %s:%i",
-                app->config.name,
-                name,
-                socket,
-                remote->host,
-                remote->port);
+    ov_log_info("%s received %s at %i from %s:%i", app->config.name, name,
+                socket, remote->host, remote->port);
 
     /*
      *      @NOTE "Cosmetic delay"
@@ -586,9 +563,8 @@ error:
 
 bool ov_signaling_app_connect(ov_app *self, ov_app_socket_config config) {
 
-    TODO(
-        "Serves mainly as doc on how to actually use ov_signaling_app - "
-        "Look for better solution and remove");
+    TODO("Serves mainly as doc on how to actually use ov_signaling_app - "
+         "Look for better solution and remove");
 
     if (0 == self) {
         ov_log_error("No app given");

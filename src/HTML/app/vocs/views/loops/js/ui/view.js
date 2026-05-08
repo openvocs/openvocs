@@ -68,7 +68,7 @@ function draw_user() {
     Menu_Slider.redraw_roles();
 }
 
-export { talk, resize, sync_loops } from "./loop_view.js";
+export { talk, sync_loops } from "./loop_view.js";
 
 export async function draw_loops() {
     await Loop_View.draw();

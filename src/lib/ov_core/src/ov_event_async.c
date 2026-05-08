@@ -68,7 +68,8 @@ typedef struct {
 
 static void *free_internal_session_data(void *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     internal_session_data *d = (internal_session_data *)self;
     d->data.value = ov_json_value_free(d->data.value);
@@ -101,8 +102,8 @@ static bool delete_keys_in_dict(void *item, void *data) {
 
     if (entry && entry->data.timedout.callback) {
 
-        entry->data.timedout.callback(
-            entry->data.timedout.userdata, entry->data);
+        entry->data.timedout.callback(entry->data.timedout.userdata,
+                                      entry->data);
 
         entry->data.value = NULL;
     }
@@ -115,18 +116,21 @@ static bool delete_keys_in_dict(void *item, void *data) {
 
 static bool search_timed_out_keys(const void *key, void *item, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     OV_ASSERT(item);
     OV_ASSERT(data);
-    if (!item || !data) goto error;
+    if (!item || !data)
+        goto error;
 
     struct container *c = (struct container *)data;
     internal_session_data *d = (internal_session_data *)item;
 
     uint64_t lifetime = d->created_usec + d->max_lifetime_usec;
 
-    if (lifetime < c->now) ov_list_push(c->list, (void *)key);
+    if (lifetime < c->now)
+        ov_list_push(c->list, (void *)key);
 
     return true;
 error:
@@ -144,7 +148,8 @@ static bool invalidate_run(uint32_t id, void *data) {
     store->invalidate_timer = OV_TIMER_INVALID;
     ov_event_loop *loop = store->config.loop;
 
-    if (!ov_thread_lock_try_lock(&store->lock)) goto timer_reenable;
+    if (!ov_thread_lock_try_lock(&store->lock))
+        goto timer_reenable;
 
     /* locked */
 
@@ -177,12 +182,11 @@ timer_reenable:
     /* Reenable invalidate run */
 
     store->invalidate_timer =
-        loop->timer.set(loop,
-                        store->config.invalidate_check_interval_usec,
-                        store,
-                        invalidate_run);
+        loop->timer.set(loop, store->config.invalidate_check_interval_usec,
+                        store, invalidate_run);
 
-    if (OV_TIMER_INVALID == store->invalidate_timer) goto error;
+    if (OV_TIMER_INVALID == store->invalidate_timer)
+        goto error;
 
     return true;
 error:
@@ -193,12 +197,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_event_async_store *ov_event_async_store_create(
-    ov_event_async_store_config config) {
+ov_event_async_store *
+ov_event_async_store_create(ov_event_async_store_config config) {
 
     ov_event_async_store *store = NULL;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
 
     if (0 == config.threadlock_timeout_usec)
         config.threadlock_timeout_usec = IMPL_THREADLOCK_TIMEOUT_USEC;
@@ -212,7 +217,8 @@ ov_event_async_store *ov_event_async_store_create(
             IMPL_INVALIDATE_TIMEOUT_MIN_USEC;
 
     store = calloc(1, sizeof(ov_event_async_store));
-    if (!store) goto error;
+    if (!store)
+        goto error;
 
     if (!ov_thread_lock_init(&store->lock, config.threadlock_timeout_usec))
         goto error;
@@ -223,17 +229,17 @@ ov_event_async_store *ov_event_async_store_create(
     d_config.value.data_function.free = free_internal_session_data;
 
     store->dict = ov_dict_create(d_config);
-    if (!store->dict) goto error;
+    if (!store->dict)
+        goto error;
 
     ov_event_loop *loop = store->config.loop;
 
     store->invalidate_timer =
-        loop->timer.set(loop,
-                        store->config.invalidate_check_interval_usec,
-                        store,
-                        invalidate_run);
+        loop->timer.set(loop, store->config.invalidate_check_interval_usec,
+                        store, invalidate_run);
 
-    if (OV_TIMER_INVALID == store->invalidate_timer) goto error;
+    if (OV_TIMER_INVALID == store->invalidate_timer)
+        goto error;
 
     if (0 != config.cache) {
 
@@ -259,14 +265,16 @@ error:
 
 ov_event_async_store *ov_event_async_store_free(ov_event_async_store *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     int i = 0;
     int max = 100;
 
     for (i = 0; i < max; i++) {
 
-        if (ov_thread_lock_try_lock(&self->lock)) break;
+        if (ov_thread_lock_try_lock(&self->lock))
+            break;
     }
 
     if (i >= max) {
@@ -299,28 +307,30 @@ ov_event_async_store *ov_event_async_store_free(ov_event_async_store *self) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_async_set(ov_event_async_store *store,
-                        const char *id,
-                        ov_event_async_data data,
-                        uint64_t max_lifetime_usec) {
+bool ov_event_async_set(ov_event_async_store *store, const char *id,
+                        ov_event_async_data data, uint64_t max_lifetime_usec) {
 
     internal_session_data *internal = NULL;
     char *key = NULL;
     bool result = false;
 
-    if (!store || !id) goto error;
+    if (!store || !id)
+        goto error;
 
     key = strdup(id);
 
     internal = ov_registered_cache_get(g_async_internal_cache);
-    if (!internal) internal = calloc(1, sizeof(internal_session_data));
+    if (!internal)
+        internal = calloc(1, sizeof(internal_session_data));
 
-    if (!internal) goto error;
+    if (!internal)
+        goto error;
 
     internal->created_usec = ov_time_get_current_time_usecs();
     internal->max_lifetime_usec = max_lifetime_usec;
 
-    if (!ov_thread_lock_try_lock(&store->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&store->lock))
+        goto error;
 
     /* locked */
 
@@ -358,9 +368,11 @@ ov_event_async_data ov_event_async_unset(ov_event_async_store *store,
 
     ov_event_async_data data = (ov_event_async_data){0};
 
-    if (!store || !id) goto error;
+    if (!store || !id)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&store->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&store->lock))
+        goto error;
 
     internal_session_data *internal =
         (internal_session_data *)ov_dict_remove(store->dict, id);
@@ -394,12 +406,14 @@ struct container_socket {
 
 static bool search_ids_of_socket(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     struct container_socket *c = (struct container_socket *)data;
     internal_session_data *d = (internal_session_data *)val;
 
-    if (c->socket == d->data.socket) return ov_list_push(c->list, (void *)key);
+    if (c->socket == d->data.socket)
+        return ov_list_push(c->list, (void *)key);
 
     return true;
 }
@@ -419,18 +433,21 @@ bool ov_event_async_drop(ov_event_async_store *store, int socket) {
     ov_list *list = NULL;
     bool result = false;
 
-    if (!store) goto error;
+    if (!store)
+        goto error;
 
     list = ov_linked_list_create((ov_list_config){0});
 
-    if (!ov_thread_lock_try_lock(&store->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&store->lock))
+        goto error;
 
     struct container_socket c =
         (struct container_socket){.socket = socket, .list = list};
 
     result = ov_dict_for_each(store->dict, &c, search_ids_of_socket);
 
-    if (!result) goto done;
+    if (!result)
+        goto done;
 
     result &= ov_list_for_each(list, store, drop_entry);
 
@@ -451,7 +468,8 @@ error:
 
 void ov_event_async_data_clear(ov_event_async_data *data) {
 
-    if (!data) goto done;
+    if (!data)
+        goto done;
 
     data->value = ov_json_value_free(data->value);
     *data = (ov_event_async_data){0};

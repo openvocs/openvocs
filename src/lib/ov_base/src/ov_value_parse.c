@@ -34,8 +34,7 @@
 
 static char const SEPARATOR_CHARS[] = " \r\n\t";
 
-static char const *skip_chars(char const *in,
-                              char const *skip_chars,
+static char const *skip_chars(char const *in, char const *skip_chars,
                               size_t len) {
 
     OV_ASSERT(0 != in);
@@ -45,7 +44,8 @@ static char const *skip_chars(char const *in,
 
     for (; i < len; ++i) {
 
-        if (0 == strchr(skip_chars, in[i])) break;
+        if (0 == strchr(skip_chars, in[i]))
+            break;
     }
 
     return in + i;
@@ -53,17 +53,14 @@ static char const *skip_chars(char const *in,
 
 /*----------------------------------------------------------------------------*/
 
-typedef ov_value *(*ParseFunc)(char const *in,
-                               size_t len,
-                               char const **remainder,
-                               char const **errormsg);
+typedef ov_value *(*ParseFunc)(char const *in, size_t len,
+                               char const **remainder, char const **errormsg);
 
 /*----------------------------------------------------------------------------*/
 
 static char const *PREMATURE_END_OF_INPUT = "Premature end of input";
 
-static ov_value *parse_next_token(char const *in,
-                                  size_t len,
+static ov_value *parse_next_token(char const *in, size_t len,
                                   char const **remainder,
                                   char const **errormsg);
 
@@ -78,14 +75,13 @@ static ov_value *parse_next_token(char const *in,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_null(char const *in,
-                            size_t len,
-                            char const **remainder,
+static ov_value *parse_null(char const *in, size_t len, char const **remainder,
                             char const **errormsg) {
 
     CHECK_INPUT(in, len, 4, remainder, errormsg);
 
-    if (0 != memcmp(in, "null", 4)) goto error;
+    if (0 != memcmp(in, "null", 4))
+        goto error;
 
     *remainder = in + 4;
 
@@ -99,14 +95,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_true(char const *in,
-                            size_t len,
-                            char const **remainder,
+static ov_value *parse_true(char const *in, size_t len, char const **remainder,
                             char const **errormsg) {
 
     CHECK_INPUT(in, len, 4, remainder, errormsg);
 
-    if (0 != memcmp(in, "true", 4)) goto error;
+    if (0 != memcmp(in, "true", 4))
+        goto error;
 
     *remainder = in + 4;
 
@@ -120,14 +115,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_false(char const *in,
-                             size_t len,
-                             char const **remainder,
+static ov_value *parse_false(char const *in, size_t len, char const **remainder,
                              char const **errormsg) {
 
     CHECK_INPUT(in, len, 5, remainder, errormsg);
 
-    if (0 != memcmp(in, "false", 5)) goto error;
+    if (0 != memcmp(in, "false", 5))
+        goto error;
 
     *remainder = in + 5;
 
@@ -144,8 +138,7 @@ error:
  ****************************************************************************/
 
 static size_t copy_string_strip_escapes(char *restrict to,
-                                        char const *restrict from,
-                                        size_t len) {
+                                        char const *restrict from, size_t len) {
 
     OV_ASSERT(0 != to);
     OV_ASSERT(0 != from);
@@ -174,10 +167,8 @@ static size_t copy_string_strip_escapes(char *restrict to,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_string(char const *in,
-                              size_t len,
-                              char const **remainder,
-                              char const **errormsg) {
+static ov_value *parse_string(char const *in, size_t len,
+                              char const **remainder, char const **errormsg) {
 
     CHECK_INPUT(in, len, 2, remainder, errormsg);
 
@@ -215,7 +206,8 @@ static ov_value *parse_string(char const *in,
             continue;
         }
 
-        if ('"' != ptr[i]) continue;
+        if ('"' != ptr[i])
+            continue;
 
         OV_ASSERT((!escaped) && ('"' == ptr[i]));
 
@@ -256,10 +248,8 @@ error:
                                      Number
  ****************************************************************************/
 
-static ov_value *parse_number(char const *in,
-                              size_t len,
-                              char const **remainder,
-                              char const **errormsg) {
+static ov_value *parse_number(char const *in, size_t len,
+                              char const **remainder, char const **errormsg) {
 
     ov_buffer *buf = 0;
 
@@ -270,7 +260,8 @@ static ov_value *parse_number(char const *in,
 
     for (i = 0; i < len; ++i) {
 
-        if (0 != strchr(SEPARATOR_CHARS, *in)) break;
+        if (0 != strchr(SEPARATOR_CHARS, *in))
+            break;
     }
 
     if (0 == i) {
@@ -319,9 +310,7 @@ error:
                                       LIST
  ****************************************************************************/
 
-static ov_value *parse_list(char const *in,
-                            size_t len,
-                            char const **remainder,
+static ov_value *parse_list(char const *in, size_t len, char const **remainder,
                             char const **errormsg) {
 
     ov_value *list = ov_value_list(0);
@@ -412,9 +401,7 @@ typedef struct {
 
 } kv_pair;
 
-static kv_pair parse_kv_pair(char const *in,
-                             size_t len,
-                             char const **remainder,
+static kv_pair parse_kv_pair(char const *in, size_t len, char const **remainder,
                              char const **errormsg) {
 
     kv_pair pair = {0};
@@ -427,7 +414,8 @@ static kv_pair parse_kv_pair(char const *in,
 
     pair.key = parse_next_token(in, rem_len, &ptr, errormsg);
 
-    if (0 != *errormsg) goto error;
+    if (0 != *errormsg)
+        goto error;
 
     if (0 == ov_value_get_string(pair.key)) {
 
@@ -479,10 +467,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_object(char const *in,
-                              size_t len,
-                              char const **remainder,
-                              char const **errormsg) {
+static ov_value *parse_object(char const *in, size_t len,
+                              char const **remainder, char const **errormsg) {
 
     ov_value *object = ov_value_object();
 
@@ -579,48 +565,48 @@ static ParseFunc get_parse_func_for(char c) {
 
     switch (c) {
 
-        case 'n':
-            return parse_null;
-        case 't':
-            return parse_true;
-        case 'f':
-            return parse_false;
-        case '"':
-            return parse_string;
-        case '0':
-            return parse_number;
-        case '1':
-            return parse_number;
-        case '2':
-            return parse_number;
-        case '3':
-            return parse_number;
-        case '4':
-            return parse_number;
-        case '5':
-            return parse_number;
-        case '6':
-            return parse_number;
-        case '7':
-            return parse_number;
-        case '8':
-            return parse_number;
-        case '9':
-            return parse_number;
-        case '.':
-            return parse_number;
-        case '-':
-            return parse_number;
-        case '+':
-            return parse_number;
-        case '[':
-            return parse_list;
+    case 'n':
+        return parse_null;
+    case 't':
+        return parse_true;
+    case 'f':
+        return parse_false;
+    case '"':
+        return parse_string;
+    case '0':
+        return parse_number;
+    case '1':
+        return parse_number;
+    case '2':
+        return parse_number;
+    case '3':
+        return parse_number;
+    case '4':
+        return parse_number;
+    case '5':
+        return parse_number;
+    case '6':
+        return parse_number;
+    case '7':
+        return parse_number;
+    case '8':
+        return parse_number;
+    case '9':
+        return parse_number;
+    case '.':
+        return parse_number;
+    case '-':
+        return parse_number;
+    case '+':
+        return parse_number;
+    case '[':
+        return parse_list;
 
-        case '{':
-            return parse_object;
+    case '{':
+        return parse_object;
 
-        default:
-            return 0;
+    default:
+        return 0;
     };
 
     return 0;
@@ -628,8 +614,7 @@ static ParseFunc get_parse_func_for(char c) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_next_token(char const *in,
-                                  size_t len,
+static ov_value *parse_next_token(char const *in, size_t len,
                                   char const **remainder,
                                   char const **errormsg) {
 
@@ -710,22 +695,24 @@ premature_end_of_input:
 
 error:
 
-    if (0 != remainder) *remainder = 0;
+    if (0 != remainder)
+        *remainder = 0;
 
     return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_value_parse_stream(char const *in,
-                           size_t in_len_bytes,
+bool ov_value_parse_stream(char const *in, size_t in_len_bytes,
                            void (*value_consumer)(ov_value *, void *),
-                           void *userdata,
-                           char const **remainder) {
+                           void *userdata, char const **remainder) {
 
-    if (0 == value_consumer) goto error;
-    if (0 == in) goto error;
-    if (0 == in_len_bytes) goto error;
+    if (0 == value_consumer)
+        goto error;
+    if (0 == in)
+        goto error;
+    if (0 == in_len_bytes)
+        goto error;
 
     ov_value *value = 0;
 
@@ -738,7 +725,8 @@ bool ov_value_parse_stream(char const *in,
 
     value = ov_value_parse(&to_parse, &rem);
 
-    if (0 == rem) goto error;
+    if (0 == rem)
+        goto error;
 
     while (0 != value) {
 
@@ -751,16 +739,19 @@ bool ov_value_parse_stream(char const *in,
 
         value = ov_value_parse(&to_parse, &rem);
 
-        if (0 == rem) goto error;
+        if (0 == rem)
+            goto error;
     };
 
-    if (0 != remainder) *remainder = rem;
+    if (0 != remainder)
+        *remainder = rem;
 
     return true;
 
 error:
 
-    if (0 != remainder) *remainder = 0;
+    if (0 != remainder)
+        *remainder = 0;
 
     return false;
 }

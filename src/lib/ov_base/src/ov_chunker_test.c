@@ -233,9 +233,8 @@ static int test_ov_chunker_next_chunk() {
     testrun(equals(rec, "redlich"));
     rec = ov_buffer_free(rec);
 
-    testrun(add_string(c,
-                       "Cuando sali de la habana, valgame dios"
-                       "Nadie me ha visto salir sino fui yo"));
+    testrun(add_string(c, "Cuando sali de la habana, valgame dios"
+                          "Nadie me ha visto salir sino fui yo"));
 
     testrun(0 == ov_chunker_next_chunk(c, 722));
 
@@ -246,10 +245,9 @@ static int test_ov_chunker_next_chunk() {
 
     testrun(0 == ov_chunker_next_chunk(c, 722));
 
-    testrun(add_string(c,
-                       "Se vino detrás de mí, que si señor"
-                       "Si a tu ventana llega una paloma"
-                       "Trátala con cariño que es mi persona"));
+    testrun(add_string(c, "Se vino detrás de mí, que si señor"
+                          "Si a tu ventana llega una paloma"
+                          "Trátala con cariño que es mi persona"));
 
     testrun(0 == ov_chunker_next_chunk(c, 722));
 
@@ -257,16 +255,15 @@ static int test_ov_chunker_next_chunk() {
 
     testrun(0 == ov_chunker_next_chunk(c, 722));
 
-    testrun(add_string(c,
-                       "Corónala de flores que es cosa mía"
-                       "Ay chinita que si, ay que dame tu amor"
-                       "Ay que vente conmigo chinita"
-                       "A donde vivo yo"
-                       "Y una linda guachinanga como una flor"
-                       "Se vino detrás de mí, que si señor"
-                       "Si a tu ventana llega una paloma"
-                       "Trátala con cariño que es mi persona"
-                       "Cuéntale tus amores bien de mi vida"));
+    testrun(add_string(c, "Corónala de flores que es cosa mía"
+                          "Ay chinita que si, ay que dame tu amor"
+                          "Ay que vente conmigo chinita"
+                          "A donde vivo yo"
+                          "Y una linda guachinanga como una flor"
+                          "Se vino detrás de mí, que si señor"
+                          "Si a tu ventana llega una paloma"
+                          "Trátala con cariño que es mi persona"
+                          "Cuéntale tus amores bien de mi vida"));
 
     testrun(0 == ov_chunker_next_chunk(c, 722));
 
@@ -274,18 +271,16 @@ static int test_ov_chunker_next_chunk() {
 
     testrun(0 == ov_chunker_next_chunk(c, 722));
 
-    testrun(add_string(c,
-                       "Ay chinita que si, ay que dame tu amor"
-                       "Ay que vente conmigo chinita"
-                       "A donde vivo yo"
-                       "Ay chinita que si, ay que dame tu amor"
-                       "Ay que vente conmigo chinita"
-                       "A donde vivo yo"));
+    testrun(add_string(c, "Ay chinita que si, ay que dame tu amor"
+                          "Ay que vente conmigo chinita"
+                          "A donde vivo yo"
+                          "Ay chinita que si, ay que dame tu amor"
+                          "Ay que vente conmigo chinita"
+                          "A donde vivo yo"));
 
     testrun(0 == ov_chunker_next_chunk(c, 723));
 
-    testrun(next_is(c,
-                    722,
+    testrun(next_is(c, 722,
                     "valgame dios"
                     "Nadie me ha visto salir sino fui yo"
                     "Y una linda guachinanga como una flor"
@@ -342,8 +337,7 @@ static bool raw_equals(uint8_t const *buffer, char const *ref) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool next_raw_is(ov_chunker *chunker,
-                        size_t expected_octets,
+static bool next_raw_is(ov_chunker *chunker, size_t expected_octets,
                         char const *ref) {
 
     uint8_t *buf = calloc(1, expected_octets);
@@ -360,8 +354,8 @@ static bool next_raw_is(ov_chunker *chunker,
 
 static int test_ov_chunker_next_chunk_raw() {
 
-    bool ov_chunker_next_chunk_raw(
-        ov_chunker * self, size_t num_octets, uint8_t * dest);
+    bool ov_chunker_next_chunk_raw(ov_chunker * self, size_t num_octets,
+                                   uint8_t * dest);
 
     testrun(!ov_chunker_next_chunk_raw(0, 0, 0));
 
@@ -394,9 +388,8 @@ static int test_ov_chunker_next_chunk_raw() {
     testrun(ov_chunker_next_chunk_raw(c, 7, buffer));
     testrun(raw_equals(buffer, "redlich"));
 
-    testrun(add_string(c,
-                       "Cuando sali de la habana, valgame dios"
-                       "Nadie me ha visto salir sino fui yo"));
+    testrun(add_string(c, "Cuando sali de la habana, valgame dios"
+                          "Nadie me ha visto salir sino fui yo"));
 
     testrun(!ov_chunker_next_chunk_raw(c, 722, buffer));
 
@@ -407,10 +400,9 @@ static int test_ov_chunker_next_chunk_raw() {
 
     testrun(!ov_chunker_next_chunk_raw(c, 722, buffer));
 
-    testrun(add_string(c,
-                       "Se vino detrás de mí, que si señor"
-                       "Si a tu ventana llega una paloma"
-                       "Trátala con cariño que es mi persona"));
+    testrun(add_string(c, "Se vino detrás de mí, que si señor"
+                          "Si a tu ventana llega una paloma"
+                          "Trátala con cariño que es mi persona"));
 
     testrun(!ov_chunker_next_chunk_raw(c, 722, buffer));
 
@@ -418,16 +410,15 @@ static int test_ov_chunker_next_chunk_raw() {
 
     testrun(!ov_chunker_next_chunk_raw(c, 722, buffer));
 
-    testrun(add_string(c,
-                       "Corónala de flores que es cosa mía"
-                       "Ay chinita que si, ay que dame tu amor"
-                       "Ay que vente conmigo chinita"
-                       "A donde vivo yo"
-                       "Y una linda guachinanga como una flor"
-                       "Se vino detrás de mí, que si señor"
-                       "Si a tu ventana llega una paloma"
-                       "Trátala con cariño que es mi persona"
-                       "Cuéntale tus amores bien de mi vida"));
+    testrun(add_string(c, "Corónala de flores que es cosa mía"
+                          "Ay chinita que si, ay que dame tu amor"
+                          "Ay que vente conmigo chinita"
+                          "A donde vivo yo"
+                          "Y una linda guachinanga como una flor"
+                          "Se vino detrás de mí, que si señor"
+                          "Si a tu ventana llega una paloma"
+                          "Trátala con cariño que es mi persona"
+                          "Cuéntale tus amores bien de mi vida"));
 
     testrun(!ov_chunker_next_chunk_raw(c, 722, buffer));
 
@@ -435,18 +426,16 @@ static int test_ov_chunker_next_chunk_raw() {
 
     testrun(!ov_chunker_next_chunk_raw(c, 722, buffer));
 
-    testrun(add_string(c,
-                       "Ay chinita que si, ay que dame tu amor"
-                       "Ay que vente conmigo chinita"
-                       "A donde vivo yo"
-                       "Ay chinita que si, ay que dame tu amor"
-                       "Ay que vente conmigo chinita"
-                       "A donde vivo yo"));
+    testrun(add_string(c, "Ay chinita que si, ay que dame tu amor"
+                          "Ay que vente conmigo chinita"
+                          "A donde vivo yo"
+                          "Ay chinita que si, ay que dame tu amor"
+                          "Ay que vente conmigo chinita"
+                          "A donde vivo yo"));
 
     testrun(!ov_chunker_next_chunk_raw(c, 723, buffer));
 
-    testrun(next_raw_is(c,
-                        722,
+    testrun(next_raw_is(c, 722,
                         "valgame dios"
                         "Nadie me ha visto salir sino fui yo"
                         "Y una linda guachinanga como una flor"
@@ -527,14 +516,9 @@ static int test_ov_chunker_enable_caching() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_chunker",
-            test_ov_chunker_create,
-            test_ov_chunker_free,
-            test_ov_chunker_add,
-            test_ov_chunker_next_chunk_preview,
-            test_ov_chunker_next_chunk,
-            test_ov_chunker_next_chunk_raw,
-            test_ov_chunker_remainder,
-            test_ov_chunker_enable_caching);
+OV_TEST_RUN("ov_chunker", test_ov_chunker_create, test_ov_chunker_free,
+            test_ov_chunker_add, test_ov_chunker_next_chunk_preview,
+            test_ov_chunker_next_chunk, test_ov_chunker_next_chunk_raw,
+            test_ov_chunker_remainder, test_ov_chunker_enable_caching);
 
 /*----------------------------------------------------------------------------*/

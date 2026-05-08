@@ -66,7 +66,8 @@ typedef struct ov_callback_data {
 
 void *ov_callback_data_cache(void *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     ov_callback_data *data = (ov_callback_data *)self;
     data->created_usec = 0;
@@ -90,11 +91,12 @@ struct container {
 
 static bool search_timedout(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     ov_callback_data *d = (ov_callback_data *)val;
     struct container *c = (struct container *)data;
 
-    if (c->now > d->created_usec + d->timeout_usec)
+    if (c->now > (d->created_usec + d->timeout_usec))
         ov_list_push(c->list, (void *)key);
 
     return true;
@@ -114,13 +116,15 @@ static bool cb_check_timeout(uint32_t id, void *data) {
 
     UNUSED(id);
     ov_callback_registry *self = ov_callback_registry_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->timer_id = self->config.loop->timer.set(
         self->config.loop, self->config.timeout_usec, self, cb_check_timeout);
 
     ov_list *timedout = ov_linked_list_create((ov_list_config){0});
-    if (!timedout) goto error;
+    if (!timedout)
+        goto error;
 
     struct container c = (struct container){
 
@@ -139,12 +143,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_callback_registry *ov_callback_registry_create(
-    ov_callback_registry_config config) {
+ov_callback_registry *
+ov_callback_registry_create(ov_callback_registry_config config) {
 
     ov_callback_registry *registry = NULL;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
     if (0 == config.timeout_usec)
         config.timeout_usec = OV_CALLBACK_TIMEOUT_DEFAULT_USEC;
 
@@ -152,7 +157,8 @@ ov_callback_registry *ov_callback_registry_create(
         config.cache_size = OV_CALLBACK_DEFAULT_CACHE_SIZE;
 
     registry = calloc(1, sizeof(ov_callback_registry));
-    if (!registry) goto error;
+    if (!registry)
+        goto error;
 
     registry->magic_bytes = OV_CALLBACK_REGISTRY_MAGIC_BYTES;
     registry->config = config;
@@ -160,13 +166,15 @@ ov_callback_registry *ov_callback_registry_create(
     registry->timer_id = config.loop->timer.set(
         config.loop, config.timeout_usec, registry, cb_check_timeout);
 
-    if (OV_TIMER_INVALID == registry->timer_id) goto error;
+    if (OV_TIMER_INVALID == registry->timer_id)
+        goto error;
 
     ov_dict_config d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_callback_data_cache;
 
     registry->data = ov_dict_create(d_config);
-    if (!registry->data) goto error;
+    if (!registry->data)
+        goto error;
 
     ov_registered_cache_config cfg = {
 
@@ -188,7 +196,8 @@ error:
 
 ov_callback_registry *ov_callback_registry_free(ov_callback_registry *self) {
 
-    if (!ov_callback_registry_cast(self)) return self;
+    if (!ov_callback_registry_cast(self))
+        return self;
 
     self->data = ov_dict_free(self->data);
     if (OV_TIMER_INVALID != self->timer_id) {
@@ -206,7 +215,8 @@ ov_callback_registry *ov_callback_registry_free(ov_callback_registry *self) {
 
 ov_callback_registry *ov_callback_registry_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == OV_CALLBACK_REGISTRY_MAGIC_BYTES)
         return (ov_callback_registry *)self;
@@ -216,18 +226,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_callback_registry_register(ov_callback_registry *self,
-                                   const char *key,
+bool ov_callback_registry_register(ov_callback_registry *self, const char *key,
                                    const ov_callback callback,
                                    uint64_t timeout) {
 
-    if (!self || !key || (0 == timeout)) goto error;
+    if (!self || !key || (0 == timeout))
+        goto error;
 
     ov_callback_data *data = ov_registered_cache_get(g_ov_callback_data_cache);
 
-    if (!data) data = calloc(1, sizeof(ov_callback_data));
+    if (!data)
+        data = calloc(1, sizeof(ov_callback_data));
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     data->created_usec = ov_time_get_current_time_usecs();
     data->timeout_usec = timeout;
@@ -253,10 +265,12 @@ ov_callback ov_callback_registry_unregister(ov_callback_registry *self,
 
     ov_callback cb = {0};
 
-    if (!self || !key) goto error;
+    if (!self || !key)
+        goto error;
 
     ov_callback_data *data = ov_dict_remove(self->data, key);
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     cb = data->cb;
     data = ov_callback_data_cache(data);
@@ -272,10 +286,12 @@ ov_callback ov_callback_registry_get(ov_callback_registry *self,
 
     ov_callback cb = {0};
 
-    if (!self || !key) goto error;
+    if (!self || !key)
+        goto error;
 
     ov_callback_data *data = ov_dict_get(self->data, key);
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     return data->cb;
 

@@ -94,11 +94,8 @@ size_t ov_stun_software_encoding_length(const uint8_t *software, size_t length);
         @param size     size of the software to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_software_encode(uint8_t *buffer,
-                             size_t length,
-                             uint8_t **next,
-                             const uint8_t *software,
-                             size_t size);
+bool ov_stun_software_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                             const uint8_t *software, size_t size);
 
 /*----------------------------------------------------------------------------*/
 
@@ -111,9 +108,7 @@ bool ov_stun_software_encode(uint8_t *buffer,
    number)
         @param size     size of the software
 */
-bool ov_stun_software_decode(const uint8_t *buffer,
-                             size_t length,
-                             uint8_t **software,
-                             size_t *size);
+bool ov_stun_software_decode(const uint8_t *buffer, size_t length,
+                             uint8_t **software, size_t *size);
 
 #endif /* ov_stun_software_h */

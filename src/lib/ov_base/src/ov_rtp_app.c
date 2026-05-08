@@ -119,20 +119,18 @@ static bool install_handler(ov_event_loop *loop,
                             struct fd_handler_struct *handler_struct,
                             bool (*low_level_handler)(int, uint8_t, void *)) {
 
-    if (ov_ptr_valid(
-            loop, "Cannot setup RT(C)P handler - invalid event loop") &&
-        ov_ptr_valid(
-            handler_struct, "Cannot setup RT(C)P handler - invalid handler") &&
+    if (ov_ptr_valid(loop,
+                     "Cannot setup RT(C)P handler - invalid event loop") &&
+        ov_ptr_valid(handler_struct,
+                     "Cannot setup RT(C)P handler - invalid handler") &&
         ov_cond_valid(-1 < handler_struct->fd,
                       "Cannot setup RT(C)P handler - invalid socket "
                       "handle")) {
 
-        return ov_event_loop_set(
-            loop,
-            handler_struct->fd,
-            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-            handler_struct,
-            low_level_handler);
+        return ov_event_loop_set(loop, handler_struct->fd,
+                                 OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                     OV_EVENT_IO_CLOSE,
+                                 handler_struct, low_level_handler);
 
     } else {
         return false;
@@ -141,8 +139,7 @@ static bool install_handler(ov_event_loop *loop,
 
 /*----------------------------------------------------------------------------*/
 
-static int create_socket_for(ov_socket_configuration scfg,
-                             bool mc,
+static int create_socket_for(ov_socket_configuration scfg, bool mc,
                              ov_socket_error *err) {
 
     char const *type_str = "unicast";
@@ -160,14 +157,12 @@ static int create_socket_for(ov_socket_configuration scfg,
 
     if (sd > -1) {
 
-        ov_log_info(
-            "Openend %s socket at %s:%" PRIu16, type_str, scfg.host, scfg.port);
+        ov_log_info("Openend %s socket at %s:%" PRIu16, type_str, scfg.host,
+                    scfg.port);
     } else {
 
-        ov_log_error("Failed to open %s socket at %s:%" PRIu16,
-                     type_str,
-                     scfg.host,
-                     scfg.port);
+        ov_log_error("Failed to open %s socket at %s:%" PRIu16, type_str,
+                     scfg.host, scfg.port);
     }
 
     return sd;
@@ -202,10 +197,8 @@ static int open_rtcp_port(ov_socket_configuration const *rtp, bool mc) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_media_socket(ov_socket_configuration *media,
-                                bool multicast,
-                                int fds[2],
-                                bool open_rtcp) {
+static bool create_media_socket(ov_socket_configuration *media, bool multicast,
+                                int fds[2], bool open_rtcp) {
 
     ov_socket_error err = {0};
 
@@ -223,15 +216,14 @@ static bool create_media_socket(ov_socket_configuration *media,
         if (0 > fds[0]) {
 
             ov_log_error("Could not open media socket on %s:%" PRIu16 " :   %s",
-                         ov_string_sanitize(media->host),
-                         media->port,
+                         ov_string_sanitize(media->host), media->port,
                          strerror(err.err));
             return false;
 
         } else if (!ov_socket_get_config(fds[0], media, 0, &err)) {
 
-            ov_log_error(
-                "Could not get local media socket info: %s", strerror(err.err));
+            ov_log_error("Could not get local media socket info: %s",
+                         strerror(err.err));
             close_socket(fds[0], multicast);
             return false;
 
@@ -242,9 +234,7 @@ static bool create_media_socket(ov_socket_configuration *media,
             if (-1 < fds[1]) {
 
                 ov_log_info("Opened RTP/RTCP ports: %s:%" PRIu16 "/%" PRIu16,
-                            media->host,
-                            media->port,
-                            media->port + 1);
+                            media->host, media->port, media->port + 1);
 
                 return true;
 
@@ -252,8 +242,7 @@ static bool create_media_socket(ov_socket_configuration *media,
 
                 ov_log_error("Could not open RTCP socket on %s:%" PRIu16
                              " :   %s",
-                             ov_string_sanitize(media->host),
-                             media->port + 1,
+                             ov_string_sanitize(media->host), media->port + 1,
                              strerror(err.err));
 
                 close_socket(fds[0], multicast);
@@ -276,10 +265,10 @@ static bool create_media_socket(ov_socket_configuration *media,
 static void uninstall_handler(ov_event_loop *loop,
                               struct fd_handler_struct *handler_struct) {
 
-    if (ov_ptr_valid(
-            loop, "Cannot setup RT(C)P handler - invalid event loop") &&
-        ov_ptr_valid(
-            handler_struct, "Cannot setup RT(C)P handler - invalid handler")) {
+    if (ov_ptr_valid(loop,
+                     "Cannot setup RT(C)P handler - invalid event loop") &&
+        ov_ptr_valid(handler_struct,
+                     "Cannot setup RT(C)P handler - invalid handler")) {
 
         loop->callback.unset(loop, handler_struct->fd, 0);
     }
@@ -289,8 +278,8 @@ static void uninstall_handler(ov_event_loop *loop,
 
 static bool set_handler_fd(struct fd_handler_struct *handler_struct, int fd) {
 
-    if (ov_ptr_valid(
-            handler_struct, "Cannot set FD on handler - invalid handler") &&
+    if (ov_ptr_valid(handler_struct,
+                     "Cannot set FD on handler - invalid handler") &&
         ov_cond_valid(fd > -1, "Cannot set FD on handler - invalid FD")) {
 
         handler_struct->fd = fd;
@@ -303,8 +292,8 @@ static bool set_handler_fd(struct fd_handler_struct *handler_struct, int fd) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_socket_configuration or_default_rtp_socket(
-    ov_socket_configuration cfg, bool set_default_port) {
+static ov_socket_configuration
+or_default_rtp_socket(ov_socket_configuration cfg, bool set_default_port) {
 
     ov_socket_configuration res_cfg = cfg;
 
@@ -315,8 +304,8 @@ static ov_socket_configuration or_default_rtp_socket(
     }
 
     if ((0 == res_cfg.port) && set_default_port) {
-        ov_log_warning(
-            "Port to listen on not set - using %i", OV_DEFAULT_RTP_PORT);
+        ov_log_warning("Port to listen on not set - using %i",
+                       OV_DEFAULT_RTP_PORT);
         res_cfg.port = OV_DEFAULT_RTP_PORT;
     }
 
@@ -401,19 +390,14 @@ int ov_rtp_app_get_rtp_sd(ov_rtp_app const *self) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_rtp_app_send_to_sockaddr(int sd_to_send_from,
-                                 ov_rtp_frame const *frame,
-                                 struct sockaddr *dest,
-                                 socklen_t dest_len) {
+bool ov_rtp_app_send_to_sockaddr(int sd_to_send_from, ov_rtp_frame const *frame,
+                                 struct sockaddr *dest, socklen_t dest_len) {
 
     if (ov_ptr_valid(frame, "Cannot send RTP frame - 0 pointer")) {
 
-        ssize_t bytes = sendto(sd_to_send_from,
-                               frame->bytes.data,
-                               frame->bytes.length,
-                               0,
-                               (struct sockaddr *)&dest,
-                               dest_len);
+        ssize_t bytes =
+            sendto(sd_to_send_from, frame->bytes.data, frame->bytes.length, 0,
+                   (struct sockaddr *)&dest, dest_len);
 
         if ((0 > bytes) || (frame->bytes.length != (size_t)bytes)) {
 
@@ -433,8 +417,7 @@ bool ov_rtp_app_send_to_sockaddr(int sd_to_send_from,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_rtp_app_send_socket(int sd_to_send_from,
-                            ov_rtp_frame const *frame,
+bool ov_rtp_app_send_socket(int sd_to_send_from, ov_rtp_frame const *frame,
                             ov_socket_configuration target,
                             ov_ip_version ip_version) {
 
@@ -443,25 +426,25 @@ bool ov_rtp_app_send_socket(int sd_to_send_from,
 
     switch (ip_version) {
 
-        case IPV4:
+    case IPV4:
 
-            break;
+        break;
 
-        case IPV6:
-            address_family = AF_INET6;
-            len = sizeof(struct sockaddr_in6);
-            break;
+    case IPV6:
+        address_family = AF_INET6;
+        len = sizeof(struct sockaddr_in6);
+        break;
     };
 
     struct sockaddr_storage dest = {0};
 
-    if (ov_cond_valid(ov_socket_fill_sockaddr_storage(
-                          &dest, address_family, target.host, target.port),
+    if (ov_cond_valid(ov_socket_fill_sockaddr_storage(&dest, address_family,
+                                                      target.host, target.port),
                       "Faild to convert to sockaddr")) {
 
         return ov_cond_valid(
-            ov_rtp_app_send_to_sockaddr(
-                sd_to_send_from, frame, (struct sockaddr *)&dest, len),
+            ov_rtp_app_send_to_sockaddr(sd_to_send_from, frame,
+                                        (struct sockaddr *)&dest, len),
             "Sending frame failed");
 
     } else {

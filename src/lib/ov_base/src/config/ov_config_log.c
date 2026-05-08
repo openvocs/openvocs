@@ -39,7 +39,8 @@
 
 static ov_log_level ov_log_level_from_json(ov_json_value const *jval) {
 
-    if (0 == jval) goto error;
+    if (0 == jval)
+        goto error;
 
     char const *level = ov_json_string_get(ov_json_get(jval, "/" OV_KEY_LEVEL));
 
@@ -54,7 +55,8 @@ error:
 
 static int create_log_file(char const *path) {
 
-    if (0 == path) return -1;
+    if (0 == path)
+        return -1;
 
     int fh = open(path, O_RDWR | O_CREAT | O_APPEND, S_IRWXU);
 
@@ -80,8 +82,7 @@ static ov_log_format format_from_json(ov_json_value const *jval) {
     char const *fmt_str = ov_json_string_get(jval);
 
     if (0 == fmt_str) {
-        ov_log_error("Invalid config: " OV_KEY_FORMAT
-                     " is not a string - "
+        ov_log_error("Invalid config: " OV_KEY_FORMAT " is not a string - "
                      "falling back to default "
                      "format");
         return fmt;
@@ -93,10 +94,9 @@ static ov_log_format format_from_json(ov_json_value const *jval) {
     }
 
     if (0 != strncmp(fmt_str, OV_KEY_PLAIN_TEXT, strlen(OV_KEY_PLAIN_TEXT))) {
-        ov_log_error(
-            "Invalid config: Unkown format '%s' - falling back to "
-            "default format",
-            fmt_str);
+        ov_log_error("Invalid config: Unkown format '%s' - falling back to "
+                     "default format",
+                     fmt_str);
     }
 
 finish:
@@ -129,8 +129,8 @@ static bool configure_log_rotation(ov_log_output *out,
 
     if ((0 != max_num_files_jval) && (!ov_json_is_number(max_num_files_jval))) {
 
-        ov_log_error(
-            "Log config invalid: %s is not a number", OV_KEY_KEEP_FILES);
+        ov_log_error("Log config invalid: %s is not a number",
+                     OV_KEY_KEEP_FILES);
         goto error;
     }
 
@@ -218,8 +218,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static int set_output_from_json(char const *module,
-                                char const *function,
+static int set_output_from_json(char const *module, char const *function,
                                 ov_json_value const *jval) {
 
     ov_log_level level = ov_log_level_from_json(jval);
@@ -250,9 +249,8 @@ bool configure_function(const void *key, void *value, void *module_name) {
     ov_json_value *jval = ov_json_value_cast(value);
 
     if (0 == jval) {
-        ov_log_critical(
-            "Internal error: Expected json pointer, got something "
-            "else");
+        ov_log_critical("Internal error: Expected json pointer, got something "
+                        "else");
         return false;
     }
 
@@ -272,17 +270,16 @@ bool configure_module(const void *key, void *value, void *data) {
     ov_json_value *jval = ov_json_value_cast(value);
 
     if (0 == jval) {
-        ov_log_critical(
-            "Internal error: Expected json pointer, got something "
-            "else");
+        ov_log_critical("Internal error: Expected json pointer, got something "
+                        "else");
         return false;
     }
 
     set_output_from_json(key, 0, value);
 
     ov_json_value const *functions = ov_json_get(jval, "/" OV_KEY_FUNCTIONS);
-    ov_json_object_for_each(
-        (ov_json_value *)functions, (void *)key, configure_function);
+    ov_json_object_for_each((ov_json_value *)functions, (void *)key,
+                            configure_function);
 
     return true;
 }

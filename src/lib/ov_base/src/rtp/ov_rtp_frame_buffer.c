@@ -89,9 +89,11 @@ typedef struct {
 
 static inline internal_frame_buffer *as_internal_frame_buffer(void *arg) {
 
-    if (0 == arg) return 0;
+    if (0 == arg)
+        return 0;
     uint32_t *magic_number = arg;
-    if (MAGIC_NUMBER != *magic_number) return 0;
+    if (MAGIC_NUMBER != *magic_number)
+        return 0;
 
     return arg;
 }
@@ -176,7 +178,8 @@ static inline ov_rtp_frame *insert_into_stage(ov_list *stage,
         if (SEQUENCE_NUMBER < CURRENT_SEQUENCE_NUMBER) {
 
             /* Replace current frame with out frame */
-            if (stage->set(stage, i, frame, (void **)&current)) return current;
+            if (stage->set(stage, i, frame, (void **)&current))
+                return current;
         }
     }
 
@@ -209,7 +212,8 @@ static inline ov_rtp_frame *insert_into_stages(ov_list *stages,
     while (0 != iter) {
 
         iter = stages->next(stages, iter, (void **)&stage);
-        if (0 == stage) break;
+        if (0 == stage)
+            break;
 
         OV_ASSERT(0 != stage);
         OV_ASSERT(0 != remainder);
@@ -278,16 +282,19 @@ static inline ov_rtp_frame *drop_oldest_frame(ov_list *stages,
     uint32_t const SSID = frame->expanded.ssrc;
     size_t const COUNT = stages->count(stages);
 
-    if (0 == COUNT) goto error;
+    if (0 == COUNT)
+        goto error;
 
     ov_list *prev_stage = 0;
     void *stage_iter = stages->iter(stages);
 
-    if (0 == stage_iter) return 0;
+    if (0 == stage_iter)
+        return 0;
 
     stage_iter = stages->next(stages, stage_iter, (void **)&prev_stage);
 
-    if (0 == prev_stage) return 0;
+    if (0 == prev_stage)
+        return 0;
 
     OV_ASSERT(0 != prev_stage);
 
@@ -336,7 +343,8 @@ static bool free_rtp_frame(void *value, void *arg) {
 
     ov_rtp_frame *frame = value;
 
-    if (0 == frame) return true;
+    if (0 == frame)
+        return true;
 
     return 0 == frame->free(frame);
 }
@@ -357,9 +365,8 @@ static inline ov_list *free_stages(ov_list *restrict stages) {
         stage = stage->free(stage);
         if (0 != stage) {
 
-            ov_log_error(
-                "Mem leak: Could not free "
-                "hash");
+            ov_log_error("Mem leak: Could not free "
+                         "hash");
         }
 
         stage = stages->pop(stages);
@@ -406,8 +413,8 @@ error:
  *                              PUBLIC FUNCTIONS
  ******************************************************************************/
 
-ov_rtp_frame_buffer *ov_rtp_frame_buffer_create(
-    ov_rtp_frame_buffer_config config) {
+ov_rtp_frame_buffer *
+ov_rtp_frame_buffer_create(ov_rtp_frame_buffer_config config) {
 
     internal_frame_buffer *buffer = calloc(1, sizeof(internal_frame_buffer));
     buffer->public = (ov_rtp_frame_buffer){
@@ -515,8 +522,8 @@ finish:
 
 /*----------------------------------------------------------------------------*/
 
-ov_list *ov_rtp_frame_buffer_get_current_frames(
-    ov_rtp_frame_buffer *restrict self) {
+ov_list *
+ov_rtp_frame_buffer_get_current_frames(ov_rtp_frame_buffer *restrict self) {
 
     ov_list *current = 0;
 
@@ -524,7 +531,7 @@ ov_list *ov_rtp_frame_buffer_get_current_frames(
     if (0 != self) {
 
         ov_list *stages = internal->stages;
-        current = stages->remove(stages, 1);
+        current = ov_list_cast(stages->remove(stages, 1));
     }
 
     return current;
@@ -586,10 +593,8 @@ void ov_rtp_frame_buffer_print(FILE *stream,
                 continue;
             }
 
-            fprintf(stream,
-                    "SSID == %" PRIu32 " SEQ == %" PRIu32 "\n",
-                    frame->expanded.ssrc,
-                    frame->expanded.sequence_number);
+            fprintf(stream, "SSID == %" PRIu32 " SEQ == %" PRIu32 "\n",
+                    frame->expanded.ssrc, frame->expanded.sequence_number);
         }
     }
 
@@ -599,3 +604,33 @@ finish:
 }
 
 /*----------------------------------------------------------------------------*/
+
+bool ov_rtp_frame_buffer_clear(ov_rtp_frame_buffer *self){
+
+    if (!self) goto error;
+
+    internal_frame_buffer *internal = as_internal_frame_buffer((void *)self);
+
+    ov_list *stages = internal->stages;
+    ov_list *frames = ov_list_pop(stages);
+    
+    while(frames){
+
+        ov_rtp_frame *frame = ov_list_pop(frames);
+
+        while(frame){
+
+            frame = ov_rtp_frame_free(frame);
+            frame = ov_list_pop(frames);
+        }
+
+        frames = ov_list_free(frames);
+        frames = ov_list_pop(stages);
+
+    }
+
+    return true;
+
+error:
+    return false;
+}

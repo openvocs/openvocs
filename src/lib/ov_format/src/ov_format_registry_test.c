@@ -48,8 +48,7 @@ const uint32_t tokenizer_magic_bytes = 0x11ff22ee;
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer ft_tokenizer_next_token(ov_format *f,
-                                         size_t req_bytes,
+static ov_buffer ft_tokenizer_next_token(ov_format *f, size_t req_bytes,
                                          void *data) {
     UNUSED(req_bytes);
 
@@ -61,7 +60,8 @@ static ov_buffer ft_tokenizer_next_token(ov_format *f,
     OV_ASSERT(0 != data);
     ft_tokenizer_data *ftd = data;
 
-    if (0 == data) goto error;
+    if (0 == data)
+        goto error;
 
     if (0 == ftd->in.start) {
         ftd->in = ov_format_payload_read_chunk_nocopy(f, 255);
@@ -151,7 +151,8 @@ static void *ft_get_tokenizer_options(ov_format *f) {
 
     ft_tokenizer_data *tdata = ov_format_get_custom_data(f);
 
-    if (0 == tdata) return 0;
+    if (0 == tdata)
+        return 0;
 
     return tdata->options;
 }
@@ -159,8 +160,7 @@ static void *ft_get_tokenizer_options(ov_format *f) {
 
 static void *ft_dummy_data_seen = 0;
 
-static ov_buffer ft_dummy_next_chunk(ov_format *f,
-                                     size_t req_bytes,
+static ov_buffer ft_dummy_next_chunk(ov_format *f, size_t req_bytes,
                                      void *data) {
 
     ft_dummy_data_seen = data;
@@ -197,18 +197,19 @@ static bool handler_is_in_registry(char const *type,
 
     bool result = false;
 
-    if (0 == type) return false;
+    if (0 == type)
+        return false;
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
     ov_format *dummy_bare =
         ov_format_from_memory((uint8_t *)test_string, test_string_len, OV_READ);
 
-    if (0 == dummy_bare) return false;
+    if (0 == dummy_bare)
+        return false;
 
     ov_format *type_fmt = ov_format_as(dummy_bare, type, 0, registry);
 
@@ -242,16 +243,15 @@ static int test_ov_format_as() {
      *                             Prepare test file
      **************************************************************************/
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
     char file_path[OV_TEST_FILE_TMP_PATH_LEN] = {0};
 
-    int fd = ov_test_file_tmp_write(
-        (uint8_t *)test_string, test_string_len, file_path);
+    int fd = ov_test_file_tmp_write((uint8_t *)test_string, test_string_len,
+                                    file_path);
 
     OV_ASSERT(0 < fd);
 
@@ -644,9 +644,8 @@ int test_ov_format_registry_create() {
 
     /*                     Dummy format to use as base */
 
-    char const *test_string =
-        "Geir nu garmr mjok fyr gnipahellir - festr man "
-        "slitna en freki renna";
+    char const *test_string = "Geir nu garmr mjok fyr gnipahellir - festr man "
+                              "slitna en freki renna";
 
     const size_t test_string_len = strlen(test_string) + 1;
 
@@ -670,9 +669,7 @@ int test_ov_format_registry_create() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_registry",
-            test_ov_format_as,
+OV_TEST_RUN("ov_format_registry", test_ov_format_as,
             test_ov_format_registry_register_type,
             test_ov_format_registry_unregister_type,
-            test_ov_format_registry_clear,
-            test_ov_format_registry_create);
+            test_ov_format_registry_clear, test_ov_format_registry_create);

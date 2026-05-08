@@ -222,8 +222,7 @@ int test_ov_dir_tree_remove() {
 
 /*----------------------------------------------------------------------------*/
 
-static bool collapse_to_path(char const **dirs,
-                             char *target_path,
+static bool collapse_to_path(char const **dirs, char *target_path,
                              size_t const target_length) {
 
     memset(target_path, 0, target_length);
@@ -306,10 +305,8 @@ static bool switch_to_temp_dir(char *old_cwd) {
     char cwd[PATH_MAX + 1] = {0};
     getcwd(cwd, sizeof(cwd));
 
-    fprintf(stderr,
-            "Temp dir: %s  - Current working dir: %s\n",
-            ov_string_sanitize(tempdir),
-            ov_string_sanitize(cwd));
+    fprintf(stderr, "Temp dir: %s  - Current working dir: %s\n",
+            ov_string_sanitize(tempdir), ov_string_sanitize(cwd));
 
     ov_free(tempdir);
     return ok;
@@ -418,9 +415,7 @@ static int test_ov_dir_tree_create() {
 
         char cwd[PATH_MAX] = {0};
         getcwd(cwd, sizeof(cwd));
-        fprintf(stderr,
-                "(cwd: %s) Removing %s\n",
-                ov_string_sanitize(cwd),
+        fprintf(stderr, "(cwd: %s) Removing %s\n", ov_string_sanitize(cwd),
                 rel_path);
 
         testrun(0 == rmdir(rel_path));
@@ -520,7 +515,5 @@ int test_ov_dir_access_to_path() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_dir",
-            test_ov_dir_tree_remove,
-            test_ov_dir_tree_create,
+OV_TEST_RUN("ov_dir", test_ov_dir_tree_remove, test_ov_dir_tree_create,
             test_ov_dir_access_to_path);

@@ -41,7 +41,8 @@ static bool interface_permit_ipv4(const struct sockaddr_in *sock) {
 
     OV_ASSERT(sock);
 
-    if (!sock) goto error;
+    if (!sock)
+        goto error;
 
     char host[OV_HOST_NAME_MAX + 1] = {0};
 
@@ -51,7 +52,8 @@ static bool interface_permit_ipv4(const struct sockaddr_in *sock) {
      *      ignore local IP4 interfaces
      */
 
-    if (0 == strncmp("127", host, 3)) goto error;
+    if (0 == strncmp("127", host, 3))
+        goto error;
 
     return true;
 error:
@@ -64,7 +66,8 @@ static bool interface_permit_ipv6(const struct sockaddr_in6 *sock) {
 
     OV_ASSERT(sock);
 
-    if (!sock) goto error;
+    if (!sock)
+        goto error;
 
     char host[OV_HOST_NAME_MAX + 1] = {0};
 
@@ -93,10 +96,12 @@ static bool interface_permit_ipv6(const struct sockaddr_in6 *sock) {
         }
 
         // Link-Local IPv6 Unicast Addresses
-        if (zero) goto error;
+        if (zero)
+            goto error;
 
         // Site-Local IPv6 Unicast Addresses
-        if (0xC0 & sock->sin6_addr.s6_addr[1]) goto error;
+        if (0xC0 & sock->sin6_addr.s6_addr[1])
+            goto error;
     }
 
     zero = true;
@@ -131,10 +136,12 @@ static bool interface_permit_ipv6(const struct sockaddr_in6 *sock) {
         if (zero) {
 
             // loopback address ::1
-            if (sock->sin6_addr.s6_addr[15] & 0x01) goto error;
+            if (sock->sin6_addr.s6_addr[15] & 0x01)
+                goto error;
 
             // any address ::0 | ::
-            if (sock->sin6_addr.s6_addr[15] & 0x00) goto error;
+            if (sock->sin6_addr.s6_addr[15] & 0x00)
+                goto error;
         }
     }
 
@@ -159,7 +166,8 @@ int ov_mc_test_common_open_socket(int net) {
 
     for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
 
-        if (ifa->ifa_addr == NULL) continue;
+        if (ifa->ifa_addr == NULL)
+            continue;
 
         socket = -1;
         socket_config = (ov_socket_configuration){0};
@@ -169,55 +177,49 @@ int ov_mc_test_common_open_socket(int net) {
 
         switch (ifa->ifa_addr->sa_family) {
 
-            case AF_INET:
+        case AF_INET:
 
-                if (net == AF_INET6) break;
+            if (net == AF_INET6)
+                break;
 
-                if (interface_permit_ipv4(
-                        (struct sockaddr_in *)ifa->ifa_addr)) {
+            if (interface_permit_ipv4((struct sockaddr_in *)ifa->ifa_addr)) {
 
-                    if (0 == getnameinfo(ifa->ifa_addr,
-                                         sizeof(struct sockaddr_in),
-                                         socket_config.host,
-                                         OV_HOST_NAME_MAX,
-                                         NULL,
-                                         0,
-                                         NI_NUMERICHOST)) {
+                if (0 == getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in),
+                                     socket_config.host, OV_HOST_NAME_MAX, NULL,
+                                     0, NI_NUMERICHOST)) {
 
-                        ignore = false;
-                    }
+                    ignore = false;
                 }
+            }
 
+            break;
+
+        case AF_INET6:
+
+            if (net == AF_INET)
                 break;
 
-            case AF_INET6:
+            if (interface_permit_ipv6((struct sockaddr_in6 *)ifa->ifa_addr)) {
 
-                if (net == AF_INET) break;
+                if (0 == getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in6),
+                                     socket_config.host, OV_HOST_NAME_MAX, NULL,
+                                     0, NI_NUMERICHOST)) {
 
-                if (interface_permit_ipv6(
-                        (struct sockaddr_in6 *)ifa->ifa_addr)) {
-
-                    if (0 == getnameinfo(ifa->ifa_addr,
-                                         sizeof(struct sockaddr_in6),
-                                         socket_config.host,
-                                         OV_HOST_NAME_MAX,
-                                         NULL,
-                                         0,
-                                         NI_NUMERICHOST)) {
-
-                        ignore = false;
-                    }
+                    ignore = false;
                 }
+            }
 
-                break;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
-        if (ignore) continue;
+        if (ignore)
+            continue;
 
-        if (0 == socket_config.host[0]) continue;
+        if (0 == socket_config.host[0])
+            continue;
 
         socket = ov_socket_create(socket_config, false, NULL);
 
@@ -237,6 +239,7 @@ int ov_mc_test_common_open_socket(int net) {
     return socket;
 error:
 
-    if (ifaddr) freeifaddrs(ifaddr);
+    if (ifaddr)
+        freeifaddrs(ifaddr);
     return -1;
 }

@@ -108,12 +108,12 @@ static int test_ov_sip_headers_auth() {
     testrun(0 ==
             ov_sip_headers_auth("sip:a.b", 0, 0, "realm", "REGISTER", "nonce"));
     testrun(0 == ov_sip_headers_auth(0, "7", 0, "realm", "REGISTER", "nonce"));
-    testrun(0 == ov_sip_headers_auth(
-                     "sip:a.b", "7", 0, "realm", "REGISTER", "nonce"));
+    testrun(0 == ov_sip_headers_auth("sip:a.b", "7", 0, "realm", "REGISTER",
+                                     "nonce"));
     testrun(0 ==
             ov_sip_headers_auth(0, 0, "abc", "realm", "REGISTER", "nonce"));
-    testrun(0 == ov_sip_headers_auth(
-                     "sip:a.b", 0, "abc", "realm", "REGISTER", "nonce"));
+    testrun(0 == ov_sip_headers_auth("sip:a.b", 0, "abc", "realm", "REGISTER",
+                                     "nonce"));
     testrun(0 ==
             ov_sip_headers_auth(0, "7", "abc", "realm", "REGISTER", "nonce"));
 
@@ -154,21 +154,21 @@ int ov_sip_headers_get_user_and_tag_test() {
     /* But we can delete `user` */
     user = ov_buffer_free(user);
 
-    testrun(ov_sip_headers_get_user_and_tag(
-        "anton@hofreiter;tag=wurzelsepp", &user, 0));
+    testrun(ov_sip_headers_get_user_and_tag("anton@hofreiter;tag=wurzelsepp",
+                                            &user, 0));
     testrun(ov_buffer_equals(user, "anton@hofreiter"));
     user = ov_buffer_free(user);
 
     ov_buffer *tag = 0;
-    testrun(ov_sip_headers_get_user_and_tag(
-        "anton@hofreiter;tag=wurzelsepp", &user, &tag));
+    testrun(ov_sip_headers_get_user_and_tag("anton@hofreiter;tag=wurzelsepp",
+                                            &user, &tag));
     testrun(ov_buffer_equals(user, "anton@hofreiter"));
     testrun(ov_buffer_equals(tag, "wurzelsepp"));
 
     /* No need to release `tag` if we feed it back in to ov_su_user_from */
 
-    testrun(ov_sip_headers_get_user_and_tag(
-        "<anton@walderado>;tag=waldschrat", &user, &tag));
+    testrun(ov_sip_headers_get_user_and_tag("<anton@walderado>;tag=waldschrat",
+                                            &user, &tag));
     testrun(ov_buffer_equals(user, "anton@walderado"));
     testrun(ov_buffer_equals(tag, "waldschrat"));
 
@@ -180,8 +180,8 @@ int ov_sip_headers_get_user_and_tag_test() {
     testrun(ov_buffer_equals(user, "bruno@walderado"));
     testrun(ov_buffer_equals(tag, "pilzkopf"));
 
-    testrun(ov_sip_headers_get_user_and_tag(
-        "<zottel_aber_gut:anton@hofreiter>", &user, 0));
+    testrun(ov_sip_headers_get_user_and_tag("<zottel_aber_gut:anton@hofreiter>",
+                                            &user, 0));
     testrun(ov_buffer_equals(user, "anton@hofreiter"));
 
     testrun(ov_sip_headers_get_user_and_tag(
@@ -204,8 +204,7 @@ int ov_sip_headers_get_user_and_tag_test() {
     testrun(0 > strcmp((char const *)user->start, "anton@hofreiter>"));
 
     testrun(ov_sip_headers_get_user_and_tag(
-        "\"anton\"  <zottel_aber_gut:anton@hofreiter>;tag=indianertot",
-        &user,
+        "\"anton\"  <zottel_aber_gut:anton@hofreiter>;tag=indianertot", &user,
         &tag));
 
     testrun(ov_buffer_equals(user, "anton@hofreiter"));
@@ -235,7 +234,5 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_sip_app",
-            test_ov_sip_headers_auth,
-            ov_sip_headers_get_user_and_tag_test,
-            tear_down);
+OV_TEST_RUN("ov_sip_app", test_ov_sip_headers_auth,
+            ov_sip_headers_get_user_and_tag_test, tear_down);

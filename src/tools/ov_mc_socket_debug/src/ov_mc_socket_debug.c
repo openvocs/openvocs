@@ -76,31 +76,32 @@ bool read_user_input(int argc, char *argv[], uint16_t *port, char **host) {
         c = getopt_long(argc, argv, "i:p:?h", long_options, &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1) break;
+        if (c == -1)
+            break;
 
         switch (c) {
 
-            case 'h':
-                print_usage();
-                goto error;
-                break;
+        case 'h':
+            print_usage();
+            goto error;
+            break;
 
-            case '?':
-                print_usage();
-                goto error;
-                break;
+        case '?':
+            print_usage();
+            goto error;
+            break;
 
-            case 'p':
-                ov_convert_string_to_uint16(optarg, strlen(optarg), port);
-                break;
+        case 'p':
+            ov_convert_string_to_uint16(optarg, strlen(optarg), port);
+            break;
 
-            case 'i':
-                *host = ov_string_dup(optarg);
-                break;
+        case 'i':
+            *host = ov_string_dup(optarg);
+            break;
 
-            default:
-                print_usage();
-                goto error;
+        default:
+            print_usage();
+            goto error;
         }
     }
 
@@ -125,36 +126,30 @@ static bool cb_socket_io(int socket, uint8_t events, void *userdata) {
     ov_socket_data in = {0};
     socklen_t in_len = 0;
 
-    ssize_t bytes = recvfrom(socket,
-                             buffer,
-                             OV_UDP_PAYLOAD_OCTETS,
-                             0,
-                             (struct sockaddr *)&in.sa,
-                             &in_len);
+    ssize_t bytes = recvfrom(socket, buffer, OV_UDP_PAYLOAD_OCTETS, 0,
+                             (struct sockaddr *)&in.sa, &in_len);
 
     in = ov_socket_data_from_sockaddr_storage(&in.sa);
 
     switch (bytes) {
 
-        case 0:
-            goto error;
+    case 0:
+        goto error;
 
-        case -1:
-            goto done;
+    case -1:
+        goto done;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     ov_rtp_frame *frame = ov_rtp_frame_decode(buffer, bytes);
-    if (!frame) goto done;
+    if (!frame)
+        goto done;
 
     ov_log_debug("IO from SSRC %i, seq %i bytes %i from %s:%i",
-                 frame->expanded.ssrc,
-                 frame->expanded.sequence_number,
-                 frame->expanded.payload.length,
-                 in.host,
-                 in.port);
+                 frame->expanded.ssrc, frame->expanded.sequence_number,
+                 frame->expanded.payload.length, in.host, in.port);
 
     frame = ov_rtp_frame_free(frame);
 
@@ -175,7 +170,8 @@ int main(int argc, char *argv[]) {
     uint16_t port = 0;
     char *host = NULL;
 
-    if (!read_user_input(argc, argv, &port, &host)) goto error;
+    if (!read_user_input(argc, argv, &port, &host))
+        goto error;
 
     if (!host || !port) {
         print_usage();
@@ -195,7 +191,8 @@ int main(int argc, char *argv[]) {
         goto error;
     }
 
-    if (!ov_event_loop_setup_signals(loop)) goto error;
+    if (!ov_event_loop_setup_signals(loop))
+        goto error;
 
     ov_socket_configuration socket_config =
         (ov_socket_configuration){.port = port, .type = UDP, .host = {0}};
@@ -210,11 +207,9 @@ int main(int argc, char *argv[]) {
 
     ov_socket_ensure_nonblocking(socket);
 
-    if (!ov_event_loop_set(loop,
-                           socket,
+    if (!ov_event_loop_set(loop, socket,
                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-                           NULL,
-                           cb_socket_io)) {
+                           NULL, cb_socket_io)) {
 
         ov_log_debug("Failed to set IO callback.");
         goto error;

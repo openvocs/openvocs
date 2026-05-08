@@ -48,11 +48,13 @@ static ov_registered_cache *g_cache = 0;
 
 static ov_buffer const *as_buffer(const void *vptr) {
 
-    if (0 == vptr) return 0;
+    if (0 == vptr)
+        return 0;
 
     ov_buffer const *buffer = vptr;
 
-    if (OV_BUFFER_MAGIC_BYTE != buffer->magic_byte) return 0;
+    if (OV_BUFFER_MAGIC_BYTE != buffer->magic_byte)
+        return 0;
 
     return buffer;
 }
@@ -78,7 +80,8 @@ static bool adapt_size_nocheck(ov_buffer *buffer, size_t size) {
 
     OV_ASSERT(0 == buffer->capacity);
 
-    if (size == SIZE_MAX) goto error;
+    if (size == SIZE_MAX)
+        goto error;
 
     /* Why one excess byte ? */
     buffer->start = calloc(size + 1, sizeof(uint8_t));
@@ -195,18 +198,20 @@ ov_buffer *ov_buffer_create(size_t size) {
 
 bool ov_buffer_extend(ov_buffer *buffer, size_t size) {
 
-    if (!buffer || (0 == size)) goto error;
+    if (!buffer || (0 == size))
+        goto error;
 
     size_t new_size = buffer->capacity + size;
 
     void *new_start = realloc(buffer->start, new_size);
-    if (!new_start) goto error;
+    if (!new_start)
+        goto error;
 
     buffer->start = new_start;
     buffer->capacity = new_size;
 
-    memset(
-        buffer->start + buffer->length, 0, buffer->capacity - buffer->length);
+    memset(buffer->start + buffer->length, 0,
+           buffer->capacity - buffer->length);
     return true;
 error:
     return false;
@@ -291,9 +296,11 @@ ov_buffer *ov_buffer_from_strlist_internal(char const **strlist) {
 
 ov_buffer *ov_buffer_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data == OV_BUFFER_MAGIC_BYTE) return (ov_buffer *)data;
+    if (*(uint16_t *)data == OV_BUFFER_MAGIC_BYTE)
+        return (ov_buffer *)data;
 
     return NULL;
 }
@@ -316,7 +323,8 @@ bool ov_buffer_set(ov_buffer *buffer, const void *data, size_t length) {
     OV_ASSERT(length <= buffer->capacity);
     OV_ASSERT(0 != buffer->start);
 
-    if (!memcpy(buffer->start, data, length)) goto error;
+    if (!memcpy(buffer->start, data, length))
+        goto error;
 
     buffer->length = length;
     return true;
@@ -332,7 +340,8 @@ bool ov_buffer_clear(void *self) {
 
     ov_buffer *buffer = (ov_buffer *)as_buffer(self);
 
-    if (!buffer) goto error;
+    if (!buffer)
+        goto error;
 
     if (0 == buffer->capacity) {
 
@@ -402,7 +411,8 @@ void *ov_buffer_copy(void **destination, const void *self) {
 
     ov_buffer *orig = (ov_buffer *)as_buffer(self);
 
-    if (!orig) goto error;
+    if (!orig)
+        goto error;
 
     ov_buffer *copy = 0;
 
@@ -455,7 +465,8 @@ bool ov_buffer_dump(FILE *stream, const void *self) {
 
     ov_buffer const *buffer = as_buffer((void *)self);
 
-    if (!stream || !buffer) goto error;
+    if (!stream || !buffer)
+        goto error;
 
     if (!fprintf(stream,
                  "BUFFER DUMP \n"
@@ -463,9 +474,7 @@ bool ov_buffer_dump(FILE *stream, const void *self) {
                  "    capacity %zd\n"
                  "    content  %s\n"
                  "\n",
-                 buffer->length,
-                 buffer->capacity,
-                 buffer->start))
+                 buffer->length, buffer->capacity, buffer->start))
         goto error;
 
     if (buffer->start) {
@@ -528,7 +537,8 @@ bool ov_buffer_push(ov_buffer *buffer, void *data, size_t size) {
         buffer->capacity = new_length;
     }
 
-    if (!memcpy(buffer->start + buffer->length, data, size)) goto error;
+    if (!memcpy(buffer->start + buffer->length, data, size))
+        goto error;
 
     buffer->length += size;
     return true;
@@ -564,14 +574,18 @@ void ov_buffer_enable_caching(size_t capacity) {
 
 bool ov_buffer_shift(ov_buffer *buffer, uint8_t *next) {
 
-    if (!buffer || !buffer->start || !next) goto error;
+    if (!buffer || !buffer->start || !next)
+        goto error;
 
     int64_t length = next - buffer->start;
-    if (length < 0) goto error;
+    if (length < 0)
+        goto error;
 
-    if (length > (int64_t)buffer->length) goto error;
+    if (length > (int64_t)buffer->length)
+        goto error;
 
-    if (length == (int64_t)buffer->length) return ov_buffer_clear(buffer);
+    if (length == (int64_t)buffer->length)
+        return ov_buffer_clear(buffer);
 
     return ov_buffer_shift_length(buffer, (size_t)length);
 
@@ -597,21 +611,27 @@ bool ov_buffer_equals(ov_buffer const *self, char const *refstr) {
 
 bool ov_buffer_shift_length(ov_buffer *buffer, size_t length) {
 
-    if (!buffer || !buffer->start) return false;
+    if (!buffer || !buffer->start)
+        return false;
 
-    if (length == 0) return true;
+    if (length == 0)
+        return true;
 
-    if (length > buffer->length) return false;
+    if (length > buffer->length)
+        return false;
 
-    if (length == buffer->length) return ov_buffer_clear(buffer);
+    if (length == buffer->length)
+        return ov_buffer_clear(buffer);
 
     size_t size = buffer->length - length;
     uint8_t temp[size];
     memset(temp, 0, size);
 
-    if (!memcpy(temp, buffer->start + length, size)) return false;
+    if (!memcpy(temp, buffer->start + length, size))
+        return false;
 
-    if (!ov_buffer_clear(buffer)) return false;
+    if (!ov_buffer_clear(buffer))
+        return false;
 
     return ov_buffer_set(buffer, temp, size);
 }

@@ -67,19 +67,23 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
 
     uint8_t *attr[IMPL_MAX_STUN_ATTRIBUTES] = {0};
 
-    if (!loop || (socket < 0)) goto error;
+    if (!loop || (socket < 0))
+        goto error;
 
-    if (!(events & OV_EVENT_IO_IN)) goto close;
+    if (!(events & OV_EVENT_IO_IN))
+        goto close;
 
     struct sockaddr_storage sa = {0};
     socklen_t sa_len = sizeof(sa);
 
-    if (debug) ov_socket_get_data(socket, &data, NULL);
+    if (debug)
+        ov_socket_get_data(socket, &data, NULL);
 
     ssize_t in =
         recvfrom(socket, buffer, size, 0, (struct sockaddr *)&sa, &sa_len);
 
-    if (in < 0) goto done;
+    if (in < 0)
+        goto done;
 
     // ignore any non stun io
     if (!ov_stun_frame_is_valid(buffer, in)) {
@@ -114,26 +118,27 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
     // we only support a fingerprint as attribute
     for (size_t i = 0; i < IMPL_MAX_STUN_ATTRIBUTES; i++) {
 
-        if (attr[i] == NULL) break;
+        if (attr[i] == NULL)
+            break;
 
         type = ov_stun_attribute_get_type(attr[i], 4);
 
         switch (type) {
 
-            case STUN_SOFTWARE:
-            case STUN_FINGERPRINT:
-                break;
+        case STUN_SOFTWARE:
+        case STUN_FINGERPRINT:
+            break;
 
-            default:
+        default:
 
-                error = "unsupported attributes";
-                goto done;
+            error = "unsupported attributes";
+            goto done;
         }
     }
 
     // fingerprint is optinal
-    if (!ov_stun_check_fingerprint(
-            buffer, in, attr, IMPL_MAX_STUN_ATTRIBUTES, false)) {
+    if (!ov_stun_check_fingerprint(buffer, in, attr, IMPL_MAX_STUN_ATTRIBUTES,
+                                   false)) {
 
         error = "fingerprint failed";
         goto done;
@@ -158,8 +163,8 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
         goto done;
     }
 
-    if (!ov_stun_xor_mapped_address_encode(
-            buffer + 20, size - 20, buffer, NULL, &sa)) {
+    if (!ov_stun_xor_mapped_address_encode(buffer + 20, size - 20, buffer, NULL,
+                                           &sa)) {
 
         error = "set XOR mapped address failed";
         goto done;
@@ -186,11 +191,7 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
     // just to be sure, we nullify the rest of the buffer
     memset(buffer + out, 0, size - out);
 
-    send = sendto(socket,
-                  buffer,
-                  out,
-                  0,
-                  (const struct sockaddr *)&sa,
+    send = sendto(socket, buffer, out, 0, (const struct sockaddr *)&sa,
                   sizeof(struct sockaddr_storage));
 
     /*
@@ -208,10 +209,8 @@ done:
 
     } else if (debug) {
 
-        ov_log_debug("STUN send failed to %s:%i - error %s",
-                     data.host,
-                     data.port,
-                     error);
+        ov_log_debug("STUN send failed to %s:%i - error %s", data.host,
+                     data.port, error);
     }
 
     return true;
@@ -243,11 +242,8 @@ static int open_socket(ov_event_loop *loop, ov_socket_configuration config) {
         goto done;
     }
 
-    if (!loop->callback.set(loop,
-                            socket,
-                            OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE,
-                            loop,
-                            process_stun)) {
+    if (!loop->callback.set(loop, socket, OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE,
+                            loop, process_stun)) {
 
         close(socket);
         socket = -1;
@@ -259,8 +255,8 @@ done:
 
         if (-1 == socket) {
 
-            ov_log_error(
-                "STUN error open socket %s:%i\n", config.host, config.port);
+            ov_log_error("STUN error open socket %s:%i\n", config.host,
+                         config.port);
 
         } else {
 
@@ -277,7 +273,8 @@ static bool open_array_socket(void *item, void *data) {
 
     ov_json_value *val = ov_json_value_cast(item);
     ov_event_loop *loop = ov_event_loop_cast(data);
-    if (!item || !loop) return false;
+    if (!item || !loop)
+        return false;
 
     ov_socket_configuration config = ov_socket_configuration_from_json(
         val, (ov_socket_configuration){.type = UDP});
@@ -290,7 +287,8 @@ static bool open_array_socket(void *item, void *data) {
 
 static bool start_ports(ov_event_loop *loop, ov_json_value *jconfig) {
 
-    if (!loop || !jconfig) goto error;
+    if (!loop || !jconfig)
+        goto error;
 
     const ov_json_value *stun = ov_json_object_get(jconfig, OV_KEY_STUN);
 
@@ -336,14 +334,18 @@ int main(int argc, char **argv) {
 
     const char *path = ov_config_path_from_command_line(argc, argv);
 
-    if (!path) path = CONFIG_PATH;
+    if (!path)
+        path = CONFIG_PATH;
 
     config = ov_config_load(path);
-    if (!config) goto error;
+    if (!config)
+        goto error;
 
-    if (!ov_config_log_from_json(config)) goto error;
+    if (!ov_config_log_from_json(config))
+        goto error;
 
-    if (ov_json_is_true(ov_json_get(config, "/stun/debug"))) debug = true;
+    if (ov_json_is_true(ov_json_get(config, "/stun/debug")))
+        debug = true;
 
     uint32_t max_sockets =
         ov_socket_get_max_supported_runtime_sockets(UINT16_MAX);
@@ -353,9 +355,11 @@ int main(int argc, char **argv) {
     loop = ov_os_event_loop(
         (ov_event_loop_config){.max.sockets = max_sockets, .max.timers = 10});
 
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    if (!start_ports(loop, config)) goto error;
+    if (!start_ports(loop, config))
+        goto error;
 
     /*  Run event loop */
     loop->run(loop, OV_RUN_MAX);

@@ -128,8 +128,9 @@ static ov_registered_cache *cache_extend(ov_registered_cache *cache,
 
 /*----------------------------------------------------------------------------*/
 
-ov_registered_cache *ov_registered_cache_extend(
-    char const *cache_name, ov_registered_cache_config cfg) {
+ov_registered_cache *
+ov_registered_cache_extend(char const *cache_name,
+                           ov_registered_cache_config cfg) {
 
     bool registry_locked = false;
 
@@ -139,8 +140,8 @@ ov_registered_cache *ov_registered_cache_extend(
         goto error;
     }
 
-    ov_log_debug(
-        "Enabling caching for %s with %zu buckets", cache_name, cfg.capacity);
+    ov_log_debug("Enabling caching for %s with %zu buckets", cache_name,
+                 cfg.capacity);
 
     if (0 == g_registry) {
 
@@ -192,7 +193,8 @@ error:
 
 static ov_registered_cache *cache_free(ov_registered_cache *restrict self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     uint64_t start = ov_time_get_current_time_usecs();
     uint64_t current = 0;
@@ -201,9 +203,11 @@ static ov_registered_cache *cache_free(ov_registered_cache *restrict self) {
 
         current = ov_time_get_current_time_usecs();
 
-        if (0 == self->timeout_usec) continue;
+        if (0 == self->timeout_usec)
+            continue;
 
-        if (current > self->timeout_usec + start) goto error;
+        if (current > self->timeout_usec + start)
+            goto error;
     }
 
     size_t no_elements_freed = 0;
@@ -222,11 +226,8 @@ static ov_registered_cache *cache_free(ov_registered_cache *restrict self) {
     ov_log_debug(
         "Cache Calls: Put: %zu (Put elements: %zu)   Get: %zu(Got elements: "
         "%zu)   Next free at exit: %zu  Freed: %zu",
-        self->stats.put_called,
-        self->stats.elements_put,
-        self->stats.get_called,
-        self->stats.elements_got,
-        self->next_free,
+        self->stats.put_called, self->stats.elements_put,
+        self->stats.get_called, self->stats.elements_got, self->next_free,
         no_elements_freed);
 
     if (0 != self->elements) {
@@ -245,8 +246,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool free_hashtable_entry(void const *key,
-                                 void const *value,
+static bool free_hashtable_entry(void const *key, void const *value,
                                  void *arg) {
 
     UNUSED(key);
@@ -262,7 +262,8 @@ static bool free_hashtable_entry(void const *key,
 
 void ov_registered_cache_free_all() {
 
-    if (0 == g_registry) return;
+    if (0 == g_registry)
+        return;
 
     if (!ov_thread_lock_try_lock(&g_lock)) {
 
@@ -416,9 +417,11 @@ static bool cache_to_json(void const *key, void const *value, void *void_arg) {
 
     struct cache_to_json_arg *arg = void_arg;
 
-    if ((0 == arg) || (0 == arg->target)) goto error;
+    if ((0 == arg) || (0 == arg->target))
+        goto error;
 
-    if (0 == value) goto finish;
+    if (0 == value)
+        goto finish;
 
     ov_registered_cache *cache = (ov_registered_cache *)value;
 
@@ -430,8 +433,8 @@ static bool cache_to_json(void const *key, void const *value, void *void_arg) {
         goto error;
     }
 
-    ov_json_object_set(
-        jcache, OV_KEY_CAPACITY, ov_json_number(cache->capacity));
+    ov_json_object_set(jcache, OV_KEY_CAPACITY,
+                       ov_json_number(cache->capacity));
 
     ov_json_object_set(jcache, OV_KEY_IN_USE, ov_json_number(cache->next_free));
 
@@ -498,8 +501,10 @@ static bool enable_caching_for(ov_registered_cache_sizes *cfg,
                                void (*enable_caching)(size_t),
                                char const *cache_name) {
 
-    if (0 == enable_caching) goto error;
-    if (0 == cache_name) goto error;
+    if (0 == enable_caching)
+        goto error;
+    if (0 == cache_name)
+        goto error;
 
     size_t size = ov_registered_cache_size_for(cfg, cache_name);
 
@@ -525,8 +530,8 @@ bool ov_registered_cache_sizes_configure(ov_registered_cache_sizes *cfg) {
     ok = ok &
          enable_caching_for(cfg, ov_linked_list_enable_caching, OV_KEY_LISTS);
 
-    ok = ok & enable_caching_for(
-                  cfg, ov_rtp_frame_enable_caching, OV_KEY_RTP_FRAMES);
+    ok = ok & enable_caching_for(cfg, ov_rtp_frame_enable_caching,
+                                 OV_KEY_RTP_FRAMES);
 
     return ok;
 }
@@ -566,8 +571,9 @@ void ov_registered_cache_set_element_checker(ov_registered_cache *self,
 }
 /*----------------------------------------------------------------------------*/
 
-ov_registered_cache *ov_registered_cache_extend(
-    char const *cache_name, ov_registered_cache_config cfg) {
+ov_registered_cache *
+ov_registered_cache_extend(char const *cache_name,
+                           ov_registered_cache_config cfg) {
 
     UNUSED(cache_name);
     UNUSED(cfg);
@@ -632,8 +638,7 @@ static bool add_cache_size(void const *vkey, void *value, void *varg) {
 
         char *cval = ov_json_value_to_string(value);
         ov_log_error("Malformed config: Expected number for key %s, got %s",
-                     key,
-                     cval == 0 ? "0" : cval);
+                     key, cval == 0 ? "0" : cval);
         free(cval);
 
         goto error;
@@ -663,10 +668,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_registered_cache_sizes *ov_registered_cache_sizes_free(
-    ov_registered_cache_sizes *self) {
+ov_registered_cache_sizes *
+ov_registered_cache_sizes_free(ov_registered_cache_sizes *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     self->sizes = ov_hashtable_free(self->sizes);
     OV_ASSERT(0 == self->sizes);
@@ -681,8 +687,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_registered_cache_sizes *ov_registered_cache_sizes_from_json(
-    ov_json_value const *jval) {
+ov_registered_cache_sizes *
+ov_registered_cache_sizes_from_json(ov_json_value const *jval) {
 
     ov_registered_cache_sizes *cfg = 0;
 

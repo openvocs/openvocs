@@ -41,8 +41,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_parse(char const *str,
-                        ov_value *ref,
+static bool check_parse(char const *str, ov_value *ref,
                         char const *ref_remainder) {
 
     bool success_p = false;
@@ -70,20 +69,18 @@ static bool check_parse(char const *str,
 
     if ((0 == ref_remainder) && (0 != remainder)) {
 
-        testrun_log_error(
-            "Remainders don't match: Expected null pointer, got "
-            "'%s'",
-            remainder);
+        testrun_log_error("Remainders don't match: Expected null pointer, got "
+                          "'%s'",
+                          remainder);
 
         goto error;
     }
 
     if ((0 != ref_remainder) && (0 == remainder)) {
 
-        testrun_log_error(
-            "Remainders don't match: Expected '%s', got null "
-            "pointer",
-            ref_remainder);
+        testrun_log_error("Remainders don't match: Expected '%s', got null "
+                          "pointer",
+                          ref_remainder);
         goto error;
     }
 
@@ -91,8 +88,7 @@ static bool check_parse(char const *str,
         (0 != strcmp(ref_remainder, remainder))) {
 
         testrun_log_error("Remainders don't match- expected '%s' - got '%s'\n",
-                          ref_remainder,
-                          remainder);
+                          ref_remainder, remainder);
 
         goto error;
     }
@@ -216,29 +212,29 @@ static int check_parse_number() {
 
         switch (i) {
 
-            case 1:
-                testrun(1 == ov_value_get_number(val));
-                break;
+        case 1:
+            testrun(1 == ov_value_get_number(val));
+            break;
 
-            case 2:
-                testrun(12 == ov_value_get_number(val));
-                break;
+        case 2:
+            testrun(12 == ov_value_get_number(val));
+            break;
 
-            case 3:
-                testrun(123 == ov_value_get_number(val));
-                break;
+        case 3:
+            testrun(123 == ov_value_get_number(val));
+            break;
 
-            case 4:
-                testrun(1234 == ov_value_get_number(val));
-                break;
+        case 4:
+            testrun(1234 == ov_value_get_number(val));
+            break;
 
-            case 5:
-                testrun(12345 == ov_value_get_number(val));
-                break;
+        case 5:
+            testrun(12345 == ov_value_get_number(val));
+            break;
 
-            case 6:
-                testrun(123456 == ov_value_get_number(val));
-                break;
+        case 6:
+            testrun(123456 == ov_value_get_number(val));
+            break;
         }
 
         val = ov_value_free(val);
@@ -864,22 +860,19 @@ static int test_ov_value_parse_json() {
 
     testrun(check_parse("\"vali\"", ov_value_string("vali"), ""));
     testrun(check_parse("    \"vali\"", ov_value_string("vali"), ""));
-    testrun(check_parse(
-        "    \"vali\" \"Baldr\"", ov_value_string("vali"), " \"Baldr\""));
+    testrun(check_parse("    \"vali\" \"Baldr\"", ov_value_string("vali"),
+                        " \"Baldr\""));
 
     testrun(check_parse("    \"one\" ", ov_value_string("one"), " "));
 
     testrun(check_parse("  \t\r\n  \"all whitespaces\"\t \r\n",
-                        ov_value_string("all whitespaces"),
-                        "\t \r\n"));
+                        ov_value_string("all whitespaces"), "\t \r\n"));
 
     testrun(check_parse(" \"some \\\\ slash escape\" ",
-                        ov_value_string("some \\ slash escape"),
-                        " "));
+                        ov_value_string("some \\ slash escape"), " "));
 
     testrun(check_parse("    \"vali \\\"the avenger\\\"\" \"Baldr\"",
-                        ov_value_string("vali \"the avenger\""),
-                        " \"Baldr\""));
+                        ov_value_string("vali \"the avenger\""), " \"Baldr\""));
 
     char const *unterminated_string = "    \"vali \\\"the avenger \\\\ Baldr";
 
@@ -909,8 +902,8 @@ static int test_ov_value_parse_json() {
     testrun(check_parse("+13.37", ov_value_number(13.37), ""));
     testrun(check_parse("-13.37", ov_value_number(-13.37), ""));
     testrun(check_parse("\t    \t-13.37", ov_value_number(-13.37), ""));
-    testrun(check_parse(
-        " \t-13.37\t\"vali\"", ov_value_number(-13.37), "\t\"vali\""));
+    testrun(check_parse(" \t-13.37\t\"vali\"", ov_value_number(-13.37),
+                        "\t\"vali\""));
 
     // Lists
 
@@ -921,21 +914,19 @@ static int test_ov_value_parse_json() {
                         ov_value_list(ov_value_number(1916), ov_value_null()),
                         "\n"));
 
-    testrun(
-        check_parse(" \n\n\n   [\"\\\"Naftagn\\\"\", \"Cthulhu\", 12.112] "
-                    ", \"",
-                    ov_value_list(ov_value_string("\"Naftagn\""),
-                                  ov_value_string("Cthulhu"),
-                                  ov_value_number(12.112)),
-                    " , \""));
+    testrun(check_parse(" \n\n\n   [\"\\\"Naftagn\\\"\", \"Cthulhu\", 12.112] "
+                        ", \"",
+                        ov_value_list(ov_value_string("\"Naftagn\""),
+                                      ov_value_string("Cthulhu"),
+                                      ov_value_number(12.112)),
+                        " , \""));
 
-    testrun(check_parse(
-        " \n\n\n   [\"\\\"Naftagn\\\"\", [\"Cthulhu\", "
-        "12.112]] , \"",
-        ov_value_list(
-            ov_value_string("\"Naftagn\""),
-            ov_value_list(ov_value_string("Cthulhu"), ov_value_number(12.112))),
-        " , \""));
+    testrun(check_parse(" \n\n\n   [\"\\\"Naftagn\\\"\", [\"Cthulhu\", "
+                        "12.112]] , \"",
+                        ov_value_list(ov_value_string("\"Naftagn\""),
+                                      ov_value_list(ov_value_string("Cthulhu"),
+                                                    ov_value_number(12.112))),
+                        " , \""));
 
     testrun(check_parse(
         " \n\n\n   [[\"Naftagn\"], [\"Cthulhu\", "
@@ -947,25 +938,18 @@ static int test_ov_value_parse_json() {
                           ov_value_number(12.112))),
         " , \""));
 
-    testrun(check_parse(
-        "{\"key1\" : [1, 2]}blablablubb",
-        OBJECT(0,
-               PAIR("key1",
-                    ov_value_list(ov_value_number(1), ov_value_number(2)))),
-        "blablablubb"));
+    testrun(
+        check_parse("{\"key1\" : [1, 2]}blablablubb",
+                    OBJECT(0, PAIR("key1", ov_value_list(ov_value_number(1),
+                                                         ov_value_number(2)))),
+                    "blablablubb"));
 
     return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_value_json",
-            check_parse_null,
-            check_parse_true,
-            check_parse_false,
-            check_parse_number,
-            check_unescape_json,
-            check_parse_string,
-            check_parse_list,
-            check_parse_object,
+OV_TEST_RUN("ov_value_json", check_parse_null, check_parse_true,
+            check_parse_false, check_parse_number, check_unescape_json,
+            check_parse_string, check_parse_list, check_parse_object,
             test_ov_value_parse_json);

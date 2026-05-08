@@ -40,14 +40,10 @@
 #define COPYRIGHT_TAG_OWNER "[COPYRIGHT_OWNER]"
 #define COPYRIGHT_TAG_PROGRAM "[PROGRAM_NAME]"
 
-char *ov_copyright_generate_header_string(const char *prefix,
-                                          const char *intro,
-                                          const char *year,
-                                          const char *owner,
-                                          const char *text,
-                                          const char *endnote,
-                                          const char *suffix,
-                                          uint16_t indent,
+char *ov_copyright_generate_header_string(const char *prefix, const char *intro,
+                                          const char *year, const char *owner,
+                                          const char *text, const char *endnote,
+                                          const char *suffix, uint16_t indent,
                                           bool spaces) {
 
     size_t size_startline = 5000;
@@ -67,20 +63,25 @@ char *ov_copyright_generate_header_string(const char *prefix,
      *      SET DEFAULTS.
      */
 
-    if (!intro) intro = COPYRIGHT_DEFAULT_INTRO;
+    if (!intro)
+        intro = COPYRIGHT_DEFAULT_INTRO;
 
-    if (!year) year = COPYRIGHT_TAG_YEAR;
+    if (!year)
+        year = COPYRIGHT_TAG_YEAR;
 
-    if (!owner) owner = COPYRIGHT_TAG_OWNER;
+    if (!owner)
+        owner = COPYRIGHT_TAG_OWNER;
 
-    if (prefix) px_len = strlen(prefix);
+    if (prefix)
+        px_len = strlen(prefix);
 
-    if (suffix) sx_len = strlen(suffix);
+    if (suffix)
+        sx_len = strlen(suffix);
 
     if (text) {
 
-        if (!snprintf(
-                startline, size_startline, "%s %s %s\n\n", intro, year, owner))
+        if (!snprintf(startline, size_startline, "%s %s %s\n\n", intro, year,
+                      owner))
             goto error;
 
         str_len = strlen(startline);
@@ -88,22 +89,19 @@ char *ov_copyright_generate_header_string(const char *prefix,
 
         size = str_len + txt_len + 2;
         result = calloc(size, sizeof(char));
-        if (!result) goto error;
+        if (!result)
+            goto error;
 
-        if (!snprintf(result, size, "%s%s", startline, text)) goto error;
+        if (!snprintf(result, size, "%s%s", startline, text))
+            goto error;
 
         string = result;
         result = NULL;
 
     } else {
 
-        if (!snprintf(startline,
-                      size_startline,
-                      "%s %s %s\n%s",
-                      intro,
-                      year,
-                      owner,
-                      COPYRIGHT_DEFAULT_TEXT))
+        if (!snprintf(startline, size_startline, "%s %s %s\n%s", intro, year,
+                      owner, COPYRIGHT_DEFAULT_TEXT))
             goto error;
 
         string = strdup(startline);
@@ -116,7 +114,8 @@ char *ov_copyright_generate_header_string(const char *prefix,
         size = str_len + txt_len + 3;
 
         result = calloc(size, sizeof(char));
-        if (!result) goto error;
+        if (!result)
+            goto error;
 
         if (!snprintf(result, size, "%s\n%s\n", string, endnote)) {
             free(string);
@@ -151,7 +150,8 @@ char *ov_copyright_generate_header_string(const char *prefix,
             ov_source_file_insert_at_each_line(string, indent_string, NULL);
         free(string);
 
-        if (!result) goto error;
+        if (!result)
+            goto error;
 
         string = result;
         result = NULL;
@@ -162,7 +162,8 @@ char *ov_copyright_generate_header_string(const char *prefix,
         str_len = strlen(string);
         size = str_len + px_len + sx_len + 1;
         result = calloc(size, sizeof(char));
-        if (!result) goto error;
+        if (!result)
+            goto error;
 
         char *ptr = result;
         if (prefix) {
@@ -184,21 +185,25 @@ char *ov_copyright_generate_header_string(const char *prefix,
         ptr += str_len;
 
         if (suffix)
-            if (!strncat(ptr, suffix, sx_len)) goto error;
+            if (!strncat(ptr, suffix, sx_len))
+                goto error;
 
         string = result;
         result = NULL;
     }
 
-    if (!result) return string;
+    if (!result)
+        return string;
 
     free(string);
     return result;
 
 error:
-    if (string) free(string);
+    if (string)
+        free(string);
 
-    if (result) free(result);
+    if (result)
+        free(result);
     return NULL;
 }
 
@@ -212,14 +217,10 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-char *ov_copyright_generate_reserved(const char *prefix,
-                                     const char *intro,
-                                     const char *year,
-                                     const char *owner,
-                                     const char *endnote,
-                                     const char *suffix,
-                                     uint16_t indent,
-                                     bool spaces,
+char *ov_copyright_generate_reserved(const char *prefix, const char *intro,
+                                     const char *year, const char *owner,
+                                     const char *endnote, const char *suffix,
+                                     uint16_t indent, bool spaces,
                                      void *custom) {
 
     if (custom) { /* IGNORED */
@@ -227,8 +228,8 @@ char *ov_copyright_generate_reserved(const char *prefix,
 
     char *text = COPYRIGHT_DEFAULT_TEXT;
 
-    return ov_copyright_generate_header_string(
-        prefix, intro, year, owner, text, endnote, suffix, indent, spaces);
+    return ov_copyright_generate_header_string(prefix, intro, year, owner, text,
+                                               endnote, suffix, indent, spaces);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -245,40 +246,34 @@ struct ov_copyright ov_copyright_reserved() {
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_copyright_generate_apache_version_2(const char *prefix,
-                                             const char *intro,
-                                             const char *year,
-                                             const char *owner,
-                                             const char *endnote,
-                                             const char *suffix,
-                                             uint16_t indent,
-                                             bool spaces,
-                                             void *custom) {
+char *ov_copyright_generate_apache_version_2(
+    const char *prefix, const char *intro, const char *year, const char *owner,
+    const char *endnote, const char *suffix, uint16_t indent, bool spaces,
+    void *custom) {
 
     if (custom) { /* IGNORED */
     };
 
-    char *text =
-        "Licensed under the Apache License, Version 2.0 (the "
-        "\"License\");\n"
-        "you may not use this file except in compliance with the "
-        "License.\n"
-        "You may obtain a copy of the License at\n"
-        "\n"
-        "        http://www.apache.org/licenses/LICENSE-2.0\n"
-        "\n"
-        "Unless required by applicable law or agreed to in "
-        "writing, software\n"
-        "distributed under the License is distributed on an \"AS "
-        "IS\" BASIS,\n"
-        "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either "
-        "express or implied.\n"
-        "See the License for the specific language governing "
-        "permissions and\n"
-        "limitations under the License.\n";
+    char *text = "Licensed under the Apache License, Version 2.0 (the "
+                 "\"License\");\n"
+                 "you may not use this file except in compliance with the "
+                 "License.\n"
+                 "You may obtain a copy of the License at\n"
+                 "\n"
+                 "        http://www.apache.org/licenses/LICENSE-2.0\n"
+                 "\n"
+                 "Unless required by applicable law or agreed to in "
+                 "writing, software\n"
+                 "distributed under the License is distributed on an \"AS "
+                 "IS\" BASIS,\n"
+                 "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either "
+                 "express or implied.\n"
+                 "See the License for the specific language governing "
+                 "permissions and\n"
+                 "limitations under the License.\n";
 
-    return ov_copyright_generate_header_string(
-        prefix, intro, year, owner, text, endnote, suffix, indent, spaces);
+    return ov_copyright_generate_header_string(prefix, intro, year, owner, text,
+                                               endnote, suffix, indent, spaces);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -298,8 +293,7 @@ char *ov_copyright_apache_version_2_full_text(void *custom) {
      *      copied 2017-12-06
      */
 
-    if (snprintf(buffer,
-                 size,
+    if (snprintf(buffer, size,
                  "                              Apache License\n"
                  "                        Version 2.0, January 2004\n"
                  "                     http://www.apache.org/licenses/\n"
@@ -646,13 +640,16 @@ char *ov_copyright_apache_version_2_full_text(void *custom) {
         goto error;
 
     result = calloc(strlen(buffer) + 1, sizeof(char));
-    if (!result) goto error;
+    if (!result)
+        goto error;
 
-    if (!strcat(result, buffer)) goto error;
+    if (!strcat(result, buffer))
+        goto error;
 
     return result;
 error:
-    if (result) free(result);
+    if (result)
+        free(result);
 
     return NULL;
 }
@@ -671,63 +668,58 @@ struct ov_copyright ov_copyright_apache_version_2() {
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_copyright_generate_bsd_3clause(const char *prefix,
-                                        const char *intro,
-                                        const char *year,
-                                        const char *owner,
-                                        const char *endnote,
-                                        const char *suffix,
-                                        uint16_t indent,
-                                        bool spaces,
+char *ov_copyright_generate_bsd_3clause(const char *prefix, const char *intro,
+                                        const char *year, const char *owner,
+                                        const char *endnote, const char *suffix,
+                                        uint16_t indent, bool spaces,
                                         void *custom) {
 
     if (custom) { /* IGNORED */
     };
 
-    char *text =
-        "Redistribution and use in source and binary forms, with "
-        "or without\n"
-        "modification, are permitted provided that the following "
-        "conditions are met:\n"
-        "    * Redistributions of source code must retain the "
-        "above copyright\n"
-        "      notice, this list of conditions and the following "
-        "disclaimer.\n"
-        "    * Redistributions in binary form must reproduce the "
-        "above copyright\n"
-        "      notice, this list of conditions and the following "
-        "disclaimer in the\n"
-        "      documentation and/or other materials provided with "
-        "the distribution.\n"
-        "    * Neither the name of the copyright holder nor the\n"
-        "      names of its contributors may be used to endorse "
-        "or promote products\n"
-        "      derived from this software without specific prior "
-        "written permission.\n"
-        "\n"
-        "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND "
-        "CONTRIBUTORS \"AS IS\" AND\n"
-        "ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT "
-        "LIMITED TO, THE IMPLIED\n"
-        "WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A "
-        "PARTICULAR PURPOSE ARE\n"
-        "DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE "
-        "LIABLE FOR ANY\n"
-        "DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR "
-        "CONSEQUENTIAL DAMAGES\n"
-        "(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF "
-        "SUBSTITUTE GOODS OR SERVICES;\n"
-        "LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) "
-        "HOWEVER CAUSED AND\n"
-        "ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT "
-        "LIABILITY, OR TORT\n"
-        "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY "
-        "OUT OF THE USE OF THIS\n"
-        "SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH "
-        "DAMAGE.\n";
+    char *text = "Redistribution and use in source and binary forms, with "
+                 "or without\n"
+                 "modification, are permitted provided that the following "
+                 "conditions are met:\n"
+                 "    * Redistributions of source code must retain the "
+                 "above copyright\n"
+                 "      notice, this list of conditions and the following "
+                 "disclaimer.\n"
+                 "    * Redistributions in binary form must reproduce the "
+                 "above copyright\n"
+                 "      notice, this list of conditions and the following "
+                 "disclaimer in the\n"
+                 "      documentation and/or other materials provided with "
+                 "the distribution.\n"
+                 "    * Neither the name of the copyright holder nor the\n"
+                 "      names of its contributors may be used to endorse "
+                 "or promote products\n"
+                 "      derived from this software without specific prior "
+                 "written permission.\n"
+                 "\n"
+                 "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND "
+                 "CONTRIBUTORS \"AS IS\" AND\n"
+                 "ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT "
+                 "LIMITED TO, THE IMPLIED\n"
+                 "WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A "
+                 "PARTICULAR PURPOSE ARE\n"
+                 "DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE "
+                 "LIABLE FOR ANY\n"
+                 "DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR "
+                 "CONSEQUENTIAL DAMAGES\n"
+                 "(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF "
+                 "SUBSTITUTE GOODS OR SERVICES;\n"
+                 "LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) "
+                 "HOWEVER CAUSED AND\n"
+                 "ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT "
+                 "LIABILITY, OR TORT\n"
+                 "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY "
+                 "OUT OF THE USE OF THIS\n"
+                 "SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH "
+                 "DAMAGE.\n";
 
-    return ov_copyright_generate_header_string(
-        prefix, intro, year, owner, text, endnote, suffix, indent, spaces);
+    return ov_copyright_generate_header_string(prefix, intro, year, owner, text,
+                                               endnote, suffix, indent, spaces);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -744,58 +736,53 @@ struct ov_copyright ov_copyright_bsd_3clause() {
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_copyright_generate_bsd_2clause(const char *prefix,
-                                        const char *intro,
-                                        const char *year,
-                                        const char *owner,
-                                        const char *endnote,
-                                        const char *suffix,
-                                        uint16_t indent,
-                                        bool spaces,
+char *ov_copyright_generate_bsd_2clause(const char *prefix, const char *intro,
+                                        const char *year, const char *owner,
+                                        const char *endnote, const char *suffix,
+                                        uint16_t indent, bool spaces,
                                         void *custom) {
 
     if (custom) { /* IGNORED */
     };
 
-    char *text =
-        "Redistribution and use in source and binary forms, with "
-        "or without\n"
-        "modification, are permitted provided that the following "
-        "conditions are met:\n"
-        "\n"
-        "1. Redistributions of source code must retain the above "
-        "copyright notice, this\n"
-        "   list of conditions and the following disclaimer.\n"
-        "2. Redistributions in binary form must reproduce the "
-        "above copyright notice,\n"
-        "   this list of conditions and the following disclaimer "
-        "in the documentation\n"
-        "   and/or other materials provided with the "
-        "distribution.\n"
-        "\n"
-        "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND "
-        "CONTRIBUTORS \"AS IS\" AND\n"
-        "ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT "
-        "LIMITED TO, THE IMPLIED\n"
-        "WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A "
-        "PARTICULAR PURPOSE ARE\n"
-        "DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR "
-        "CONTRIBUTORS BE LIABLE FOR\n"
-        "ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR "
-        "CONSEQUENTIAL DAMAGES\n"
-        "(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF "
-        "SUBSTITUTE GOODS OR SERVICES;\n"
-        "LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) "
-        "HOWEVER CAUSED AND\n"
-        "ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT "
-        "LIABILITY, OR TORT\n"
-        "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY "
-        "OUT OF THE USE OF THIS\n"
-        "SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH "
-        "DAMAGE.\n";
+    char *text = "Redistribution and use in source and binary forms, with "
+                 "or without\n"
+                 "modification, are permitted provided that the following "
+                 "conditions are met:\n"
+                 "\n"
+                 "1. Redistributions of source code must retain the above "
+                 "copyright notice, this\n"
+                 "   list of conditions and the following disclaimer.\n"
+                 "2. Redistributions in binary form must reproduce the "
+                 "above copyright notice,\n"
+                 "   this list of conditions and the following disclaimer "
+                 "in the documentation\n"
+                 "   and/or other materials provided with the "
+                 "distribution.\n"
+                 "\n"
+                 "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND "
+                 "CONTRIBUTORS \"AS IS\" AND\n"
+                 "ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT "
+                 "LIMITED TO, THE IMPLIED\n"
+                 "WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A "
+                 "PARTICULAR PURPOSE ARE\n"
+                 "DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR "
+                 "CONTRIBUTORS BE LIABLE FOR\n"
+                 "ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR "
+                 "CONSEQUENTIAL DAMAGES\n"
+                 "(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF "
+                 "SUBSTITUTE GOODS OR SERVICES;\n"
+                 "LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) "
+                 "HOWEVER CAUSED AND\n"
+                 "ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT "
+                 "LIABILITY, OR TORT\n"
+                 "(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY "
+                 "OUT OF THE USE OF THIS\n"
+                 "SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH "
+                 "DAMAGE.\n";
 
-    return ov_copyright_generate_header_string(
-        prefix, intro, year, owner, text, endnote, suffix, indent, spaces);
+    return ov_copyright_generate_header_string(prefix, intro, year, owner, text,
+                                               endnote, suffix, indent, spaces);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -812,53 +799,47 @@ struct ov_copyright ov_copyright_bsd_2clause() {
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_copyright_generate_mit(const char *prefix,
-                                const char *intro,
-                                const char *year,
-                                const char *owner,
-                                const char *endnote,
-                                const char *suffix,
-                                uint16_t indent,
-                                bool spaces,
-                                void *custom) {
+char *ov_copyright_generate_mit(const char *prefix, const char *intro,
+                                const char *year, const char *owner,
+                                const char *endnote, const char *suffix,
+                                uint16_t indent, bool spaces, void *custom) {
 
     if (custom) { /* IGNORED */
     };
 
-    char *text =
-        "Permission is hereby granted, free of charge, to any "
-        "person obtaining a copy\n"
-        "of this software and associated documentation files (the "
-        "\"Software\"), to deal\n"
-        "in the Software without restriction, including without "
-        "limitation the rights\n"
-        "to use, copy, modify, merge, publish, distribute, "
-        "sublicense, and/or sell\n"
-        "copies of the Software, and to permit persons to whom "
-        "the Software is\n"
-        "furnished to do so, subject to the following "
-        "conditions:\n"
-        "\n"
-        "The above copyright notice and this permission notice "
-        "shall be included in all\n"
-        "copies or substantial portions of the Software.\n"
-        "\n"
-        "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF "
-        "ANY KIND, EXPRESS OR\n"
-        "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF "
-        "MERCHANTABILITY,\n"
-        "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN "
-        "NO EVENT SHALL THE\n"
-        "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, "
-        "DAMAGES OR OTHER\n"
-        "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR "
-        "OTHERWISE, ARISING FROM,\n"
-        "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR "
-        "OTHER DEALINGS IN THE\n"
-        "SOFTWARE.\n";
+    char *text = "Permission is hereby granted, free of charge, to any "
+                 "person obtaining a copy\n"
+                 "of this software and associated documentation files (the "
+                 "\"Software\"), to deal\n"
+                 "in the Software without restriction, including without "
+                 "limitation the rights\n"
+                 "to use, copy, modify, merge, publish, distribute, "
+                 "sublicense, and/or sell\n"
+                 "copies of the Software, and to permit persons to whom "
+                 "the Software is\n"
+                 "furnished to do so, subject to the following "
+                 "conditions:\n"
+                 "\n"
+                 "The above copyright notice and this permission notice "
+                 "shall be included in all\n"
+                 "copies or substantial portions of the Software.\n"
+                 "\n"
+                 "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF "
+                 "ANY KIND, EXPRESS OR\n"
+                 "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF "
+                 "MERCHANTABILITY,\n"
+                 "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN "
+                 "NO EVENT SHALL THE\n"
+                 "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, "
+                 "DAMAGES OR OTHER\n"
+                 "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR "
+                 "OTHERWISE, ARISING FROM,\n"
+                 "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR "
+                 "OTHER DEALINGS IN THE\n"
+                 "SOFTWARE.\n";
 
-    return ov_copyright_generate_header_string(
-        prefix, intro, year, owner, text, endnote, suffix, indent, spaces);
+    return ov_copyright_generate_header_string(prefix, intro, year, owner, text,
+                                               endnote, suffix, indent, spaces);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -885,8 +866,7 @@ char *ov_copyright_gpl_v3_general_licence() {
      *      copied 2017-12-06
      */
 
-    if (snprintf(buffer,
-                 size,
+    if (snprintf(buffer, size,
                  "            GNU GENERAL PUBLIC LICENSE\n"
                  "               Version 3, 29 June 2007\n"
                  "\n"
@@ -2045,8 +2025,7 @@ char *ov_copyright_gpl_v3_lesser_licence() {
      *      copied 2017-12-06
      */
 
-    if (snprintf(buffer,
-                 size,
+    if (snprintf(buffer, size,
                  "                   GNU LESSER GENERAL PUBLIC LICENSE\n"
                  "                       Version 3, 29 June 2007\n"
                  "\n"
@@ -2331,8 +2310,7 @@ char *ov_copyright_gpl_v3_affero_licence() {
      *      copied 2017-12-06
      */
 
-    if (snprintf(buffer,
-                 size,
+    if (snprintf(buffer, size,
                  "                    GNU AFFERO GENERAL PUBLIC LICENSE\n"
                  "                       Version 3, 19 November 2007\n"
                  "\n"
@@ -3463,20 +3441,21 @@ error:
 
 char *ov_copyright_gpl_version_3_full_text(void *custom) {
 
-    if (!custom) return NULL;
+    if (!custom)
+        return NULL;
 
     struct ov_copyright_gpl_v3_parameter *config = custom;
 
     switch (config->type) {
-        case LESSER:
-            return ov_copyright_gpl_v3_lesser_licence();
-            break;
-        case AFFERO:
-            return ov_copyright_gpl_v3_affero_licence();
-            break;
-        case GENERAL:
-            return ov_copyright_gpl_v3_general_licence();
-            break;
+    case LESSER:
+        return ov_copyright_gpl_v3_lesser_licence();
+        break;
+    case AFFERO:
+        return ov_copyright_gpl_v3_affero_licence();
+        break;
+    case GENERAL:
+        return ov_copyright_gpl_v3_general_licence();
+        break;
     }
 
     return NULL;
@@ -3484,44 +3463,41 @@ char *ov_copyright_gpl_version_3_full_text(void *custom) {
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_copyright_generate_gpl_version_3(const char *prefix,
-                                          const char *intro,
-                                          const char *year,
-                                          const char *owner,
+char *ov_copyright_generate_gpl_version_3(const char *prefix, const char *intro,
+                                          const char *year, const char *owner,
                                           const char *endnote,
-                                          const char *suffix,
-                                          uint16_t indent,
-                                          bool spaces,
-                                          void *custom) {
+                                          const char *suffix, uint16_t indent,
+                                          bool spaces, void *custom) {
 
-    if (!custom) return NULL;
+    if (!custom)
+        return NULL;
 
     struct ov_copyright_gpl_v3_parameter *config = custom;
 
     char *variant = NULL;
     const char *program_name = config->program_name;
 
-    if (!program_name) program_name = COPYRIGHT_TAG_PROGRAM;
+    if (!program_name)
+        program_name = COPYRIGHT_TAG_PROGRAM;
 
     switch (config->type) {
-        case LESSER:
-            variant = "Lesser General";
-            break;
-        case AFFERO:
-            variant = "Affero General";
-            break;
-        case GENERAL:
-            variant = "General";
-            break;
-        default:
-            goto error;
-            break;
+    case LESSER:
+        variant = "Lesser General";
+        break;
+    case AFFERO:
+        variant = "Affero General";
+        break;
+    case GENERAL:
+        variant = "General";
+        break;
+    default:
+        goto error;
+        break;
     }
 
     char text[2000] = {0};
 
-    if (!snprintf(text,
-                  2000,
+    if (!snprintf(text, 2000,
                   "This file is part of %s\n"
                   "\n"
                   "%s is free software: you can redistribute it and/or "
@@ -3543,17 +3519,12 @@ char *ov_copyright_generate_gpl_version_3(const char *prefix,
                   "License\n"
                   "along with %s. If not, see "
                   "<http://www.gnu.org/licenses/>.\n",
-                  program_name,
-                  program_name,
-                  variant,
-                  program_name,
-                  variant,
-                  variant,
-                  program_name))
+                  program_name, program_name, variant, program_name, variant,
+                  variant, program_name))
         goto error;
 
-    return ov_copyright_generate_header_string(
-        prefix, intro, year, owner, text, endnote, suffix, indent, spaces);
+    return ov_copyright_generate_header_string(prefix, intro, year, owner, text,
+                                               endnote, suffix, indent, spaces);
 error:
     return NULL;
 }

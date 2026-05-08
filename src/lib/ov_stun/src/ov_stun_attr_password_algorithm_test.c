@@ -79,7 +79,8 @@ int test_ov_stun_attr_password_algorithm_encoding_length() {
     for (size_t i = 1; i < 1000; i++) {
 
         pad = i % 4;
-        if (pad != 0) pad = 4 - pad;
+        if (pad != 0)
+            pad = 4 - pad;
 
         testrun(8 + i + pad ==
                 ov_stun_attr_password_algorithm_encoding_length(i));
@@ -104,12 +105,12 @@ int test_ov_stun_attr_password_algorithm_encode() {
         !ov_stun_attr_password_algorithm_encode(NULL, size, NULL, 1, 8, nonce));
     testrun(
         !ov_stun_attr_password_algorithm_encode(buffer, 0, NULL, 1, 8, nonce));
-    testrun(!ov_stun_attr_password_algorithm_encode(
-        buffer, size, NULL, 1, 8, NULL));
+    testrun(!ov_stun_attr_password_algorithm_encode(buffer, size, NULL, 1, 8,
+                                                    NULL));
 
     memset(buf, 0, size);
-    testrun(ov_stun_attr_password_algorithm_encode(
-        buffer, size, &next, 1, 8, nonce));
+    testrun(ov_stun_attr_password_algorithm_encode(buffer, size, &next, 1, 8,
+                                                   nonce));
     testrun(STUN_ATTR_PASSWORD_ALGORITHM ==
             ov_stun_attribute_get_type(buffer, size));
     testrun(12 == ov_stun_attribute_get_length(buffer, size));
@@ -133,24 +134,24 @@ int test_ov_ov_stun_attr_password_algorithm_decode() {
     uint16_t out = 0;
 
     uint8_t *nonce = (uint8_t *)"test1234";
-    testrun(ov_stun_attr_password_algorithm_encode(
-        buffer, size, NULL, 1, 8, nonce));
+    testrun(ov_stun_attr_password_algorithm_encode(buffer, size, NULL, 1, 8,
+                                                   nonce));
 
     testrun(
         !ov_stun_attr_password_algorithm_decode(NULL, size, NULL, NULL, NULL));
-    testrun(!ov_stun_attr_password_algorithm_decode(
-        NULL, size, &algo, &out, &para));
+    testrun(!ov_stun_attr_password_algorithm_decode(NULL, size, &algo, &out,
+                                                    &para));
     testrun(
         !ov_stun_attr_password_algorithm_decode(buffer, 0, &algo, &out, &para));
-    testrun(!ov_stun_attr_password_algorithm_decode(
-        buffer, size, NULL, &out, &para));
-    testrun(!ov_stun_attr_password_algorithm_decode(
-        buffer, size, &algo, NULL, &para));
-    testrun(!ov_stun_attr_password_algorithm_decode(
-        buffer, size, &algo, &out, NULL));
+    testrun(!ov_stun_attr_password_algorithm_decode(buffer, size, NULL, &out,
+                                                    &para));
+    testrun(!ov_stun_attr_password_algorithm_decode(buffer, size, &algo, NULL,
+                                                    &para));
+    testrun(!ov_stun_attr_password_algorithm_decode(buffer, size, &algo, &out,
+                                                    NULL));
 
-    testrun(ov_stun_attr_password_algorithm_decode(
-        buffer, size, &algo, &out, &para));
+    testrun(ov_stun_attr_password_algorithm_decode(buffer, size, &algo, &out,
+                                                   &para));
     testrun(algo == 1);
     testrun(out == 8);
     testrun(0 == memcmp(para, nonce, out));

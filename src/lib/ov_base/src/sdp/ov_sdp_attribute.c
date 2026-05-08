@@ -40,7 +40,8 @@
 
 bool ov_sdp_attribute_is_set(const ov_sdp_list *attributes, const char *name) {
 
-    if (!attributes || !name) goto error;
+    if (!attributes || !name)
+        goto error;
 
     size_t len = strlen(name);
 
@@ -54,7 +55,8 @@ bool ov_sdp_attribute_is_set(const ov_sdp_list *attributes, const char *name) {
         }
 
         if (strlen(attr->key) == len)
-            if (0 == strncmp(attr->key, name, len)) return true;
+            if (0 == strncmp(attr->key, name, len))
+                return true;
 
         attr = ov_node_next(attr);
     }
@@ -66,7 +68,8 @@ error:
 
 bool ov_sdp_attribute_del(ov_sdp_list **attributes, const char *name) {
 
-    if (!attributes || !name) goto error;
+    if (!attributes || !name)
+        goto error;
 
     size_t len = strlen(name);
 
@@ -87,9 +90,11 @@ bool ov_sdp_attribute_del(ov_sdp_list **attributes, const char *name) {
 
         attr = ov_node_next(attr);
 
-        if (NULL == del) continue;
+        if (NULL == del)
+            continue;
 
-        if (!ov_node_unplug((void **)attributes, del)) goto error;
+        if (!ov_node_unplug((void **)attributes, del))
+            goto error;
 
         del = ov_sdp_list_free(del);
     }
@@ -104,7 +109,8 @@ error:
 const char *ov_sdp_attribute_get(const ov_sdp_list *attributes,
                                  const char *name) {
 
-    if (!attributes || !name) goto error;
+    if (!attributes || !name)
+        goto error;
 
     size_t len = strlen(name);
 
@@ -118,7 +124,8 @@ const char *ov_sdp_attribute_get(const ov_sdp_list *attributes,
         }
 
         if (strlen(attr->key) == len)
-            if (0 == strncmp(attr->key, name, len)) return attr->value;
+            if (0 == strncmp(attr->key, name, len))
+                return attr->value;
 
         attr = ov_node_next(attr);
     }
@@ -128,28 +135,31 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sdp_attribute_add(ov_sdp_list **attributes,
-                          const char *key,
+bool ov_sdp_attribute_add(ov_sdp_list **attributes, const char *key,
                           const char *val) {
 
     ov_sdp_list *list = NULL;
 
-    if (!attributes || !key) goto error;
+    if (!attributes || !key)
+        goto error;
 
     /*
      *      (1) validate input
      */
 
-    if (!ov_sdp_is_token(key, strlen(key))) goto error;
+    if (!ov_sdp_is_token(key, strlen(key)))
+        goto error;
     if (val)
-        if (!ov_sdp_is_byte_string(val, strlen(val))) goto error;
+        if (!ov_sdp_is_byte_string(val, strlen(val)))
+            goto error;
 
     /*
      *      (2) create list node
      */
 
     list = ov_sdp_list_create();
-    if (!list) goto error;
+    if (!list)
+        goto error;
 
     list->key = key;
     list->value = val;
@@ -158,7 +168,8 @@ bool ov_sdp_attribute_add(ov_sdp_list **attributes,
      *      (3) add list node to head
      */
 
-    if (!ov_node_push((void **)attributes, list)) goto error;
+    if (!ov_node_push((void **)attributes, list))
+        goto error;
 
     return true;
 error:
@@ -170,7 +181,8 @@ error:
 
 bool ov_sdp_is_recvonly(const ov_sdp_description *description) {
 
-    if (!description) return false;
+    if (!description)
+        return false;
     return ov_sdp_attribute_is_set(description->attributes, OV_SDP_RECV_ONLY);
 }
 
@@ -178,7 +190,8 @@ bool ov_sdp_is_recvonly(const ov_sdp_description *description) {
 
 bool ov_sdp_is_sendrecv(const ov_sdp_description *description) {
 
-    if (!description) return false;
+    if (!description)
+        return false;
     return ov_sdp_attribute_is_set(description->attributes, OV_SDP_SEND_RECV);
 }
 
@@ -186,7 +199,8 @@ bool ov_sdp_is_sendrecv(const ov_sdp_description *description) {
 
 bool ov_sdp_is_sendonly(const ov_sdp_description *description) {
 
-    if (!description) return false;
+    if (!description)
+        return false;
     return ov_sdp_attribute_is_set(description->attributes, OV_SDP_SEND_ONLY);
 }
 
@@ -194,7 +208,8 @@ bool ov_sdp_is_sendonly(const ov_sdp_description *description) {
 
 bool ov_sdp_is_inactive(const ov_sdp_description *description) {
 
-    if (!description) return false;
+    if (!description)
+        return false;
     return ov_sdp_attribute_is_set(description->attributes, OV_SDP_INACTIVE);
 }
 
@@ -202,7 +217,8 @@ bool ov_sdp_is_inactive(const ov_sdp_description *description) {
 
 const char *ov_sdp_get_orientation(const ov_sdp_description *description) {
 
-    if (!description) return NULL;
+    if (!description)
+        return NULL;
     return ov_sdp_attribute_get(description->attributes, OV_SDP_ORIENTATION);
 }
 
@@ -210,7 +226,8 @@ const char *ov_sdp_get_orientation(const ov_sdp_description *description) {
 
 const char *ov_sdp_get_type(const ov_sdp_description *description) {
 
-    if (!description) return NULL;
+    if (!description)
+        return NULL;
     return ov_sdp_attribute_get(description->attributes, OV_SDP_TYPE);
 }
 
@@ -218,7 +235,8 @@ const char *ov_sdp_get_type(const ov_sdp_description *description) {
 
 const char *ov_sdp_get_charset(const ov_sdp_description *description) {
 
-    if (!description) return NULL;
+    if (!description)
+        return NULL;
     return ov_sdp_attribute_get(description->attributes, OV_SDP_CHARSET);
 }
 
@@ -226,7 +244,8 @@ const char *ov_sdp_get_charset(const ov_sdp_description *description) {
 
 const char *ov_sdp_get_sdplang(const ov_sdp_description *description) {
 
-    if (!description) return NULL;
+    if (!description)
+        return NULL;
     return ov_sdp_attribute_get(description->attributes, OV_SDP_SDPLANG);
 }
 
@@ -234,7 +253,8 @@ const char *ov_sdp_get_sdplang(const ov_sdp_description *description) {
 
 const char *ov_sdp_get_lang(const ov_sdp_description *description) {
 
-    if (!description) return NULL;
+    if (!description)
+        return NULL;
     return ov_sdp_attribute_get(description->attributes, OV_SDP_LANG);
 }
 
@@ -242,11 +262,13 @@ const char *ov_sdp_get_lang(const ov_sdp_description *description) {
 
 static uint64_t get_number(const char *string) {
 
-    if (!string) return 0;
+    if (!string)
+        return 0;
 
     uint64_t nbr = 0;
 
-    if (!ov_convert_string_to_uint64(string, strlen(string), &nbr)) return 0;
+    if (!ov_convert_string_to_uint64(string, strlen(string), &nbr))
+        return 0;
 
     return nbr;
 }
@@ -255,7 +277,8 @@ static uint64_t get_number(const char *string) {
 
 uint64_t ov_sdp_get_framerate(const ov_sdp_description *description) {
 
-    if (!description) return 0;
+    if (!description)
+        return 0;
     return get_number(
         ov_sdp_attribute_get(description->attributes, OV_SDP_FRAMERATE));
 }
@@ -264,7 +287,8 @@ uint64_t ov_sdp_get_framerate(const ov_sdp_description *description) {
 
 uint64_t ov_sdp_get_quality(const ov_sdp_description *description) {
 
-    if (!description) return 0;
+    if (!description)
+        return 0;
     return get_number(
         ov_sdp_attribute_get(description->attributes, OV_SDP_QUALITY));
 }
@@ -274,7 +298,8 @@ uint64_t ov_sdp_get_quality(const ov_sdp_description *description) {
 const char *ov_sdp_get_fmtp(const ov_sdp_description *description,
                             const char *name) {
 
-    if (!description || !name) goto error;
+    if (!description || !name)
+        goto error;
 
     size_t len = strlen(name);
 
@@ -309,7 +334,8 @@ error:
 
 bool ov_sdp_del_fmtp(const ov_sdp_description *description, const char *name) {
 
-    if (!description || !name) goto error;
+    if (!description || !name)
+        goto error;
 
     size_t len = strlen(name);
 
@@ -317,7 +343,8 @@ bool ov_sdp_del_fmtp(const ov_sdp_description *description, const char *name) {
 
     while (attr) {
 
-        if (!attr->key) goto error;
+        if (!attr->key)
+            goto error;
 
         if ((attr->key[0] == 'f') &&
             (0 == strncmp(attr->key, OV_SDP_FMTP, strlen(OV_SDP_FMTP)))) {
@@ -346,7 +373,8 @@ error:
 const char *ov_sdp_get_rtpmap(const ov_sdp_description *description,
                               const char *name) {
 
-    if (!description || !name) goto error;
+    if (!description || !name)
+        goto error;
 
     size_t len = strlen(name);
 
@@ -382,7 +410,8 @@ error:
 bool ov_sdp_del_rtpmap(const ov_sdp_description *description,
                        const char *name) {
 
-    if (!description || !name) goto error;
+    if (!description || !name)
+        goto error;
 
     size_t len = strlen(name);
 
@@ -418,11 +447,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sdp_attributes_iterate(ov_sdp_list **attributes,
-                               const char *name,
+bool ov_sdp_attributes_iterate(ov_sdp_list **attributes, const char *name,
                                const char **out) {
 
-    if (!attributes || !name || !out) goto error;
+    if (!attributes || !name || !out)
+        goto error;
 
     ov_sdp_list *attr = *attributes;
 
@@ -455,10 +484,12 @@ error:
 
 bool ov_sdp_add_fmt(ov_sdp_description *desc, const char *fmt) {
 
-    if (!desc || !fmt) goto error;
+    if (!desc || !fmt)
+        goto error;
 
     ov_sdp_list *item = ov_sdp_list_create();
-    if (!item) goto error;
+    if (!item)
+        goto error;
 
     item->value = fmt;
     if (!ov_node_push((void **)&desc->media.formats, item)) {
@@ -479,13 +510,16 @@ ov_json_value *ov_sdp_rtpmap_to_json(const ov_sdp_description *desc,
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!desc || !fmt) goto error;
+    if (!desc || !fmt)
+        goto error;
 
     const char *map = ov_sdp_get_rtpmap(desc, fmt);
-    if (!map) goto error;
+    if (!map)
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     size_t len = strlen(map);
     size_t plen = 0;
@@ -499,9 +533,11 @@ ov_json_value *ov_sdp_rtpmap_to_json(const ov_sdp_description *desc,
     }
 
     val = ov_json_string(NULL);
-    if (!ov_json_string_set_length(val, map, plen)) goto error;
+    if (!ov_json_string_set_length(val, map, plen))
+        goto error;
 
-    if (!ov_json_object_set(out, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_NAME, val))
+        goto error;
 
     char *rate = ptr + 1;
     ptr = memchr(rate, '/', len - (rate - map));
@@ -514,10 +550,12 @@ ov_json_value *ov_sdp_rtpmap_to_json(const ov_sdp_description *desc,
 
     uint64_t number = 0;
 
-    if (!ov_convert_string_to_uint64(rate, plen, &number)) goto error;
+    if (!ov_convert_string_to_uint64(rate, plen, &number))
+        goto error;
 
     val = ov_json_number(number);
-    if (!ov_json_object_set(out, OV_KEY_SAMPLE_RATE_HERTZ, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_SAMPLE_RATE_HERTZ, val))
+        goto error;
 
     if (ptr) {
 
@@ -526,9 +564,11 @@ ov_json_value *ov_sdp_rtpmap_to_json(const ov_sdp_description *desc,
     }
 
     val = ov_json_string(NULL);
-    if (!ov_json_string_set_length(val, ptr, plen)) goto error;
+    if (!ov_json_string_set_length(val, ptr, plen))
+        goto error;
 
-    if (!ov_json_object_set(out, OV_KEY_PARAMETER, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_PARAMETER, val))
+        goto error;
 
     return out;
 error:

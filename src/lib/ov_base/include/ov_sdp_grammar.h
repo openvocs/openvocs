@@ -154,8 +154,7 @@ bool ov_sdp_is_port(const char *buffer, uint64_t length);
 /**
         Test if a buffer is typed time (digit + optional char [dhms])
 */
-bool ov_sdp_is_typed_time(const char *buffer,
-                          uint64_t length,
+bool ov_sdp_is_typed_time(const char *buffer, uint64_t length,
                           bool allow_negative);
 
 /*----------------------------------------------------------------------------*/

@@ -68,11 +68,13 @@ const size_t pcap_packet_header_length = 4 + 4 + 4 + 4;
 
 static pcap_data *as_pcap_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     pcap_data *pcap_data = data;
 
-    if (pcap_magic_bytes != pcap_data->magic_bytes) return 0;
+    if (pcap_magic_bytes != pcap_data->magic_bytes)
+        return 0;
 
     return pcap_data;
 }
@@ -106,20 +108,20 @@ static enum bytes_swapped detect_bytes_swapped(uint8_t **rd_ptr,
 
     switch (*magic_bytes) {
 
-        case 0xa1b2c3d4:
-        case 0xa1b23c4d:
+    case 0xa1b2c3d4:
+    case 0xa1b23c4d:
 
-            return PCAP_PROPER;
+        return PCAP_PROPER;
 
-        case 0xd4c3b2a1:
-        case 0x4d3cb2a1:
+    case 0xd4c3b2a1:
+    case 0x4d3cb2a1:
 
-            return PCAP_SWAPPED;
+        return PCAP_SWAPPED;
 
-        default:
+    default:
 
-            /* Entirely wrong magic_bytes -> Not a pcap file */
-            return PCAP_INVALID;
+        /* Entirely wrong magic_bytes -> Not a pcap file */
+        return PCAP_INVALID;
     };
 
 error:
@@ -130,8 +132,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool get_global_header_unsafe(ov_format_pcap_global_header *out,
-                                     uint8_t **rd_ptr,
-                                     size_t *length) {
+                                     uint8_t **rd_ptr, size_t *length) {
 
     OV_ASSERT(0 != out);
     OV_ASSERT(0 != rd_ptr);
@@ -195,8 +196,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool get_packet_header_unsafe(ov_format_pcap_packet_header *out,
-                                     uint8_t **rd_ptr,
-                                     size_t *length,
+                                     uint8_t **rd_ptr, size_t *length,
                                      const bool bytes_swapped) {
 
     OV_ASSERT(0 != out);
@@ -254,9 +254,8 @@ static ov_buffer impl_next_chunk(ov_format *f, size_t req_bytes, void *data) {
 
     if (0 == pcap_data) {
 
-        ov_log_error(
-            "Internal error: function was called expecting PCAP "
-            "format");
+        ov_log_error("Internal error: function was called expecting PCAP "
+                     "format");
         goto error;
     }
 
@@ -272,9 +271,7 @@ static ov_buffer impl_next_chunk(ov_format *f, size_t req_bytes, void *data) {
 
     ov_format_pcap_packet_header hdr = {0};
 
-    if (!get_packet_header_unsafe(&hdr,
-                                  &buf.start,
-                                  &buf.length,
+    if (!get_packet_header_unsafe(&hdr, &buf.start, &buf.length,
                                   pcap_data->global_header.bytes_swapped)) {
 
         goto error;
@@ -286,8 +283,7 @@ static ov_buffer impl_next_chunk(ov_format *f, size_t req_bytes, void *data) {
 
     if (0 == buf.start) {
 
-        ov_log_error("Could not read packet payload, expected %" PRIu32
-                     " bytes"
+        ov_log_error("Could not read packet payload, expected %" PRIu32 " bytes"
                      " of "
                      "payloa"
                      "d");
@@ -305,8 +301,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     UNUSED(f);
@@ -337,8 +332,8 @@ static void *impl_data_create(ov_format *f, void *options) {
 
     ov_format_pcap_global_header global_header = {0};
 
-    if (!get_global_header_unsafe(
-            &global_header, &header.start, &header.length)) {
+    if (!get_global_header_unsafe(&global_header, &header.start,
+                                  &header.length)) {
 
         ov_log_error("Could not decode global PCAP header");
         goto error;
@@ -363,7 +358,8 @@ static void *impl_data_free(void *data) {
 
     pcap_data *pcap = as_pcap_data(data);
 
-    if (0 == pcap) return data;
+    if (0 == pcap)
+        return data;
 
     free(pcap);
     pcap = 0;
@@ -386,8 +382,8 @@ bool ov_format_pcap_install(ov_format_registry *registry) {
 
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_PCAP_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_PCAP_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -395,7 +391,8 @@ bool ov_format_pcap_install(ov_format_registry *registry) {
 bool ov_format_pcap_get_global_header(ov_format const *f,
                                       ov_format_pcap_global_header *hdr) {
 
-    if (0 == hdr) goto error;
+    if (0 == hdr)
+        goto error;
 
     pcap_data *pcap = as_pcap_data(ov_format_get_custom_data(f));
 
@@ -433,8 +430,7 @@ bool ov_format_pcap_get_current_packet_header(
         goto error;
     }
 
-    memcpy(hdr,
-           &data->current_packet_header,
+    memcpy(hdr, &data->current_packet_header,
            sizeof(ov_format_pcap_packet_header));
 
     return true;
@@ -449,28 +445,22 @@ error:
 int ov_format_pcap_print_global_header(FILE *out,
                                        ov_format_pcap_global_header *hdr) {
 
-    if (0 == out) return -EINVAL;
+    if (0 == out)
+        return -EINVAL;
 
-    if (0 == hdr) return -EINVAL;
+    if (0 == hdr)
+        return -EINVAL;
 
     return fprintf(out,
                    "bytes swapped: %s\n"
-                   "version: %" PRIu16 ".%" PRIu16
-                   "\n"
-                   "thiszone %" PRIi32
-                   "\n"
-                   "sigfigs %" PRIu32
-                   "\n"
-                   "snaplen %" PRIu32
-                   "\n"
+                   "version: %" PRIu16 ".%" PRIu16 "\n"
+                   "thiszone %" PRIi32 "\n"
+                   "sigfigs %" PRIu32 "\n"
+                   "snaplen %" PRIu32 "\n"
                    "network %" PRIu32 "\n",
-                   hdr->bytes_swapped ? "yes" : "no",
-                   hdr->version_major,
-                   hdr->version_minor,
-                   hdr->thiszone,
-                   hdr->sigfigs,
-                   hdr->snaplen,
-                   hdr->data_link_type);
+                   hdr->bytes_swapped ? "yes" : "no", hdr->version_major,
+                   hdr->version_minor, hdr->thiszone, hdr->sigfigs,
+                   hdr->snaplen, hdr->data_link_type);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -495,38 +485,38 @@ ov_format *ov_format_pcap_create_network_layer_format(ov_format *pcap_fmt) {
 
     switch (hdr.data_link_type) {
 
-        case OV_FORMAT_PCAP_LINKTYPE_ETHERNET:
+    case OV_FORMAT_PCAP_LINKTYPE_ETHERNET:
 
-            network_layer =
-                ov_format_as(pcap_fmt, "ethernet_ip", &fo_ethernet, 0);
+        network_layer = ov_format_as(pcap_fmt, "ethernet_ip", &fo_ethernet, 0);
 
-            if (0 == network_layer) goto error;
+        if (0 == network_layer)
+            goto error;
 
-            break;
+        break;
 
-        case OV_FORMAT_PCAP_LINKTYPE_LINUX_SLL:
-            network_layer =
-                ov_format_as(pcap_fmt, "linux_sll", &fo_ethernet, 0);
+    case OV_FORMAT_PCAP_LINKTYPE_LINUX_SLL:
+        network_layer = ov_format_as(pcap_fmt, "linux_sll", &fo_ethernet, 0);
 
-            if (0 == network_layer) goto error;
+        if (0 == network_layer)
+            goto error;
 
-            ipv4 = ov_format_as(network_layer, "ipv4", 0, 0);
+        ipv4 = ov_format_as(network_layer, "ipv4", 0, 0);
 
-            if (0 == ipv4) {
+        if (0 == ipv4) {
 
-                network_layer = ov_format_close_non_recursive(network_layer);
-                goto error;
-            }
+            network_layer = ov_format_close_non_recursive(network_layer);
+            goto error;
+        }
 
-            network_layer = ipv4;
-            ipv4 = 0;
+        network_layer = ipv4;
+        ipv4 = 0;
 
-            break;
+        break;
 
-        default:
+    default:
 
-            ov_log_error(
-                "Unsupported link layer format: %" PRIu32, hdr.data_link_type);
+        ov_log_error("Unsupported link layer format: %" PRIu32,
+                     hdr.data_link_type);
     }
 
 error:

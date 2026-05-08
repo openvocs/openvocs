@@ -1,6 +1,6 @@
 :host {
     display: inline-block;
-    width: 10rem;
+    width: 15rem;
     user-select: text;
 }
 
@@ -10,7 +10,7 @@
 }
 
 :host #node_area {
-    height: 1.7rem;
+    height: 2.7rem;
     border: solid 0.063rem var(--white_transparent_64);
     display: grid;
     grid-template-columns: 1.5rem 1fr 1.5rem;
@@ -39,10 +39,17 @@
     letter-spacing: 0;
     text-anchor: middle;
     opacity: 0.5;
+    line-height: 1.1rem;
+    align-self: center;
 }
 
 :host([frozen]) #node_name::before {
-    content: "*";
+    content: "\2744";
+}
+
+:host([global]) #node_name::before {
+    content: "\29BF";
+    margin-right: 0.1rem;
 }
 
 :host(.highlight) #node_name,
@@ -51,8 +58,8 @@
 }
 
 :host button.icon {
-    width: 4.95rem;
-    height: 1.55rem;
+    width: 7.3rem;
+    height: 2.55rem;
     padding: 0.1rem 0.2rem;
     display: none;
     opacity: 0.5;
@@ -112,7 +119,7 @@
 
 :host(:hover.edit) #exit_network_icon {
     display: initial;
-    width: 9.9rem;
+    width: 14.9rem;
 }
 
 :host(.edit_loop_edges:hover) #edit_icon,
@@ -133,7 +140,7 @@
 :host([type=user].edit_role_edges:not(.select):hover) #connect_icon,
 :host([type=user].edit_role_edges.select:hover) #deconnect_icon {
     display: initial;
-    width: 9.9rem;
+    width: 14.9rem;
 }
 
 :host([type=loop].edit_role_edges:not(.select_talk):hover) #microphone_icon,
@@ -143,6 +150,12 @@
 :host([type=role].edit_loop_edges:not(.select_monitor):hover) #headphone_icon,
 :host([type=role].edit_loop_edges.select:hover) #deconnect_icon {
     display: initial;
+}
+
+:host([type=loop].edit_user_edges),
+:host([type=user].edit_loop_edges) {
+    pointer-events: none;
+    cursor: default;
 }
 
 dialog {
@@ -157,11 +170,12 @@ dialog button {
 
 dialog input,
 dialog label,
-dialog span {
+dialog span,
+dialog select {
     display: none;
 }
 
-dialog input {
+dialog input, dialog select {
     margin-bottom: 0.5rem;
 }
 
@@ -174,20 +188,22 @@ dialog input {
 }
 
 #delete_element,
+:host([type=user]) #user_name_label,
+:host([type=role]) #id_label,
+:host([type=loop]) #id_label,
 #edit_id,
-label[for=edit_id],
+:host([type=user]) #display_name_label,
+:host([type=role]) #name_label,
+:host([type=loop]) #name_label,
 #edit_name,
-label[for=edit_name],
-:host([type=user]) #edit_password,
 :host([type=user]) label[for=edit_password],
-:host([type=role]) #edit_abbreviation,
-:host([type=role]) label[for=edit_abbreviation],
-:host([type=loop]) #edit_abbreviation,
-:host([type=loop]) label[for=edit_abbreviation],
-:host([type=loop]) #edit_multicast_ip,
+:host([type=user]) #edit_password,
 :host([type=loop]) label[for=edit_multicast_ip],
+:host([type=loop]) #edit_multicast_ip,
 :host([type=loop]) #edit_multicast_port,
-:host([type=loop]) #edit_multicast_split {
+:host([type=loop]) #edit_multicast_split,
+:host([type=loop][allow_highlighting]) label[for=edit_highlight_color],
+:host([type=loop][allow_highlighting]) #edit_highlight_color {
     display: initial;
 }
 
@@ -199,4 +215,11 @@ label[for=edit_name],
     text-align: center;
     margin-bottom: 0.5rem;
     display: block;
+}
+
+#name_char_count,
+#name_char_max {
+    display: inline-block;
+    float: right;
+
 }

@@ -93,8 +93,7 @@ uint32_t ov_format_ethernet_calculate_crc32(ov_format const *f);
                                  OTHER HELPERS
  ****************************************************************************/
 
-char *ov_format_ethernet_mac_to_string(uint8_t *mac,
-                                       char *out_string,
+char *ov_format_ethernet_mac_to_string(uint8_t *mac, char *out_string,
                                        size_t out_len);
 
 /*****************************************************************************

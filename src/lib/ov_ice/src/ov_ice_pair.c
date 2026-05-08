@@ -57,7 +57,8 @@ static const char *label_extractor_srtp = "EXTRACTOR-dtls_srtp";
 bool ov_ice_pair_calculate_priority(ov_ice_pair *pair,
                                     ov_ice_session *session) {
 
-    if (!pair || !session) return false;
+    if (!pair || !session)
+        return false;
 
     uint32_t g = 0;
     uint32_t d = 0;
@@ -121,7 +122,8 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
     char *fingerprint = NULL;
 
-    if (!source) return NULL;
+    if (!source)
+        return NULL;
 
     size_t hex_len = 2 * length + 1;
     char hex[hex_len + 1];
@@ -138,13 +140,15 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
         fingerprint[(i * 3) + 0] = toupper(hex[(i * 2) + 0]);
         fingerprint[(i * 3) + 1] = toupper(hex[(i * 2) + 1]);
-        if (i < length - 1) fingerprint[(i * 3) + 2] = ':';
+        if (i < length - 1)
+            fingerprint[(i * 3) + 2] = ':';
     }
 
     return fingerprint;
 
 error:
-    if (fingerprint) free(fingerprint);
+    if (fingerprint)
+        free(fingerprint);
     return NULL;
 }
 
@@ -158,7 +162,8 @@ static char *X509_fingerprint_create(const X509 *cert, ov_hash_function type) {
     char *fingerprint = NULL;
 
     const EVP_MD *func = ov_hash_function_to_EVP(type);
-    if (!func || !cert) return NULL;
+    if (!func || !cert)
+        return NULL;
 
     if (0 < X509_digest(cert, func, mdigest, &mdigest_size)) {
         fingerprint = fingerprint_format_RFC8122((char *)mdigest, mdigest_size);
@@ -189,9 +194,12 @@ static bool create_turn_permission(ov_ice_pair *pair) {
     uint8_t buffer[OV_UDP_PAYLOAD_OCTETS] = {0};
     uint8_t *next = NULL;
 
-    if (!pair) goto error;
-    if (!pair->local) goto error;
-    if (pair->local->type != OV_ICE_RELAYED) goto error;
+    if (!pair)
+        goto error;
+    if (!pair->local)
+        goto error;
+    if (pair->local->type != OV_ICE_RELAYED)
+        goto error;
 
     ov_ice *ice = pair->local->base->stream->session->ice;
     ov_event_loop *loop = ov_ice_get_event_loop(ice);
@@ -199,54 +207,41 @@ static bool create_turn_permission(ov_ice_pair *pair) {
     const ov_ice_candidate *local = pair->local;
     const ov_ice_candidate *remote = pair->remote;
 
-    if (!local->turn.nonce || !local->turn.realm) goto timer_set;
+    if (!local->turn.nonce || !local->turn.realm)
+        goto timer_set;
 
     struct sockaddr_storage address = {0};
 
     if (!ov_socket_fill_sockaddr_storage(&address,
                                          local->base->local.data.sa.ss_family,
-                                         remote->addr,
-                                         remote->port))
+                                         remote->addr, remote->port))
         goto error;
 
     if (!ov_ice_transaction_create(ice, pair->transaction_id, 13, pair))
         goto error;
 
-    if (!ov_turn_create_permission(buffer,
-                                   OV_UDP_PAYLOAD_OCTETS,
-                                   &next,
-                                   pair->transaction_id,
-                                   NULL,
-                                   0,
-                                   (uint8_t *)local->server.auth.user,
-                                   strlen(local->server.auth.user),
-                                   (uint8_t *)local->turn.realm,
-                                   strlen(local->turn.realm),
-                                   (uint8_t *)local->turn.nonce,
-                                   strlen(local->turn.nonce),
-                                   (uint8_t *)local->server.auth.pass,
-                                   strlen(local->server.auth.pass),
-                                   &address,
-                                   true))
+    if (!ov_turn_create_permission(
+            buffer, OV_UDP_PAYLOAD_OCTETS, &next, pair->transaction_id, NULL, 0,
+            (uint8_t *)local->server.auth.user, strlen(local->server.auth.user),
+            (uint8_t *)local->turn.realm, strlen(local->turn.realm),
+            (uint8_t *)local->turn.nonce, strlen(local->turn.nonce),
+            (uint8_t *)local->server.auth.pass, strlen(local->server.auth.pass),
+            &address, true))
         goto error;
 
     struct sockaddr_storage dest = {0};
 
-    if (!ov_socket_fill_sockaddr_storage(&dest,
-                                         local->base->local.data.sa.ss_family,
-                                         local->server.socket.host,
-                                         local->server.socket.port))
+    if (!ov_socket_fill_sockaddr_storage(
+            &dest, local->base->local.data.sa.ss_family,
+            local->server.socket.host, local->server.socket.port))
         goto error;
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (dest.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (dest.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
-    ssize_t out = sendto(local->base->socket,
-                         buffer,
-                         next - buffer,
-                         0,
-                         (struct sockaddr *)&dest,
-                         len);
+    ssize_t out = sendto(local->base->socket, buffer, next - buffer, 0,
+                         (struct sockaddr *)&dest, len);
 
     if (out <= 0) {
 
@@ -275,7 +270,8 @@ ov_ice_pair *ov_ice_pair_create(ov_ice_stream *stream,
 
     ov_ice_pair *pair = NULL;
 
-    if (!stream || !local || !remote) goto error;
+    if (!stream || !local || !remote)
+        goto error;
 
     ov_socket_configuration config = (ov_socket_configuration){
         .type = remote->transport, .port = remote->port};
@@ -283,7 +279,8 @@ ov_ice_pair *ov_ice_pair_create(ov_ice_stream *stream,
     memcpy(config.host, remote->addr, OV_HOST_NAME_MAX);
 
     int socket = ov_socket_create(config, true, NULL);
-    if (socket < 0) goto error;
+    if (socket < 0)
+        goto error;
     if (!ov_sockets_are_similar(socket, local->base->socket)) {
         close(socket);
         goto error;
@@ -300,32 +297,29 @@ ov_ice_pair *ov_ice_pair_create(ov_ice_stream *stream,
     pair->priority = 0;
     pair->success_count = 0;
 
-    if (!ov_ice_pair_calculate_priority(pair, stream->session)) goto error;
+    if (!ov_ice_pair_calculate_priority(pair, stream->session))
+        goto error;
 
     switch (local->type) {
 
-        case OV_ICE_RELAYED:
+    case OV_ICE_RELAYED:
 
-            // create permission for remote at TURN server
-            create_turn_permission(pair);
+        // create permission for remote at TURN server
+        create_turn_permission(pair);
 
-            break;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
-    if (!ov_node_push((void **)&stream->pairs, pair)) goto error;
+    if (!ov_node_push((void **)&stream->pairs, pair))
+        goto error;
 
     ov_log_info("ICE session %s|%i created pair %s:%i remote %s:%i %s:%i %s",
-                stream->session->uuid,
-                stream->index,
-                pair->local->addr,
-                pair->local->port,
-                pair->remote->addr,
-                pair->remote->port,
-                pair->remote->raddr,
-                pair->remote->rport,
+                stream->session->uuid, stream->index, pair->local->addr,
+                pair->local->port, pair->remote->addr, pair->remote->port,
+                pair->remote->raddr, pair->remote->rport,
                 ov_ice_candidate_type_to_string(pair->local->type));
 
     return pair;
@@ -341,20 +335,20 @@ const char *ov_ice_pair_state_to_string(ov_ice_pair_state state) {
 
     switch (state) {
 
-        case OV_ICE_PAIR_FROZEN:
-            return OV_KEY_FROZEN;
+    case OV_ICE_PAIR_FROZEN:
+        return OV_KEY_FROZEN;
 
-        case OV_ICE_PAIR_WAITING:
-            return OV_KEY_WAITING;
+    case OV_ICE_PAIR_WAITING:
+        return OV_KEY_WAITING;
 
-        case OV_ICE_PAIR_PROGRESS:
-            return OV_KEY_PROGRESS;
+    case OV_ICE_PAIR_PROGRESS:
+        return OV_KEY_PROGRESS;
 
-        case OV_ICE_PAIR_SUCCESS:
-            return OV_KEY_SUCCESS;
+    case OV_ICE_PAIR_SUCCESS:
+        return OV_KEY_SUCCESS;
 
-        case OV_ICE_PAIR_FAILED:
-            return OV_KEY_FAILED;
+    case OV_ICE_PAIR_FAILED:
+        return OV_KEY_FAILED;
     }
 
     return NULL;
@@ -364,11 +358,13 @@ const char *ov_ice_pair_state_to_string(ov_ice_pair_state state) {
 
 ov_ice_pair *ov_ice_pair_cast(const void *data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_node *node = (ov_node *)data;
 
-    if (node->type == OV_ICE_PAIR_MAGIC_BYTES) return (ov_ice_pair *)data;
+    if (node->type == OV_ICE_PAIR_MAGIC_BYTES)
+        return (ov_ice_pair *)data;
 error:
     return NULL;
 }
@@ -378,7 +374,8 @@ error:
 void *ov_ice_pair_free(void *self) {
 
     ov_ice_pair *pair = ov_ice_pair_cast(self);
-    if (!pair) return self;
+    if (!pair)
+        return self;
 
     pair->srtp.profile = ov_data_pointer_free(pair->srtp.profile);
 
@@ -387,7 +384,8 @@ void *ov_ice_pair_free(void *self) {
         ov_node_remove_if_included((void **)&pair->stream->pairs, pair);
         ov_list_remove_if_included(pair->stream->valid, pair);
         ov_list_remove_if_included(pair->stream->trigger, pair);
-        if (pair == pair->stream->selected) pair->stream->selected = NULL;
+        if (pair == pair->stream->selected)
+            pair->stream->selected = NULL;
 
         ov_event_loop *loop = ov_ice_get_event_loop(pair->stream->session->ice);
 
@@ -427,14 +425,14 @@ void *ov_ice_pair_free(void *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static size_t pair_send_turn(const ov_ice_pair *pair,
-                             const uint8_t *input,
+static size_t pair_send_turn(const ov_ice_pair *pair, const uint8_t *input,
                              size_t size) {
 
     uint8_t buffer[OV_UDP_PAYLOAD_OCTETS] = {0};
     uint8_t transaction_id[OV_UDP_PAYLOAD_OCTETS] = {0};
 
-    if (!pair || !input || (size < 1)) goto error;
+    if (!pair || !input || (size < 1))
+        goto error;
 
     ov_ice_base *base = pair->local->base;
 
@@ -448,37 +446,31 @@ static size_t pair_send_turn(const ov_ice_pair *pair,
     struct sockaddr_storage dest = {0};
     struct sockaddr_storage turn = {0};
 
-    if (!ov_socket_fill_sockaddr_storage(&turn,
-                                         base->local.data.sa.ss_family,
+    if (!ov_socket_fill_sockaddr_storage(&turn, base->local.data.sa.ss_family,
                                          pair->local->server.socket.host,
                                          pair->local->server.socket.port))
         goto error;
 
-    if (!ov_socket_fill_sockaddr_storage(&dest,
-                                         base->local.data.sa.ss_family,
+    if (!ov_socket_fill_sockaddr_storage(&dest, base->local.data.sa.ss_family,
                                          pair->remote->addr,
                                          pair->remote->port))
         goto error;
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (turn.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (turn.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
     uint8_t *next = NULL;
 
-    if (!ov_ice_transaction_create(ice, transaction_id, 13, NULL)) goto error;
-
-    if (!ov_turn_create_send(buffer,
-                             OV_UDP_PAYLOAD_OCTETS,
-                             &next,
-                             transaction_id,
-                             &dest,
-                             input,
-                             size,
-                             false))
+    if (!ov_ice_transaction_create(ice, transaction_id, 13, NULL))
         goto error;
 
-    ssize_t out = sendto(
-        base->socket, buffer, next - buffer, 0, (struct sockaddr *)&turn, len);
+    if (!ov_turn_create_send(buffer, OV_UDP_PAYLOAD_OCTETS, &next,
+                             transaction_id, &dest, input, size, false))
+        goto error;
+
+    ssize_t out = sendto(base->socket, buffer, next - buffer, 0,
+                         (struct sockaddr *)&turn, len);
 
     return out;
 
@@ -488,14 +480,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_ice_pair_send(ov_ice_pair *pair,
-                         const uint8_t *buffer,
+ssize_t ov_ice_pair_send(ov_ice_pair *pair, const uint8_t *buffer,
                          size_t size) {
 
-    if (!pair || !buffer || !size) goto error;
+    if (!pair || !buffer || !size)
+        goto error;
 
-    if (!pair->local) goto error;
-    if (!pair->remote) goto error;
+    if (!pair->local)
+        goto error;
+    if (!pair->remote)
+        goto error;
 
     if (OV_ICE_TURN_SERVER == pair->local->server.type)
         return pair_send_turn(pair, buffer, size);
@@ -505,14 +499,14 @@ ssize_t ov_ice_pair_send(ov_ice_pair *pair,
 
     struct sockaddr_storage dest = {0};
 
-    if (!ov_socket_fill_sockaddr_storage(&dest,
-                                         base->local.data.sa.ss_family,
+    if (!ov_socket_fill_sockaddr_storage(&dest, base->local.data.sa.ss_family,
                                          pair->remote->addr,
                                          pair->remote->port))
         goto error;
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (dest.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (dest.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
     ssize_t out =
         sendto(base->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
@@ -525,15 +519,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_ice_pair_handshake_passive(ov_ice_pair *pair,
-                                   const uint8_t *buffer,
+bool ov_ice_pair_handshake_passive(ov_ice_pair *pair, const uint8_t *buffer,
                                    size_t size) {
 
     char errorstring[OV_ICE_SSL_ERROR_STRING_BUFFER_SIZE] = {0};
     int errorcode = -1;
     int n = 0, r = 0;
 
-    if (!pair || !buffer || !size) goto error;
+    if (!pair || !buffer || !size)
+        goto error;
 
     ov_ice *ice = pair->stream->session->ice;
     SSL_CTX *ctx = ov_ice_get_dtls_ctx(ice);
@@ -548,12 +542,14 @@ bool ov_ice_pair_handshake_passive(ov_ice_pair *pair,
     pair->dtls.handshaked = false;
     pair->dtls.type = OV_ICE_DTLS_PASSIVE;
     pair->dtls.ssl = SSL_new(ctx);
-    if (!pair->dtls.ssl) goto error;
+    if (!pair->dtls.ssl)
+        goto error;
 
     SSL_set_accept_state(pair->dtls.ssl);
 
     r = SSL_set_tlsext_use_srtp(pair->dtls.ssl, config.dtls.srtp.profile);
-    if (0 != r) goto error;
+    if (0 != r)
+        goto error;
 
     pair->dtls.read = BIO_new(BIO_s_mem());
     pair->dtls.write = ov_ice_dtls_filter_pair_bio_create(pair);
@@ -564,7 +560,8 @@ bool ov_ice_pair_handshake_passive(ov_ice_pair *pair,
     SSL_set_options(pair->dtls.ssl, SSL_OP_COOKIE_EXCHANGE);
 
     r = BIO_write(pair->dtls.read, buffer, size);
-    if (r < 0) goto error;
+    if (r < 0)
+        goto error;
 
     BIO_ADDR *peer_bio = BIO_ADDR_new();
 
@@ -581,12 +578,9 @@ bool ov_ice_pair_handshake_passive(ov_ice_pair *pair,
         pair->stream->dtls = OV_ICE_COMPLETED;
 
         ov_log_info("ICE %s|%i completed DTLS on pair %s %s:%i %s:%i",
-                    pair->stream->session->uuid,
-                    pair->stream->index,
+                    pair->stream->session->uuid, pair->stream->index,
                     ov_ice_candidate_type_to_string(pair->local->type),
-                    pair->local->addr,
-                    pair->local->port,
-                    pair->remote->addr,
+                    pair->local->addr, pair->local->port, pair->remote->addr,
                     pair->remote->port);
 
         goto done;
@@ -607,52 +601,46 @@ bool ov_ice_pair_handshake_passive(ov_ice_pair *pair,
 
         switch (n) {
 
-            case SSL_ERROR_NONE:
-            case SSL_ERROR_WANT_READ:
-            case SSL_ERROR_WANT_CONNECT:
-            case SSL_ERROR_WANT_ACCEPT:
-            case SSL_ERROR_WANT_X509_LOOKUP:
-            case SSL_ERROR_WANT_WRITE:
-                break;
+        case SSL_ERROR_NONE:
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_CONNECT:
+        case SSL_ERROR_WANT_ACCEPT:
+        case SSL_ERROR_WANT_X509_LOOKUP:
+        case SSL_ERROR_WANT_WRITE:
+            break;
 
-            case SSL_ERROR_ZERO_RETURN:
-                // connection close
-                // ov_log_debug("FD %i connection closed", socket);
-                goto error;
-                break;
+        case SSL_ERROR_ZERO_RETURN:
+            // connection close
+            // ov_log_debug("FD %i connection closed", socket);
+            goto error;
+            break;
 
-            case SSL_ERROR_SYSCALL:
+        case SSL_ERROR_SYSCALL:
 
-                ov_log_error(
-                    "socket %i - SSL_ERROR_SYSCALL - "
-                    "errno %d | %s",
-                    socket,
-                    errno,
-                    strerror(errno));
-                goto error;
+            ov_log_error("socket %i - SSL_ERROR_SYSCALL - "
+                         "errno %d | %s",
+                         socket, errno, strerror(errno));
+            goto error;
 
-                break;
+            break;
 
-            case SSL_ERROR_SSL:
+        case SSL_ERROR_SSL:
 
-                errorcode = ERR_get_error();
-                ERR_error_string_n(errorcode,
-                                   errorstring,
-                                   OV_ICE_SSL_ERROR_STRING_BUFFER_SIZE);
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_ICE_SSL_ERROR_STRING_BUFFER_SIZE);
 
-                ov_log_error(
-                    "socket %i - SSL_ERROR_SSL - "
-                    "%s",
-                    socket,
-                    errorstring);
-                goto error;
+            ov_log_error("socket %i - SSL_ERROR_SSL - "
+                         "%s",
+                         socket, errorstring);
+            goto error;
 
-                break;
+            break;
 
-            default:
+        default:
 
-                goto error;
-                break;
+            goto error;
+            break;
         }
     }
 
@@ -660,7 +648,8 @@ done:
     return true;
 
 error:
-    if (pair) pair->state = OV_ICE_PAIR_FAILED;
+    if (pair)
+        pair->state = OV_ICE_PAIR_FAILED;
     return false;
 }
 
@@ -674,7 +663,8 @@ static int dummy_client_hello_cb(SSL *s, int *al, void *arg) {
      *      so we add some dummy callback, to resume
      *      standard SSL operation.
      */
-    if (!s) return SSL_CLIENT_HELLO_ERROR;
+    if (!s)
+        return SSL_CLIENT_HELLO_ERROR;
 
     if (al || arg) { /* ignore */
     };
@@ -690,7 +680,8 @@ static int check_cert(ov_ice_pair *pair) {
     OV_ASSERT(pair);
     OV_ASSERT(pair->dtls.ssl);
 
-    if (!pair || !pair->dtls.ssl) goto error;
+    if (!pair || !pair->dtls.ssl)
+        goto error;
 
     int r = 0;
 
@@ -698,9 +689,7 @@ static int check_cert(ov_ice_pair *pair) {
     if (!cert) {
 
         ov_log_debug("Get peer certificate failed for pair %s:%i | %s:%i",
-                     pair->local->addr,
-                     pair->local->port,
-                     pair->remote->addr,
+                     pair->local->addr, pair->local->port, pair->remote->addr,
                      pair->remote->port);
 
         goto close;
@@ -710,9 +699,7 @@ static int check_cert(ov_ice_pair *pair) {
     if (r != X509_V_OK) {
 
         ov_log_debug("Verify peer certificate failed for pair %s:%i | %s:%i",
-                     pair->local->addr,
-                     pair->local->port,
-                     pair->remote->addr,
+                     pair->local->addr, pair->local->port, pair->remote->addr,
                      pair->remote->port);
 
         goto close;
@@ -722,13 +709,10 @@ static int check_cert(ov_ice_pair *pair) {
 
     if (!finger) {
 
-        ov_log_debug(
-            "Fingerprint peer certificate failed for pair %s:%i | "
-            "%s:%i",
-            pair->local->addr,
-            pair->local->port,
-            pair->remote->addr,
-            pair->remote->port);
+        ov_log_debug("Fingerprint peer certificate failed for pair %s:%i | "
+                     "%s:%i",
+                     pair->local->addr, pair->local->port, pair->remote->addr,
+                     pair->remote->port);
 
         X509_free(cert);
         goto close;
@@ -736,11 +720,8 @@ static int check_cert(ov_ice_pair *pair) {
 
     X509_free(cert);
 
-    if (!snprintf(hash_finger,
-                  OV_ICE_DTLS_FINGERPRINT_MAX,
-                  "%s %s",
-                  ov_hash_function_to_RFC8122_string(OV_HASH_SHA256),
-                  finger)) {
+    if (!snprintf(hash_finger, OV_ICE_DTLS_FINGERPRINT_MAX, "%s %s",
+                  ov_hash_function_to_RFC8122_string(OV_HASH_SHA256), finger)) {
 
         finger = ov_data_pointer_free(finger);
         goto close;
@@ -751,9 +732,7 @@ static int check_cert(ov_ice_pair *pair) {
     if (0 != strcmp(hash_finger, pair->stream->remote.fingerprint)) {
 
         ov_log_debug("Fingerprint verification failed for pair %s:%i | %s:%i",
-                     pair->local->addr,
-                     pair->local->port,
-                     pair->remote->addr,
+                     pair->local->addr, pair->local->port, pair->remote->addr,
                      pair->remote->port);
 
         goto close;
@@ -781,7 +760,8 @@ static bool perform_ssl_client_handshake(ov_ice_pair *pair) {
     bool shutdown = true;
 
     OV_ASSERT(pair);
-    if (!pair) goto error;
+    if (!pair)
+        goto error;
 
     ov_event_loop *loop = ov_ice_get_event_loop(pair->stream->session->ice);
     ov_ice_config config = ov_ice_get_config(pair->stream->session->ice);
@@ -796,77 +776,76 @@ static bool perform_ssl_client_handshake(ov_ice_pair *pair) {
 
     switch (r) {
 
+    case 1:
+
+        r = check_cert(pair);
+        switch (r) {
+
         case 1:
+            goto success;
 
-            r = check_cert(pair);
-            switch (r) {
-
-                case 1:
-                    goto success;
-
-                case 0:
-                    goto close;
-                default:
-                    OV_ASSERT(1 == 0);
-                    goto error;
-            }
-
+        case 0:
+            goto close;
         default:
+            OV_ASSERT(1 == 0);
+            goto error;
+        }
 
-            n = SSL_get_error(pair->dtls.ssl, r);
-            switch (n) {
+    default:
 
-                case SSL_ERROR_NONE:
-                    OV_ASSERT(1 == 0);
-                    break;
+        n = SSL_get_error(pair->dtls.ssl, r);
+        switch (n) {
 
-                case SSL_ERROR_ZERO_RETURN:
-                    // ov_log_debug("SSL_ERROR_ZERO_RETURN");
-                    goto close;
-                    break;
-
-                case SSL_ERROR_WANT_READ:
-                    // ov_log_debug("SSL_ERROR_WANT_READ");
-                    break;
-                case SSL_ERROR_WANT_WRITE:
-                    // ov_log_debug("SSL_ERROR_WANT_WRITE");
-                    break;
-                case SSL_ERROR_WANT_CONNECT:
-                    // ov_log_debug("SSL_ERROR_WANT_CONNECT");
-                    break;
-                case SSL_ERROR_WANT_X509_LOOKUP:
-                    // ov_log_debug("SSL_ERROR_WANT_X509_LOOKUP");
-                    break;
-                case SSL_ERROR_WANT_ASYNC:
-                    // ov_log_debug("SSL_ERROR_WANT_ASYNC");
-                    break;
-                case SSL_ERROR_WANT_ASYNC_JOB:
-                    // ov_log_debug("SSL_ERROR_WANT_ASYNC_JOB");
-                    break;
-                case SSL_ERROR_WANT_CLIENT_HELLO_CB:
-                    // ov_log_debug("SSL_ERROR_WANT_CLIENT_HELLO_CB");
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_SYSCALL:
-                    goto close;
-                    break;
-
-                case SSL_ERROR_SSL:
-                    errorcode = ERR_get_error();
-                    ERR_error_string_n(errorcode,
-                                       errorstring,
-                                       OV_ICE_SSL_ERROR_STRING_BUFFER_SIZE);
-
-                    shutdown = false;
-
-                    goto close;
-                    break;
-
-                case SSL_ERROR_WANT_ACCEPT:
-                    break;
-            }
+        case SSL_ERROR_NONE:
+            OV_ASSERT(1 == 0);
             break;
+
+        case SSL_ERROR_ZERO_RETURN:
+            // ov_log_debug("SSL_ERROR_ZERO_RETURN");
+            goto close;
+            break;
+
+        case SSL_ERROR_WANT_READ:
+            // ov_log_debug("SSL_ERROR_WANT_READ");
+            break;
+        case SSL_ERROR_WANT_WRITE:
+            // ov_log_debug("SSL_ERROR_WANT_WRITE");
+            break;
+        case SSL_ERROR_WANT_CONNECT:
+            // ov_log_debug("SSL_ERROR_WANT_CONNECT");
+            break;
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            // ov_log_debug("SSL_ERROR_WANT_X509_LOOKUP");
+            break;
+        case SSL_ERROR_WANT_ASYNC:
+            // ov_log_debug("SSL_ERROR_WANT_ASYNC");
+            break;
+        case SSL_ERROR_WANT_ASYNC_JOB:
+            // ov_log_debug("SSL_ERROR_WANT_ASYNC_JOB");
+            break;
+        case SSL_ERROR_WANT_CLIENT_HELLO_CB:
+            // ov_log_debug("SSL_ERROR_WANT_CLIENT_HELLO_CB");
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_SYSCALL:
+            goto close;
+            break;
+
+        case SSL_ERROR_SSL:
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_ICE_SSL_ERROR_STRING_BUFFER_SIZE);
+
+            shutdown = false;
+
+            goto close;
+            break;
+
+        case SSL_ERROR_WANT_ACCEPT:
+            break;
+        }
+        break;
     }
 
 call_again_later:
@@ -878,22 +857,23 @@ call_again_later:
      */
 
     pair->timer.handshake =
-        loop->timer.set(loop,
-                        config.dtls.reconnect_interval_usec,
-                        pair,
+        loop->timer.set(loop, config.dtls.reconnect_interval_usec, pair,
                         perform_ssl_client_handshake_triggered);
 
-    if (OV_TIMER_INVALID == pair->timer.handshake) goto error;
+    if (OV_TIMER_INVALID == pair->timer.handshake)
+        goto error;
 
 success:
     return true;
 
 close:
 
-    if (shutdown) SSL_shutdown(pair->dtls.ssl);
+    if (shutdown)
+        SSL_shutdown(pair->dtls.ssl);
 
 error:
-    if (pair) pair->state = OV_ICE_PAIR_FAILED;
+    if (pair)
+        pair->state = OV_ICE_PAIR_FAILED;
     return false;
 }
 
@@ -901,7 +881,8 @@ error:
 
 bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata) {
 
-    if (!userdata) return false;
+    if (!userdata)
+        return false;
 
     ov_ice_pair *pair = (ov_ice_pair *)(userdata);
     OV_ASSERT(id == pair->timer.handshake);
@@ -915,7 +896,8 @@ bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata) {
 
 static bool srtp_unset_data(ov_ice_pair *pair) {
 
-    if (!pair) return false;
+    if (!pair)
+        return false;
 
     pair->srtp.ready = false;
     pair->srtp.profile = ov_data_pointer_free(pair->srtp.profile);
@@ -931,39 +913,40 @@ static bool srtp_unset_data(ov_ice_pair *pair) {
 }
 /*---------------------------------------------------------------------------*/
 
-static bool srtp_get_key_length_of_profile(
-    const SRTP_PROTECTION_PROFILE *profile,
-    uint32_t *keylen,
-    uint32_t *saltlen) {
+static bool
+srtp_get_key_length_of_profile(const SRTP_PROTECTION_PROFILE *profile,
+                               uint32_t *keylen, uint32_t *saltlen) {
 
-    if (!profile || !keylen || !saltlen) goto error;
+    if (!profile || !keylen || !saltlen)
+        goto error;
 
-    if (!profile->id) goto error;
+    if (!profile->id)
+        goto error;
 
     switch (profile->id) {
 
-        case SRTP_AES128_CM_SHA1_80:
-            *keylen = 16;
-            *saltlen = 14;
-            break;
+    case SRTP_AES128_CM_SHA1_80:
+        *keylen = 16;
+        *saltlen = 14;
+        break;
 
-        case SRTP_AES128_CM_SHA1_32:
-            *keylen = 16;
-            *saltlen = 14;
-            break;
+    case SRTP_AES128_CM_SHA1_32:
+        *keylen = 16;
+        *saltlen = 14;
+        break;
 
-        case SRTP_AEAD_AES_128_GCM:
-            *keylen = 16;
-            *saltlen = 12;
-            break;
+    case SRTP_AEAD_AES_128_GCM:
+        *keylen = 16;
+        *saltlen = 12;
+        break;
 
-        case SRTP_AEAD_AES_256_GCM:
-            *keylen = 32;
-            *saltlen = 12;
-            break;
+    case SRTP_AEAD_AES_256_GCM:
+        *keylen = 32;
+        *saltlen = 12;
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     return true;
@@ -973,12 +956,9 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static const char *get_srtp_keys(ov_ice_pair *pair,
-                                 uint32_t *key_len,
-                                 uint32_t *salt_len,
-                                 uint8_t *server_key,
-                                 uint8_t *server_salt,
-                                 uint8_t *client_key,
+static const char *get_srtp_keys(ov_ice_pair *pair, uint32_t *key_len,
+                                 uint32_t *salt_len, uint8_t *server_key,
+                                 uint8_t *server_salt, uint8_t *client_key,
                                  uint8_t *client_salt) {
 
     size_t size = 2 * OV_ICE_SRTP_KEY_MAX + 2 * OV_ICE_SRTP_SALT_MAX + 1;
@@ -994,11 +974,14 @@ static const char *get_srtp_keys(ov_ice_pair *pair,
 
     SRTP_PROTECTION_PROFILE *profile =
         SSL_get_selected_srtp_profile(pair->dtls.ssl);
-    if (!srtp_get_key_length_of_profile(profile, &keylen, &saltlen)) goto error;
+    if (!srtp_get_key_length_of_profile(profile, &keylen, &saltlen))
+        goto error;
 
-    if (keylen > *key_len) goto error;
+    if (keylen > *key_len)
+        goto error;
 
-    if (saltlen > *salt_len) goto error;
+    if (saltlen > *salt_len)
+        goto error;
 
     /*      The total length of keying material obtained
             should be equal to two times the sum of
@@ -1012,14 +995,9 @@ static const char *get_srtp_keys(ov_ice_pair *pair,
 
     */
 
-    if (1 != SSL_export_keying_material(pair->dtls.ssl,
-                                        buffer,
-                                        size,
-                                        label_extractor_srtp,
-                                        strlen(label_extractor_srtp),
-                                        NULL,
-                                        0,
-                                        0))
+    if (1 != SSL_export_keying_material(
+                 pair->dtls.ssl, buffer, size, label_extractor_srtp,
+                 strlen(label_extractor_srtp), NULL, 0, 0))
         goto error;
 
     *key_len = keylen;
@@ -1027,13 +1005,17 @@ static const char *get_srtp_keys(ov_ice_pair *pair,
 
     uint8_t *ptr = buffer;
 
-    if (!memcpy(client_key, ptr, keylen)) return false;
+    if (!memcpy(client_key, ptr, keylen))
+        return false;
     ptr += keylen;
-    if (!memcpy(server_key, ptr, keylen)) return false;
+    if (!memcpy(server_key, ptr, keylen))
+        return false;
     ptr += keylen;
-    if (!memcpy(client_salt, ptr, saltlen)) return false;
+    if (!memcpy(client_salt, ptr, saltlen))
+        return false;
     ptr += saltlen;
-    if (!memcpy(server_salt, ptr, saltlen)) return false;
+    if (!memcpy(server_salt, ptr, saltlen))
+        return false;
     ptr += saltlen;
 
     return profile->name;
@@ -1043,8 +1025,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_ice_pair_dtls_io(ov_ice_pair *pair,
-                         const uint8_t *buffer,
+bool ov_ice_pair_dtls_io(ov_ice_pair *pair, const uint8_t *buffer,
                          size_t size) {
 
     char buf[OV_ICE_SSL_BUFFER_SIZE] = {0};
@@ -1052,39 +1033,38 @@ bool ov_ice_pair_dtls_io(ov_ice_pair *pair,
     int r = 0;
     ssize_t out = 0;
 
-    if (!pair || !buffer || size < 1) goto error;
+    if (!pair || !buffer || size < 1)
+        goto error;
 
     r = BIO_write(pair->dtls.read, buffer, size);
-    if (r < 0) goto error;
+    if (r < 0)
+        goto error;
 
     if (!SSL_is_init_finished(pair->dtls.ssl)) {
 
         switch (pair->dtls.type) {
 
-            case OV_ICE_DTLS_PASSIVE:
+        case OV_ICE_DTLS_PASSIVE:
 
-                r = SSL_do_handshake(pair->dtls.ssl);
+            r = SSL_do_handshake(pair->dtls.ssl);
 
-                if (SSL_is_init_finished(pair->dtls.ssl)) {
-                    pair->dtls.handshaked = true;
-                }
+            if (SSL_is_init_finished(pair->dtls.ssl)) {
+                pair->dtls.handshaked = true;
+            }
 
-                break;
+            break;
 
-            case OV_ICE_DTLS_ACTIVE:
-                perform_ssl_client_handshake(pair);
-                break;
+        case OV_ICE_DTLS_ACTIVE:
+            perform_ssl_client_handshake(pair);
+            break;
         }
 
         srtp_unset_data(pair);
 
-        const char *profile = get_srtp_keys(pair,
-                                            &pair->srtp.key_len,
-                                            &pair->srtp.salt_len,
-                                            pair->srtp.server.key,
-                                            pair->srtp.server.salt,
-                                            pair->srtp.client.key,
-                                            pair->srtp.client.salt);
+        const char *profile =
+            get_srtp_keys(pair, &pair->srtp.key_len, &pair->srtp.salt_len,
+                          pair->srtp.server.key, pair->srtp.server.salt,
+                          pair->srtp.client.key, pair->srtp.client.salt);
 
         if (profile) {
 
@@ -1101,14 +1081,10 @@ bool ov_ice_pair_dtls_io(ov_ice_pair *pair,
         out = SSL_read(pair->dtls.ssl, buf, OV_ICE_SSL_BUFFER_SIZE);
 
         if (out > 0) {
-            ov_log_debug(
-                "%zi bytes of unexpected SSL data received at pair "
-                "%s:%i | %s:%i",
-                out,
-                pair->local->addr,
-                pair->local->port,
-                pair->remote->addr,
-                pair->remote->port);
+            ov_log_debug("%zi bytes of unexpected SSL data received at pair "
+                         "%s:%i | %s:%i",
+                         out, pair->local->addr, pair->local->port,
+                         pair->remote->addr, pair->remote->port);
         }
     }
 
@@ -1126,11 +1102,13 @@ bool ov_ice_pair_handshake_active(ov_ice_pair *pair) {
     int errorcode = -1;
     int r = 0;
 
-    if (!pair) goto error;
+    if (!pair)
+        goto error;
 
     ov_ice_config config = ov_ice_get_config(pair->stream->session->ice);
 
-    if (0 == pair->stream->remote.fingerprint[0]) goto error;
+    if (0 == pair->stream->remote.fingerprint[0])
+        goto error;
 
     if (pair->dtls.ssl) {
 
@@ -1142,7 +1120,8 @@ bool ov_ice_pair_handshake_active(ov_ice_pair *pair) {
     pair->dtls.type = OV_ICE_DTLS_ACTIVE;
 
     pair->dtls.ctx = SSL_CTX_new(DTLS_client_method());
-    if (!pair->dtls.ctx) goto error;
+    if (!pair->dtls.ctx)
+        goto error;
 
     if (1 != SSL_CTX_set_min_proto_version(pair->dtls.ctx, DTLS1_2_VERSION))
         goto error;
@@ -1155,9 +1134,11 @@ bool ov_ice_pair_handshake_active(ov_ice_pair *pair) {
     const char *file = NULL;
     const char *path = NULL;
 
-    if (0 != config.dtls.ca.file[0]) file = config.dtls.ca.file;
+    if (0 != config.dtls.ca.file[0])
+        file = config.dtls.ca.file;
 
-    if (0 != config.dtls.ca.path[0]) path = config.dtls.ca.path;
+    if (0 != config.dtls.ca.path[0])
+        path = config.dtls.ca.path;
 
     if (file || path) {
 
@@ -1166,24 +1147,24 @@ bool ov_ice_pair_handshake_active(ov_ice_pair *pair) {
         if (r != 1) {
 
             errorcode = ERR_get_error();
-            ERR_error_string_n(
-                errorcode, errorstring, OV_ICE_SSL_ERROR_STRING_BUFFER_SIZE);
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_ICE_SSL_ERROR_STRING_BUFFER_SIZE);
 
-            ov_log_error(
-                "SSL_CTX_load_verify_locations failed "
-                "at socket %i | %s",
-                socket,
-                errorstring);
+            ov_log_error("SSL_CTX_load_verify_locations failed "
+                         "at socket %i | %s",
+                         socket, errorstring);
             goto error;
         }
     }
 
     // create the DTLS session context
     pair->dtls.ssl = SSL_new(pair->dtls.ctx);
-    if (!pair->dtls.ssl) goto error;
+    if (!pair->dtls.ssl)
+        goto error;
 
     r = SSL_set_tlsext_use_srtp(pair->dtls.ssl, config.dtls.srtp.profile);
-    if (0 != r) goto error;
+    if (0 != r)
+        goto error;
 
     pair->dtls.read = BIO_new(BIO_s_mem());
     pair->dtls.write = ov_ice_dtls_filter_pair_bio_create(pair);
@@ -1198,16 +1179,16 @@ bool ov_ice_pair_handshake_active(ov_ice_pair *pair) {
 
     ov_event_loop *loop = ov_ice_get_event_loop(pair->stream->session->ice);
     pair->timer.handshake =
-        loop->timer.set(loop,
-                        config.dtls.reconnect_interval_usec,
-                        pair,
+        loop->timer.set(loop, config.dtls.reconnect_interval_usec, pair,
                         perform_ssl_client_handshake_triggered);
 
-    if (OV_TIMER_INVALID == pair->timer.handshake) goto error;
+    if (OV_TIMER_INVALID == pair->timer.handshake)
+        goto error;
 
     return true;
 error:
-    if (pair) pair->state = OV_ICE_PAIR_FAILED;
+    if (pair)
+        pair->state = OV_ICE_PAIR_FAILED;
     return false;
 }
 
@@ -1219,33 +1200,37 @@ bool ov_ice_pair_send_stun_binding_request(ov_ice_pair *pair) {
     uint8_t buffer[OV_UDP_PAYLOAD_OCTETS] = {0};
     uint8_t *ptr = buffer;
 
-    if (!pair) goto error;
+    if (!pair)
+        goto error;
 
     ov_ice_base *base = pair->local->base;
     ov_ice_stream *stream = base->stream;
     ov_ice_session *session = stream->session;
 
-    if (!ov_ice_transaction_create(
-            session->ice, pair->transaction_id, 13, pair))
+    if (!ov_ice_transaction_create(session->ice, pair->transaction_id, 13,
+                                   pair))
         goto error;
 
     bool usecandidate = false;
 
-    if (session->controlling) usecandidate = pair->nominated;
+    if (session->controlling)
+        usecandidate = pair->nominated;
 
     const char *user = stream->uuid;
     const char *pass = stream->local.pass;
     const char *peer_user = stream->remote.user;
     const char *peer_pass = stream->remote.pass;
 
-    if (!user || !pass || !peer_user || !peer_pass) goto error;
+    if (!user || !pass || !peer_user || !peer_pass)
+        goto error;
 
     size_t required = 20; // header
     size_t len = 0;
 
     char username[513] = {0};
 
-    if (!snprintf(username, 513, "%s:%s", peer_user, user)) goto error;
+    if (!snprintf(username, 513, "%s:%s", peer_user, user))
+        goto error;
 
     required += ov_stun_message_integrity_encoding_length();
     required += ov_stun_fingerprint_encoding_length();
@@ -1254,11 +1239,13 @@ bool ov_ice_pair_send_stun_binding_request(ov_ice_pair *pair) {
     len =
         ov_stun_username_encoding_length((uint8_t *)username, strlen(username));
 
-    if (0 == len) goto error;
+    if (0 == len)
+        goto error;
 
     required += len;
 
-    if (usecandidate) required += ov_stun_ice_use_candidate_encoding_length();
+    if (usecandidate)
+        required += ov_stun_ice_use_candidate_encoding_length();
 
     if (session->controlling) {
         required += ov_stun_ice_controlling_encoding_length();
@@ -1270,7 +1257,8 @@ bool ov_ice_pair_send_stun_binding_request(ov_ice_pair *pair) {
      *      Prepare the buffer
      */
 
-    if (required > OV_UDP_PAYLOAD_OCTETS) goto error;
+    if (required > OV_UDP_PAYLOAD_OCTETS)
+        goto error;
 
     size = required;
     uint8_t *start = buffer;
@@ -1279,13 +1267,17 @@ bool ov_ice_pair_send_stun_binding_request(ov_ice_pair *pair) {
      *      Write content to the buffer.
      */
 
-    if (!ov_stun_frame_set_request(ptr, size)) goto error;
+    if (!ov_stun_frame_set_request(ptr, size))
+        goto error;
 
-    if (!ov_stun_frame_set_method(ptr, size, STUN_BINDING)) goto error;
+    if (!ov_stun_frame_set_method(ptr, size, STUN_BINDING))
+        goto error;
 
-    if (!ov_stun_frame_set_magic_cookie(ptr, size)) goto error;
+    if (!ov_stun_frame_set_magic_cookie(ptr, size))
+        goto error;
 
-    if (!ov_stun_frame_set_length(ptr, size, size - 20)) goto error;
+    if (!ov_stun_frame_set_length(ptr, size, size - 20))
+        goto error;
 
     if (!ov_stun_frame_set_transaction_id(ptr, size, pair->transaction_id))
         goto error;
@@ -1294,14 +1286,14 @@ bool ov_ice_pair_send_stun_binding_request(ov_ice_pair *pair) {
 
     if (session->controlling) {
 
-        if (!ov_stun_ice_controlling_encode(
-                ptr, size - (ptr - start), &ptr, session->tiebreaker))
+        if (!ov_stun_ice_controlling_encode(ptr, size - (ptr - start), &ptr,
+                                            session->tiebreaker))
             goto error;
 
     } else {
 
-        if (!ov_stun_ice_controlled_encode(
-                ptr, size - (ptr - start), &ptr, session->tiebreaker))
+        if (!ov_stun_ice_controlled_encode(ptr, size - (ptr - start), &ptr,
+                                           session->tiebreaker))
             goto error;
     }
 
@@ -1311,22 +1303,20 @@ bool ov_ice_pair_send_stun_binding_request(ov_ice_pair *pair) {
             goto error;
     }
 
-    if (!ov_stun_ice_priority_encode(
-            ptr, size - (ptr - start), &ptr, pair->priority))
+    if (!ov_stun_ice_priority_encode(ptr, size - (ptr - start), &ptr,
+                                     pair->priority))
         goto error;
 
-    if (!ov_stun_username_encode(ptr,
-                                 size - (ptr - start),
-                                 &ptr,
-                                 (uint8_t *)username,
-                                 strlen(username)))
+    if (!ov_stun_username_encode(ptr, size - (ptr - start), &ptr,
+                                 (uint8_t *)username, strlen(username)))
         goto error;
 
-    if (!ov_stun_add_message_integrity(
-            start, size, ptr, &ptr, (uint8_t *)peer_pass, strlen(peer_pass)))
+    if (!ov_stun_add_message_integrity(start, size, ptr, &ptr,
+                                       (uint8_t *)peer_pass, strlen(peer_pass)))
         goto error;
 
-    if (!ov_stun_add_fingerprint(start, size, ptr, &ptr)) goto error;
+    if (!ov_stun_add_fingerprint(start, size, ptr, &ptr))
+        goto error;
 
     ssize_t out = ov_ice_pair_send(pair, start, ptr - start);
 
@@ -1338,20 +1328,21 @@ bool ov_ice_pair_send_stun_binding_request(ov_ice_pair *pair) {
 
     if (ov_ice_debug_stun(session->ice))
         ov_log_debug("STUN send binding request from %s:%i to %s:%i",
-                     base->local.data.host,
-                     base->local.data.port,
-                     pair->remote->addr,
-                     pair->remote->port);
+                     base->local.data.host, base->local.data.port,
+                     pair->remote->addr, pair->remote->port);
 
     pair->progress_count++;
 
-    if (pair->state != OV_ICE_PAIR_SUCCESS) pair->state = OV_ICE_PAIR_PROGRESS;
+    if (pair->state != OV_ICE_PAIR_SUCCESS)
+        pair->state = OV_ICE_PAIR_PROGRESS;
 
-    if (pair->progress_count > 100) goto error;
+    if (pair->progress_count > 100)
+        goto error;
 
     return true;
 error:
-    if (pair) pair->state = OV_ICE_PAIR_FAILED;
+    if (pair)
+        pair->state = OV_ICE_PAIR_FAILED;
     return false;
 }
 
@@ -1359,7 +1350,8 @@ error:
 
 bool ov_ice_pair_create_turn_permission(ov_ice_pair *pair) {
 
-    if (!pair) goto error;
+    if (!pair)
+        goto error;
 
     TODO("... to be implemented.");
 

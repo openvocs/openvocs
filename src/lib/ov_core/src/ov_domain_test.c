@@ -148,10 +148,10 @@ int test_ov_domain_config_to_json() {
     testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_KEY));
     testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_FILE));
     testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY));
-    testrun(ov_json_get(
-        out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY "/" OV_KEY_FILE));
-    testrun(ov_json_get(
-        out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY "/" OV_KEY_PATH));
+    testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY
+                             "/" OV_KEY_FILE));
+    testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY
+                             "/" OV_KEY_PATH));
 
     testrun(ov_json_is_null(ov_json_get(out, "/" OV_KEY_PATH)));
     testrun(ov_json_is_null(ov_json_get(out, "/" OV_KEY_NAME)));
@@ -183,31 +183,26 @@ int test_ov_domain_config_to_json() {
     testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_KEY));
     testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_FILE));
     testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY));
-    testrun(ov_json_get(
-        out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY "/" OV_KEY_FILE));
-    testrun(ov_json_get(
-        out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY "/" OV_KEY_PATH));
+    testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY
+                             "/" OV_KEY_FILE));
+    testrun(ov_json_get(out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_AUTHORITY
+                             "/" OV_KEY_PATH));
 
     testrun(0 ==
             strcmp("1", ov_json_string_get(ov_json_get(out, "/" OV_KEY_NAME))));
     testrun(0 ==
             strcmp("2", ov_json_string_get(ov_json_get(out, "/" OV_KEY_PATH))));
-    testrun(0 == strcmp("3",
-                        ov_json_string_get(ov_json_get(
+    testrun(0 ==
+            strcmp("3", ov_json_string_get(ov_json_get(
                             out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_FILE))));
-    testrun(0 == strcmp("4",
-                        ov_json_string_get(ov_json_get(
-                            out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_KEY))));
-    testrun(0 == strcmp("5",
-                        ov_json_string_get(ov_json_get(out,
-                                                       "/" OV_KEY_CERTIFICATE
-                                                       "/" OV_KEY_AUTHORITY
-                                                       "/" OV_KEY_FILE))));
-    testrun(0 == strcmp("6",
-                        ov_json_string_get(ov_json_get(out,
-                                                       "/" OV_KEY_CERTIFICATE
-                                                       "/" OV_KEY_AUTHORITY
-                                                       "/" OV_KEY_PATH))));
+    testrun(0 == strcmp("4", ov_json_string_get(ov_json_get(
+                                 out, "/" OV_KEY_CERTIFICATE "/" OV_KEY_KEY))));
+    testrun(0 == strcmp("5", ov_json_string_get(ov_json_get(
+                                 out, "/" OV_KEY_CERTIFICATE
+                                      "/" OV_KEY_AUTHORITY "/" OV_KEY_FILE))));
+    testrun(0 == strcmp("6", ov_json_string_get(ov_json_get(
+                                 out, "/" OV_KEY_CERTIFICATE
+                                      "/" OV_KEY_AUTHORITY "/" OV_KEY_PATH))));
     out = ov_json_value_free(out);
 
     return testrun_log_success();
@@ -518,8 +513,8 @@ int test_ov_domain_array_clean() {
         testrun(strcat(array[i].config.certificate.cert, "certificate"));
         testrun(strcat(array[i].config.certificate.key, "sadadafadasfasfsaf"));
         testrun(strcat(array[i].config.certificate.ca.file, "sdsdsdsdsdds"));
-        testrun(strcat(
-            array[i].config.certificate.ca.path, "fonafnafpnpanfpasnfpn"));
+        testrun(strcat(array[i].config.certificate.ca.path,
+                       "fonafnafpnpanfpasnfpn"));
     }
 
     ov_domain *arr = array;
@@ -560,8 +555,8 @@ int test_ov_domain_array_free() {
         testrun(strcat(array[i].config.certificate.cert, "certificate"));
         testrun(strcat(array[i].config.certificate.key, "sadadafadasfasfsaf"));
         testrun(strcat(array[i].config.certificate.ca.file, "sdsdsdsdsdds"));
-        testrun(strcat(
-            array[i].config.certificate.ca.path, "fonafnafpnpanfpasnfpn"));
+        testrun(strcat(array[i].config.certificate.ca.path,
+                       "fonafnafpnpanfpasnfpn"));
     }
 
     array = ov_domain_array_free(10, array);

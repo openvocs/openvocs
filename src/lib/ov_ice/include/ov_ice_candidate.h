@@ -34,6 +34,7 @@ typedef struct ov_ice_candidate ov_ice_candidate;
 
 #include "ov_ice_base.h"
 #include "ov_ice_server.h"
+#include "ov_ice_stream.h"
 
 #include <ov_base/ov_buffer.h>
 #include <ov_base/ov_node.h>
@@ -186,8 +187,7 @@ char *ov_ice_candidate_to_string(const ov_ice_candidate *candidate);
         @param string   of type: |foundation SP id SP transport SP ...|
         @param length   length of the string
 */
-bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
-                            const char *string,
+bool ov_ice_candidate_parse(ov_ice_candidate *candidate, const char *string,
                             size_t length);
 
 /*----------------------------------------------------------------------------*/
@@ -234,8 +234,8 @@ ov_ice_candidate *ov_ice_candidate_from_json_string(const ov_json_value *input);
     keys of the candidate info and point to the source
     within the JSON value. (pointer based parsing)
 */
-ov_ice_candidate_info ov_ice_candidate_info_from_json(
-    const ov_json_value *input);
+ov_ice_candidate_info
+ov_ice_candidate_info_from_json(const ov_json_value *input);
 
 /*----------------------------------------------------------------------------*/
 

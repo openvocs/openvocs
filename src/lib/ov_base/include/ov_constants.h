@@ -457,6 +457,17 @@
 
 #endif
 
+#ifndef OV_DEFAULT_CUTOFF_AFTER_FRAMES
+
+/**
+ * If Voice detection is active, determines after how many frames of no
+ * voice having been detected the voice should be considered gone.
+ * Used e.g. by the recorder to stop a recording if VAD is active.
+ */
+#define OV_DEFAULT_CUTOFF_AFTER_FRAMES 100
+
+#endif
+
 /*****************************************************************************
  *                           DERIVED CONSTANTS
  ****************************************************************************/

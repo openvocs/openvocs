@@ -224,8 +224,7 @@ static int test_impl_clear_buffer() { return testrun_log_success(); }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *read_value_using_buffer(ov_serde *serde,
-                                         int shandle,
+static ov_value *read_value_using_buffer(ov_serde *serde, int shandle,
                                          ov_buffer *buf) {
 
     ssize_t read_bytes = recv(shandle, buf->start, buf->capacity, 0);
@@ -309,8 +308,8 @@ static int test_impl_serialize() {
     testrun(OV_ERROR_NOERROR != res.error_code);
     ov_result_clear(&res);
 
-    data.data = ov_value_list(
-        ov_value_number(1), ov_value_number(2), ov_value_number(3));
+    data.data = ov_value_list(ov_value_number(1), ov_value_number(2),
+                              ov_value_number(3));
     testrun(0 != data.data);
 
     testrun(ov_serde_serialize(serde, spair[1], data, 0));
@@ -355,13 +354,8 @@ static int cleanup() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_value_serde",
-            test_ov_value_serde_create,
-            test_impl_add_raw,
-            test_impl_pop_datum,
-            test_impl_clear_buffer,
-            test_impl_serialize,
-            test_impl_free,
-            cleanup);
+OV_TEST_RUN("ov_value_serde", test_ov_value_serde_create, test_impl_add_raw,
+            test_impl_pop_datum, test_impl_clear_buffer, test_impl_serialize,
+            test_impl_free, cleanup);
 
 /*----------------------------------------------------------------------------*/

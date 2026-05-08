@@ -36,18 +36,18 @@ char const *ov_sip_message_type_to_string(ov_sip_message_type type) {
 
     switch (type) {
 
-        case OV_SIP_INVALID:
-            return "INVALID";
+    case OV_SIP_INVALID:
+        return "INVALID";
 
-        case OV_SIP_REQUEST:
-            return "REQUEST";
+    case OV_SIP_REQUEST:
+        return "REQUEST";
 
-        case OV_SIP_RESPONSE:
-            return "RESPONSE";
+    case OV_SIP_RESPONSE:
+        return "RESPONSE";
 
-        default:
-            ov_log_error("Never to happen");
-            abort();
+    default:
+        ov_log_error("Never to happen");
+        abort();
     };
 }
 
@@ -90,12 +90,12 @@ struct ov_sip_message {
 static bool is_code_valid(int16_t code) {
 
     if (100 > code) {
-        ov_log_error(
-            "Invalid SIP response code: %" PRIi16 " - too small", code);
+        ov_log_error("Invalid SIP response code: %" PRIi16 " - too small",
+                     code);
         return false;
     } else if (699 < code) {
-        ov_log_error(
-            "Invalid SIP response code: %" PRIi16 " - too small", code);
+        ov_log_error("Invalid SIP response code: %" PRIi16 " - too small",
+                     code);
         return false;
     } else {
         return true;
@@ -236,8 +236,7 @@ static bool start_line_clear(ov_sip_message *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool free_hashtable_value(const void *key,
-                                 const void *value,
+static bool free_hashtable_value(const void *key, const void *value,
                                  void *arg) {
 
     UNUSED(key);
@@ -268,24 +267,24 @@ static ov_sip_message *basic_message_copy(ov_sip_message const *self) {
 
     switch (ov_sip_message_type_get(self)) {
 
-        case OV_SIP_INVALID:
+    case OV_SIP_INVALID:
 
-            ov_log_error("Cannot copy message - invalid message");
-            return 0;
+        ov_log_error("Cannot copy message - invalid message");
+        return 0;
 
-        case OV_SIP_RESPONSE:
+    case OV_SIP_RESPONSE:
 
-            return ov_sip_message_response_create(
-                ov_sip_message_response_code(self),
-                ov_sip_message_response_reason(self));
+        return ov_sip_message_response_create(
+            ov_sip_message_response_code(self),
+            ov_sip_message_response_reason(self));
 
-        case OV_SIP_REQUEST:
+    case OV_SIP_REQUEST:
 
-            return ov_sip_message_request_create(
-                ov_sip_message_method(self), ov_sip_message_uri(self));
+        return ov_sip_message_request_create(ov_sip_message_method(self),
+                                             ov_sip_message_uri(self));
 
-        default:
-            OV_PANIC("Invalid enum value");
+    default:
+        OV_PANIC("Invalid enum value");
     };
 }
 
@@ -324,18 +323,18 @@ ov_sip_message *ov_sip_message_cast(void *ptr) {
 
     switch (ov_sip_message_type_get(msg)) {
 
-        case OV_SIP_REQUEST:
+    case OV_SIP_REQUEST:
 
-            return msg;
+        return msg;
 
-        case OV_SIP_RESPONSE:
+    case OV_SIP_RESPONSE:
 
-            return msg;
+        return msg;
 
-        case OV_SIP_INVALID:
-        default:
+    case OV_SIP_INVALID:
+    default:
 
-            return 0;
+        return 0;
     };
 }
 
@@ -424,8 +423,8 @@ static uint32_t parse_cseq_header(char const *header, char const **method) {
         endptr = propagate_to_first_non_space(endptr);
     }
 
-    if (!ov_ptr_valid(
-            endptr, "Could not parse CSEQ header - no valid number") ||
+    if (!ov_ptr_valid(endptr,
+                      "Could not parse CSEQ header - no valid number") ||
         !is_non_zero(*endptr, "No method given")) {
         return 0;
     } else if (0 != method) {
@@ -442,8 +441,8 @@ static uint32_t parse_cseq_header(char const *header, char const **method) {
 
 uint32_t ov_sip_message_cseq(ov_sip_message const *self, char const **method) {
 
-    return parse_cseq_header(
-        ov_sip_message_header(self, OV_SIP_HEADER_CSEQ), method);
+    return parse_cseq_header(ov_sip_message_header(self, OV_SIP_HEADER_CSEQ),
+                             method);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -468,8 +467,7 @@ static char *create_cseq_string(char const *method, uint32_t seq) {
 /*----------------------------------------------------------------------------*/
 
 static bool method_fits_if_request(ov_sip_message const *self,
-                                   char const *method,
-                                   char const *message) {
+                                   char const *method, char const *message) {
 
     char const *request_method = request_method_get((ov_sip_message *)self);
 
@@ -485,8 +483,7 @@ static bool method_fits_if_request(ov_sip_message const *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sip_message_cseq_set(ov_sip_message *self,
-                             char const *method,
+bool ov_sip_message_cseq_set(ov_sip_message *self, char const *method,
                              uint32_t seq) {
 
     char *cseq = create_cseq_string(method, seq);
@@ -567,8 +564,7 @@ static bool is_header_value_valid(char const *value, char const *name) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sip_message_header_set(ov_sip_message *self,
-                               char const *name,
+bool ov_sip_message_header_set(ov_sip_message *self, char const *name,
                                char const *value) {
 
     if (!is_msg_valid(self) || (!ov_ptr_valid(name, "Missing header name")) ||
@@ -661,8 +657,7 @@ static bool ptr_valid(void const *ptr, char const *name) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sip_message_body_set(ov_sip_message *self,
-                             ov_buffer *body,
+bool ov_sip_message_body_set(ov_sip_message *self, ov_buffer *body,
                              char const *content_type) {
 
     if ((!is_msg_valid(self)) || (!ptr_valid(body, "body")) ||
@@ -676,11 +671,11 @@ bool ov_sip_message_body_set(ov_sip_message *self,
         char content_length[30] = {0};
         snprintf(content_length, sizeof(content_length), "%zu", body->length);
 
-        ov_sip_message_header_set(
-            self, OV_SIP_HEADER_CONTENT_LENGTH, content_length);
+        ov_sip_message_header_set(self, OV_SIP_HEADER_CONTENT_LENGTH,
+                                  content_length);
 
-        ov_sip_message_header_set(
-            self, OV_SIP_HEADER_CONTENT_TYPE, content_type);
+        ov_sip_message_header_set(self, OV_SIP_HEADER_CONTENT_TYPE,
+                                  content_type);
 
         return true;
     }
@@ -747,9 +742,7 @@ static bool dump_header(char const *name, char const *value, void *additional) {
         return false;
     } else {
 
-        fprintf(out,
-                "    %s: %s\n",
-                ov_string_sanitize(name),
+        fprintf(out, "    %s: %s\n", ov_string_sanitize(name),
                 ov_string_sanitize(value));
 
         return true;
@@ -779,9 +772,7 @@ static void dump_body(FILE *out, ov_buffer const *body) {
 
         } else {
 
-            fprintf(out,
-                    "%.*s\n",
-                    (int)body->length,
+            fprintf(out, "%.*s\n", (int)body->length,
                     ov_string_sanitize((char const *)body->start));
         }
     }
@@ -796,8 +787,7 @@ static void dump_request(FILE *out, ov_sip_message const *self) {
 
         fprintf(out, "\n--- BEGIN SIP MESSAGE ---\n");
 
-        fprintf(out,
-                "SIP Request message: %s - URi: %s\n",
+        fprintf(out, "SIP Request message: %s - URi: %s\n",
                 ov_string_sanitize(ov_sip_message_method(self)),
                 ov_string_sanitize(ov_sip_message_uri(self)));
 
@@ -812,14 +802,13 @@ static void dump_request(FILE *out, ov_sip_message const *self) {
 
 static void dump_response(FILE *out, ov_sip_message const *self) {
 
-    if ((ov_ptr_valid(
-            out, "Tried to dump SIP message, but no output stream")) &&
+    if ((ov_ptr_valid(out,
+                      "Tried to dump SIP message, but no output stream")) &&
         (ov_ptr_valid(self, "Tried to dump SIP message, but no message"))) {
 
         fprintf(out, "\n--- BEGIN SIP MESSAGE ---\n");
 
-        fprintf(out,
-                "SIP Response message: %" PRIi16 "- %s\n",
+        fprintf(out, "SIP Response message: %" PRIi16 "- %s\n",
                 ov_sip_message_response_code(self),
                 ov_sip_message_response_reason(self));
 
@@ -848,23 +837,23 @@ void ov_sip_message_dump(FILE *out, ov_sip_message const *self) {
 
     switch (ov_sip_message_type_get(self)) {
 
-        case OV_SIP_REQUEST:
+    case OV_SIP_REQUEST:
 
-            dump_request(out, self);
-            break;
+        dump_request(out, self);
+        break;
 
-        case OV_SIP_RESPONSE:
+    case OV_SIP_RESPONSE:
 
-            dump_response(out, self);
-            break;
+        dump_response(out, self);
+        break;
 
-        case OV_SIP_INVALID:
+    case OV_SIP_INVALID:
 
-            dump_invalid(out);
-            break;
+        dump_invalid(out);
+        break;
 
-        default:
-            OV_ASSERT(!"MUST NEVER HAPPEN");
+    default:
+        OV_ASSERT(!"MUST NEVER HAPPEN");
     };
 }
 

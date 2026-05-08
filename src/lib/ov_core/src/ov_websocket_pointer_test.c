@@ -153,12 +153,12 @@ int test_ov_websocket_process_handshake_request() {
         ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -177,18 +177,15 @@ int test_ov_websocket_process_handshake_request() {
     testrun(0 == strncmp(OV_HTTP_SWITCH_PROTOCOLS,
                          (char *)out->status.phrase.start,
                          out->status.phrase.length));
-    header = ov_http_header_get_unique(
-        out->header, out->config.header.capacity, OV_HTTP_KEY_UPGRADE);
-    testrun(0 == strncmp(OV_WEBSOCKET_KEY,
-                         (char *)header->value.start,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
+                                       OV_HTTP_KEY_UPGRADE);
+    testrun(0 == strncmp(OV_WEBSOCKET_KEY, (char *)header->value.start,
                          header->value.length));
-    header = ov_http_header_get_unique(
-        out->header, out->config.header.capacity, OV_HTTP_KEY_CONNECTION);
-    testrun(0 == strncmp(OV_HTTP_KEY_UPGRADE,
-                         (char *)header->value.start,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
+                                       OV_HTTP_KEY_CONNECTION);
+    testrun(0 == strncmp(OV_HTTP_KEY_UPGRADE, (char *)header->value.start,
                          header->value.length));
-    header = ov_http_header_get_unique(out->header,
-                                       out->config.header.capacity,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
                                        OV_WEBSOCKET_KEY_SECURE_ACCEPT);
 
     testrun(0 == memcmp(accept_key, header->value.start, header->value.length));
@@ -204,18 +201,15 @@ int test_ov_websocket_process_handshake_request() {
     testrun(0 == strncmp(OV_HTTP_SWITCH_PROTOCOLS,
                          (char *)out->status.phrase.start,
                          out->status.phrase.length));
-    header = ov_http_header_get_unique(
-        out->header, out->config.header.capacity, OV_HTTP_KEY_UPGRADE);
-    testrun(0 == strncmp(OV_WEBSOCKET_KEY,
-                         (char *)header->value.start,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
+                                       OV_HTTP_KEY_UPGRADE);
+    testrun(0 == strncmp(OV_WEBSOCKET_KEY, (char *)header->value.start,
                          header->value.length));
-    header = ov_http_header_get_unique(
-        out->header, out->config.header.capacity, OV_HTTP_KEY_CONNECTION);
-    testrun(0 == strncmp(OV_HTTP_KEY_UPGRADE,
-                         (char *)header->value.start,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
+                                       OV_HTTP_KEY_CONNECTION);
+    testrun(0 == strncmp(OV_HTTP_KEY_UPGRADE, (char *)header->value.start,
                          header->value.length));
-    header = ov_http_header_get_unique(out->header,
-                                       out->config.header.capacity,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
                                        OV_WEBSOCKET_KEY_SECURE_ACCEPT);
     testrun(0 == memcmp(accept_key, header->value.start, header->value.length));
 
@@ -228,12 +222,12 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_create_request_string(config, version, "PUT", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -250,10 +244,10 @@ int test_ov_websocket_process_handshake_request() {
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
     testrun(
         ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE, "somthing"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -268,12 +262,12 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, "something"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              "something"));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -287,12 +281,12 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_message_free(in);
     in = ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -307,10 +301,10 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -325,12 +319,12 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_close_header(in));
     testrun(OV_HTTP_PARSER_SUCCESS == ov_http_pointer_parse_message(in, NULL));
     testrun(!ov_websocket_process_handshake_request(in, &out, &is_handshake));
@@ -343,12 +337,12 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "12"));
     testrun(ov_http_message_close_header(in));
@@ -362,8 +356,7 @@ int test_ov_websocket_process_handshake_request() {
     testrun(0 == strncmp(OV_HTTP_UPGRADE_REQUIRED,
                          (char *)out->status.phrase.start,
                          out->status.phrase.length));
-    header = ov_http_header_get_unique(out->header,
-                                       out->config.header.capacity,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
                                        OV_WEBSOCKET_KEY_SECURE_VERSION);
     testrun(0 ==
             strncmp("13", (char *)header->value.start, header->value.length));
@@ -376,12 +369,12 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, wrong_key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              wrong_key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -396,12 +389,12 @@ int test_ov_websocket_process_handshake_request() {
     in = ov_http_create_request_string(config, version, "GET", "/");
     testrun(in);
     testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_HOST, "host"));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
-    testrun(ov_http_message_add_header_string(
-        in, OV_HTTP_KEY_CONNECTION, "x, y, z,  upgrade , whatever "));
-    testrun(ov_http_message_add_header_string(
-        in, OV_WEBSOCKET_KEY_SECURE, (char *)key));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(in, OV_HTTP_KEY_CONNECTION,
+                                              "x, y, z,  upgrade , whatever "));
+    testrun(ov_http_message_add_header_string(in, OV_WEBSOCKET_KEY_SECURE,
+                                              (char *)key));
     testrun(ov_http_message_add_header_string(
         in, OV_WEBSOCKET_KEY_SECURE_VERSION, "13"));
     testrun(ov_http_message_close_header(in));
@@ -415,18 +408,15 @@ int test_ov_websocket_process_handshake_request() {
     testrun(0 == strncmp(OV_HTTP_SWITCH_PROTOCOLS,
                          (char *)out->status.phrase.start,
                          out->status.phrase.length));
-    header = ov_http_header_get_unique(
-        out->header, out->config.header.capacity, OV_HTTP_KEY_UPGRADE);
-    testrun(0 == strncmp(OV_WEBSOCKET_KEY,
-                         (char *)header->value.start,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
+                                       OV_HTTP_KEY_UPGRADE);
+    testrun(0 == strncmp(OV_WEBSOCKET_KEY, (char *)header->value.start,
                          header->value.length));
-    header = ov_http_header_get_unique(
-        out->header, out->config.header.capacity, OV_HTTP_KEY_CONNECTION);
-    testrun(0 == strncmp(OV_HTTP_KEY_UPGRADE,
-                         (char *)header->value.start,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
+                                       OV_HTTP_KEY_CONNECTION);
+    testrun(0 == strncmp(OV_HTTP_KEY_UPGRADE, (char *)header->value.start,
                          header->value.length));
-    header = ov_http_header_get_unique(out->header,
-                                       out->config.header.capacity,
+    header = ov_http_header_get_unique(out->header, out->config.header.capacity,
                                        OV_WEBSOCKET_KEY_SECURE_ACCEPT);
     testrun(0 == memcmp(accept_key, header->value.start, header->value.length));
 
@@ -457,9 +447,11 @@ int check_fragmentation_state() {
         fin = false;
         opcode = false;
 
-        if (buffer & 0x80) fin = true;
+        if (buffer & 0x80)
+            fin = true;
 
-        if (buffer & 0x0F) opcode = true;
+        if (buffer & 0x0F)
+            opcode = true;
 
         state = fragmentation_state(buffer);
 
@@ -1217,18 +1209,18 @@ int test_ov_websocket_parse_frame() {
 
         switch (0x0F & i) {
 
-            case OV_WEBSOCKET_OPCODE_CONTINUATION:
-            case OV_WEBSOCKET_OPCODE_TEXT:
-            case OV_WEBSOCKET_OPCODE_BINARY:
-            case OV_WEBSOCKET_OPCODE_CLOSE:
-            case OV_WEBSOCKET_OPCODE_PING:
-            case OV_WEBSOCKET_OPCODE_PONG:
-                testrun(OV_WEBSOCKET_PARSER_SUCCESS ==
-                        ov_websocket_parse_frame(frame, &next));
-                break;
-            default:
-                testrun(OV_WEBSOCKET_PARSER_ERROR ==
-                        ov_websocket_parse_frame(frame, &next));
+        case OV_WEBSOCKET_OPCODE_CONTINUATION:
+        case OV_WEBSOCKET_OPCODE_TEXT:
+        case OV_WEBSOCKET_OPCODE_BINARY:
+        case OV_WEBSOCKET_OPCODE_CLOSE:
+        case OV_WEBSOCKET_OPCODE_PING:
+        case OV_WEBSOCKET_OPCODE_PONG:
+            testrun(OV_WEBSOCKET_PARSER_SUCCESS ==
+                    ov_websocket_parse_frame(frame, &next));
+            break;
+        default:
+            testrun(OV_WEBSOCKET_PARSER_ERROR ==
+                    ov_websocket_parse_frame(frame, &next));
         }
     }
 
@@ -1454,7 +1446,8 @@ int check_generate_masking_key() {
 
         for (size_t x = 0; x < 20; x++) {
 
-            if (x == i) continue;
+            if (x == i)
+                continue;
 
             testrun(0 != memcmp(array[i], array[x], 5));
         }

@@ -47,8 +47,8 @@ int test_ov_stun_attribute_frame_is_message_integrity_sha256() {
     memset(buf, 'a', size);
 
     // prepare valid frame
-    testrun(ov_stun_attribute_set_type(
-        buffer, size, STUN_ATTR_MESSAGE_INTEGRITY_SHA256));
+    testrun(ov_stun_attribute_set_type(buffer, size,
+                                       STUN_ATTR_MESSAGE_INTEGRITY_SHA256));
     testrun(ov_stun_attribute_set_length(buffer, size, 32));
 
     testrun(ov_stun_attribute_frame_is_message_integrity_sha256(buffer, size));
@@ -71,8 +71,8 @@ int test_ov_stun_attribute_frame_is_message_integrity_sha256() {
     // type not message integrity
     testrun(ov_stun_attribute_set_type(buffer, size, 0));
     testrun(!ov_stun_attribute_frame_is_message_integrity_sha256(buffer, size));
-    testrun(ov_stun_attribute_set_type(
-        buffer, size, STUN_ATTR_MESSAGE_INTEGRITY_SHA256));
+    testrun(ov_stun_attribute_set_type(buffer, size,
+                                       STUN_ATTR_MESSAGE_INTEGRITY_SHA256));
     testrun(ov_stun_attribute_frame_is_message_integrity_sha256(buffer, size));
 
     return testrun_log_success();
@@ -147,20 +147,20 @@ int test_ov_stun_add_message_integrity_sha256() {
 
     // start not at 32 bit multiple
     ptr++;
-    testrun(!ov_stun_add_message_integrity_sha256(
-        head, length, ptr, NULL, key, len));
+    testrun(!ov_stun_add_message_integrity_sha256(head, length, ptr, NULL, key,
+                                                  len));
 
     ptr++;
-    testrun(!ov_stun_add_message_integrity_sha256(
-        head, length, ptr, NULL, key, len));
+    testrun(!ov_stun_add_message_integrity_sha256(head, length, ptr, NULL, key,
+                                                  len));
 
     ptr++;
-    testrun(!ov_stun_add_message_integrity_sha256(
-        head, length, ptr, NULL, key, len));
+    testrun(!ov_stun_add_message_integrity_sha256(head, length, ptr, NULL, key,
+                                                  len));
 
     ptr++;
-    testrun(ov_stun_add_message_integrity_sha256(
-        head, length, ptr, NULL, key, len));
+    testrun(ov_stun_add_message_integrity_sha256(head, length, ptr, NULL, key,
+                                                 len));
 
     memset(buffer, 0, 100);
 
@@ -264,8 +264,8 @@ int test_ov_stun_check_message_integrity_sha256() {
     buffer[19] = 0x00; // ID
 
     ptr = buffer + 20;
-    testrun(ov_stun_add_message_integrity_sha256(
-        head, length, ptr, NULL, key, len));
+    testrun(ov_stun_add_message_integrity_sha256(head, length, ptr, NULL, key,
+                                                 len));
 
     testrun(ov_stun_frame_slice(head, 56, arr, az));
     testrun(arr[0] != NULL);
@@ -275,58 +275,58 @@ int test_ov_stun_check_message_integrity_sha256() {
 
     testrun(ov_stun_attribute_frame_is_message_integrity_sha256(arr[0], 30));
 
-    testrun(!ov_stun_check_message_integrity_sha256(
-        NULL, 0, NULL, 0, NULL, 0, true));
-    testrun(!ov_stun_check_message_integrity_sha256(
-        NULL, length, arr, az, key, len, true));
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, 0, arr, az, key, len, true));
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, NULL, az, key, len, true));
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, 0, key, len, true));
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, NULL, len, true));
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, 0, true));
+    testrun(!ov_stun_check_message_integrity_sha256(NULL, 0, NULL, 0, NULL, 0,
+                                                    true));
+    testrun(!ov_stun_check_message_integrity_sha256(NULL, length, arr, az, key,
+                                                    len, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, 0, arr, az, key, len,
+                                                    true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, NULL, az, key,
+                                                    len, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, 0, key,
+                                                    len, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, az, NULL,
+                                                    len, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                    0, true));
 
-    testrun(ov_stun_check_message_integrity_sha256(
-        head, 56, arr, az, key, len, true));
+    testrun(ov_stun_check_message_integrity_sha256(head, 56, arr, az, key, len,
+                                                   true));
 
     // different key
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len - 1, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                    len - 1, true));
 
     // different content
     buffer[10] = 0x00;
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                    len, true));
 
     buffer[10] = 0x11;
-    testrun(ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, true));
+    testrun(ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                   len, true));
 
     // no message integrity used
     ptr[0] = 0x00; // attribute type username
     ptr[1] = 0x06; // attribute type username
 
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, true));
-    testrun(ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, false));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                    len, true));
+    testrun(ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                   len, false));
 
     ptr[0] = 0x00;
     ptr[1] = 0x1C;
-    testrun(ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, true));
+    testrun(ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                   len, true));
 
     // integrity length failure
     ptr[2] = 0x32;
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                    len, true));
     ptr[2] = 0x00;
-    testrun(ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, true));
+    testrun(ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                   len, true));
 
     // attribute behind integrity
     buffer[2] = 0x00; // LENGTH
@@ -350,8 +350,8 @@ int test_ov_stun_check_message_integrity_sha256() {
         testrun(arr[i] == NULL);
     }
 
-    testrun(!ov_stun_check_message_integrity_sha256(
-        head, length, arr, az, key, len, true));
+    testrun(!ov_stun_check_message_integrity_sha256(head, length, arr, az, key,
+                                                    len, true));
 
     return testrun_log_success();
 }

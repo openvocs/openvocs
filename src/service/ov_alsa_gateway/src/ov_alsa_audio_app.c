@@ -173,10 +173,8 @@ static bool device_info_from_extended_format(ov_json_value const *jval,
 static size_t get_devices_list(char **devices_target,
                                char **multicast_ip_target,
                                uint16_t *multicast_port_target,
-                               char **mixer_target,
-                               double *volumes,
-                               size_t capacity,
-                               ov_json_value const *jdevices) {
+                               char **mixer_target, double *volumes,
+                               size_t capacity, ov_json_value const *jdevices) {
 
     size_t num_devices = ov_json_array_count(jdevices);
 
@@ -184,13 +182,12 @@ static size_t get_devices_list(char **devices_target,
         ov_log_warning(
             "Number of configured devices %zu exeeds limits, only using the "
             "first %zu numbers",
-            num_devices,
-            capacity);
+            num_devices, capacity);
     }
 
     if (ov_ptr_valid(devices_target, "Cannot read devices list - 0 pointer") &&
-        ov_ptr_valid(
-            multicast_ip_target, "Cannot read devices list - 0 pointer")) {
+        ov_ptr_valid(multicast_ip_target,
+                     "Cannot read devices list - 0 pointer")) {
 
         bool result = true;
 
@@ -203,15 +200,11 @@ static size_t get_devices_list(char **devices_target,
             double volume = 0;
 
             device_info_from_extended_format(
-                ov_json_array_get((ov_json_value *)jdevices, 1 + i),
-                &devstring,
-                &multicast_ip,
-                &port,
-                &mixer,
-                &volume);
+                ov_json_array_get((ov_json_value *)jdevices, 1 + i), &devstring,
+                &multicast_ip, &port, &mixer, &volume);
 
-            if (ov_ptr_valid(
-                    devstring, "Invalid device entry in ALSA devices")) {
+            if (ov_ptr_valid(devstring,
+                             "Invalid device entry in ALSA devices")) {
                 devices_target[i] = ov_string_dup(devstring);
 
                 if (0 != multicast_ip_target) {
@@ -275,30 +268,25 @@ bool ov_alsa_audio_app_config_clear(ov_alsa_audio_app_config *cfg) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_alsa_audio_app_config ov_alsa_audio_app_config_from_json(
-    ov_json_value const *jcfg,
-    ov_alsa_audio_app_config default_config,
-    bool *ok) {
+ov_alsa_audio_app_config
+ov_alsa_audio_app_config_from_json(ov_json_value const *jcfg,
+                                   ov_alsa_audio_app_config default_config,
+                                   bool *ok) {
 
     ov_json_value const *channels = ov_json_get(jcfg, "/" OV_KEY_CHANNELS);
 
     if (0 != channels) {
         ov_alsa_audio_app_config cfg = {0};
 
-        get_devices_list(cfg.channels.output,
-                         cfg.static_loops.output,
+        get_devices_list(cfg.channels.output, cfg.static_loops.output,
                          cfg.static_loops.output_ports,
-                         cfg.channel_mixer.output,
-                         cfg.channel_volumes.output,
+                         cfg.channel_mixer.output, cfg.channel_volumes.output,
                          OV_ALSA_MAX_DEVICES,
                          ov_json_get(channels, "/" OV_KEY_OUTPUT));
 
-        get_devices_list(cfg.channels.input,
-                         cfg.static_loops.input,
-                         cfg.static_loops.input_ports,
-                         cfg.channel_mixer.input,
-                         cfg.channel_volumes.input,
-                         OV_ALSA_MAX_DEVICES,
+        get_devices_list(cfg.channels.input, cfg.static_loops.input,
+                         cfg.static_loops.input_ports, cfg.channel_mixer.input,
+                         cfg.channel_volumes.input, OV_ALSA_MAX_DEVICES,
                          ov_json_get(channels, "/" OV_KEY_INPUT));
 
         cfg.max_num_frames = ov_config_u32_or_default(
@@ -313,11 +301,10 @@ ov_alsa_audio_app_config ov_alsa_audio_app_config_from_json(
         cfg.rtp_socket = (ov_socket_configuration){
             .host = "0.0.0.0", .port = 0, .type = UDP};
 
-        char const *listen_interface =
-            OV_OR_DEFAULT(ov_json_string_get(ov_json_get(jcfg,
-                                                         "/"
-                                                         "rtp_interface")),
-                          "0.0.0.0");
+        char const *listen_interface = OV_OR_DEFAULT(
+            ov_json_string_get(ov_json_get(jcfg, "/"
+                                                 "rtp_interface")),
+            "0.0.0.0");
 
         strcpy(cfg.rtp_socket.host, listen_interface);
 
@@ -449,8 +436,8 @@ static ov_rtp_app const *get_rtp_app_send(ov_alsa_audio_app const *self) {
 static OutChannel const *get_out_channel_ptr(ov_alsa_audio_app const *self,
                                              size_t i) {
 
-    if (ov_ptr_valid(
-            as_alsa_audio_app(self), "Cannot get ALSA channel - 0 pointer") &&
+    if (ov_ptr_valid(as_alsa_audio_app(self),
+                     "Cannot get ALSA channel - 0 pointer") &&
         ov_cond_valid(i < self->num_channels,
                       "Cannot get ALSA channel - channel index out of range")) {
 
@@ -473,8 +460,8 @@ static OutChannel *get_out_channel_ptr_mut(ov_alsa_audio_app *self, size_t i) {
 static InChannel const *get_in_channel_ptr(ov_alsa_audio_app const *self,
                                            size_t i) {
 
-    if (ov_ptr_valid(
-            as_alsa_audio_app(self), "Cannot get ALSA channel - 0 pointer") &&
+    if (ov_ptr_valid(as_alsa_audio_app(self),
+                     "Cannot get ALSA channel - 0 pointer") &&
         ov_cond_valid(i < self->num_channels,
                       "Cannot get ALSA channel - channel index out of range")) {
 
@@ -589,8 +576,8 @@ static ov_alsa_playback *create_alsa_playback(OutChannel const *channel,
 
     ov_alsa_playback *ap = 0;
 
-    if (ov_ptr_valid(
-            channel, "Cannot prepare ALSA playback for output channel") &&
+    if (ov_ptr_valid(channel,
+                     "Cannot prepare ALSA playback for output channel") &&
         ov_cond_valid(0 == channel->playback, "ALSA channel already in use")) {
 
         ov_alsa_playback_config pb_config = {
@@ -646,10 +633,8 @@ static ov_alsa_rtp_mixer *create_mixer_for(OutChannel *channel,
 /*----------------------------------------------------------------------------*/
 
 static size_t initialize_out_channels(ov_alsa_audio_app *self,
-                                      OutChannel *channels,
-                                      int rtp_logging_fd,
-                                      size_t capacity,
-                                      char const **devices,
+                                      OutChannel *channels, int rtp_logging_fd,
+                                      size_t capacity, char const **devices,
                                       char const **mixer_elements,
                                       double const *volumes,
                                       size_t num_devices) {
@@ -659,15 +644,14 @@ static size_t initialize_out_channels(ov_alsa_audio_app *self,
     if (capacity < num_devices) {
 
         ov_log_warning(
-            "More ALSA devices configured than supported: %zu vs %zu",
-            capacity,
+            "More ALSA devices configured than supported: %zu vs %zu", capacity,
             num_devices);
     }
 
-    if (ov_ptr_valid(
-            channels, "Cannot initialize ALSA device list - 0 pointer") &&
-        ov_ptr_valid(
-            devices, "Cannot initialize ALSA device list - 0 pointer")) {
+    if (ov_ptr_valid(channels,
+                     "Cannot initialize ALSA device list - 0 pointer") &&
+        ov_ptr_valid(devices,
+                     "Cannot initialize ALSA device list - 0 pointer")) {
 
         uint64_t frame_length_ms = get_frame_length_ms(self);
 
@@ -683,10 +667,9 @@ static size_t initialize_out_channels(ov_alsa_audio_app *self,
 
             if (0 == devices[i]) {
 
-                ov_log_info(
-                    "Not activating ALSA playback for channel %zu - "
-                    "deactivated in config (no device set)",
-                    i);
+                ov_log_info("Not activating ALSA playback for channel %zu - "
+                            "deactivated in config (no device set)",
+                            i);
 
             } else {
 
@@ -695,8 +678,8 @@ static size_t initialize_out_channels(ov_alsa_audio_app *self,
                 channels[i].mixer = create_mixer_for(
                     channels + i, get_recv_codec_for(self, i), frame_length_ms);
 
-                ov_log_info(
-                    "Prepared output channel %zu to device %s", i, devices[i]);
+                ov_log_info("Prepared output channel %zu to device %s", i,
+                            devices[i]);
             }
         }
     }
@@ -706,8 +689,7 @@ static size_t initialize_out_channels(ov_alsa_audio_app *self,
 
 /*----------------------------------------------------------------------------*/
 
-static size_t initialize_in_channels(InChannel *channels,
-                                     size_t capacity,
+static size_t initialize_in_channels(InChannel *channels, size_t capacity,
                                      char const **devices,
                                      char const **mixer_elements,
                                      double const *volumes,
@@ -718,15 +700,14 @@ static size_t initialize_in_channels(InChannel *channels,
     if (capacity < num_devices) {
 
         ov_log_warning(
-            "More ALSA devices configured than supported: %zu vs %zu",
-            capacity,
+            "More ALSA devices configured than supported: %zu vs %zu", capacity,
             num_devices);
     }
 
-    if (ov_ptr_valid(
-            channels, "Cannot initialize ALSA device list - 0 pointer") &&
-        ov_ptr_valid(
-            devices, "Cannot initialize ALSA device list - 0 pointer")) {
+    if (ov_ptr_valid(channels,
+                     "Cannot initialize ALSA device list - 0 pointer") &&
+        ov_ptr_valid(devices,
+                     "Cannot initialize ALSA device list - 0 pointer")) {
 
         for (i = 0; (i < capacity) && (i < num_devices); ++i) {
             memset(channels + i, 0, sizeof(InChannel));
@@ -777,8 +758,8 @@ static bool cb_rtp_recv(ov_rtp_frame *rtp_frame, void *userdata) {
     bool result = false;
     OutChannel *channel = as_out_channel_mut(userdata);
 
-    if (ov_ptr_valid(
-            channel, "Cannot forward RTP - Frame - invalid Channel pointer")) {
+    if (ov_ptr_valid(channel,
+                     "Cannot forward RTP - Frame - invalid Channel pointer")) {
 
         if (rtp_frame->expanded.ssrc == channel->ssid_to_cancel) {
 
@@ -801,10 +782,8 @@ static bool cb_rtp_recv(ov_rtp_frame *rtp_frame, void *userdata) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_rtp_app *create_rtp_app(ov_alsa_audio_app *self,
-                                  OutChannel *channel,
-                                  char const *mc_loop,
-                                  uint16_t mc_port) {
+static ov_rtp_app *create_rtp_app(ov_alsa_audio_app *self, OutChannel *channel,
+                                  char const *mc_loop, uint16_t mc_port) {
 
     if (ov_ptr_valid(channel,
                      "Cannot open RTP MC socket - ALSA channel pointer "
@@ -860,17 +839,14 @@ bool ov_alsa_audio_app_start_playbacks(ov_alsa_audio_app *self,
             (0 == channel->rtp)) {
 
             channel->rtp =
-                create_rtp_app(self,
-                               channel,
-                               loops[i],
+                create_rtp_app(self, channel, loops[i],
                                get_mc_port_from_list(loop_mc_ports, i));
 
             if (!ov_ptr_valid(channel->rtp, "Could not join MC loop")) {
                 ov_log_info("Setup static playback of openvocs loop %s:%" PRIu16
                             " on channel %zu "
                             "FAILED",
-                            loops[i],
-                            get_mc_port_from_list(loop_mc_ports, i),
+                            loops[i], get_mc_port_from_list(loop_mc_ports, i),
                             i);
 
                 ++num_failed_to_set_up;
@@ -878,8 +854,7 @@ bool ov_alsa_audio_app_start_playbacks(ov_alsa_audio_app *self,
             } else {
                 ov_log_info("Setup static playback of openvocs loop %s:%" PRIu16
                             " on channel %zu SUCCESSFUL",
-                            loops[i],
-                            get_mc_port_from_list(loop_mc_ports, i),
+                            loops[i], get_mc_port_from_list(loop_mc_ports, i),
                             i);
             }
 
@@ -890,9 +865,7 @@ bool ov_alsa_audio_app_start_playbacks(ov_alsa_audio_app *self,
                 "Could not setup static playback of openvocs loop %s:%" PRIu16
                 " on "
                 "channel %zu",
-                loops[i],
-                get_mc_port_from_list(loop_mc_ports, i),
-                i);
+                loops[i], get_mc_port_from_list(loop_mc_ports, i), i);
         }
     }
 
@@ -917,17 +890,14 @@ bool ov_alsa_audio_app_start_recordings(ov_alsa_audio_app *self,
                     self,
                     socket_config_for_mc_loop(
                         loops[i], get_mc_port_from_list(loop_mc_ports, i)),
-                    get_channel_ssid(self, i),
-                    get_send_codec_for(self, i),
-                    i,
+                    get_channel_ssid(self, i), get_send_codec_for(self, i), i,
                     &res)) {
 
                 ov_log_info(
                     "Setup static recording of channel %zu towards multicast "
                     "loop "
                     "%s",
-                    i,
-                    loops[i]);
+                    i, loops[i]);
 
             } else if (0 != loops[i]) {
 
@@ -936,9 +906,7 @@ bool ov_alsa_audio_app_start_recordings(ov_alsa_audio_app *self,
                     "Could not setup static recording of channel %zu towards "
                     "%s: "
                     "%s",
-                    i,
-                    loops[i],
-                    ov_result_get_message(res));
+                    i, loops[i], ov_result_get_message(res));
             }
 
             ov_result_clear(&res);
@@ -961,14 +929,12 @@ static int open_file(char const *path, char const *err_msg) {
 
     } else {
 
-        int fd = open(path,
-                      O_WRONLY | O_CREAT | O_CLOEXEC | O_TRUNC,
+        int fd = open(path, O_WRONLY | O_CREAT | O_CLOEXEC | O_TRUNC,
                       S_IRWXU | S_IRWXG | S_IRWXO);
 
         if (0 > fd) {
 
-            ov_log_error("%s %s: %s",
-                         ov_string_sanitize(err_msg),
+            ov_log_error("%s %s: %s", ov_string_sanitize(err_msg),
                          ov_string_sanitize(path),
                          ov_string_sanitize(strerror(errno)));
         }
@@ -984,14 +950,14 @@ ov_alsa_audio_app *ov_alsa_audio_app_create(ov_event_loop *loop,
 
     ov_alsa_audio_app *self = 0;
 
-    ov_rtp_app *rtp_app = ov_rtp_app_create(loop,
-                                            (ov_rtp_app_config){
-                                                .rtp_handler = cb_rtp_io,
-                                                .rtp_socket = cfg.rtp_socket,
-                                            });
+    ov_rtp_app *rtp_app =
+        ov_rtp_app_create(loop, (ov_rtp_app_config){
+                                    .rtp_handler = cb_rtp_io,
+                                    .rtp_socket = cfg.rtp_socket,
+                                });
 
-    if (ov_ptr_valid(
-            rtp_app, "Cannot create alsa app - Cannot open RTP socket")) {
+    if (ov_ptr_valid(rtp_app,
+                     "Cannot create alsa app - Cannot open RTP socket")) {
 
         self = calloc(1, sizeof(ov_alsa_audio_app));
         self->magic_bytes = MAGIC_BYTES;
@@ -1010,21 +976,16 @@ ov_alsa_audio_app *ov_alsa_audio_app_create(ov_event_loop *loop,
         self->mix_and_replay_timer = OV_TIMER_INVALID;
 
         initialize_out_channels(
-            self,
-            self->out_channel,
-            self->num_channels,
+            self, self->out_channel, self->num_channels,
             open_file(cfg.debug.rtp_logging, "Cannot open RTP logging file"),
             (char const **)cfg.channels.output,
-            (char const **)cfg.channel_mixer.output,
-            cfg.channel_volumes.output,
+            (char const **)cfg.channel_mixer.output, cfg.channel_volumes.output,
             OV_ALSA_MAX_DEVICES);
 
-        initialize_in_channels(self->in_channel,
-                               self->num_channels,
+        initialize_in_channels(self->in_channel, self->num_channels,
                                (char const **)cfg.channels.input,
                                (char const **)cfg.channel_mixer.input,
-                               cfg.channel_volumes.input,
-                               OV_ALSA_MAX_DEVICES);
+                               cfg.channel_volumes.input, OV_ALSA_MAX_DEVICES);
 
         self->settings.frame_length_ms = OV_DEFAULT_FRAME_LENGTH_MS;
         self->settings.max_frames_to_buffer = cfg.max_num_frames;
@@ -1098,14 +1059,11 @@ ov_alsa_audio_app *ov_alsa_audio_app_free(ov_alsa_audio_app *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_alsa_record *create_record(ov_rtp_app const *rtp_app,
-                                     char const *device,
-                                     char const *mixer_element,
-                                     ov_socket_configuration mcsocket,
-                                     uint32_t ssid,
-                                     ov_json_value const *codec_config,
-                                     double volume,
-                                     ov_result *res) {
+static ov_alsa_record *
+create_record(ov_rtp_app const *rtp_app, char const *device,
+              char const *mixer_element, ov_socket_configuration mcsocket,
+              uint32_t ssid, ov_json_value const *codec_config, double volume,
+              ov_result *res) {
 
     if (!ov_ptr_valid(device, "Invalid input channel")) {
         ov_result_set(res, OV_ERROR_NO_RESOURCE, "Invalid analogue channel");
@@ -1131,8 +1089,8 @@ static ov_alsa_record *create_record(ov_rtp_app const *rtp_app,
 
         };
 
-        return ov_alsa_record_create(
-            record_cfg, ov_rtp_app_get_rtp_sd(rtp_app), res);
+        return ov_alsa_record_create(record_cfg, ov_rtp_app_get_rtp_sd(rtp_app),
+                                     res);
     }
 }
 
@@ -1142,19 +1100,14 @@ bool ov_alsa_audio_app_record_to(ov_alsa_audio_app *self,
                                  ov_socket_configuration mcsocket,
                                  uint32_t ssid,
                                  ov_json_value const *codec_config,
-                                 uint32_t analogue_channel,
-                                 ov_result *res) {
+                                 uint32_t analogue_channel, ov_result *res) {
 
     InChannel *channel = get_in_channel_mut(self, analogue_channel);
 
-    ov_alsa_record *record = create_record(get_rtp_app_send(self),
-                                           in_channel_device(channel),
-                                           in_channel_mixer_element(channel),
-                                           mcsocket,
-                                           ssid,
-                                           codec_config,
-                                           in_channel_volume(channel),
-                                           res);
+    ov_alsa_record *record =
+        create_record(get_rtp_app_send(self), in_channel_device(channel),
+                      in_channel_mixer_element(channel), mcsocket, ssid,
+                      codec_config, in_channel_volume(channel), res);
 
     if ((0 != channel) && (0 != record)) {
 
@@ -1178,10 +1131,10 @@ static bool in_channel_to_json_to(ov_json_value *jchannel,
 
     if (ov_ptr_valid(jchannel, "No target JSON object") &&
         ov_ptr_valid(channel, "Invalid channel") && (0 != channel->device) &&
-        ov_json_object_set(
-            jchannel, OV_KEY_DEVICE, ov_json_string(channel->device)) &&
-        ov_json_object_set(
-            jchannel, OV_KEY_IN_USE, ov_json_bool(0 != channel->record))) {
+        ov_json_object_set(jchannel, OV_KEY_DEVICE,
+                           ov_json_string(channel->device)) &&
+        ov_json_object_set(jchannel, OV_KEY_IN_USE,
+                           ov_json_bool(0 != channel->record))) {
 
         return true;
 
@@ -1211,10 +1164,10 @@ static bool out_channel_to_json_to(ov_json_value *jchannel,
 
     if (ov_ptr_valid(jchannel, "No target JSON object") &&
         ov_ptr_valid(channel, "Invalid channel") && (0 != channel->device) &&
-        ov_json_object_set(
-            jchannel, OV_KEY_DEVICE, ov_json_string(channel->device)) &&
-        ov_json_object_set(
-            jchannel, OV_KEY_IN_USE, ov_json_bool(0 != channel->playback))) {
+        ov_json_object_set(jchannel, OV_KEY_DEVICE,
+                           ov_json_string(channel->device)) &&
+        ov_json_object_set(jchannel, OV_KEY_IN_USE,
+                           ov_json_bool(0 != channel->playback))) {
 
         return true;
 
@@ -1245,17 +1198,17 @@ static ov_json_value *channel_to_json(ov_alsa_audio_app const *self,
 
     switch (type) {
 
-        case ANALOGUE_IN:
-            return in_channel_to_json(get_in_channel_ptr(self, channel_no));
+    case ANALOGUE_IN:
+        return in_channel_to_json(get_in_channel_ptr(self, channel_no));
 
-        case ANALOGUE_OUT:
-            return out_channel_to_json(get_out_channel_ptr(self, channel_no));
+    case ANALOGUE_OUT:
+        return out_channel_to_json(get_out_channel_ptr(self, channel_no));
 
-        case ANALOGUE_INVALID:
-        default:
+    case ANALOGUE_INVALID:
+    default:
 
-            ov_log_error("Invalid channel type");
-            return 0;
+        ov_log_error("Invalid channel type");
+        return 0;
     };
 }
 
@@ -1265,9 +1218,8 @@ static bool list_channels(ov_json_value *jchannels,
                           ov_alsa_audio_app const *self,
                           ov_analogue_event_type type) {
 
-    if (ov_ptr_valid(jchannels,
-                     "Cannot list output channels - no target JSON "
-                     "object") &&
+    if (ov_ptr_valid(jchannels, "Cannot list output channels - no target JSON "
+                                "object") &&
         ov_ptr_valid(self, "Cannot list output channels - no ALSA app")) {
 
         // a byte yields 3 digits max...
@@ -1339,8 +1291,8 @@ static bool mix_channel(OutChannel *channel) {
 
 static bool mix_channels(ov_alsa_audio_app *self) {
 
-    if (ov_ptr_valid(
-            self, "Cannot mix frames: Invalid ASLA audio app pointer")) {
+    if (ov_ptr_valid(self,
+                     "Cannot mix frames: Invalid ASLA audio app pointer")) {
 
         for (size_t i = 0; i < self->num_channels; ++i) {
 
@@ -1359,8 +1311,8 @@ static bool mix_channels(ov_alsa_audio_app *self) {
 
 static bool replay_channels(ov_alsa_audio_app *self) {
 
-    if (ov_ptr_valid(
-            self, "Cannot replay frames: Invalid ASLA audio app pointer")) {
+    if (ov_ptr_valid(self,
+                     "Cannot replay frames: Invalid ASLA audio app pointer")) {
 
         for (size_t i = 0; i < self->num_channels; ++i) {
 
@@ -1371,23 +1323,23 @@ static bool replay_channels(ov_alsa_audio_app *self) {
                 switch (
                     ov_alsa_playback_play(channel->playback, channel->buffer)) {
 
-                    case ALSA_REPLAY_OK:
-                        break;
+                case ALSA_REPLAY_OK:
+                    break;
 
-                    case ALSA_REPLAY_INSUFFICIENT:
+                case ALSA_REPLAY_INSUFFICIENT:
 
-                        // ov_log_warning(
-                        //     "Not enough PCM - playing comfort noise");
-                        // ov_alsa_playback_play_comfort_noise(channel->playback);
-                        break;
+                    // ov_log_warning(
+                    //     "Not enough PCM - playing comfort noise");
+                    // ov_alsa_playback_play_comfort_noise(channel->playback);
+                    break;
 
-                    case ALSA_REPLAY_FAILED:
-                    default:
+                case ALSA_REPLAY_FAILED:
+                default:
 
-                        ov_log_error("Replaying failed for ALSA device %s",
-                                     ov_string_sanitize(channel->device));
+                    ov_log_error("Replaying failed for ALSA device %s",
+                                 ov_string_sanitize(channel->device));
 
-                        break;
+                    break;
                 }
             }
         }
@@ -1410,10 +1362,8 @@ static bool cb_mix_and_replay(uint32_t id, void *data) {
     OV_ASSERT(app->mix_and_replay_timer == id);
 
     app->mix_and_replay_timer =
-        ov_event_loop_timer_set(app->loop,
-                                app->settings.frame_length_ms * 1000,
-                                app,
-                                cb_mix_and_replay);
+        ov_event_loop_timer_set(app->loop, app->settings.frame_length_ms * 1000,
+                                app, cb_mix_and_replay);
 
     if (ov_ptr_valid(app, "Cannot mix and replay: Invalid pointer")) {
 
@@ -1428,18 +1378,15 @@ static bool cb_mix_and_replay(uint32_t id, void *data) {
 
 bool ov_alsa_audio_app_start_playback_thread(ov_alsa_audio_app *self) {
 
-    if (ov_ptr_valid(self,
-                     "Cannot start mix and playback thread: Invalid "
-                     "pointer") &&
+    if (ov_ptr_valid(self, "Cannot start mix and playback thread: Invalid "
+                           "pointer") &&
         ov_cond_valid(OV_TIMER_INVALID == self->mix_and_replay_timer,
                       "Cannot start mix and playback timer: Already "
                       "running")) {
 
-        self->mix_and_replay_timer =
-            ov_event_loop_timer_set(self->loop,
-                                    self->settings.frame_length_ms * 1000,
-                                    self,
-                                    cb_mix_and_replay);
+        self->mix_and_replay_timer = ov_event_loop_timer_set(
+            self->loop, self->settings.frame_length_ms * 1000, self,
+            cb_mix_and_replay);
 
         return ov_cond_valid(OV_TIMER_INVALID != self->mix_and_replay_timer,
                              "Could not start mix and replay timer");

@@ -35,26 +35,22 @@ import ov_Dialog from "/components/dialog/dialog.js";
 
 export default class ov_Loop extends HTMLElement {
     // attributes
-    #layout;
     #state;
 
     // properties
     #loop_id;
     #type;
     #name;
-    #abbreviation;
     #project;
     #permission;
     #volume;
-    //#layout_pos;
+    #highlight_color;
     #layout_page;
     #layout_row;
     #layout_column;
     #participants;
     #active_participants;
     #links;
-    #font_size;
-    #name_size;
 
     static CONTENT = {
         ACTIVITY: "loop_activity",
@@ -65,30 +61,16 @@ export default class ov_Loop extends HTMLElement {
         VOLUME: "loop_volume"
     }
 
-    static LAYOUT = {
-        GRID: "grid_element",
-        LIST: "list_element"
-    }
-
     static STATE = {
         TALK: "send",
         MONITOR: "recv",
         NONE: "none"
     }
 
-    #loop_size = {};
-
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this.#active_participants = new Map();
-        //this.state = ov_Loop.STATE.NONE;
-        this.#loop_size[ov_Loop.CONTENT.ACTIVITY] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.PERMISSION] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.LEAVE] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.NAME] = "1.5em";
-        this.#loop_size[ov_Loop.CONTENT.PARTICIPANTS] = "1.0em";
-        this.#loop_size[ov_Loop.CONTENT.VOLUME] = "1.0em";
     }
 
     toString() {
@@ -97,15 +79,12 @@ export default class ov_Loop extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["layout", "state", "name", "permission"];
+        return ["layout", "state", "name", "permission", "color"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue)
             return;
-        if (name === "layout") {
-            this.#layout = newValue;
-        }
         if (name === "state") {
             this.#state = newValue;
             if (this.shadowRoot.isConnected) {
@@ -120,14 +99,10 @@ export default class ov_Loop extends HTMLElement {
         if (name === "permission") {
             this.#permission = newValue;
         }
-    }
 
-    set layout(layout) {
-        this.setAttribute("layout", layout);
-    }
-
-    get layout() {
-        return this.#layout;
+        if (name === "color") {
+            this.#highlight_color = newValue;
+        }
     }
 
     set state(state) {
@@ -170,14 +145,6 @@ export default class ov_Loop extends HTMLElement {
         return this.#name;
     }
 
-    set abbreviation(abbreviation) {
-        this.#abbreviation = abbreviation;
-    }
-
-    get abbreviation() {
-        return this.#abbreviation;
-    }
-
     set project(project) {
         this.#project = project;
     }
@@ -205,6 +172,14 @@ export default class ov_Loop extends HTMLElement {
 
     get volume() {
         return this.#volume;
+    }
+
+    set highlight_color(color) {
+        this.setAttribute("color", color);
+    }
+
+    get highlight_color() {
+        return this.#highlight_color;
     }
 
     set layout_pos(layout_pos) {
@@ -255,8 +230,11 @@ export default class ov_Loop extends HTMLElement {
     }
 
     update_active_participants_list() {
-        let value = this.active_participants.map(participant =>
-            participant[ACTIVITY_CONTENT]).toString();
+        let value;
+        if (ACTIVITY_CONTENT === "display_name")
+            value = this.active_participants.map(participant => participant["name"]).toString();
+        else
+            value = this.active_participants.map(participant => participant["id"]).toString();
         if (this.shadowRoot.isConnected)
             this.shadowRoot.querySelector("#loop_activity").textContent = value;
         this.shadowRoot.host.classList.toggle("activity", this.has_active_participants());
@@ -298,25 +276,8 @@ export default class ov_Loop extends HTMLElement {
         this.participants = this.participants;
         this.update_state();
         this.volume = this.#volume;
-
-        if (this.#name_size)
-            this.#update_loop_content_size(ov_Loop.CONTENT.NAME, this.#name_size);
-        else
-            this.#update_loop_content_size(ov_Loop.CONTENT.NAME, this.#loop_size[ov_Loop.CONTENT.NAME]);
-
-        if (this.#font_size) {
-            this.#update_loop_content_size(ov_Loop.CONTENT.PERMISSION, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.LEAVE, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.ACTIVITY, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.PARTICIPANTS, this.#font_size);
-            this.#update_loop_content_size(ov_Loop.CONTENT.VOLUME, this.#font_size);
-        } else {
-            this.#update_loop_content_size(ov_Loop.CONTENT.PERMISSION, this.#loop_size[ov_Loop.CONTENT.PERMISSION]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.LEAVE, this.#loop_size[ov_Loop.CONTENT.LEAVE]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.ACTIVITY, this.#loop_size[ov_Loop.CONTENT.ACTIVITY]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.PARTICIPANTS, this.#loop_size[ov_Loop.CONTENT.PARTICIPANTS]);
-            this.#update_loop_content_size(ov_Loop.CONTENT.VOLUME, this.#loop_size[ov_Loop.CONTENT.VOLUME]);
-        }
+        if (this.#highlight_color)
+            this.highlight_color = this.#highlight_color;
 
         this.shadowRoot.querySelector("#join_loop").onclick = () => {
             let next_state = this.#determine_next_loop_state();
@@ -368,44 +329,23 @@ export default class ov_Loop extends HTMLElement {
     }
 
     update_state() {
-        let element = this.shadowRoot.querySelector("#leave_loop");
-        if (element) {
+        let leave_button = this.shadowRoot.querySelector("#leave_loop");
+        let volume_button = this.shadowRoot.querySelector("#loop_volume");
+        let volume_slider = this.shadowRoot.querySelector("#loop_volume_input");
+        if (leave_button && volume_button) {
             console.log("state of loop " + this.#loop_id + " changed to " + this.#state);
             if (this.#state === ov_Loop.STATE.MONITOR || this.#state === ov_Loop.STATE.TALK) {
                 this.shadowRoot.host.classList.add("dark");
-                element.disabled = false;
+                leave_button.disabled = false;
+                volume_slider.disabled = false;
+                volume_button.classList.remove("disabled");
             } else {
                 this.shadowRoot.host.classList.remove("dark");
-                element.disabled = true;
+                leave_button.disabled = true;
+                volume_slider.disabled = true;
+                volume_button.classList.add("disabled");
             }
         }
-    }
-
-    #update_loop_content_size(content, size) {
-        let element = this.shadowRoot.querySelector("#" + content);
-        if (element) {
-            if (typeof LOOP_ELEMENT_SIZE_MIN !== undefined && size < LOOP_ELEMENT_SIZE_MIN)
-                size = LOOP_ELEMENT_SIZE_MIN;
-            if (typeof LOOP_ELEMENT_SIZE_MAX !== undefined && size > LOOP_ELEMENT_SIZE_MAX)
-                size = LOOP_ELEMENT_SIZE_MAX;
-            element.style.fontSize = size + "rem";
-            element.style.lineHeight = size + "rem";
-            this.#loop_size[content] = size;
-        }
-    }
-
-    update_font_size(size) {
-        this.#font_size = size;
-        this.#update_loop_content_size(ov_Loop.CONTENT.PERMISSION, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.LEAVE, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.ACTIVITY, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.PARTICIPANTS, size);
-        this.#update_loop_content_size(ov_Loop.CONTENT.VOLUME, size);
-    }
-
-    update_name_size(size) {
-        this.#name_size = size;
-        this.#update_loop_content_size(ov_Loop.CONTENT.NAME, size);
     }
 
     /* if loop not joined, press loop to
@@ -434,9 +374,6 @@ export default class ov_Loop extends HTMLElement {
         if (!json.hasOwnProperty("name"))
             json.name = id;
 
-        if (!json.hasOwnProperty("abbreviation"))
-            json.abbreviation = json.name;
-
         if (!json.hasOwnProperty("state"))
             json.state = ov_Loop.STATE.NONE;
 
@@ -454,12 +391,14 @@ export default class ov_Loop extends HTMLElement {
         this.loop_id = id;
         this.type = json.type;
         this.name = json.name;
-        this.abbreviation = json.abbreviation;
         this.project = json.project;
         this.participants = json.participants;
         this.state = json.state;
         this.permission = json.permission;
         this.volume = json.volume;
+
+        if (json.highlight_color)
+            this.highlight_color = json.highlight_color;
 
         if (typeof position !== "object") {
             this.layout_pos = {};

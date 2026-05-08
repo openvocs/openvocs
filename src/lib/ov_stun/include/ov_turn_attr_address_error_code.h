@@ -81,13 +81,10 @@ size_t ov_turn_attr_address_error_code_encoding_length(size_t phrase_len);
         @param len      phrase len
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_address_error_code_encode(uint8_t *buffer,
-                                            size_t length,
-                                            uint8_t **next,
-                                            uint8_t family,
+bool ov_turn_attr_address_error_code_encode(uint8_t *buffer, size_t length,
+                                            uint8_t **next, uint8_t family,
                                             uint16_t code,
-                                            const uint8_t *phrase,
-                                            size_t len);
+                                            const uint8_t *phrase, size_t len);
 
 /*----------------------------------------------------------------------------*/
 
@@ -102,8 +99,7 @@ bool ov_turn_attr_address_error_code_encode(uint8_t *buffer,
         @param len      pointer for phrase len
 */
 bool ov_turn_attr_address_error_code_decode(const uint8_t *buffer,
-                                            size_t length,
-                                            uint8_t *family,
+                                            size_t length, uint8_t *family,
                                             uint16_t *code,
                                             const uint8_t **phrase,
                                             size_t *len);

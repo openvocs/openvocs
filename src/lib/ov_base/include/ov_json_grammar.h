@@ -184,9 +184,7 @@ bool ov_json_match_object(uint8_t **start, uint8_t **end, size_t size);
    entire one, there is no first fully parseable element, last_of_first is set
    to 0
 */
-bool ov_json_match(const uint8_t *start,
-                   size_t size,
-                   bool incomplete,
+bool ov_json_match(const uint8_t *start, size_t size, bool incomplete,
                    uint8_t **last_of_first);
 
 #endif /* ov_json_grammar_h */

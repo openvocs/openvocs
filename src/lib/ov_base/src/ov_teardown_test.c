@@ -267,7 +267,5 @@ int ov_teardown_test() { return testrun_log_success(); }
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_teardown",
-            ov_teardown_register_test,
-            ov_teardown_register_multiple_test,
-            ov_teardown_test);
+OV_TEST_RUN("ov_teardown", ov_teardown_register_test,
+            ov_teardown_register_multiple_test, ov_teardown_test);

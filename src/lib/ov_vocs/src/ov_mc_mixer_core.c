@@ -34,6 +34,7 @@
 
 #include <netdb.h>
 #include <sys/socket.h>
+#include <unistd.h>
 
 #include <ov_base/ov_dict.h>
 #include <ov_base/ov_linked_list.h>
@@ -99,12 +100,15 @@ struct ov_mc_mixer_core {
 
 static ov_list *ov_mc_mixer_core_frame_processing_list_free(ov_list *list) {
 
-    if (!list) goto error;
+    if (!list || !ov_list_cast(list))
+        goto error;
 
-    for (ov_rtp_frame *frame = ov_list_pop(list); 0 != frame;
-         frame = ov_list_pop(list)) {
+    ov_rtp_frame *frame = ov_list_pop(list);
+    
+    while(frame){
 
         frame = ov_rtp_frame_free(frame);
+        frame = ov_list_pop(list);
     }
 
     return ov_list_free(list);
@@ -114,8 +118,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void process_rtcp(ov_mc_mixer_core *mixer,
-                         const uint8_t *input,
+static void process_rtcp(ov_mc_mixer_core *mixer, const uint8_t *input,
                          size_t length) {
 
     ov_log_debug("Got RTCP: SSRC of mixer is %" PRIu32, mixer->forward.ssrc);
@@ -151,28 +154,27 @@ static void process_rtcp(ov_mc_mixer_core *mixer,
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_io_multicast(void *userdata,
-                            const ov_mc_loop_data *data,
-                            const uint8_t *buffer,
-                            size_t bytes,
+static void cb_io_multicast(void *userdata, const ov_mc_loop_data *data,
+                            const uint8_t *buffer, size_t bytes,
                             const ov_socket_data *remote) {
 
     ov_rtp_frame *frame = NULL;
 
     ov_mc_mixer_core *mixer = ov_mc_mixer_core_cast(userdata);
-    if (!mixer || !data || !buffer || 0 == bytes || !remote) return;
+    if (!mixer || !data || !buffer || 0 == bytes || !remote)
+        return;
 
     switch (buffer[1]) {
 
-        case 200:
-        case 201:
-        case 202:
-        case 203:
-        case 204:
-            process_rtcp(mixer, buffer, bytes);
-            return;
-        default:
-            break;
+    case 200:
+    case 201:
+    case 202:
+    case 203:
+    case 204:
+        process_rtcp(mixer, buffer, bytes);
+        return;
+    default:
+        break;
     }
 
     frame = ov_rtp_frame_decode(buffer, bytes);
@@ -302,25 +304,21 @@ static ov_codec *get_destination_codec(ov_mc_mixer_core *mixer) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *decode(ov_mc_mixer_core *mixer,
-                         ov_rtp_frame const *frame,
-                         ov_codec *codec,
-                         const size_t buflen_max) {
+static ov_buffer *decode(ov_mc_mixer_core *mixer, ov_rtp_frame const *frame,
+                         ov_codec *codec, const size_t buflen_max) {
 
     OV_ASSERT(mixer);
     OV_ASSERT(frame);
 
-    if (!codec) goto error;
+    if (!codec)
+        goto error;
 
     ov_buffer *decoded = ov_buffer_create(buflen_max);
     OV_ASSERT(NULL != decoded);
 
-    decoded->length = ov_codec_decode(codec,
-                                      frame->expanded.sequence_number,
-                                      frame->expanded.payload.data,
-                                      frame->expanded.payload.length,
-                                      decoded->start,
-                                      decoded->capacity);
+    decoded->length = ov_codec_decode(
+        codec, frame->expanded.sequence_number, frame->expanded.payload.data,
+        frame->expanded.payload.length, decoded->start, decoded->capacity);
 
     return decoded;
 error:
@@ -344,10 +342,8 @@ static ov_buffer *scale_decoded_pcm_nocheck(ov_buffer const *pcm,
 
     result = ov_buffer_create(result_length);
 
-    if (!ov_pcm_16_scale_to_32_bare(num_samples,
-                                    (int16_t *)pcm->start,
-                                    (int32_t *)result->start,
-                                    scale_factor)) {
+    if (!ov_pcm_16_scale_to_32_bare(num_samples, (int16_t *)pcm->start,
+                                    (int32_t *)result->start, scale_factor)) {
 
         ov_log_error("Scaling of incoming PCM failed");
 
@@ -384,10 +380,8 @@ static ov_buffer *fade_decoded_pcm_nocheck(ov_buffer const *pcm,
 
     result = ov_buffer_create(result_length);
 
-    if (!ov_pcm_16_fade_to_32(num_samples,
-                              (int16_t *)pcm->start,
-                              (int32_t *)result->start,
-                              scale_factor_start,
+    if (!ov_pcm_16_fade_to_32(num_samples, (int16_t *)pcm->start,
+                              (int32_t *)result->start, scale_factor_start,
                               scale_factor_end)) {
 
         ov_log_error("Scaling of incoming PCM failed");
@@ -436,13 +430,11 @@ static ov_frame_data *frame_data_from_pcm(ov_buffer const *decoded,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_frame_data *frame_data_from_pcm_with_vad(
-    ov_buffer const *decoded,
-    ov_rtp_frame_expansion const *frame,
-    ov_vad_config vad_config,
-    bool drop_no_va,
-    double volume,
-    RtpStream *rtp_stream) {
+static ov_frame_data *
+frame_data_from_pcm_with_vad(ov_buffer const *decoded,
+                             ov_rtp_frame_expansion const *frame,
+                             ov_vad_config vad_config, bool drop_no_va,
+                             double volume, RtpStream *rtp_stream) {
 
     ov_frame_data *data = 0;
     ov_vad_parameters vad_params = {0};
@@ -451,8 +443,7 @@ static ov_frame_data *frame_data_from_pcm_with_vad(
     if ((0 != decoded) && (0 != frame) && (0 != rtp_stream) &&
         ov_cond_valid(ov_pcm_16_get_audio_params(decoded->length / 2,
                                                  (int16_t *)decoded->start,
-                                                 &vad_params,
-                                                 &max_amplitude),
+                                                 &vad_params, &max_amplitude),
                       "Extracting audio parameters for VAD/normalisation "
                       "failed")) {
 
@@ -529,8 +520,8 @@ static ov_frame_data *frame_data_extract_nocheck(ov_mc_mixer_core *mixer,
 
     RtpStream *rtp_stream = get_rtp_stream(mixer, frame);
 
-    if (ov_ptr_valid(
-            rtp_stream, "Cannot decode frame - no Stream info found") &&
+    if (ov_ptr_valid(rtp_stream,
+                     "Cannot decode frame - no Stream info found") &&
         ov_ptr_valid(frame, "Cannot decode frame - no frame") &&
         // Volume 0 -> just drop frame
         (0 != frame->expanded.payload.length)) {
@@ -550,19 +541,16 @@ static ov_frame_data *frame_data_extract_nocheck(ov_mc_mixer_core *mixer,
 
             if (mixer->config.incoming_vad) {
 
-                ov_log_debug("VAD active - normalizing");
-                data = frame_data_from_pcm_with_vad(decoded,
-                                                    &frame->expanded,
-                                                    mixer->config.vad,
-                                                    mixer->config.drop_no_va,
-                                                    scale_factor,
-                                                    rtp_stream);
+                //ov_log_debug("VAD active - normalizing");
+                data = frame_data_from_pcm_with_vad(
+                    decoded, &frame->expanded, mixer->config.vad,
+                    mixer->config.drop_no_va, scale_factor, rtp_stream);
 
             } else {
 
-                ov_log_debug("VAD inactive - no normalization");
-                data = frame_data_from_pcm(
-                    decoded, &frame->expanded, scale_factor);
+                //ov_log_debug("VAD inactive - no normalization");
+                data = frame_data_from_pcm(decoded, &frame->expanded,
+                                           scale_factor);
             }
         }
     }
@@ -575,8 +563,7 @@ static ov_frame_data *frame_data_extract_nocheck(ov_mc_mixer_core *mixer,
 
 /*----------------------------------------------------------------------------*/
 
-static void extract_frame_data(ov_mc_mixer_core *self,
-                               ov_frame_data_list *list,
+static void extract_frame_data(ov_mc_mixer_core *self, ov_frame_data_list *list,
                                ov_list *frames) {
 
     ov_rtp_frame *frame = 0;
@@ -666,8 +653,7 @@ static void frame_length_from_frame_list(ov_frame_data_list const *list,
  * Output: buffer containing pcm16s wrapped in pcm32s - the mixed pcm
  */
 static ov_buffer *mix_nocheck(ov_frame_data_list const *list,
-                              size_t length_bytes,
-                              size_t num_samples) {
+                              size_t length_bytes, size_t num_samples) {
 
     OV_ASSERT(0 != list);
     OV_ASSERT(0 != list->capacity);
@@ -690,7 +676,8 @@ static ov_buffer *mix_nocheck(ov_frame_data_list const *list,
 
         ov_frame_data *frame = list->frames[i];
 
-        if (0 == frame) continue;
+        if (0 == frame)
+            continue;
 
         OV_ASSERT(0 != list->frames[i]);
         OV_ASSERT(0 != list->frames[i]->pcm16s_32bit);
@@ -703,8 +690,7 @@ static ov_buffer *mix_nocheck(ov_frame_data_list const *list,
 
         OV_ASSERT(length_bytes == list->frames[i]->pcm16s_32bit->length);
 
-        if (!ov_pcm_32_add(num_samples,
-                           (int32_t *)result->start,
+        if (!ov_pcm_32_add(num_samples, (int32_t *)result->start,
                            (int32_t *)list->frames[i]->pcm16s_32bit->start)) {
 
             goto error;
@@ -727,15 +713,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *mix_frames_nocheck(ov_mc_mixer_core *self,
-                                     size_t num_frames,
-                                     ov_list *frames_list,
-                                     size_t *num_samples,
+static ov_buffer *mix_frames_nocheck(ov_mc_mixer_core *self, size_t num_frames,
+                                     ov_list *frames_list, size_t *num_samples,
                                      ov_frame_data_list **used_frames) {
 
     if ((!ov_ptr_valid(self, "Internal error: No mixer processing object")) ||
-        (!ov_ptr_valid(
-            used_frames, "Internal error: No pointer to store used frames")) ||
+        (!ov_ptr_valid(used_frames,
+                       "Internal error: No pointer to store used frames")) ||
         (0 == num_samples) || (0 == frames_list) || (0 == num_frames)) {
         goto error;
     }
@@ -859,14 +843,15 @@ error:
 static bool forward_mixed_frame_to_destination(ov_mc_mixer_core *mixer,
                                                ov_rtp_frame *out) {
 
-    if (!mixer || !out) goto error;
+    if (!mixer || !out)
+        goto error;
 
-    if (-1 == mixer->socket) goto error;
+    if (-1 == mixer->socket)
+        goto error;
 
     struct sockaddr_storage dest = {0};
 
-    if (!ov_socket_fill_sockaddr_storage(&dest,
-                                         mixer->local.sa.ss_family,
+    if (!ov_socket_fill_sockaddr_storage(&dest, mixer->local.sa.ss_family,
                                          mixer->forward.socket.host,
                                          mixer->forward.socket.port))
         goto error;
@@ -884,20 +869,18 @@ static bool forward_mixed_frame_to_destination(ov_mc_mixer_core *mixer,
         out->bytes.data[1] = (out->bytes.data[1] | 0x80);
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (dest.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (dest.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
-    ssize_t bytes = sendto(mixer->socket,
-                           out->bytes.data,
-                           out->bytes.length,
-                           0,
-                           (struct sockaddr *)&dest,
-                           len);
+    ssize_t bytes = sendto(mixer->socket, out->bytes.data, out->bytes.length, 0,
+                           (struct sockaddr *)&dest, len);
     /*
         ov_log_debug("send %zi bytes to %s:%i", bytes,
                 mixer->forward.socket.host, mixer->forward.socket.port);
     */
 
-    if (-1 == bytes) goto error;
+    if (-1 == bytes)
+        goto error;
 
     return true;
 error:
@@ -906,15 +889,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void forward_mixed_frame_to_encoder(
-    ov_mc_mixer_core *mixer,
-    ov_frame_data mixed_data,
-    ov_frame_data_list *original_frames) {
+static void
+forward_mixed_frame_to_encoder(ov_mc_mixer_core *mixer,
+                               ov_frame_data mixed_data,
+                               ov_frame_data_list *original_frames) {
 
     ov_rtp_frame *encoded_frame = NULL;
     UNUSED(original_frames);
 
-    if (!mixer) goto error;
+    if (!mixer)
+        goto error;
 
     ov_buffer *mixed_signal = mixed_data.pcm16s_32bit;
     size_t num_samples = mixed_data.num_samples;
@@ -926,7 +910,8 @@ static void forward_mixed_frame_to_encoder(
 
     encoded_frame = encode_frame_nocheck(&mixed_data, codec);
 
-    if (!forward_mixed_frame_to_destination(mixer, encoded_frame)) goto error;
+    if (!forward_mixed_frame_to_destination(mixer, encoded_frame))
+        goto error;
 error:
     encoded_frame = ov_rtp_frame_free(encoded_frame);
     return;
@@ -940,16 +925,17 @@ static bool process_frames(ov_mc_mixer_core *mixer, ov_list *frames) {
     ov_buffer *mixed_payload = NULL;
     ov_frame_data_list *used_frames = NULL;
 
-    if (!mixer || !frames) goto finish;
+    OV_ASSERT(mixer);
+    OV_ASSERT(frames);
 
     size_t num_frames = ov_list_count(frames);
 
     size_t num_samples = 0;
 
-    mixed_payload = mix_frames_nocheck(
-        mixer, num_frames, frames, &num_samples, &used_frames);
+    mixed_payload = mix_frames_nocheck(mixer, num_frames, frames, &num_samples,
+                                       &used_frames);
 
-    frames = 0;
+    frames = NULL;
 
     if (0 == mixed_payload) {
         mixed_payload = get_comfort_noise(mixer, &num_samples);
@@ -987,7 +973,6 @@ static bool process_frames(ov_mc_mixer_core *mixer, ov_list *frames) {
 finish:
 
     mixed_payload = ov_buffer_free(mixed_payload);
-    frames = ov_mc_mixer_core_frame_processing_list_free(frames);
     used_frames = ov_frame_data_list_free(used_frames);
 
     OV_ASSERT(0 == mixed_payload);
@@ -1041,19 +1026,15 @@ static bool cb_mix(uint32_t id, void *data) {
         frame_list = ov_linked_list_create((ov_list_config){0});
     }
 
-    if (process_frames(mixer, frame_list)) {
-        frame_list = NULL;
-    }
-
-    frame_list = ov_mc_mixer_core_frame_processing_list_free(frame_list);
+    process_frames(mixer, frame_list);
 
     return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *create_comfort_noise_for_default_frame(
-    ov_mc_mixer_core *self) {
+static ov_buffer *
+create_comfort_noise_for_default_frame(ov_mc_mixer_core *self) {
 
     OV_ASSERT(0 != self);
 
@@ -1079,12 +1060,8 @@ static ov_buffer *create_comfort_noise_for_default_frame(
     // The buffer now contains PCM16s, we need to convert into
     // PCM16s wrapped in 32bits per sample
 
-    ov_pcm_16_scale_to_32(num_samples,
-                          (int16_t const *)buf->start,
-                          (int32_t *)buf32->start,
-                          1.0,
-                          0,
-                          0);
+    ov_pcm_16_scale_to_32(num_samples, (int16_t const *)buf->start,
+                          (int32_t *)buf32->start, 1.0, 0, 0);
 
     buf = ov_buffer_free(buf);
 
@@ -1110,8 +1087,8 @@ static uint16_t get_max_amplitude(double level_db) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_mc_mixer_core_config set_config_defaults(
-    ov_mc_mixer_core_config config) {
+static ov_mc_mixer_core_config
+set_config_defaults(ov_mc_mixer_core_config config) {
 
     ov_mc_mixer_core_config out = (ov_mc_mixer_core_config){
 
@@ -1135,7 +1112,8 @@ static ov_mc_mixer_core_config set_config_defaults(
         out.vad.zero_crossings_rate_threshold_hertz =
             config.vad.zero_crossings_rate_threshold_hertz;
 
-    if (0 != config.samplerate_hz) out.samplerate_hz = config.samplerate_hz;
+    if (0 != config.samplerate_hz)
+        out.samplerate_hz = config.samplerate_hz;
 
     if (0 != config.comfort_noise_max_amplitude)
         out.comfort_noise_max_amplitude = config.comfort_noise_max_amplitude;
@@ -1174,16 +1152,19 @@ ov_mc_mixer_core *ov_mc_mixer_core_create(ov_mc_mixer_core_config config) {
 
     ov_mc_mixer_core *mixer = NULL;
 
-    if (0 == config.loop) goto error;
+    if (0 == config.loop)
+        goto error;
 
     ov_event_loop *loop = config.loop;
     config = set_config_defaults(config);
     config.loop = loop;
 
-    if (0 == config.limit.frame_buffer_max) config.limit.frame_buffer_max = 10;
+    if (0 == config.limit.frame_buffer_max)
+        config.limit.frame_buffer_max = 10;
 
     mixer = calloc(1, sizeof(ov_mc_mixer_core));
-    if (!mixer) goto error;
+    if (!mixer)
+        goto error;
 
     mixer->magic_bytes = OV_MC_MIXER_CORE_MAGIC_BYTES;
     mixer->config = config;
@@ -1193,24 +1174,28 @@ ov_mc_mixer_core *ov_mc_mixer_core_create(ov_mc_mixer_core_config config) {
     d_config.value.data_function.free = ov_mc_loop_free_void;
 
     mixer->loops = ov_dict_create(d_config);
-    if (!mixer->loops) goto error;
+    if (!mixer->loops)
+        goto error;
 
     mixer->frame_buffer =
         ov_rtp_frame_buffer_create((ov_rtp_frame_buffer_config){
             .num_frames_to_buffer_per_stream = config.limit.frame_buffer_max});
 
-    if (!mixer->frame_buffer) goto error;
+    if (!mixer->frame_buffer)
+        goto error;
 
     mixer->mix_timer =
         ov_event_loop_timer_set(config.loop, 20000, mixer, cb_mix);
 
     mixer->codec.factory = ov_codec_factory_create_standard();
-    if (!mixer->codec.factory) goto error;
+    if (!mixer->codec.factory)
+        goto error;
 
     d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = rtp_stream_free_void;
     mixer->codec.codecs = ov_dict_create(d_config);
-    if (!mixer->codec.codecs) goto error;
+    if (!mixer->codec.codecs)
+        goto error;
 
     mixer->comfort_noise_32bit = create_comfort_noise_for_default_frame(mixer);
 
@@ -1228,7 +1213,8 @@ error:
 bool ov_mc_mixer_core_reconfigure(ov_mc_mixer_core *self,
                                   ov_mc_mixer_core_config config) {
 
-    if (!self || !config.loop) goto error;
+    if (!self || !config.loop)
+        goto error;
 
     if (self->mix_timer != OV_TIMER_INVALID) {
         ov_event_loop_timer_unset(self->config.loop, self->mix_timer, NULL);
@@ -1244,6 +1230,8 @@ bool ov_mc_mixer_core_reconfigure(ov_mc_mixer_core *self,
 
     self->mix_timer = ov_event_loop_timer_set(config.loop, 20000, self, cb_mix);
 
+    ov_rtp_frame_buffer_clear(self->frame_buffer);
+
     return true;
 error:
     return false;
@@ -1253,9 +1241,11 @@ error:
 
 ov_mc_mixer_core *ov_mc_mixer_core_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_MC_MIXER_CORE_MAGIC_BYTES) return NULL;
+    if (*(uint16_t *)data != OV_MC_MIXER_CORE_MAGIC_BYTES)
+        return NULL;
 
     return (ov_mc_mixer_core *)data;
 }
@@ -1264,7 +1254,8 @@ ov_mc_mixer_core *ov_mc_mixer_core_cast(const void *data) {
 
 ov_mc_mixer_core *ov_mc_mixer_core_free(ov_mc_mixer_core *self) {
 
-    if (!ov_mc_mixer_core_cast(self)) return self;
+    if (!ov_mc_mixer_core_cast(self))
+        return self;
 
     if (self->frame_buffer)
         self->frame_buffer = self->frame_buffer->free(self->frame_buffer);
@@ -1275,10 +1266,6 @@ ov_mc_mixer_core *ov_mc_mixer_core_free(ov_mc_mixer_core *self) {
     self->codec.codecs = ov_dict_free(self->codec.codecs);
     self->comfort_noise_32bit = ov_buffer_free(self->comfort_noise_32bit);
 
-    if (self->frame_buffer) {
-        self->frame_buffer = self->frame_buffer->free(self->frame_buffer);
-    }
-
     self = ov_data_pointer_free(self);
     return NULL;
 }
@@ -1287,7 +1274,8 @@ ov_mc_mixer_core *ov_mc_mixer_core_free(ov_mc_mixer_core *self) {
 
 bool ov_mc_mixer_core_set_name(ov_mc_mixer_core *self, const char *name) {
 
-    if (!self || !name) goto error;
+    if (!self || !name)
+        goto error;
 
     self->name = ov_data_pointer_free(self->name);
     self->name = ov_string_dup(name);
@@ -1301,22 +1289,25 @@ error:
 
 const char *ov_mc_mixer_core_get_name(const ov_mc_mixer_core *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     return self->name;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_mixer_core_set_volume(ov_mc_mixer_core *self,
-                                 const char *name,
+bool ov_mc_mixer_core_set_volume(ov_mc_mixer_core *self, const char *name,
                                  uint8_t vol) {
 
-    if (!self || !name) goto error;
+    if (!self || !name)
+        goto error;
 
     ov_mc_loop *l = ov_dict_get(self->loops, name);
-    if (!l) goto error;
+    if (!l)
+        goto error;
 
-    if (vol > 100) vol = 100;
+    if (vol > 100)
+        vol = 100;
 
     return ov_mc_loop_set_volume(l, vol);
 error:
@@ -1328,10 +1319,12 @@ error:
 uint8_t ov_mc_mixer_core_get_volume(const ov_mc_mixer_core *self,
                                     const char *name) {
 
-    if (!self || !name) goto error;
+    if (!self || !name)
+        goto error;
 
     ov_mc_loop *l = ov_dict_get(self->loops, name);
-    if (!l) goto error;
+    if (!l)
+        goto error;
 
     return ov_mc_loop_get_volume(l);
 
@@ -1355,7 +1348,8 @@ bool ov_mc_mixer_core_join(ov_mc_mixer_core *self, ov_mc_loop_data loop) {
         .callback.io = cb_io_multicast};
 
     ov_mc_loop *l = ov_mc_loop_create(config);
-    if (!l) goto error;
+    if (!l)
+        goto error;
 
     char *key = ov_string_dup(loop.name);
     if (!ov_dict_set(self->loops, key, l, NULL)) {
@@ -1365,11 +1359,8 @@ bool ov_mc_mixer_core_join(ov_mc_mixer_core *self, ov_mc_loop_data loop) {
         goto error;
     }
 
-    ov_log_info("Mixer %s joins loop %s at %s:%i",
-                self->name,
-                loop.name,
-                loop.socket.host,
-                loop.socket.port);
+    ov_log_info("Mixer %s joins loop %s at %s:%i", self->name, loop.name,
+                loop.socket.host, loop.socket.port);
 
     return true;
 error:
@@ -1380,9 +1371,11 @@ error:
 
 bool ov_mc_mixer_core_leave(ov_mc_mixer_core *self, const char *name) {
 
-    if (!self || !name) goto error;
+    if (!self || !name)
+        goto error;
 
-    if (!ov_dict_del(self->loops, name)) goto error;
+    if (!ov_dict_del(self->loops, name))
+        goto error;
 
     ov_log_info("Mixer %s left loop %s", self->name, name);
 
@@ -1395,20 +1388,21 @@ error:
 
 bool ov_mc_mixer_core_release(ov_mc_mixer_core *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     ov_log_info("Mixer release %s", self->name);
 
-    if (!ov_dict_clear(self->loops)) goto error;
+    if (!ov_dict_clear(self->loops))
+        goto error;
 
-    if (!ov_dict_clear(self->codec.codecs)) goto error;
+    if (!ov_dict_clear(self->codec.codecs))
+        goto error;
 
     self->name = ov_data_pointer_free(self->name);
     self->forward = (ov_mc_mixer_core_forward){0};
 
-    ov_list *frames =
-        ov_rtp_frame_buffer_get_current_frames(self->frame_buffer);
-    frames = ov_mc_mixer_core_frame_processing_list_free(frames);
+    ov_rtp_frame_buffer_clear(self->frame_buffer);
 
     return true;
 error:
@@ -1436,7 +1430,8 @@ bool ov_mc_mixer_core_forward_data_is_valid(
 static bool cb_io_forwarding_socket(int socket, uint8_t events, void *data) {
 
     ov_mc_mixer_core *self = ov_mc_mixer_core_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
@@ -1458,13 +1453,16 @@ error:
 bool ov_mc_mixer_core_set_forward(ov_mc_mixer_core *self,
                                   ov_mc_mixer_core_forward data) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     /* Forward data should be correct */
-    if (!ov_mc_mixer_core_forward_data_is_valid(&data)) return false;
+    if (!ov_mc_mixer_core_forward_data_is_valid(&data))
+        return false;
 
     ov_event_loop *loop = self->config.loop;
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     self->forward = data;
     self->output.payload_type = data.payload_type;
@@ -1480,18 +1478,19 @@ bool ov_mc_mixer_core_set_forward(ov_mc_mixer_core *self,
         (ov_socket_configuration){.host = "0.0.0.0", .port = 0, .type = UDP};
 
     self->socket = ov_socket_create(socket_config, false, NULL);
-    if (-1 == self->socket) goto error;
+    if (-1 == self->socket)
+        goto error;
 
-    if (!ov_socket_ensure_nonblocking(self->socket)) goto error;
+    if (!ov_socket_ensure_nonblocking(self->socket))
+        goto error;
 
-    if (!ov_socket_get_data(self->socket, &self->local, NULL)) goto error;
+    if (!ov_socket_get_data(self->socket, &self->local, NULL))
+        goto error;
 
-    if (!loop->callback.set(
-            loop,
-            self->socket,
-            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-            self,
-            cb_io_forwarding_socket))
+    if (!loop->callback.set(loop, self->socket,
+                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                OV_EVENT_IO_CLOSE,
+                            self, cb_io_forwarding_socket))
         goto error;
 
     return true;
@@ -1503,7 +1502,8 @@ error:
 
 ov_mc_mixer_core_forward ov_mc_mixer_core_get_forward(ov_mc_mixer_core *self) {
 
-    if (!self) return (ov_mc_mixer_core_forward){0};
+    if (!self)
+        return (ov_mc_mixer_core_forward){0};
     return self->forward;
 }
 
@@ -1511,13 +1511,16 @@ ov_mc_mixer_core_forward ov_mc_mixer_core_get_forward(ov_mc_mixer_core *self) {
 
 static bool add_loop_data(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     ov_mc_loop *loop = (ov_mc_loop *)val;
     ov_json_value *store = ov_json_value_cast(data);
-    if (!loop || !store) goto error;
+    if (!loop || !store)
+        goto error;
 
     val = ov_mc_loop_to_json(loop);
-    if (!ov_json_object_set(store, (const char *)key, val)) goto error;
+    if (!ov_json_object_set(store, (const char *)key, val))
+        goto error;
 
     return true;
 error:
@@ -1531,44 +1534,63 @@ ov_json_value *ov_mc_mixer_state(ov_mc_mixer_core *self) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
+
+    pid_t pid = getpid();
 
     out = ov_json_object();
+
+    val = ov_json_number(pid);
+    if (!ov_json_object_set(out, "pid", val))
+        goto error;
+
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_KEY_FORWARD, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_FORWARD, val))
+        goto error;
 
     ov_json_value *temp = val;
 
     val = ov_json_number(self->forward.ssrc);
-    if (!ov_json_object_set(temp, OV_KEY_SSRC, val)) goto error;
+    if (!ov_json_object_set(temp, OV_KEY_SSRC, val))
+        goto error;
 
     val = ov_json_number(self->forward.socket.port);
-    if (!ov_json_object_set(temp, OV_KEY_PORT, val)) goto error;
+    if (!ov_json_object_set(temp, OV_KEY_PORT, val))
+        goto error;
 
     val = ov_json_string(self->forward.socket.host);
-    if (!ov_json_object_set(temp, OV_KEY_HOST, val)) goto error;
+    if (!ov_json_object_set(temp, OV_KEY_HOST, val))
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_KEY_LOOPS, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_LOOPS, val))
+        goto error;
 
-    if (!ov_dict_for_each(self->loops, val, add_loop_data)) goto error;
+    if (!ov_dict_for_each(self->loops, val, add_loop_data))
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_KEY_OUTPUT, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_OUTPUT, val))
+        goto error;
 
     temp = val;
 
     val = ov_json_number(self->output.sequence_number);
-    if (!ov_json_object_set(temp, OV_KEY_SEQUENCE_NUMBER, val)) goto error;
+    if (!ov_json_object_set(temp, OV_KEY_SEQUENCE_NUMBER, val))
+        goto error;
 
     val = ov_json_number(self->output.timestamp);
-    if (!ov_json_object_set(temp, OV_KEY_TIMESTAMP, val)) goto error;
+    if (!ov_json_object_set(temp, OV_KEY_TIMESTAMP, val))
+        goto error;
 
     val = ov_json_number(self->output.payload_type);
-    if (!ov_json_object_set(temp, OV_KEY_PAYLOAD_TYPE, val)) goto error;
+    if (!ov_json_object_set(temp, OV_KEY_PAYLOAD_TYPE, val))
+        goto error;
 
     val = ov_json_number(self->output.ssid);
-    if (!ov_json_object_set(temp, OV_KEY_SSRC, val)) goto error;
+    if (!ov_json_object_set(temp, OV_KEY_SSRC, val))
+        goto error;
 
     return out;
 error:
@@ -1589,15 +1611,13 @@ typedef struct {
 
 /*----------------------------------------------------------------------------*/
 
-static bool collect_stale_stream_ssids(const void *key,
-                                       void *value,
+static bool collect_stale_stream_ssids(const void *key, void *value,
                                        void *data) {
 
     gc_args *args = data;
 
-    if (ov_ptr_valid(args,
-                     "Cannot collect stale RTP streams - invalid args "
-                     "pointer") &&
+    if (ov_ptr_valid(args, "Cannot collect stale RTP streams - invalid args "
+                           "pointer") &&
         (sizeof(args->ssids) / sizeof(args->ssids[0]) > args->ssids_found)) {
 
         RtpStream *entry = value;
@@ -1623,8 +1643,8 @@ static void clean_stream_entries(ov_dict *codec_entries, gc_args args) {
 
     for (size_t i = 0; i < args.ssids_found; ++i) {
 
-        ov_log_info(
-            "ALSA RTP mixer: Removing stale stream %" PRIu32, args.ssids[i]);
+        ov_log_info("ALSA RTP mixer: Removing stale stream %" PRIu32,
+                    args.ssids[i]);
         intptr_t ssidptr = args.ssids[i];
         ov_dict_del(codec_entries, (void *)ssidptr);
     }

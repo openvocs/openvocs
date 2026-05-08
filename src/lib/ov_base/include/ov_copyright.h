@@ -77,12 +77,9 @@ struct ov_copyright_gpl_v3_parameter {
 
 struct ov_copyright {
 
-    char *(*generate_header_string)(const char *prefix,
-                                    const char *intro,
-                                    const char *year,
-                                    const char *owner,
-                                    const char *end_note,
-                                    const char *suffix,
+    char *(*generate_header_string)(const char *prefix, const char *intro,
+                                    const char *year, const char *owner,
+                                    const char *end_note, const char *suffix,
                                     uint16_t line_indent,
                                     bool indent_using_spaces,
                                     void *custom_data);
@@ -119,14 +116,11 @@ struct ov_copyright_config {
 
         @returns                allocated c string or NULL
 */
-char *ov_copyright_generate_header_string(const char *prefix,
-                                          const char *intro,
-                                          const char *year,
-                                          const char *owner,
+char *ov_copyright_generate_header_string(const char *prefix, const char *intro,
+                                          const char *year, const char *owner,
                                           const char *text,
                                           const char *end_note,
-                                          const char *suffix,
-                                          uint16_t indent,
+                                          const char *suffix, uint16_t indent,
                                           bool spaces);
 
 /*      ------------------------------------------------------------------------

@@ -59,12 +59,14 @@ static ov_json_value *json_object_get_with_length(ov_json_value *object,
                                                   const char *key,
                                                   size_t length) {
 
-    if (!object || !key || length < 1) return NULL;
+    if (!object || !key || length < 1)
+        return NULL;
 
     char buffer[length + 1];
     memset(buffer, 0, length + 1);
 
-    if (!strncat(buffer, key, length)) goto error;
+    if (!strncat(buffer, key, length))
+        goto error;
 
     return ov_json_object_get(object, buffer);
 error:
@@ -73,17 +75,17 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool json_object_set_with_length(ov_json_value *obj,
-                                        const char *key,
-                                        size_t length,
-                                        ov_json_value *value) {
+static bool json_object_set_with_length(ov_json_value *obj, const char *key,
+                                        size_t length, ov_json_value *value) {
 
-    if (!obj || !key || length < 1 || !value) return false;
+    if (!obj || !key || length < 1 || !value)
+        return false;
 
     char buffer[length + 1];
     memset(buffer, 0, length + 1);
 
-    if (!strncat(buffer, key, length)) goto error;
+    if (!strncat(buffer, key, length))
+        goto error;
 
     return ov_json_object_set(obj, buffer, value);
 error:
@@ -100,24 +102,19 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static int64_t json_object_decode(ov_json_value **value,
-                                  uint8_t *buffer,
+static int64_t json_object_decode(ov_json_value **value, uint8_t *buffer,
                                   size_t size);
 
-static int64_t json_array_decode(ov_json_value **value,
-                                 uint8_t *buffer,
+static int64_t json_array_decode(ov_json_value **value, uint8_t *buffer,
                                  size_t size);
 
-static int64_t json_string_decode(ov_json_value **value,
-                                  uint8_t *buffer,
+static int64_t json_string_decode(ov_json_value **value, uint8_t *buffer,
                                   size_t size);
 
-static int64_t json_number_decode(ov_json_value **value,
-                                  uint8_t *buffer,
+static int64_t json_number_decode(ov_json_value **value, uint8_t *buffer,
                                   size_t size);
 
-static int64_t json_literal_decode(ov_json_value **value,
-                                   uint8_t *buffer,
+static int64_t json_literal_decode(ov_json_value **value, uint8_t *buffer,
                                    size_t size);
 
 /*
@@ -187,8 +184,7 @@ static int64_t json_parser_calculate_literal(const ov_json_value *value,
         bytes written (if the char is not NULL)
         open will ne reduced by the amount of bytes written.
 */
-static bool json_parser_write_if_not_null(const char *content,
-                                          char **next,
+static bool json_parser_write_if_not_null(const char *content, char **next,
                                           size_t *open);
 
 /*----------------------------------------------------------------------------*/
@@ -206,87 +202,91 @@ static bool json_number_fill_string(const ov_json_value *self, char *string);
  *      ------------------------------------------------------------------------
  */
 
-int64_t ov_json_parser_decode(ov_json_value **value,
-                              const char *buffer,
+int64_t ov_json_parser_decode(ov_json_value **value, const char *buffer,
                               size_t length) {
 
     bool created = false;
-    if (!value || !buffer || length < 1) goto error;
+    if (!value || !buffer || length < 1)
+        goto error;
 
     size_t size = length;
     int64_t len = -1;
 
     uint8_t *ptr = (uint8_t *)buffer;
 
-    if (!ov_json_clear_whitespace(&ptr, &size)) goto error;
+    if (!ov_json_clear_whitespace(&ptr, &size))
+        goto error;
 
     switch (ptr[0]) {
 
-        case 0x7B: // ={ need to parse an object
+    case 0x7B: // ={ need to parse an object
 
-            len = json_object_decode(value, ptr, size);
-            break;
+        len = json_object_decode(value, ptr, size);
+        break;
 
-        case 0x5B: // =[ need to parse an array
+    case 0x5B: // =[ need to parse an array
 
-            len = json_array_decode(value, ptr, size);
-            break;
+        len = json_array_decode(value, ptr, size);
+        break;
 
-        case 0x22: // ="  need to parse for string
+    case 0x22: // ="  need to parse for string
 
-            len = json_string_decode(value, ptr, size);
-            break;
+        len = json_string_decode(value, ptr, size);
+        break;
 
-        case 0x6E: // =n need to parse for "null"
-        case 0x66: // =f need to parse for "false"
-        case 0x74: // =t need to parse for "true"
+    case 0x6E: // =n need to parse for "null"
+    case 0x66: // =f need to parse for "false"
+    case 0x74: // =t need to parse for "true"
 
-            len = json_literal_decode(value, ptr, size);
-            break;
+        len = json_literal_decode(value, ptr, size);
+        break;
 
-            // number
+        // number
 
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-        case '0':
-        case '-':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+    case '-':
 
-            len = json_number_decode(value, ptr, size);
-            break;
-        default:
-            goto error;
-            break;
+        len = json_number_decode(value, ptr, size);
+        break;
+    default:
+        goto error;
+        break;
     }
 
-    if (len < 0) goto error;
+    if (len < 0)
+        goto error;
 
     return ((char *)ptr - (char *)buffer) + len;
 error:
-    if (created) *value = ov_json_value_free(*value);
+    if (created)
+        *value = ov_json_value_free(*value);
 
     return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static int64_t json_object_decode(ov_json_value **value,
-                                  uint8_t *buffer,
+static int64_t json_object_decode(ov_json_value **value, uint8_t *buffer,
                                   size_t size) {
 
     bool created = false;
-    if (!value || !buffer || size < 2) goto error;
+    if (!value || !buffer || size < 2)
+        goto error;
 
     uint8_t *start = (uint8_t *)buffer;
     uint8_t *end = NULL;
 
-    if (!ov_json_match_object(&start, &end, size)) goto error;
+    if (!ov_json_match_object(&start, &end, size))
+        goto error;
 
     // testrun_log("\nOBJECT\t|%s\nSTART\t|%s\nEND\t%s\n", (char*) buffer,
     // (char*) start, (char*) end);
@@ -295,12 +295,14 @@ static int64_t json_object_decode(ov_json_value **value,
     if (!*value) {
 
         *value = ov_json_object();
-        if (!*value) goto error;
+        if (!*value)
+            goto error;
 
         created = true;
     }
 
-    if (!ov_json_object_clear(*value)) goto error;
+    if (!ov_json_object_clear(*value))
+        goto error;
 
     ov_json_value *child = NULL;
     uint8_t *ptr = NULL;
@@ -315,14 +317,16 @@ static int64_t json_object_decode(ov_json_value **value,
     size_t content_size = (end - start) + 2;
 
     // check whitespace only (empty object)
-    if (!ov_json_clear_whitespace(&content, &content_size)) goto error;
+    if (!ov_json_clear_whitespace(&content, &content_size))
+        goto error;
 
     while (content_size > 1) {
 
         /* parse a key */
         key = content;
 
-        if (!ov_json_match_string(&key, &ptr, content_size)) goto error;
+        if (!ov_json_match_string(&key, &ptr, content_size))
+            goto error;
 
         key_len = (ptr - key) + 1;
 
@@ -334,19 +338,23 @@ static int64_t json_object_decode(ov_json_value **value,
         content_size -= (ptr - content) + 1;
         content = key + key_len + 1;
 
-        if (!ov_json_clear_whitespace(&content, &content_size)) goto error;
+        if (!ov_json_clear_whitespace(&content, &content_size))
+            goto error;
 
-        if (content[0] != ':') goto error;
+        if (content[0] != ':')
+            goto error;
 
         content++;
         content_size--;
 
-        if (!ov_json_clear_whitespace(&content, &content_size)) goto error;
+        if (!ov_json_clear_whitespace(&content, &content_size))
+            goto error;
 
         /* parse a value */
         child = NULL;
         len = ov_json_parser_decode(&child, (char *)content, content_size);
-        if (len < 0) goto error;
+        if (len < 0)
+            goto error;
 
         content_size -= len;
         content += len;
@@ -364,38 +372,44 @@ static int64_t json_object_decode(ov_json_value **value,
         key = NULL;
         child = NULL;
 
-        if (!ov_json_clear_whitespace(&content, &content_size)) goto error;
+        if (!ov_json_clear_whitespace(&content, &content_size))
+            goto error;
 
-        if (content[0] == '}') break;
+        if (content[0] == '}')
+            break;
 
-        if (content[0] != ',') goto error;
+        if (content[0] != ',')
+            goto error;
 
         content += 1;
         content_size -= 1;
     }
 
     // content MUST point to closing bracket
-    if (*content != '}') goto error;
+    if (*content != '}')
+        goto error;
 
     return ((end - buffer) + 2);
 error:
-    if (created) *value = ov_json_value_free(*value);
+    if (created)
+        *value = ov_json_value_free(*value);
     return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static int64_t json_array_decode(ov_json_value **value,
-                                 uint8_t *buffer,
+static int64_t json_array_decode(ov_json_value **value, uint8_t *buffer,
                                  size_t size) {
 
     bool created = false;
-    if (!value || !buffer || size < 2) goto error;
+    if (!value || !buffer || size < 2)
+        goto error;
 
     uint8_t *start = (uint8_t *)buffer;
     uint8_t *end = NULL;
 
-    if (!ov_json_match_array(&start, &end, size)) goto error;
+    if (!ov_json_match_array(&start, &end, size))
+        goto error;
 
     // testrun_log("\nARRAY\t|%s\nSTART\t|%s\nEND\t%s\n", (char*) buffer,
     // (char*) start, (char*) end);
@@ -404,12 +418,14 @@ static int64_t json_array_decode(ov_json_value **value,
     if (!*value) {
 
         *value = ov_json_array();
-        if (!*value) goto error;
+        if (!*value)
+            goto error;
 
         created = true;
     }
 
-    if (!ov_json_array_clear(*value)) goto error;
+    if (!ov_json_array_clear(*value))
+        goto error;
 
     ov_json_value *child = NULL;
     uint8_t *content = start;
@@ -420,13 +436,15 @@ static int64_t json_array_decode(ov_json_value **value,
     size_t content_size = (end - start) + 2;
 
     // check whitespace only (empty array)
-    if (!ov_json_clear_whitespace(&content, &content_size)) goto error;
+    if (!ov_json_clear_whitespace(&content, &content_size))
+        goto error;
 
     while (content_size > 1) {
 
         child = NULL;
         len = ov_json_parser_decode(&child, (char *)content, content_size);
-        if (len < 0) goto error;
+        if (len < 0)
+            goto error;
 
         if (!ov_json_array_push(*value, child)) {
             child = ov_json_value_free(child);
@@ -438,49 +456,58 @@ static int64_t json_array_decode(ov_json_value **value,
         content += len;
 
         // clear whitespace
-        if (!ov_json_clear_whitespace(&content, &content_size)) goto error;
+        if (!ov_json_clear_whitespace(&content, &content_size))
+            goto error;
 
-        if (content_size == 1) break;
+        if (content_size == 1)
+            break;
 
-        if (content[0] != ',') goto error;
+        if (content[0] != ',')
+            goto error;
 
         content++;
         content_size--;
 
-        if (!ov_json_clear_whitespace(&content, &content_size)) goto error;
+        if (!ov_json_clear_whitespace(&content, &content_size))
+            goto error;
     }
 
     return ((end - buffer) + 2);
 error:
-    if (created) *value = ov_json_value_free(*value);
+    if (created)
+        *value = ov_json_value_free(*value);
     return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static int64_t json_string_decode(ov_json_value **value,
-                                  uint8_t *buffer,
+static int64_t json_string_decode(ov_json_value **value, uint8_t *buffer,
                                   size_t size) {
 
     bool created = false;
-    if (!value || !buffer || size < 2) goto error;
+    if (!value || !buffer || size < 2)
+        goto error;
 
-    if (buffer[0] != '"') goto error;
+    if (buffer[0] != '"')
+        goto error;
 
     uint8_t *start = (uint8_t *)buffer;
     uint8_t *end = NULL;
 
-    if (!ov_json_match_string(&start, &end, size)) goto error;
+    if (!ov_json_match_string(&start, &end, size))
+        goto error;
 
     if (!*value) {
 
         *value = ov_json_string(0);
-        if (!*value) goto error;
+        if (!*value)
+            goto error;
 
         created = true;
     }
 
-    if (!ov_json_string_clear(*value)) goto error;
+    if (!ov_json_string_clear(*value))
+        goto error;
 
     if (!ov_json_string_set_length(*value, (char *)start, (end - start) + 1))
         goto error;
@@ -489,18 +516,19 @@ static int64_t json_string_decode(ov_json_value **value,
 
     return ((end - start) + 3);
 error:
-    if (created) *value = ov_json_value_free(*value);
+    if (created)
+        *value = ov_json_value_free(*value);
     return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static int64_t json_number_decode(ov_json_value **value,
-                                  uint8_t *buffer,
+static int64_t json_number_decode(ov_json_value **value, uint8_t *buffer,
                                   size_t size) {
 
     bool created = false;
-    if (!value || !buffer || size < 2) goto error;
+    if (!value || !buffer || size < 2)
+        goto error;
 
     char *ptr = NULL;
     double number = 0;
@@ -510,34 +538,37 @@ static int64_t json_number_decode(ov_json_value **value,
     /* CHECK start */
     switch (buffer[0]) {
 
-        case '-':
-        case '0':
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            break;
+    case '-':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     errno = 0;
     number = strtod((char *)buffer, &ptr);
-    if (errno != 0) goto error;
+    if (errno != 0)
+        goto error;
 
     // testrun_log("\nNUMNER\t|\nSTART\t|%s\nEND\t%s\n", (char*) buffer,
     // (char*) ptr);
 
-    if (ptr == (char *)buffer) goto error;
+    if (ptr == (char *)buffer)
+        goto error;
 
     // check parsing beyond length
-    if ((uint64_t)((char *)ptr - (char *)buffer) > size) goto error;
+    if ((uint64_t)((char *)ptr - (char *)buffer) > size)
+        goto error;
 
     /* NOTE:    strtod breaks on space to check for wrong input
      *          of the form below, the best way is to check if the last char
@@ -552,47 +583,51 @@ static int64_t json_number_decode(ov_json_value **value,
      */
 
     if (ptr[0] == ' ')
-        if (!isdigit(ptr[-1])) goto error;
+        if (!isdigit(ptr[-1]))
+            goto error;
 
     /* Check next (MUST be some JSON closing token or whitespace) */
     switch (ptr[0]) {
-        case ',':
-        case ']':
-        case '}':
-        case 0x20:
-        case 0x09:
-        case 0x0A:
-        case 0x0D:
-            break;
+    case ',':
+    case ']':
+    case '}':
+    case 0x20:
+    case 0x09:
+    case 0x0A:
+    case 0x0D:
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     if (!*value) {
 
         *value = ov_json_number(0);
-        if (!*value) goto error;
+        if (!*value)
+            goto error;
 
         created = true;
     }
 
-    if (!ov_json_number_set(*value, number)) goto error;
+    if (!ov_json_number_set(*value, number))
+        goto error;
 
     return (ptr - (char *)buffer);
 error:
-    if (created) *value = ov_json_value_free(*value);
+    if (created)
+        *value = ov_json_value_free(*value);
     return -1;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static int64_t json_literal_decode(ov_json_value **value,
-                                   uint8_t *buffer,
+static int64_t json_literal_decode(ov_json_value **value, uint8_t *buffer,
                                    size_t size) {
 
     bool created = false;
-    if (!value || !buffer || size < 4) goto error;
+    if (!value || !buffer || size < 4)
+        goto error;
 
     // testrun_log("\nLITERAL\t|%s\n, buffer);
 
@@ -600,47 +635,57 @@ static int64_t json_literal_decode(ov_json_value **value,
 
         *value = ov_json_null();
 
-        if (!*value) goto error;
+        if (!*value)
+            goto error;
 
         created = true;
     }
 
-    if (!ov_json_literal_clear(*value)) goto error;
+    if (!ov_json_literal_clear(*value))
+        goto error;
 
     switch (buffer[0]) {
 
-        case 'n':
+    case 'n':
 
-            if (strncmp((char *)buffer, "null", 4) != 0) goto error;
+        if (strncmp((char *)buffer, "null", 4) != 0)
+            goto error;
 
-            if (ov_json_literal_set(*value, OV_JSON_NULL)) return 4;
+        if (ov_json_literal_set(*value, OV_JSON_NULL))
+            return 4;
 
-            break;
+        break;
 
-        case 't':
+    case 't':
 
-            if (strncmp((char *)buffer, "true", 4) != 0) goto error;
+        if (strncmp((char *)buffer, "true", 4) != 0)
+            goto error;
 
-            if (ov_json_literal_set(*value, OV_JSON_TRUE)) return 4;
+        if (ov_json_literal_set(*value, OV_JSON_TRUE))
+            return 4;
 
-            break;
+        break;
 
-        case 'f':
+    case 'f':
 
-            if (size < 5) goto error;
+        if (size < 5)
+            goto error;
 
-            if (strncmp((char *)buffer, "false", 5) != 0) goto error;
+        if (strncmp((char *)buffer, "false", 5) != 0)
+            goto error;
 
-            if (ov_json_literal_set(*value, OV_JSON_FALSE)) return 5;
+        if (ov_json_literal_set(*value, OV_JSON_FALSE))
+            return 5;
 
-            break;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
 error:
-    if (created) *value = ov_json_value_free(*value);
+    if (created)
+        *value = ov_json_value_free(*value);
     return -1;
 }
 
@@ -656,7 +701,8 @@ error:
 
 static bool json_number_fill_string(const ov_json_value *self, char *string) {
 
-    if (!ov_json_is_number(self) || !string) goto error;
+    if (!ov_json_is_number(self) || !string)
+        goto error;
 
     double number = ov_json_number_get(self);
     size_t length = 0;
@@ -670,7 +716,8 @@ static bool json_number_fill_string(const ov_json_value *self, char *string) {
         length = sprintf(string, "%.15g", number);
     }
 
-    if (length == 0) goto error;
+    if (length == 0)
+        goto error;
 
     return true;
 error:
@@ -681,7 +728,8 @@ error:
 
 bool ov_json_parser_collocate_ascending(const char *key, ov_list *list) {
 
-    if (!key || !ov_list_cast(list)) return false;
+    if (!key || !ov_list_cast(list))
+        return false;
 
     uint8_t *k = (uint8_t *)key;
     uint8_t *s = NULL;
@@ -695,25 +743,29 @@ bool ov_json_parser_collocate_ascending(const char *key, ov_list *list) {
         s = list->get(list, i);
         slen = strlen((char *)s);
         len = klen;
-        if (slen < klen) len = slen;
+        if (slen < klen)
+            len = slen;
 
         for (size_t x = 0; x <= len; x++) {
 
             if (k[x] < s[x]) {
 
-                if (!list->insert(list, i, (void *)key)) goto error;
+                if (!list->insert(list, i, (void *)key))
+                    goto error;
 
                 return true;
             }
 
-            if (k[x] != s[x]) break;
+            if (k[x] != s[x])
+                break;
         }
 
         // check against next item
     }
 
     // not returned?
-    if (!list->push(list, (void *)key)) goto error;
+    if (!list->push(list, (void *)key))
+        goto error;
 
     return true;
 error:
@@ -726,10 +778,10 @@ int64_t ov_json_parser_encode(const ov_json_value *value,
                               const ov_json_stringify_config *conf,
                               bool (*collocate_keys)(const char *key,
                                                      ov_list *list),
-                              char *buffer,
-                              size_t size) {
+                              char *buffer, size_t size) {
 
-    if (!value || !buffer || size < 1) goto error;
+    if (!value || !buffer || size < 1)
+        goto error;
 
     EncodingParameter parameter = {
 
@@ -750,27 +802,33 @@ int64_t ov_json_parser_encode(const ov_json_value *value,
     if (NULL != parameter.config.intro) {
 
         len = strlen(parameter.config.intro);
-        if (len >= size) goto error;
+        if (len >= size)
+            goto error;
 
-        if (!memcpy(buffer, parameter.config.intro, len)) goto error;
+        if (!memcpy(buffer, parameter.config.intro, len))
+            goto error;
 
         parameter.buffer += len;
         parameter.size -= len;
     }
 
     int64_t result = json_value_encode(value, &parameter);
-    if (result < 0) goto error;
+    if (result < 0)
+        goto error;
     result += len;
 
     if (NULL != parameter.config.outro) {
 
         int64_t used = parameter.buffer - buffer;
-        if (used < 0) goto error;
+        if (used < 0)
+            goto error;
 
         len = strlen(parameter.config.outro);
-        if (len > size - used) goto error;
+        if (len > size - used)
+            goto error;
 
-        if (!memcpy(parameter.buffer, parameter.config.outro, len)) goto error;
+        if (!memcpy(parameter.buffer, parameter.config.outro, len))
+            goto error;
 
         result += len;
     }
@@ -786,29 +844,30 @@ error:
 static int64_t json_value_encode(const ov_json_value *value,
                                  EncodingParameter *parameter) {
 
-    if (!ov_json_value_cast(value) || !parameter) goto error;
+    if (!ov_json_value_cast(value) || !parameter)
+        goto error;
 
     switch (value->type) {
 
-        case OV_JSON_NULL:
-        case OV_JSON_TRUE:
-        case OV_JSON_FALSE:
-            return json_literal_encode(value, parameter);
+    case OV_JSON_NULL:
+    case OV_JSON_TRUE:
+    case OV_JSON_FALSE:
+        return json_literal_encode(value, parameter);
 
-        case OV_JSON_STRING:
-            return json_string_encode(value, parameter);
+    case OV_JSON_STRING:
+        return json_string_encode(value, parameter);
 
-        case OV_JSON_NUMBER:
-            return json_number_encode(value, parameter);
+    case OV_JSON_NUMBER:
+        return json_number_encode(value, parameter);
 
-        case OV_JSON_ARRAY:
-            return json_array_encode(value, parameter);
+    case OV_JSON_ARRAY:
+        return json_array_encode(value, parameter);
 
-        case OV_JSON_OBJECT:
-            return json_object_encode(value, parameter);
+    case OV_JSON_OBJECT:
+        return json_object_encode(value, parameter);
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
 error:
@@ -819,7 +878,8 @@ error:
 
 static bool validate_parameter(const EncodingParameter *para) {
 
-    if (!para || !para->buffer || para->size < 1) return false;
+    if (!para || !para->buffer || para->size < 1)
+        return false;
 
     return true;
 }
@@ -828,24 +888,29 @@ static bool validate_parameter(const EncodingParameter *para) {
 
 static bool object_write_indent(EncodingParameter *parameter) {
 
-    if (!parameter) goto error;
+    if (!parameter)
+        goto error;
 
     bool enabled = parameter->config.object.entry.depth;
     char *indent = parameter->config.object.entry.indent;
 
     size_t len = 0;
 
-    if (!enabled || !indent) return true;
+    if (!enabled || !indent)
+        return true;
 
     len = strlen(indent);
 
-    if (parameter->size < parameter->depth * len) goto error;
+    if (parameter->size < parameter->depth * len)
+        goto error;
 
     for (size_t i = 0; i < parameter->depth; i++) {
 
-        if (parameter->size <= len) goto error;
+        if (parameter->size <= len)
+            goto error;
 
-        if (!memcpy(parameter->buffer, indent, len)) goto error;
+        if (!memcpy(parameter->buffer, indent, len))
+            goto error;
 
         parameter->buffer += len;
         parameter->size -= len;
@@ -860,13 +925,14 @@ error:
 
 static bool object_write_intro(EncodingParameter *parameter) {
 
-    if (!parameter || !parameter->config.object.item.intro) goto error;
+    if (!parameter || !parameter->config.object.item.intro)
+        goto error;
 
-    if (!object_write_indent(parameter)) goto error;
+    if (!object_write_indent(parameter))
+        goto error;
 
     return json_parser_write_if_not_null(parameter->config.object.item.intro,
-                                         &parameter->buffer,
-                                         &parameter->size);
+                                         &parameter->buffer, &parameter->size);
 
 error:
     return false;
@@ -876,25 +942,26 @@ error:
 
 static bool object_write_outro(EncodingParameter *parameter) {
 
-    if (!parameter || !parameter->config.object.item.intro) goto error;
+    if (!parameter || !parameter->config.object.item.intro)
+        goto error;
 
-    if (!parameter->config.object.item.outro) goto error;
+    if (!parameter->config.object.item.outro)
+        goto error;
 
     // write out e.g. \n
     if (!json_parser_write_if_not_null(parameter->config.object.item.out,
-                                       &parameter->buffer,
-                                       &parameter->size))
+                                       &parameter->buffer, &parameter->size))
         goto error;
 
     // write outro indent e.g. \t
 
-    if (!object_write_indent(parameter)) goto error;
+    if (!object_write_indent(parameter))
+        goto error;
 
     // write outro e.g. }
 
     return json_parser_write_if_not_null(parameter->config.object.item.outro,
-                                         &parameter->buffer,
-                                         &parameter->size);
+                                         &parameter->buffer, &parameter->size);
 
 error:
     return false;
@@ -902,31 +969,36 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool object_write_entry(const void *key_in,
-                               void *value,
+static bool object_write_entry(const void *key_in, void *value,
                                void *parameter) {
 
-    if (!key_in) return true;
+    if (!key_in)
+        return true;
 
-    if (!key_in || !value || !parameter) return false;
+    if (!key_in || !value || !parameter)
+        return false;
 
     ov_json_value *val = ov_json_value_cast(value);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     char *key = (char *)key_in;
     size_t key_len = strlen(key);
     EncodingParameter *para = (EncodingParameter *)parameter;
 
-    if (!object_write_indent(parameter)) goto error;
+    if (!object_write_indent(parameter))
+        goto error;
 
-    if (para->size < (strlen(key) + 2)) goto error;
+    if (para->size < (strlen(key) + 2))
+        goto error;
 
     // write key
 
     *para->buffer = '"';
     para->buffer++;
 
-    if (!memcpy(para->buffer, key, key_len)) goto error;
+    if (!memcpy(para->buffer, key, key_len))
+        goto error;
 
     para->buffer += key_len;
 
@@ -935,47 +1007,49 @@ static bool object_write_entry(const void *key_in,
 
     para->size -= key_len + 2;
 
-    if (!json_parser_write_if_not_null(
-            para->config.object.item.delimiter, &para->buffer, &para->size))
+    if (!json_parser_write_if_not_null(para->config.object.item.delimiter,
+                                       &para->buffer, &para->size))
         goto error;
 
-    if (para->size < 2) goto error;
+    if (para->size < 2)
+        goto error;
 
     if (para->config.object.entry.depth) {
 
         switch (val->type) {
 
-            case OV_JSON_ARRAY:
+        case OV_JSON_ARRAY:
 
-                if (!ov_json_array_is_empty(val)) {
+            if (!ov_json_array_is_empty(val)) {
 
-                    para->buffer[0] = '\n';
-                    para->buffer++;
-                    para->size--;
-                }
+                para->buffer[0] = '\n';
+                para->buffer++;
+                para->size--;
+            }
 
-                break;
+            break;
 
-            case OV_JSON_OBJECT:
+        case OV_JSON_OBJECT:
 
-                if (!ov_json_object_is_empty(val)) {
+            if (!ov_json_object_is_empty(val)) {
 
-                    para->buffer[0] = '\n';
-                    para->buffer++;
-                    para->size--;
-                }
+                para->buffer[0] = '\n';
+                para->buffer++;
+                para->size--;
+            }
 
-                break;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
     }
 
-    if (json_value_encode(value, parameter) < 1) goto error;
+    if (json_value_encode(value, parameter) < 1)
+        goto error;
 
-    if (!json_parser_write_if_not_null(
-            para->config.object.item.separator, &para->buffer, &para->size))
+    if (!json_parser_write_if_not_null(para->config.object.item.separator,
+                                       &para->buffer, &para->size))
         goto error;
 
     return true;
@@ -995,15 +1069,18 @@ struct container1 {
 
 static bool object_write_ordered(void *item, void *data) {
 
-    if (!item || !data) goto error;
+    if (!item || !data)
+        goto error;
 
     struct container1 *container = (struct container1 *)data;
 
-    if (!container->object || !container->parameter) goto error;
+    if (!container->object || !container->parameter)
+        goto error;
 
     ov_json_value *value = ov_json_object_get(container->object, (char *)item);
 
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     return object_write_entry(item, value, container->parameter);
 
@@ -1023,12 +1100,15 @@ struct parameter_order {
 
 static bool add_key_collocated(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    if (!value || !data) return false;
+    if (!value || !data)
+        return false;
 
     struct parameter_order *d = (struct parameter_order *)data;
-    if (!d->list || !d->collocate_key) goto error;
+    if (!d->list || !d->collocate_key)
+        goto error;
 
     return d->collocate_key((char *)key, d->list);
 error:
@@ -1043,7 +1123,8 @@ static ov_list *collocate_object_keys(const ov_json_value *value,
 
     ov_list *list = NULL;
 
-    if (!value || !function) goto error;
+    if (!value || !function)
+        goto error;
 
     list = ov_list_create((ov_list_config){0});
 
@@ -1053,13 +1134,14 @@ static ov_list *collocate_object_keys(const ov_json_value *value,
         .collocate_key = function,
     };
 
-    if (!ov_json_object_for_each(
-            (ov_json_value *)value, &data, add_key_collocated))
+    if (!ov_json_object_for_each((ov_json_value *)value, &data,
+                                 add_key_collocated))
         goto error;
 
     return list;
 error:
-    if (list) list->free(list);
+    if (list)
+        list->free(list);
     return NULL;
 }
 
@@ -1070,16 +1152,19 @@ static int64_t json_object_encode(const ov_json_value *value,
 
     ov_list *list = NULL;
 
-    if (!value || !validate_parameter(parameter)) goto error;
+    if (!value || !validate_parameter(parameter))
+        goto error;
 
     char *start = parameter->buffer;
     size_t items = ov_json_object_count(value);
 
     if (items == 0) {
 
-        if (parameter->size < 2) goto error;
+        if (parameter->size < 2)
+            goto error;
 
-        if (!memcpy(parameter->buffer, "{}", 2)) goto error;
+        if (!memcpy(parameter->buffer, "{}", 2))
+            goto error;
 
         parameter->buffer += 2;
         parameter->size -= 2;
@@ -1088,7 +1173,8 @@ static int64_t json_object_encode(const ov_json_value *value,
 
     // not empty
 
-    if (!object_write_intro(parameter)) goto error;
+    if (!object_write_intro(parameter))
+        goto error;
 
     // write childs with depth +1
     parameter->depth++;
@@ -1097,7 +1183,8 @@ static int64_t json_object_encode(const ov_json_value *value,
 
         // write ordered
         list = collocate_object_keys(value, parameter->collocate_keys);
-        if (!list) goto error;
+        if (!list)
+            goto error;
 
         struct container1 container = {
 
@@ -1109,8 +1196,8 @@ static int64_t json_object_encode(const ov_json_value *value,
     } else {
 
         // unordered
-        if (!ov_json_object_for_each(
-                (ov_json_value *)value, parameter, object_write_entry))
+        if (!ov_json_object_for_each((ov_json_value *)value, parameter,
+                                     object_write_entry))
 
             goto error;
     }
@@ -1122,7 +1209,8 @@ static int64_t json_object_encode(const ov_json_value *value,
     parameter->buffer -= len;
     parameter->size += len;
 
-    if (!object_write_outro(parameter)) goto error;
+    if (!object_write_outro(parameter))
+        goto error;
 done:
     ov_list_free(list);
     return (parameter->buffer - start);
@@ -1136,24 +1224,29 @@ error:
 
 static bool array_write_indent(EncodingParameter *parameter) {
 
-    if (!parameter) goto error;
+    if (!parameter)
+        goto error;
 
     bool enabled = parameter->config.array.entry.depth;
     char *indent = parameter->config.array.entry.indent;
 
     size_t len = 0;
 
-    if (!enabled || !indent) return true;
+    if (!enabled || !indent)
+        return true;
 
     len = strlen(indent);
 
-    if (parameter->size < parameter->depth * len) goto error;
+    if (parameter->size < parameter->depth * len)
+        goto error;
 
     for (size_t i = 0; i < parameter->depth; i++) {
 
-        if (parameter->size <= len) goto error;
+        if (parameter->size <= len)
+            goto error;
 
-        if (!memcpy(parameter->buffer, indent, len)) goto error;
+        if (!memcpy(parameter->buffer, indent, len))
+            goto error;
 
         parameter->buffer += len;
         parameter->size -= len;
@@ -1168,13 +1261,14 @@ error:
 
 static bool array_write_intro(EncodingParameter *parameter) {
 
-    if (!parameter || !parameter->config.array.item.intro) goto error;
+    if (!parameter || !parameter->config.array.item.intro)
+        goto error;
 
-    if (!array_write_indent(parameter)) goto error;
+    if (!array_write_indent(parameter))
+        goto error;
 
     return json_parser_write_if_not_null(parameter->config.array.item.intro,
-                                         &parameter->buffer,
-                                         &parameter->size);
+                                         &parameter->buffer, &parameter->size);
 
 error:
     return false;
@@ -1184,25 +1278,26 @@ error:
 
 static bool array_write_outro(EncodingParameter *parameter) {
 
-    if (!parameter || !parameter->config.array.item.intro) goto error;
+    if (!parameter || !parameter->config.array.item.intro)
+        goto error;
 
-    if (!parameter->config.array.item.outro) goto error;
+    if (!parameter->config.array.item.outro)
+        goto error;
 
     // write out e.g. \n
     if (!json_parser_write_if_not_null(parameter->config.array.item.out,
-                                       &parameter->buffer,
-                                       &parameter->size))
+                                       &parameter->buffer, &parameter->size))
         goto error;
 
     // write outro indent e.g. \t
 
-    if (!array_write_indent(parameter)) goto error;
+    if (!array_write_indent(parameter))
+        goto error;
 
     // write outro e.g. ]
 
     return json_parser_write_if_not_null(parameter->config.array.item.outro,
-                                         &parameter->buffer,
-                                         &parameter->size);
+                                         &parameter->buffer, &parameter->size);
 
 error:
     return false;
@@ -1213,7 +1308,8 @@ error:
 static int64_t json_array_encode(const ov_json_value *value,
                                  EncodingParameter *parameter) {
 
-    if (!value || !validate_parameter(parameter)) goto error;
+    if (!value || !validate_parameter(parameter))
+        goto error;
 
     char *start = parameter->buffer;
 
@@ -1222,7 +1318,8 @@ static int64_t json_array_encode(const ov_json_value *value,
 
     if (items == 0) {
 
-        if (!memcpy(parameter->buffer, "[]", 2)) goto error;
+        if (!memcpy(parameter->buffer, "[]", 2))
+            goto error;
 
         parameter->buffer += 2;
         parameter->size -= 2;
@@ -1231,7 +1328,8 @@ static int64_t json_array_encode(const ov_json_value *value,
 
     // non empty (use of configured indent)
 
-    if (!array_write_intro(parameter)) goto error;
+    if (!array_write_intro(parameter))
+        goto error;
 
     ov_json_value *child = NULL;
 
@@ -1242,38 +1340,42 @@ static int64_t json_array_encode(const ov_json_value *value,
     for (size_t i = 1; i <= items; i++) {
 
         child = ov_json_array_get((ov_json_value *)value, i);
-        if (!child) goto error;
+        if (!child)
+            goto error;
 
         write_indent = true;
 
         switch (child->type) {
 
-            case OV_JSON_ARRAY:
+        case OV_JSON_ARRAY:
 
-                if (!ov_json_array_is_empty(child)) write_indent = false;
+            if (!ov_json_array_is_empty(child))
+                write_indent = false;
 
-                break;
+            break;
 
-            case OV_JSON_OBJECT:
+        case OV_JSON_OBJECT:
 
-                if (!ov_json_object_is_empty(child)) write_indent = false;
+            if (!ov_json_object_is_empty(child))
+                write_indent = false;
 
-                break;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         if (write_indent)
-            if (!array_write_indent(parameter)) goto error;
+            if (!array_write_indent(parameter))
+                goto error;
 
-        if (json_value_encode(child, parameter) < 1) goto error;
+        if (json_value_encode(child, parameter) < 1)
+            goto error;
 
         if (i < items) {
 
             if (!json_parser_write_if_not_null(
-                    parameter->config.array.item.separator,
-                    &parameter->buffer,
+                    parameter->config.array.item.separator, &parameter->buffer,
                     &parameter->size))
                 goto error;
         }
@@ -1281,7 +1383,8 @@ static int64_t json_array_encode(const ov_json_value *value,
 
     parameter->depth--;
 
-    if (!array_write_outro(parameter)) goto error;
+    if (!array_write_outro(parameter))
+        goto error;
 
 done:
     return (parameter->buffer - start);
@@ -1295,28 +1398,29 @@ error:
 static int64_t json_string_encode(const ov_json_value *value,
                                   EncodingParameter *parameter) {
 
-    if (!value || !validate_parameter(parameter)) goto error;
+    if (!value || !validate_parameter(parameter))
+        goto error;
 
     char *start = parameter->buffer;
 
-    if (!ov_json_string_is_valid(value)) goto error;
+    if (!ov_json_string_is_valid(value))
+        goto error;
 
     const char *string = ov_json_string_get(value);
 
-    if (parameter->size < (strlen(string) + 2)) goto error;
-
-    if (!json_parser_write_if_not_null(parameter->config.string.item.intro,
-                                       &parameter->buffer,
-                                       &parameter->size))
+    if (parameter->size < (strlen(string) + 2))
         goto error;
 
-    if (!json_parser_write_if_not_null(
-            string, &parameter->buffer, &parameter->size))
+    if (!json_parser_write_if_not_null(parameter->config.string.item.intro,
+                                       &parameter->buffer, &parameter->size))
+        goto error;
+
+    if (!json_parser_write_if_not_null(string, &parameter->buffer,
+                                       &parameter->size))
         goto error;
 
     if (!json_parser_write_if_not_null(parameter->config.string.item.outro,
-                                       &parameter->buffer,
-                                       &parameter->size))
+                                       &parameter->buffer, &parameter->size))
         goto error;
 
     return (parameter->buffer - start);
@@ -1331,26 +1435,27 @@ static int64_t json_number_encode(const ov_json_value *self,
 
     char string[25] = {0};
 
-    if (!self || !validate_parameter(parameter)) goto error;
+    if (!self || !validate_parameter(parameter))
+        goto error;
 
     char *start = parameter->buffer;
 
-    if (!json_number_fill_string(self, string)) goto error;
-
-    if (parameter->size < strlen(string)) goto error;
-
-    if (!json_parser_write_if_not_null(parameter->config.number.item.intro,
-                                       &parameter->buffer,
-                                       &parameter->size))
+    if (!json_number_fill_string(self, string))
         goto error;
 
-    if (!json_parser_write_if_not_null(
-            string, &parameter->buffer, &parameter->size))
+    if (parameter->size < strlen(string))
+        goto error;
+
+    if (!json_parser_write_if_not_null(parameter->config.number.item.intro,
+                                       &parameter->buffer, &parameter->size))
+        goto error;
+
+    if (!json_parser_write_if_not_null(string, &parameter->buffer,
+                                       &parameter->size))
         goto error;
 
     if (!json_parser_write_if_not_null(parameter->config.number.item.outro,
-                                       &parameter->buffer,
-                                       &parameter->size))
+                                       &parameter->buffer, &parameter->size))
         goto error;
 
     return (parameter->buffer - start);
@@ -1362,16 +1467,17 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool json_literal_encode_pack(const struct ov_json_value_config *config,
-                                     const char *content,
-                                     char **next,
+                                     const char *content, char **next,
                                      size_t *open) {
 
-    if (!config) return false;
+    if (!config)
+        return false;
 
     if (!json_parser_write_if_not_null(config->item.intro, next, open))
         return false;
 
-    if (!json_parser_write_if_not_null(content, next, open)) return false;
+    if (!json_parser_write_if_not_null(content, next, open))
+        return false;
 
     if (!json_parser_write_if_not_null(config->item.outro, next, open))
         return false;
@@ -1391,39 +1497,36 @@ static int64_t json_literal_encode(const ov_json_value *self,
 
     switch (self->type) {
 
-        case OV_JSON_NULL:
+    case OV_JSON_NULL:
 
-            if (!json_literal_encode_pack(&parameter->config.literal,
-                                          ENCODING_STRING_NULL,
-                                          &parameter->buffer,
-                                          &parameter->size))
-                goto error;
-
-            break;
-
-        case OV_JSON_TRUE:
-
-            if (!json_literal_encode_pack(&parameter->config.literal,
-                                          ENCODING_STRING_TRUE,
-                                          &parameter->buffer,
-                                          &parameter->size))
-                goto error;
-
-            break;
-
-        case OV_JSON_FALSE:
-
-            if (!json_literal_encode_pack(&parameter->config.literal,
-                                          ENCODING_STRING_FALSE,
-                                          &parameter->buffer,
-                                          &parameter->size))
-                goto error;
-
-            break;
-
-        default:
-            // NOT a literal
+        if (!json_literal_encode_pack(&parameter->config.literal,
+                                      ENCODING_STRING_NULL, &parameter->buffer,
+                                      &parameter->size))
             goto error;
+
+        break;
+
+    case OV_JSON_TRUE:
+
+        if (!json_literal_encode_pack(&parameter->config.literal,
+                                      ENCODING_STRING_TRUE, &parameter->buffer,
+                                      &parameter->size))
+            goto error;
+
+        break;
+
+    case OV_JSON_FALSE:
+
+        if (!json_literal_encode_pack(&parameter->config.literal,
+                                      ENCODING_STRING_FALSE, &parameter->buffer,
+                                      &parameter->size))
+            goto error;
+
+        break;
+
+    default:
+        // NOT a literal
+        goto error;
     }
 
     return (parameter->buffer - start);
@@ -1448,12 +1551,14 @@ error:
 
 static size_t json_object_calculate_indent(EncodingParameter *parameter) {
 
-    if (!parameter) goto error;
+    if (!parameter)
+        goto error;
 
     bool enabled = parameter->config.object.entry.depth;
     char *indent = parameter->config.object.entry.indent;
 
-    if (!enabled || !indent) goto error;
+    if (!enabled || !indent)
+        goto error;
 
     return strlen(indent) * parameter->depth;
 
@@ -1465,12 +1570,15 @@ error:
 
 static bool add_encoding_size(const void *key, void *value, void *data) {
 
-    if (!key && !value) return true;
+    if (!key && !value)
+        return true;
 
-    if (!key || !value || !data) goto error;
+    if (!key || !value || !data)
+        goto error;
 
     ov_json_value *val = ov_json_value_cast(value);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     EncodingParameter *p = (EncodingParameter *)data;
 
@@ -1484,25 +1592,28 @@ static bool add_encoding_size(const void *key, void *value, void *data) {
 
         switch (val->type) {
 
-            case OV_JSON_ARRAY:
+        case OV_JSON_ARRAY:
 
-                if (!ov_json_array_is_empty(val)) length = length + 1;
+            if (!ov_json_array_is_empty(val))
+                length = length + 1;
 
-                break;
+            break;
 
-            case OV_JSON_OBJECT:
+        case OV_JSON_OBJECT:
 
-                if (!ov_json_object_is_empty(val)) length = length + 1;
+            if (!ov_json_object_is_empty(val))
+                length = length + 1;
 
-                break;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
     }
 
     size_t vlen = json_parser_calculate_value(value, p);
-    if (vlen < 1) goto error;
+    if (vlen < 1)
+        goto error;
 
     length = length + vlen;
     length = length + strlen(p->config.object.item.separator);
@@ -1518,10 +1629,12 @@ error:
 static int64_t json_parser_calculate_object(const ov_json_value *value,
                                             EncodingParameter *p) {
 
-    if (!value || !p) goto error;
+    if (!value || !p)
+        goto error;
 
     size_t length = 0;
-    if (ov_json_object_is_empty(value)) return 2;
+    if (ov_json_object_is_empty(value))
+        return 2;
 
     size_t indent = json_object_calculate_indent(p);
 
@@ -1530,7 +1643,8 @@ static int64_t json_parser_calculate_object(const ov_json_value *value,
     // outro length }
     length += indent + strlen(p->config.object.item.outro);
     // out length \n
-    if (p->config.object.item.out) length += strlen(p->config.object.item.out);
+    if (p->config.object.item.out)
+        length += strlen(p->config.object.item.out);
 
     p->counter = length;
     p->depth++;
@@ -1554,11 +1668,13 @@ error:
 static int64_t json_parser_calculate_array(const ov_json_value *value,
                                            EncodingParameter *p) {
 
-    if (!value || !p) goto error;
+    if (!value || !p)
+        goto error;
 
     size_t length = 0;
     size_t items = ov_json_array_count(value);
-    if (items == 0) return 2;
+    if (items == 0)
+        return 2;
 
     size_t indent = 0;
     size_t separator = strlen(p->config.array.item.separator);
@@ -1574,7 +1690,8 @@ static int64_t json_parser_calculate_array(const ov_json_value *value,
     // outro length
     length += (p->depth * indent) + strlen(p->config.array.item.outro);
     // out length
-    if (p->config.array.item.out) length += strlen(p->config.array.item.out);
+    if (p->config.array.item.out)
+        length += strlen(p->config.array.item.out);
 
     ov_json_value *child = NULL;
 
@@ -1582,35 +1699,37 @@ static int64_t json_parser_calculate_array(const ov_json_value *value,
     for (size_t i = 1; i <= items; i++) {
 
         child = ov_json_array_get((ov_json_value *)value, i);
-        if (!child) goto error;
+        if (!child)
+            goto error;
 
         switch (child->type) {
 
-            case OV_JSON_ARRAY:
+        case OV_JSON_ARRAY:
 
-                if (ov_json_array_is_empty(child))
-                    length += (p->depth * indent);
-
-                length += json_parser_calculate_value(child, p);
-                break;
-
-            case OV_JSON_OBJECT:
-
-                if (ov_json_object_is_empty(child))
-                    length += (p->depth * indent);
-
-                length += json_parser_calculate_value(child, p);
-
-                break;
-
-            default:
-
+            if (ov_json_array_is_empty(child))
                 length += (p->depth * indent);
-                length += json_parser_calculate_value(child, p);
-                break;
+
+            length += json_parser_calculate_value(child, p);
+            break;
+
+        case OV_JSON_OBJECT:
+
+            if (ov_json_object_is_empty(child))
+                length += (p->depth * indent);
+
+            length += json_parser_calculate_value(child, p);
+
+            break;
+
+        default:
+
+            length += (p->depth * indent);
+            length += json_parser_calculate_value(child, p);
+            break;
         }
 
-        if (i < items) length += separator;
+        if (i < items)
+            length += separator;
     }
 
     p->depth--;
@@ -1627,9 +1746,11 @@ static int64_t json_parser_calculate_number(const ov_json_value *value,
 
     char string[25] = {};
 
-    if (!value || !parameter) goto error;
+    if (!value || !parameter)
+        goto error;
 
-    if (!json_number_fill_string(value, string)) goto error;
+    if (!json_number_fill_string(value, string))
+        goto error;
 
     size_t length = strlen(string);
 
@@ -1650,10 +1771,12 @@ error:
 static int64_t json_parser_calculate_string(const ov_json_value *value,
                                             EncodingParameter *parameter) {
 
-    if (!value || !parameter) goto error;
+    if (!value || !parameter)
+        goto error;
 
     const char *content = ov_json_string_get(value);
-    if (!content) goto error;
+    if (!content)
+        goto error;
 
     size_t length = strlen(content);
 
@@ -1673,51 +1796,52 @@ error:
 static int64_t json_parser_calculate_literal(const ov_json_value *value,
                                              EncodingParameter *parameter) {
 
-    if (!value || !parameter) goto error;
+    if (!value || !parameter)
+        goto error;
 
     int64_t length = 0;
 
     switch (value->type) {
 
-        case OV_JSON_NULL:
+    case OV_JSON_NULL:
 
-            length = 4;
+        length = 4;
 
-            if (parameter->config.literal.item.intro)
-                length += strlen(parameter->config.literal.item.intro);
+        if (parameter->config.literal.item.intro)
+            length += strlen(parameter->config.literal.item.intro);
 
-            if (parameter->config.literal.item.outro)
-                length += strlen(parameter->config.literal.item.outro);
+        if (parameter->config.literal.item.outro)
+            length += strlen(parameter->config.literal.item.outro);
 
-            break;
+        break;
 
-        case OV_JSON_TRUE:
+    case OV_JSON_TRUE:
 
-            length = 4;
+        length = 4;
 
-            if (parameter->config.literal.item.intro)
-                length += strlen(parameter->config.literal.item.intro);
+        if (parameter->config.literal.item.intro)
+            length += strlen(parameter->config.literal.item.intro);
 
-            if (parameter->config.literal.item.outro)
-                length += strlen(parameter->config.literal.item.outro);
+        if (parameter->config.literal.item.outro)
+            length += strlen(parameter->config.literal.item.outro);
 
-            break;
+        break;
 
-        case OV_JSON_FALSE:
+    case OV_JSON_FALSE:
 
-            length = 5;
+        length = 5;
 
-            if (parameter->config.literal.item.intro)
-                length += strlen(parameter->config.literal.item.intro);
+        if (parameter->config.literal.item.intro)
+            length += strlen(parameter->config.literal.item.intro);
 
-            if (parameter->config.literal.item.outro)
-                length += strlen(parameter->config.literal.item.outro);
+        if (parameter->config.literal.item.outro)
+            length += strlen(parameter->config.literal.item.outro);
 
-            break;
+        break;
 
-        default:
-            // NOT a literal
-            goto error;
+    default:
+        // NOT a literal
+        goto error;
     }
 
     return length;
@@ -1730,29 +1854,30 @@ error:
 static int64_t json_parser_calculate_value(const ov_json_value *value,
                                            EncodingParameter *parameter) {
 
-    if (!ov_json_value_validate(value) || !parameter) goto error;
+    if (!ov_json_value_validate(value) || !parameter)
+        goto error;
 
     switch (value->type) {
 
-        case OV_JSON_NULL:
-        case OV_JSON_TRUE:
-        case OV_JSON_FALSE:
-            return json_parser_calculate_literal(value, parameter);
+    case OV_JSON_NULL:
+    case OV_JSON_TRUE:
+    case OV_JSON_FALSE:
+        return json_parser_calculate_literal(value, parameter);
 
-        case OV_JSON_STRING:
-            return json_parser_calculate_string(value, parameter);
+    case OV_JSON_STRING:
+        return json_parser_calculate_string(value, parameter);
 
-        case OV_JSON_NUMBER:
-            return json_parser_calculate_number(value, parameter);
+    case OV_JSON_NUMBER:
+        return json_parser_calculate_number(value, parameter);
 
-        case OV_JSON_ARRAY:
-            return json_parser_calculate_array(value, parameter);
+    case OV_JSON_ARRAY:
+        return json_parser_calculate_array(value, parameter);
 
-        case OV_JSON_OBJECT:
-            return json_parser_calculate_object(value, parameter);
+    case OV_JSON_OBJECT:
+        return json_parser_calculate_object(value, parameter);
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
 error:
@@ -1764,13 +1889,15 @@ error:
 int64_t ov_json_parser_calculate(const ov_json_value *value,
                                  const ov_json_stringify_config *conf) {
 
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     EncodingParameter parameter;
     memset(&parameter, 0, sizeof(EncodingParameter));
     if (conf) {
 
-        if (!ov_json_stringify_config_validate(conf)) goto error;
+        if (!ov_json_stringify_config_validate(conf))
+            goto error;
 
         parameter.config = *conf;
 
@@ -1779,7 +1906,8 @@ int64_t ov_json_parser_calculate(const ov_json_value *value,
     }
 
     int64_t result = json_parser_calculate_value(value, &parameter);
-    if (result < 0) goto error;
+    if (result < 0)
+        goto error;
 
     if (NULL != parameter.config.intro)
         result += strlen(parameter.config.intro);
@@ -1884,22 +2012,25 @@ ov_json_stringify_config ov_json_config_stringify_default() {
 
 /*----------------------------------------------------------------------------*/
 
-bool json_parser_write_if_not_null(const char *content,
-                                   char **next,
+bool json_parser_write_if_not_null(const char *content, char **next,
                                    size_t *open) {
 
-    if (!content) return true;
+    if (!content)
+        return true;
 
-    if (!next || !open) return false;
+    if (!next || !open)
+        return false;
 
     size_t length = strlen(content);
 
-    if (*open < length) return false;
+    if (*open < length)
+        return false;
 
     char *p = (char *)*next;
 
     p = strncpy(p, content, length);
-    if (!p) return false;
+    if (!p)
+        return false;
 
     *next += length;
     *open -= length;
@@ -1914,21 +2045,25 @@ char *ov_json_value_to_string_with_config(const ov_json_value *value,
 
     char *string = NULL;
 
-    if (!ov_json_value_cast(value)) goto error;
+    if (!ov_json_value_cast(value))
+        goto error;
 
     int64_t size = ov_json_parser_calculate(value, &config);
-    if (size < 0) goto error;
+    if (size < 0)
+        goto error;
 
     string = calloc(size + 1, sizeof(char));
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
-    if (0 >
-        ov_json_parser_encode(
-            value, &config, ov_json_parser_collocate_ascending, string, size))
+    if (0 > ov_json_parser_encode(value, &config,
+                                  ov_json_parser_collocate_ascending, string,
+                                  size))
         goto error;
 
     return string;
 error:
-    if (string) free(string);
+    if (string)
+        free(string);
     return NULL;
 }

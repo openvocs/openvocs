@@ -235,8 +235,8 @@ typedef struct ov_registered_cache_sizes ov_registered_cache_sizes;
 
 /*----------------------------------------------------------------------------*/
 
-ov_registered_cache_sizes *ov_registered_cache_sizes_free(
-    ov_registered_cache_sizes *self);
+ov_registered_cache_sizes *
+ov_registered_cache_sizes_free(ov_registered_cache_sizes *self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -252,8 +252,8 @@ ov_registered_cache_sizes *ov_registered_cache_sizes_free(
  *    }
  * }
  */
-ov_registered_cache_sizes *ov_registered_cache_sizes_from_json(
-    ov_json_value const *jval);
+ov_registered_cache_sizes *
+ov_registered_cache_sizes_from_json(ov_json_value const *jval);
 
 /*----------------------------------------------------------------------------*/
 

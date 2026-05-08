@@ -814,9 +814,11 @@ int test_ov_dict_set() {
 
 bool dummy_for_each(const void *key, void *value, void *data) {
 
-    if (!key && !value) return true;
+    if (!key && !value)
+        return true;
 
-    if (key || value || data) return true;
+    if (key || value || data)
+        return true;
 
     return true;
 }

@@ -82,10 +82,8 @@ struct ov_vocs_record {
 ov_vocs_record *ov_vocs_record_create(ov_vocs_record_config config);
 void *ov_vocs_record_free_void(void *self);
 
-bool ov_vocs_record_set_active(ov_vocs_record *self,
-                               char const *id,
-                               char const *loop,
-                               char const *uri,
+bool ov_vocs_record_set_active(ov_vocs_record *self, char const *id,
+                               char const *loop, char const *uri,
                                int recorder_fh);
 
 bool ov_vocs_record_reset_active(ov_vocs_record *self);

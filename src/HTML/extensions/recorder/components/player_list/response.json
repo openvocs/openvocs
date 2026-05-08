@@ -1,0 +1,23 @@
+[
+    {
+        "id": "0ab8dc7a-be95-12bc-8365-84eb17c7bec9",
+        "uri": "project1_Bloop_20241010T09:00:00_21fe55fb-300a-44dd-8228-90564aaeaf6d.opus",
+        "loop": "recorded_loop",
+        "start_epoch_secs": 123456789,
+        "end_epoch_secs": 123456795
+    },
+    {
+        "id": "70acab6b-eb35-88e0-b9e8-be1352b25dbd",
+        "uri": "project1_loopA_20241016T09:00:00_21fe55fb-2aee-44dd-8228-90564aaeaf6d.opus",
+        "loop": "recorded_loop",
+        "start_epoch_secs": 123456789,
+        "end_epoch_secs": 123456795
+    },
+    {
+        "id": "459126db-6119-8e7d-14a8-1eeea21d91c2",
+        "uri": "project1_loopA_20241016T16:00:00_21fe55fb-2aee-44dd-8228-86564aaeaf6d.opus",
+        "loop": "recorded_loop",
+        "start_epoch_secs": 123456789,
+        "end_epoch_secs": 123456795
+    }
+]

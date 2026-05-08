@@ -81,8 +81,8 @@ bool ov_stun_attribute_frame_is_mapped_address(const uint8_t *buffer,
 /**
         Calculate the byte length for the full attribute frame (incl header)
 */
-size_t ov_stun_mapped_address_encoding_length(
-    const struct sockaddr_storage *address);
+size_t
+ov_stun_mapped_address_encoding_length(const struct sockaddr_storage *address);
 
 /*----------------------------------------------------------------------------*/
 
@@ -95,8 +95,7 @@ size_t ov_stun_mapped_address_encoding_length(
         @param address  sockaddr_storage to encode.
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_mapped_address_encode(uint8_t *buffer,
-                                   size_t length,
+bool ov_stun_mapped_address_encode(uint8_t *buffer, size_t length,
                                    uint8_t **next,
                                    const struct sockaddr_storage *address);
 
@@ -109,8 +108,7 @@ bool ov_stun_mapped_address_encode(uint8_t *buffer,
         @param length   length of the buffer
         @param address  pointer to sockaddr_storage to fill / create
 */
-bool ov_stun_mapped_address_decode(const uint8_t *buffer,
-                                   size_t length,
+bool ov_stun_mapped_address_decode(const uint8_t *buffer, size_t length,
                                    struct sockaddr_storage **address);
 
 #endif /* ov_stun_mapped_address_h */

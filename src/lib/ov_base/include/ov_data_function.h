@@ -200,7 +200,7 @@ void *ov_data_function_wrapper_free(void *ptr);
         Create an allocated struct for ov_data_functions and fill
         the struct using a custom function.
 */
-ov_data_function *ov_data_function_allocated(
-    ov_data_function (*function_fill_struct)());
+ov_data_function *
+    ov_data_function_allocated(ov_data_function (*function_fill_struct)());
 
 #endif /* ov_data_function_h */

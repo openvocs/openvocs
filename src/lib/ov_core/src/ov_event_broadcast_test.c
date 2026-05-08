@@ -159,17 +159,17 @@ int test_ov_event_broadcast_set() {
 
         switch (i) {
 
-            case 0:
-                testrun(2 == b->connections[i].type);
-                break;
-            case 1:
-                testrun(4 == b->connections[i].type);
-                break;
-            case 20:
-                testrun(1 == b->connections[i].type);
-                break;
-            default:
-                testrun(OV_BROADCAST_UNSET == b->connections[i].type);
+        case 0:
+            testrun(2 == b->connections[i].type);
+            break;
+        case 1:
+            testrun(4 == b->connections[i].type);
+            break;
+        case 20:
+            testrun(1 == b->connections[i].type);
+            break;
+        default:
+            testrun(OV_BROADCAST_UNSET == b->connections[i].type);
         }
     }
 
@@ -187,11 +187,11 @@ int test_ov_event_broadcast_set() {
 
         switch (i) {
 
-            case 20:
-                testrun(OV_BROADCAST_UNSET == b->connections[i].type);
-                break;
-            default:
-                testrun(OV_USER_BROADCAST == b->connections[i].type);
+        case 20:
+            testrun(OV_BROADCAST_UNSET == b->connections[i].type);
+            break;
+        default:
+            testrun(OV_USER_BROADCAST == b->connections[i].type);
         }
     }
 
@@ -202,15 +202,15 @@ int test_ov_event_broadcast_set() {
 
         switch (i) {
 
-            case 11:
-                testrun((OV_LOOP_BROADCAST | OV_ROLE_BROADCAST) ==
-                        b->connections[i].type);
-                break;
-            case 20:
-                testrun(OV_BROADCAST_UNSET == b->connections[i].type);
-                break;
-            default:
-                testrun(OV_USER_BROADCAST == b->connections[i].type);
+        case 11:
+            testrun((OV_LOOP_BROADCAST | OV_ROLE_BROADCAST) ==
+                    b->connections[i].type);
+            break;
+        case 20:
+            testrun(OV_BROADCAST_UNSET == b->connections[i].type);
+            break;
+        default:
+            testrun(OV_USER_BROADCAST == b->connections[i].type);
         }
     }
 
@@ -221,14 +221,14 @@ int test_ov_event_broadcast_set() {
 
         switch (i) {
 
-            case 11:
-                testrun(0x0E == b->connections[i].type);
-                break;
-            case 20:
-                testrun(OV_BROADCAST_UNSET == b->connections[i].type);
-                break;
-            default:
-                testrun(OV_USER_BROADCAST == b->connections[i].type);
+        case 11:
+            testrun(0x0E == b->connections[i].type);
+            break;
+        case 20:
+            testrun(OV_BROADCAST_UNSET == b->connections[i].type);
+            break;
+        default:
+            testrun(OV_USER_BROADCAST == b->connections[i].type);
         }
     }
 
@@ -268,7 +268,8 @@ int test_ov_event_broadcast_get() {
 
 static bool dummy_send(void *instance, int socket, const ov_json_value *val) {
 
-    if (!instance) return false;
+    if (!instance)
+        return false;
 
     ov_dict *dict = ov_dict_cast(instance);
     intptr_t key = socket;
@@ -317,17 +318,17 @@ int test_ov_event_broadcast_send_params() {
 
         switch (i) {
 
-            case 10:
-            case 20:
-            case 30:
-            case 31:
-            case 32:
-            case 33:
-                testrun(v == ov_dict_get(dict, (void *)i));
-                break;
+        case 10:
+        case 20:
+        case 30:
+        case 31:
+        case 32:
+        case 33:
+            testrun(v == ov_dict_get(dict, (void *)i));
+            break;
 
-            default:
-                testrun(ov_dict_get(dict, (void *)i) == NULL);
+        default:
+            testrun(ov_dict_get(dict, (void *)i) == NULL);
         }
     }
 
@@ -338,17 +339,17 @@ int test_ov_event_broadcast_send_params() {
 
         switch (i) {
 
-            case 21:
-            case 22:
-            case 23:
-            case 31:
-            case 32:
-            case 33:
-                testrun(v == ov_dict_get(dict, (void *)i));
-                break;
+        case 21:
+        case 22:
+        case 23:
+        case 31:
+        case 32:
+        case 33:
+            testrun(v == ov_dict_get(dict, (void *)i));
+            break;
 
-            default:
-                testrun(ov_dict_get(dict, (void *)i) == NULL);
+        default:
+            testrun(ov_dict_get(dict, (void *)i) == NULL);
         }
     }
 
@@ -359,20 +360,20 @@ int test_ov_event_broadcast_send_params() {
 
         switch (i) {
 
-            case 10:
-            case 20:
-            case 30:
-            case 21:
-            case 22:
-            case 23:
-            case 31:
-            case 32:
-            case 33:
-                testrun(v == ov_dict_get(dict, (void *)i));
-                break;
+        case 10:
+        case 20:
+        case 30:
+        case 21:
+        case 22:
+        case 23:
+        case 31:
+        case 32:
+        case 33:
+            testrun(v == ov_dict_get(dict, (void *)i));
+            break;
 
-            default:
-                testrun(ov_dict_get(dict, (void *)i) == NULL);
+        default:
+            testrun(ov_dict_get(dict, (void *)i) == NULL);
         }
     }
 
@@ -394,13 +395,13 @@ int test_ov_event_broadcast_send_params() {
 
         switch (i) {
 
-            case 40:
-            case 100:
-                testrun(v == ov_dict_get(dict, (void *)i));
-                break;
+        case 40:
+        case 100:
+            testrun(v == ov_dict_get(dict, (void *)i));
+            break;
 
-            default:
-                testrun(ov_dict_get(dict, (void *)i) == NULL);
+        default:
+            testrun(ov_dict_get(dict, (void *)i) == NULL);
         }
     }
 
@@ -411,13 +412,13 @@ int test_ov_event_broadcast_send_params() {
 
         switch (i) {
 
-            case 80:
-            case 100:
-                testrun(v == ov_dict_get(dict, (void *)i));
-                break;
+        case 80:
+        case 100:
+            testrun(v == ov_dict_get(dict, (void *)i));
+            break;
 
-            default:
-                testrun(ov_dict_get(dict, (void *)i) == NULL);
+        default:
+            testrun(ov_dict_get(dict, (void *)i) == NULL);
         }
     }
 
@@ -430,21 +431,21 @@ int test_ov_event_broadcast_send_params() {
 
         switch (i) {
 
-            case 10:
-            case 20:
-            case 30:
-            case 21:
-            case 22:
-            case 23:
-            case 31:
-            case 32:
-            case 33:
-            case 100:
-                testrun(v == ov_dict_get(dict, (void *)i));
-                break;
+        case 10:
+        case 20:
+        case 30:
+        case 21:
+        case 22:
+        case 23:
+        case 31:
+        case 32:
+        case 33:
+        case 100:
+            testrun(v == ov_dict_get(dict, (void *)i));
+            break;
 
-            default:
-                testrun(ov_dict_get(dict, (void *)i) == NULL);
+        default:
+            testrun(ov_dict_get(dict, (void *)i) == NULL);
         }
     }
 
@@ -712,10 +713,8 @@ int time_ov_event_broadcast_create() {
 
     } else {
 
-        fprintf(stdout,
-                "MAX RUNTIME %" PRIu32 " sockets in %" PRIu64 " usec\n",
-                b->config.max_sockets,
-                end - start);
+        fprintf(stdout, "MAX RUNTIME %" PRIu32 " sockets in %" PRIu64 " usec\n",
+                b->config.max_sockets, end - start);
     }
 
     b = ov_event_broadcast_free(b);
@@ -837,7 +836,8 @@ struct dummy_userdata {
 
 static bool dummy_userdata_clear(struct dummy_userdata *data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
 
     data->messages = ov_list_free(data->messages);
     return true;
@@ -845,8 +845,7 @@ static bool dummy_userdata_clear(struct dummy_userdata *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool dummy_send_to_userdata(void *userdata,
-                                   int socket,
+static bool dummy_send_to_userdata(void *userdata, int socket,
                                    const ov_json_value *v) {
 
     struct dummy_userdata *d = (struct dummy_userdata *)userdata;
@@ -856,7 +855,8 @@ static bool dummy_send_to_userdata(void *userdata,
      * functionality of ov_webserver_multithreaded:mt_channel_send_at_socket */
 
     UNUSED(socket);
-    if (!d || !v) goto error;
+    if (!d || !v)
+        goto error;
 
     if (!d->messages) {
         d->messages =
@@ -864,7 +864,8 @@ static bool dummy_send_to_userdata(void *userdata,
     }
 
     ov_json_value *copy = NULL;
-    if (!ov_json_value_copy((void **)&copy, v)) goto error;
+    if (!ov_json_value_copy((void **)&copy, v))
+        goto error;
 
     if (!ov_list_push(d->messages, copy)) {
         copy = ov_json_value_free(copy);
@@ -970,7 +971,8 @@ int time_ov_event_broadcast_send_params() {
 
     for (int i = 1; i < 100000; i++) {
         testrun(ov_event_broadcast_set(b, i, 0x00));
-        if (0 == i % 2) testrun(ov_event_broadcast_set(b, i, 0x30));
+        if (0 == i % 2)
+            testrun(ov_event_broadcast_set(b, i, 0x30));
     }
 
     teststring = "1 to 100K every second with interest";
@@ -984,7 +986,8 @@ int time_ov_event_broadcast_send_params() {
 
     for (int i = 1; i < 100000; i++) {
         testrun(ov_event_broadcast_set(b, i, 0x00));
-        if (0 == i % 4) testrun(ov_event_broadcast_set(b, i, 0x30));
+        if (0 == i % 4)
+            testrun(ov_event_broadcast_set(b, i, 0x30));
     }
 
     teststring = "1 to 100K every forth with interest";

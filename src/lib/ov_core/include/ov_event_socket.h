@@ -131,8 +131,7 @@ bool ov_event_socket_close(ov_event_socket *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_socket_send(ov_event_socket *self,
-                          int socket,
+bool ov_event_socket_send(ov_event_socket *self, int socket,
                           const ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/

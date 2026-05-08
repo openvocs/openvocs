@@ -117,8 +117,7 @@ ov_buffer *interleave_buffers(ov_buffer const *b1, ov_buffer const *b2) {
 
 /*----------------------------------------------------------------------------*/
 
-void dump_buffers_as_16s(FILE *out,
-                         ov_buffer const **buffers,
+void dump_buffers_as_16s(FILE *out, ov_buffer const **buffers,
                          size_t num_buffers) {
 
     OV_ASSERT(0 != out);
@@ -173,11 +172,8 @@ ov_buffer *encode(ov_buffer const *in, int channels) {
 
     ov_buffer *out = ov_buffer_create(out_max_len);
 
-    int retval = opus_encode(encoder,
-                             (int16_t *)in->start,
-                             samples_per_frame,
-                             (unsigned char *)out->start,
-                             out->capacity);
+    int retval = opus_encode(encoder, (int16_t *)in->start, samples_per_frame,
+                             (unsigned char *)out->start, out->capacity);
 
     opus_encoder_destroy(encoder);
 
@@ -220,12 +216,8 @@ ov_buffer *decode(ov_buffer const *in, int channels) {
     OV_ASSERT(0 != out);
     OV_ASSERT((size_t)max_samples_per_channel <= out->capacity);
 
-    int retval = opus_decode(decoder,
-                             in->start,
-                             in->length,
-                             (int16_t *)out->start,
-                             max_samples_per_channel,
-                             0);
+    int retval = opus_decode(decoder, in->start, in->length,
+                             (int16_t *)out->start, max_samples_per_channel, 0);
 
     opus_decoder_destroy(decoder);
     decoder = 0;
@@ -247,8 +239,7 @@ ov_buffer *decode(ov_buffer const *in, int channels) {
             "Max samples per frame & channel: %i\n",
             opus_packet_get_nb_channels(in->start),
             opus_packet_get_samples_per_frame(in->start, 48000),
-            samples_per_channel,
-            max_samples_per_channel);
+            samples_per_channel, max_samples_per_channel);
 
     return out;
 }
@@ -297,10 +288,8 @@ int main(int argc, char **argv) {
     OV_ASSERT_or_abort(0 < num_output_channels);
     OV_ASSERT_or_abort(3 > num_output_channels);
 
-    fprintf(stderr,
-            "Using %zu input channels, %zu output channels\n",
-            num_input_channels,
-            num_output_channels);
+    fprintf(stderr, "Using %zu input channels, %zu output channels\n",
+            num_input_channels, num_output_channels);
 
     ov_buffer *pcm = generate_pcm_sin(150, 60000);
     ov_buffer *pcm_2 = generate_pcm_sin(400, 60000);
@@ -323,17 +312,15 @@ int main(int argc, char **argv) {
 
     OV_ASSERT(0 != encoded);
 
-    fprintf(stderr,
-            "Encoded %zu samples to %zu bytes\n",
-            num_samples,
+    fprintf(stderr, "Encoded %zu samples to %zu bytes\n", num_samples,
             encoded->length);
 
     ov_buffer *decoded = decode(encoded, num_output_channels);
 
     encoded = ov_buffer_free(encoded);
 
-    dump_buffers_as_16s(
-        stdout, (ov_buffer const *[]){pcm_interleaved, decoded}, 2);
+    dump_buffers_as_16s(stdout, (ov_buffer const *[]){pcm_interleaved, decoded},
+                        2);
 
     pcm_interleaved = ov_buffer_free(pcm_interleaved);
     decoded = ov_buffer_free(decoded);

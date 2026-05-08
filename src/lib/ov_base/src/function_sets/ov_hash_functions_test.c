@@ -48,18 +48,19 @@
 
 #define VARIANCE(v, e, x) ((v) + ((x) - (e)) * ((x) - (e)))
 
-bool utils_fill_buffer_random_string(uint8_t **buffer,
-                                     size_t length,
+bool utils_fill_buffer_random_string(uint8_t **buffer, size_t length,
                                      const char *alphabet_in) {
 
     static const char *alphabet_default = "1234567890AbCdEfGhJkMnPqRsTwXz";
 
     const char *alphabet = alphabet_in;
-    if (!alphabet) alphabet = alphabet_default;
+    if (!alphabet)
+        alphabet = alphabet_default;
 
     size_t alphabet_max_index = strlen(alphabet);
 
-    if (0 == alphabet_max_index) goto error;
+    if (0 == alphabet_max_index)
+        goto error;
 
     --alphabet_max_index;
 
@@ -67,7 +68,8 @@ bool utils_fill_buffer_random_string(uint8_t **buffer,
     uint8_t *pointer = NULL;
     int64_t number = 0;
 
-    if (!length) goto error;
+    if (!length)
+        goto error;
 
     pointer = *buffer;
 
@@ -122,11 +124,8 @@ void helper_hash_function_c_string(uint64_t (*f)(const void *),
     average /= num_keys;
     variance /= num_keys;
 
-    fprintf(stderr,
-            "AVERAGE EXPECTED: %f    REAL:  %f    VARIANCE %f\n",
-            expected_avg,
-            average,
-            variance);
+    fprintf(stderr, "AVERAGE EXPECTED: %f    REAL:  %f    VARIANCE %f\n",
+            expected_avg, average, variance);
 }
 
 /*----------------------------------------------------------------------------*/

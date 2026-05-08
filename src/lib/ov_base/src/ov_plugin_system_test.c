@@ -133,6 +133,5 @@ int test_ov_plugin_system_load_dir() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_plugin_system",
-            test_ov_plugin_system_load,
+OV_TEST_RUN("ov_plugin_system", test_ov_plugin_system_load,
             test_ov_plugin_system_load_dir);

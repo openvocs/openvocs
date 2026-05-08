@@ -50,11 +50,13 @@ typedef struct {
 
 static codec_data *as_codec_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     codec_data *cdata = data;
 
-    if (MAGIC_BYTES != cdata->magic_bytes) return 0;
+    if (MAGIC_BYTES != cdata->magic_bytes)
+        return 0;
 
     return cdata;
 }
@@ -139,8 +141,7 @@ static ov_buffer *adjust_buffer_size_to(ov_buffer *buffer, size_t size) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     /*
@@ -181,12 +182,9 @@ static ov_buffer impl_next_chunk(ov_format *f,
     cdata->out_buffer =
         adjust_buffer_size_to(cdata->out_buffer, requested_bytes * 20);
 
-    int32_t bytes_out = codec->decode(codec,
-                                      cdata->sequence_number,
-                                      in.start,
-                                      in.length,
-                                      cdata->out_buffer->start,
-                                      cdata->out_buffer->capacity);
+    int32_t bytes_out =
+        codec->decode(codec, cdata->sequence_number, in.start, in.length,
+                      cdata->out_buffer->start, cdata->out_buffer->capacity);
 
     if (0 > bytes_out) {
 
@@ -206,8 +204,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     ssize_t retval = -1;
@@ -245,8 +242,8 @@ static ssize_t impl_write_chunk(ov_format *f,
 
     OV_ASSERT(0 != out);
 
-    ssize_t bytes_written = codec->encode(
-        codec, chunk->start, chunk->length, out->start, out->capacity);
+    ssize_t bytes_written = codec->encode(codec, chunk->start, chunk->length,
+                                          out->start, out->capacity);
 
     if (0 > bytes_written) {
 
@@ -283,8 +280,8 @@ bool ov_format_codec_install(ov_format_registry *registry) {
 
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_CODEC_TYPE_STRING, codec_handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_CODEC_TYPE_STRING,
+                                            codec_handler, registry);
 }
 
 /*----------------------------------------------------------------------------*/

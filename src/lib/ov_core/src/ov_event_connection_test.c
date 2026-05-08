@@ -178,14 +178,12 @@ int test_ov_event_connection_set() {
     testrun(!ov_event_connection_set(c, NULL, "val"));
 
     testrun(ov_event_connection_set(c, "key", "val"));
-    testrun(
-        0 ==
-        strcmp("val", ov_json_string_get(ov_json_object_get(c->data, "key"))));
+    testrun(0 == strcmp("val", ov_json_string_get(
+                                   ov_json_object_get(c->data, "key"))));
 
     testrun(ov_event_connection_set(c, "key", "other"));
-    testrun(0 ==
-            strcmp("other",
-                   ov_json_string_get(ov_json_object_get(c->data, "key"))));
+    testrun(0 == strcmp("other", ov_json_string_get(
+                                     ov_json_object_get(c->data, "key"))));
 
     testrun(1 == ov_json_object_count(c->data));
 
@@ -259,9 +257,8 @@ int test_ov_event_connection_get_json() {
 
     testrun(ov_event_connection_set_json(c, "key", val));
     testrun(0 == strcmp("test", ov_event_connection_get(c, "key")));
-    testrun(0 ==
-            strcmp("test",
-                   ov_json_string_get(ov_event_connection_get_json(c, "key"))));
+    testrun(0 == strcmp("test", ov_json_string_get(
+                                    ov_event_connection_get_json(c, "key"))));
 
     testrun(NULL == ov_event_connection_free(c));
     val = ov_json_value_free(val);

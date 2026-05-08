@@ -146,9 +146,11 @@ typedef struct ov_ice_proxy {
 static ov_ice_proxy *as_ice_proxy(const void *data) {
 
     ov_ice_proxy_generic *generic = ov_ice_proxy_generic_cast(data);
-    if (!generic) return NULL;
+    if (!generic)
+        return NULL;
 
-    if (generic->type == OV_ICE_PROXY_MAGIC_BYTES) return (ov_ice_proxy *)data;
+    if (generic->type == OV_ICE_PROXY_MAGIC_BYTES)
+        return (ov_ice_proxy *)data;
 
     return NULL;
 }
@@ -157,10 +159,10 @@ static ov_ice_proxy *as_ice_proxy(const void *data) {
 
 static bool init_config(ov_ice_proxy_generic_config *config) {
 
-    if (!ov_ptr_valid(
-            config, "Cannot initialize ICE Proxy Config - no config") ||
-        !ov_ptr_valid(
-            config->loop, "Cannot initialize ICE Proxy Config - no loop") ||
+    if (!ov_ptr_valid(config,
+                      "Cannot initialize ICE Proxy Config - no config") ||
+        !ov_ptr_valid(config->loop,
+                      "Cannot initialize ICE Proxy Config - no loop") ||
         !ov_cond_valid(0 != config->external.host[0],
                        "Cannot initialize ICE Proxy Config - no host given") ||
         !ov_cond_valid(0 != config->config.dtls.cert[0],
@@ -389,20 +391,20 @@ struct Transaction {
 static bool transaction_create(ov_ice_proxy *self, Pair *pair) {
 
     Transaction *transaction = NULL;
-    if (!self || !pair) goto error;
+    if (!self || !pair)
+        goto error;
 
     transaction = calloc(1, sizeof(Transaction));
-    if (!transaction) goto error;
+    if (!transaction)
+        goto error;
 
     transaction->created = ov_time_get_current_time_usecs();
     transaction->pair = pair;
 
     ov_stun_frame_generate_transaction_id((uint8_t *)pair->transaction_id);
 
-    if (!ov_dict_set(self->transactions,
-                     ov_string_dup(pair->transaction_id),
-                     transaction,
-                     NULL))
+    if (!ov_dict_set(self->transactions, ov_string_dup(pair->transaction_id),
+                     transaction, NULL))
         goto error;
 
     return true;
@@ -417,12 +419,14 @@ static Pair *transaction_unset(ov_ice_proxy *self, const char *transaction_id) {
 
     char key[13] = {0};
 
-    if (!self || !transaction_id) goto error;
+    if (!self || !transaction_id)
+        goto error;
 
     strncpy(key, (char *)transaction_id, 12);
 
     Transaction *t = ov_dict_remove(self->transactions, key);
-    if (!t) goto error;
+    if (!t)
+        goto error;
 
     Pair *p = t->pair;
     t = ov_data_pointer_free(t);
@@ -436,7 +440,8 @@ error:
 
 static void *transaction_free(void *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     self = ov_data_pointer_free(self);
     return self;
 }
@@ -454,16 +459,19 @@ struct container_timer {
 
 static bool create_timeout_key_list(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    if (!value || !data) goto error;
+    if (!value || !data)
+        goto error;
 
     struct container_timer *container = (struct container_timer *)data;
     Transaction *tdata = (Transaction *)value;
 
     uint64_t lifetime = tdata->created + container->max;
 
-    if (container->now < lifetime) return true;
+    if (container->now < lifetime)
+        return true;
 
     // add to delete list
     return ov_list_push(container->list, (void *)key);
@@ -476,7 +484,8 @@ error:
 
 static bool del_key_list(void *key, void *data) {
 
-    if (!key || !data) goto error;
+    if (!key || !data)
+        goto error;
 
     ov_dict *dict = ov_dict_cast(data);
     OV_ASSERT(dict);
@@ -491,7 +500,8 @@ static bool invalidate_transactions(uint32_t timer, void *self) {
 
     UNUSED(timer);
     ov_ice_proxy *proxy = as_ice_proxy(self);
-    if (!proxy) goto error;
+    if (!proxy)
+        goto error;
     proxy->timer.transactions_invalidate = OV_TIMER_INVALID;
 
     ov_list *list = ov_list_create((ov_list_config){0});
@@ -503,18 +513,18 @@ static bool invalidate_transactions(uint32_t timer, void *self) {
         .list = list,
     };
 
-    if (!ov_dict_for_each(
-            proxy->transactions, &container, create_timeout_key_list))
+    if (!ov_dict_for_each(proxy->transactions, &container,
+                          create_timeout_key_list))
         goto error;
 
-    if (!ov_list_for_each(list, proxy->transactions, del_key_list)) goto error;
+    if (!ov_list_for_each(list, proxy->transactions, del_key_list))
+        goto error;
 
     list = ov_list_free(list);
 
     proxy->timer.transactions_invalidate = ov_event_loop_timer_set(
         proxy->public.config.loop,
-        proxy->public.config.config.limits.transaction_lifetime_usecs,
-        proxy,
+        proxy->public.config.config.limits.transaction_lifetime_usecs, proxy,
         invalidate_transactions);
 
     return true;
@@ -534,15 +544,15 @@ error:
 
 static bool register_pair(Pair *pair) {
 
-    if (!pair) goto error;
-    if (!pair->stream) goto error;
-    if (0 == pair->remote.socket.host[0]) goto error;
+    if (!pair)
+        goto error;
+    if (!pair->stream)
+        goto error;
+    if (0 == pair->remote.socket.host[0])
+        goto error;
 
     char *key = calloc(1, OV_HOST_NAME_MAX + 20);
-    snprintf(key,
-             OV_HOST_NAME_MAX + 20,
-             "%s:%i",
-             pair->remote.socket.host,
+    snprintf(key, OV_HOST_NAME_MAX + 20, "%s:%i", pair->remote.socket.host,
              pair->remote.socket.port);
 
     ov_dict_set(pair->stream->session->proxy->remote, key, pair->stream, NULL);
@@ -557,14 +567,14 @@ static bool unregister_pair(Pair *pair) {
 
     char key[OV_HOST_NAME_MAX + 20] = {0};
 
-    if (!pair) goto error;
-    if (!pair->stream) goto error;
-    if (0 == pair->remote.socket.host[0]) goto error;
+    if (!pair)
+        goto error;
+    if (!pair->stream)
+        goto error;
+    if (0 == pair->remote.socket.host[0])
+        goto error;
 
-    snprintf(key,
-             OV_HOST_NAME_MAX + 20,
-             "%s:%i",
-             pair->remote.socket.host,
+    snprintf(key, OV_HOST_NAME_MAX + 20, "%s:%i", pair->remote.socket.host,
              pair->remote.socket.port);
 
     ov_dict_del(pair->stream->session->proxy->remote, key);
@@ -577,10 +587,12 @@ error:
 
 static void *pair_free(void *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     Pair *pair = (Pair *)self;
 
-    if (!pair->stream) goto done;
+    if (!pair->stream)
+        goto done;
 
     if (0 != pair->transaction_id[0])
         transaction_unset(pair->stream->session->proxy, pair->transaction_id);
@@ -600,7 +612,8 @@ static void *pair_free(void *self) {
     }
 
     ov_node_unplug((void **)&pair->stream->pairs, pair);
-    if (pair == pair->stream->selected) pair->stream->selected = NULL;
+    if (pair == pair->stream->selected)
+        pair->stream->selected = NULL;
 
 done:
     pair = ov_data_pointer_free(pair);
@@ -612,13 +625,16 @@ done:
 static Pair *pair_create(Stream *stream) {
 
     Pair *pair = NULL;
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     pair = calloc(1, sizeof(Pair));
-    if (!pair) goto error;
+    if (!pair)
+        goto error;
 
     pair->stream = stream;
-    if (!ov_node_push((void **)&stream->pairs, pair)) goto error;
+    if (!ov_node_push((void **)&stream->pairs, pair))
+        goto error;
 
     return pair;
 error:
@@ -630,7 +646,8 @@ error:
 
 static ssize_t pair_send(Pair *pair, const uint8_t *buffer, size_t size) {
 
-    if (!pair || !buffer || (0 == size)) goto error;
+    if (!pair || !buffer || (0 == size))
+        goto error;
 
     OV_ASSERT(pair->stream);
     OV_ASSERT(pair->stream->session);
@@ -639,7 +656,8 @@ static ssize_t pair_send(Pair *pair, const uint8_t *buffer, size_t size) {
     ov_ice_proxy *proxy = session->proxy;
     OV_ASSERT(proxy);
 
-    if (-1 == proxy->socket) goto error;
+    if (-1 == proxy->socket)
+        goto error;
 
     struct sockaddr local_address = {0};
     socklen_t len = sizeof(struct sockaddr);
@@ -647,14 +665,14 @@ static ssize_t pair_send(Pair *pair, const uint8_t *buffer, size_t size) {
 
     struct sockaddr_storage dest = {0};
 
-    if (!ov_socket_fill_sockaddr_storage(&dest,
-                                         local_address.sa_family,
+    if (!ov_socket_fill_sockaddr_storage(&dest, local_address.sa_family,
                                          pair->remote.socket.host,
                                          pair->remote.socket.port))
         goto error;
 
     len = sizeof(struct sockaddr_in);
-    if (dest.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (dest.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
     ssize_t out =
         sendto(proxy->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
@@ -677,30 +695,30 @@ static uint32_t type_preference(ov_ice_candidate_type type) {
 
     switch (type) {
 
-        case OV_ICE_HOST:
+    case OV_ICE_HOST:
 
-            preference = 126;
-            break;
+        preference = 126;
+        break;
 
-        case OV_ICE_SERVER_REFLEXIVE:
+    case OV_ICE_SERVER_REFLEXIVE:
 
-            preference = 100;
-            break;
+        preference = 100;
+        break;
 
-        case OV_ICE_PEER_REFLEXIVE:
+    case OV_ICE_PEER_REFLEXIVE:
 
-            // MUST be higher than ICE_SERVER_REFLEXIVE
-            preference = 110;
-            break;
+        // MUST be higher than ICE_SERVER_REFLEXIVE
+        preference = 110;
+        break;
 
-        case OV_ICE_RELAYED:
+    case OV_ICE_RELAYED:
 
-            preference = 0;
-            break;
+        preference = 0;
+        break;
 
-        default:
-            preference = 0;
-            break;
+    default:
+        preference = 0;
+        break;
     }
 
     return preference;
@@ -710,7 +728,8 @@ static uint32_t type_preference(ov_ice_candidate_type type) {
 
 static bool pair_calculate_local_priority(Pair *pair) {
 
-    if (!pair) return false;
+    if (!pair)
+        return false;
 
     /*
      *      This is an implementation of RFC 8445 5.1.2.1,
@@ -731,7 +750,8 @@ static bool pair_calculate_local_priority(Pair *pair) {
 
 static bool pair_calculate_priority(Pair *pair) {
 
-    if (!pair) return false;
+    if (!pair)
+        return false;
 
     OV_ASSERT(pair->stream);
     OV_ASSERT(pair->stream->session);
@@ -779,7 +799,8 @@ static bool pair_calculate_priority(Pair *pair) {
 
 static Pair *get_pair_by_remote(Stream *stream, const ov_socket_data *remote) {
 
-    if (!stream || !remote) goto error;
+    if (!stream || !remote)
+        goto error;
 
     Pair *pair = stream->pairs;
     while (pair) {
@@ -802,7 +823,8 @@ error:
 
 static Pair *get_pair_by_candidate(Stream *stream, const ov_ice_candidate *c) {
 
-    if (!stream || !c) goto error;
+    if (!stream || !c)
+        goto error;
 
     Pair *pair = stream->pairs;
     while (pair) {
@@ -829,14 +851,16 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
     uint8_t buffer[size];
     memset(buffer, 0, size);
 
-    if (!self || !pair) goto error;
+    if (!self || !pair)
+        goto error;
 
     OV_ASSERT(pair->stream);
     OV_ASSERT(pair->stream->session);
     Stream *stream = pair->stream;
     Session *session = stream->session;
 
-    if (!transaction_create(self, pair)) goto error;
+    if (!transaction_create(self, pair))
+        goto error;
 
     bool usecandidate = false;
 
@@ -853,7 +877,8 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
 
     char username[513] = {0};
 
-    if (!snprintf(username, 513, "%s:%s", peer_user, user)) goto error;
+    if (!snprintf(username, 513, "%s:%s", peer_user, user))
+        goto error;
 
     required += ov_stun_message_integrity_encoding_length();
     required += ov_stun_fingerprint_encoding_length();
@@ -862,11 +887,13 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
     len =
         ov_stun_username_encoding_length((uint8_t *)username, strlen(username));
 
-    if (0 == len) goto error;
+    if (0 == len)
+        goto error;
 
     required += len;
 
-    if (usecandidate) required += ov_stun_ice_use_candidate_encoding_length();
+    if (usecandidate)
+        required += ov_stun_ice_use_candidate_encoding_length();
 
     if (session->controlling) {
         required += ov_stun_ice_controlling_encoding_length();
@@ -878,7 +905,8 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
      *      Prepare the buffer
      */
 
-    if (required > OV_UDP_PAYLOAD_OCTETS) goto error;
+    if (required > OV_UDP_PAYLOAD_OCTETS)
+        goto error;
 
     size = required;
     uint8_t *ptr = buffer;
@@ -888,30 +916,34 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
      *      Write content to the buffer.
      */
 
-    if (!ov_stun_frame_set_request(ptr, size)) goto error;
+    if (!ov_stun_frame_set_request(ptr, size))
+        goto error;
 
-    if (!ov_stun_frame_set_method(ptr, size, STUN_BINDING)) goto error;
+    if (!ov_stun_frame_set_method(ptr, size, STUN_BINDING))
+        goto error;
 
-    if (!ov_stun_frame_set_magic_cookie(ptr, size)) goto error;
+    if (!ov_stun_frame_set_magic_cookie(ptr, size))
+        goto error;
 
-    if (!ov_stun_frame_set_length(ptr, size, size - 20)) goto error;
+    if (!ov_stun_frame_set_length(ptr, size, size - 20))
+        goto error;
 
-    if (!ov_stun_frame_set_transaction_id(
-            ptr, size, (uint8_t *)pair->transaction_id))
+    if (!ov_stun_frame_set_transaction_id(ptr, size,
+                                          (uint8_t *)pair->transaction_id))
         goto error;
 
     ptr = buffer + 20;
 
     if (session->controlling) {
 
-        if (!ov_stun_ice_controlling_encode(
-                ptr, size - (ptr - start), &ptr, session->tiebreaker))
+        if (!ov_stun_ice_controlling_encode(ptr, size - (ptr - start), &ptr,
+                                            session->tiebreaker))
             goto error;
 
     } else {
 
-        if (!ov_stun_ice_controlled_encode(
-                ptr, size - (ptr - start), &ptr, session->tiebreaker))
+        if (!ov_stun_ice_controlled_encode(ptr, size - (ptr - start), &ptr,
+                                           session->tiebreaker))
             goto error;
     }
 
@@ -921,22 +953,20 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
             goto error;
     }
 
-    if (!ov_stun_ice_priority_encode(
-            ptr, size - (ptr - start), &ptr, pair->priority))
+    if (!ov_stun_ice_priority_encode(ptr, size - (ptr - start), &ptr,
+                                     pair->priority))
         goto error;
 
-    if (!ov_stun_username_encode(ptr,
-                                 size - (ptr - start),
-                                 &ptr,
-                                 (uint8_t *)username,
-                                 strlen(username)))
+    if (!ov_stun_username_encode(ptr, size - (ptr - start), &ptr,
+                                 (uint8_t *)username, strlen(username)))
         goto error;
 
-    if (!ov_stun_add_message_integrity(
-            start, size, ptr, &ptr, (uint8_t *)peer_pass, strlen(peer_pass)))
+    if (!ov_stun_add_message_integrity(start, size, ptr, &ptr,
+                                       (uint8_t *)peer_pass, strlen(peer_pass)))
         goto error;
 
-    if (!ov_stun_add_fingerprint(start, size, ptr, &ptr)) goto error;
+    if (!ov_stun_add_fingerprint(start, size, ptr, &ptr))
+        goto error;
 
     ssize_t out = pair_send(pair, start, ptr - start);
 
@@ -946,11 +976,13 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
         goto error;
     }
 
-    if (pair->state != OV_ICE_PAIR_SUCCESS) pair->state = OV_ICE_PAIR_PROGRESS;
+    if (pair->state != OV_ICE_PAIR_SUCCESS)
+        pair->state = OV_ICE_PAIR_PROGRESS;
 
     return true;
 error:
-    if (pair) pair->state = OV_ICE_PAIR_FAILED;
+    if (pair)
+        pair->state = OV_ICE_PAIR_FAILED;
     return false;
 }
 
@@ -964,7 +996,8 @@ error:
 
 static void session_state_change(Session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     Stream *stream = session->streams;
 
@@ -975,16 +1008,16 @@ static void session_state_change(Session *session) {
 
         switch (stream->state) {
 
-            case OV_ICE_PROXY_GENERIC_RUNNING:
-                completed = false;
-                break;
+        case OV_ICE_PROXY_GENERIC_RUNNING:
+            completed = false;
+            break;
 
-            case OV_ICE_PROXY_GENERIC_FAILED:
-                failed = true;
-                break;
+        case OV_ICE_PROXY_GENERIC_FAILED:
+            failed = true;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         stream = ov_node_next(stream);
@@ -1002,8 +1035,7 @@ static void session_state_change(Session *session) {
 
         if (session->proxy->public.config.callbacks.session.state)
             session->proxy->public.config.callbacks.session.state(
-                session->proxy->public.config.callbacks.userdata,
-                session->uuid,
+                session->proxy->public.config.callbacks.userdata, session->uuid,
                 session->state);
     }
 
@@ -1019,11 +1051,13 @@ static bool get_profile(Pair *pair);
 
 static void stream_state_change(Stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     if (stream->selected) {
 
-        if (!stream->selected->srtp.profile) get_profile(stream->selected);
+        if (!stream->selected->srtp.profile)
+            get_profile(stream->selected);
     }
 
     if ((stream->state_protocol.stun == OV_ICE_PROXY_GENERIC_COMPLETED) &&
@@ -1033,9 +1067,7 @@ static void stream_state_change(Stream *stream) {
         stream->state = OV_ICE_PROXY_GENERIC_COMPLETED;
 
         ov_log_debug("Session %s stream %i|%s - completed",
-                     stream->session->uuid,
-                     stream->index,
-                     stream->uuid);
+                     stream->session->uuid, stream->index, stream->uuid);
     }
 
     if ((stream->state_protocol.stun == OV_ICE_PROXY_GENERIC_FAILED) ||
@@ -1044,10 +1076,8 @@ static void stream_state_change(Stream *stream) {
 
         stream->state = OV_ICE_PROXY_GENERIC_FAILED;
 
-        ov_log_debug("Session %s stream %i|%s - failed",
-                     stream->session->uuid,
-                     stream->index,
-                     stream->uuid);
+        ov_log_debug("Session %s stream %i|%s - failed", stream->session->uuid,
+                     stream->index, stream->uuid);
     }
 
     session_state_change(stream->session);
@@ -1067,7 +1097,8 @@ error:
 
 static Stream *stream_free(Stream *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     self->valid = ov_list_free(self->valid);
     self->trigger = ov_list_free(self->trigger);
@@ -1075,8 +1106,7 @@ static Stream *stream_free(Stream *self) {
     if (OV_TIMER_INVALID != self->timer.nominate) {
 
         ov_event_loop_timer_unset(self->session->proxy->public.config.loop,
-                                  self->timer.nominate,
-                                  NULL);
+                                  self->timer.nominate, NULL);
 
         self->timer.nominate = OV_TIMER_INVALID;
     }
@@ -1112,10 +1142,12 @@ static Stream *stream_create(Session *session, int i) {
 
     Stream *stream = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     stream = calloc(1, sizeof(Stream));
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     stream->session = session;
     stream->index = i;
@@ -1127,17 +1159,19 @@ static Stream *stream_create(Session *session, int i) {
 
     stream->valid = ov_linked_list_create((ov_list_config){0});
     stream->trigger = ov_linked_list_create((ov_list_config){0});
-    if (!stream->valid || !stream->trigger) goto error;
+    if (!stream->valid || !stream->trigger)
+        goto error;
 
     ov_id_fill_with_uuid(stream->uuid);
 
     if (!ov_ice_string_fill_random(stream->local.pass, OV_ICE_PASS_MIN))
         goto error;
 
-    if (!ov_node_push((void **)&session->streams, stream)) goto error;
+    if (!ov_node_push((void **)&session->streams, stream))
+        goto error;
 
-    if (!ov_dict_set(
-            session->proxy->streams, ov_string_dup(stream->uuid), stream, NULL))
+    if (!ov_dict_set(session->proxy->streams, ov_string_dup(stream->uuid),
+                     stream, NULL))
         goto error;
 
     return stream;
@@ -1152,7 +1186,8 @@ static Stream *get_stream_by_remote(ov_ice_proxy *self,
                                     const ov_socket_data *remote) {
 
     char key[OV_HOST_NAME_MAX + 20] = {0};
-    if (!self || !remote) goto error;
+    if (!self || !remote)
+        goto error;
 
     snprintf(key, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
     return ov_dict_get(self->remote, key);
@@ -1162,12 +1197,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_stream_by_remote(ov_ice_proxy *self,
-                                 Stream *stream,
+static bool add_stream_by_remote(ov_ice_proxy *self, Stream *stream,
                                  const ov_socket_data *remote) {
 
     char key[OV_HOST_NAME_MAX + 20] = {0};
-    if (!self || !remote || !stream) goto error;
+    if (!self || !remote || !stream)
+        goto error;
 
     snprintf(key, OV_HOST_NAME_MAX + 20, "%s:%i", remote->host, remote->port);
     return ov_dict_set(self->remote, strdup(key), stream, NULL);
@@ -1177,12 +1212,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static Stream *get_stream_by_ufrag(ov_ice_proxy *self,
-                                   const char *ufrag,
+static Stream *get_stream_by_ufrag(ov_ice_proxy *self, const char *ufrag,
                                    size_t ufrag_in_len) {
 
     char key[ufrag_in_len + 1];
-    if (!self || !ufrag) goto error;
+    if (!self || !ufrag)
+        goto error;
 
     snprintf(key, ufrag_in_len + 1, "%s", ufrag);
     return ov_dict_get(self->streams, key);
@@ -1197,10 +1232,12 @@ static Pair *stream_add_peer_reflexive_pair(Stream *stream,
                                             uint64_t priority) {
 
     Pair *pair = NULL;
-    if (!stream || !remote) goto error;
+    if (!stream || !remote)
+        goto error;
 
     pair = pair_create(stream);
-    if (!pair) goto error;
+    if (!pair)
+        goto error;
 
     pair->remote.socket = *remote;
     pair->remote.priority = priority;
@@ -1212,10 +1249,8 @@ static Pair *stream_add_peer_reflexive_pair(Stream *stream,
     pair_calculate_local_priority(pair);
     pair_calculate_priority(pair);
 
-    ov_log_debug("%s added peer reflexive pair from %s:%i",
-                 stream->uuid,
-                 remote->host,
-                 remote->port);
+    ov_log_debug("%s added peer reflexive pair from %s:%i", stream->uuid,
+                 remote->host, remote->port);
 
     return pair;
 error:
@@ -1226,7 +1261,8 @@ error:
 
 static bool stream_order(Stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     Pair *pair = NULL;
     Pair *next = stream->pairs;
@@ -1252,7 +1288,8 @@ static bool stream_order(Stream *stream) {
                 continue;
             }
 
-            if (walk == pair) break;
+            if (walk == pair)
+                break;
 
             if (!ov_node_insert_before((void **)&stream->pairs, pair, walk))
                 goto error;
@@ -1273,16 +1310,18 @@ static bool pairs_are_redundant(Pair *pair, Pair *check) {
     OV_ASSERT(pair);
     OV_ASSERT(check);
 
-    if (!pair || !check) return false;
+    if (!pair || !check)
+        return false;
 
-    if (pair == check) return false;
+    if (pair == check)
+        return false;
 
     /* local is always the same */
 
-    if (pair->remote.socket.port != check->remote.socket.port) return false;
+    if (pair->remote.socket.port != check->remote.socket.port)
+        return false;
 
-    if (0 != strncmp(pair->remote.socket.host,
-                     check->remote.socket.host,
+    if (0 != strncmp(pair->remote.socket.host, check->remote.socket.host,
                      OV_HOST_NAME_MAX))
         return false;
 
@@ -1293,7 +1332,8 @@ static bool pairs_are_redundant(Pair *pair, Pair *check) {
 
 static bool stream_prune(Stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     Pair *pair = stream->pairs;
     Pair *next = NULL;
@@ -1309,13 +1349,13 @@ static bool stream_prune(Stream *stream) {
 
         switch (pair->state) {
 
-            case OV_ICE_PAIR_FROZEN:
-            case OV_ICE_PAIR_WAITING:
-                break;
+        case OV_ICE_PAIR_FROZEN:
+        case OV_ICE_PAIR_WAITING:
+            break;
 
-            default:
-                pair = ov_node_next(pair);
-                continue;
+        default:
+            pair = ov_node_next(pair);
+            continue;
         }
 
         /*
@@ -1331,7 +1371,8 @@ static bool stream_prune(Stream *stream) {
             drop = next;
             next = ov_node_next(next);
 
-            if (drop == stream->selected) continue;
+            if (drop == stream->selected)
+                continue;
 
             if (pairs_are_redundant(pair, drop)) {
 
@@ -1360,19 +1401,19 @@ static bool send_nominated_update(uint32_t timer, void *s) {
     Pair *pair = stream->pairs;
     while (pair) {
 
-        if (pair->nominated) break;
+        if (pair->nominated)
+            break;
         pair = ov_node_next(pair);
     }
 
-    if (!pair) goto error;
+    if (!pair)
+        goto error;
 
     send_stun_binding_request(stream->session->proxy, pair);
 
-    stream->timer.nominate =
-        ov_event_loop_timer_set(stream->session->proxy->public.config.loop,
-                                OV_ICE_PROXY_CONNECTIVITY_PACE_USECS,
-                                stream,
-                                send_nominated_update);
+    stream->timer.nominate = ov_event_loop_timer_set(
+        stream->session->proxy->public.config.loop,
+        OV_ICE_PROXY_CONNECTIVITY_PACE_USECS, stream, send_nominated_update);
 
     return true;
 error:
@@ -1383,7 +1424,8 @@ error:
 
 static bool stream_update_stun(Stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     if (stream->state_protocol.stun == OV_ICE_PROXY_GENERIC_COMPLETED)
         return true;
@@ -1431,13 +1473,13 @@ static bool stream_update_stun(Stream *stream) {
 
                 switch (pair->state) {
 
-                    case OV_ICE_PAIR_FROZEN:
-                    case OV_ICE_PAIR_WAITING:
-                        trash = pair;
-                        break;
+                case OV_ICE_PAIR_FROZEN:
+                case OV_ICE_PAIR_WAITING:
+                    trash = pair;
+                    break;
 
-                    default:
-                        break;
+                default:
+                    break;
                 }
 
                 pair = ov_node_next(pair);
@@ -1468,15 +1510,15 @@ static bool stream_update_stun(Stream *stream) {
     if (selected) {
 
         if (0 == ov_list_get_pos(stream->trigger, selected))
-            if (!ov_list_queue_push(stream->trigger, selected)) goto error;
+            if (!ov_list_queue_push(stream->trigger, selected))
+                goto error;
 
         selected->nominated = true;
 
         stream->timer.nominate =
             ov_event_loop_timer_set(stream->session->proxy->public.config.loop,
                                     OV_ICE_PROXY_CONNECTIVITY_PACE_USECS,
-                                    stream,
-                                    send_nominated_update);
+                                    stream, send_nominated_update);
     }
 
     return true;
@@ -1490,14 +1532,18 @@ static bool stream_callback_selected_ready(Stream *stream) {
 
     int r = srtp_err_status_ok;
 
-    if (!stream) goto error;
-    if (!stream->selected) goto error;
-    if (!stream->selected->srtp.profile) goto error;
+    if (!stream)
+        goto error;
+    if (!stream->selected)
+        goto error;
+    if (!stream->selected->srtp.profile)
+        goto error;
 
     stream->state_protocol.srtp = OV_ICE_PROXY_GENERIC_RUNNING;
 
     srtp_t srtp_session = stream->session->srtp.session;
-    if (!srtp_session) goto error;
+    if (!srtp_session)
+        goto error;
 
     /* Step 1 - prepare policy */
 
@@ -1507,8 +1553,8 @@ static bool stream_callback_selected_ready(Stream *stream) {
     srtp_crypto_policy_set_rtp_default(&stream->remote.policy.rtp);
     srtp_crypto_policy_set_rtcp_default(&stream->remote.policy.rtcp);
 
-    if (0 == ov_string_compare(
-                 "SRTP_AES128_CM_SHA1_80", stream->selected->srtp.profile)) {
+    if (0 == ov_string_compare("SRTP_AES128_CM_SHA1_80",
+                               stream->selected->srtp.profile)) {
 
         srtp_crypto_policy_set_aes_cm_128_hmac_sha1_80(
             &stream->local.policy.rtp);
@@ -1545,59 +1591,55 @@ static bool stream_callback_selected_ready(Stream *stream) {
 
     switch (stream->selected->dtls.type) {
 
-        case OV_ICE_PROXY_GENERIC_DTLS_ACTIVE:
+    case OV_ICE_PROXY_GENERIC_DTLS_ACTIVE:
 
-            /* Local policy is client policy,
-             * incoming streams will use the server key. */
+        /* Local policy is client policy,
+         * incoming streams will use the server key. */
 
-            memcpy(stream->local.key,
-                   stream->selected->srtp.server.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->local.key, stream->selected->srtp.server.key,
+               stream->selected->srtp.key_len);
 
-            memcpy(stream->remote.key,
-                   stream->selected->srtp.client.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->remote.key, stream->selected->srtp.client.key,
+               stream->selected->srtp.key_len);
 
-            srtp_append_salt_to_key(stream->local.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.server.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->local.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.server.salt,
+                                stream->selected->srtp.salt_len);
 
-            srtp_append_salt_to_key(stream->remote.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.client.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->remote.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.client.salt,
+                                stream->selected->srtp.salt_len);
 
-            break;
+        break;
 
-        case OV_ICE_PROXY_GENERIC_DTLS_PASSIVE:
+    case OV_ICE_PROXY_GENERIC_DTLS_PASSIVE:
 
-            /* Local policy is server policy,
-             * incoming streams will use the client key. */
+        /* Local policy is server policy,
+         * incoming streams will use the client key. */
 
-            memcpy(stream->local.key,
-                   stream->selected->srtp.client.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->local.key, stream->selected->srtp.client.key,
+               stream->selected->srtp.key_len);
 
-            memcpy(stream->remote.key,
-                   stream->selected->srtp.server.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->remote.key, stream->selected->srtp.server.key,
+               stream->selected->srtp.key_len);
 
-            srtp_append_salt_to_key(stream->local.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.client.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->local.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.client.salt,
+                                stream->selected->srtp.salt_len);
 
-            srtp_append_salt_to_key(stream->remote.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.server.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->remote.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.server.salt,
+                                stream->selected->srtp.salt_len);
 
-            break;
+        break;
 
-            break;
-        default:
-            goto error;
+        break;
+    default:
+        goto error;
     }
 
     /* Step 3 prepare streams */
@@ -1616,30 +1658,28 @@ static bool stream_callback_selected_ready(Stream *stream) {
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            break;
+    case srtp_err_status_ok:
+        break;
 
-        default:
-            goto error;
-            break;
+    default:
+        goto error;
+        break;
     }
 
     r = srtp_add_stream(srtp_session, &stream->local.policy);
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            break;
+    case srtp_err_status_ok:
+        break;
 
-        default:
-            goto error;
-            break;
+    default:
+        goto error;
+        break;
     }
 
     ov_log_debug("Session %s stream %i|%s - completed SRTP",
-                 stream->session->uuid,
-                 stream->index,
-                 stream->uuid);
+                 stream->session->uuid, stream->index, stream->uuid);
 
     stream->state_protocol.srtp = OV_ICE_PROXY_GENERIC_COMPLETED;
     stream_state_change(stream);
@@ -1653,14 +1693,13 @@ error:
 
 static bool stream_complete_dtls(Stream *stream, Pair *pair) {
 
-    if (!stream || !pair) goto error;
+    if (!stream || !pair)
+        goto error;
 
     stream->state_protocol.dtls = OV_ICE_PROXY_GENERIC_COMPLETED;
 
     ov_log_debug("Session %s stream %i|%s - completed DTLS",
-                 stream->session->uuid,
-                 stream->index,
-                 stream->uuid);
+                 stream->session->uuid, stream->index, stream->uuid);
 
     if (!stream->selected) {
 
@@ -1697,7 +1736,8 @@ error:
 
 static bool change_tie_breaker(Session *session, uint64_t min, uint64_t max) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     uint64_t new = session->tiebreaker;
 
@@ -1717,14 +1757,14 @@ error:
 
 static void *session_free(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
     Session *session = (Session *)data;
 
     if (OV_TIMER_INVALID != session->timer.session_timeout) {
 
         ov_event_loop_timer_unset(session->proxy->public.config.loop,
-                                  session->timer.session_timeout,
-                                  NULL);
+                                  session->timer.session_timeout, NULL);
 
         session->timer.session_timeout = OV_TIMER_INVALID;
     }
@@ -1732,8 +1772,7 @@ static void *session_free(void *data) {
     if (OV_TIMER_INVALID != session->timer.connectivity) {
 
         ov_event_loop_timer_unset(session->proxy->public.config.loop,
-                                  session->timer.connectivity,
-                                  NULL);
+                                  session->timer.connectivity, NULL);
 
         session->timer.connectivity = OV_TIMER_INVALID;
     }
@@ -1745,8 +1784,8 @@ static void *session_free(void *data) {
     if (session->srtp.session) {
 
         if (srtp_err_status_ok != srtp_dealloc(session->srtp.session))
-            ov_log_error(
-                "ICE %s failed to deallocate SRTP session", session->uuid);
+            ov_log_error("ICE %s failed to deallocate SRTP session",
+                         session->uuid);
 
         session->srtp.session = NULL;
     }
@@ -1782,10 +1821,12 @@ static bool timeout_session(uint32_t id, void *s) {
 static Session *session_create(ov_ice_proxy *self) {
 
     Session *session = NULL;
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     session = calloc(1, sizeof(Session));
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     session->proxy = self;
     session->state = OV_ICE_PROXY_GENERIC_RUNNING;
@@ -1798,22 +1839,21 @@ static Session *session_create(ov_ice_proxy *self) {
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            break;
+    case srtp_err_status_ok:
+        break;
 
-        default:
-            ov_log_error("ICE session %s srtp failed %i", session->uuid, r);
-            goto error;
+    default:
+        ov_log_error("ICE session %s srtp failed %i", session->uuid, r);
+        goto error;
     }
 
-    if (!ov_dict_set(
-            self->sessions, ov_string_dup(session->uuid), session, NULL))
+    if (!ov_dict_set(self->sessions, ov_string_dup(session->uuid), session,
+                     NULL))
         goto error;
 
     session->timer.session_timeout = ov_event_loop_timer_set(
         self->public.config.loop,
-        self->public.config.config.timeouts.stun.session_timeout_usecs,
-        session,
+        self->public.config.config.timeouts.stun.session_timeout_usecs, session,
         timeout_session);
 
     return session;
@@ -1826,7 +1866,8 @@ error:
 
 static bool session_change_role(Session *self, uint64_t remote_tiebreaker) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (self->controlling) {
 
@@ -1842,7 +1883,8 @@ static bool session_change_role(Session *self, uint64_t remote_tiebreaker) {
 
             while (self->tiebreaker >= remote_tiebreaker) {
 
-                if (!change_tie_breaker(self, 0, remote_tiebreaker)) goto error;
+                if (!change_tie_breaker(self, 0, remote_tiebreaker))
+                    goto error;
             }
 
         } else {
@@ -1864,7 +1906,8 @@ static bool session_change_role(Session *self, uint64_t remote_tiebreaker) {
 
             while (self->tiebreaker <= remote_tiebreaker) {
 
-                if (!change_tie_breaker(self, remote_tiebreaker, 0)) goto error;
+                if (!change_tie_breaker(self, remote_tiebreaker, 0))
+                    goto error;
             }
         }
     }
@@ -1896,9 +1939,11 @@ static bool session_unfreeze(Session *session) {
     Stream *stream = NULL;
     Pair *pair = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
-    if (!session->streams) return true;
+    if (!session->streams)
+        return true;
 
     /* We have only the Mutiplexed candidate as candidate for all
      * sessions and streams. So we do have just one foundation to use */
@@ -1937,7 +1982,8 @@ static bool connectivity_check_send_next(uint32_t id, void *data) {
     OV_ASSERT(stream->session);
 
     Session *session = stream->session;
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     OV_ASSERT(id == session->timer.connectivity);
 
@@ -1949,7 +1995,8 @@ static bool connectivity_check_send_next(uint32_t id, void *data) {
 
     return true;
 error:
-    if (session) session->state = OV_ICE_PROXY_GENERIC_FAILED;
+    if (session)
+        session->state = OV_ICE_PROXY_GENERIC_FAILED;
     return false;
 }
 
@@ -1961,16 +2008,20 @@ bool perform_connectivity_check(Stream *stream) {
     OV_ASSERT(stream->session);
     OV_ASSERT(stream->session->proxy);
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     Session *session = stream->session;
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     ov_ice_proxy *proxy = session->proxy;
-    if (!proxy) goto error;
+    if (!proxy)
+        goto error;
 
     ov_event_loop *loop = proxy->public.config.loop;
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     /*
      *      Search the next stream active state with
@@ -2000,7 +2051,8 @@ bool perform_connectivity_check(Stream *stream) {
      *      (async with ta delay offset)
      */
 
-    if (!stream) goto reschedule_session;
+    if (!stream)
+        goto reschedule_session;
 
     /*
      *      Send a connectivity check on the
@@ -2015,7 +2067,8 @@ bool perform_connectivity_check(Stream *stream) {
 
         while (pair) {
 
-            if (pair->state == OV_ICE_PAIR_WAITING) break;
+            if (pair->state == OV_ICE_PAIR_WAITING)
+                break;
 
             pair = ov_node_next(pair);
         }
@@ -2030,24 +2083,25 @@ bool perform_connectivity_check(Stream *stream) {
 
         stream = ov_node_next(stream);
 
-        if (!stream) goto reschedule_session;
+        if (!stream)
+            goto reschedule_session;
 
         return perform_connectivity_check(stream);
     }
 
     switch (pair->state) {
 
-        case OV_ICE_PAIR_PROGRESS:
+    case OV_ICE_PAIR_PROGRESS:
 
-            if (pair->progress_count > 100) {
-                pair->state = OV_ICE_PAIR_FAILED;
-                return perform_connectivity_check(session->streams);
-            }
+        if (pair->progress_count > 100) {
+            pair->state = OV_ICE_PAIR_FAILED;
+            return perform_connectivity_check(session->streams);
+        }
 
-            break;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     if (!send_stun_binding_request(proxy, pair)) {
@@ -2066,10 +2120,10 @@ bool perform_connectivity_check(Stream *stream) {
         session->timer.connectivity = loop->timer.set(
             loop,
             proxy->public.config.config.timeouts.stun.connectivity_pace_usecs,
-            stream,
-            connectivity_check_send_next);
+            stream, connectivity_check_send_next);
 
-        if (OV_TIMER_INVALID == session->timer.connectivity) goto error;
+        if (OV_TIMER_INVALID == session->timer.connectivity)
+            goto error;
     }
 
     return true;
@@ -2081,10 +2135,10 @@ reschedule_session:
         session->timer.connectivity = loop->timer.set(
             loop,
             proxy->public.config.config.timeouts.stun.connectivity_pace_usecs,
-            session->streams,
-            connectivity_check_send_next);
+            session->streams, connectivity_check_send_next);
 
-        if (OV_TIMER_INVALID == session->timer.connectivity) goto error;
+        if (OV_TIMER_INVALID == session->timer.connectivity)
+            goto error;
     }
 
     session_unfreeze(session);
@@ -2098,7 +2152,8 @@ error:
 
 static bool session_checklists_run(Session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     /*
      *  We will start running the checklists,
@@ -2108,26 +2163,28 @@ static bool session_checklists_run(Session *session) {
 
     switch (session->state) {
 
-        case OV_ICE_PROXY_GENERIC_INIT:
-        case OV_ICE_PROXY_GENERIC_RUNNING:
-        case OV_ICE_PROXY_GENERIC_FAILED:
-            break;
+    case OV_ICE_PROXY_GENERIC_INIT:
+    case OV_ICE_PROXY_GENERIC_RUNNING:
+    case OV_ICE_PROXY_GENERIC_FAILED:
+        break;
 
-        case OV_ICE_PROXY_GENERIC_ERROR:
-            goto error;
-            break;
+    case OV_ICE_PROXY_GENERIC_ERROR:
+        goto error;
+        break;
 
-        case OV_ICE_PROXY_GENERIC_COMPLETED:
-            return true;
+    case OV_ICE_PROXY_GENERIC_COMPLETED:
+        return true;
     }
 
     if (OV_TIMER_INVALID == session->timer.connectivity) {
 
-        if (!session->streams) return true;
+        if (!session->streams)
+            return true;
 
         session_unfreeze(session);
 
-        if (!perform_connectivity_check(session->streams)) goto error;
+        if (!perform_connectivity_check(session->streams))
+            goto error;
 
         session->state = OV_ICE_PROXY_GENERIC_RUNNING;
     }
@@ -2141,7 +2198,8 @@ error:
 
 static bool session_update_stun(Session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     ov_event_loop *loop = session->proxy->public.config.loop;
 
@@ -2157,17 +2215,17 @@ static bool session_update_stun(Session *session) {
 
         switch (stream->state_protocol.stun) {
 
-            case OV_ICE_PROXY_GENERIC_COMPLETED:
-                all_failed = false;
-                break;
+        case OV_ICE_PROXY_GENERIC_COMPLETED:
+            all_failed = false;
+            break;
 
-            case OV_ICE_PROXY_GENERIC_RUNNING:
-                all_failed = false;
-                all_completed = false;
-                break;
+        case OV_ICE_PROXY_GENERIC_RUNNING:
+            all_failed = false;
+            all_completed = false;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         stream = ov_node_next(stream);
@@ -2232,7 +2290,8 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
     char *fingerprint = NULL;
 
-    if (!source) return NULL;
+    if (!source)
+        return NULL;
 
     size_t hex_len = 2 * length + 1;
     char hex[hex_len + 1];
@@ -2249,13 +2308,15 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
         fingerprint[(i * 3) + 0] = toupper(hex[(i * 2) + 0]);
         fingerprint[(i * 3) + 1] = toupper(hex[(i * 2) + 1]);
-        if (i < length - 1) fingerprint[(i * 3) + 2] = ':';
+        if (i < length - 1)
+            fingerprint[(i * 3) + 2] = ':';
     }
 
     return fingerprint;
 
 error:
-    if (fingerprint) free(fingerprint);
+    if (fingerprint)
+        free(fingerprint);
     return NULL;
 }
 
@@ -2269,7 +2330,8 @@ static char *X509_fingerprint_create(const X509 *cert, ov_hash_function type) {
     char *fingerprint = NULL;
 
     const EVP_MD *func = ov_hash_function_to_EVP(type);
-    if (!func || !cert) return NULL;
+    if (!func || !cert)
+        return NULL;
 
     if (0 < X509_digest(cert, func, mdigest, &mdigest_size)) {
         fingerprint = fingerprint_format_RFC8122((char *)mdigest, mdigest_size);
@@ -2280,16 +2342,17 @@ static char *X509_fingerprint_create(const X509 *cert, ov_hash_function type) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_fingerprint_cert(const char *path,
-                                    ov_hash_function hash,
+static bool create_fingerprint_cert(const char *path, ov_hash_function hash,
                                     char *out) {
 
     char *x509_fingerprint = NULL;
 
-    if (!path || !out) goto error;
+    if (!path || !out)
+        goto error;
 
     const char *hash_string = ov_hash_function_to_RFC8122_string(hash);
-    if (!hash_string) goto error;
+    if (!hash_string)
+        goto error;
 
     X509 *x = NULL;
 
@@ -2304,20 +2367,19 @@ static bool create_fingerprint_cert(const char *path,
     fclose(fp);
     X509_free(x);
 
-    if (!x509_fingerprint) goto error;
+    if (!x509_fingerprint)
+        goto error;
 
     size_t size = strlen(x509_fingerprint) + strlen(hash_string) + 2;
 
     OV_ASSERT(size < ov_ice_proxy_generic_dtls_FINGERPRINT_MAX);
-    if (size >= ov_ice_proxy_generic_dtls_FINGERPRINT_MAX) goto error;
+    if (size >= ov_ice_proxy_generic_dtls_FINGERPRINT_MAX)
+        goto error;
 
     memset(out, 0, ov_ice_proxy_generic_dtls_FINGERPRINT_MAX);
 
-    if (!snprintf(out,
-                  ov_ice_proxy_generic_dtls_FINGERPRINT_MAX,
-                  "%s %s",
-                  hash_string,
-                  x509_fingerprint))
+    if (!snprintf(out, ov_ice_proxy_generic_dtls_FINGERPRINT_MAX, "%s %s",
+                  hash_string, x509_fingerprint))
         goto error;
 
     out[ov_ice_proxy_generic_dtls_FINGERPRINT_MAX - 1] = 0;
@@ -2336,37 +2398,35 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static void plain_stun_response(ov_ice_proxy *self,
-                                uint8_t *buffer,
-                                size_t length,
-                                const ov_socket_data *remote) {
+static void plain_stun_response(ov_ice_proxy *self, uint8_t *buffer,
+                                size_t length, const ov_socket_data *remote) {
 
-    if (!self || !buffer || !remote) goto error;
+    if (!self || !buffer || !remote)
+        goto error;
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (remote->sa.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (remote->sa.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
     /* plain STUN request processing */
 
-    if (!ov_stun_frame_set_success_response(buffer, length)) goto error;
+    if (!ov_stun_frame_set_success_response(buffer, length))
+        goto error;
 
-    if (!ov_stun_xor_mapped_address_encode(
-            buffer + 20, length - 20, buffer, NULL, &remote->sa))
+    if (!ov_stun_xor_mapped_address_encode(buffer + 20, length - 20, buffer,
+                                           NULL, &remote->sa))
         goto error;
 
     size_t out = 20 + ov_stun_xor_mapped_address_encoding_length(&remote->sa);
 
-    if (!ov_stun_frame_set_length(buffer, length, out - 20)) goto error;
+    if (!ov_stun_frame_set_length(buffer, length, out - 20))
+        goto error;
 
     // just to be sure, we nullify the rest of the buffer
     memset(buffer + out, 0, length - out);
 
-    ssize_t send = sendto(self->socket,
-                          buffer,
-                          out,
-                          0,
-                          (const struct sockaddr *)&remote->sa,
-                          len);
+    ssize_t send = sendto(self->socket, buffer, out, 0,
+                          (const struct sockaddr *)&remote->sa, len);
 
     UNUSED(send);
 
@@ -2376,11 +2436,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_stun_request(ov_ice_proxy *self,
-                            uint8_t *buffer,
-                            size_t size,
-                            const ov_socket_data *remote,
-                            size_t attr_size,
+static bool io_stun_request(ov_ice_proxy *self, uint8_t *buffer, size_t size,
+                            const ov_socket_data *remote, size_t attr_size,
                             uint8_t *attr[]) {
 
     Stream *stream = NULL;
@@ -2425,43 +2482,46 @@ static bool io_stun_request(ov_ice_proxy *self,
         goto ignore;
     }
 
-    if (!attr_username || !attr_integrity || !attr_priority) goto bad_request;
+    if (!attr_username || !attr_integrity || !attr_priority)
+        goto bad_request;
 
-    if (!attr_controlling && !attr_controlled) goto bad_request;
+    if (!attr_controlling && !attr_controlled)
+        goto bad_request;
 
-    if (attr_controlling && attr_controlled) goto bad_request;
+    if (attr_controlling && attr_controlled)
+        goto bad_request;
 
     if (!ov_stun_ice_priority_decode(
             attr_priority, size - (attr_priority - buffer), &priority))
         goto bad_request;
 
-    if (!ov_stun_username_decode(
-            attr_username, size - (buffer - attr_username), &ptr, &name_length))
+    if (!ov_stun_username_decode(attr_username, size - (buffer - attr_username),
+                                 &ptr, &name_length))
         goto unauthorized;
 
     const char *pass = NULL;
 
     uint8_t *colon = memchr(ptr, ':', name_length);
-    if (!colon) goto unauthorized;
+    if (!colon)
+        goto unauthorized;
 
     ssize_t ufrag_in_len = colon - ptr;
-    if (ufrag_in_len < 1) goto bad_request;
+    if (ufrag_in_len < 1)
+        goto bad_request;
 
     stream = get_stream_by_ufrag(self, (char *)ptr, ufrag_in_len);
-    if (!stream) goto unauthorized;
+    if (!stream)
+        goto unauthorized;
 
     OV_ASSERT(stream->session);
 
     pass = stream->local.pass;
-    if (!pass) goto error;
+    if (!pass)
+        goto error;
 
-    if (!ov_stun_check_message_integrity((uint8_t *)buffer,
-                                         size,
-                                         attr,
-                                         attr_size,
-                                         (uint8_t *)pass,
-                                         strlen(pass),
-                                         true))
+    if (!ov_stun_check_message_integrity((uint8_t *)buffer, size, attr,
+                                         attr_size, (uint8_t *)pass,
+                                         strlen(pass), true))
         goto unauthorized;
 
     uint64_t attr_tiebreaker = 0;
@@ -2472,12 +2532,12 @@ static bool io_stun_request(ov_ice_proxy *self,
         if (attr_controlling) {
 
             if (!ov_stun_ice_controlling_decode(
-                    attr_controlling,
-                    size - (attr_controlling - buffer),
+                    attr_controlling, size - (attr_controlling - buffer),
                     &attr_tiebreaker))
                 goto bad_request;
 
-            if (sess_tiebreaker >= attr_tiebreaker) goto role_conflict;
+            if (sess_tiebreaker >= attr_tiebreaker)
+                goto role_conflict;
 
             session_change_role(stream->session, attr_tiebreaker);
         }
@@ -2492,13 +2552,13 @@ static bool io_stun_request(ov_ice_proxy *self,
              */
 
             if (!ov_stun_ice_controlled_decode(
-                    attr_controlled,
-                    size - (attr_controlling - buffer),
+                    attr_controlled, size - (attr_controlling - buffer),
                     &attr_tiebreaker))
 
                 goto bad_request;
 
-            if (sess_tiebreaker < attr_tiebreaker) goto role_conflict;
+            if (sess_tiebreaker < attr_tiebreaker)
+                goto role_conflict;
 
             session_change_role(stream->session, attr_tiebreaker);
         }
@@ -2513,35 +2573,32 @@ static bool io_stun_request(ov_ice_proxy *self,
     if (!ov_stun_frame_set_success_response(response, response_length))
         goto error;
 
-    if (!ov_stun_frame_set_magic_cookie(response, response_length)) goto error;
+    if (!ov_stun_frame_set_magic_cookie(response, response_length))
+        goto error;
 
     if (!ov_stun_frame_set_method(response, response_length, STUN_BINDING))
         goto error;
 
     if (!ov_stun_frame_set_transaction_id(
-            response,
-            response_length,
+            response, response_length,
             ov_stun_frame_get_transaction_id(buffer, size)))
         goto error;
 
     // add XOR MAPPED ADDRESS
-    if (!ov_stun_xor_mapped_address_encode(
-            response + 20, response_length - 20, response, &next, &remote->sa))
+    if (!ov_stun_xor_mapped_address_encode(response + 20, response_length - 20,
+                                           response, &next, &remote->sa))
         goto error;
 
-    if (!ov_stun_frame_set_length(
-            response, response_length, (next - response) - 20))
+    if (!ov_stun_frame_set_length(response, response_length,
+                                  (next - response) - 20))
         goto error;
 
     response_length = (next - response);
 
     // add a message integrity
-    if (!ov_stun_add_message_integrity(response,
-                                       OV_UDP_PAYLOAD_OCTETS,
-                                       response + response_length,
-                                       &next,
-                                       (uint8_t *)pass,
-                                       strlen(pass)))
+    if (!ov_stun_add_message_integrity(response, OV_UDP_PAYLOAD_OCTETS,
+                                       response + response_length, &next,
+                                       (uint8_t *)pass, strlen(pass)))
         goto error;
 
     response_length = (next - response);
@@ -2569,34 +2626,33 @@ static bool io_stun_request(ov_ice_proxy *self,
 
     switch (pair->state) {
 
-        case OV_ICE_PAIR_SUCCESS:
-            pair->progress_count = 0;
-            break;
+    case OV_ICE_PAIR_SUCCESS:
+        pair->progress_count = 0;
+        break;
 
-        case OV_ICE_PAIR_WAITING:
-        case OV_ICE_PAIR_FROZEN:
-        case OV_ICE_PAIR_PROGRESS:
-        case OV_ICE_PAIR_FAILED:
+    case OV_ICE_PAIR_WAITING:
+    case OV_ICE_PAIR_FROZEN:
+    case OV_ICE_PAIR_PROGRESS:
+    case OV_ICE_PAIR_FAILED:
 
-            if (0 == ov_list_get_pos(stream->trigger, pair)) {
+        if (0 == ov_list_get_pos(stream->trigger, pair)) {
 
-                if (ov_list_queue_push(stream->trigger, pair)) {
+            if (ov_list_queue_push(stream->trigger, pair)) {
 
-                    pair->state = OV_ICE_PAIR_WAITING;
+                pair->state = OV_ICE_PAIR_WAITING;
 
-                    if (OV_ICE_PROXY_GENERIC_FAILED ==
-                        stream->state_protocol.stun) {
-                        stream->state_protocol.stun =
-                            OV_ICE_PROXY_GENERIC_RUNNING;
-                        stream_state_change(stream);
-                    }
-
-                } else {
-                    pair->state = OV_ICE_PAIR_FAILED;
+                if (OV_ICE_PROXY_GENERIC_FAILED ==
+                    stream->state_protocol.stun) {
+                    stream->state_protocol.stun = OV_ICE_PROXY_GENERIC_RUNNING;
+                    stream_state_change(stream);
                 }
-            }
 
-            break;
+            } else {
+                pair->state = OV_ICE_PAIR_FAILED;
+            }
+        }
+
+        break;
     }
 
     session_update_stun(stream->session);
@@ -2606,52 +2662,46 @@ static bool io_stun_request(ov_ice_proxy *self,
 role_conflict:
 
     response_length = ov_stun_error_code_generate_response(
-        buffer,
-        size,
-        response,
-        response_length,
+        buffer, size, response, response_length,
         ov_stun_error_code_set_ice_role_conflict);
 
-    if (0 == response_length) goto error;
+    if (0 == response_length)
+        goto error;
 
     goto send_response;
 
 bad_request:
 
     response_length = ov_stun_error_code_generate_response(
-        buffer,
-        size,
-        response,
-        response_length,
+        buffer, size, response, response_length,
         ov_stun_error_code_set_bad_request);
 
-    if (0 == response_length) goto error;
+    if (0 == response_length)
+        goto error;
 
     goto send_response;
 
 unauthorized:
 
     response_length = ov_stun_error_code_generate_response(
-        buffer,
-        size,
-        response,
-        response_length,
+        buffer, size, response, response_length,
         ov_stun_error_code_set_unauthorized);
 
-    if (0 == response_length) goto error;
+    if (0 == response_length)
+        goto error;
 
     goto send_response;
 
 send_response:
 
     // set new length
-    if (!ov_stun_attribute_set_length(
-            response, OV_UDP_PAYLOAD_OCTETS, response_length - 20))
+    if (!ov_stun_attribute_set_length(response, OV_UDP_PAYLOAD_OCTETS,
+                                      response_length - 20))
         goto error;
 
     // add a fingerprint
-    if (!ov_stun_add_fingerprint(
-            response, OV_UDP_PAYLOAD_OCTETS, response + response_length, NULL))
+    if (!ov_stun_add_fingerprint(response, OV_UDP_PAYLOAD_OCTETS,
+                                 response + response_length, NULL))
         goto error;
 
     response_length += ov_stun_fingerprint_encoding_length();
@@ -2659,14 +2709,11 @@ send_response:
     ssize_t bytes = -1;
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (remote->sa.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (remote->sa.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
-    bytes = sendto(self->socket,
-                   response,
-                   response_length,
-                   0,
-                   (struct sockaddr *)&remote->sa,
-                   len);
+    bytes = sendto(self->socket, response, response_length, 0,
+                   (struct sockaddr *)&remote->sa, len);
     UNUSED(bytes);
 
 ignore:
@@ -2677,11 +2724,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_stun_success(ov_ice_proxy *self,
-                            uint8_t *buffer,
-                            size_t size,
-                            const ov_socket_data *remote,
-                            size_t attr_size,
+static bool io_stun_success(ov_ice_proxy *self, uint8_t *buffer, size_t size,
+                            const ov_socket_data *remote, size_t attr_size,
                             uint8_t *attr[]) {
 
     if (!self || !buffer || !size || !remote || !attr_size || !attr)
@@ -2690,7 +2734,8 @@ static bool io_stun_success(ov_ice_proxy *self,
     Pair *pair = transaction_unset(
         self, (char *)ov_stun_frame_get_transaction_id(buffer, size));
 
-    if (!pair) goto ignore;
+    if (!pair)
+        goto ignore;
 
     /*
      *      Prepare required attribute frame pointers.
@@ -2701,13 +2746,14 @@ static bool io_stun_success(ov_ice_proxy *self,
 
     uint8_t *prio = ov_stun_attributes_get_type(attr, attr_size, ICE_PRIORITY);
 
-    if (!xmap) goto ignore;
+    if (!xmap)
+        goto ignore;
 
     ov_socket_data xor_mapped = {0};
     struct sockaddr_storage *xor_ptr = &xor_mapped.sa;
 
-    if (!ov_stun_xor_mapped_address_decode(
-            xmap, size - (xmap - buffer), buffer, &xor_ptr))
+    if (!ov_stun_xor_mapped_address_decode(xmap, size - (xmap - buffer), buffer,
+                                           &xor_ptr))
         goto ignore;
 
     xor_mapped = ov_socket_data_from_sockaddr_storage(&xor_mapped.sa);
@@ -2716,8 +2762,8 @@ static bool io_stun_success(ov_ice_proxy *self,
 
     if (prio) {
 
-        if (!ov_stun_ice_priority_decode(
-                prio, size - (prio - buffer), &priority))
+        if (!ov_stun_ice_priority_decode(prio, size - (prio - buffer),
+                                         &priority))
             goto ignore;
     }
 
@@ -2734,8 +2780,7 @@ static bool io_stun_success(ov_ice_proxy *self,
         goto ignore;
 
     if ((xor_mapped.port != self->public.config.external.port) ||
-        (0 != memcmp(xor_mapped.host,
-                     self->public.config.external.host,
+        (0 != memcmp(xor_mapped.host, self->public.config.external.host,
                      OV_HOST_NAME_MAX))) {
 
         /* We received some peer reflexive response */
@@ -2794,8 +2839,7 @@ static bool io_stun_success(ov_ice_proxy *self,
             if (OV_TIMER_INVALID != stream->timer.nominate) {
 
                 ov_event_loop_timer_unset(session->proxy->public.config.loop,
-                                          stream->timer.nominate,
-                                          NULL);
+                                          stream->timer.nominate, NULL);
 
                 stream->timer.nominate = OV_TIMER_INVALID;
             }
@@ -2811,11 +2855,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_stun_error(ov_ice_proxy *self,
-                          uint8_t *buffer,
-                          size_t size,
-                          const ov_socket_data *remote,
-                          size_t attr_size,
+static bool io_stun_error(ov_ice_proxy *self, uint8_t *buffer, size_t size,
+                          const ov_socket_data *remote, size_t attr_size,
                           uint8_t *attr[]) {
 
     Stream *stream = get_stream_by_remote(self, remote);
@@ -2826,7 +2867,8 @@ static bool io_stun_error(ov_ice_proxy *self,
     Pair *pair = transaction_unset(
         self, (char *)ov_stun_frame_get_transaction_id(buffer, size));
 
-    if (!pair) goto ignore;
+    if (!pair)
+        goto ignore;
 
     pair->state = OV_ICE_PAIR_FAILED;
 
@@ -2841,38 +2883,41 @@ ignore:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_external_stun(ov_ice_proxy *self,
-                             uint8_t *buffer,
-                             size_t size,
+static bool io_external_stun(ov_ice_proxy *self, uint8_t *buffer, size_t size,
                              const ov_socket_data *remote) {
 
     size_t attr_size = IMPL_STUN_ATTR_FRAMES;
     uint8_t *attr[attr_size];
     memset(attr, 0, attr_size * sizeof(uint8_t *));
 
-    if (!self || !buffer || !size || !remote) goto error;
+    if (!self || !buffer || !size || !remote)
+        goto error;
 
     uint16_t method = ov_stun_frame_get_method(buffer, size);
 
-    if (!ov_stun_frame_is_valid(buffer, size)) goto ignore;
+    if (!ov_stun_frame_is_valid(buffer, size))
+        goto ignore;
 
-    if (!ov_stun_frame_has_magic_cookie(buffer, size)) goto ignore;
+    if (!ov_stun_frame_has_magic_cookie(buffer, size))
+        goto ignore;
 
-    if (!ov_stun_frame_slice(buffer, size, attr, attr_size)) goto ignore;
+    if (!ov_stun_frame_slice(buffer, size, attr, attr_size))
+        goto ignore;
 
     if (!ov_stun_check_fingerprint(buffer, size, attr, attr_size, false))
         goto ignore;
 
     switch (method) {
 
-        case STUN_BINDING:
-            break;
+    case STUN_BINDING:
+        break;
 
-        default:
-            goto ignore;
+    default:
+        goto ignore;
     }
 
-    if (ov_stun_frame_class_is_indication(buffer, size)) goto ignore;
+    if (ov_stun_frame_class_is_indication(buffer, size))
+        goto ignore;
 
     if (ov_stun_frame_class_is_request(buffer, size)) {
 
@@ -2896,39 +2941,40 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static bool srtp_get_key_length_of_profile(
-    const SRTP_PROTECTION_PROFILE *profile,
-    uint32_t *keylen,
-    uint32_t *saltlen) {
+static bool
+srtp_get_key_length_of_profile(const SRTP_PROTECTION_PROFILE *profile,
+                               uint32_t *keylen, uint32_t *saltlen) {
 
-    if (!profile || !keylen || !saltlen) goto error;
+    if (!profile || !keylen || !saltlen)
+        goto error;
 
-    if (!profile->id) goto error;
+    if (!profile->id)
+        goto error;
 
     switch (profile->id) {
 
-        case SRTP_AES128_CM_SHA1_80:
-            *keylen = 16;
-            *saltlen = 14;
-            break;
+    case SRTP_AES128_CM_SHA1_80:
+        *keylen = 16;
+        *saltlen = 14;
+        break;
 
-        case SRTP_AES128_CM_SHA1_32:
-            *keylen = 16;
-            *saltlen = 14;
-            break;
+    case SRTP_AES128_CM_SHA1_32:
+        *keylen = 16;
+        *saltlen = 14;
+        break;
 
-        case SRTP_AEAD_AES_128_GCM:
-            *keylen = 16;
-            *saltlen = 12;
-            break;
+    case SRTP_AEAD_AES_128_GCM:
+        *keylen = 16;
+        *saltlen = 12;
+        break;
 
-        case SRTP_AEAD_AES_256_GCM:
-            *keylen = 32;
-            *saltlen = 12;
-            break;
+    case SRTP_AEAD_AES_256_GCM:
+        *keylen = 32;
+        *saltlen = 12;
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     return true;
@@ -2938,12 +2984,9 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static const char *dtls_get_srtp_keys(Pair *pair,
-                                      uint32_t *key_len,
-                                      uint32_t *salt_len,
-                                      uint8_t *server_key,
-                                      uint8_t *server_salt,
-                                      uint8_t *client_key,
+static const char *dtls_get_srtp_keys(Pair *pair, uint32_t *key_len,
+                                      uint32_t *salt_len, uint8_t *server_key,
+                                      uint8_t *server_salt, uint8_t *client_key,
                                       uint8_t *client_salt) {
 
     size_t size =
@@ -2962,11 +3005,14 @@ static const char *dtls_get_srtp_keys(Pair *pair,
     SRTP_PROTECTION_PROFILE *profile =
         SSL_get_selected_srtp_profile(pair->dtls.ssl);
 
-    if (!srtp_get_key_length_of_profile(profile, &keylen, &saltlen)) goto error;
+    if (!srtp_get_key_length_of_profile(profile, &keylen, &saltlen))
+        goto error;
 
-    if (keylen > *key_len) goto error;
+    if (keylen > *key_len)
+        goto error;
 
-    if (saltlen > *salt_len) goto error;
+    if (saltlen > *salt_len)
+        goto error;
 
     /*      The total length of keying material obtained
             should be equal to two times the sum of
@@ -2980,14 +3026,9 @@ static const char *dtls_get_srtp_keys(Pair *pair,
 
     */
 
-    if (1 != SSL_export_keying_material(pair->dtls.ssl,
-                                        buffer,
-                                        size,
-                                        label_extractor_srtp,
-                                        strlen(label_extractor_srtp),
-                                        NULL,
-                                        0,
-                                        0))
+    if (1 != SSL_export_keying_material(
+                 pair->dtls.ssl, buffer, size, label_extractor_srtp,
+                 strlen(label_extractor_srtp), NULL, 0, 0))
         goto error;
 
     *key_len = keylen;
@@ -2995,13 +3036,17 @@ static const char *dtls_get_srtp_keys(Pair *pair,
 
     uint8_t *ptr = buffer;
 
-    if (!memcpy(client_key, ptr, keylen)) return false;
+    if (!memcpy(client_key, ptr, keylen))
+        return false;
     ptr += keylen;
-    if (!memcpy(server_key, ptr, keylen)) return false;
+    if (!memcpy(server_key, ptr, keylen))
+        return false;
     ptr += keylen;
-    if (!memcpy(client_salt, ptr, saltlen)) return false;
+    if (!memcpy(client_salt, ptr, saltlen))
+        return false;
     ptr += saltlen;
-    if (!memcpy(server_salt, ptr, saltlen)) return false;
+    if (!memcpy(server_salt, ptr, saltlen))
+        return false;
     ptr += saltlen;
 
     return profile->name;
@@ -3013,7 +3058,8 @@ error:
 
 static bool srtp_unset_data(Pair *pair) {
 
-    if (!pair) return false;
+    if (!pair)
+        return false;
 
     pair->srtp.ready = false;
     pair->srtp.profile = ov_data_pointer_free(pair->srtp.profile);
@@ -3034,13 +3080,9 @@ static bool get_profile(Pair *pair) {
 
     srtp_unset_data(pair);
 
-    const char *profile = dtls_get_srtp_keys(pair,
-                                             &pair->srtp.key_len,
-                                             &pair->srtp.salt_len,
-                                             pair->srtp.server.key,
-                                             pair->srtp.server.salt,
-                                             pair->srtp.client.key,
-                                             pair->srtp.client.salt);
+    const char *profile = dtls_get_srtp_keys(
+        pair, &pair->srtp.key_len, &pair->srtp.salt_len, pair->srtp.server.key,
+        pair->srtp.server.salt, pair->srtp.client.key, pair->srtp.client.salt);
 
     if (profile) {
 
@@ -3063,13 +3105,13 @@ static long dtls_bio_ctrl(BIO *bio, int cmd, long num, void *ptr) {
     UNUSED(ptr);
 
     switch (cmd) {
-        case BIO_CTRL_FLUSH:
-            return 1;
-        case BIO_CTRL_WPENDING:
-        case BIO_CTRL_PENDING:
-            return 0L;
-        default:
-            break;
+    case BIO_CTRL_FLUSH:
+        return 1;
+    case BIO_CTRL_WPENDING:
+    case BIO_CTRL_PENDING:
+        return 0L;
+    default:
+        break;
     }
 
     return 0;
@@ -3079,7 +3121,8 @@ static long dtls_bio_ctrl(BIO *bio, int cmd, long num, void *ptr) {
 
 static int dtls_bio_write(BIO *bio, const char *in, int size) {
 
-    if (size <= 0) goto error;
+    if (size <= 0)
+        goto error;
 
     Pair *pair = (Pair *)BIO_get_data(bio);
 
@@ -3153,16 +3196,15 @@ static BIO *dtls_filter_pair_bio_create(Pair *pair) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool dtls_handshake_passive(ov_ice_proxy *self,
-                                   Pair *pair,
-                                   uint8_t *buffer,
-                                   size_t size) {
+static bool dtls_handshake_passive(ov_ice_proxy *self, Pair *pair,
+                                   uint8_t *buffer, size_t size) {
 
     char errorstring[OV_ICE_PROXY_SSL_ERROR_STRING_BUFFER_SIZE] = {0};
     int errorcode = -1;
     int n = 0, r = 0;
 
-    if (!self || !pair || !buffer || !size) goto error;
+    if (!self || !pair || !buffer || !size)
+        goto error;
 
     if (pair->dtls.ssl) {
 
@@ -3174,21 +3216,25 @@ static bool dtls_handshake_passive(ov_ice_proxy *self,
     pair->dtls.type = OV_ICE_PROXY_GENERIC_DTLS_PASSIVE;
     pair->dtls.ssl = SSL_new(self->dtls.ctx);
 
-    if (!pair->dtls.ssl) goto error;
+    if (!pair->dtls.ssl)
+        goto error;
 
     SSL_set_accept_state(pair->dtls.ssl);
 
     OV_ASSERT(1 == SSL_is_server(pair->dtls.ssl));
 
-    r = SSL_set_tlsext_use_srtp(
-        pair->dtls.ssl, self->public.config.config.dtls.srtp.profile);
-    if (0 != r) goto error;
+    r = SSL_set_tlsext_use_srtp(pair->dtls.ssl,
+                                self->public.config.config.dtls.srtp.profile);
+    if (0 != r)
+        goto error;
 
     pair->dtls.read = BIO_new(BIO_s_mem());
-    if (!pair->dtls.read) goto error;
+    if (!pair->dtls.read)
+        goto error;
 
     pair->dtls.write = dtls_filter_pair_bio_create(pair);
-    if (!pair->dtls.write) goto error;
+    if (!pair->dtls.write)
+        goto error;
 
     BIO_set_mem_eof_return(pair->dtls.read, -1);
     BIO_set_mem_eof_return(pair->dtls.write, -1);
@@ -3197,7 +3243,8 @@ static bool dtls_handshake_passive(ov_ice_proxy *self,
     SSL_set_options(pair->dtls.ssl, SSL_OP_COOKIE_EXCHANGE);
 
     r = BIO_write(pair->dtls.read, buffer, size);
-    if (r < 0) goto error;
+    if (r < 0)
+        goto error;
 
     BIO_ADDR *peer_bio = BIO_ADDR_new();
 
@@ -3230,51 +3277,47 @@ static bool dtls_handshake_passive(ov_ice_proxy *self,
 
         switch (n) {
 
-            case SSL_ERROR_NONE:
-            case SSL_ERROR_WANT_READ:
-            case SSL_ERROR_WANT_CONNECT:
-            case SSL_ERROR_WANT_ACCEPT:
-            case SSL_ERROR_WANT_X509_LOOKUP:
-            case SSL_ERROR_WANT_WRITE:
-                break;
+        case SSL_ERROR_NONE:
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_CONNECT:
+        case SSL_ERROR_WANT_ACCEPT:
+        case SSL_ERROR_WANT_X509_LOOKUP:
+        case SSL_ERROR_WANT_WRITE:
+            break;
 
-            case SSL_ERROR_ZERO_RETURN:
-                // connection close
-                // ov_log_debug("FD %i connection closed", socket);
-                goto error;
-                break;
+        case SSL_ERROR_ZERO_RETURN:
+            // connection close
+            // ov_log_debug("FD %i connection closed", socket);
+            goto error;
+            break;
 
-            case SSL_ERROR_SYSCALL:
+        case SSL_ERROR_SYSCALL:
 
-                ov_log_error(
-                    "SSL_ERROR_SYSCALL - "
-                    "errno %d | %s",
-                    errno,
-                    strerror(errno));
+            ov_log_error("SSL_ERROR_SYSCALL - "
+                         "errno %d | %s",
+                         errno, strerror(errno));
 
-                goto error;
+            goto error;
 
-                break;
+            break;
 
-            case SSL_ERROR_SSL:
+        case SSL_ERROR_SSL:
 
-                errorcode = ERR_get_error();
-                ERR_error_string_n(errorcode,
-                                   errorstring,
-                                   OV_ICE_PROXY_SSL_ERROR_STRING_BUFFER_SIZE);
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_ICE_PROXY_SSL_ERROR_STRING_BUFFER_SIZE);
 
-                ov_log_error(
-                    "socket SSL_ERROR_SSL - "
-                    "%s",
-                    errorstring);
-                goto error;
+            ov_log_error("socket SSL_ERROR_SSL - "
+                         "%s",
+                         errorstring);
+            goto error;
 
-                break;
+            break;
 
-            default:
+        default:
 
-                goto error;
-                break;
+            goto error;
+            break;
         }
     }
 
@@ -3293,30 +3336,34 @@ static bool dtls_io(Pair *pair, uint8_t *buffer, size_t size) {
     int r = 0;
     ssize_t out = 0;
 
-    if (!pair || !buffer || !size) goto error;
+    if (!pair || !buffer || !size)
+        goto error;
 
-    if (!pair->dtls.ssl) goto error;
-    if (!pair->dtls.read) goto error;
+    if (!pair->dtls.ssl)
+        goto error;
+    if (!pair->dtls.read)
+        goto error;
 
     r = BIO_write(pair->dtls.read, buffer, size);
-    if (r < 0) goto error;
+    if (r < 0)
+        goto error;
 
     if (!SSL_is_init_finished(pair->dtls.ssl)) {
 
         switch (pair->dtls.type) {
 
-            case OV_ICE_PROXY_GENERIC_DTLS_PASSIVE:
+        case OV_ICE_PROXY_GENERIC_DTLS_PASSIVE:
 
-                r = SSL_do_handshake(pair->dtls.ssl);
+            r = SSL_do_handshake(pair->dtls.ssl);
 
-                if (SSL_is_init_finished(pair->dtls.ssl)) {
-                    pair->dtls.handshaked = true;
-                }
+            if (SSL_is_init_finished(pair->dtls.ssl)) {
+                pair->dtls.handshaked = true;
+            }
 
-                break;
+            break;
 
-            default:
-                goto error;
+        default:
+            goto error;
         }
 
         get_profile(pair);
@@ -3327,7 +3374,8 @@ static bool dtls_io(Pair *pair, uint8_t *buffer, size_t size) {
         out = SSL_read(pair->dtls.ssl, buf, OV_ICE_PROXY_SSL_BUFFER_SIZE);
         UNUSED(out);
 
-        if (!pair->srtp.profile) get_profile(pair);
+        if (!pair->srtp.profile)
+            get_profile(pair);
     }
 
     return true;
@@ -3337,22 +3385,24 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_external_ssl(ov_ice_proxy *self,
-                            uint8_t *buffer,
-                            size_t size,
+static bool io_external_ssl(ov_ice_proxy *self, uint8_t *buffer, size_t size,
                             const ov_socket_data *remote) {
 
-    if (!self || !buffer || !size || !remote) goto error;
+    if (!self || !buffer || !size || !remote)
+        goto error;
 
     Stream *stream = get_stream_by_remote(self, remote);
-    if (!stream) goto ignore;
+    if (!stream)
+        goto ignore;
 
     Pair *pair = get_pair_by_remote(stream, remote);
-    if (!pair) goto ignore;
+    if (!pair)
+        goto ignore;
 
     if (!pair->dtls.ssl) {
 
-        if (!dtls_handshake_passive(self, pair, buffer, size)) goto ignore;
+        if (!dtls_handshake_passive(self, pair, buffer, size))
+            goto ignore;
 
         goto ignore;
     }
@@ -3367,34 +3417,35 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_external_rtp(ov_ice_proxy *self,
-                            uint8_t *buffer,
-                            size_t size,
+static bool io_external_rtp(ov_ice_proxy *self, uint8_t *buffer, size_t size,
                             const ov_socket_data *remote) {
 
-    if (!self || !buffer || !size || !remote) goto error;
+    if (!self || !buffer || !size || !remote)
+        goto error;
 
     Stream *stream = get_stream_by_remote(self, remote);
-    if (!stream) goto ignore;
+    if (!stream)
+        goto ignore;
 
     int l = size;
 
     srtp_t srtp_session = stream->session->srtp.session;
 
-    if (!srtp_session) goto error;
+    if (!srtp_session)
+        goto error;
 
     srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            // ov_log_debug("SRTP unprotect success");
-            break;
+    case srtp_err_status_ok:
+        // ov_log_debug("SRTP unprotect success");
+        break;
 
-        default:
-            // ov_log_error("SRTP unprotect error");
-            goto ignore;
-            break;
+    default:
+        // ov_log_error("SRTP unprotect error");
+        goto ignore;
+        break;
     }
 
     /* We change the SSRC to the proxy SSRC and forward the RTP Frame
@@ -3409,11 +3460,8 @@ static bool io_external_rtp(ov_ice_proxy *self,
 
     if (proxy->public.config.callbacks.stream.io)
         proxy->public.config.callbacks.stream.io(
-            proxy->public.config.callbacks.userdata,
-            stream->session->uuid,
-            stream->index,
-            buffer,
-            l);
+            proxy->public.config.callbacks.userdata, stream->session->uuid,
+            stream->index, buffer, l);
 
 ignore:
     return true;
@@ -3430,7 +3478,8 @@ static bool io_external(int socket, uint8_t events, void *userdata) {
     socklen_t src_addr_len = sizeof(remote.sa);
 
     ov_ice_proxy *self = as_ice_proxy(userdata);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
@@ -3440,17 +3489,14 @@ static bool io_external(int socket, uint8_t events, void *userdata) {
 
     OV_ASSERT(events & OV_EVENT_IO_IN);
 
-    ssize_t bytes = recvfrom(socket,
-                             (char *)buffer,
-                             OV_UDP_PAYLOAD_OCTETS,
-                             0,
-                             (struct sockaddr *)&remote.sa,
-                             &src_addr_len);
+    ssize_t bytes = recvfrom(socket, (char *)buffer, OV_UDP_PAYLOAD_OCTETS, 0,
+                             (struct sockaddr *)&remote.sa, &src_addr_len);
 
-    if (bytes < 1) goto error;
+    if (bytes < 1)
+        goto error;
 
-    if (!ov_socket_parse_sockaddr_storage(
-            &remote.sa, remote.host, OV_HOST_NAME_MAX, &remote.port))
+    if (!ov_socket_parse_sockaddr_storage(&remote.sa, remote.host,
+                                          OV_HOST_NAME_MAX, &remote.port))
         goto error;
 
     /*  -----------------------------------------------------------------
@@ -3476,7 +3522,8 @@ static bool io_external(int socket, uint8_t events, void *userdata) {
      *      process SSL
      */
 
-    if (buffer[0] <= 3) return io_external_stun(self, buffer, bytes, &remote);
+    if (buffer[0] <= 3)
+        return io_external_stun(self, buffer, bytes, &remote);
 
     if (buffer[0] <= 63 && buffer[0] >= 20) {
 
@@ -3505,50 +3552,38 @@ static bool load_certificates(SSL_CTX *ctx,
                               const ov_ice_proxy_generic_config *config,
                               const char *type) {
 
-    if (!ctx || !config || !type) goto error;
+    if (!ctx || !config || !type)
+        goto error;
 
     if (SSL_CTX_use_certificate_chain_file(ctx, config->config.dtls.cert) !=
         1) {
 
-        ov_log_error(
-            "ICE %s config failure load certificate "
-            "from %s | error %d | %s",
-            type,
-            config->config.dtls.cert,
-            errno,
-            strerror(errno));
+        ov_log_error("ICE %s config failure load certificate "
+                     "from %s | error %d | %s",
+                     type, config->config.dtls.cert, errno, strerror(errno));
         goto error;
     }
 
-    if (SSL_CTX_use_PrivateKey_file(
-            ctx, config->config.dtls.key, SSL_FILETYPE_PEM) != 1) {
+    if (SSL_CTX_use_PrivateKey_file(ctx, config->config.dtls.key,
+                                    SSL_FILETYPE_PEM) != 1) {
 
-        ov_log_error(
-            "ICE %s config failure load key "
-            "from %s | error %d | %s",
-            type,
-            config->config.dtls.key,
-            errno,
-            strerror(errno));
+        ov_log_error("ICE %s config failure load key "
+                     "from %s | error %d | %s",
+                     type, config->config.dtls.key, errno, strerror(errno));
         goto error;
     }
 
     if (SSL_CTX_check_private_key(ctx) != 1) {
 
-        ov_log_error(
-            "ICE %s config failure private key for\n"
-            "CERT | %s\n"
-            " KEY | %s",
-            type,
-            config->config.dtls.cert,
-            config->config.dtls.key);
+        ov_log_error("ICE %s config failure private key for\n"
+                     "CERT | %s\n"
+                     " KEY | %s",
+                     type, config->config.dtls.cert, config->config.dtls.key);
         goto error;
     }
 
-    ov_log_info("ICE loaded %s certificate \n file %s\n key %s\n",
-                type,
-                config->config.dtls.cert,
-                config->config.dtls.key);
+    ov_log_info("ICE loaded %s certificate \n file %s\n key %s\n", type,
+                config->config.dtls.cert, config->config.dtls.key);
 
     return true;
 error:
@@ -3570,11 +3605,11 @@ static bool renew_dtls_keys(uint32_t timer_id, void *data) {
 
     self->timer.dtls_key_renew = self->public.config.loop->timer.set(
         self->public.config.loop,
-        self->public.config.config.dtls.dtls.keys.lifetime_usec,
-        self,
+        self->public.config.config.dtls.dtls.keys.lifetime_usec, self,
         renew_dtls_keys);
 
-    if (OV_TIMER_INVALID == self->timer.dtls_key_renew) goto error;
+    if (OV_TIMER_INVALID == self->timer.dtls_key_renew)
+        goto error;
 
     return true;
 error:
@@ -3587,23 +3622,26 @@ static bool configure_dtls(ov_ice_proxy *self) {
 
     OV_ASSERT(self);
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (!self->dtls.ctx) {
         self->dtls.ctx = SSL_CTX_new(DTLS_server_method());
     }
 
-    if (!self->dtls.ctx) goto error;
+    if (!self->dtls.ctx)
+        goto error;
 
     if (!self->dtls.cookies) {
         self->dtls.cookies = ov_ice_proxy_generic_dtls_cookie_store_create();
-        if (!self->dtls.cookies) goto error;
+        if (!self->dtls.cookies)
+            goto error;
     }
 
     if (OV_TIMER_INVALID != self->timer.dtls_key_renew) {
 
-        self->public.config.loop->timer.unset(
-            self->public.config.loop, self->timer.dtls_key_renew, NULL);
+        self->public.config.loop->timer.unset(self->public.config.loop,
+                                              self->timer.dtls_key_renew, NULL);
     }
 
     self->timer.dtls_key_renew = OV_TIMER_INVALID;
@@ -3620,19 +3658,19 @@ static bool configure_dtls(ov_ice_proxy *self) {
     SSL_CTX_set_min_proto_version(self->dtls.ctx, DTLS1_2_VERSION);
     SSL_CTX_set_max_proto_version(self->dtls.ctx, DTLS1_2_VERSION);
 
-    SSL_CTX_set_cookie_generate_cb(
-        self->dtls.ctx, ov_ice_proxy_generic_dtls_cookie_generate);
+    SSL_CTX_set_cookie_generate_cb(self->dtls.ctx,
+                                   ov_ice_proxy_generic_dtls_cookie_generate);
 
-    SSL_CTX_set_cookie_verify_cb(
-        self->dtls.ctx, ov_ice_proxy_generic_dtls_cookie_verify);
+    SSL_CTX_set_cookie_verify_cb(self->dtls.ctx,
+                                 ov_ice_proxy_generic_dtls_cookie_verify);
 
     self->timer.dtls_key_renew = self->public.config.loop->timer.set(
         self->public.config.loop,
-        self->public.config.config.dtls.dtls.keys.lifetime_usec,
-        self,
+        self->public.config.config.dtls.dtls.keys.lifetime_usec, self,
         renew_dtls_keys);
 
-    if (OV_TIMER_INVALID == self->timer.dtls_key_renew) goto error;
+    if (OV_TIMER_INVALID == self->timer.dtls_key_renew)
+        goto error;
 
     if (0 ==
         SSL_CTX_set_tlsext_use_srtp(
@@ -3659,7 +3697,8 @@ error:
 static ov_ice_proxy_generic *ov_ice_proxy_free(ov_ice_proxy_generic *in) {
 
     ov_ice_proxy *self = as_ice_proxy(in);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->sessions = ov_dict_free(self->sessions);
     self->streams = ov_dict_free(self->streams);
@@ -3677,8 +3716,8 @@ static ov_ice_proxy_generic *ov_ice_proxy_free(ov_ice_proxy_generic *in) {
 
     if (OV_TIMER_INVALID == self->timer.dtls_key_renew) {
 
-        ov_event_loop_timer_unset(
-            self->public.config.loop, self->timer.dtls_key_renew, NULL);
+        ov_event_loop_timer_unset(self->public.config.loop,
+                                  self->timer.dtls_key_renew, NULL);
 
         self->timer.dtls_key_renew = OV_TIMER_INVALID;
     }
@@ -3713,20 +3752,21 @@ error:
 ov_sdp_connection get_connection(ov_ice_proxy *self, ov_sdp_description *desc) {
 
     ov_sdp_connection c = {0};
-    if (!self || !desc) goto error;
+    if (!self || !desc)
+        goto error;
 
     switch (self->local.sa.ss_family) {
 
-        case AF_INET:
-            c.addrtype = "IP4";
-            break;
+    case AF_INET:
+        c.addrtype = "IP4";
+        break;
 
-        case AF_INET6:
-            c.addrtype = "IP6";
-            break;
+    case AF_INET6:
+        c.addrtype = "IP6";
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     desc->media.port = self->local.port;
@@ -3747,13 +3787,15 @@ const char *ov_ice_proxy_create_session(ov_ice_proxy_generic *generic,
     char ssrc[OV_UDP_PAYLOAD_OCTETS] = {0};
     ov_ice_proxy *self = as_ice_proxy(generic);
 
-    if (!self || !sdp) goto error;
+    if (!self || !sdp)
+        goto error;
 
     uint32_t count = ov_node_count(sdp->description);
 
     Stream *stream = NULL;
     Session *session = session_create(self);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     sdp->name = session->uuid;
     sdp->origin.name = "-";
@@ -3764,8 +3806,8 @@ const char *ov_ice_proxy_create_session(ov_ice_proxy_generic *generic,
     sdp->origin.connection.addrtype = "IP4";
     sdp->origin.connection.address = "0.0.0.0";
 
-    if (!ov_sdp_attribute_add(
-            &sdp->attributes, OV_ICE_STRING_OPTIONS, OV_ICE_STRING_TRICKLE))
+    if (!ov_sdp_attribute_add(&sdp->attributes, OV_ICE_STRING_OPTIONS,
+                              OV_ICE_STRING_TRICKLE))
         goto error;
 
     ov_sdp_description *description = NULL;
@@ -3775,12 +3817,14 @@ const char *ov_ice_proxy_create_session(ov_ice_proxy_generic *generic,
     for (size_t i = 0; i < count; i++) {
 
         stream = stream_create(session, i);
-        if (!stream) goto error;
+        if (!stream)
+            goto error;
 
         description = ov_node_get(sdp->description, i + 1);
 
         ov_sdp_list *formats = sdp->description->media.formats;
-        if (ov_node_count(formats) != 1) goto error;
+        if (ov_node_count(formats) != 1)
+            goto error;
         const char *fmt = formats->value;
         ov_convert_string_to_uint16(fmt, strlen(fmt), &stream->format);
 
@@ -3788,30 +3832,29 @@ const char *ov_ice_proxy_create_session(ov_ice_proxy_generic *generic,
          *      Set stream parameter
          */
 
-        if (!ov_sdp_attribute_add(
-                &description->attributes, OV_ICE_STRING_USER, stream->uuid))
+        if (!ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_USER,
+                                  stream->uuid))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_ICE_STRING_PASS,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_PASS,
                                   stream->local.pass))
             goto error;
 
-        if (!ov_sdp_attribute_add(
-                &description->attributes, OV_KEY_SETUP, OV_ICE_STRING_PASSIVE))
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_SETUP,
+                                  OV_ICE_STRING_PASSIVE))
             goto error;
 
-        if (!ov_sdp_attribute_add(
-                &description->attributes, OV_KEY_RTCP_MUX, NULL))
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_RTCP_MUX,
+                                  NULL))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_KEY_FINGERPRINT,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_FINGERPRINT,
                                   self->dtls.fingerprint))
             goto error;
 
         description->connection = ov_sdp_connection_create();
-        if (!description->connection) goto error;
+        if (!description->connection)
+            goto error;
 
         *description->connection = get_connection(self, description);
 
@@ -3823,34 +3866,29 @@ const char *ov_ice_proxy_create_session(ov_ice_proxy_generic *generic,
          *      a persistant uuid.
          */
 
-        if (!memset(ssrc, 0, OV_UDP_PAYLOAD_OCTETS)) goto error;
+        if (!memset(ssrc, 0, OV_UDP_PAYLOAD_OCTETS))
+            goto error;
 
-        if (!snprintf(ssrc,
-                      OV_UDP_PAYLOAD_OCTETS,
-                      "%" PRIu32 " cname:%s",
-                      stream->local.ssrc,
-                      stream->uuid))
+        if (!snprintf(ssrc, OV_UDP_PAYLOAD_OCTETS, "%" PRIu32 " cname:%s",
+                      stream->local.ssrc, stream->uuid))
             goto error;
 
         if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_SSRC, ssrc))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_KEY_CANDIDATE,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_CANDIDATE,
                                   self->candidate.string))
             goto error;
 
         if (self->nat_ip.string) {
 
             if (!ov_sdp_attribute_add(&description->attributes,
-                                      OV_KEY_CANDIDATE,
-                                      self->nat_ip.string))
+                                      OV_KEY_CANDIDATE, self->nat_ip.string))
                 goto error;
         }
 
         if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_ICE_STRING_END_OF_CANDIDATES,
-                                  NULL))
+                                  OV_ICE_STRING_END_OF_CANDIDATES, NULL))
             goto error;
 
         ov_sdp_session_persist(sdp);
@@ -3869,7 +3907,8 @@ static bool ov_ice_proxy_session_drop(ov_ice_proxy_generic *generic,
 
     ov_ice_proxy *self = as_ice_proxy(generic);
 
-    if (!self || !session_id) goto error;
+    if (!self || !session_id)
+        goto error;
 
     return ov_dict_del(self->sessions, session_id);
 error:
@@ -3880,7 +3919,8 @@ error:
 
 static bool sdp_verify_input(Session *session, const ov_sdp_session *sdp) {
 
-    if (!session || !sdp) goto error;
+    if (!session || !sdp)
+        goto error;
 
     if (ov_node_count(sdp->description) != ov_node_count(session->streams))
         goto error;
@@ -3912,9 +3952,11 @@ static bool sdp_verify_input(Session *session, const ov_sdp_session *sdp) {
             sendrecv = true;
 
         if (sendrecv)
-            if (recvonly || sendonly) goto error;
+            if (recvonly || sendonly)
+                goto error;
 
-        if (recvonly && sendonly) goto error;
+        if (recvonly && sendonly)
+            goto error;
 
         desc = ov_node_next(desc);
     }
@@ -3928,13 +3970,16 @@ error:
 
 static bool check_ice_trickle(const ov_sdp_list *attributes, bool *trickle) {
 
-    if (!trickle) return false;
+    if (!trickle)
+        return false;
     *trickle = false;
 
-    if (!attributes) return true;
+    if (!attributes)
+        return true;
 
     const char *ptr = ov_sdp_attribute_get(attributes, OV_ICE_STRING_OPTIONS);
-    if (!ptr) return true;
+    if (!ptr)
+        return true;
 
     if (0 != strcmp(ptr, OV_ICE_STRING_TRICKLE)) {
         return false;
@@ -3950,7 +3995,8 @@ static bool stream_add_candidate(Stream *stream, const ov_ice_candidate *c) {
 
     ov_socket_data remote = {0};
 
-    if (!stream || !c) goto error;
+    if (!stream || !c)
+        goto error;
 
     memcpy(remote.host, c->addr, OV_HOST_NAME_MAX);
     remote.port = c->port;
@@ -3962,17 +4008,18 @@ static bool stream_add_candidate(Stream *stream, const ov_ice_candidate *c) {
 
     if (set) {
 
-        if (set == stream) return true;
+        if (set == stream)
+            return true;
 
         ov_log_debug("Candidate %s:%i already registered for different stream.",
-                     c->addr,
-                     c->port);
+                     c->addr, c->port);
 
         goto error;
     }
 
     Pair *pair = get_pair_by_candidate(stream, c);
-    if (pair) return true;
+    if (pair)
+        return true;
 
     pair = pair_create(stream);
     pair->remote.socket.port = c->port;
@@ -3999,12 +4046,15 @@ static bool ov_ice_proxy_session_update(ov_ice_proxy_generic *generic,
 
     ov_ice_proxy *self = as_ice_proxy(generic);
 
-    if (!self || !session_id || !sdp) goto error;
+    if (!self || !session_id || !sdp)
+        goto error;
 
     Session *session = ov_dict_get(self->sessions, session_id);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
-    if (!sdp_verify_input(session, sdp)) goto error;
+    if (!sdp_verify_input(session, sdp))
+        goto error;
 
     const char *fingerprint = NULL;
     const char *fingerprint_stream = NULL;
@@ -4034,7 +4084,8 @@ static bool ov_ice_proxy_session_update(ov_ice_proxy_generic *generic,
     user_session = ov_sdp_attribute_get(sdp->attributes, OV_ICE_STRING_USER);
     pass_session = ov_sdp_attribute_get(sdp->attributes, OV_ICE_STRING_PASS);
 
-    if (!check_ice_trickle(sdp->attributes, &trickle_session)) goto error;
+    if (!check_ice_trickle(sdp->attributes, &trickle_session))
+        goto error;
 
     ov_sdp_description *desc = sdp->description;
     Stream *stream = session->streams;
@@ -4079,9 +4130,11 @@ static bool ov_ice_proxy_session_update(ov_ice_proxy_generic *generic,
             if (!trickle_stream &&
                 (0 == strcmp(attr->key, OV_ICE_STRING_OPTIONS))) {
 
-                if (NULL == attr->value) goto error;
+                if (NULL == attr->value)
+                    goto error;
 
-                if (0 != strcmp(attr->value, OV_ICE_STRING_TRICKLE)) goto error;
+                if (0 != strcmp(attr->value, OV_ICE_STRING_TRICKLE))
+                    goto error;
 
                 trickle_stream = true;
                 continue;
@@ -4089,19 +4142,21 @@ static bool ov_ice_proxy_session_update(ov_ice_proxy_generic *generic,
 
             if (!cname && (0 == strcmp(attr->key, OV_KEY_SSRC))) {
 
-                if (!attr->value) goto error;
+                if (!attr->value)
+                    goto error;
 
                 cname = memchr(attr->value, ' ', strlen(attr->value));
-                if (!cname) goto error;
+                if (!cname)
+                    goto error;
 
-                if (!ov_convert_string_to_uint32(
-                        attr->value, (cname - attr->value), &ssrc))
+                if (!ov_convert_string_to_uint32(attr->value,
+                                                 (cname - attr->value), &ssrc))
                     goto error;
 
                 cname++;
 
-                ptr = memchr(
-                    cname, ':', strlen(attr->value) - (cname - attr->value));
+                ptr = memchr(cname, ':',
+                             strlen(attr->value) - (cname - attr->value));
                 if (!ptr) {
                     cname = NULL;
                     ssrc = 0;
@@ -4125,20 +4180,24 @@ static bool ov_ice_proxy_session_update(ov_ice_proxy_generic *generic,
 
         /* Step2 - check required attributes are set */
 
-        if (!trickle_session && !trickle_stream) goto error;
+        if (!trickle_session && !trickle_stream)
+            goto error;
 
         if (!user) {
 
-            if (pass) goto error;
+            if (pass)
+                goto error;
 
-            if (!user_session || !pass_session) goto error;
+            if (!user_session || !pass_session)
+                goto error;
 
             user = user_session;
             pass = pass_session;
 
         } else {
 
-            if (!pass) goto error;
+            if (!pass)
+                goto error;
         }
 
         if (fingerprint_stream) {
@@ -4147,35 +4206,39 @@ static bool ov_ice_proxy_session_update(ov_ice_proxy_generic *generic,
             fingerprint = fingerprint_session;
         }
 
-        if (!setup || !fingerprint) goto error;
+        if (!setup || !fingerprint)
+            goto error;
 
-        if (0 == ssrc) goto error;
+        if (0 == ssrc)
+            goto error;
 
         stream->remote.ssrc = ssrc;
-        if (end_of_candidates) stream->remote.gathered = true;
+        if (end_of_candidates)
+            stream->remote.gathered = true;
 
         strncpy(stream->remote.user, user, OV_ICE_UFRAG_MAX);
         strncpy(stream->remote.pass, pass, OV_ICE_PASS_MAX);
-        strncpy(stream->remote.fingerprint,
-                fingerprint,
+        strncpy(stream->remote.fingerprint, fingerprint,
                 OV_ICE_DTLS_FINGERPRINT_MAX);
 
         /* Step3 - add ICE candidates */
 
         const char *value = NULL;
 
-        while (ov_sdp_attributes_iterate(
-            &desc->attributes, OV_ICE_STRING_CANDIDATE, &value)) {
+        while (ov_sdp_attributes_iterate(&desc->attributes,
+                                         OV_ICE_STRING_CANDIDATE, &value)) {
 
             ov_ice_candidate *c =
                 ov_ice_candidate_from_string(value, strlen(value));
-            if (!c) continue;
+            if (!c)
+                continue;
 
             stream_add_candidate(stream, c);
             c = ov_ice_candidate_free(c);
         }
 
-        if (end_of_candidates) stream->remote.gathered = true;
+        if (end_of_candidates)
+            stream->remote.gathered = true;
 
         stream_order(stream);
         stream_prune(stream);
@@ -4192,23 +4255,25 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool ov_ice_proxy_stream_candidate_in(
-    ov_ice_proxy_generic *generic,
-    const char *session_id,
-    uint32_t stream_id,
-    const ov_ice_candidate *candidate) {
+static bool
+ov_ice_proxy_stream_candidate_in(ov_ice_proxy_generic *generic,
+                                 const char *session_id, uint32_t stream_id,
+                                 const ov_ice_candidate *candidate) {
 
     ov_ice_proxy *self = as_ice_proxy(generic);
-    if (!self || !session_id || !candidate) goto error;
+    if (!self || !session_id || !candidate)
+        goto error;
 
     Session *session = ov_dict_get(self->sessions, session_id);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     OV_ASSERT(session->proxy);
     OV_ASSERT(session->proxy == self);
 
     Stream *stream = ov_node_get(session->streams, stream_id + 1);
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     OV_ASSERT(stream->session == session);
     OV_ASSERT(stream->session->proxy == self);
@@ -4225,13 +4290,16 @@ static bool ov_ice_proxy_stream_end_of_candidates_in(
     ov_ice_proxy_generic *generic, const char *session_id, uint32_t stream_id) {
 
     ov_ice_proxy *self = as_ice_proxy(generic);
-    if (!self || !session_id) goto error;
+    if (!self || !session_id)
+        goto error;
 
     Session *session = ov_dict_get(self->sessions, session_id);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     Stream *stream = ov_node_get(session->streams, stream_id + 1);
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     stream->remote.gathered = true;
     return true;
@@ -4247,13 +4315,16 @@ static uint32_t ov_ice_proxy_stream_get_ssrc(ov_ice_proxy_generic *generic,
                                              uint32_t stream_id) {
 
     ov_ice_proxy *self = as_ice_proxy(generic);
-    if (!self || !uuid) goto error;
+    if (!self || !uuid)
+        goto error;
 
     Session *session = ov_dict_get(self->sessions, uuid);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     Stream *stream = ov_node_get(session->streams, stream_id + 1);
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     return stream->local.ssrc;
 error:
@@ -4264,24 +4335,29 @@ error:
 
 static ssize_t ov_ice_proxy_stream_send(ov_ice_proxy_generic *generic,
                                         const char *session_id,
-                                        uint32_t stream_id,
-                                        uint8_t *buffer,
+                                        uint32_t stream_id, uint8_t *buffer,
                                         size_t bytes) {
 
     ov_ice_proxy *self = as_ice_proxy(generic);
-    if (!self || !session_id || !buffer || !bytes) goto error;
+    if (!self || !session_id || !buffer || !bytes)
+        goto error;
 
     Session *session = ov_dict_get(self->sessions, session_id);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     Stream *stream = ov_node_get(session->streams, stream_id + 1);
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
-    if (!stream->selected) goto error;
-    if (!session->srtp.session) goto error;
+    if (!stream->selected)
+        goto error;
+    if (!session->srtp.session)
+        goto error;
 
     srtp_t srtp_session = session->srtp.session;
-    if (!srtp_session) goto error;
+    if (!srtp_session)
+        goto error;
 
     uint32_t u32 = htonl(stream->local.ssrc);
     memcpy(buffer + 8, &u32, 4);
@@ -4296,13 +4372,13 @@ static ssize_t ov_ice_proxy_stream_send(ov_ice_proxy_generic *generic,
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            break;
+    case srtp_err_status_ok:
+        break;
 
-        default:
-            ov_log_error("SRTP protect error %i", r);
-            goto error;
-            break;
+    default:
+        ov_log_error("SRTP protect error %i", r);
+        goto error;
+        break;
     }
 
     return pair_send(stream->selected, buffer, out);
@@ -4313,17 +4389,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_ice_proxy_generic *ov_ice_proxy_multiplexing_create(
-    ov_ice_proxy_generic_config config) {
+ov_ice_proxy_generic *
+ov_ice_proxy_multiplexing_create(ov_ice_proxy_generic_config config) {
 
     ov_ice_proxy *self = NULL;
 
-    if (!ov_cond_valid(
-            init_config(&config), "Cannot create ICE Proxy - Config invalid"))
+    if (!ov_cond_valid(init_config(&config),
+                       "Cannot create ICE Proxy - Config invalid"))
         goto error;
 
     self = calloc(1, sizeof(ov_ice_proxy));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->public.magic_bytes = OV_ICE_PROXY_GENERIC_MAGIC_BYTES;
     self->public.type = OV_ICE_PROXY_MAGIC_BYTES;
@@ -4340,8 +4417,7 @@ ov_ice_proxy_generic *ov_ice_proxy_multiplexing_create(
 
     if (!ov_cond_valid(
             create_fingerprint_cert(self->public.config.config.dtls.cert,
-                                    OV_HASH_SHA256,
-                                    self->dtls.fingerprint),
+                                    OV_HASH_SHA256, self->dtls.fingerprint),
             "Cannot create ICE Proxy - Could not create fingerprint cert"))
         goto error;
 
@@ -4354,8 +4430,7 @@ ov_ice_proxy_generic *ov_ice_proxy_multiplexing_create(
                      self->public.config.external.port);
         goto error;
     }
-    ov_log_debug("opened socket %s:%i",
-                 self->public.config.external.host,
+    ov_log_debug("opened socket %s:%i", self->public.config.external.host,
                  self->public.config.external.port);
 
     uint8_t event = OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE;
@@ -4366,26 +4441,29 @@ ov_ice_proxy_generic *ov_ice_proxy_multiplexing_create(
     ov_dict_config d_config = ov_dict_string_key_config(255);
 
     self->remote = ov_dict_create(d_config);
-    if (!self->remote) goto error;
+    if (!self->remote)
+        goto error;
 
     self->streams = ov_dict_create(d_config);
-    if (!self->streams) goto error;
+    if (!self->streams)
+        goto error;
 
     d_config.value.data_function.free = session_free;
     self->sessions = ov_dict_create(d_config);
-    if (!self->sessions) goto error;
+    if (!self->sessions)
+        goto error;
 
     d_config.value.data_function.free = transaction_free;
     self->transactions = ov_dict_create(d_config);
-    if (!self->transactions) goto error;
+    if (!self->transactions)
+        goto error;
 
-    self->timer.transactions_invalidate =
-        ov_event_loop_timer_set(config.loop,
-                                config.config.limits.transaction_lifetime_usecs,
-                                self,
-                                invalidate_transactions);
+    self->timer.transactions_invalidate = ov_event_loop_timer_set(
+        config.loop, config.config.limits.transaction_lifetime_usecs, self,
+        invalidate_transactions);
 
-    if (OV_TIMER_INVALID == self->timer.transactions_invalidate) goto error;
+    if (OV_TIMER_INVALID == self->timer.transactions_invalidate)
+        goto error;
 
     ov_socket_get_data(self->socket, &self->local, NULL);
     self->candidate.type = OV_ICE_HOST;
@@ -4401,7 +4479,8 @@ ov_ice_proxy_generic *ov_ice_proxy_multiplexing_create(
     self->candidate.port = self->local.port;
 
     self->candidate.string = ov_ice_candidate_to_string(&self->candidate);
-    if (!self->candidate.string) goto error;
+    if (!self->candidate.string)
+        goto error;
 
     self->public.free = ov_ice_proxy_free;
 

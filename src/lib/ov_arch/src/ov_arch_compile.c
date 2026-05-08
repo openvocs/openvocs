@@ -40,10 +40,8 @@
 
 #include <execinfo.h>
 
-static char *frame_to_string(char *target,
-                             const size_t max_bytes,
-                             void const *address,
-                             char const *symbol) {
+static char *frame_to_string(char *target, const size_t max_bytes,
+                             void const *address, char const *symbol) {
 
     if (0 == target) {
         abort();
@@ -63,8 +61,7 @@ static char *frame_to_string(char *target,
 /*----------------------------------------------------------------------------*/
 
 static char *backtrace_to_string(void const **addresses,
-                                 char const *const *symbols,
-                                 size_t num) {
+                                 char const *const *symbols, size_t num) {
 
     char *bt = calloc(num + 1, MAX_FRAME_LENGTH);
     char *bt_copy = calloc(num + 1, MAX_FRAME_LENGTH);
@@ -76,10 +73,7 @@ static char *backtrace_to_string(void const **addresses,
     for (size_t i = 0; i < num; ++i) {
 
         snprintf(
-            bt,
-            max_len_bytes,
-            "%s\n%s",
-            bt_copy,
+            bt, max_len_bytes, "%s\n%s", bt_copy,
             frame_to_string(frame, MAX_FRAME_LENGTH, addresses[i], symbols[i]));
 
         strcpy(bt_copy, bt);
@@ -99,9 +93,9 @@ char *ov_arch_compile_backtrace(size_t max_frames) {
     size_t actual_no_frames = backtrace(addresses, max_frames);
     char **symbols = backtrace_symbols(addresses, actual_no_frames);
 
-    char *backtrace = backtrace_to_string((void const **)addresses,
-                                          (char const *const *)symbols,
-                                          actual_no_frames);
+    char *backtrace =
+        backtrace_to_string((void const **)addresses,
+                            (char const *const *)symbols, actual_no_frames);
 
     free(symbols);
     free(addresses);

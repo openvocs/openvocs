@@ -66,7 +66,7 @@ var ov_admin = {
                 JSON.stringify(msg.response, null, 2);
                 break;
 
-            case "state_session":
+            case "get_mixer_state":
                 document.getElementById('state').innerHTML =
                 JSON.stringify(msg.response, null, 2);
                 break;
@@ -138,16 +138,16 @@ var ov_admin = {
 
     },
 
-    session_state: function(session_id){
+    get_mixer_state: function(user_id){
 
         let request = {
             uuid : this.create_uuid(),
             client: this.client,
-            event: "state_session",
+            event: "get_mixer_state",
             parameter: {}
         }
 
-        request.parameter.session = session_id;
+        request.parameter.user = user_id;
         ov_websocket.send(JSON.stringify(request));
 
     },

@@ -55,22 +55,24 @@ int main(int argc, char *argv[]) {
 
     ov_source_file_config config = {0};
 
-    if (!ov_source_file_read_user_input(
-            argc, argv, &config, OV_SOURCE_FILE_NAME)) {
+    if (!ov_source_file_read_user_input(argc, argv, &config,
+                                        OV_SOURCE_FILE_NAME)) {
         fprintf(stderr, "Failed to read user input\n");
         goto error;
     }
 
     if (!config.copyright.author) {
 
-        if (!ov_source_file_get_git_author(buffer, size)) goto error;
+        if (!ov_source_file_get_git_author(buffer, size))
+            goto error;
 
         config.copyright.author = buffer;
     }
 
     if (!config.project.path) {
 
-        if (!getcwd(path, PATH_MAX)) goto error;
+        if (!getcwd(path, PATH_MAX))
+            goto error;
 
         config.project.path = path;
     }
@@ -79,16 +81,17 @@ int main(int argc, char *argv[]) {
 
     config.project.url = "https://openvocs.org";
     config.copyright.owner = "German Aerospace Center DLR e.V. (GSOC)";
-    config.copyright.note =
-        "This file is part of the openvocs project. "
-        "https://openvocs.org";
+    config.copyright.note = "This file is part of the openvocs project. "
+                            "https://openvocs.org";
 
     if (!config.project.create) {
 
-        if (!ov_source_file_create_source_files(&config)) goto error;
+        if (!ov_source_file_create_source_files(&config))
+            goto error;
     } else {
 
-        if (!ov_source_file_create_project(&config)) goto error;
+        if (!ov_source_file_create_project(&config))
+            goto error;
     }
 
     return EXIT_SUCCESS;

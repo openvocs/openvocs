@@ -53,9 +53,11 @@
 
 bool check_hostname_localhost(const char *name) {
 
-    if (0 == strncmp(name, "127.0.0.1", strlen("127.0.0.1"))) return true;
+    if (0 == strncmp(name, "127.0.0.1", strlen("127.0.0.1")))
+        return true;
 
-    if (0 == strncmp(name, "::1", strlen("::1"))) return true;
+    if (0 == strncmp(name, "::1", strlen("::1")))
+        return true;
 
     return false;
 }
@@ -118,7 +120,8 @@ int test_ov_socket_create() {
     testrun(0 == getsockopt(socket, SOL_SOCKET, SO_TYPE, &so_opt, &so_len));
     testrun(so_opt == SOCK_DGRAM);
     testrun(0 == getsockname(socket, (struct sockaddr *)&ss, &ss_len));
-    if (AF_INET != ss.ss_family) testrun(AF_INET6 == ss.ss_family);
+    if (AF_INET != ss.ss_family)
+        testrun(AF_INET6 == ss.ss_family);
     sock4 = (struct sockaddr_in *)&ss;
     testrun(i == ntohs(sock4->sin_port));
     testrun(0 != inet_ntop(AF_INET, &sock4->sin_addr, ip, INET6_ADDRSTRLEN));
@@ -154,7 +157,8 @@ int test_ov_socket_create() {
     testrun(0 == getsockopt(socket, SOL_SOCKET, SO_TYPE, &so_opt, &so_len));
     testrun(so_opt == SOCK_DGRAM);
     testrun(0 == getsockname(socket, (struct sockaddr *)&ss, &ss_len));
-    if (AF_INET != ss.ss_family) testrun(AF_INET6 == ss.ss_family);
+    if (AF_INET != ss.ss_family)
+        testrun(AF_INET6 == ss.ss_family);
     sock4 = (struct sockaddr_in *)&ss;
     testrun(i == ntohs(sock4->sin_port));
     testrun(0 != inet_ntop(AF_INET, &sock4->sin_addr, ip, INET6_ADDRSTRLEN));
@@ -709,7 +713,8 @@ int test_ov_socket_create_at_interface() {
     testrun(getifaddrs(&ifaddr) != -1);
     for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
 
-        if (ifa->ifa_addr == NULL) continue;
+        if (ifa->ifa_addr == NULL)
+            continue;
 
         family = ifa->ifa_addr->sa_family;
         if (family == AF_INET || family == AF_INET6) {
@@ -876,36 +881,36 @@ int test_ov_socket_get_config() {
     pid_t pid1 = -1;
 
     switch (pid1 = fork()) {
-        case -1: // failure fork
-            testrun(1 == 0, "failure fork");
-            break;
+    case -1: // failure fork
+        testrun(1 == 0, "failure fork");
+        break;
 
-        case 0:
-            // child1
-            // let the socket run here
-            return 0;
-            break;
-        default:
-            // parent
-            // create client config from server
+    case 0:
+        // child1
+        // let the socket run here
+        return 0;
+        break;
+    default:
+        // parent
+        // create client config from server
 
-            client = ov_socket_create(cfg_client, true, &err);
-            testrun(client);
-            testrun(ov_socket_get_config(client, &loc, &rem, &err));
-            testrun(loc.type == cfg_client.type);
-            testrun(check_hostname_localhost(loc.host));
-            testrun(loc.port > 0);
-            testrun(rem.type == loc.type);
-            testrun(check_hostname_localhost(rem.host));
-            testrun(rem.port == cfg_client.port);
+        client = ov_socket_create(cfg_client, true, &err);
+        testrun(client);
+        testrun(ov_socket_get_config(client, &loc, &rem, &err));
+        testrun(loc.type == cfg_client.type);
+        testrun(check_hostname_localhost(loc.host));
+        testrun(loc.port > 0);
+        testrun(rem.type == loc.type);
+        testrun(check_hostname_localhost(rem.host));
+        testrun(rem.port == cfg_client.port);
 
-            close(socket);
-            close(client);
+        close(socket);
+        close(client);
 
-            kill(pid1, SIGKILL);
+        kill(pid1, SIGKILL);
 
-            return testrun_log_success();
-            break;
+        return testrun_log_success();
+        break;
     }
 
     return testrun_log_success();
@@ -967,44 +972,44 @@ int test_ov_socket_get_sockaddr_storage() {
     pid_t pid1 = -1;
 
     switch (pid1 = fork()) {
-        case -1: // failure fork
-            testrun(1 == 0, "failure fork");
-            break;
+    case -1: // failure fork
+        testrun(1 == 0, "failure fork");
+        break;
 
-        case 0:
-            // child1
-            // let the socket run here
-            return 0;
-            break;
-        default:
-            // parent
-            // create client
+    case 0:
+        // child1
+        // let the socket run here
+        return 0;
+        break;
+    default:
+        // parent
+        // create client
 
-            client = ov_socket_create(cfg_client, true, &err);
-            testrun(client);
+        client = ov_socket_create(cfg_client, true, &err);
+        testrun(client);
 
-            testrun(ov_socket_get_sockaddr_storage(client, &loc, &rem, &err));
-            // quick check with parse
-            memset(ip, 0, OV_HOST_NAME_MAX);
-            port = 0;
-            testrun(ov_socket_parse_sockaddr_storage(
-                &loc, ip, OV_HOST_NAME_MAX, &port));
-            testrun(port > 0);
-            testrun(check_hostname_localhost(ip));
-            memset(ip, 0, OV_HOST_NAME_MAX);
-            port = 0;
-            testrun(ov_socket_parse_sockaddr_storage(
-                &rem, ip, OV_HOST_NAME_MAX, &port));
-            testrun(port > 0);
-            testrun(check_hostname_localhost(ip));
+        testrun(ov_socket_get_sockaddr_storage(client, &loc, &rem, &err));
+        // quick check with parse
+        memset(ip, 0, OV_HOST_NAME_MAX);
+        port = 0;
+        testrun(ov_socket_parse_sockaddr_storage(&loc, ip, OV_HOST_NAME_MAX,
+                                                 &port));
+        testrun(port > 0);
+        testrun(check_hostname_localhost(ip));
+        memset(ip, 0, OV_HOST_NAME_MAX);
+        port = 0;
+        testrun(ov_socket_parse_sockaddr_storage(&rem, ip, OV_HOST_NAME_MAX,
+                                                 &port));
+        testrun(port > 0);
+        testrun(check_hostname_localhost(ip));
 
-            close(socket);
-            close(client);
+        close(socket);
+        close(client);
 
-            kill(pid1, SIGKILL);
+        kill(pid1, SIGKILL);
 
-            return testrun_log_success();
-            break;
+        return testrun_log_success();
+        break;
     }
 
     return testrun_log_success();
@@ -1051,14 +1056,12 @@ int test_ov_socket_parse_sockaddr_storage() {
     s.ss_family = AF_INET6;
     sock6->sin6_family = AF_INET6;
     sock6->sin6_port = htons(1234);
-    testrun(1 == inet_pton(AF_INET6,
-                           "2001:db8:85a3:8d3:1319:8a2e:370:7348",
+    testrun(1 == inet_pton(AF_INET6, "2001:db8:85a3:8d3:1319:8a2e:370:7348",
                            &sock6->sin6_addr));
 
     testrun(ov_socket_parse_sockaddr_storage(&s, ip, INET6_ADDRSTRLEN, &port));
     testrun(port == 1234);
-    testrun(0 == strncmp(ip,
-                         "2001:db8:85a3:8d3:1319:8a2e:370:7348",
+    testrun(0 == strncmp(ip, "2001:db8:85a3:8d3:1319:8a2e:370:7348",
                          strlen("2001:db8:85a3:8d3:1319:8a2e:370:7348")));
 
     // AF_INET
@@ -1108,14 +1111,12 @@ int test_ov_socket_data_from_sockaddr_storage() {
     s.ss_family = AF_INET6;
     sock6->sin6_family = AF_INET6;
     sock6->sin6_port = htons(1234);
-    testrun(1 == inet_pton(AF_INET6,
-                           "2001:db8:85a3:8d3:1319:8a2e:370:7348",
+    testrun(1 == inet_pton(AF_INET6, "2001:db8:85a3:8d3:1319:8a2e:370:7348",
                            &sock6->sin6_addr));
 
     data = ov_socket_data_from_sockaddr_storage(&s);
     testrun(1234 == data.port);
-    testrun(0 == strncmp(data.host,
-                         "2001:db8:85a3:8d3:1319:8a2e:370:7348",
+    testrun(0 == strncmp(data.host, "2001:db8:85a3:8d3:1319:8a2e:370:7348",
                          strlen("2001:db8:85a3:8d3:1319:8a2e:370:7348")));
 
     // AF_INET
@@ -1214,8 +1215,7 @@ int test_ov_socket_fill_sockaddr_storage() {
     testrun(sock6->sin6_flowinfo == 0);
     testrun(sock6->sin6_scope_id == 0);
     testrun(inet_ntop(AF_INET6, &sock6->sin6_addr, data, INET6_ADDRSTRLEN));
-    testrun(0 == strncmp(ip,
-                         "2001:db8:85a3:8d3:1319:8a2e:370:7348",
+    testrun(0 == strncmp(ip, "2001:db8:85a3:8d3:1319:8a2e:370:7348",
                          strlen("2001:db8:85a3:8d3:1319:8a2e:370:7348")));
 
     // AF_INET
@@ -1351,12 +1351,10 @@ int test_ov_socket_configuration_to_json() {
     testrun(ov_socket_configuration_to_json(config, &value));
     testrun(value);
     testrun(0 == strncmp(ov_json_string_get(ov_json_get(value, "/host")),
-                         "localhost",
-                         strlen("localhost")));
+                         "localhost", strlen("localhost")));
     testrun(123 == ov_json_number_get(ov_json_get(value, "/port")));
     testrun(0 == strncmp(ov_json_string_get(ov_json_get(value, "/type")),
-                         "DTLS",
-                         4));
+                         "DTLS", 4));
 
     memset(config.host, 0, OV_HOST_NAME_MAX);
     config.port = 63333;
@@ -1573,8 +1571,8 @@ int test_ov_socket_log() {
     close(client);
     close(server);
 
-    config = (ov_socket_configuration){
-        .type = LOCAL, .host = "/tmp/some_unix_socket"};
+    config = (ov_socket_configuration){.type = LOCAL,
+                                       .host = "/tmp/some_unix_socket"};
 
     server = ov_socket_create(config, false, NULL);
 
@@ -1708,14 +1706,8 @@ int test_ov_socket_generate_5tuple() {
     testrun(!ov_socket_generate_5tuple(&dest, NULL, server, &remote));
     testrun(!ov_socket_generate_5tuple(&dest, &dest_len, server, NULL));
 
-    testrun(snprintf(expect,
-                     max,
-                     "%s:%i%s%s:%i",
-                     socket_config.host,
-                     socket_config.port,
-                     transport,
-                     remote.host,
-                     remote.port));
+    testrun(snprintf(expect, max, "%s:%i%s%s:%i", socket_config.host,
+                     socket_config.port, transport, remote.host, remote.port));
 
     testrun(ov_socket_generate_5tuple(&dest, &dest_len, server, &remote));
     testrun(dest);
@@ -1733,14 +1725,8 @@ int test_ov_socket_generate_5tuple() {
     testrun(ov_socket_get_data(client, &remote, NULL));
     transport = ov_socket_transport_to_string(socket_config.type);
 
-    testrun(snprintf(expect,
-                     max,
-                     "%s:%i%s%s:%i",
-                     socket_config.host,
-                     socket_config.port,
-                     transport,
-                     remote.host,
-                     remote.port));
+    testrun(snprintf(expect, max, "%s:%i%s%s:%i", socket_config.host,
+                     socket_config.port, transport, remote.host, remote.port));
 
     testrun(ov_socket_generate_5tuple(&dest, &dest_len, server, &remote));
     testrun(dest);
@@ -2171,40 +2157,24 @@ static int test_ov_socket_state_to_json() {
 }
 
 /*----------------------------------------------------------------------------*/
-OV_TEST_RUN("ov_socket",
-            test_ov_socket_create,
-            test_ov_socket_close,
-            test_ov_socket_close_local,
-            test_ov_socket_set_dont_fragment,
-            test_ov_socket_ensure_nonblocking,
-            test_ov_socket_set_reuseaddress,
-            test_ov_socket_create_at_interface,
-            test_ov_socket_config_from_sockaddr_storage,
-            test_ov_socket_get_config,
-            test_ov_socket_get_sockaddr_storage,
-            test_ov_socket_parse_sockaddr_storage,
-            test_ov_socket_data_from_sockaddr_storage,
-            test_ov_socket_fill_sockaddr_storage,
-            test_ov_socket_configuration_from_json,
-            test_ov_socket_configuration_to_json,
-            test_ov_socket_configuration_equals,
-            test_ov_socket_transport_parse_string,
-            test_ov_socket_transport_from_string,
-            test_ov_socket_transport_to_string,
-            test_ov_socket_data_to_string,
-            test_ov_socket_log_error_with_config,
-            test_ov_socket_log,
-            test_ov_socket_configuration_list,
-            test_ov_socket_get_data,
-            test_ov_socket_get_data,
-            test_ov_socket_generate_5tuple,
-            test_ov_socket_is_dgram,
-            test_ov_socket_connect,
-            test_ov_socket_unconnect,
-            test_ov_socket_open_server,
-            test_ov_socket_destination_address_type,
-            test_ov_socket_get_send_buffer_size,
-            test_ov_socket_get_recv_buffer_size,
-            test_ov_socket_configuration_to_sockaddr,
-            test_ov_socket_state_from_handle,
-            test_ov_socket_state_to_json);
+OV_TEST_RUN(
+    "ov_socket", test_ov_socket_create, test_ov_socket_close,
+    test_ov_socket_close_local, test_ov_socket_set_dont_fragment,
+    test_ov_socket_ensure_nonblocking, test_ov_socket_set_reuseaddress,
+    test_ov_socket_create_at_interface,
+    test_ov_socket_config_from_sockaddr_storage, test_ov_socket_get_config,
+    test_ov_socket_get_sockaddr_storage, test_ov_socket_parse_sockaddr_storage,
+    test_ov_socket_data_from_sockaddr_storage,
+    test_ov_socket_fill_sockaddr_storage,
+    test_ov_socket_configuration_from_json,
+    test_ov_socket_configuration_to_json, test_ov_socket_configuration_equals,
+    test_ov_socket_transport_parse_string, test_ov_socket_transport_from_string,
+    test_ov_socket_transport_to_string, test_ov_socket_data_to_string,
+    test_ov_socket_log_error_with_config, test_ov_socket_log,
+    test_ov_socket_configuration_list, test_ov_socket_get_data,
+    test_ov_socket_get_data, test_ov_socket_generate_5tuple,
+    test_ov_socket_is_dgram, test_ov_socket_connect, test_ov_socket_unconnect,
+    test_ov_socket_open_server, test_ov_socket_destination_address_type,
+    test_ov_socket_get_send_buffer_size, test_ov_socket_get_recv_buffer_size,
+    test_ov_socket_configuration_to_sockaddr, test_ov_socket_state_from_handle,
+    test_ov_socket_state_to_json);

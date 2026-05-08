@@ -31,16 +31,20 @@
 
 bool ov_turn_attr_is_even_port(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 8) goto error;
+    if (!buffer || length < 8)
+        goto error;
 
     uint16_t type = ov_stun_attribute_get_type(buffer, length);
     int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != TURN_EVEN_PORT) goto error;
+    if (type != TURN_EVEN_PORT)
+        goto error;
 
-    if (size != 4) goto error;
+    if (size != 4)
+        goto error;
 
-    if (length < (size_t)size + 4) goto error;
+    if (length < (size_t)size + 4)
+        goto error;
 
     return true;
 
@@ -60,40 +64,43 @@ size_t ov_turn_attr_even_port_encoding_length() { return 8; }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_attr_even_port_encode(uint8_t *buffer,
-                                   size_t length,
-                                   uint8_t **next,
-                                   bool set) {
+bool ov_turn_attr_even_port_encode(uint8_t *buffer, size_t length,
+                                   uint8_t **next, bool set) {
 
-    if (!buffer) goto error;
+    if (!buffer)
+        goto error;
 
     size_t len = ov_turn_attr_even_port_encoding_length();
 
-    if (length < len) goto error;
+    if (length < len)
+        goto error;
 
     uint8_t buf[4] = {0};
 
-    if (set) buf[0] = 0x80;
+    if (set)
+        buf[0] = 0x80;
 
-    return ov_stun_attribute_encode(
-        buffer, length, next, TURN_EVEN_PORT, buf, 4);
+    return ov_stun_attribute_encode(buffer, length, next, TURN_EVEN_PORT, buf,
+                                    4);
 error:
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_attr_even_port_decode(const uint8_t *buffer,
-                                   size_t length,
+bool ov_turn_attr_even_port_decode(const uint8_t *buffer, size_t length,
                                    bool *set) {
 
-    if (!buffer || length < 8 || !set) goto error;
+    if (!buffer || length < 8 || !set)
+        goto error;
 
-    if (!ov_turn_attr_is_even_port(buffer, length)) goto error;
+    if (!ov_turn_attr_is_even_port(buffer, length))
+        goto error;
 
     *set = false;
 
-    if (buffer[4] & 0x80) *set = true;
+    if (buffer[4] & 0x80)
+        *set = true;
 
     return true;
 error:

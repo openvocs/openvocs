@@ -64,12 +64,8 @@
         Log a failure. Failure: Inability to perform a function as expected.
 */
 #define testrun_log_failure(msg, ...)                                          \
-    fprintf(stderr,                                                            \
-            "\t[FAIL]\t%s line:%d errno:%s message: " msg "\n",                \
-            __FUNCTION__,                                                      \
-            __LINE__,                                                          \
-            testrun_errno(),                                                   \
-            ##__VA_ARGS__)
+    fprintf(stderr, "\t[FAIL]\t%s line:%d errno:%s message: " msg "\n",        \
+            __FUNCTION__, __LINE__, testrun_errno(), ##__VA_ARGS__)
 
 /*----------------------------------------------------------------------------*/
 
@@ -77,12 +73,8 @@
         Log an error. Error: Difference between expected and actual result.
 */
 #define testrun_log_error(msg, ...)                                            \
-    fprintf(stderr,                                                            \
-            "\t[ERROR]\t%s line:%d errno:%s message: " msg "\n",               \
-            __FUNCTION__,                                                      \
-            __LINE__,                                                          \
-            testrun_errno(),                                                   \
-            ##__VA_ARGS__)
+    fprintf(stderr, "\t[ERROR]\t%s line:%d errno:%s message: " msg "\n",       \
+            __FUNCTION__, __LINE__, testrun_errno(), ##__VA_ARGS__)
 
 /*----------------------------------------------------------------------------*/
 
@@ -96,19 +88,14 @@
 /*----------------------------------------------------------------------------*/
 
 #define testrun_log_function_info(msg, ...)                                    \
-    fprintf(stdout,                                                            \
-            "\t[INFO] \t%s line:%d message: " msg "\n",                        \
-            __FUNCTION__,                                                      \
-            __LINE__,                                                          \
-            ##__VA_ARGS__)
+    fprintf(stdout, "\t[INFO] \t%s line:%d message: " msg "\n", __FUNCTION__,  \
+            __LINE__, ##__VA_ARGS__)
 
 /*----------------------------------------------------------------------------*/
 
 #define testrun_log_clock(start, end)                                          \
-    fprintf(stdout,                                                            \
-            "\tClock ticks function: ( %s ) | %f s | %.0f ms \n",              \
-            __func__,                                                          \
-            ((double)(end - start)) / CLOCKS_PER_SEC,                          \
+    fprintf(stdout, "\tClock ticks function: ( %s ) | %f s | %.0f ms \n",      \
+            __func__, ((double)(end - start)) / CLOCKS_PER_SEC,                \
             (((double)(end - start)) / CLOCKS_PER_SEC) * 1000)
 
 /*----------------------------------------------------------------------------*/
@@ -155,7 +142,8 @@
 #define testrun_test(test)                                                     \
     result = test();                                                           \
     testrun_counter++;                                                         \
-    if (result < 0) return result;
+    if (result < 0)                                                            \
+        return result;
 
 /**
         Runs a function pointer, which SHALL contain the test function pointers
@@ -213,10 +201,10 @@
         }                                                                      \
         end_t = clock();                                                       \
         testrun_log("ALL TESTS RUN - %zu/%zu succeeded",                       \
-                    tests_run - tests_failed,                                  \
-                    tests_run);                                                \
+                    tests_run - tests_failed, tests_run);                      \
         testrun_log_clock(start_t, end_t);                                     \
-        if (tests_failed != 0) exit(EXIT_FAILURE);                             \
+        if (tests_failed != 0)                                                 \
+            exit(EXIT_FAILURE);                                                \
         result = result >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;                    \
         exit(result);                                                          \
     }

@@ -51,29 +51,34 @@ static uint32_t create_ssrc() {
 ov_ice_stream *ov_ice_stream_create(ov_ice_session *session, int index) {
 
     ov_ice_stream *stream = NULL;
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     stream = calloc(1, sizeof(ov_ice_stream));
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     stream->node.type = OV_ICE_STREAM_MAGIC_BYTES;
     stream->session = session;
     stream->index = index;
     stream->type = OV_ICE_DTLS_PASSIVE;
 
-    if (!ov_node_push((void **)&session->streams, stream)) goto error;
+    if (!ov_node_push((void **)&session->streams, stream))
+        goto error;
 
     stream->local.ssrc = create_ssrc();
     ov_id_fill_with_uuid(stream->uuid);
 
     stream->valid = ov_linked_list_create((ov_list_config){0});
     stream->trigger = ov_linked_list_create((ov_list_config){0});
-    if (!stream->valid || !stream->trigger) goto error;
+    if (!stream->valid || !stream->trigger)
+        goto error;
 
     if (!ov_ice_string_fill_random(stream->local.pass, OV_ICE_STUN_PASS_MIN))
         goto error;
 
-    if (!ov_ice_gather_candidates(session->ice, stream)) goto error;
+    if (!ov_ice_gather_candidates(session->ice, stream))
+        goto error;
 
     stream->state = OV_ICE_RUNNING;
     return stream;
@@ -86,11 +91,13 @@ error:
 
 ov_ice_stream *ov_ice_stream_cast(const void *data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_node *node = (ov_node *)data;
 
-    if (node->type == OV_ICE_STREAM_MAGIC_BYTES) return (ov_ice_stream *)data;
+    if (node->type == OV_ICE_STREAM_MAGIC_BYTES)
+        return (ov_ice_stream *)data;
 error:
     return NULL;
 }
@@ -100,7 +107,8 @@ error:
 void *ov_ice_stream_free(void *self) {
 
     ov_ice_stream *stream = ov_ice_stream_cast(self);
-    if (!stream) return self;
+    if (!stream)
+        return self;
 
     if (stream->session) {
 
@@ -110,8 +118,7 @@ void *ov_ice_stream_free(void *self) {
     if (OV_TIMER_INVALID != stream->timer.nominate) {
 
         ov_event_loop_timer_unset(ov_ice_get_event_loop(stream->session->ice),
-                                  stream->timer.nominate,
-                                  NULL);
+                                  stream->timer.nominate, NULL);
 
         stream->timer.nominate = OV_TIMER_INVALID;
     }
@@ -155,11 +162,12 @@ void *ov_ice_stream_free(void *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_ice_candidate *ov_ice_stream_select_default_candidate(
-    const ov_ice_stream *stream) {
+static ov_ice_candidate *
+ov_ice_stream_select_default_candidate(const ov_ice_stream *stream) {
 
     OV_ASSERT(stream);
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     ov_ice_candidate *candidate = stream->candidates.local;
     ov_ice_candidate *selected = NULL;
@@ -180,31 +188,34 @@ static ov_ice_candidate *ov_ice_stream_select_default_candidate(
 
         switch (candidate->type) {
 
-            case OV_ICE_RELAYED:
+        case OV_ICE_RELAYED:
 
-                if (selected->type != OV_ICE_RELAYED) selected = candidate;
-
-                break;
-
-            case OV_ICE_PEER_REFLEXIVE:
-
+            if (selected->type != OV_ICE_RELAYED)
                 selected = candidate;
-                break;
 
-            case OV_ICE_SERVER_REFLEXIVE:
+            break;
 
-                if (selected->type == OV_ICE_HOST) selected = candidate;
+        case OV_ICE_PEER_REFLEXIVE:
 
-                break;
+            selected = candidate;
+            break;
 
-            case OV_ICE_HOST:
+        case OV_ICE_SERVER_REFLEXIVE:
 
-                if (selected->type == OV_ICE_INVALID) selected = candidate;
+            if (selected->type == OV_ICE_HOST)
+                selected = candidate;
 
-                break;
+            break;
 
-            default:
-                break;
+        case OV_ICE_HOST:
+
+            if (selected->type == OV_ICE_INVALID)
+                selected = candidate;
+
+            break;
+
+        default:
+            break;
         }
 
         candidate = ov_node_next(candidate);
@@ -222,7 +233,8 @@ ov_sdp_connection ov_ice_stream_get_connection(ov_ice_stream *stream,
 
     ov_sdp_connection c = {0};
 
-    if (!stream || !desc) goto error;
+    if (!stream || !desc)
+        goto error;
 
     ov_ice_candidate *candidate =
         ov_ice_stream_select_default_candidate(stream);
@@ -230,16 +242,16 @@ ov_sdp_connection ov_ice_stream_get_connection(ov_ice_stream *stream,
 
     switch (candidate->base->local.data.sa.ss_family) {
 
-        case AF_INET:
-            c.addrtype = "IP4";
-            break;
+    case AF_INET:
+        c.addrtype = "IP4";
+        break;
 
-        case AF_INET6:
-            c.addrtype = "IP6";
-            break;
+    case AF_INET6:
+        c.addrtype = "IP6";
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     desc->media.port = candidate->port;
@@ -255,7 +267,8 @@ error:
 
 bool ov_ice_stream_candidate(ov_ice_stream *stream, const ov_ice_candidate *c) {
 
-    if (!stream || !c) goto error;
+    if (!stream || !c)
+        goto error;
 
     /*
      *      Check input candidate,
@@ -264,17 +277,23 @@ bool ov_ice_stream_candidate(ov_ice_stream *stream, const ov_ice_candidate *c) {
      */
 
     if (c->transport != UDP)
-        if (c->transport != DTLS) goto done;
+        if (c->transport != DTLS)
+            goto done;
 
-    if (OV_ICE_INVALID == c->type) goto error;
+    if (OV_ICE_INVALID == c->type)
+        goto error;
 
-    if (0 == c->addr[0]) goto error;
+    if (0 == c->addr[0])
+        goto error;
 
-    if (0 == c->foundation[0]) goto error;
+    if (0 == c->foundation[0])
+        goto error;
 
-    if (0 != c->server.socket.host[0]) goto error;
+    if (0 != c->server.socket.host[0])
+        goto error;
 
-    if (0 == c->component_id) goto error;
+    if (0 == c->component_id)
+        goto error;
 
     /*
      *      Finaly check of the candidate is already included.
@@ -287,13 +306,17 @@ bool ov_ice_stream_candidate(ov_ice_stream *stream, const ov_ice_candidate *c) {
         test = next;
         next = ov_node_next(next);
 
-        if (test == c) return true;
+        if (test == c)
+            return true;
 
-        if (test->port != c->port) continue;
+        if (test->port != c->port)
+            continue;
 
-        if (0 != strncmp(test->addr, c->addr, OV_HOST_NAME_MAX)) continue;
+        if (0 != strncmp(test->addr, c->addr, OV_HOST_NAME_MAX))
+            continue;
 
-        if (test->rport != c->rport) continue;
+        if (test->rport != c->rport)
+            continue;
 
         if (0 != test->raddr[0]) {
 
@@ -357,9 +380,11 @@ bool ov_ice_stream_candidate(ov_ice_stream *stream, const ov_ice_candidate *c) {
         local = ov_node_next(local);
     }
 
-    if (!ov_ice_stream_order(stream)) goto error;
+    if (!ov_ice_stream_order(stream))
+        goto error;
 
-    if (!ov_ice_stream_prune(stream)) goto error;
+    if (!ov_ice_stream_prune(stream))
+        goto error;
 
     /*
      *      We do not limit the amount of pairs here.
@@ -375,7 +400,8 @@ error:
 
 bool ov_ice_stream_end_of_candidates(ov_ice_stream *stream) {
 
-    if (!stream) return false;
+    if (!stream)
+        return false;
     stream->remote.gathered = true;
     return true;
 }
@@ -384,18 +410,20 @@ bool ov_ice_stream_end_of_candidates(ov_ice_stream *stream) {
 
 uint32_t ov_ice_stream_get_stream_ssrc(ov_ice_stream *stream) {
 
-    if (!stream) return 0;
+    if (!stream)
+        return 0;
     return stream->local.ssrc;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_ice_stream_send_stream(ov_ice_stream *stream,
-                                  const uint8_t *buffer,
+ssize_t ov_ice_stream_send_stream(ov_ice_stream *stream, const uint8_t *buffer,
                                   size_t size) {
 
-    if (!stream || !buffer || !size) goto error;
-    if (!stream->selected) goto error;
+    if (!stream || !buffer || !size)
+        goto error;
+    if (!stream->selected)
+        goto error;
 
     return ov_ice_pair_send(stream->selected, buffer, size);
 error:
@@ -406,10 +434,11 @@ error:
 
 bool ov_ice_stream_set_active(ov_ice_stream *stream, const char *fingerprint) {
 
-    if (!stream || !fingerprint) return false;
+    if (!stream || !fingerprint)
+        return false;
 
-    memcpy(
-        stream->remote.fingerprint, fingerprint, OV_ICE_DTLS_FINGERPRINT_MAX);
+    memcpy(stream->remote.fingerprint, fingerprint,
+           OV_ICE_DTLS_FINGERPRINT_MAX);
 
     stream->type = OV_ICE_DTLS_ACTIVE;
     return true;
@@ -419,7 +448,8 @@ bool ov_ice_stream_set_active(ov_ice_stream *stream, const char *fingerprint) {
 
 bool ov_ice_stream_set_passive(ov_ice_stream *stream) {
 
-    if (!stream) return false;
+    if (!stream)
+        return false;
     stream->type = OV_ICE_DTLS_PASSIVE;
     return true;
 }
@@ -428,7 +458,8 @@ bool ov_ice_stream_set_passive(ov_ice_stream *stream) {
 
 bool ov_ice_stream_order(ov_ice_stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     ov_ice_pair *pair = NULL;
     ov_ice_pair *next = stream->pairs;
@@ -454,7 +485,8 @@ bool ov_ice_stream_order(ov_ice_stream *stream) {
                 continue;
             }
 
-            if (walk == pair) break;
+            if (walk == pair)
+                break;
 
             if (!ov_node_insert_before((void **)&stream->pairs, pair, walk))
                 goto error;
@@ -475,13 +507,17 @@ static bool pairs_are_redundant(ov_ice_pair *pair, ov_ice_pair *check) {
     OV_ASSERT(pair);
     OV_ASSERT(check);
 
-    if (!pair || !check) return false;
+    if (!pair || !check)
+        return false;
 
-    if (pair == check) return false;
+    if (pair == check)
+        return false;
 
-    if (pair->local != check->local) return false;
+    if (pair->local != check->local)
+        return false;
 
-    if (pair->remote != check->remote) return false;
+    if (pair->remote != check->remote)
+        return false;
 
     return true;
 }
@@ -491,7 +527,8 @@ static bool pairs_are_redundant(ov_ice_pair *pair, ov_ice_pair *check) {
 bool ov_ice_stream_prune(ov_ice_stream *stream) {
 
     OV_ASSERT(stream);
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     ov_ice_pair *pair = stream->pairs;
     ov_ice_pair *next = NULL;
@@ -507,13 +544,13 @@ bool ov_ice_stream_prune(ov_ice_stream *stream) {
 
         switch (pair->state) {
 
-            case OV_ICE_PAIR_FROZEN:
-            case OV_ICE_PAIR_WAITING:
-                break;
+        case OV_ICE_PAIR_FROZEN:
+        case OV_ICE_PAIR_WAITING:
+            break;
 
-            default:
-                pair = ov_node_next(pair);
-                continue;
+        default:
+            pair = ov_node_next(pair);
+            continue;
         }
 
         /*
@@ -529,9 +566,11 @@ bool ov_ice_stream_prune(ov_ice_stream *stream) {
             drop = next;
             next = ov_node_next(next);
 
-            if (drop == stream->selected) continue;
+            if (drop == stream->selected)
+                continue;
 
-            if (pairs_are_redundant(pair, drop)) drop = ov_ice_pair_free(drop);
+            if (pairs_are_redundant(pair, drop))
+                drop = ov_ice_pair_free(drop);
         }
 
         pair = ov_node_next(pair);
@@ -548,9 +587,11 @@ bool ov_ice_stream_trickle_candidates(ov_ice_stream *stream) {
 
     bool all_trickled = true;
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
-    if (!stream->session->trickling_started) goto done;
+    if (!stream->session->trickling_started)
+        goto done;
 
     ov_ice *ice = stream->session->ice;
 
@@ -565,23 +606,20 @@ bool ov_ice_stream_trickle_candidates(ov_ice_stream *stream) {
 
         switch (candidate->gathering) {
 
-            case OV_ICE_GATHERING_SUCCESS:
+        case OV_ICE_GATHERING_SUCCESS:
 
-                if (NULL == candidate->string)
-                    candidate->string = ov_ice_candidate_to_string(candidate);
+            if (NULL == candidate->string)
+                candidate->string = ov_ice_candidate_to_string(candidate);
 
-                ov_ice_trickle_candidate(ice,
-                                         stream->session->uuid,
-                                         stream->uuid,
-                                         stream->index,
-                                         candidate);
+            ov_ice_trickle_candidate(ice, stream->session->uuid, stream->uuid,
+                                     stream->index, candidate);
 
-                candidate->trickled = true;
+            candidate->trickled = true;
 
-                break;
-            default:
-                all_trickled = false;
-                break;
+            break;
+        default:
+            all_trickled = false;
+            break;
         }
 
         candidate = ov_node_next(candidate);
@@ -591,8 +629,8 @@ bool ov_ice_stream_trickle_candidates(ov_ice_stream *stream) {
 
         stream->local.gathered = true;
 
-        ov_ice_trickle_end_of_candidates(
-            ice, stream->session->uuid, stream->index);
+        ov_ice_trickle_end_of_candidates(ice, stream->session->uuid,
+                                         stream->index);
     }
 
 done:
@@ -606,7 +644,8 @@ error:
 static bool pair_new_remote_gathered(ov_ice_stream *stream,
                                      ov_ice_candidate *candidate) {
 
-    if (!stream || !candidate) goto error;
+    if (!stream || !candidate)
+        goto error;
 
     ov_ice_candidate *remote = stream->candidates.remote;
     ov_ice_pair *pair = NULL;
@@ -627,18 +666,19 @@ static bool pair_new_remote_gathered(ov_ice_stream *stream,
 
         switch (candidate->type) {
 
-            case OV_ICE_SERVER_REFLEXIVE:
-                break;
+        case OV_ICE_SERVER_REFLEXIVE:
+            break;
 
-            case OV_ICE_TURN_SERVER:
+        case OV_ICE_TURN_SERVER:
 
-                if (!ov_ice_pair_create_turn_permission(pair)) goto error;
-
-                break;
-
-            default:
-                OV_ASSERT(1 == 0);
+            if (!ov_ice_pair_create_turn_permission(pair))
                 goto error;
+
+            break;
+
+        default:
+            OV_ASSERT(1 == 0);
+            goto error;
         };
 
         pair->state = OV_ICE_PAIR_WAITING;
@@ -653,9 +693,11 @@ static bool pair_new_remote_gathered(ov_ice_stream *stream,
         remote = ov_node_next(remote);
     }
 
-    if (!ov_ice_stream_order(stream)) goto error;
+    if (!ov_ice_stream_order(stream))
+        goto error;
 
-    if (!ov_ice_stream_prune(stream)) goto error;
+    if (!ov_ice_stream_prune(stream))
+        goto error;
 
     return true;
 error:
@@ -667,16 +709,17 @@ error:
 bool ov_ice_stream_process_remote_gathered(ov_ice_stream *stream,
                                            ov_ice_candidate *candidate) {
 
-    if (!stream || !candidate) goto error;
+    if (!stream || !candidate)
+        goto error;
 
     switch (candidate->type) {
 
-        case OV_ICE_SERVER_REFLEXIVE:
-        case OV_ICE_RELAYED:
-            break;
-        default:
-            OV_ASSERT(1 == 0);
-            goto error;
+    case OV_ICE_SERVER_REFLEXIVE:
+    case OV_ICE_RELAYED:
+        break;
+    default:
+        OV_ASSERT(1 == 0);
+        goto error;
     };
 
     ov_ice_stream_trickle_candidates(stream);
@@ -692,7 +735,8 @@ error:
 
 bool ov_ice_stream_update(ov_ice_stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     if ((OV_ICE_COMPLETED == stream->stun) &&
         (OV_ICE_COMPLETED == stream->dtls) &&
@@ -749,13 +793,13 @@ bool ov_ice_stream_update(ov_ice_stream *stream) {
 
                 switch (pair->state) {
 
-                    case OV_ICE_PAIR_FROZEN:
-                    case OV_ICE_PAIR_WAITING:
-                        trash = pair;
-                        break;
+                case OV_ICE_PAIR_FROZEN:
+                case OV_ICE_PAIR_WAITING:
+                    trash = pair;
+                    break;
 
-                    default:
-                        break;
+                default:
+                    break;
                 }
 
                 pair = ov_node_next(pair);
@@ -791,7 +835,8 @@ bool ov_ice_stream_update(ov_ice_stream *stream) {
     if (selected) {
 
         if (0 == ov_list_get_pos(stream->trigger, selected))
-            if (!ov_list_queue_push(stream->trigger, selected)) goto error;
+            if (!ov_list_queue_push(stream->trigger, selected))
+                goto error;
 
         selected->nominated = true;
     }
@@ -807,7 +852,8 @@ error:
 
 bool ov_ice_stream_sort_priority(ov_ice_stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     ov_ice_candidate *next = stream->candidates.local;
     ov_ice_candidate *cand = NULL;
@@ -821,12 +867,13 @@ bool ov_ice_stream_sort_priority(ov_ice_stream *stream) {
         walk = stream->candidates.local;
         while (walk) {
 
-            if (walk == cand) break;
+            if (walk == cand)
+                break;
 
             if (walk->priority < cand->priority) {
 
-                if (!ov_node_insert_before(
-                        (void **)&stream->candidates.local, cand, walk))
+                if (!ov_node_insert_before((void **)&stream->candidates.local,
+                                           cand, walk))
                     goto error;
 
                 break;
@@ -845,12 +892,14 @@ error:
 
 bool ov_ice_stream_recalculate_priorities(ov_ice_stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     ov_ice_pair *pair = stream->pairs;
     while (pair) {
 
-        if (!ov_ice_pair_calculate_priority(pair, stream->session)) goto error;
+        if (!ov_ice_pair_calculate_priority(pair, stream->session))
+            goto error;
 
         pair = ov_node_next(pair);
     }
@@ -865,10 +914,12 @@ error:
 bool ov_ice_stream_cb_selected_srtp_ready(ov_ice_stream *stream) {
 
     int r = 0;
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     srtp_t srtp_session = stream->session->srtp.session;
-    if (!srtp_session) goto error;
+    if (!srtp_session)
+        goto error;
 
     stream->srtp = OV_ICE_INIT;
 
@@ -880,8 +931,8 @@ bool ov_ice_stream_cb_selected_srtp_ready(ov_ice_stream *stream) {
     srtp_crypto_policy_set_rtp_default(&stream->remote.policy.rtp);
     srtp_crypto_policy_set_rtcp_default(&stream->remote.policy.rtcp);
 
-    if (0 == ov_string_compare(
-                 "SRTP_AES128_CM_SHA1_80", stream->selected->srtp.profile)) {
+    if (0 == ov_string_compare("SRTP_AES128_CM_SHA1_80",
+                               stream->selected->srtp.profile)) {
 
         srtp_crypto_policy_set_aes_cm_128_hmac_sha1_80(
             &stream->local.policy.rtp);
@@ -918,59 +969,55 @@ bool ov_ice_stream_cb_selected_srtp_ready(ov_ice_stream *stream) {
 
     switch (stream->selected->dtls.type) {
 
-        case OV_ICE_DTLS_ACTIVE:
+    case OV_ICE_DTLS_ACTIVE:
 
-            /* Local policy is client policy,
-             * incoming streams will use the server key. */
+        /* Local policy is client policy,
+         * incoming streams will use the server key. */
 
-            memcpy(stream->local.key,
-                   stream->selected->srtp.server.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->local.key, stream->selected->srtp.server.key,
+               stream->selected->srtp.key_len);
 
-            memcpy(stream->remote.key,
-                   stream->selected->srtp.client.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->remote.key, stream->selected->srtp.client.key,
+               stream->selected->srtp.key_len);
 
-            srtp_append_salt_to_key(stream->local.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.server.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->local.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.server.salt,
+                                stream->selected->srtp.salt_len);
 
-            srtp_append_salt_to_key(stream->remote.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.client.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->remote.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.client.salt,
+                                stream->selected->srtp.salt_len);
 
-            break;
+        break;
 
-        case OV_ICE_DTLS_PASSIVE:
+    case OV_ICE_DTLS_PASSIVE:
 
-            /* Local policy is server policy,
-             * incoming streams will use the client key. */
+        /* Local policy is server policy,
+         * incoming streams will use the client key. */
 
-            memcpy(stream->local.key,
-                   stream->selected->srtp.client.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->local.key, stream->selected->srtp.client.key,
+               stream->selected->srtp.key_len);
 
-            memcpy(stream->remote.key,
-                   stream->selected->srtp.server.key,
-                   stream->selected->srtp.key_len);
+        memcpy(stream->remote.key, stream->selected->srtp.server.key,
+               stream->selected->srtp.key_len);
 
-            srtp_append_salt_to_key(stream->local.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.client.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->local.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.client.salt,
+                                stream->selected->srtp.salt_len);
 
-            srtp_append_salt_to_key(stream->remote.key,
-                                    stream->selected->srtp.key_len,
-                                    stream->selected->srtp.server.salt,
-                                    stream->selected->srtp.salt_len);
+        srtp_append_salt_to_key(stream->remote.key,
+                                stream->selected->srtp.key_len,
+                                stream->selected->srtp.server.salt,
+                                stream->selected->srtp.salt_len);
 
-            break;
+        break;
 
-            break;
-        default:
-            goto error;
+        break;
+    default:
+        goto error;
     }
 
     /* Step 3 prepare streams */
@@ -989,34 +1036,35 @@ bool ov_ice_stream_cb_selected_srtp_ready(ov_ice_stream *stream) {
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            break;
+    case srtp_err_status_ok:
+        break;
 
-        default:
-            goto error;
-            break;
+    default:
+        goto error;
+        break;
     }
 
     r = srtp_add_stream(srtp_session, &stream->local.policy);
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            break;
+    case srtp_err_status_ok:
+        break;
 
-        default:
-            goto error;
-            break;
+    default:
+        goto error;
+        break;
     }
 
     stream->srtp = OV_ICE_COMPLETED;
 
-    ov_log_info(
-        "ICE %s|%i completed srtp.", stream->session->uuid, stream->index);
+    ov_log_info("ICE %s|%i completed srtp.", stream->session->uuid,
+                stream->index);
 
     return true;
 error:
-    if (stream) stream->srtp = OV_ICE_FAILED;
+    if (stream)
+        stream->srtp = OV_ICE_FAILED;
     return false;
 }
 
@@ -1024,7 +1072,8 @@ error:
 
 bool ov_ice_stream_gathering_stop(ov_ice_stream *stream) {
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     ov_ice_candidate *next = stream->candidates.local;
     ov_ice_candidate *cand = NULL;
@@ -1038,10 +1087,7 @@ bool ov_ice_stream_gathering_stop(ov_ice_stream *stream) {
 
             ov_log_debug("Dropping candidate type %s addr %s:%i raddr %s:%i",
                          ov_ice_candidate_type_to_string(cand->type),
-                         cand->addr,
-                         cand->port,
-                         cand->raddr,
-                         cand->rport);
+                         cand->addr, cand->port, cand->raddr, cand->rport);
 
             cand = ov_ice_candidate_free(cand);
         }

@@ -40,36 +40,36 @@ char const *ov_notify_type_to_string(ov_notify_type type) {
 
     switch (type) {
 
-        case NOTIFY_INVALID:
+    case NOTIFY_INVALID:
 
-            return 0;
+        return 0;
 
-        case NOTIFY_ENTITY_LOST:
+    case NOTIFY_ENTITY_LOST:
 
-            return "entity_lost";
+        return "entity_lost";
 
-        case NOTIFY_CALL_TERMINATED:
+    case NOTIFY_CALL_TERMINATED:
 
-            return "call_terminated";
+        return "call_terminated";
 
-        case NOTIFY_NEW_CALL:
-            return "new_call";
+    case NOTIFY_NEW_CALL:
+        return "new_call";
 
-        case NOTIFY_INCOMING_CALL:
-            return "incoming_call";
+    case NOTIFY_INCOMING_CALL:
+        return "incoming_call";
 
-        case NOTIFY_NEW_RECORDING:
+    case NOTIFY_NEW_RECORDING:
 
-            return "new_recording";
+        return "new_recording";
 
-        case NOTIFY_PLAYBACK_STOPPED:
+    case NOTIFY_PLAYBACK_STOPPED:
 
-            return "playback_stopped";
+        return "playback_stopped";
 
-        default:
+    default:
 
-            // OV_ASSERT(!"MUST NEVER HAPPEN");
-            return 0;
+        // OV_ASSERT(!"MUST NEVER HAPPEN");
+        return 0;
     };
 }
 
@@ -84,9 +84,9 @@ ov_notify_type ov_notify_type_from_string(char const *str) {
 
         return NOTIFY_ENTITY_LOST;
 
-    } else if(0 == strcmp("incoming_call", str)) {
+    } else if (0 == strcmp("incoming_call", str)) {
 
-        return  NOTIFY_INCOMING_CALL;
+        return NOTIFY_INCOMING_CALL;
 
     } else if (0 == strcmp("new_call", str)) {
 
@@ -114,11 +114,11 @@ static ov_json_value *notify_message(char const *uuid, char const *type_str) {
     ov_json_value *params = ov_event_api_set_parameter(msg);
     ov_json_value *type_json = ov_json_string(type_str);
 
-    if ((!ov_ptr_valid(
-            type_str, "Cannot create notify message: No type given")) ||
+    if ((!ov_ptr_valid(type_str,
+                       "Cannot create notify message: No type given")) ||
         (!ov_ptr_valid(params, "Could not create basic notify message")) ||
-        (!ov_ptr_valid(
-            type_json, "Cannot create notify message: No type given")) ||
+        (!ov_ptr_valid(type_json,
+                       "Cannot create notify message: No type given")) ||
         (!ov_json_object_set(params, OV_KEY_TYPE, type_json))) {
 
         msg = ov_json_value_free(msg);
@@ -133,14 +133,11 @@ static ov_json_value *notify_message(char const *uuid, char const *type_str) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *notify_new_call(ov_notify_type type,
-                                      char const *uuid,
-                                      char const *id,
-                                      char const *peer,
+static ov_json_value *notify_new_call(ov_notify_type type, char const *uuid,
+                                      char const *id, char const *peer,
                                       char const *loop) {
 
-    ov_json_value *msg =
-        notify_message(uuid, ov_notify_type_to_string(type));
+    ov_json_value *msg = notify_message(uuid, ov_notify_type_to_string(type));
     ov_json_value *params = ov_event_api_get_parameter(msg);
 
     if ((!ov_ptr_valid(id, "Cannot notify lieges: Invalid ID")) ||
@@ -151,14 +148,14 @@ static ov_json_value *notify_new_call(ov_notify_type type,
 
         msg = ov_json_value_free(msg);
 
-    } else if ((0 != peer) && (!ov_json_object_set(
-                                  params, OV_KEY_PEER, ov_json_string(peer)))) {
+    } else if ((0 != peer) && (!ov_json_object_set(params, OV_KEY_PEER,
+                                                   ov_json_string(peer)))) {
 
         ov_log_error("Could not set " OV_KEY_PEER " on notification message");
         msg = ov_json_value_free(msg);
 
-    } else if ((0 != loop) && (!ov_json_object_set(
-                                  params, OV_KEY_LOOP, ov_json_string(loop)))) {
+    } else if ((0 != loop) && (!ov_json_object_set(params, OV_KEY_LOOP,
+                                                   ov_json_string(loop)))) {
 
         ov_log_error("Could not set " OV_KEY_PEER " on notification message");
         msg = ov_json_value_free(msg);
@@ -254,46 +251,39 @@ static ov_json_value *notify_entity_lost(char const *uuid,
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_notify_message(char const *uuid,
-                                 ov_notify_type notify_type,
+ov_json_value *ov_notify_message(char const *uuid, ov_notify_type notify_type,
                                  ov_notify_parameters parameters) {
 
     switch (notify_type) {
 
-        case NOTIFY_NEW_CALL:
+    case NOTIFY_NEW_CALL:
 
-            return notify_new_call(NOTIFY_NEW_CALL,
-                                   uuid,
-                                   parameters.call.id,
-                                   parameters.call.peer,
-                                   parameters.call.loop);
+        return notify_new_call(NOTIFY_NEW_CALL, uuid, parameters.call.id,
+                               parameters.call.peer, parameters.call.loop);
 
-        case NOTIFY_INCOMING_CALL:
+    case NOTIFY_INCOMING_CALL:
 
-            return notify_new_call(NOTIFY_INCOMING_CALL,
-                                   uuid,
-                                   parameters.call.id,
-                                   parameters.call.peer,
-                                   parameters.call.loop);
+        return notify_new_call(NOTIFY_INCOMING_CALL, uuid, parameters.call.id,
+                               parameters.call.peer, parameters.call.loop);
 
-        case NOTIFY_CALL_TERMINATED:
+    case NOTIFY_CALL_TERMINATED:
 
-            return notify_call_terminated(uuid, parameters.call.id);
+        return notify_call_terminated(uuid, parameters.call.id);
 
-        case NOTIFY_NEW_RECORDING:
+    case NOTIFY_NEW_RECORDING:
 
-            return notify_new_recording(uuid, parameters.recording);
+        return notify_new_recording(uuid, parameters.recording);
 
-        case NOTIFY_ENTITY_LOST:
+    case NOTIFY_ENTITY_LOST:
 
-            return notify_entity_lost(
-                uuid, parameters.entity.name, parameters.entity.type);
+        return notify_entity_lost(uuid, parameters.entity.name,
+                                  parameters.entity.type);
 
-        case NOTIFY_INVALID:
-        default:
+    case NOTIFY_INVALID:
+    default:
 
-            ov_log_error("Cannot create notify message: Invalid type");
-            return 0;
+        ov_log_error("Cannot create notify message: Invalid type");
+        return 0;
     }
 }
 
@@ -371,27 +361,26 @@ ov_notify_type ov_notify_parse(ov_json_value const *parameters,
 
     switch (type) {
 
-        case NOTIFY_INVALID:
-        default:
+    case NOTIFY_INVALID:
+    default:
 
-            return NOTIFY_INVALID;
+        return NOTIFY_INVALID;
 
-        case NOTIFY_ENTITY_LOST:
-            return parse_entity_lost(parameters, notify_params);
+    case NOTIFY_ENTITY_LOST:
+        return parse_entity_lost(parameters, notify_params);
 
-        case NOTIFY_NEW_CALL:
-            return parse_call(parameters, notify_params, NOTIFY_NEW_CALL);
+    case NOTIFY_NEW_CALL:
+        return parse_call(parameters, notify_params, NOTIFY_NEW_CALL);
 
-        case NOTIFY_INCOMING_CALL:
-            return parse_call(parameters, notify_params, NOTIFY_INCOMING_CALL);
+    case NOTIFY_INCOMING_CALL:
+        return parse_call(parameters, notify_params, NOTIFY_INCOMING_CALL);
 
-        case NOTIFY_CALL_TERMINATED:
-            return parse_call(
-                parameters, notify_params, NOTIFY_CALL_TERMINATED);
+    case NOTIFY_CALL_TERMINATED:
+        return parse_call(parameters, notify_params, NOTIFY_CALL_TERMINATED);
 
-        case NOTIFY_NEW_RECORDING:
-            return parse_new_recording(
-                parameters, notify_params, NOTIFY_NEW_RECORDING);
+    case NOTIFY_NEW_RECORDING:
+        return parse_new_recording(parameters, notify_params,
+                                   NOTIFY_NEW_RECORDING);
     }
 
     return type;

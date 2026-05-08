@@ -155,8 +155,7 @@ struct ov_rtp_client {
              * Processed PCM data received via RTP.
              * @return number of samples in buffer.
              */
-            size_t (*output_pcm)(ov_rtp_client *,
-                                 uint8_t *pcm,
+            size_t (*output_pcm)(ov_rtp_client *, uint8_t *pcm,
                                  size_t length_bytes);
             uint16_t last_sequence_number;
         } receive;
@@ -180,9 +179,9 @@ struct ov_rtp_client {
 
 /*----------------------------------------------------------------------------*/
 
-ov_rtp_client *ov_rtp_client_create(
-    ov_rtp_client_parameters *client_params,
-    ov_rtp_client_audio_parameters *audio_params);
+ov_rtp_client *
+ov_rtp_client_create(ov_rtp_client_parameters *client_params,
+                     ov_rtp_client_audio_parameters *audio_params);
 
 /*----------------------------------------------------------------------------*/
 
@@ -199,21 +198,18 @@ char const *ov_operation_mode_to_string(operation_mode mode);
 /*----------------------------------------------------------------------------*/
 
 void ov_rtp_client_parameters_print(
-    FILE *out,
-    ov_rtp_client_parameters const *client_params,
+    FILE *out, ov_rtp_client_parameters const *client_params,
     size_t indentation_level);
 
 /*----------------------------------------------------------------------------*/
 
 void ov_rtp_client_audio_parameters_print(
-    FILE *out,
-    ov_rtp_client_audio_parameters const *params,
+    FILE *out, ov_rtp_client_audio_parameters const *params,
     size_t indentation_level);
 
 /*----------------------------------------------------------------------------*/
 
-void ov_rtp_client_print(FILE *out,
-                         ov_rtp_client const *client,
+void ov_rtp_client_print(FILE *out, ov_rtp_client const *client,
                          size_t indentation_level);
 
 /*----------------------------------------------------------------------------*/

@@ -44,7 +44,8 @@
 
 void *ov_node_next(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
     ov_node *node = (ov_node *)data;
     return node->next;
@@ -54,7 +55,8 @@ void *ov_node_next(void *data) {
 
 void *ov_node_prev(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
     ov_node *node = (ov_node *)data;
     return node->prev;
@@ -69,14 +71,16 @@ void *ov_node_prev(void *data) {
  */
 void *ov_node_get(void *head, uint64_t pos) {
 
-    if (!head || (pos == 0)) return NULL;
+    if (!head || (pos == 0))
+        return NULL;
 
     ov_node *next = head;
     uint64_t count = 1;
 
     while (next) {
 
-        if (count == pos) return next;
+        if (count == pos)
+            return next;
 
         next = next->next;
         count++;
@@ -89,7 +93,8 @@ void *ov_node_get(void *head, uint64_t pos) {
 
 bool ov_node_set(void **start, uint64_t pos, void *item) {
 
-    if (!start || !item || (pos == 0)) goto error;
+    if (!start || !item || (pos == 0))
+        goto error;
 
     ov_node **head = (ov_node **)start;
     ov_node *node = (ov_node *)item;
@@ -98,11 +103,13 @@ bool ov_node_set(void **start, uint64_t pos, void *item) {
      *      Prevent pushing unclean node.
      */
 
-    if (node->prev || node->next) goto error;
+    if (node->prev || node->next)
+        goto error;
 
     if (!*head) {
 
-        if (pos != 1) goto error;
+        if (pos != 1)
+            goto error;
 
         *head = item;
         return true;
@@ -123,7 +130,8 @@ bool ov_node_set(void **start, uint64_t pos, void *item) {
             next->prev = node;
             node->next = next;
 
-            if (next == *head) *head = node;
+            if (next == *head)
+                *head = node;
 
             return true;
         }
@@ -153,7 +161,8 @@ error:
 
 uint64_t ov_node_count(void *head) {
 
-    if (!head) goto error;
+    if (!head)
+        goto error;
 
     ov_node *next = (ov_node *)head;
     uint64_t count = 1;
@@ -172,19 +181,23 @@ error:
 
 bool ov_node_unplug(void **start, void *self) {
 
-    if (!start || !self) goto error;
+    if (!start || !self)
+        goto error;
 
     ov_node *node = (ov_node *)self;
 
     if (self == *start) {
         *start = node->next;
-        if (node->next) node->next->prev = NULL;
+        if (node->next)
+            node->next->prev = NULL;
         goto clean;
     }
 
-    if (node->prev) node->prev->next = node->next;
+    if (node->prev)
+        node->prev->next = node->next;
 
-    if (node->next) node->next->prev = node->prev;
+    if (node->next)
+        node->next->prev = node->prev;
 
 clean:
 
@@ -200,19 +213,22 @@ error:
 
 uint64_t ov_node_get_position(const void *start, const void *self) {
 
-    if (!start || !self) goto error;
+    if (!start || !self)
+        goto error;
 
     ov_node *head = (ov_node *)start;
     ov_node *node = (ov_node *)self;
 
-    if (!head || !node) goto error;
+    if (!head || !node)
+        goto error;
 
     ov_node *next = (ov_node *)head;
     uint64_t counter = 1;
 
     while (next) {
 
-        if (next == node) return counter;
+        if (next == node)
+            return counter;
 
         counter++;
         next = next->next;
@@ -226,7 +242,8 @@ error:
 
 bool ov_node_is_included(const void *start, const void *self) {
 
-    if (!start || !self) goto error;
+    if (!start || !self)
+        goto error;
 
     ov_node *head = (ov_node *)start;
     ov_node *node = (ov_node *)self;
@@ -235,7 +252,8 @@ bool ov_node_is_included(const void *start, const void *self) {
 
     while (next) {
 
-        if (next == node) return true;
+        if (next == node)
+            return true;
 
         next = next->next;
     }
@@ -248,14 +266,16 @@ error:
 
 bool ov_node_remove_if_included(void **start, void *self) {
 
-    if (!start || !self) goto error;
+    if (!start || !self)
+        goto error;
 
     ov_node *next = (ov_node *)*start;
     ov_node *node = (ov_node *)self;
 
     while (next) {
 
-        if (next == node) return ov_node_unplug(start, self);
+        if (next == node)
+            return ov_node_unplug(start, self);
 
         next = next->next;
     }
@@ -269,7 +289,8 @@ error:
 
 bool ov_node_push(void **start, void *self) {
 
-    if (!start || !self) goto error;
+    if (!start || !self)
+        goto error;
 
     ov_node **head = (ov_node **)start;
     ov_node *node = (ov_node *)self;
@@ -278,7 +299,8 @@ bool ov_node_push(void **start, void *self) {
      *      Prevent pushing unclean node.
      */
 
-    if (node->prev || node->next) goto error;
+    if (node->prev || node->next)
+        goto error;
 
     if (!*head) {
         *head = self;
@@ -302,17 +324,20 @@ error:
 
 void *ov_node_pop(void **start) {
 
-    if (!start) goto error;
+    if (!start)
+        goto error;
 
     ov_node **head = (ov_node **)start;
-    if (!*head) goto error;
+    if (!*head)
+        goto error;
 
     ov_node *node = *head;
     ov_node *next = node->next;
 
     *head = next;
 
-    if (next) next->prev = NULL;
+    if (next)
+        next->prev = NULL;
 
     node->next = NULL;
 
@@ -325,7 +350,8 @@ error:
 
 bool ov_node_push_front(void **start, void *self) {
 
-    if (!start || !self) goto error;
+    if (!start || !self)
+        goto error;
 
     ov_node *node = (ov_node *)self;
     ov_node **head = (ov_node **)start;
@@ -334,7 +360,8 @@ bool ov_node_push_front(void **start, void *self) {
      *      Prevent pushing unclean node.
      */
 
-    if (node->prev || node->next) goto error;
+    if (node->prev || node->next)
+        goto error;
 
     if (!*head) {
         *head = node;
@@ -365,14 +392,16 @@ bool ov_node_push_last(void **head, void *node) {
 
 void *ov_node_pop_last(void **head) {
 
-    if (!head || !*head) return NULL;
+    if (!head || !*head)
+        return NULL;
 
     ov_node *next = (ov_node *)*head;
 
     while (next->next)
         next = next->next;
 
-    if (!ov_node_unplug(head, next)) return NULL;
+    if (!ov_node_unplug(head, next))
+        return NULL;
 
     return next;
 }
@@ -381,10 +410,13 @@ void *ov_node_pop_last(void **head) {
 
 bool ov_node_insert_before(void **head, void *n, void *x) {
 
-    if (!head || !n || !x) goto error;
+    if (!head || !n || !x)
+        goto error;
 
-    if (n == x) goto error;
-    if (!*head) goto error;
+    if (n == x)
+        goto error;
+    if (!*head)
+        goto error;
 
     /*
      *      We perform a check if
@@ -405,9 +437,11 @@ bool ov_node_insert_before(void **head, void *n, void *x) {
         next = next->next;
     }
 
-    if (!included) return false;
+    if (!included)
+        return false;
 
-    if (!ov_node_unplug(head, n)) goto error;
+    if (!ov_node_unplug(head, n))
+        goto error;
 
     ov_node *node = (ov_node *)n;
     ov_node *prev = (ov_node *)*head;
@@ -445,10 +479,13 @@ error:
 
 bool ov_node_insert_after(void **head, void *n, void *p) {
 
-    if (!n || !p || !head) goto error;
-    if (!*head) goto error;
+    if (!n || !p || !head)
+        goto error;
+    if (!*head)
+        goto error;
 
-    if (n == p) goto error;
+    if (n == p)
+        goto error;
 
     ov_node *prev = (ov_node *)p;
     ov_node *node = (ov_node *)n;
@@ -466,9 +503,11 @@ bool ov_node_insert_after(void **head, void *n, void *p) {
         next = next->next;
     }
 
-    if (!included) return false;
+    if (!included)
+        return false;
 
-    if (!ov_node_unplug(head, node)) goto error;
+    if (!ov_node_unplug(head, node))
+        goto error;
 
     if (prev->next) {
 

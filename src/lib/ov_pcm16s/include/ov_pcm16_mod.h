@@ -41,10 +41,8 @@
  * Scales samples with `in` with scale_factor. Result will be stored in `out`.
  * If number_of_samples == 0, nothing is done.
  */
-bool ov_pcm_16_scale_to_32_bare(size_t number_of_samples,
-                                int16_t const *in,
-                                int32_t *out,
-                                double scale_factor);
+bool ov_pcm_16_scale_to_32_bare(size_t number_of_samples, int16_t const *in,
+                                int32_t *out, double scale_factor);
 
 /**
  * Scales samples with `in` with scale_factor. Result will be stored in `out`.
@@ -53,10 +51,8 @@ bool ov_pcm_16_scale_to_32_bare(size_t number_of_samples,
  * If you want a constant scale factor, just set both  `scale_factor_start` and
  * `scale_factor_end` to the desired constant factor.
  */
-bool ov_pcm_16_fade_to_32(size_t number_of_samples,
-                          int16_t const *in,
-                          int32_t *out,
-                          double scale_factor_start,
+bool ov_pcm_16_fade_to_32(size_t number_of_samples, int16_t const *in,
+                          int32_t *out, double scale_factor_start,
                           double scale_factor_end);
 
 /**
@@ -64,8 +60,7 @@ bool ov_pcm_16_fade_to_32(size_t number_of_samples,
  * If number_of_samples == 0, nothing is done.
  * If `params` is 0, its an error. Nothing is done and `false` returned.
  */
-bool ov_pcm_16_get_audio_params(size_t number_of_samples,
-                                int16_t const *in,
+bool ov_pcm_16_get_audio_params(size_t number_of_samples, int16_t const *in,
                                 ov_vad_parameters *params,
                                 int16_t *max_amplitude);
 
@@ -77,18 +72,15 @@ bool ov_pcm_16_get_audio_params(size_t number_of_samples,
  * If `max_amplitude` is not 0, the maximum of the amplitudes found in the PCM
  * is stored therein
  */
-bool ov_pcm_16_scale_to_32(size_t number_of_samples,
-                           int16_t const *in,
-                           int32_t *out,
-                           double scale_factor,
+bool ov_pcm_16_scale_to_32(size_t number_of_samples, int16_t const *in,
+                           int32_t *out, double scale_factor,
                            ov_vad_parameters *vad_params,
                            int16_t *max_amplitude);
 
 /**
  * Scale 32bit wide pcm signal
  */
-bool ov_pcm_32_scale(size_t number_of_samples,
-                     int32_t *pcm32,
+bool ov_pcm_32_scale(size_t number_of_samples, int32_t *pcm32,
                      double scale_factor);
 
 /**
@@ -96,32 +88,28 @@ bool ov_pcm_32_scale(size_t number_of_samples,
  * Find maximum amplitude and scale the signal in such a way that the max
  * amplitude equals max_amplitude
  */
-bool ov_pcm_32_normalize_to(size_t number_of_samples,
-                            int32_t *pcm32,
+bool ov_pcm_32_normalize_to(size_t number_of_samples, int32_t *pcm32,
                             uint32_t max_amplitude);
 
 /**
  * Transforms 32 bit samples to 16 bit samples by clipping at INT16_MAX/MIN
  * If number_of_samples == 0, nothing is done.
  */
-bool ov_pcm_32_clip_to_16(size_t number_of_samples,
-                          int32_t const *in,
+bool ov_pcm_32_clip_to_16(size_t number_of_samples, int32_t const *in,
                           int16_t *out);
 
 /**
  * Transforms 32 bit samples to 16 bit samples by audio compression.
  * If number_of_samples == 0, nothing is done.
  */
-bool ov_pcm_32_compress_to_16(size_t number_of_samples,
-                              int32_t const *in,
+bool ov_pcm_32_compress_to_16(size_t number_of_samples, int32_t const *in,
                               int16_t *out);
 
 /**
  * Sutracts  `in2` from `in1` and stores result in `in1`.
  * If number_of_samples == 0, nothing is done.
  */
-bool ov_pcm_32_subtract(size_t number_of_samples,
-                        int32_t *in1,
+bool ov_pcm_32_subtract(size_t number_of_samples, int32_t *in1,
                         int32_t const *in2);
 
 /**
@@ -135,23 +123,20 @@ bool ov_pcm_32_add(size_t number_of_samples, int32_t *in1, int32_t const *in2);
  * If number_of_samples == 0, nothing is done.
  * If `params` is 0, its an error. Nothing is done and `false` returned.
  */
-bool ov_pcm_16_get_vad_parameters(size_t number_of_samples,
-                                  int16_t const *in,
+bool ov_pcm_16_get_vad_parameters(size_t number_of_samples, int16_t const *in,
                                   ov_vad_parameters *params);
 
 /**
  * @see ov_pcm_16_get_vad_parameters
  * Same as ov_pcm_16_get_vad_parameters - but for 32bit samples.
  */
-bool ov_pcm_32_get_vad_parameters(size_t number_of_samples,
-                                  int32_t const *in,
+bool ov_pcm_32_get_vad_parameters(size_t number_of_samples, int32_t const *in,
                                   ov_vad_parameters *params);
 
 /**
  * Returns `true` if `params` indicate voice activity.
  */
-bool ov_pcm_vad_detected(uint64_t samplerate_hz,
-                         ov_vad_parameters params,
+bool ov_pcm_vad_detected(uint64_t samplerate_hz, ov_vad_parameters params,
                          ov_vad_config limits);
 
 /*----------------------------------------------------------------------------*/

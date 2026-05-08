@@ -231,26 +231,26 @@ int check_json_pointer_replace_special_encoding() {
 
     char *result = buffer2;
 
-    testrun(!json_pointer_replace_special_encoding(
-        NULL, size, buffer1, "abc", "xyz"));
+    testrun(!json_pointer_replace_special_encoding(NULL, size, buffer1, "abc",
+                                                   "xyz"));
 
-    testrun(!json_pointer_replace_special_encoding(
-        result, size, NULL, "abc", "xyz"));
+    testrun(!json_pointer_replace_special_encoding(result, size, NULL, "abc",
+                                                   "xyz"));
 
-    testrun(!json_pointer_replace_special_encoding(
-        result, size, buffer1, NULL, "xyz"));
+    testrun(!json_pointer_replace_special_encoding(result, size, buffer1, NULL,
+                                                   "xyz"));
 
-    testrun(!json_pointer_replace_special_encoding(
-        result, size, buffer1, "abc", NULL));
+    testrun(!json_pointer_replace_special_encoding(result, size, buffer1, "abc",
+                                                   NULL));
 
-    testrun(!json_pointer_replace_special_encoding(
-        result, 0, buffer1, "abc", "xyz"));
+    testrun(!json_pointer_replace_special_encoding(result, 0, buffer1, "abc",
+                                                   "xyz"));
 
     testrun(strlen(buffer2) == 0);
 
     // replace with same length
-    testrun(json_pointer_replace_special_encoding(
-        result, size, buffer1, "abc", "xyz"));
+    testrun(json_pointer_replace_special_encoding(result, size, buffer1, "abc",
+                                                  "xyz"));
 
     testrun(strlen(buffer2) == strlen(buffer1));
     testrun(strncmp("123xyzdefg", buffer2, strlen(buffer2)) == 0);
@@ -258,8 +258,8 @@ int check_json_pointer_replace_special_encoding() {
 
     // replace with shorter length
     memset(buffer2, '\0', size);
-    testrun(json_pointer_replace_special_encoding(
-        result, size, buffer1, "abc", "x"));
+    testrun(json_pointer_replace_special_encoding(result, size, buffer1, "abc",
+                                                  "x"));
 
     testrun(strlen(buffer2) == strlen(buffer1) - 2);
     testrun(strncmp("123xdefg", buffer2, strlen(buffer2)) == 0);
@@ -282,48 +282,48 @@ int check_json_pointer_replace_special_encoding() {
 
     // replace (not included)
     memset(buffer2, '\0', size);
-    testrun(json_pointer_replace_special_encoding(
-        result, size, buffer1, "vvv", "x"));
+    testrun(json_pointer_replace_special_encoding(result, size, buffer1, "vvv",
+                                                  "x"));
 
     testrun(strlen(buffer2) == strlen(buffer1));
     testrun(strncmp("123abcdefg", buffer2, strlen(buffer2)) == 0);
 
     // replace all
     memset(buffer2, '\0', size);
-    testrun(json_pointer_replace_special_encoding(
-        result, size, buffer1, "123abcdefg", "x"));
+    testrun(json_pointer_replace_special_encoding(result, size, buffer1,
+                                                  "123abcdefg", "x"));
 
     testrun(strlen(buffer2) == 1);
     testrun(strncmp("x", buffer2, strlen(buffer2)) == 0);
 
     // replace up to length
     memset(buffer2, '\0', size);
-    testrun(json_pointer_replace_special_encoding(
-        result, 9, buffer1, "abc", "xyz"));
+    testrun(json_pointer_replace_special_encoding(result, 9, buffer1, "abc",
+                                                  "xyz"));
     testrun(strlen(buffer2) == 9);
     testrun(strncmp("123xyzdef", buffer2, strlen(buffer2)) == 0);
 
     memset(buffer2, '\0', size);
-    testrun(json_pointer_replace_special_encoding(
-        result, 8, buffer1, "abc", "xyz"));
+    testrun(json_pointer_replace_special_encoding(result, 8, buffer1, "abc",
+                                                  "xyz"));
     testrun(strlen(buffer2) == 8);
     testrun(strncmp("123xyzde", buffer2, strlen(buffer2)) == 0);
 
     memset(buffer2, '\0', size);
-    testrun(json_pointer_replace_special_encoding(
-        result, 7, buffer1, "abc", "xyz"));
+    testrun(json_pointer_replace_special_encoding(result, 7, buffer1, "abc",
+                                                  "xyz"));
     testrun(strlen(buffer2) == 7);
     testrun(strncmp("123xyzd", buffer2, strlen(buffer2)) == 0);
 
     memset(buffer2, '\0', size);
-    testrun(json_pointer_replace_special_encoding(
-        result, 6, buffer1, "abc", "xyz"));
+    testrun(json_pointer_replace_special_encoding(result, 6, buffer1, "abc",
+                                                  "xyz"));
     testrun(strlen(buffer2) == 6);
     testrun(strncmp("123xyz", buffer2, strlen(buffer2)) == 0);
 
     memset(buffer2, '\0', size);
-    testrun(!json_pointer_replace_special_encoding(
-        result, 5, buffer1, "abc", "xyz"));
+    testrun(!json_pointer_replace_special_encoding(result, 5, buffer1, "abc",
+                                                   "xyz"));
     testrun(strlen(buffer2) == 0);
 
     memcpy(buffer1, "/123/abc/x", 10);

@@ -105,7 +105,8 @@ int test_ov_stun_username_encoding_length() {
     for (size_t i = 1; i < 600; i++) {
 
         pad = i % 4;
-        if (pad != 0) pad = 4 - pad;
+        if (pad != 0)
+            pad = 4 - pad;
 
         if (i <= 513) {
             testrun(4 + i + pad == ov_stun_username_encoding_length(name, i));

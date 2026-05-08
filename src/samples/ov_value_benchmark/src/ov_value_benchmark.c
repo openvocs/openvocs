@@ -37,13 +37,12 @@ size_t NUM_RUNS = 10000;
 
 size_t NUM_PARSE_RUNS = 10000;
 
-char const *parse_str =
-    "[\"aesir\", 4,\n"
-    "[\"odin\", \"thor\", \"loki\", \"heimdall\", "
-    "\"...\"],\n"
-    "\"vanir\", 3,\n"
-    "[\"freyr\", \"freya\", \"njoerdr\"],\n"
-    "\"swartalfar\", 0, null]";
+char const *parse_str = "[\"aesir\", 4,\n"
+                        "[\"odin\", \"thor\", \"loki\", \"heimdall\", "
+                        "\"...\"],\n"
+                        "\"vanir\", 3,\n"
+                        "[\"freyr\", \"freya\", \"njoerdr\"],\n"
+                        "\"swartalfar\", 0, null]";
 
 /*----------------------------------------------------------------------------*/
 
@@ -84,14 +83,11 @@ static struct usage get_usage() {
 /*----------------------------------------------------------------------------*/
 
 #define print_time(desc)                                                       \
-    printf("\n%s   %li.%li\n",                                                 \
-           desc,                                                               \
-           after.time.secs - before.time_secs,                                 \
+    printf("\n%s   %li.%li\n", desc, after.time.secs - before.time_secs,       \
            after.time.usecs - before.time_usecs)
 
 #define print_field(desc, field)                                               \
-    printf("\n\n %s   " #field " %li\n",                                       \
-           desc,                                                               \
+    printf("\n\n %s   " #field " %li\n", desc,                                 \
            after.rusage.ru_##field - before.rusage.ru_##field);
 
 /*----------------------------------------------------------------------------*/
@@ -110,8 +106,7 @@ void print_usage(struct usage before) {
         exit(EXIT_FAILURE);
     }
 
-    printf("\n%s   %li.%li\n",
-           "Time passed",
+    printf("\n%s   %li.%li\n", "Time passed",
            after.time.tv_sec - before.time.tv_sec,
            (long)after.time.tv_usec - before.time.tv_usec);
 
@@ -142,13 +137,11 @@ static void ov_value_sample() {
         vnumber = ov_value_number(i);
         vstring = ov_value_string("Hrafn");
 
-        vlist = ov_value_list(ov_value_null(),
-                              ov_value_string("Cthulhu naftagn"),
-                              ov_value_true());
+        vlist =
+            ov_value_list(ov_value_null(), ov_value_string("Cthulhu naftagn"),
+                          ov_value_true());
 
-        vlist = ov_value_list(ov_value_true(),
-                              ov_value_number(143),
-                              vlist,
+        vlist = ov_value_list(ov_value_true(), ov_value_number(143), vlist,
                               ov_value_string("Naglfar"));
 
         vnull = ov_value_free(vnull);
@@ -223,9 +216,7 @@ static void ov_json_value_sample() {
         vlist = get_json_array(
             ov_json_null(), ov_json_string("Cthulhu naftagn"), ov_json_true());
 
-        vlist = get_json_array(ov_json_true(),
-                               ov_json_number(143),
-                               vlist,
+        vlist = get_json_array(ov_json_true(), ov_json_number(143), vlist,
                                ov_json_string("Naglfar"));
 
         vnull = ov_json_value_free(vnull);
@@ -269,7 +260,8 @@ static void ov_json_value_from_string_sample() {
 
 size_t get_NUM_RUNS(int argc, char **argv) {
 
-    if (2 > argc) return NUM_RUNS;
+    if (2 > argc)
+        return NUM_RUNS;
 
     char *endptr = 0;
     long NUM_RUNS_l = strtol(argv[1], &endptr, 0);

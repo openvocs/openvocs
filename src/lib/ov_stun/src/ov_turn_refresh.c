@@ -39,30 +39,23 @@
 
 bool ov_turn_method_is_refresh(const uint8_t *frame, size_t length) {
 
-    if (TURN_REFRESH == ov_stun_frame_get_method(frame, length)) return true;
+    if (TURN_REFRESH == ov_stun_frame_get_method(frame, length))
+        return true;
 
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_turn_refresh_generate_request_long_term(uint8_t *start,
-                                                size_t length,
-                                                uint8_t **next,
-                                                const uint8_t *transaction_id,
-                                                const uint8_t *software,
-                                                size_t software_length,
-                                                const uint8_t *username,
-                                                size_t username_length,
-                                                const uint8_t *realm,
-                                                size_t realm_length,
-                                                const uint8_t *nonce,
-                                                size_t nonce_length,
-                                                const uint8_t *key,
-                                                size_t key_len,
-                                                bool fingerprint) {
+bool ov_turn_refresh_generate_request_long_term(
+    uint8_t *start, size_t length, uint8_t **next,
+    const uint8_t *transaction_id, const uint8_t *software,
+    size_t software_length, const uint8_t *username, size_t username_length,
+    const uint8_t *realm, size_t realm_length, const uint8_t *nonce,
+    size_t nonce_length, const uint8_t *key, size_t key_len, bool fingerprint) {
 
-    if (!start || length < 20 || !transaction_id) goto error;
+    if (!start || length < 20 || !transaction_id)
+        goto error;
 
     uint8_t *ptr = start;
     size_t required = 20;
@@ -72,10 +65,12 @@ bool ov_turn_refresh_generate_request_long_term(uint8_t *start,
 
     if (software) {
 
-        if (!ov_stun_software_validate(software, software_length)) goto error;
+        if (!ov_stun_software_validate(software, software_length))
+            goto error;
 
         len = ov_stun_software_encoding_length(software, software_length);
-        if (len == 0) goto error;
+        if (len == 0)
+            goto error;
 
         required += len;
     }
@@ -83,12 +78,14 @@ bool ov_turn_refresh_generate_request_long_term(uint8_t *start,
     required += ov_stun_message_integrity_encoding_length();
     required += ov_turn_attr_requested_transport_encoding_length();
 
-    if (fingerprint) required += ov_stun_fingerprint_encoding_length();
+    if (fingerprint)
+        required += ov_stun_fingerprint_encoding_length();
 
     if (username) {
 
         len = ov_stun_username_encoding_length(username, username_length);
-        if (len == 0) goto error;
+        if (len == 0)
+            goto error;
 
         required += len;
     }
@@ -96,7 +93,8 @@ bool ov_turn_refresh_generate_request_long_term(uint8_t *start,
     if (realm) {
 
         len = ov_stun_realm_encoding_length(realm, realm_length);
-        if (len == 0) goto error;
+        if (len == 0)
+            goto error;
 
         required += len;
     }
@@ -104,24 +102,31 @@ bool ov_turn_refresh_generate_request_long_term(uint8_t *start,
     if (nonce) {
 
         len = ov_stun_nonce_encoding_length(nonce, nonce_length);
-        if (len == 0) goto error;
+        if (len == 0)
+            goto error;
 
         required += len;
     }
 
-    if (length < required) goto error;
+    if (length < required)
+        goto error;
 
     // write header
 
-    if (!memset(start, 0, required)) goto error;
+    if (!memset(start, 0, required))
+        goto error;
 
-    if (!ov_stun_frame_set_request(start, length)) goto error;
+    if (!ov_stun_frame_set_request(start, length))
+        goto error;
 
-    if (!ov_stun_frame_set_method(start, length, TURN_REFRESH)) goto error;
+    if (!ov_stun_frame_set_method(start, length, TURN_REFRESH))
+        goto error;
 
-    if (!ov_stun_frame_set_magic_cookie(start, length)) goto error;
+    if (!ov_stun_frame_set_magic_cookie(start, length))
+        goto error;
 
-    if (!ov_stun_frame_set_length(start, length, required - 20)) goto error;
+    if (!ov_stun_frame_set_length(start, length, required - 20))
+        goto error;
 
     if (!ov_stun_frame_set_transaction_id(start, length, transaction_id))
         goto error;
@@ -130,39 +135,42 @@ bool ov_turn_refresh_generate_request_long_term(uint8_t *start,
 
     ptr = start + 20;
 
-    if (!ov_turn_attr_requested_transport_encode(
-            ptr, length - (ptr - start), &ptr, 17))
+    if (!ov_turn_attr_requested_transport_encode(ptr, length - (ptr - start),
+                                                 &ptr, 17))
         goto error;
 
     if (username)
-        if (!ov_stun_username_encode(
-                ptr, length - (ptr - start), &ptr, username, username_length))
+        if (!ov_stun_username_encode(ptr, length - (ptr - start), &ptr,
+                                     username, username_length))
             goto error;
 
     if (realm)
-        if (!ov_stun_realm_encode(
-                ptr, length - (ptr - start), &ptr, realm, realm_length))
+        if (!ov_stun_realm_encode(ptr, length - (ptr - start), &ptr, realm,
+                                  realm_length))
             goto error;
 
     if (nonce)
-        if (!ov_stun_nonce_encode(
-                ptr, length - (ptr - start), &ptr, nonce, nonce_length))
+        if (!ov_stun_nonce_encode(ptr, length - (ptr - start), &ptr, nonce,
+                                  nonce_length))
             goto error;
 
     if (software)
-        if (!ov_stun_software_encode(
-                ptr, length - (ptr - start), &ptr, software, software_length))
+        if (!ov_stun_software_encode(ptr, length - (ptr - start), &ptr,
+                                     software, software_length))
             goto error;
 
     if (!ov_stun_add_message_integrity(start, length, ptr, &ptr, key, key_len))
         goto error;
 
     if (fingerprint)
-        if (!ov_stun_add_fingerprint(start, length, ptr, &ptr)) goto error;
+        if (!ov_stun_add_fingerprint(start, length, ptr, &ptr))
+            goto error;
 
-    if (next) *next = ptr;
+    if (next)
+        *next = ptr;
     return true;
 error:
-    if (next) *next = NULL;
+    if (next)
+        *next = NULL;
     return false;
 }

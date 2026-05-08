@@ -185,8 +185,8 @@ ov_json_value *ov_thread_loop_config_to_json(const ov_thread_loop_config config,
 /**
  * Deserialize ov_thread_loop_config from JSON
  */
-ov_thread_loop_config ov_thread_loop_config_from_json(
-    const ov_json_value *restrict json);
+ov_thread_loop_config
+ov_thread_loop_config_from_json(const ov_json_value *restrict json);
 
 /*----------------------------------------------------------------------------*/
 #endif /* ov_thread_loop_h */

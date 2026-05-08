@@ -35,11 +35,13 @@
 
 bool ov_stun_frame_add_padding(const uint8_t *head, uint8_t **pos) {
 
-    if (!head || !pos || !*pos) return false;
+    if (!head || !pos || !*pos)
+        return false;
 
     size_t pad = 0;
     pad = (*pos - head) % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     *pos = *pos + pad;
     return true;
@@ -57,29 +59,38 @@ bool ov_stun_frame_add_padding(const uint8_t *head, uint8_t **pos) {
 
 bool ov_stun_frame_is_valid(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 20) goto error;
+    if (!buffer || length < 20)
+        goto error;
 
     // MUST be 32 bit padded
-    if (length % 4 != 0) return false;
+    if (length % 4 != 0)
+        return false;
 
     // check leading zeros
-    if ((buffer[0] & 0x80) || (buffer[0] & 0x40)) return false;
+    if ((buffer[0] & 0x80) || (buffer[0] & 0x40))
+        return false;
 
     // check closing zeros
-    if ((buffer[3] & 0x01) || (buffer[3] & 0x02)) return false;
+    if ((buffer[3] & 0x01) || (buffer[3] & 0x02))
+        return false;
 
     // check magic cookie
-    if (buffer[4] != 0x21) return false;
+    if (buffer[4] != 0x21)
+        return false;
 
-    if (buffer[5] != 0x12) return false;
+    if (buffer[5] != 0x12)
+        return false;
 
-    if (buffer[6] != 0xA4) return false;
+    if (buffer[6] != 0xA4)
+        return false;
 
-    if (buffer[7] != 0x42) return false;
+    if (buffer[7] != 0x42)
+        return false;
 
     // frame length MUST be message length + header
     size_t len = 20 + ov_stun_frame_get_length(buffer, length);
-    if (length != len) goto error;
+    if (length != len)
+        goto error;
 
     return true;
 
@@ -95,14 +106,14 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-bool ov_stun_frame_slice(const uint8_t *buffer,
-                         size_t length,
-                         uint8_t *array[],
+bool ov_stun_frame_slice(const uint8_t *buffer, size_t length, uint8_t *array[],
                          size_t array_size) {
 
-    if (!buffer || length < 20) goto error;
+    if (!buffer || length < 20)
+        goto error;
 
-    if (!array || array_size < 1) goto error;
+    if (!array || array_size < 1)
+        goto error;
 
     size_t len = 0;
     int64_t open = 0;
@@ -112,7 +123,8 @@ bool ov_stun_frame_slice(const uint8_t *buffer,
     open = ov_stun_frame_get_length(buffer, length);
     ptr = (uint8_t *)buffer + 20;
 
-    if (open != (int64_t)length - 20) goto error;
+    if (open != (int64_t)length - 20)
+        goto error;
 
     memset(array, 0, array_size);
 
@@ -122,19 +134,23 @@ bool ov_stun_frame_slice(const uint8_t *buffer,
         array[item] = ptr;
         item++;
 
-        if (item == array_size) goto error;
+        if (item == array_size)
+            goto error;
 
-        if (open < 4) goto error;
+        if (open < 4)
+            goto error;
 
         len = ntohs(*(uint16_t *)(ptr + 2));
 
         // add padding to 32 bit
         pad = len % 4;
-        if (pad != 0) pad = 4 - pad;
+        if (pad != 0)
+            pad = 4 - pad;
 
         len += pad;
         // log("len %jd pad %jd", len, pad);
-        if (open < (int64_t)(4 + len)) goto error;
+        if (open < (int64_t)(4 + len))
+            goto error;
 
         ptr += (4 + len);
         open -= (4 + len);
@@ -142,7 +158,8 @@ bool ov_stun_frame_slice(const uint8_t *buffer,
 
     return true;
 error:
-    if (array) memset(array, 0, array_size);
+    if (array)
+        memset(array, 0, array_size);
     return false;
 }
 
@@ -156,7 +173,8 @@ error:
 
 int64_t ov_stun_frame_get_length(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 4) return -1;
+    if (!buffer || length < 4)
+        return -1;
 
     // use of shift based calculation (network byte order)
     return ntohs(*(uint16_t *)(buffer + 2));
@@ -164,11 +182,11 @@ int64_t ov_stun_frame_get_length(const uint8_t *buffer, size_t length) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_frame_set_length(uint8_t *head,
-                              size_t header_length,
+bool ov_stun_frame_set_length(uint8_t *head, size_t header_length,
                               uint16_t length) {
 
-    if (!head || header_length < 20) return false;
+    if (!head || header_length < 20)
+        return false;
 
     *(uint16_t *)(head + 2) = htons(length);
     return true;
@@ -219,13 +237,14 @@ bool ov_stun_frame_generate_transaction_id(uint8_t *buffer) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_frame_set_transaction_id(uint8_t *head,
-                                      size_t length,
+bool ov_stun_frame_set_transaction_id(uint8_t *head, size_t length,
                                       const uint8_t *id) {
 
-    if (!head || !id || length < 20) return false;
+    if (!head || !id || length < 20)
+        return false;
 
-    if (!memcpy(head + 8, id, 12)) return false;
+    if (!memcpy(head + 8, id, 12))
+        return false;
 
     return true;
 }
@@ -234,7 +253,8 @@ bool ov_stun_frame_set_transaction_id(uint8_t *head,
 
 uint8_t *ov_stun_frame_get_transaction_id(const uint8_t *head, size_t length) {
 
-    if (!head || length < 20) return false;
+    if (!head || length < 20)
+        return false;
 
     return (uint8_t *)head + 8;
 }
@@ -249,15 +269,20 @@ uint8_t *ov_stun_frame_get_transaction_id(const uint8_t *head, size_t length) {
 
 bool ov_stun_frame_has_magic_cookie(const uint8_t *head, size_t length) {
 
-    if (!head || length < 20) return false;
+    if (!head || length < 20)
+        return false;
 
-    if (head[4] != 0x21) return false;
+    if (head[4] != 0x21)
+        return false;
 
-    if (head[5] != 0x12) return false;
+    if (head[5] != 0x12)
+        return false;
 
-    if (head[6] != 0xA4) return false;
+    if (head[6] != 0xA4)
+        return false;
 
-    if (head[7] != 0x42) return false;
+    if (head[7] != 0x42)
+        return false;
 
     return true;
 }
@@ -266,7 +291,8 @@ bool ov_stun_frame_has_magic_cookie(const uint8_t *head, size_t length) {
 
 bool ov_stun_frame_set_magic_cookie(uint8_t *head, size_t length) {
 
-    if (!head || length < 20) return false;
+    if (!head || length < 20)
+        return false;
 
     head[4] = 0x21;
     head[5] = 0x12;
@@ -286,7 +312,8 @@ bool ov_stun_frame_set_magic_cookie(uint8_t *head, size_t length) {
 
 uint16_t ov_stun_frame_get_method(const uint8_t *head, size_t length) {
 
-    if (!head || length < 2) return false;
+    if (!head || length < 2)
+        return false;
 
     uint16_t type = 0;
 
@@ -303,7 +330,8 @@ uint16_t ov_stun_frame_get_method(const uint8_t *head, size_t length) {
 
 bool ov_stun_frame_set_method(uint8_t *head, size_t length, uint16_t type) {
 
-    if (!head || length < 20 || type > 0xfff) return false;
+    if (!head || length < 20 || type > 0xfff)
+        return false;
 
     /*
      *  0                   1
@@ -350,11 +378,14 @@ bool ov_stun_frame_set_method(uint8_t *head, size_t length, uint16_t type) {
 
 bool ov_stun_frame_class_is_request(const uint8_t *head, size_t length) {
 
-    if (!head || length < 2) return false;
+    if (!head || length < 2)
+        return false;
 
-    if ((head[0] & 0x01)) return false;
+    if ((head[0] & 0x01))
+        return false;
 
-    if ((head[1] & 0x10)) return false;
+    if ((head[1] & 0x10))
+        return false;
 
     return true;
 }
@@ -363,11 +394,14 @@ bool ov_stun_frame_class_is_request(const uint8_t *head, size_t length) {
 
 bool ov_stun_frame_class_is_indication(const uint8_t *head, size_t length) {
 
-    if (!head || length < 2) return false;
+    if (!head || length < 2)
+        return false;
 
-    if ((head[0] & 0x01)) return false;
+    if ((head[0] & 0x01))
+        return false;
 
-    if (!(head[1] & 0x10)) return false;
+    if (!(head[1] & 0x10))
+        return false;
 
     return true;
 }
@@ -377,11 +411,14 @@ bool ov_stun_frame_class_is_indication(const uint8_t *head, size_t length) {
 bool ov_stun_frame_class_is_success_response(const uint8_t *head,
                                              size_t length) {
 
-    if (!head || length < 2) return false;
+    if (!head || length < 2)
+        return false;
 
-    if (!(head[0] & 0x01)) return false;
+    if (!(head[0] & 0x01))
+        return false;
 
-    if ((head[1] & 0x10)) return false;
+    if ((head[1] & 0x10))
+        return false;
 
     return true;
 }
@@ -390,11 +427,14 @@ bool ov_stun_frame_class_is_success_response(const uint8_t *head,
 
 bool ov_stun_frame_class_is_error_response(const uint8_t *head, size_t length) {
 
-    if (!head || length < 2) return false;
+    if (!head || length < 2)
+        return false;
 
-    if (!(head[0] & 0x01)) return false;
+    if (!(head[0] & 0x01))
+        return false;
 
-    if (!(head[1] & 0x10)) return false;
+    if (!(head[1] & 0x10))
+        return false;
 
     return true;
 }
@@ -403,7 +443,8 @@ bool ov_stun_frame_class_is_error_response(const uint8_t *head, size_t length) {
 
 bool ov_stun_frame_set_success_response(uint8_t *head, size_t length) {
 
-    if (!head || length < 20) return false;
+    if (!head || length < 20)
+        return false;
 
     head[0] = head[0] | 0x01;
     head[1] = (head[1] & 0xEF);
@@ -415,7 +456,8 @@ bool ov_stun_frame_set_success_response(uint8_t *head, size_t length) {
 
 bool ov_stun_frame_set_error_response(uint8_t *head, size_t length) {
 
-    if (!head || length < 20) return false;
+    if (!head || length < 20)
+        return false;
 
     head[0] = head[0] | 0x01;
     head[1] = head[1] | 0x10;
@@ -427,7 +469,8 @@ bool ov_stun_frame_set_error_response(uint8_t *head, size_t length) {
 
 bool ov_stun_frame_set_request(uint8_t *head, size_t length) {
 
-    if (!head || length < 20) return false;
+    if (!head || length < 20)
+        return false;
 
     head[0] = head[0] & 0x3E;
     head[1] = head[1] & 0xEF;
@@ -439,7 +482,8 @@ bool ov_stun_frame_set_request(uint8_t *head, size_t length) {
 
 bool ov_stun_frame_set_indication(uint8_t *head, size_t length) {
 
-    if (!head || length < 20) return false;
+    if (!head || length < 20)
+        return false;
 
     head[0] = head[0] & 0x3E;
     head[1] = head[1] | 0x10;

@@ -40,9 +40,7 @@ static int ov_pcm_16_resampler_free_test() { return testrun_log_success(); }
                                    RESAMPLING
  ****************************************************************************/
 
-static void print_samples(FILE *f,
-                          int16_t const *samples,
-                          size_t num_samples,
+static void print_samples(FILE *f, int16_t const *samples, size_t num_samples,
                           double samplerate_hz) {
 
     TEST_ASSERT(0 != f);
@@ -69,10 +67,8 @@ static void print_samples(FILE *f,
 
 /*----------------------------------------------------------------------------*/
 
-static void print_samples_to_file(char const *path,
-                                  int16_t const *sig_in,
-                                  size_t num_samples,
-                                  double samplerate_hz) {
+static void print_samples_to_file(char const *path, int16_t const *sig_in,
+                                  size_t num_samples, double samplerate_hz) {
 
     TEST_ASSERT(0 != path);
 
@@ -173,8 +169,8 @@ static int ov_pcm_16_resample_test() {
 
     print_samples_to_file("/tmp/in.csv", sig_in, num_samples, samplerate_in_hz);
 
-    resampler = ov_pcm_16_resampler_create(
-        num_samples, num_samples, samplerate_in_hz, samplerate_out_hz);
+    resampler = ov_pcm_16_resampler_create(num_samples, num_samples,
+                                           samplerate_in_hz, samplerate_out_hz);
     testrun(0 != resampler);
 
     out = calloc(1, sizeof(int16_t) * num_samples);
@@ -191,12 +187,11 @@ static int ov_pcm_16_resample_test() {
         fprintf(stdout,
                 "Warning: Number of required output samples %zu higher than "
                 "actual output buffer: %zu\n",
-                num_out_samples,
-                out_length_samples);
+                num_out_samples, out_length_samples);
     }
 
-    print_samples_to_file(
-        "/tmp/out.csv", out, num_out_samples, samplerate_out_hz);
+    print_samples_to_file("/tmp/out.csv", out, num_out_samples,
+                          samplerate_out_hz);
 
     printf("Done resampling\n");
 
@@ -213,7 +208,5 @@ static int ov_pcm_16_resample_test() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_pcm_resampler",
-            ov_pcm_16_resampler_create_test,
-            ov_pcm_16_resampler_free_test,
-            ov_pcm_16_resample_test);
+OV_TEST_RUN("ov_pcm_resampler", ov_pcm_16_resampler_create_test,
+            ov_pcm_16_resampler_free_test, ov_pcm_16_resample_test);

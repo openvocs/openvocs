@@ -36,11 +36,11 @@ const char *ov_ice_server_type_to_string(ov_ice_server_type type) {
 
     switch (type) {
 
-        case OV_ICE_STUN_SERVER:
-            return OV_ICE_STRING_STUN;
+    case OV_ICE_STUN_SERVER:
+        return OV_ICE_STRING_STUN;
 
-        case OV_ICE_TURN_SERVER:
-            return OV_ICE_STRING_TURN;
+    case OV_ICE_TURN_SERVER:
+        return OV_ICE_STRING_TURN;
     }
 
     return NULL;
@@ -50,7 +50,8 @@ const char *ov_ice_server_type_to_string(ov_ice_server_type type) {
 
 ov_ice_server_type ov_ice_server_type_from_string(const char *string) {
 
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     if (0 == strncmp(string, OV_ICE_STRING_TURN, strlen(OV_ICE_STRING_TURN)))
         return OV_ICE_TURN_SERVER;
@@ -66,30 +67,38 @@ ov_json_value *ov_ice_server_config_to_json(const ov_ice_server *config) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!config) goto error;
+    if (!config)
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     const char *type = OV_ICE_STRING_STUN;
-    if (config->type == OV_ICE_TURN_SERVER) type = OV_ICE_STRING_TURN;
+    if (config->type == OV_ICE_TURN_SERVER)
+        type = OV_ICE_STRING_TURN;
 
     val = ov_json_string(type);
-    if (!ov_json_object_set(out, OV_KEY_TYPE, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_TYPE, val))
+        goto error;
 
     val = NULL;
-    if (!ov_socket_configuration_to_json(config->socket, &val)) goto error;
+    if (!ov_socket_configuration_to_json(config->socket, &val))
+        goto error;
 
-    if (!ov_json_object_set(out, OV_KEY_SOCKET, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_SOCKET, val))
+        goto error;
 
     if (0 != config->auth.user[0]) {
         val = ov_json_string(config->auth.user);
-        if (!ov_json_object_set(out, OV_KEY_USER, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_USER, val))
+            goto error;
     }
 
     if (0 != config->auth.pass[0]) {
         val = ov_json_string(config->auth.pass);
-        if (!ov_json_object_set(out, OV_KEY_PASSWORD, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_PASSWORD, val))
+            goto error;
     }
 
     return out;
@@ -105,11 +114,13 @@ ov_ice_server ov_ice_server_config_from_json(ov_json_value *value) {
 
     ov_ice_server config = {0};
 
-    if (!value) goto done;
+    if (!value)
+        goto done;
 
     ov_json_value *conf = ov_json_object_get(value, OV_KEY_SERVER);
 
-    if (!conf) conf = value;
+    if (!conf)
+        conf = value;
 
     config.type = ov_ice_server_type_from_string(
         ov_json_string_get(ov_json_object_get(conf, OV_KEY_TYPE)));
@@ -120,11 +131,13 @@ ov_ice_server ov_ice_server_config_from_json(ov_json_value *value) {
     const char *string =
         ov_json_string_get(ov_json_object_get(conf, OV_KEY_USER));
 
-    if (string) strncpy(config.auth.user, string, OV_ICE_STUN_USER_MAX);
+    if (string)
+        strncpy(config.auth.user, string, OV_ICE_STUN_USER_MAX);
 
     string = ov_json_string_get(ov_json_object_get(conf, OV_KEY_PASSWORD));
 
-    if (string) strncpy(config.auth.pass, string, OV_ICE_STUN_PASS_MAX);
+    if (string)
+        strncpy(config.auth.pass, string, OV_ICE_STUN_PASS_MAX);
 done:
     return config;
 }
@@ -144,11 +157,13 @@ ov_ice_server *ov_ice_server_create(ov_event_loop *loop) {
 
 ov_ice_server *ov_ice_server_cast(const void *data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_node *node = (ov_node *)data;
 
-    if (node->type == OV_ICE_SERVER_MAGIC_BYTES) return (ov_ice_server *)data;
+    if (node->type == OV_ICE_SERVER_MAGIC_BYTES)
+        return (ov_ice_server *)data;
 error:
     return NULL;
 }
@@ -158,7 +173,8 @@ error:
 void *ov_ice_server_free(void *self) {
 
     ov_ice_server *server = ov_ice_server_cast(self);
-    if (!server) goto error;
+    if (!server)
+        goto error;
 
     if (OV_TIMER_INVALID != server->timer.keepalive) {
 

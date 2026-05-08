@@ -117,9 +117,7 @@ static int free_caches() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_rtp_frame_message",
-            test_ov_rtp_frame_message_enable_caching,
-            test_ov_rtp_frame_message_create,
-            free_caches);
+OV_TEST_RUN("ov_rtp_frame_message", test_ov_rtp_frame_message_enable_caching,
+            test_ov_rtp_frame_message_create, free_caches);
 
 /*----------------------------------------------------------------------------*/

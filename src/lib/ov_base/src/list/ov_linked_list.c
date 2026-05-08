@@ -68,7 +68,37 @@ typedef struct {
 /*----------------------------------------------------------------------------*/
 
 /*
- For each function *must* hold:
+
+The list double-linked. It is either empty:
+
+   -----------------------------------
+   | Last: 0 | Content: 0  | Next: 0 |
+   -----------------------------------
+
+Or contains some entries:
+
+   -----------------------------
+   | Last | Content: 0  | Next |
+   -----------------------------
+                           |
+                           V
+         ---------------------------------
+         | Last: 0 | Content: 13245  | Next |
+         ---------------------------------
+                  ^                  |
+                  |                  V
+              ------------------------------------
+              | Last | Content: 13245  | Next: 0 |
+              ------------------------------------
+
+Nota bene:
+- The first entry is special, the content is always 0.
+- Other than with regular entries, its 'last' pointer points to the end of the list
+- Its 'next' pointer points towards the first entry with actual content
+- The first entry with actual content is always the second in the list.
+
+
+ Therefore, for each function *must* hold:
 
         OV_ASSERT((0 == list->head.next) || (0 == list->head.next->last));
         OV_ASSERT((0 == list->head.last) || (0 == list->head.last->next));
@@ -515,8 +545,9 @@ static bool impl_linked_list_insert(ov_list *self, size_t pos, void *item) {
     }
 
     /* If new element is the only element in the list,
-     * head.next ought to point to it ...*/
+     * head.next already ought to point to it ...*/
     if (0 == ll->head.last) {
+        ll->head.next = new;
         ll->head.last = new;
     }
 
@@ -614,7 +645,7 @@ static void *impl_linked_list_pop(ov_list *self) {
 
     LinkedList *ll = AS_LINKED_LIST(self);
     if (0 == ll) goto no_list_error;
-
+    
     ASSERT_LIST_INVARIANTS(ll);
 
     ListEntity *last = ll->head.last;

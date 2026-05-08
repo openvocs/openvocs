@@ -94,8 +94,7 @@ static uint32_t calc_lookup_entry_reflected(uint32_t i, uint32_t poly) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_crc32_generate_table_for(uint32_t polynomial,
-                                 bool reverted_in,
+bool ov_crc32_generate_table_for(uint32_t polynomial, bool reverted_in,
                                  uint32_t lookup[0x100]) {
 
     if (ov_ptr_valid(lookup, "Cannot generate CRC32 table: No target memory")) {
@@ -124,10 +123,8 @@ bool ov_crc32_generate_table_for(uint32_t polynomial,
 
 /*----------------------------------------------------------------------------*/
 
-static uint32_t crc32_straight_in(uint32_t crc,
-                                  uint8_t const *data,
-                                  size_t len_octets,
-                                  uint32_t lookup[0x100]) {
+static uint32_t crc32_straight_in(uint32_t crc, uint8_t const *data,
+                                  size_t len_octets, uint32_t lookup[0x100]) {
 
     // fprintf(stderr, "Calculating checksum: ");
     for (size_t i = 0; i < len_octets; ++i) {
@@ -141,10 +138,8 @@ static uint32_t crc32_straight_in(uint32_t crc,
 
 /*----------------------------------------------------------------------------*/
 
-static uint32_t crc32_reflected_in(uint32_t crc,
-                                   uint8_t const *data,
-                                   size_t len_octets,
-                                   uint32_t lookup[0x100]) {
+static uint32_t crc32_reflected_in(uint32_t crc, uint8_t const *data,
+                                   size_t len_octets, uint32_t lookup[0x100]) {
 
     for (size_t i = 0; i < len_octets; ++i) {
         crc = (crc >> 8) ^ lookup[data[i] ^ (crc & 0xff)];
@@ -155,12 +150,8 @@ static uint32_t crc32_reflected_in(uint32_t crc,
 
 /*----------------------------------------------------------------------------*/
 
-uint32_t ov_crc32_sum(uint32_t crc,
-                      uint8_t const *data,
-                      size_t len_octets,
-                      bool rfin,
-                      bool rfout,
-                      uint32_t lookup[0x100]) {
+uint32_t ov_crc32_sum(uint32_t crc, uint8_t const *data, size_t len_octets,
+                      bool rfin, bool rfout, uint32_t lookup[0x100]) {
 
     if (rfin) {
 

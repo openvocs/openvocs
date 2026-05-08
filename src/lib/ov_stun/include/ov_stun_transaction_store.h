@@ -60,13 +60,13 @@ typedef struct ov_stun_transaction_store_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_stun_transaction_store *ov_stun_transaction_store_create(
-    ov_stun_transaction_store_config config);
+ov_stun_transaction_store *
+ov_stun_transaction_store_create(ov_stun_transaction_store_config config);
 
 /*----------------------------------------------------------------------------*/
 
-ov_stun_transaction_store *ov_stun_transaction_store_free(
-    ov_stun_transaction_store *self);
+ov_stun_transaction_store *
+ov_stun_transaction_store_free(ov_stun_transaction_store *self);
 
 /*----------------------------------------------------------------------------*/
 

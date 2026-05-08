@@ -76,10 +76,8 @@ size_t ov_turn_attr_channel_number_encoding_length();
         @param number   number to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_channel_number_encode(uint8_t *buffer,
-                                        size_t length,
-                                        uint8_t **next,
-                                        uint16_t number);
+bool ov_turn_attr_channel_number_encode(uint8_t *buffer, size_t length,
+                                        uint8_t **next, uint16_t number);
 
 /*----------------------------------------------------------------------------*/
 
@@ -90,8 +88,7 @@ bool ov_turn_attr_channel_number_encode(uint8_t *buffer,
         @param length   length of the buffer
         @param number   pointer to store decoded number
 */
-bool ov_turn_attr_channel_number_decode(const uint8_t *buffer,
-                                        size_t length,
+bool ov_turn_attr_channel_number_decode(const uint8_t *buffer, size_t length,
                                         uint16_t *number);
 
 #endif /* ov_turn_attr_channel_number_h */

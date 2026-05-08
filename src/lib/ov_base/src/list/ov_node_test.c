@@ -1086,7 +1086,8 @@ int test_ov_node_insert_before() {
         test = head;
         while (test) {
 
-            if (test == node) break;
+            if (test == node)
+                break;
 
             if (test->value < node->value) {
                 ov_node_insert_before(&head, node, test);
@@ -1126,7 +1127,8 @@ int test_ov_node_insert_before() {
         test = head;
         while (test) {
 
-            if (test == node) break;
+            if (test == node)
+                break;
 
             if (test->value < node->value) {
 

@@ -67,12 +67,11 @@ static int32_t clip_to_32_bit(int64_t val) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_16_scale_to_32_bare(size_t number_of_samples,
-                                int16_t const *in,
-                                int32_t *out,
-                                double scale_factor) {
+bool ov_pcm_16_scale_to_32_bare(size_t number_of_samples, int16_t const *in,
+                                int32_t *out, double scale_factor) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if ((0 == in) || (0 == out)) {
         goto error;
@@ -97,10 +96,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_16_fade_to_32(size_t number_of_samples,
-                          int16_t const *in,
-                          int32_t *out,
-                          double scale_factor_start,
+bool ov_pcm_16_fade_to_32(size_t number_of_samples, int16_t const *in,
+                          int32_t *out, double scale_factor_start,
                           double scale_factor_end) {
 
     if (0 == number_of_samples) {
@@ -129,12 +126,12 @@ bool ov_pcm_16_fade_to_32(size_t number_of_samples,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_16_get_audio_params(size_t number_of_samples,
-                                int16_t const *in,
+bool ov_pcm_16_get_audio_params(size_t number_of_samples, int16_t const *in,
                                 ov_vad_parameters *params,
                                 int16_t *max_amplitude) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if ((0 == in) || (0 == params)) {
         goto error;
@@ -184,14 +181,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_16_scale_to_32(size_t number_of_samples,
-                           int16_t const *in,
-                           int32_t *out,
-                           double scale_factor,
+bool ov_pcm_16_scale_to_32(size_t number_of_samples, int16_t const *in,
+                           int32_t *out, double scale_factor,
                            ov_vad_parameters *vad_params,
                            int16_t *max_amplitude) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if ((0 == in) || (0 == out)) {
         goto error;
@@ -248,11 +244,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_32_scale(size_t number_of_samples,
-                     int32_t *pcm32,
+bool ov_pcm_32_scale(size_t number_of_samples, int32_t *pcm32,
                      double scale_factor) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if (0 == pcm32) {
         goto error;
@@ -275,11 +271,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_32_normalize_to(size_t number_of_samples,
-                            int32_t *pcm32,
+bool ov_pcm_32_normalize_to(size_t number_of_samples, int32_t *pcm32,
                             uint32_t max_amplitude) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if (0 == pcm32) {
         goto error;
@@ -308,8 +304,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_32_clip_to_16(size_t number_of_samples,
-                          int32_t const *in,
+bool ov_pcm_32_clip_to_16(size_t number_of_samples, int32_t const *in,
                           int16_t *out) {
 
     if (0 == number_of_samples) {
@@ -334,8 +329,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_32_compress_to_16(size_t number_of_samples,
-                              int32_t const *in,
+bool ov_pcm_32_compress_to_16(size_t number_of_samples, int32_t const *in,
                               int16_t *out) {
 
     UNUSED(number_of_samples);
@@ -347,11 +341,11 @@ bool ov_pcm_32_compress_to_16(size_t number_of_samples,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_32_subtract(size_t number_of_samples,
-                        int32_t *in1,
+bool ov_pcm_32_subtract(size_t number_of_samples, int32_t *in1,
                         int32_t const *in2) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if ((0 == in1) || (0 == in2)) {
         goto error;
@@ -376,7 +370,8 @@ error:
 
 bool ov_pcm_32_add(size_t number_of_samples, int32_t *in1, int32_t const *in2) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if ((0 == in1) || (0 == in2)) {
         goto error;
@@ -398,11 +393,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_16_get_vad_parameters(size_t number_of_samples,
-                                  int16_t const *in,
+bool ov_pcm_16_get_vad_parameters(size_t number_of_samples, int16_t const *in,
                                   ov_vad_parameters *params) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if ((0 == in) || (0 == params)) {
         goto error;
@@ -438,11 +433,11 @@ error:
     return false;
 }
 
-bool ov_pcm_32_get_vad_parameters(size_t number_of_samples,
-                                  int32_t const *in,
+bool ov_pcm_32_get_vad_parameters(size_t number_of_samples, int32_t const *in,
                                   ov_vad_parameters *params) {
 
-    if (0 == number_of_samples) return true;
+    if (0 == number_of_samples)
+        return true;
 
     if ((0 == in) || (0 == params)) {
         goto error;
@@ -480,8 +475,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_vad_detected(uint64_t samplerate_hz,
-                         ov_vad_parameters params,
+bool ov_pcm_vad_detected(uint64_t samplerate_hz, ov_vad_parameters params,
                          ov_vad_config limits) {
 
     double zero_crossings_hz = params.zero_crossings_per_sample;

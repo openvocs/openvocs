@@ -133,8 +133,7 @@ typedef struct {
  * ov_pcm_gen_stream
  * @param buffer_cache cache to use for retrieving new buffer, might be 0
  */
-ov_pcm_gen *ov_pcm_gen_create(ov_pcm_gen_type type,
-                              ov_pcm_gen_config config,
+ov_pcm_gen *ov_pcm_gen_create(ov_pcm_gen_type type, ov_pcm_gen_config config,
                               void *restrict specific);
 
 /*----------------------------------------------------------------------------*/
@@ -147,8 +146,7 @@ ov_buffer *ov_pcm_gen_generate_frame(ov_pcm_gen *generator);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_gen_config_print(FILE *out,
-                             ov_pcm_gen_config const *config,
+bool ov_pcm_gen_config_print(FILE *out, ov_pcm_gen_config const *config,
                              size_t indentation_level);
 
 /*----------------------------------------------------------------------------*/

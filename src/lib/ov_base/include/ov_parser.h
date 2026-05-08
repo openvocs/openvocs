@@ -164,8 +164,7 @@ struct ov_parser {
         bool (*has_data)(const ov_parser *self);
 
         // get whatever raw data the parser buffer has set
-        bool (*empty_out)(ov_parser *self,
-                          void **raw,
+        bool (*empty_out)(ov_parser *self, void **raw,
                           void *(**free_raw)(void *));
     } buffer;
 

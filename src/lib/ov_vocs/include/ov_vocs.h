@@ -35,7 +35,6 @@
 #include "ov_mc_backend_sip_static.h"
 #include "ov_mc_backend_vad.h"
 #include "ov_mc_frontend.h"
-#include "ov_vocs_events.h"
 #include "ov_vocs_recorder.h"
 
 #include <ov_core/ov_event_io.h>
@@ -44,7 +43,6 @@
 #include <ov_ldap/ov_ldap.h>
 
 #include <ov_vocs_db/ov_vocs_db.h>
-#include <ov_vocs_db/ov_vocs_db_app.h>
 #include <ov_vocs_db/ov_vocs_env.h>
 
 #define OV_KEY_VOCS "vocs"
@@ -78,7 +76,7 @@ typedef struct {
 
     ov_event_loop *loop;
     ov_vocs_db *db;
-    ov_vocs_db_app *db_app;
+    ov_vocs_db_persistance *persistance;
     ov_io *io;
     ov_event_trigger *trigger;
     ov_vocs_env env;
@@ -89,11 +87,16 @@ typedef struct {
         ov_mc_frontend_config frontend;
         ov_mc_backend_sip_config sip;
         ov_mc_backend_sip_static_config sip_static;
-        ov_vocs_events_config events;
         ov_vocs_recorder_config recorder;
         ov_mc_backend_vad_config vad;
 
     } module;
+
+    struct {
+
+        ov_socket_configuration cluster;
+
+    } socket;
 
     struct {
 
@@ -135,7 +138,10 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
-ov_event_io_config ov_vocs_event_io_uri_config(ov_vocs *self);
-ov_event_io_config ov_vocs_admin_io_uri_config(ov_vocs *self);
+void *ov_vocs_get_io_callback(ov_vocs *vocs);
+
+/*----------------------------------------------------------------------------*/
+
+void *ov_vocs_get_close_callback(ov_vocs *vocs);
 
 #endif /* ov_vocs_h */

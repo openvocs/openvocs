@@ -66,7 +66,8 @@ static void init_genrand(uint32_t s) { g_random_number = s; }
 
 static void genrand_reseed() {
 
-    if (g_random_seeded) return;
+    if (g_random_seeded)
+        return;
 
     init_genrand(ov_time_get_current_time_usecs());
     g_random_seeded = true;
@@ -123,7 +124,8 @@ bool ov_random_bytes_with_zeros(uint8_t *buffer, size_t size) {
 
     genrand_reseed();
 
-    if (!buffer || size < 1) return false;
+    if (!buffer || size < 1)
+        return false;
 
     for (size_t i = 0; i < size; i++) {
         uint32_t r = genrand_int32();
@@ -138,7 +140,8 @@ bool ov_random_bytes_with_zeros(uint8_t *buffer, size_t size) {
 
 bool ov_random_bytes(uint8_t *buffer, size_t size) {
 
-    if (!buffer || size < 1) return false;
+    if (!buffer || size < 1)
+        return false;
 
     genrand_reseed();
 

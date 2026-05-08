@@ -89,8 +89,8 @@ static double get_frequency_wobble(internal_pcm_gen *self);
 
 /*----------------------------------------------------------------------------*/
 
-static internal_sinusoids *create_internal_sinusoids(
-    ov_pcm_gen_sinusoids *const restrict params) {
+static internal_sinusoids *
+create_internal_sinusoids(ov_pcm_gen_sinusoids *const restrict params) {
 
     internal_sinusoids *internal = calloc(1, sizeof(internal_sinusoids));
 
@@ -233,8 +233,8 @@ struct internal_white_noise {
 
 /*----------------------------------------------------------------------------*/
 
-static internal_white_noise *create_internal_white_noise(
-    ov_pcm_gen_white_noise *const params) {
+static internal_white_noise *
+create_internal_white_noise(ov_pcm_gen_white_noise *const params) {
 
     if (0 == params) {
 
@@ -352,11 +352,7 @@ static bool decode_buffer_unsafe(struct internal_buffer *internal,
     input_buffer = internal->buffer;
     internal->buffer = calloc(1, internal->size);
 
-    codec->decode(codec,
-                  0,
-                  input_buffer,
-                  internal->size,
-                  internal->buffer,
+    codec->decode(codec, 0, input_buffer, internal->size, internal->buffer,
                   internal->size);
 
     retval = true;
@@ -397,7 +393,8 @@ void *create_internal_buffer(const ov_pcm_gen_from_file *config) {
         goto error;
     }
     char *path = config->file_name;
-    if (0 == path) goto error;
+    if (0 == path)
+        goto error;
 
     struct stat fstate = {0};
 
@@ -434,16 +431,13 @@ void *create_internal_buffer(const ov_pcm_gen_from_file *config) {
 
         /* default to PCM_16S_BE */
         char codec_config_str[256] = {0};
-        snprintf(codec_config_str,
-                 sizeof(codec_config_str) - 1,
-                 "{\"%s\":\"%s\"}",
-                 OV_KEY_CODEC,
-                 ov_codec_pcm16_signed_id());
+        snprintf(codec_config_str, sizeof(codec_config_str) - 1,
+                 "{\"%s\":\"%s\"}", OV_KEY_CODEC, ov_codec_pcm16_signed_id());
 
         codec_config_str[255] = 0;
 
-        codec_config = ov_json_value_from_string(
-            codec_config_str, strlen(codec_config_str));
+        codec_config = ov_json_value_from_string(codec_config_str,
+                                                 strlen(codec_config_str));
 
         free_codec_config = true;
     }
@@ -558,7 +552,8 @@ static inline size_t get_num_samples(const internal_pcm_gen *restrict pcm_gen) {
 
 static void *impl_free(void *self) {
 
-    if (0 == self) return 0;
+    if (0 == self)
+        return 0;
 
     internal_pcm_gen *internal = self;
 
@@ -637,32 +632,34 @@ ov_pcm_gen *ov_pcm_gen_create(ov_pcm_gen_type type,
 
     switch (type) {
 
-        case OV_SINUSOIDS:
+    case OV_SINUSOIDS:
 
-            internal_params = create_internal_sinusoids(specific);
-            generate = impl_generate_sinusoids;
-            break;
+        internal_params = create_internal_sinusoids(specific);
+        generate = impl_generate_sinusoids;
+        break;
 
-        case OV_WHITE_NOISE:
-            internal_params = create_internal_white_noise(specific);
-            generate = impl_generate_white_noise;
-            break;
+    case OV_WHITE_NOISE:
+        internal_params = create_internal_white_noise(specific);
+        generate = impl_generate_white_noise;
+        break;
 
-        case OV_FROM_FILE:
+    case OV_FROM_FILE:
 
-            internal_params = create_internal_buffer(specific);
-            generate = impl_generate_buffer;
-            break;
+        internal_params = create_internal_buffer(specific);
+        generate = impl_generate_buffer;
+        break;
 
-        default:
-            OV_ASSERT(!"MUST NEVER HAPPEN");
-            ov_log_error("Unknown type");
-            return 0;
+    default:
+        OV_ASSERT(!"MUST NEVER HAPPEN");
+        ov_log_error("Unknown type");
+        return 0;
     }
 
-    if (0 == internal_params) goto error;
+    if (0 == internal_params)
+        goto error;
 
-    if (0 == generate) goto error;
+    if (0 == generate)
+        goto error;
 
     *internal = (internal_pcm_gen){
         .public.generate_frame = generate,
@@ -708,8 +705,7 @@ ov_buffer *ov_pcm_gen_generate_frame(ov_pcm_gen *generator) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_pcm_gen_config_print(FILE *out,
-                             ov_pcm_gen_config const *config,
+bool ov_pcm_gen_config_print(FILE *out, ov_pcm_gen_config const *config,
                              size_t indentation_level) {
 
     if (INT_MAX < indentation_level) {
@@ -729,10 +725,7 @@ bool ov_pcm_gen_config_print(FILE *out,
 
     fprintf(out,
             "%*.sSample rate (Hz): %f    Frame length(usec): %" PRIu64 "\n",
-            indent,
-            " ",
-            config->sample_rate_hertz,
-            config->frame_length_usecs);
+            indent, " ", config->sample_rate_hertz, config->frame_length_usecs);
 
     return true;
 }

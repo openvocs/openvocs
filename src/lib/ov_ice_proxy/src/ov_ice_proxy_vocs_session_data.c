@@ -31,12 +31,14 @@
 
 #include "../include/ov_ice_proxy_vocs_stream_forward.h"
 
-ov_ice_proxy_vocs_session_data ov_ice_proxy_vocs_session_data_clear(
-    ov_ice_proxy_vocs_session_data *self) {
+ov_ice_proxy_vocs_session_data
+ov_ice_proxy_vocs_session_data_clear(ov_ice_proxy_vocs_session_data *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (self->desc) self->desc = ov_sdp_session_free(self->desc);
+    if (self->desc)
+        self->desc = ov_sdp_session_free(self->desc);
 
 error:
     return (ov_ice_proxy_vocs_session_data){0};
@@ -47,8 +49,10 @@ error:
 ov_json_value *ov_ice_proxy_vocs_session_data_description_to_json(
     const ov_ice_proxy_vocs_session_data *data) {
 
-    if (!data) goto error;
-    if (!data->desc) goto error;
+    if (!data)
+        goto error;
+    if (!data->desc)
+        goto error;
 
     return ov_sdp_session_to_json(data->desc);
 
@@ -58,8 +62,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *stream_create_proxy_data(
-    const ov_ice_proxy_vocs_session_data *in) {
+static ov_json_value *
+stream_create_proxy_data(const ov_ice_proxy_vocs_session_data *in) {
 
     /*
         {
@@ -72,7 +76,8 @@ static ov_json_value *stream_create_proxy_data(
         }
     */
 
-    if (!in) goto error;
+    if (!in)
+        goto error;
 
     ov_ice_proxy_vocs_stream_forward_data data =
         (ov_ice_proxy_vocs_stream_forward_data){
@@ -95,12 +100,14 @@ ov_json_value *ov_ice_proxy_vocs_session_data_to_json(
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     out = ov_json_array();
     val = stream_create_proxy_data(data);
 
-    if (!ov_json_array_push(out, val)) goto error;
+    if (!ov_json_array_push(out, val))
+        goto error;
 
     return out;
 error:

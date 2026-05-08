@@ -293,12 +293,8 @@ static int test_ov_config_bool_or_default() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_config",
-            test_ov_config_default_config_file_for,
-            test_ov_config_load,
-            test_ov_config_path_from_command_line,
-            test_ov_config_from_command_line,
-            test_ov_config_double_or_default,
-            test_ov_config_u32_or_default,
-            test_ov_config_u64_or_default,
+OV_TEST_RUN("ov_config", test_ov_config_default_config_file_for,
+            test_ov_config_load, test_ov_config_path_from_command_line,
+            test_ov_config_from_command_line, test_ov_config_double_or_default,
+            test_ov_config_u32_or_default, test_ov_config_u64_or_default,
             test_ov_config_bool_or_default);

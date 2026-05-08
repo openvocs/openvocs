@@ -90,22 +90,16 @@ int test_ov_event_async_store_free() {
     store = ov_event_async_store_create(config);
 
     testrun(ov_event_async_set(
-        store,
-        "1",
-        (ov_event_async_data){.socket = 1, .value = ov_json_object()},
-        1000));
+        store, "1",
+        (ov_event_async_data){.socket = 1, .value = ov_json_object()}, 1000));
 
     testrun(ov_event_async_set(
-        store,
-        "2",
-        (ov_event_async_data){.socket = 1, .value = ov_json_object()},
-        1000));
+        store, "2",
+        (ov_event_async_data){.socket = 1, .value = ov_json_object()}, 1000));
 
     testrun(ov_event_async_set(
-        store,
-        "3",
-        (ov_event_async_data){.socket = 1, .value = ov_json_object()},
-        1000));
+        store, "3",
+        (ov_event_async_data){.socket = 1, .value = ov_json_object()}, 1000));
 
     testrun(NULL == ov_event_async_store_free(store));
     testrun(NULL == ov_event_loop_free(loop));
@@ -240,22 +234,16 @@ int test_ov_event_async_unset() {
     testrun(store);
 
     testrun(ov_event_async_set(
-        store,
-        "1",
-        (ov_event_async_data){.socket = 1, .value = ov_json_object()},
-        1000));
+        store, "1",
+        (ov_event_async_data){.socket = 1, .value = ov_json_object()}, 1000));
 
     testrun(ov_event_async_set(
-        store,
-        "2",
-        (ov_event_async_data){.socket = 2, .value = ov_json_object()},
-        1000));
+        store, "2",
+        (ov_event_async_data){.socket = 2, .value = ov_json_object()}, 1000));
 
     testrun(ov_event_async_set(
-        store,
-        "3",
-        (ov_event_async_data){.socket = 3, .value = ov_json_object()},
-        1000));
+        store, "3",
+        (ov_event_async_data){.socket = 3, .value = ov_json_object()}, 1000));
 
     testrun(3 == ov_dict_count(store->dict));
 
@@ -346,22 +334,17 @@ int check_ov_event_async_invalidation() {
     testrun(store->config.invalidate_check_interval_usec == 20000);
 
     testrun(ov_event_async_set(
-        store,
-        "1",
-        (ov_event_async_data){.socket = 1, .value = ov_json_object()},
-        500000));
+        store, "1",
+        (ov_event_async_data){.socket = 1, .value = ov_json_object()}, 500000));
 
     testrun(ov_event_async_set(
-        store,
-        "2",
+        store, "2",
         (ov_event_async_data){.socket = 2, .value = ov_json_object()},
         1000000));
 
     testrun(ov_event_async_set(
-        store,
-        "3",
-        (ov_event_async_data){.socket = 3, .value = ov_json_object()},
-        200000));
+        store, "3",
+        (ov_event_async_data){.socket = 3, .value = ov_json_object()}, 200000));
 
     testrun(3 == ov_dict_count(store->dict));
 
@@ -393,22 +376,16 @@ int check_ov_event_async_invalidation() {
     /* set same values again */
 
     testrun(ov_event_async_set(
-        store,
-        "1",
-        (ov_event_async_data){.socket = 1, .value = ov_json_object()},
-        50000));
+        store, "1",
+        (ov_event_async_data){.socket = 1, .value = ov_json_object()}, 50000));
 
     testrun(ov_event_async_set(
-        store,
-        "2",
-        (ov_event_async_data){.socket = 2, .value = ov_json_object()},
-        500000));
+        store, "2",
+        (ov_event_async_data){.socket = 2, .value = ov_json_object()}, 500000));
 
     testrun(ov_event_async_set(
-        store,
-        "3",
-        (ov_event_async_data){.socket = 3, .value = ov_json_object()},
-        10000));
+        store, "3",
+        (ov_event_async_data){.socket = 3, .value = ov_json_object()}, 10000));
 
     /* lock store */
     testrun(ov_thread_lock_try_lock(&store->lock));
@@ -434,8 +411,7 @@ int check_ov_event_async_invalidation() {
     struct dummy_userdata userdata = (struct dummy_userdata){0};
 
     testrun(ov_event_async_set(
-        store,
-        "1",
+        store, "1",
         (ov_event_async_data){.socket = 1,
                               .value = input1,
                               .timedout.userdata = &userdata,
@@ -443,8 +419,7 @@ int check_ov_event_async_invalidation() {
         50000));
 
     testrun(ov_event_async_set(
-        store,
-        "2",
+        store, "2",
         (ov_event_async_data){.socket = 2,
                               .value = input2,
                               .timedout.userdata = &userdata,
@@ -525,8 +500,7 @@ int check_timing() {
 
         start = ov_time_get_current_time_usecs();
         testrun(ov_event_async_set(
-            store,
-            str,
+            store, str,
             (ov_event_async_data){.socket = i,
                                   .value = input,
                                   .timedout.userdata = &userdata,
@@ -536,12 +510,11 @@ int check_timing() {
         // fprintf(stdout, "%zu set %"PRIu64" usec\n", i, end - start);
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average set %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average set %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     average = 0;
     max = 0;
@@ -560,12 +533,11 @@ int check_timing() {
 
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average unset %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average unset %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     // rerun with now cached internal structures
 
@@ -577,8 +549,7 @@ int check_timing() {
 
         start = ov_time_get_current_time_usecs();
         testrun(ov_event_async_set(
-            store,
-            str,
+            store, str,
             (ov_event_async_data){.socket = i,
                                   .value = input,
                                   .timedout.userdata = &userdata,
@@ -587,12 +558,11 @@ int check_timing() {
         end = ov_time_get_current_time_usecs();
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average set cached %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average set cached %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     average = 0;
     max = 0;
@@ -610,12 +580,11 @@ int check_timing() {
 
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average unset %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average unset %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     items = 255;
 
@@ -632,8 +601,7 @@ int check_timing() {
 
         start = ov_time_get_current_time_usecs();
         testrun(ov_event_async_set(
-            store,
-            str,
+            store, str,
             (ov_event_async_data){.socket = i,
                                   .value = input,
                                   .timedout.userdata = &userdata,
@@ -642,12 +610,11 @@ int check_timing() {
         end = ov_time_get_current_time_usecs();
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average set %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average set %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     average = 0;
     max = 0;
@@ -665,12 +632,11 @@ int check_timing() {
 
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average unset %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average unset %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     items = 5000;
     fprintf(stdout, "\nChecking with %zu items\n", items);
@@ -683,8 +649,7 @@ int check_timing() {
 
         start = ov_time_get_current_time_usecs();
         testrun(ov_event_async_set(
-            store,
-            str,
+            store, str,
             (ov_event_async_data){.socket = i,
                                   .value = input,
                                   .timedout.userdata = &userdata,
@@ -693,12 +658,11 @@ int check_timing() {
         end = ov_time_get_current_time_usecs();
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average set %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average set %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     average = 0;
     max = 0;
@@ -716,12 +680,11 @@ int check_timing() {
 
         runtime = end - start;
         average += runtime;
-        if (runtime > max) max = runtime;
+        if (runtime > max)
+            max = runtime;
     }
-    fprintf(stdout,
-            "average unset %f usec max %" PRIu64 " \n",
-            (double)average / items,
-            max);
+    fprintf(stdout, "average unset %f usec max %" PRIu64 " \n",
+            (double)average / items, max);
 
     list = ov_list_free(list);
     input = ov_json_value_free(input);

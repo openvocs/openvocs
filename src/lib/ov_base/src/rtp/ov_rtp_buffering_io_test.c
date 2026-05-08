@@ -70,7 +70,8 @@ error:
 
 static bool release_rtp_io_resources(ov_rtp_buffering_io_config *cfg) {
 
-    if (0 == cfg) return true;
+    if (0 == cfg)
+        return true;
 
     cfg->loop = ov_event_loop_free(cfg->loop);
 
@@ -358,7 +359,8 @@ ssize_t find_index_for_ssid(uint32_t ssid, uint16_t ssrc_seq_array[][2]) {
     size_t i = 0;
     while ((0 != ssrc_seq_array[i][0]) && (0 != ssrc_seq_array[i][1])) {
 
-        if (ssid == ssrc_seq_array[i][0]) return i;
+        if (ssid == ssrc_seq_array[i][0])
+            return i;
 
         ++i;
     }
@@ -419,8 +421,7 @@ bool check_frames_received(ov_rtp_buffering_io *io,
             fprintf(stderr,
                     "%" PRIu32 ": seq do not match (%" PRIu16 " vs %" PRIu16
                     ")\n",
-                    frame->expanded.ssrc,
-                    frame->expanded.sequence_number,
+                    frame->expanded.ssrc, frame->expanded.sequence_number,
                     ssrc_seq_array[i][1]);
 
             goto failed;
@@ -576,8 +577,7 @@ int test_ov_rtp_buffering_io_next_frame_list() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_rtp_buffering_io",
-            test_ov_rtp_buffering_io_create,
+OV_TEST_RUN("ov_rtp_buffering_io", test_ov_rtp_buffering_io_create,
             test_ov_rtp_buffering_io_free,
             test_ov_rtp_buffering_io_register_socket,
             test_ov_rtp_buffering_io_unregister_socket,

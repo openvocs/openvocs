@@ -51,10 +51,8 @@ static bool userdata_clear(struct userdata *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_io(void *userdata,
-                  const ov_mc_loop_data *data,
-                  const uint8_t *buffer,
-                  size_t bytes,
+static void cb_io(void *userdata, const ov_mc_loop_data *data,
+                  const uint8_t *buffer, size_t bytes,
                   const ov_socket_data *remote) {
 
     struct userdata *d = (struct userdata *)userdata;

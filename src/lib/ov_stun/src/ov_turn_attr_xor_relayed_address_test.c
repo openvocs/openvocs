@@ -193,10 +193,10 @@ int test_ov_turn_attr_xor_relayed_address_encode() {
         !ov_turn_attr_xor_relayed_address_encode(NULL, size, head, NULL, &sa));
     testrun(
         !ov_turn_attr_xor_relayed_address_encode(buffer, 0, head, NULL, &sa));
-    testrun(!ov_turn_attr_xor_relayed_address_encode(
-        buffer, size, head, NULL, NULL));
-    testrun(!ov_turn_attr_xor_relayed_address_encode(
-        buffer, size, NULL, NULL, &sa));
+    testrun(!ov_turn_attr_xor_relayed_address_encode(buffer, size, head, NULL,
+                                                     NULL));
+    testrun(!ov_turn_attr_xor_relayed_address_encode(buffer, size, NULL, NULL,
+                                                     &sa));
 
     testrun(
         !ov_turn_attr_xor_relayed_address_encode(buffer, 11, head, NULL, &sa));
@@ -236,8 +236,7 @@ int test_ov_turn_attr_xor_relayed_address_encode() {
     sock6 = (struct sockaddr_in6 *)&sa;
     sock6->sin6_family = AF_INET6;
     sock6->sin6_port = htons(0xff01);
-    testrun(1 == inet_pton(AF_INET6,
-                           "face:aaaa:bbbb:cccc:dddd:eeee:f1f1:1234",
+    testrun(1 == inet_pton(AF_INET6, "face:aaaa:bbbb:cccc:dddd:eeee:f1f1:1234",
                            &sock6->sin6_addr));
     testrun(
         !ov_turn_attr_xor_relayed_address_encode(buffer, 12, head, &next, &sa));
@@ -275,8 +274,8 @@ int test_ov_turn_attr_xor_relayed_address_encode() {
     // different setting
     sock6->sin6_port = htons(12345);
     testrun(1 == inet_pton(AF_INET6, "::1", &sock6->sin6_addr));
-    testrun(ov_turn_attr_xor_relayed_address_encode(
-        buffer, size, head, &next, &sa));
+    testrun(ov_turn_attr_xor_relayed_address_encode(buffer, size, head, &next,
+                                                    &sa));
     testrun(TURN_XOR_RELAYED_ADDRESS ==
             ov_stun_attribute_get_type(buffer, size));
     testrun(20 == ov_stun_attribute_get_length(buffer, size));
@@ -326,8 +325,8 @@ int test_ov_turn_attr_xor_relayed_address_encode() {
     head[18] = 0xbf;
     head[19] = 0xcf;
 
-    testrun(ov_turn_attr_xor_relayed_address_encode(
-        buffer, size, head, &next, &sa));
+    testrun(ov_turn_attr_xor_relayed_address_encode(buffer, size, head, &next,
+                                                    &sa));
     testrun(TURN_XOR_RELAYED_ADDRESS ==
             ov_stun_attribute_get_type(buffer, size));
     testrun(20 == ov_stun_attribute_get_length(buffer, size));

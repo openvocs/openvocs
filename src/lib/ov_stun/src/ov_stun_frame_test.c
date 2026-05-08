@@ -527,10 +527,12 @@ int test_ov_stun_frame_set_length() {
 
 static bool item_not_equals_buffer(void *item, void *buffer) {
 
-    if (!item || !buffer) return false;
+    if (!item || !buffer)
+        return false;
 
     // item equals buffer?
-    if (0 == memcmp(item, buffer, 12)) return false;
+    if (0 == memcmp(item, buffer, 12))
+        return false;
 
     return true;
 }
@@ -579,8 +581,8 @@ int test_ov_stun_frame_set_transaction_id() {
 
     memset(buf, 0, 100);
 
-    uint8_t id[12] = {
-        0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC};
+    uint8_t id[12] = {0x11, 0x22, 0x33, 0x44, 0x55, 0x66,
+                      0x77, 0x88, 0x99, 0xAA, 0xBB, 0xCC};
 
     testrun(!ov_stun_frame_set_transaction_id(NULL, 0, NULL));
     testrun(!ov_stun_frame_set_transaction_id(buffer, 0, id));

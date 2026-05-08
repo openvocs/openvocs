@@ -130,8 +130,5 @@ int test_ov_reconnect_manager_connect() {
  *                                 Run tests
  ******************************************************************************/
 
-OV_TEST_RUN("ov_reconnect_manager",
-            prepare,
-            test_ov_reconnect_manager_create,
-            test_ov_reconnect_manager_free,
-            test_ov_reconnect_manager_connect);
+OV_TEST_RUN("ov_reconnect_manager", prepare, test_ov_reconnect_manager_create,
+            test_ov_reconnect_manager_free, test_ov_reconnect_manager_connect);

@@ -57,10 +57,7 @@ static uint8_t ref_udp_frame_payload[] = {
     0x12, // Checksum dummy
     0x34,
     'y', // payload
-    'm',
-    'i',
-    'r',
-    0x00};
+    'm',  'i', 'r', 0x00};
 
 _Static_assert(sizeof(ref_udp_frame_payload) >= 8,
                "UDP frame must be at least 8 bytes");
@@ -78,9 +75,7 @@ static void print_header(FILE *out, ov_format_udp_header hdr) {
     fprintf(out,
             "SRC Port: %" PRIu16 "   DST Port: %" PRIu16
             " Total Length: %" PRIu16 " Checksum: %" PRIu16 "\n",
-            hdr.source_port,
-            hdr.destination_port,
-            hdr.length_octets,
+            hdr.source_port, hdr.destination_port, hdr.length_octets,
             hdr.checksum);
 }
 
@@ -88,8 +83,8 @@ static void print_header(FILE *out, ov_format_udp_header hdr) {
 
 static int test_ov_format_udp_install() {
 
-    ov_format *fmt = ov_format_from_memory(
-        ref_udp_frame_min, sizeof(ref_udp_frame_min), OV_READ);
+    ov_format *fmt = ov_format_from_memory(ref_udp_frame_min,
+                                           sizeof(ref_udp_frame_min), OV_READ);
     testrun(0 != fmt);
     ov_format *udp_fmt = ov_format_as(fmt, "udp", 0, 0);
     testrun(0 == udp_fmt);
@@ -151,8 +146,8 @@ static int test_impl_next_chunk() {
                                Test single frame - with payload
      ************************************************************************/
 
-    mem_fmt = ov_format_from_memory(
-        ref_udp_frame_payload, sizeof(ref_udp_frame_payload), OV_READ);
+    mem_fmt = ov_format_from_memory(ref_udp_frame_payload,
+                                    sizeof(ref_udp_frame_payload), OV_READ);
 
     testrun(0 != mem_fmt);
 
@@ -263,7 +258,5 @@ static int test_ov_format_udp_get_header() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_udp",
-            test_ov_format_udp_install,
-            test_impl_next_chunk,
+OV_TEST_RUN("ov_format_udp", test_ov_format_udp_install, test_impl_next_chunk,
             test_ov_format_udp_get_header);

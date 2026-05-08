@@ -172,12 +172,11 @@ static bool page_increase_sample_count(Page *page, uint32_t inc) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool page_clear(Page *page,
-                       bool continuation,
+static bool page_clear(Page *page, bool continuation,
                        OggParameters const *params) {
 
-    if (!ov_ptr_valid(
-            params, "Cannot create new Ogg page: No OGG parameters")) {
+    if (!ov_ptr_valid(params,
+                      "Cannot create new Ogg page: No OGG parameters")) {
 
         return 0;
 
@@ -310,12 +309,12 @@ static ssize_t serialize_page_header(PageHeader const header,
 
     size_t written_octets = 0;
 
-    if ((!ov_ptr_valid(
-            target_buffer, "Cannot serialize OGG Page: No target buffer")) ||
-        (!ov_cond_valid(
-            target_buffer_len_octets >= (size_t)27 + header.num_segments,
-            "Cannot serialize OGG Page: Target buffer too "
-            "small"))) {
+    if ((!ov_ptr_valid(target_buffer,
+                       "Cannot serialize OGG Page: No target buffer")) ||
+        (!ov_cond_valid(target_buffer_len_octets >=
+                            (size_t)27 + header.num_segments,
+                        "Cannot serialize OGG Page: Target buffer too "
+                        "small"))) {
 
         return -1;
 
@@ -330,8 +329,8 @@ static ssize_t serialize_page_header(PageHeader const header,
         tb += 6;
         written_octets = 6;
 
-        written_octets += encode_64(
-            OV_TWOS_COMPLEMENT(header.sample_position), (uint8_t **)&tb);
+        written_octets += encode_64(OV_TWOS_COMPLEMENT(header.sample_position),
+                                    (uint8_t **)&tb);
 
         written_octets +=
             encode_32(header.stream_serial_number, (uint8_t **)&tb);
@@ -346,8 +345,8 @@ static ssize_t serialize_page_header(PageHeader const header,
 
         OV_ASSERT(27 == written_octets);
 
-        memcpy(
-            tb, &header.segment_table, header.num_segments * sizeof(uint8_t));
+        memcpy(tb, &header.segment_table,
+               header.num_segments * sizeof(uint8_t));
 
         written_octets += header.num_segments;
 
@@ -357,8 +356,7 @@ static ssize_t serialize_page_header(PageHeader const header,
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_to_format(ov_format *fout,
-                            uint8_t const *data,
+static bool write_to_format(ov_format *fout, uint8_t const *data,
                             size_t len_octets) {
 
     // Complicated, but how else to do it safely?
@@ -410,16 +408,15 @@ static ssize_t serialize_page(ov_format *fout, Page const *page) {
 
         } else {
 
-            uint32_t crc32 =
-                OV_H32TOLE(ov_crc32_ogg(ov_crc32_ogg(0, out, written_octets),
-                                        page->bitstream.data,
-                                        page->bitstream.len_octets));
+            uint32_t crc32 = OV_H32TOLE(
+                ov_crc32_ogg(ov_crc32_ogg(0, out, written_octets),
+                             page->bitstream.data, page->bitstream.len_octets));
 
             memcpy(out + OFFSET_CRC32, &crc32, sizeof(crc32));
 
             if (write_to_format(fout, out, written_octets) &&
-                write_to_format(
-                    fout, page->bitstream.data, page->bitstream.len_octets)) {
+                write_to_format(fout, page->bitstream.data,
+                                page->bitstream.len_octets)) {
 
                 return written_octets + page->bitstream.len_octets;
 
@@ -450,9 +447,7 @@ static bool page_set_sample_position(Page *page, int64_t sample_pos) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool rotate_page(ov_format *fout,
-                        Page *page,
-                        bool continuation,
+static bool rotate_page(ov_format *fout, Page *page, bool continuation,
                         OggParameters *params) {
 
     if ((!ov_ptr_valid(page, "Cannot rotate page: Invalid page")) ||
@@ -467,8 +462,8 @@ static bool rotate_page(ov_format *fout,
 
         int64_t current_sample_pos = page->header.sample_position;
 
-        return ov_cond_valid(
-                   serialize_page(fout, page), "Cannot serialize page") &&
+        return ov_cond_valid(serialize_page(fout, page),
+                             "Cannot serialize page") &&
                ov_cond_valid(page_clear(page, continuation, params),
                              "Cannot reset page") &&
                page_set_sample_position(page, current_sample_pos);
@@ -481,11 +476,8 @@ static bool rotate_page(ov_format *fout,
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_segment(ov_format *fout,
-                        Page *page,
-                        ov_buffer *segment,
-                        bool continuation,
-                        OggParameters *params) {
+static bool add_segment(ov_format *fout, Page *page, ov_buffer *segment,
+                        bool continuation, OggParameters *params) {
 
     size_t seglen = ov_buffer_len(segment);
 
@@ -501,8 +493,7 @@ static bool add_segment(ov_format *fout,
         page->header.segment_table[page->header.num_segments++] = seglen;
 
         memcpy(page->bitstream.data + page->bitstream.len_octets,
-               segment->start,
-               seglen);
+               segment->start, seglen);
         page->bitstream.len_octets += seglen;
 
         return true;
@@ -515,10 +506,8 @@ static bool add_segment(ov_format *fout,
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t serialize_to_pages(ov_format *fout,
-                                  ov_chunker *chunker,
-                                  OggParameters *params,
-                                  Page *page) {
+static ssize_t serialize_to_pages(ov_format *fout, ov_chunker *chunker,
+                                  OggParameters *params, Page *page) {
 
     ov_buffer *segment = ov_chunker_next_chunk(chunker, 255);
 
@@ -555,8 +544,7 @@ static ssize_t serialize_to_pages(ov_format *fout,
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *format,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *format, ov_buffer const *chunk,
                                 void *data) {
 
     OggOut *out = as_ogg_out(data);
@@ -570,8 +558,8 @@ static ssize_t impl_write_chunk(ov_format *format,
 
         ov_chunker_add(out->chunker, chunk);
 
-        return serialize_to_pages(
-            format, out->chunker, &out->parameters, &out->page);
+        return serialize_to_pages(format, out->chunker, &out->parameters,
+                                  &out->page);
     }
 }
 
@@ -637,9 +625,9 @@ OggIn *ogg_in_free(OggIn *self) { return ov_free(self); }
 static bool get_octets(ov_format *format, Page *page, size_t num_octets) {
 
     if ((!ov_ptr_valid(page, "Cannot read next page: Invalid page object")) ||
-        (!ov_cond_valid(
-            num_octets + page->bitstream.len_octets <= MAX_LEN_PAGE_OCTETS,
-            "Tried to read page larger than maximum"))) {
+        (!ov_cond_valid(num_octets + page->bitstream.len_octets <=
+                            MAX_LEN_PAGE_OCTETS,
+                        "Tried to read page larger than maximum"))) {
 
         return false;
 
@@ -655,15 +643,13 @@ static bool get_octets(ov_format *format, Page *page, size_t num_octets) {
         } else if (num_octets != buf.length) {
 
             ov_log_error("Could not get octets: Expected %zu, but got %zu",
-                         num_octets,
-                         buf.length);
+                         num_octets, buf.length);
 
             return false;
 
         } else {
 
-            memcpy(page->bitstream.data + page->bitstream.len_octets,
-                   buf.start,
+            memcpy(page->bitstream.data + page->bitstream.len_octets, buf.start,
                    buf.length);
             page->bitstream.len_octets += buf.length;
 
@@ -723,14 +709,10 @@ static void print_header(PageHeader const *header) {
         fprintf(stdout,
                 "Segment %" PRIu32 ": CRC: %" PRIu32 "  Segments: %" PRIu8
                 "   Stream id %" PRIu32 "   Sample position: %" PRIi64 "   ",
-                header->sequence_number,
-                header->crc32,
-                header->num_segments,
-                header->stream_serial_number,
-                header->sample_position);
+                header->sequence_number, header->crc32, header->num_segments,
+                header->stream_serial_number, header->sample_position);
 
-        print_flags(header->flags.continuation,
-                    header->flags.begin_of_stream,
+        print_flags(header->flags.continuation, header->flags.begin_of_stream,
                     header->flags.end_of_stream);
 
         fprintf(stdout, "\n");
@@ -786,10 +768,10 @@ static bool decode_segment_table(Page *page) {
     if ((!ov_ptr_valid(page, "Cannot decode segment table - no page")) ||
         (!ov_cond_valid(OFFSET_NUM_SEGMENTS < page->bitstream.len_octets,
                         "Cannot decode segment table - not enough data")) ||
-        (!ov_cond_valid(
-            OFFSET_SEGMENT_TABLE + page->bitstream.data[OFFSET_NUM_SEGMENTS] <=
-                page->bitstream.len_octets,
-            "Cannot decode segment table - no data"))) {
+        (!ov_cond_valid(OFFSET_SEGMENT_TABLE +
+                                page->bitstream.data[OFFSET_NUM_SEGMENTS] <=
+                            page->bitstream.len_octets,
+                        "Cannot decode segment table - no data"))) {
 
         return false;
 
@@ -808,8 +790,8 @@ static bool decode_segment_table(Page *page) {
 static bool update_header(ov_format *format, Page *page) {
 
     return get_octets(format, page, 27) && decode_base_header(page) &&
-           get_octets(
-               format, page, page->header.num_segments * sizeof(uint8_t)) &&
+           get_octets(format, page,
+                      page->header.num_segments * sizeof(uint8_t)) &&
            decode_segment_table(page);
 
     // read_result result =
@@ -882,12 +864,11 @@ static bool check_check_sum(Page *page) {
                     "CRC32 check failed: In Header: %" PRIu32
                     ", calculated: %" PRIu32 "\n",
                     page->header.crc32,
-                    ov_crc32_ogg(
-                        0, page->bitstream.data, page->bitstream.len_octets));
+                    ov_crc32_ogg(0, page->bitstream.data,
+                                 page->bitstream.len_octets));
         }
 
-        return page->header.crc32 == ov_crc32_ogg(0,
-                                                  page->bitstream.data,
+        return page->header.crc32 == ov_crc32_ogg(0, page->bitstream.data,
                                                   page->bitstream.len_octets);
     }
 }
@@ -981,8 +962,8 @@ static bool update_page(ov_format *format, OggIn *self) {
 
         self->primary_stream.start_found =
             next_page(format, self) &&
-            set_primary_stream_serial(
-                self, self->page.header.stream_serial_number);
+            set_primary_stream_serial(self,
+                                      self->page.header.stream_serial_number);
 
         return self->primary_stream.start_found;
 
@@ -1038,19 +1019,17 @@ static gather_chunk_result gather_chunk(OggIn *self) {
 
     if (offset_segment + total_size_octets > self->page.bitstream.len_octets) {
 
-        ov_log_error(
-            "OGG corrupted: segment table lists more bytes than "
-            " available in byte stream: %zu vs %zu",
-            offset_segment + total_size_octets,
-            self->page.bitstream.len_octets);
+        ov_log_error("OGG corrupted: segment table lists more bytes than "
+                     " available in byte stream: %zu vs %zu",
+                     offset_segment + total_size_octets,
+                     self->page.bitstream.len_octets);
 
         return result;
 
     } else {
 
         result.chunk = ov_buffer_create(total_size_octets);
-        memcpy(result.chunk->start,
-               self->page.bitstream.data + offset_segment,
+        memcpy(result.chunk->start, self->page.bitstream.data + offset_segment,
                total_size_octets);
 
         result.chunk->length = total_size_octets;
@@ -1088,8 +1067,7 @@ ov_buffer *read_chunk(ov_format *format, OggIn *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -1135,21 +1113,21 @@ static void *impl_create_data(ov_format *f, void *options) {
 
     switch (ov_format_get_mode(f)) {
 
-        case OV_READ:
+    case OV_READ:
 
-            return ogg_in_create(options);
+        return ogg_in_create(options);
 
-        case OV_WRITE:
+    case OV_WRITE:
 
-            return ogg_out_create(f, options);
+        return ogg_out_create(f, options);
 
-        case OV_INVALID:
+    case OV_INVALID:
 
-            return 0;
+        return 0;
 
-        default:
-            OV_ASSERT(!"MUST NEVER HAPPEN");
-            return 0;
+    default:
+        OV_ASSERT(!"MUST NEVER HAPPEN");
+        return 0;
     };
 }
 
@@ -1187,8 +1165,8 @@ bool ov_format_ogg_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_OGG_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_OGG_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/

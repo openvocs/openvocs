@@ -73,8 +73,7 @@ bool ov_id_array_add(ov_id ids[], size_t capacity, char const *id);
 
 bool ov_id_array_del(ov_id ids[], size_t capacity, char const *id);
 
-ssize_t ov_id_array_get_index(ov_id const *uuids,
-                              size_t capacity,
+ssize_t ov_id_array_get_index(ov_id const *uuids, size_t capacity,
                               char const *id);
 
 /**
@@ -82,8 +81,7 @@ ssize_t ov_id_array_get_index(ov_id const *uuids,
  * To start from the beginning, use `-1` as `index`.
  * call `ov_uuid_array_next(uuids, c, -1);
  */
-ssize_t ov_id_array_next(ov_id const *uuids,
-                         size_t capacity,
+ssize_t ov_id_array_next(ov_id const *uuids, size_t capacity,
                          ssize_t last_index);
 
 /*----------------------------------------------------------------------------*/

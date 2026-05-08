@@ -31,12 +31,14 @@
 
 bool ov_stun_attr_is_password_algorithm(const uint8_t *buffer, size_t length) {
 
-    if (!buffer || length < 8) goto error;
+    if (!buffer || length < 8)
+        goto error;
 
     uint16_t type = ov_stun_attribute_get_type(buffer, length);
     // int64_t size = ov_stun_attribute_get_length(buffer, length);
 
-    if (type != STUN_ATTR_PASSWORD_ALGORITHM) goto error;
+    if (type != STUN_ATTR_PASSWORD_ALGORITHM)
+        goto error;
 
     return true;
 
@@ -56,17 +58,16 @@ size_t ov_stun_attr_password_algorithm_encoding_length(size_t password) {
 
     size_t pad = 0;
     pad = password % 4;
-    if (pad != 0) pad = 4 - pad;
+    if (pad != 0)
+        pad = 4 - pad;
 
     return password + 8 + pad;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_stun_attr_password_algorithm_encode(uint8_t *buffer,
-                                            size_t length,
-                                            uint8_t **next,
-                                            uint16_t algorithm,
+bool ov_stun_attr_password_algorithm_encode(uint8_t *buffer, size_t length,
+                                            uint8_t **next, uint16_t algorithm,
                                             uint16_t parameter_length,
                                             const uint8_t *parameter) {
 
@@ -74,12 +75,14 @@ bool ov_stun_attr_password_algorithm_encode(uint8_t *buffer,
     uint8_t buf[size];
     memset(buf, 0, size);
 
-    if (!buffer || size < 1 || !parameter) goto error;
+    if (!buffer || size < 1 || !parameter)
+        goto error;
 
     size_t len =
         ov_stun_attr_password_algorithm_encoding_length(parameter_length);
 
-    if (length < len) goto error;
+    if (length < len)
+        goto error;
 
     buf[0] = algorithm >> 8;
     buf[1] = algorithm;
@@ -88,8 +91,8 @@ bool ov_stun_attr_password_algorithm_encode(uint8_t *buffer,
 
     memcpy(buf + 4, parameter, size - 4);
 
-    return ov_stun_attribute_encode(
-        buffer, length, next, STUN_ATTR_PASSWORD_ALGORITHM, buf, size);
+    return ov_stun_attribute_encode(buffer, length, next,
+                                    STUN_ATTR_PASSWORD_ALGORITHM, buf, size);
 error:
     return false;
 }
@@ -97,17 +100,19 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_stun_attr_password_algorithm_decode(const uint8_t *buffer,
-                                            size_t length,
-                                            uint16_t *algorithm,
+                                            size_t length, uint16_t *algorithm,
                                             uint16_t *size,
                                             const uint8_t **params) {
 
-    if (!buffer || length < 8 || !algorithm || !size || !params) goto error;
+    if (!buffer || length < 8 || !algorithm || !size || !params)
+        goto error;
 
-    if (!ov_stun_attr_is_password_algorithm(buffer, length)) goto error;
+    if (!ov_stun_attr_is_password_algorithm(buffer, length))
+        goto error;
 
     int64_t len = ov_stun_attribute_get_length(buffer, length);
-    if (len <= 0) goto error;
+    if (len <= 0)
+        goto error;
 
     uint16_t num = buffer[4] << 8;
     num += buffer[5];

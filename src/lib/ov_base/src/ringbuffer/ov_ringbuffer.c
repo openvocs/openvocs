@@ -44,7 +44,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-ov_registered_cache *g_cache = 0;
+static ov_registered_cache *g_cache = 0;
 
 /******************************************************************************
  *
@@ -83,8 +83,8 @@ static size_t ringbuffer_capacity(const ov_ringbuffer *self);
 static bool ringbuffer_clear(ov_ringbuffer *self);
 static ov_ringbuffer *ringbuffer_free(ov_ringbuffer *self);
 
-static ov_ringbuffer_statistics ringbuffer_get_statistics(
-    const ov_ringbuffer *self);
+static ov_ringbuffer_statistics
+ringbuffer_get_statistics(const ov_ringbuffer *self);
 
 /*----------------------------------------------------------------------------*/
 
@@ -176,7 +176,8 @@ static void advance_write(struct internal_ringbuffer *internal) {
 
 static void *ringbuffer_pop(ov_ringbuffer *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     struct internal_ringbuffer *internal = (struct internal_ringbuffer *)self;
 
@@ -201,10 +202,12 @@ error:
 
 static bool ringbuffer_insert(ov_ringbuffer *self, void *element) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     /* element must not be 0 since 0 indicates an empty slot */
-    if (0 == element) goto error;
+    if (0 == element)
+        goto error;
 
     struct internal_ringbuffer *internal = (struct internal_ringbuffer *)self;
 
@@ -231,7 +234,8 @@ error:
 
 static bool ringbuffer_clear(ov_ringbuffer *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     struct internal_ringbuffer *internal = (struct internal_ringbuffer *)self;
 
@@ -256,7 +260,8 @@ static struct internal_ringbuffer *new_buffer_create(size_t capacity) {
 
     struct internal_ringbuffer *buffer = 0;
 
-    if (0 == capacity) goto error;
+    if (0 == capacity)
+        goto error;
 
     capacity = 1 + capacity;
 
@@ -345,7 +350,8 @@ error:
 
 static size_t ringbuffer_capacity(const ov_ringbuffer *self) {
 
-    if (0 == self) return 0;
+    if (0 == self)
+        return 0;
 
     struct internal_ringbuffer *internal = (struct internal_ringbuffer *)self;
 
@@ -358,9 +364,11 @@ static size_t ringbuffer_capacity(const ov_ringbuffer *self) {
 
 static ov_ringbuffer *ringbuffer_free(ov_ringbuffer *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
-    if (!self->clear(self)) goto error;
+    if (!self->clear(self))
+        goto error;
 
     /* Free linked list infrastructure */
     struct internal_ringbuffer *internal = (struct internal_ringbuffer *)self;
@@ -382,10 +390,11 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static ov_ringbuffer_statistics ringbuffer_get_statistics(
-    const ov_ringbuffer *self) {
+static ov_ringbuffer_statistics
+ringbuffer_get_statistics(const ov_ringbuffer *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     struct internal_ringbuffer *internal = (struct internal_ringbuffer *)self;
 

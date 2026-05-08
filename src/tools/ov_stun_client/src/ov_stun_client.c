@@ -69,9 +69,11 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
 
     uint8_t *attr[IMPL_MAX_STUN_ATTRIBUTES] = {0};
 
-    if (!loop || (socket < 0)) goto error;
+    if (!loop || (socket < 0))
+        goto error;
 
-    if (!(events & OV_EVENT_IO_IN)) goto close;
+    if (!(events & OV_EVENT_IO_IN))
+        goto close;
 
     ov_socket_data remote = {0};
     struct sockaddr_storage sa = {0};
@@ -80,7 +82,8 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
     ssize_t in =
         recvfrom(socket, buffer, size, 0, (struct sockaddr *)&sa, &sa_len);
 
-    if (in < 0) goto done;
+    if (in < 0)
+        goto done;
 
     remote = ov_socket_data_from_sockaddr_storage(&sa);
 
@@ -111,29 +114,30 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
 
     for (size_t i = 0; i < IMPL_MAX_STUN_ATTRIBUTES; i++) {
 
-        if (attr[i] == NULL) break;
+        if (attr[i] == NULL)
+            break;
 
         type = ov_stun_attribute_get_type(attr[i], 4);
 
         switch (type) {
 
-            case STUN_SOFTWARE:
-            case STUN_FINGERPRINT:
-            case STUN_XOR_MAPPED_ADDRESS:
-                break;
+        case STUN_SOFTWARE:
+        case STUN_FINGERPRINT:
+        case STUN_XOR_MAPPED_ADDRESS:
+            break;
 
-            default:
-                goto done;
+        default:
+            goto done;
         }
     }
 
-    if (!ov_stun_check_fingerprint(
-            buffer, in, attr, IMPL_MAX_STUN_ATTRIBUTES, false)) {
+    if (!ov_stun_check_fingerprint(buffer, in, attr, IMPL_MAX_STUN_ATTRIBUTES,
+                                   false)) {
         goto done;
     }
 
-    uint8_t *xmap = ov_stun_attributes_get_type(
-        attr, IMPL_MAX_STUN_ATTRIBUTES, STUN_XOR_MAPPED_ADDRESS);
+    uint8_t *xmap = ov_stun_attributes_get_type(attr, IMPL_MAX_STUN_ATTRIBUTES,
+                                                STUN_XOR_MAPPED_ADDRESS);
 
     if (!xmap) {
         goto done;
@@ -142,21 +146,18 @@ static bool process_stun(int socket, uint8_t events, void *userdata) {
     ov_socket_data xor_mapped = {0};
     struct sockaddr_storage *xor_ptr = &xor_mapped.sa;
 
-    if (!ov_stun_xor_mapped_address_decode(
-            xmap, in - (xmap - buffer), buffer, &xor_ptr)) {
+    if (!ov_stun_xor_mapped_address_decode(xmap, in - (xmap - buffer), buffer,
+                                           &xor_ptr)) {
         goto done;
     }
 
     xor_mapped = ov_socket_data_from_sockaddr_storage(&xor_mapped.sa);
 
-    fprintf(stdout,
-            "STUN success %s:%i from %s:%i\n",
-            xor_mapped.host,
-            xor_mapped.port,
-            remote.host,
-            remote.port);
+    fprintf(stdout, "STUN success %s:%i from %s:%i\n", xor_mapped.host,
+            xor_mapped.port, remote.host, remote.port);
 
-    if (ov_dict_is_empty(global_transactions)) goto close;
+    if (ov_dict_is_empty(global_transactions))
+        goto close;
 
 done:
     return true;
@@ -174,8 +175,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_server(ov_event_loop *loop,
-                         int client,
+static bool check_server(ov_event_loop *loop, int client,
                          struct sockaddr_storage *local,
                          ov_socket_configuration config) {
 
@@ -187,16 +187,19 @@ static bool check_server(ov_event_loop *loop,
     memset(buffer, 0, size);
     uint8_t *next = NULL;
 
-    if (!loop || (client < 1)) goto error;
+    if (!loop || (client < 1))
+        goto error;
 
     struct sockaddr_storage sa;
     socklen_t socklen = sizeof(sa);
 
-    if (!ov_socket_configuration_to_sockaddr(config, &sa, &socklen)) goto error;
+    if (!ov_socket_configuration_to_sockaddr(config, &sa, &socklen))
+        goto error;
 
     transaction_id = calloc(13, sizeof(uint8_t));
 
-    if (!ov_stun_frame_generate_transaction_id(transaction_id)) goto error;
+    if (!ov_stun_frame_generate_transaction_id(transaction_id))
+        goto error;
 
     intptr_t value = config.port;
 
@@ -210,10 +213,11 @@ static bool check_server(ov_event_loop *loop,
     }
 
     socklen = sizeof(struct sockaddr_in);
-    if (local->ss_family == AF_INET6) socklen = sizeof(struct sockaddr_in6);
+    if (local->ss_family == AF_INET6)
+        socklen = sizeof(struct sockaddr_in6);
 
-    ssize_t bytes = sendto(
-        client, buffer, next - buffer, 0, (struct sockaddr *)&sa, socklen);
+    ssize_t bytes = sendto(client, buffer, next - buffer, 0,
+                           (struct sockaddr *)&sa, socklen);
 
     if (bytes > 0) {
 
@@ -228,12 +232,8 @@ static bool check_server(ov_event_loop *loop,
 
 failed:
 
-    fprintf(stdout,
-            "SEND failed to %s:%i error %i|%s\n",
-            config.host,
-            config.port,
-            errno,
-            strerror(errno));
+    fprintf(stdout, "SEND failed to %s:%i error %i|%s\n", config.host,
+            config.port, errno, strerror(errno));
     ov_dict_del(global_transactions, transaction_id);
 
 error:
@@ -255,7 +255,8 @@ static bool array_check_server(void *item, void *data) {
 
     ov_json_value *val = ov_json_value_cast(item);
     struct container *c = (struct container *)data;
-    if (!val || !c) return false;
+    if (!val || !c)
+        return false;
 
     ov_socket_configuration server = ov_socket_configuration_from_json(
         val, (ov_socket_configuration){.type = UDP});
@@ -269,7 +270,8 @@ static bool array_check_server(void *item, void *data) {
 
 static bool check_ports(ov_event_loop *loop, ov_json_value *jconfig) {
 
-    if (!loop || !jconfig) goto error;
+    if (!loop || !jconfig)
+        goto error;
 
     const ov_json_value *stun = ov_json_object_get(jconfig, OV_KEY_STUN);
 
@@ -284,11 +286,8 @@ static bool check_ports(ov_event_loop *loop, ov_json_value *jconfig) {
         !ov_socket_get_sockaddr_storage(socket, &sa, NULL, NULL))
         goto error;
 
-    if (!loop->callback.set(loop,
-                            socket,
-                            OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE,
-                            loop,
-                            process_stun)) {
+    if (!loop->callback.set(loop, socket, OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE,
+                            loop, process_stun)) {
 
         fprintf(stdout, "open socket %i - event cb failed\n", socket);
         close(socket);
@@ -303,9 +302,8 @@ static bool check_ports(ov_event_loop *loop, ov_json_value *jconfig) {
     if (value) {
 
         ov_socket_configuration server = ov_socket_configuration_from_json(
-            value,
-            (ov_socket_configuration){
-                .host = "localhost", .type = UDP, .port = 3478});
+            value, (ov_socket_configuration){
+                       .host = "localhost", .type = UDP, .port = 3478});
 
         if (ov_json_get(stun, "/server/range")) {
 
@@ -347,7 +345,8 @@ error:
 
 static void *log_failed_port(void *data) {
 
-    if (NULL == data) return NULL;
+    if (NULL == data)
+        return NULL;
 
     intptr_t port = (intptr_t)data;
     fprintf(stdout, "PORT w/o response: %" PRIiPTR "\n", port);
@@ -362,30 +361,37 @@ int main(int argc, char **argv) {
 
     ov_event_loop *loop = NULL;
     global_transactions = ov_dict_create(ov_dict_string_key_config(255));
-    if (!global_transactions) goto error;
+    if (!global_transactions)
+        goto error;
 
     const char *path = ov_config_path_from_command_line(argc, argv);
 
-    if (!path) path = CONFIG_PATH;
+    if (!path)
+        path = CONFIG_PATH;
 
     config = ov_config_load(path);
-    if (!config) goto error;
+    if (!config)
+        goto error;
 
-    if (!ov_config_log_from_json(config)) goto error;
+    if (!ov_config_log_from_json(config))
+        goto error;
 
     uint32_t max_sockets = 10;
     uint64_t max_runtime =
         ov_json_number_get(ov_json_get(config, "/stun/max_wait_usecs"));
-    if (0 == max_runtime) max_runtime = IMPL_RUNTIME_USECS;
+    if (0 == max_runtime)
+        max_runtime = IMPL_RUNTIME_USECS;
 
     /* Initiate the event loop to be used */
 
-    loop = ov_os_event_loop((ov_event_loop_config){
-        .max.sockets = max_sockets, .max.timers = max_sockets});
+    loop = ov_os_event_loop((ov_event_loop_config){.max.sockets = max_sockets,
+                                                   .max.timers = max_sockets});
 
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    if (!check_ports(loop, config)) goto error;
+    if (!check_ports(loop, config))
+        goto error;
 
     /*  Run event loop */
 

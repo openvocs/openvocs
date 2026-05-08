@@ -35,11 +35,11 @@
 
 /*----------------------------------------------------------------------------*/
 
-static bool change_tie_breaker(ov_ice_session *session,
-                               uint64_t min,
+static bool change_tie_breaker(ov_ice_session *session, uint64_t min,
                                uint64_t max) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     uint64_t new = session->tiebreaker;
 
@@ -75,7 +75,8 @@ static bool timeout_session(uint32_t id, void *s) {
 static bool start_trickling(uint32_t timer_id, void *data) {
 
     ov_ice_session *session = ov_ice_session_cast(data);
-    if (!session) goto error;
+    if (!session)
+        goto error;
     UNUSED(timer_id);
     session->timer.trickling = OV_TIMER_INVALID;
     session->trickling_started = true;
@@ -97,7 +98,8 @@ error:
 static bool start_nominate(uint32_t timer_id, void *data) {
 
     ov_ice_session *session = ov_ice_session_cast(data);
-    if (!session) goto error;
+    if (!session)
+        goto error;
     UNUSED(timer_id);
     session->timer.nominate_timeout = OV_TIMER_INVALID;
     session->nominate_started = true;
@@ -121,10 +123,12 @@ ov_ice_session *create_session(ov_ice *ice) {
 
     ov_ice_session *session = NULL;
 
-    if (!ice) goto error;
+    if (!ice)
+        goto error;
 
     session = calloc(1, sizeof(ov_ice_session));
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     session->node.type = OV_ICE_SESSION_MAGIC_BYTES;
     ov_id_fill_with_uuid(session->uuid);
@@ -139,33 +143,27 @@ ov_ice_session *create_session(ov_ice *ice) {
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            break;
+    case srtp_err_status_ok:
+        break;
 
-        default:
-            ov_log_error("ICE session %s srtp failed %i", session->uuid, r);
-            goto error;
+    default:
+        ov_log_error("ICE session %s srtp failed %i", session->uuid, r);
+        goto error;
     }
 
     ov_ice_config config = ov_ice_get_config(ice);
 
-    session->timer.session_timeout =
-        ov_event_loop_timer_set(config.loop,
-                                config.limits.stun.session_timeout_usecs,
-                                session,
-                                timeout_session);
+    session->timer.session_timeout = ov_event_loop_timer_set(
+        config.loop, config.limits.stun.session_timeout_usecs, session,
+        timeout_session);
 
-    session->timer.trickling =
-        ov_event_loop_timer_set(config.loop,
-                                config.limits.stun.connectivity_pace_usecs,
-                                session,
-                                start_trickling);
+    session->timer.trickling = ov_event_loop_timer_set(
+        config.loop, config.limits.stun.connectivity_pace_usecs, session,
+        start_trickling);
 
-    session->timer.nominate_timeout =
-        ov_event_loop_timer_set(config.loop,
-                                config.limits.stun.connectivity_pace_usecs * 10,
-                                session,
-                                start_nominate);
+    session->timer.nominate_timeout = ov_event_loop_timer_set(
+        config.loop, config.limits.stun.connectivity_pace_usecs * 10, session,
+        start_nominate);
 
     return session;
 
@@ -181,10 +179,12 @@ ov_ice_session *ov_ice_session_create_offer(ov_ice *ice, ov_sdp_session *sdp) {
 
     ov_ice_session *session = NULL;
 
-    if (!ice || !sdp) goto error;
+    if (!ice || !sdp)
+        goto error;
 
     session = create_session(ice);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     uint32_t count = ov_node_count(sdp->description);
 
@@ -197,8 +197,8 @@ ov_ice_session *ov_ice_session_create_offer(ov_ice *ice, ov_sdp_session *sdp) {
     sdp->origin.connection.addrtype = "IP4";
     sdp->origin.connection.address = "0.0.0.0";
 
-    if (!ov_sdp_attribute_add(
-            &sdp->attributes, OV_ICE_STRING_OPTIONS, OV_ICE_STRING_TRICKLE))
+    if (!ov_sdp_attribute_add(&sdp->attributes, OV_ICE_STRING_OPTIONS,
+                              OV_ICE_STRING_TRICKLE))
         goto error;
 
     ov_sdp_session_persist(sdp);
@@ -209,35 +209,34 @@ ov_ice_session *ov_ice_session_create_offer(ov_ice *ice, ov_sdp_session *sdp) {
     for (size_t i = 0; i < count; i++) {
 
         stream = ov_ice_stream_create(session, i);
-        if (!stream) goto error;
+        if (!stream)
+            goto error;
 
         description = ov_node_get(sdp->description, i + 1);
-        if (!description) goto error;
+        if (!description)
+            goto error;
 
         /*
          *      Set stream parameter
          */
 
-        if (!ov_sdp_attribute_add(
-                &description->attributes, OV_ICE_STRING_USER, stream->uuid))
+        if (!ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_USER,
+                                  stream->uuid))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_ICE_STRING_PASS,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_PASS,
                                   stream->local.pass))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_KEY_SETUP,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_SETUP,
                                   OV_ICE_STRING_ACTIVE_PASSIVE))
             goto error;
 
-        if (!ov_sdp_attribute_add(
-                &description->attributes, OV_KEY_RTCP_MUX, NULL))
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_RTCP_MUX,
+                                  NULL))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_KEY_FINGERPRINT,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_FINGERPRINT,
                                   ov_ice_get_fingerprint(stream->session->ice)))
             goto error;
 
@@ -249,20 +248,19 @@ ov_ice_session *ov_ice_session_create_offer(ov_ice *ice, ov_sdp_session *sdp) {
          *      a persistant uuid.
          */
 
-        if (!memset(ssrc, 0, OV_UDP_PAYLOAD_OCTETS)) goto error;
+        if (!memset(ssrc, 0, OV_UDP_PAYLOAD_OCTETS))
+            goto error;
 
-        if (!snprintf(ssrc,
-                      OV_UDP_PAYLOAD_OCTETS,
-                      "%" PRIu32 " cname:%s",
-                      stream->local.ssrc,
-                      stream->uuid))
+        if (!snprintf(ssrc, OV_UDP_PAYLOAD_OCTETS, "%" PRIu32 " cname:%s",
+                      stream->local.ssrc, stream->uuid))
             goto error;
 
         if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_SSRC, ssrc))
             goto error;
 
         description->connection = ov_sdp_connection_create();
-        if (!description->connection) goto error;
+        if (!description->connection)
+            goto error;
 
         *description->connection =
             ov_ice_stream_get_connection(stream, description);
@@ -285,13 +283,16 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
 
     ov_ice_session *session = NULL;
 
-    if (!ice || !sdp) goto error;
+    if (!ice || !sdp)
+        goto error;
 
     session = create_session(ice);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     session = create_session(ice);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     uint32_t count = ov_node_count(sdp->description);
 
@@ -326,10 +327,12 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
     for (size_t i = 0; i < count; i++) {
 
         stream = ov_ice_stream_create(session, i);
-        if (!stream) goto error;
+        if (!stream)
+            goto error;
 
         description = ov_node_get(sdp->description, i + 1);
-        if (!description) goto error;
+        if (!description)
+            goto error;
 
         fingerprint_stream =
             ov_sdp_attribute_get(description->attributes, OV_KEY_FINGERPRINT);
@@ -348,31 +351,33 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
         pass =
             ov_sdp_attribute_get(description->attributes, OV_ICE_STRING_PASS);
 
-        if (!fingerprint || !user || !pass) goto error;
+        if (!fingerprint || !user || !pass)
+            goto error;
 
         const char *setup =
             ov_sdp_attribute_get(description->attributes, OV_KEY_SETUP);
-        if (!setup) goto error;
+        if (!setup)
+            goto error;
 
         if (0 == ov_string_compare(setup, OV_ICE_STRING_ACTIVE_PASSIVE)) {
 
             ov_sdp_attribute_del(&description->attributes, OV_KEY_SETUP);
-            ov_sdp_attribute_add(
-                &description->attributes, OV_ICE_STRING_ACTIVE, NULL);
+            ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_ACTIVE,
+                                 NULL);
             ov_ice_stream_set_active(stream, fingerprint);
 
         } else if (0 == ov_string_compare(setup, OV_ICE_STRING_ACTIVE)) {
 
             ov_sdp_attribute_del(&description->attributes, OV_KEY_SETUP);
-            ov_sdp_attribute_add(
-                &description->attributes, OV_ICE_STRING_PASSIVE, NULL);
+            ov_sdp_attribute_add(&description->attributes,
+                                 OV_ICE_STRING_PASSIVE, NULL);
             ov_ice_stream_set_passive(stream);
 
         } else if (0 == ov_string_compare(setup, OV_ICE_STRING_PASSIVE)) {
 
             ov_sdp_attribute_del(&description->attributes, OV_KEY_SETUP);
-            ov_sdp_attribute_add(
-                &description->attributes, OV_ICE_STRING_ACTIVE, NULL);
+            ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_ACTIVE,
+                                 NULL);
             ov_ice_stream_set_active(stream, fingerprint);
 
         } else {
@@ -388,10 +393,12 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
 
             if (!cname && (0 == strcmp(attr->key, OV_KEY_SSRC))) {
 
-                if (!attr->value) goto error;
+                if (!attr->value)
+                    goto error;
 
                 cname = memchr(attr->value, ' ', strlen(attr->value));
-                if (!cname) goto error;
+                if (!cname)
+                    goto error;
 
                 if (!ov_convert_string_to_uint32(
                         attr->value, (cname - attr->value), &remote_ssrc))
@@ -399,8 +406,8 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
 
                 cname++;
 
-                ptr = memchr(
-                    cname, ':', strlen(attr->value) - (cname - attr->value));
+                ptr = memchr(cname, ':',
+                             strlen(attr->value) - (cname - attr->value));
                 if (!ptr) {
                     cname = NULL;
                     remote_ssrc = 0;
@@ -431,18 +438,19 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
 
             ov_ice_candidate *c =
                 ov_ice_candidate_from_string(out, strlen(out));
-            if (!c) continue;
+            if (!c)
+                continue;
 
             ov_ice_stream_candidate(stream, c);
             c = ov_ice_candidate_free(c);
         }
 
-        if (end_of_candidates) stream->remote.gathered = true;
+        if (end_of_candidates)
+            stream->remote.gathered = true;
 
         memcpy(stream->remote.user, user, OV_ICE_STUN_USER_MAX);
         memcpy(stream->remote.pass, pass, OV_ICE_STUN_PASS_MAX);
-        memcpy(stream->remote.fingerprint,
-               fingerprint,
+        memcpy(stream->remote.fingerprint, fingerprint,
                OV_ICE_DTLS_FINGERPRINT_MAX);
 
         ov_sdp_attribute_del(&description->attributes, OV_ICE_STRING_USER);
@@ -455,26 +463,23 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
          *      Set stream parameter
          */
 
-        if (!ov_sdp_attribute_add(
-                &description->attributes, OV_ICE_STRING_USER, stream->uuid))
+        if (!ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_USER,
+                                  stream->uuid))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_ICE_STRING_PASS,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_ICE_STRING_PASS,
                                   stream->local.pass))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_KEY_SETUP,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_SETUP,
                                   OV_ICE_STRING_ACTIVE_PASSIVE))
             goto error;
 
-        if (!ov_sdp_attribute_add(
-                &description->attributes, OV_KEY_RTCP_MUX, NULL))
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_RTCP_MUX,
+                                  NULL))
             goto error;
 
-        if (!ov_sdp_attribute_add(&description->attributes,
-                                  OV_KEY_FINGERPRINT,
+        if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_FINGERPRINT,
                                   ov_ice_get_fingerprint(stream->session->ice)))
             goto error;
 
@@ -486,20 +491,19 @@ ov_ice_session *ov_ice_session_create_answer(ov_ice *ice, ov_sdp_session *sdp) {
          *      a persistant uuid.
          */
 
-        if (!memset(ssrc, 0, OV_UDP_PAYLOAD_OCTETS)) goto error;
+        if (!memset(ssrc, 0, OV_UDP_PAYLOAD_OCTETS))
+            goto error;
 
-        if (!snprintf(ssrc,
-                      OV_UDP_PAYLOAD_OCTETS,
-                      "%" PRIu32 " cname:%s",
-                      stream->local.ssrc,
-                      stream->uuid))
+        if (!snprintf(ssrc, OV_UDP_PAYLOAD_OCTETS, "%" PRIu32 " cname:%s",
+                      stream->local.ssrc, stream->uuid))
             goto error;
 
         if (!ov_sdp_attribute_add(&description->attributes, OV_KEY_SSRC, ssrc))
             goto error;
 
         description->connection = ov_sdp_connection_create();
-        if (!description->connection) goto error;
+        if (!description->connection)
+            goto error;
 
         *description->connection =
             ov_ice_stream_get_connection(stream, description);
@@ -518,11 +522,13 @@ error:
 
 ov_ice_session *ov_ice_session_cast(const void *data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_node *node = (ov_node *)data;
 
-    if (node->type == OV_ICE_SESSION_MAGIC_BYTES) return (ov_ice_session *)data;
+    if (node->type == OV_ICE_SESSION_MAGIC_BYTES)
+        return (ov_ice_session *)data;
 error:
     return NULL;
 }
@@ -532,7 +538,8 @@ error:
 void *ov_ice_session_free(void *self) {
 
     ov_ice_session *session = ov_ice_session_cast(self);
-    if (!session) return self;
+    if (!session)
+        return self;
 
     ov_event_loop *loop = ov_ice_get_event_loop(session->ice);
 
@@ -567,8 +574,8 @@ void *ov_ice_session_free(void *self) {
     if (session->srtp.session) {
 
         if (srtp_err_status_ok != srtp_dealloc(session->srtp.session))
-            ov_log_error(
-                "ICE %s failed to deallocate SRTP session", session->uuid);
+            ov_log_error("ICE %s failed to deallocate SRTP session",
+                         session->uuid);
 
         session->srtp.session = NULL;
     }
@@ -592,7 +599,8 @@ void *ov_ice_session_free(void *self) {
 static bool sdp_verify_input(ov_ice_session *session,
                              const ov_sdp_session *sdp) {
 
-    if (!session || !sdp) goto error;
+    if (!session || !sdp)
+        goto error;
 
     if (ov_node_count(sdp->description) != ov_node_count(session->streams))
         goto error;
@@ -624,9 +632,11 @@ static bool sdp_verify_input(ov_ice_session *session,
             sendrecv = true;
 
         if (sendrecv)
-            if (recvonly || sendonly) goto error;
+            if (recvonly || sendonly)
+                goto error;
 
-        if (recvonly && sendonly) goto error;
+        if (recvonly && sendonly)
+            goto error;
 
         desc = ov_node_next(desc);
     }
@@ -640,13 +650,16 @@ error:
 
 static bool check_ice_trickle(const ov_sdp_list *attributes, bool *trickle) {
 
-    if (!trickle) return false;
+    if (!trickle)
+        return false;
     *trickle = false;
 
-    if (!attributes) return true;
+    if (!attributes)
+        return true;
 
     const char *ptr = ov_sdp_attribute_get(attributes, OV_ICE_STRING_OPTIONS);
-    if (!ptr) return true;
+    if (!ptr)
+        return true;
 
     if (0 != strcmp(ptr, OV_ICE_STRING_TRICKLE)) {
         return false;
@@ -661,9 +674,11 @@ static bool check_ice_trickle(const ov_sdp_list *attributes, bool *trickle) {
 bool ov_ice_session_process_answer_in(ov_ice_session *session,
                                       const ov_sdp_session *sdp) {
 
-    if (!session || !sdp) goto error;
+    if (!session || !sdp)
+        goto error;
 
-    if (!sdp_verify_input(session, sdp)) goto error;
+    if (!sdp_verify_input(session, sdp))
+        goto error;
 
     const char *fingerprint = NULL;
     const char *fingerprint_stream = NULL;
@@ -693,7 +708,8 @@ bool ov_ice_session_process_answer_in(ov_ice_session *session,
     user_session = ov_sdp_attribute_get(sdp->attributes, OV_ICE_STRING_USER);
     pass_session = ov_sdp_attribute_get(sdp->attributes, OV_ICE_STRING_PASS);
 
-    if (!check_ice_trickle(sdp->attributes, &trickle_session)) goto error;
+    if (!check_ice_trickle(sdp->attributes, &trickle_session))
+        goto error;
 
     ov_sdp_description *desc = sdp->description;
     ov_ice_stream *stream = session->streams;
@@ -738,9 +754,11 @@ bool ov_ice_session_process_answer_in(ov_ice_session *session,
             if (!trickle_stream &&
                 (0 == strcmp(attr->key, OV_ICE_STRING_OPTIONS))) {
 
-                if (NULL == attr->value) goto error;
+                if (NULL == attr->value)
+                    goto error;
 
-                if (0 != strcmp(attr->value, OV_ICE_STRING_TRICKLE)) goto error;
+                if (0 != strcmp(attr->value, OV_ICE_STRING_TRICKLE))
+                    goto error;
 
                 trickle_stream = true;
                 continue;
@@ -748,19 +766,21 @@ bool ov_ice_session_process_answer_in(ov_ice_session *session,
 
             if (!cname && (0 == strcmp(attr->key, OV_KEY_SSRC))) {
 
-                if (!attr->value) goto error;
+                if (!attr->value)
+                    goto error;
 
                 cname = memchr(attr->value, ' ', strlen(attr->value));
-                if (!cname) goto error;
+                if (!cname)
+                    goto error;
 
-                if (!ov_convert_string_to_uint32(
-                        attr->value, (cname - attr->value), &ssrc))
+                if (!ov_convert_string_to_uint32(attr->value,
+                                                 (cname - attr->value), &ssrc))
                     goto error;
 
                 cname++;
 
-                ptr = memchr(
-                    cname, ':', strlen(attr->value) - (cname - attr->value));
+                ptr = memchr(cname, ':',
+                             strlen(attr->value) - (cname - attr->value));
                 if (!ptr) {
                     cname = NULL;
                     ssrc = 0;
@@ -788,7 +808,8 @@ bool ov_ice_session_process_answer_in(ov_ice_session *session,
             fingerprint = fingerprint_session;
         }
 
-        if (!setup || !fingerprint) goto error;
+        if (!setup || !fingerprint)
+            goto error;
 
         if (0 == ov_string_compare(setup, OV_ICE_STRING_ACTIVE_PASSIVE)) {
 
@@ -809,49 +830,56 @@ bool ov_ice_session_process_answer_in(ov_ice_session *session,
 
         /* Step2 - check required attributes are set */
 
-        if (!trickle_session && !trickle_stream) goto error;
+        if (!trickle_session && !trickle_stream)
+            goto error;
 
         if (!user) {
 
-            if (pass) goto error;
+            if (pass)
+                goto error;
 
-            if (!user_session || !pass_session) goto error;
+            if (!user_session || !pass_session)
+                goto error;
 
             user = user_session;
             pass = pass_session;
 
         } else {
 
-            if (!pass) goto error;
+            if (!pass)
+                goto error;
         }
 
-        if (0 == ssrc) goto error;
+        if (0 == ssrc)
+            goto error;
 
         stream->remote.ssrc = ssrc;
-        if (end_of_candidates) stream->remote.gathered = true;
+        if (end_of_candidates)
+            stream->remote.gathered = true;
 
         strncpy(stream->remote.user, user, OV_ICE_STUN_USER_MAX);
         strncpy(stream->remote.pass, pass, OV_ICE_STUN_PASS_MAX);
-        strncpy(stream->remote.fingerprint,
-                fingerprint,
+        strncpy(stream->remote.fingerprint, fingerprint,
                 OV_ICE_DTLS_FINGERPRINT_MAX);
 
         /* Step3 - add ICE candidates */
 
         const char *value = NULL;
 
-        while (ov_sdp_attributes_iterate(
-            &desc->attributes, OV_ICE_STRING_CANDIDATE, &value)) {
+        while (ov_sdp_attributes_iterate(&desc->attributes,
+                                         OV_ICE_STRING_CANDIDATE, &value)) {
 
             ov_ice_candidate *c =
                 ov_ice_candidate_from_string(value, strlen(value));
-            if (!c) continue;
+            if (!c)
+                continue;
 
             ov_ice_stream_candidate(stream, c);
             c = ov_ice_candidate_free(c);
         }
 
-        if (end_of_candidates) stream->remote.gathered = true;
+        if (end_of_candidates)
+            stream->remote.gathered = true;
 
         ov_ice_stream_order(stream);
         ov_ice_stream_prune(stream);
@@ -868,21 +896,22 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_ice_session_candidate(ov_ice_session *session,
-                              int stream_id,
+bool ov_ice_session_candidate(ov_ice_session *session, int stream_id,
                               const ov_ice_candidate *candidate) {
 
-    if (!session || !candidate) return false;
+    if (!session || !candidate)
+        return false;
 
-    return ov_ice_stream_candidate(
-        ov_node_get(session->streams, stream_id + 1), candidate);
+    return ov_ice_stream_candidate(ov_node_get(session->streams, stream_id + 1),
+                                   candidate);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_ice_session_end_of_candidates(ov_ice_session *session, int stream_id) {
 
-    if (!session) return false;
+    if (!session)
+        return false;
 
     return ov_ice_stream_end_of_candidates(
         ov_node_get(session->streams, stream_id + 1));
@@ -893,7 +922,8 @@ bool ov_ice_session_end_of_candidates(ov_ice_session *session, int stream_id) {
 uint32_t ov_ice_session_get_stream_ssrc(ov_ice_session *session,
                                         int stream_id) {
 
-    if (!session) return 0;
+    if (!session)
+        return 0;
 
     return ov_ice_stream_get_stream_ssrc(
         ov_node_get(session->streams, stream_id + 1));
@@ -901,12 +931,11 @@ uint32_t ov_ice_session_get_stream_ssrc(ov_ice_session *session,
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_ice_session_stream_send(ov_ice_session *session,
-                                   int stream_id,
-                                   const uint8_t *buffer,
-                                   size_t size) {
+ssize_t ov_ice_session_stream_send(ov_ice_session *session, int stream_id,
+                                   const uint8_t *buffer, size_t size) {
 
-    if (!session) return -1;
+    if (!session)
+        return -1;
 
     return ov_ice_stream_send_stream(
         ov_node_get(session->streams, stream_id + 1), buffer, size);
@@ -931,11 +960,14 @@ static bool have_same_foundation(const ov_ice_candidate *a,
      *      Foundations are used in the frozen algorithm.
      */
 
-    if (a->type != b->type) return false;
+    if (a->type != b->type)
+        return false;
 
-    if (a->transport != b->transport) return false;
+    if (a->transport != b->transport)
+        return false;
 
-    if (0 != strncmp(a->addr, b->addr, OV_HOST_NAME_MAX)) return false;
+    if (0 != strncmp(a->addr, b->addr, OV_HOST_NAME_MAX))
+        return false;
 
     if ((0 == a->server.socket.host[0]) && (0 == b->server.socket.host[0]))
         return true;
@@ -946,12 +978,12 @@ static bool have_same_foundation(const ov_ice_candidate *a,
      *      Check if both use the same STUN / TURN SERVER
      */
 
-    if (a->server.type != b->server.type) return false;
+    if (a->server.type != b->server.type)
+        return false;
 
     if ((0 != a->server.socket.host[0]) && (0 != b->server.socket.host[0])) {
 
-        if (0 == strncmp(a->server.socket.host,
-                         b->server.socket.host,
+        if (0 == strncmp(a->server.socket.host, b->server.socket.host,
                          OV_HOST_NAME_MAX))
             return true;
     }
@@ -964,7 +996,8 @@ static bool have_same_foundation(const ov_ice_candidate *a,
 bool ov_ice_session_set_state_on_foundation(ov_ice_session *self,
                                             ov_ice_pair *pair) {
 
-    if (!self || !pair) goto error;
+    if (!self || !pair)
+        goto error;
 
     ov_ice_stream *stream = self->streams;
     ov_ice_pair *test = NULL;
@@ -994,12 +1027,14 @@ bool ov_ice_session_set_state_on_foundation(ov_ice_session *self,
                 }
             }
 
-            if (foundation_success) break;
+            if (foundation_success)
+                break;
 
             test = ov_node_next(test);
         }
 
-        if (foundation_success) break;
+        if (foundation_success)
+            break;
 
         stream = ov_node_next(stream);
     }
@@ -1024,15 +1059,10 @@ void ov_ice_session_dump_pairs(ov_ice_session *session) {
         while (pair) {
 
             ov_log_debug("ICE %s|%i %p %s %" PRIu64 " %s:%i <-> %s:%i %s",
-                         session->uuid,
-                         stream->index,
-                         pair,
+                         session->uuid, stream->index, pair,
                          ov_ice_candidate_type_to_string(pair->local->type),
-                         pair->priority,
-                         pair->local->addr,
-                         pair->local->port,
-                         pair->remote->addr,
-                         pair->remote->port,
+                         pair->priority, pair->local->addr, pair->local->port,
+                         pair->remote->addr, pair->remote->port,
                          ov_ice_pair_state_to_string(pair->state));
 
             pair = ov_node_next(pair);
@@ -1060,7 +1090,8 @@ static bool drop_unselected(ov_ice_session *session) {
             drop = pair;
             pair = ov_node_next(pair);
 
-            if (drop == stream->selected) continue;
+            if (drop == stream->selected)
+                continue;
 
             drop = ov_ice_pair_free(drop);
         }
@@ -1075,9 +1106,11 @@ static bool drop_unselected(ov_ice_session *session) {
 
 bool ov_ice_session_update(ov_ice_session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
-    if (session->state != OV_ICE_RUNNING) return true;
+    if (session->state != OV_ICE_RUNNING)
+        return true;
 
     ov_ice_config config = ov_ice_get_config(session->ice);
 
@@ -1089,22 +1122,23 @@ bool ov_ice_session_update(ov_ice_session *session) {
 
     while (stream) {
 
-        if (stream->state == OV_ICE_RUNNING) ov_ice_stream_update(stream);
+        if (stream->state == OV_ICE_RUNNING)
+            ov_ice_stream_update(stream);
 
         switch (stream->state) {
 
-            case OV_ICE_COMPLETED:
-                break;
+        case OV_ICE_COMPLETED:
+            break;
 
-            case OV_ICE_RUNNING:
-                all_completed = false;
-                break;
+        case OV_ICE_RUNNING:
+            all_completed = false;
+            break;
 
-            case OV_ICE_FAILED:
-                failed = true;
+        case OV_ICE_FAILED:
+            failed = true;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         stream = ov_node_next(stream);
@@ -1115,8 +1149,8 @@ bool ov_ice_session_update(ov_ice_session *session) {
         session->state = OV_ICE_FAILED;
 
         if (config.callbacks.session.state)
-            config.callbacks.session.state(
-                config.callbacks.userdata, session->uuid, session->state);
+            config.callbacks.session.state(config.callbacks.userdata,
+                                           session->uuid, session->state);
 
         ov_ice_drop_session(session->ice, session->uuid);
         goto done;
@@ -1151,8 +1185,8 @@ bool ov_ice_session_update(ov_ice_session *session) {
         drop_unselected(session);
 
         if (config.callbacks.session.state)
-            config.callbacks.session.state(
-                config.callbacks.userdata, session->uuid, session->state);
+            config.callbacks.session.state(config.callbacks.userdata,
+                                           session->uuid, session->state);
     }
 
 done:
@@ -1166,7 +1200,8 @@ error:
 bool ov_ice_session_set_foundation(ov_ice_session *session,
                                    ov_ice_candidate *candidate) {
 
-    if (!session || !candidate) goto error;
+    if (!session || !candidate)
+        goto error;
 
     ov_ice_stream *stream = session->streams;
     ov_ice_candidate *cand = NULL;
@@ -1183,7 +1218,8 @@ bool ov_ice_session_set_foundation(ov_ice_session *session,
 
             if (have_same_foundation(candidate, cand)) {
 
-                if (0 == cand->foundation[0]) goto done;
+                if (0 == cand->foundation[0])
+                    goto done;
 
                 memcpy(candidate->foundation, cand->foundation, 32);
 
@@ -1208,7 +1244,8 @@ error:
 bool ov_ice_session_unfreeze_foundation(ov_ice_session *session,
                                         const uint8_t *foundation) {
 
-    if (!session || !foundation) goto error;
+    if (!session || !foundation)
+        goto error;
 
     ov_ice_stream *stream = session->streams;
     ov_ice_pair *pair = NULL;
@@ -1239,7 +1276,8 @@ error:
 
 bool ov_ice_session_restart(ov_ice_session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     ov_ice_pair *pair = NULL;
     ov_ice_pair *next = NULL;
@@ -1301,8 +1339,8 @@ bool ov_ice_session_restart(ov_ice_session *session) {
 
                 pair->state = OV_ICE_PAIR_FROZEN;
 
-                if (!ov_ice_session_set_state_on_foundation(
-                        stream->session, pair)) {
+                if (!ov_ice_session_set_state_on_foundation(stream->session,
+                                                            pair)) {
                     pair = ov_ice_pair_free(pair);
                     goto error;
                 }
@@ -1313,9 +1351,11 @@ bool ov_ice_session_restart(ov_ice_session *session) {
             remote = ov_node_next(remote);
         }
 
-        if (!ov_ice_stream_order(stream)) goto error;
+        if (!ov_ice_stream_order(stream))
+            goto error;
 
-        if (!ov_ice_stream_prune(stream)) goto error;
+        if (!ov_ice_stream_prune(stream))
+            goto error;
 
         stream->state = OV_ICE_RUNNING;
         stream = ov_node_next(stream);
@@ -1332,7 +1372,8 @@ error:
 bool ov_ice_session_change_role(ov_ice_session *session,
                                 uint64_t remote_tiebreaker) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     session->controlling = !session->controlling;
 
@@ -1376,9 +1417,11 @@ static bool foundation_done(ov_list *list, ov_ice_pair *pair) {
         next = list->next(list, next, (void **)&foundation);
         OV_ASSERT(foundation);
 
-        if (!foundation || !pair->local) continue;
+        if (!foundation || !pair->local)
+            continue;
 
-        if (memcmp(foundation, pair->local->foundation, 32)) return true;
+        if (memcmp(foundation, pair->local->foundation, 32))
+            return true;
     }
 
     return false;
@@ -1391,9 +1434,11 @@ static bool session_unfreeze(ov_ice_session *session) {
     ov_list *list = NULL;
     ov_ice_stream *stream = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
-    if (!session->streams) return true;
+    if (!session->streams)
+        return true;
 
     stream = session->streams;
 
@@ -1405,7 +1450,8 @@ static bool session_unfreeze(ov_ice_session *session) {
      */
 
     list = ov_list_create((ov_list_config){0});
-    if (!list) goto error;
+    if (!list)
+        goto error;
 
     ov_ice_pair *pair = stream->pairs;
 
@@ -1456,7 +1502,8 @@ static bool connectivity_check_send_next(uint32_t id, void *data) {
     OV_ASSERT(stream->session);
 
     ov_ice_session *session = stream->session;
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     OV_ASSERT(id == session->timer.connectivity);
 
@@ -1468,7 +1515,8 @@ static bool connectivity_check_send_next(uint32_t id, void *data) {
 
     return true;
 error:
-    if (session) session->state = OV_ICE_FAILED;
+    if (session)
+        session->state = OV_ICE_FAILED;
     return false;
 }
 
@@ -1478,15 +1526,18 @@ bool perform_connectivity_check(ov_ice_stream *stream) {
 
     OV_ASSERT(stream);
 
-    if (!stream) goto error;
+    if (!stream)
+        goto error;
 
     ov_ice_session *session = stream->session;
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     ov_ice_config config = ov_ice_get_config(session->ice);
 
     ov_event_loop *loop = ov_ice_get_event_loop(session->ice);
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
     /*
      *      Search the next stream active state with
@@ -1516,7 +1567,8 @@ bool perform_connectivity_check(ov_ice_stream *stream) {
      *      (async with ta delay offset)
      */
 
-    if (!stream) goto reschedule_session;
+    if (!stream)
+        goto reschedule_session;
 
     /*
      *      Send a connectivity check on the
@@ -1528,7 +1580,8 @@ bool perform_connectivity_check(ov_ice_stream *stream) {
     if (pair) {
 
         OV_ASSERT(ov_ice_pair_cast(pair));
-        if (!ov_ice_pair_cast(pair)) goto error;
+        if (!ov_ice_pair_cast(pair))
+            goto error;
 
     } else {
 
@@ -1536,7 +1589,8 @@ bool perform_connectivity_check(ov_ice_stream *stream) {
 
         while (pair) {
 
-            if (pair->state == OV_ICE_PAIR_WAITING) break;
+            if (pair->state == OV_ICE_PAIR_WAITING)
+                break;
 
             pair = ov_node_next(pair);
         }
@@ -1551,24 +1605,25 @@ bool perform_connectivity_check(ov_ice_stream *stream) {
 
         stream = ov_node_next(stream);
 
-        if (!stream) goto reschedule_session;
+        if (!stream)
+            goto reschedule_session;
 
         return perform_connectivity_check(stream);
     }
 
     switch (pair->state) {
 
-        case OV_ICE_PAIR_PROGRESS:
+    case OV_ICE_PAIR_PROGRESS:
 
-            if (pair->progress_count > 100) {
-                pair->state = OV_ICE_PAIR_FAILED;
-                return perform_connectivity_check(session->streams);
-            }
+        if (pair->progress_count > 100) {
+            pair->state = OV_ICE_PAIR_FAILED;
+            return perform_connectivity_check(session->streams);
+        }
 
-            break;
+        break;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     if (!ov_ice_pair_send_stun_binding_request(pair)) {
@@ -1585,12 +1640,11 @@ bool perform_connectivity_check(ov_ice_stream *stream) {
     if (OV_TIMER_INVALID == session->timer.connectivity) {
 
         session->timer.connectivity =
-            loop->timer.set(loop,
-                            config.limits.stun.connectivity_pace_usecs,
-                            stream,
-                            connectivity_check_send_next);
+            loop->timer.set(loop, config.limits.stun.connectivity_pace_usecs,
+                            stream, connectivity_check_send_next);
 
-        if (OV_TIMER_INVALID == session->timer.connectivity) goto error;
+        if (OV_TIMER_INVALID == session->timer.connectivity)
+            goto error;
     }
 
     return true;
@@ -1600,12 +1654,11 @@ reschedule_session:
     if (OV_TIMER_INVALID == session->timer.connectivity) {
 
         session->timer.connectivity =
-            loop->timer.set(loop,
-                            config.limits.stun.connectivity_pace_usecs,
-                            session->streams,
-                            connectivity_check_send_next);
+            loop->timer.set(loop, config.limits.stun.connectivity_pace_usecs,
+                            session->streams, connectivity_check_send_next);
 
-        if (OV_TIMER_INVALID == session->timer.connectivity) goto error;
+        if (OV_TIMER_INVALID == session->timer.connectivity)
+            goto error;
     }
 
     session_unfreeze(session);
@@ -1619,7 +1672,8 @@ error:
 
 bool ov_ice_session_checklists_run(ov_ice_session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     /*
      *  We will start running the checklists,
@@ -1629,33 +1683,36 @@ bool ov_ice_session_checklists_run(ov_ice_session *session) {
 
     switch (session->state) {
 
-        case OV_ICE_INIT:
-        case OV_ICE_RUNNING:
-        case OV_ICE_FAILED:
-            break;
+    case OV_ICE_INIT:
+    case OV_ICE_RUNNING:
+    case OV_ICE_FAILED:
+        break;
 
-        case OV_ICE_ERROR:
-            goto error;
-            break;
+    case OV_ICE_ERROR:
+        goto error;
+        break;
 
-        case OV_ICE_COMPLETED:
-            return true;
+    case OV_ICE_COMPLETED:
+        return true;
     }
 
     if (OV_TIMER_INVALID == session->timer.connectivity) {
 
-        if (!session->streams) return true;
+        if (!session->streams)
+            return true;
 
         session_unfreeze(session);
 
-        if (!perform_connectivity_check(session->streams)) goto error;
+        if (!perform_connectivity_check(session->streams))
+            goto error;
 
         session->state = OV_ICE_RUNNING;
     }
 
     return true;
 error:
-    if (session) session->state = OV_ICE_FAILED;
+    if (session)
+        session->state = OV_ICE_FAILED;
     return false;
 }
 
@@ -1663,7 +1720,8 @@ error:
 
 void ov_ice_session_state_change(ov_ice_session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     ov_ice_stream *stream = session->streams;
 
@@ -1674,16 +1732,16 @@ void ov_ice_session_state_change(ov_ice_session *session) {
 
         switch (stream->state) {
 
-            case OV_ICE_RUNNING:
-                completed = false;
-                break;
+        case OV_ICE_RUNNING:
+            completed = false;
+            break;
 
-            case OV_ICE_FAILED:
-                failed = true;
-                break;
+        case OV_ICE_FAILED:
+            failed = true;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
 
         stream = ov_node_next(stream);
@@ -1700,8 +1758,8 @@ void ov_ice_session_state_change(ov_ice_session *session) {
         ov_ice_config config = ov_ice_get_config(session->ice);
 
         if (config.callbacks.session.state)
-            config.callbacks.session.state(
-                config.callbacks.userdata, session->uuid, session->state);
+            config.callbacks.session.state(config.callbacks.userdata,
+                                           session->uuid, session->state);
     }
 
 error:

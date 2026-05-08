@@ -65,15 +65,15 @@ typedef struct ov_mc_backend_sip_static_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_mc_backend_sip_static *ov_mc_backend_sip_static_create(
-    ov_mc_backend_sip_static_config config);
-ov_mc_backend_sip_static *ov_mc_backend_sip_static_free(
-    ov_mc_backend_sip_static *self);
+ov_mc_backend_sip_static *
+ov_mc_backend_sip_static_create(ov_mc_backend_sip_static_config config);
+ov_mc_backend_sip_static *
+ov_mc_backend_sip_static_free(ov_mc_backend_sip_static *self);
 ov_mc_backend_sip_static *ov_mc_backend_sip_static_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_sip_static_config ov_mc_backend_sip_static_config_from_json(
-    const ov_json_value *val);
+ov_mc_backend_sip_static_config
+ov_mc_backend_sip_static_config_from_json(const ov_json_value *val);
 
 #endif /* ov_mc_backend_sip_static_h */

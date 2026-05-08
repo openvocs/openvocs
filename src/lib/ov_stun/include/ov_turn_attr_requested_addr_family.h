@@ -77,10 +77,8 @@ size_t ov_turn_attr_requested_addr_family_encoding_length();
         @param number   number to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_requested_addr_family_encode(uint8_t *buffer,
-                                               size_t length,
-                                               uint8_t **next,
-                                               uint16_t number);
+bool ov_turn_attr_requested_addr_family_encode(uint8_t *buffer, size_t length,
+                                               uint8_t **next, uint16_t number);
 
 /*----------------------------------------------------------------------------*/
 
@@ -92,7 +90,6 @@ bool ov_turn_attr_requested_addr_family_encode(uint8_t *buffer,
         @param number   pointer to store decoded number
 */
 bool ov_turn_attr_requested_addr_family_decode(const uint8_t *buffer,
-                                               size_t length,
-                                               uint16_t *number);
+                                               size_t length, uint16_t *number);
 
 #endif /* ov_turn_attr_requested_addr_family_h */

@@ -75,8 +75,7 @@ bool ov_event_app_close(ov_event_app *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_app_send(ov_event_app *self,
-                       int socket,
+bool ov_event_app_send(ov_event_app *self, int socket,
                        const ov_json_value *msg);
 
 /*
@@ -99,13 +98,9 @@ bool ov_event_app_send(ov_event_app *self,
     JSON will be freed in ov_event_app. If some event callback is defined, that
     callback MUST free the input JSON transported.
 */
-bool ov_event_app_register(ov_event_app *app,
-                           const char *name,
-                           void *userdata,
-                           void (*callback)(void *userdata,
-                                            const char *name,
-                                            int socket,
-                                            ov_json_value *input));
+bool ov_event_app_register(ov_event_app *app, const char *name, void *userdata,
+                           void (*callback)(void *userdata, const char *name,
+                                            int socket, ov_json_value *input));
 
 /*----------------------------------------------------------------------------*/
 

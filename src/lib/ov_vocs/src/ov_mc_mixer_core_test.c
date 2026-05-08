@@ -80,12 +80,11 @@ int test_ov_mc_mixer_core_free() {
 
     testrun(ov_mc_mixer_core_set_name(core, "username"));
     testrun(ov_mc_mixer_core_set_forward(
-        core,
-        (ov_mc_mixer_core_forward){.ssrc = 12345,
-                                   .payload_type = 1,
-                                   .socket.host = "127.0.0.1",
-                                   .socket.port = 12345,
-                                   .socket.type = UDP}));
+        core, (ov_mc_mixer_core_forward){.ssrc = 12345,
+                                         .payload_type = 1,
+                                         .socket.host = "127.0.0.1",
+                                         .socket.port = 12345,
+                                         .socket.type = UDP}));
 
     testrun(ov_mc_mixer_core_join(core,
                                   (ov_mc_loop_data){.socket.host = "229.0.0.1",

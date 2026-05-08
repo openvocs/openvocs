@@ -45,70 +45,74 @@
 #define IMPL_PARALLEL_DEFAULT 16
 #define IMPL_LENGTH_DEFAULT 64
 
-bool ov_password_hash_scrypt(uint8_t *out,
-                             size_t *len,
-                             const char *pass,
+bool ov_password_hash_scrypt(uint8_t *out, size_t *len, const char *pass,
                              const char *salt,
                              ov_password_hash_parameter params) {
 
     EVP_PKEY_CTX *pctx = NULL;
 
-    if (!out || !len || !pass || !salt) goto error;
+    if (!out || !len || !pass || !salt)
+        goto error;
 
     /* defaults (use the one of openssl example */
 
-    if (0 == params.workfactor) params.workfactor = IMPL_WORKFACTOR_DEFAULT;
+    if (0 == params.workfactor)
+        params.workfactor = IMPL_WORKFACTOR_DEFAULT;
 
-    if (0 == params.blocksize) params.blocksize = IMPL_BLOCKSIZE_DEFAULT;
+    if (0 == params.blocksize)
+        params.blocksize = IMPL_BLOCKSIZE_DEFAULT;
 
-    if (0 == params.parallel) params.parallel = IMPL_PARALLEL_DEFAULT;
+    if (0 == params.parallel)
+        params.parallel = IMPL_PARALLEL_DEFAULT;
 
     pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_SCRYPT, NULL);
 
-    if (1 != EVP_PKEY_derive_init(pctx)) goto error;
+    if (1 != EVP_PKEY_derive_init(pctx))
+        goto error;
 
-    if (1 != EVP_PKEY_CTX_set1_pbe_pass(pctx, pass, strlen(pass))) goto error;
+    if (1 != EVP_PKEY_CTX_set1_pbe_pass(pctx, pass, strlen(pass)))
+        goto error;
 
     if (1 != EVP_PKEY_CTX_set1_scrypt_salt(pctx, (uint8_t *)salt, strlen(salt)))
         goto error;
 
-    if (1 != EVP_PKEY_CTX_set_scrypt_N(pctx, params.workfactor)) goto error;
+    if (1 != EVP_PKEY_CTX_set_scrypt_N(pctx, params.workfactor))
+        goto error;
 
-    if (1 != EVP_PKEY_CTX_set_scrypt_r(pctx, params.blocksize)) goto error;
+    if (1 != EVP_PKEY_CTX_set_scrypt_r(pctx, params.blocksize))
+        goto error;
 
-    if (1 != EVP_PKEY_CTX_set_scrypt_p(pctx, params.parallel)) goto error;
+    if (1 != EVP_PKEY_CTX_set_scrypt_p(pctx, params.parallel))
+        goto error;
 
-    if (1 != EVP_PKEY_derive(pctx, out, len)) goto error;
+    if (1 != EVP_PKEY_derive(pctx, out, len))
+        goto error;
 
     EVP_PKEY_CTX_free(pctx);
     return out;
 error:
-    if (pctx) EVP_PKEY_CTX_free(pctx);
+    if (pctx)
+        EVP_PKEY_CTX_free(pctx);
     return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_password_hash_pdkdf2(uint8_t *out,
-                             size_t *len,
-                             const char *pass,
+bool ov_password_hash_pdkdf2(uint8_t *out, size_t *len, const char *pass,
                              const char *salt,
                              ov_password_hash_parameter params) {
 
-    if (!out || !len || !pass || !salt) goto error;
+    if (!out || !len || !pass || !salt)
+        goto error;
 
     int length = *len;
 
-    if (0 == params.workfactor) params.workfactor = IMPL_WORKFACTOR_DEFAULT;
+    if (0 == params.workfactor)
+        params.workfactor = IMPL_WORKFACTOR_DEFAULT;
 
-    if (1 != PKCS5_PBKDF2_HMAC(pass,
-                               strlen(pass),
-                               (uint8_t *)salt,
-                               strlen(salt),
-                               (int)params.workfactor,
-                               EVP_sha3_512(),
-                               length,
-                               out))
+    if (1 != PKCS5_PBKDF2_HMAC(pass, strlen(pass), (uint8_t *)salt,
+                               strlen(salt), (int)params.workfactor,
+                               EVP_sha3_512(), length, out))
         goto error;
 
     return true;
@@ -118,12 +122,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_password_hash_parameter ov_password_params_from_json(
-    const ov_json_value *input) {
+ov_password_hash_parameter
+ov_password_params_from_json(const ov_json_value *input) {
 
     ov_password_hash_parameter params = {0};
 
-    if (!input) goto error;
+    if (!input)
+        goto error;
 
     params.workfactor = (uint16_t)ov_json_number_get(
         ov_json_object_get(input, OV_AUTH_KEY_WORKFACTOR));
@@ -148,13 +153,16 @@ ov_json_value *ov_password_params_to_json(ov_password_hash_parameter params) {
     ov_json_value *val = NULL;
 
     val = ov_json_number(params.workfactor);
-    if (!ov_json_object_set(out, OV_AUTH_KEY_WORKFACTOR, val)) goto error;
+    if (!ov_json_object_set(out, OV_AUTH_KEY_WORKFACTOR, val))
+        goto error;
 
     val = ov_json_number(params.blocksize);
-    if (!ov_json_object_set(out, OV_AUTH_KEY_BLOCKSIZE, val)) goto error;
+    if (!ov_json_object_set(out, OV_AUTH_KEY_BLOCKSIZE, val))
+        goto error;
 
     val = ov_json_number(params.parallel);
-    if (!ov_json_object_set(out, OV_AUTH_KEY_PARALLEL, val)) goto error;
+    if (!ov_json_object_set(out, OV_AUTH_KEY_PARALLEL, val))
+        goto error;
 
     return out;
 
@@ -174,14 +182,16 @@ bool ov_password_is_valid(const char *password, const ov_json_value *input) {
     uint8_t *salt_byte_string = NULL;
     size_t salt_byte_length = 0;
 
-    if (!password || !input) return false;
+    if (!password || !input)
+        return false;
 
     /* parse the expected hash and salt to be used */
     const char *hash =
         ov_json_string_get(ov_json_object_get(input, OV_AUTH_KEY_HASH));
     const char *salt =
         ov_json_string_get(ov_json_object_get(input, OV_AUTH_KEY_SALT));
-    if (!hash || !salt) return false;
+    if (!hash || !salt)
+        return false;
 
     /* parse the params to be used */
     ov_password_hash_parameter params = ov_password_params_from_json(input);
@@ -207,12 +217,12 @@ bool ov_password_is_valid(const char *password, const ov_json_value *input) {
      * process.
      */
 
-    if (!ov_base64_decode(
-            (uint8_t *)hash, hash_length, &hash_byte_string, &hash_byte_length))
+    if (!ov_base64_decode((uint8_t *)hash, hash_length, &hash_byte_string,
+                          &hash_byte_length))
         goto error;
 
-    if (!ov_base64_decode(
-            (uint8_t *)salt, salt_length, &salt_byte_string, &salt_byte_length))
+    if (!ov_base64_decode((uint8_t *)salt, salt_length, &salt_byte_string,
+                          &salt_byte_length))
         goto error;
 
     size_t length = hash_length;
@@ -264,18 +274,12 @@ bool ov_password_is_valid(const char *password, const ov_json_value *input) {
 
     if ((0 != params.blocksize) || (0 != params.parallel)) {
 
-        if (!ov_password_hash_scrypt(hash_buffer,
-                                     &length,
-                                     password,
-                                     (char *)salt_byte_string,
-                                     params))
+        if (!ov_password_hash_scrypt(hash_buffer, &length, password,
+                                     (char *)salt_byte_string, params))
             goto error;
 
-    } else if (!ov_password_hash_pdkdf2(hash_buffer,
-                                        &length,
-                                        password,
-                                        (char *)salt_byte_string,
-                                        params)) {
+    } else if (!ov_password_hash_pdkdf2(hash_buffer, &length, password,
+                                        (char *)salt_byte_string, params)) {
 
         goto error;
     }
@@ -301,7 +305,8 @@ ov_json_value *ov_password_hash(const char *password,
                                 ov_password_hash_parameter params,
                                 size_t length) {
 
-    if (0 == length) length = IMPL_LENGTH_DEFAULT;
+    if (0 == length)
+        length = IMPL_LENGTH_DEFAULT;
 
     size_t len = length + 1;
 
@@ -317,22 +322,24 @@ ov_json_value *ov_password_hash(const char *password,
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!password) goto error;
+    if (!password)
+        goto error;
 
     /* Create salt (using openssl CSPRNG)*/
 
-    if (1 != RAND_bytes(salt, length)) goto error;
+    if (1 != RAND_bytes(salt, length))
+        goto error;
 
     /* Create hash */
 
     if ((0 != params.blocksize) || (0 != params.parallel)) {
 
-        if (!ov_password_hash_scrypt(
-                hash, &length, password, (char *)salt, params))
+        if (!ov_password_hash_scrypt(hash, &length, password, (char *)salt,
+                                     params))
             goto error;
 
-    } else if (!ov_password_hash_pdkdf2(
-                   hash, &length, password, (char *)salt, params)) {
+    } else if (!ov_password_hash_pdkdf2(hash, &length, password, (char *)salt,
+                                        params)) {
 
         goto error;
     }
@@ -341,32 +348,39 @@ ov_json_value *ov_password_hash(const char *password,
 
     out = ov_password_params_to_json(params);
 
-    if (0 == params.workfactor) ov_json_object_del(out, OV_AUTH_KEY_WORKFACTOR);
+    if (0 == params.workfactor)
+        ov_json_object_del(out, OV_AUTH_KEY_WORKFACTOR);
 
-    if (0 == params.blocksize) ov_json_object_del(out, OV_AUTH_KEY_BLOCKSIZE);
+    if (0 == params.blocksize)
+        ov_json_object_del(out, OV_AUTH_KEY_BLOCKSIZE);
 
-    if (0 == params.parallel) ov_json_object_del(out, OV_AUTH_KEY_PARALLEL);
+    if (0 == params.parallel)
+        ov_json_object_del(out, OV_AUTH_KEY_PARALLEL);
 
     /* add base64 salt and hash */
 
     uint8_t *b64 = NULL;
     size_t b64_len = 0;
 
-    if (!ov_base64_encode(hash, length, &b64, &b64_len)) goto error;
+    if (!ov_base64_encode(hash, length, &b64, &b64_len))
+        goto error;
 
     val = ov_json_string((char *)b64);
     b64 = ov_data_pointer_free(b64);
     b64_len = 0;
 
-    if (!ov_json_object_set(out, OV_AUTH_KEY_HASH, val)) goto error;
+    if (!ov_json_object_set(out, OV_AUTH_KEY_HASH, val))
+        goto error;
 
-    if (!ov_base64_encode(salt, length, &b64, &b64_len)) goto error;
+    if (!ov_base64_encode(salt, length, &b64, &b64_len))
+        goto error;
 
     val = ov_json_string((char *)b64);
     b64 = ov_data_pointer_free(b64);
     b64_len = 0;
 
-    if (!ov_json_object_set(out, OV_AUTH_KEY_SALT, val)) goto error;
+    if (!ov_json_object_set(out, OV_AUTH_KEY_SALT, val))
+        goto error;
 
     return out;
 

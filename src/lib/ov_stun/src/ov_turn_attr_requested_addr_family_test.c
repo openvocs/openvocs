@@ -140,8 +140,8 @@ int test_ov_turn_attr_requested_addr_family_decode() {
     testrun(ov_stun_attribute_set_length(buffer, 4, 4));
     testrun(ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
 
-    testrun(ov_stun_attribute_set_type(
-        buffer, 4, TURN_REQUESTED_ADDRESS_FAMILY - 1));
+    testrun(ov_stun_attribute_set_type(buffer, 4,
+                                       TURN_REQUESTED_ADDRESS_FAMILY - 1));
     testrun(!ov_turn_attr_requested_addr_family_decode(buffer, 100, &out));
 
     return testrun_log_success();

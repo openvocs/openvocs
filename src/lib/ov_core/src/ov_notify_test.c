@@ -184,8 +184,8 @@ static bool entity_params_equal(ov_notify_parameters p1,
 /*----------------------------------------------------------------------------*/
 
 static int test_ov_notify_parse() {
-    ov_notify_type ov_notify_parse(
-        ov_json_value const *parameters, ov_notify_parameters *notify_params);
+    ov_notify_type ov_notify_parse(ov_json_value const *parameters,
+                                   ov_notify_parameters *notify_params);
 
     testrun(NOTIFY_INVALID == ov_notify_parse(0, 0));
 
@@ -301,11 +301,11 @@ static int test_ov_notify_parse() {
     testrun(0 ==
             ov_string_compare(params.recording.id, parsed_params.recording.id));
 
-    testrun(0 == ov_string_compare(
-                     params.recording.loop, parsed_params.recording.loop));
+    testrun(0 == ov_string_compare(params.recording.loop,
+                                   parsed_params.recording.loop));
 
-    testrun(0 == ov_string_compare(
-                     params.recording.uri, parsed_params.recording.uri));
+    testrun(0 == ov_string_compare(params.recording.uri,
+                                   parsed_params.recording.uri));
 
     memset(&params, 0, sizeof(params));
 
@@ -316,7 +316,5 @@ static int test_ov_notify_parse() {
 }
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_notify",
-            test_ov_notify_type_to_string,
-            test_ov_notify_message,
+OV_TEST_RUN("ov_notify", test_ov_notify_type_to_string, test_ov_notify_message,
             test_ov_notify_parse);

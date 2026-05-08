@@ -50,8 +50,8 @@
 ov_json_value *ov_mc_mixer_msg_register(const char *uuid, const char *type);
 
 ov_json_value *ov_mc_mixer_msg_configure(ov_mc_mixer_core_config config);
-ov_mc_mixer_core_config ov_mc_mixer_msg_configure_from_json(
-    const ov_json_value *json);
+ov_mc_mixer_core_config
+ov_mc_mixer_msg_configure_from_json(const ov_json_value *json);
 
 /*----------------------------------------------------------------------------*/
 
@@ -101,8 +101,8 @@ ov_json_value *ov_mc_mixer_msg_forward(const char *username,
 /*----------------------------------------------------------------------------*/
 
 const char *ov_mc_mixer_msg_aquire_get_username(const ov_json_value *m);
-ov_mc_mixer_core_forward ov_mc_mixer_msg_acquire_get_forward(
-    const ov_json_value *m);
+ov_mc_mixer_core_forward
+ov_mc_mixer_msg_acquire_get_forward(const ov_json_value *m);
 
 /*----------------------------------------------------------------------------*/
 

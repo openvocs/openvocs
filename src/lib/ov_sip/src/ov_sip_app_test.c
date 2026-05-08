@@ -380,13 +380,9 @@ int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_sip_app",
-            test_ov_sip_app_create,
-            test_ov_sip_app_free,
-            test_ov_sip_app_register_handler,
-            test_ov_sip_app_connect,
-            test_ov_sip_app_open_server_socket,
-            test_ov_sip_app_send,
+OV_TEST_RUN("ov_sip_app", test_ov_sip_app_create, test_ov_sip_app_free,
+            test_ov_sip_app_register_handler, test_ov_sip_app_connect,
+            test_ov_sip_app_open_server_socket, test_ov_sip_app_send,
             tear_down);
 
 /*----------------------------------------------------------------------------*/

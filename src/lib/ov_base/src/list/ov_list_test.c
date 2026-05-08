@@ -689,7 +689,8 @@ int test_ov_list_count() {
 
 bool for_each_dummy(void *item, void *data) {
 
-    if (item || data) return true;
+    if (item || data)
+        return true;
 
     return true;
 }

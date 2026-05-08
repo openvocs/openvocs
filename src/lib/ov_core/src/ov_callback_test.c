@@ -81,24 +81,21 @@ int test_ov_callback_registry_free() {
     void *data = calloc(1, 1000);
 
     testrun(ov_callback_registry_register(
-        reg,
-        "a",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(ov_callback_registry_register(
-        reg,
-        "a-b",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a-b",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(ov_callback_registry_register(
-        reg,
-        "a-b-c",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a-b-c",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(NULL == ov_callback_registry_free(reg));
@@ -145,31 +142,27 @@ int test_ov_callback_registry_register() {
     void *data = calloc(1, 1000);
 
     testrun(!ov_callback_registry_register(
-        NULL,
-        "a",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        NULL, "a",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(!ov_callback_registry_register(
-        reg,
-        NULL,
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, NULL,
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(!ov_callback_registry_register(
-        reg,
-        "a",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         0));
 
     testrun(ov_callback_registry_register(
-        reg,
-        "a",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(1 == ov_dict_count(reg->data));
@@ -177,10 +170,9 @@ int test_ov_callback_registry_register() {
     // check override
 
     testrun(ov_callback_registry_register(
-        reg,
-        "a",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(1 == ov_dict_count(reg->data));
@@ -188,10 +180,9 @@ int test_ov_callback_registry_register() {
     // check additional
 
     testrun(ov_callback_registry_register(
-        reg,
-        "b",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "b",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(2 == ov_dict_count(reg->data));
@@ -218,10 +209,9 @@ int test_ov_callback_registry_unregister() {
     void *data = calloc(1, 1000);
 
     testrun(ov_callback_registry_register(
-        reg,
-        "a",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(1 == ov_dict_count(reg->data));
@@ -258,10 +248,9 @@ int test_ov_callback_registry_get() {
     void *data = calloc(1, 1000);
 
     testrun(ov_callback_registry_register(
-        reg,
-        "a",
-        (ov_callback){
-            .userdata = data, .function = ov_callback_registry_register},
+        reg, "a",
+        (ov_callback){.userdata = data,
+                      .function = ov_callback_registry_register},
         OV_CALLBACK_TIMEOUT_DEFAULT_USEC));
 
     testrun(1 == ov_dict_count(reg->data));

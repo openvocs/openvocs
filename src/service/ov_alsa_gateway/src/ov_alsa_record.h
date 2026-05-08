@@ -69,8 +69,7 @@ typedef struct {
 /*----------------------------------------------------------------------------*/
 
 ov_alsa_record *ov_alsa_record_create(const ov_alsa_record_config cfg,
-                                      int sd_for_sending,
-                                      ov_result *res);
+                                      int sd_for_sending, ov_result *res);
 
 /*----------------------------------------------------------------------------*/
 

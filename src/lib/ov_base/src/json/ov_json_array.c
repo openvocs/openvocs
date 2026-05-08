@@ -73,8 +73,7 @@ struct json_array {
      *       you MAY search the value using for_each
      *       but FREE it after the for_each run.
      *       (external, don't delete during internal iteration) */
-    bool (*for_each)(json_array *self,
-                     void *data,
+    bool (*for_each)(json_array *self, void *data,
                      bool (*function)(void *value, void *data));
 
     bool (*remove_child)(json_array *self, ov_json_value *child);
@@ -96,7 +95,8 @@ ov_json_value *ov_json_array() { return ov_json_list(); }
 
 bool ov_json_is_array(const ov_json_value *value) {
 
-    if (AS_JSON_ARRAY(value)) return true;
+    if (AS_JSON_ARRAY(value))
+        return true;
 
     return false;
 }
@@ -117,7 +117,8 @@ json_array *ov_json_array_cast(const void *data) { return AS_JSON_ARRAY(data); }
 
 json_array *ov_json_array_set_head(json_array *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     self->head.magic_byte = OV_JSON_VALUE_MAGIC_BYTE;
     self->head.type = OV_JSON_ARRAY;
@@ -131,7 +132,8 @@ json_array *ov_json_array_set_head(json_array *self) {
 bool ov_json_array_clear(void *data) {
 
     json_array *array = AS_JSON_ARRAY(data);
-    if (!array || !array->head.clear) return false;
+    if (!array || !array->head.clear)
+        return false;
 
     return array->head.clear(array);
 }
@@ -141,7 +143,8 @@ bool ov_json_array_clear(void *data) {
 void *ov_json_array_free(void *data) {
 
     json_array *array = AS_JSON_ARRAY(data);
-    if (!array || !array->head.free) return data;
+    if (!array || !array->head.free)
+        return data;
 
     return array->head.free(array);
 }
@@ -151,17 +154,22 @@ void *ov_json_array_free(void *data) {
 static bool copy_items(void *value, void *data) {
 
     ov_json_value *val = ov_json_value_cast(value);
-    if (!val || !data) return false;
+    if (!val || !data)
+        return false;
 
     ov_json_value *content = NULL;
     json_array *target = ov_json_array_cast(data);
-    if (!target || !target->push) goto error;
+    if (!target || !target->push)
+        goto error;
 
-    if (!ov_json_value_copy((void **)&content, val)) goto error;
+    if (!ov_json_value_copy((void **)&content, val))
+        goto error;
 
-    if (!content) goto error;
+    if (!content)
+        goto error;
 
-    if (target->push(target, content)) return true;
+    if (target->push(target, content))
+        return true;
 
     content = ov_json_value_free(content);
 
@@ -176,24 +184,29 @@ void *ov_json_array_copy(void **dest, const void *data) {
     bool created = false;
     json_array *copy = NULL;
     json_array *orig = AS_JSON_ARRAY(data);
-    if (!dest || !orig) return NULL;
+    if (!dest || !orig)
+        return NULL;
 
     if (!*dest) {
 
         *dest = ov_json_array();
-        if (!*dest) goto error;
+        if (!*dest)
+            goto error;
 
         created = true;
     }
 
     copy = ov_json_array_cast(*dest);
-    if (!ov_json_array_clear(copy)) goto error;
+    if (!ov_json_array_clear(copy))
+        goto error;
 
-    if (!orig->for_each(orig, copy, copy_items)) goto error;
+    if (!orig->for_each(orig, copy, copy_items))
+        goto error;
 
     return copy;
 error:
-    if (created) *dest = ov_json_array_free(*dest);
+    if (created)
+        *dest = ov_json_array_free(*dest);
     return false;
 }
 
@@ -202,11 +215,14 @@ error:
 static bool dump_items(void *value, void *data) {
 
     ov_json_value *val = ov_json_value_cast(value);
-    if (!val || !data) return false;
+    if (!val || !data)
+        return false;
 
-    if (!ov_json_value_dump((FILE *)data, val)) return false;
+    if (!ov_json_value_dump((FILE *)data, val))
+        return false;
 
-    if (!fprintf((FILE *)data, "\n")) return false;
+    if (!fprintf((FILE *)data, "\n"))
+        return false;
 
     return true;
 }
@@ -216,13 +232,17 @@ static bool dump_items(void *value, void *data) {
 bool ov_json_array_dump(FILE *stream, const void *data) {
 
     json_array *array = AS_JSON_ARRAY(data);
-    if (!stream || !array) return false;
+    if (!stream || !array)
+        return false;
 
-    if (!fprintf(stream, "\n[\n")) goto error;
+    if (!fprintf(stream, "\n[\n"))
+        goto error;
 
-    if (!array->for_each(array, stream, dump_items)) goto error;
+    if (!array->for_each(array, stream, dump_items))
+        goto error;
 
-    if (!fprintf(stream, "]\n")) goto error;
+    if (!fprintf(stream, "]\n"))
+        goto error;
 
     return true;
 error:
@@ -303,8 +323,7 @@ static ov_json_value *impl_json_array_get(json_array *self, size_t position);
 
 static ov_json_value *impl_json_array_remove(json_array *self, size_t position);
 
-static bool impl_json_array_insert(json_array *self,
-                                   size_t position,
+static bool impl_json_array_insert(json_array *self, size_t position,
                                    ov_json_value *value);
 
 /*----------------------------------------------------------------------------*/
@@ -312,8 +331,7 @@ static bool impl_json_array_insert(json_array *self,
 static size_t impl_json_array_count(const json_array *self);
 static bool impl_json_array_is_empty(const json_array *self);
 
-static bool impl_json_array_for_each(json_array *self,
-                                     void *data,
+static bool impl_json_array_for_each(json_array *self, void *data,
                                      bool (*function)(void *value, void *data));
 
 static bool impl_json_array_remove_child(json_array *self,
@@ -333,14 +351,17 @@ ov_list_config json_list_config() {
 
 bool json_list_init(JsonList *list) {
 
-    if (!list) goto error;
+    if (!list)
+        goto error;
 
     // set head
-    if (!ov_json_array_set_head((json_array *)list)) goto error;
+    if (!ov_json_array_set_head((json_array *)list))
+        goto error;
 
     list->public.type = OV_JSON_ARRAY_LIST;
 
-    if (list->data) list->data = ov_list_free(list->data);
+    if (list->data)
+        list->data = ov_list_free(list->data);
     list->data = ov_list_create(json_list_config());
 
     // set interface functions
@@ -372,9 +393,11 @@ error:
 static ov_json_value *ov_json_list() {
 
     JsonList *list = calloc(1, sizeof(JsonList));
-    if (!list) goto error;
+    if (!list)
+        goto error;
 
-    if (json_list_init(list)) return (ov_json_value *)list;
+    if (json_list_init(list))
+        return (ov_json_value *)list;
 
     free(list);
 error:
@@ -386,7 +409,8 @@ error:
 bool impl_json_array_clear(void *self) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     // pop empty
     ov_json_value *value = ov_list_pop(list->data);
@@ -407,12 +431,15 @@ error:
 void *impl_json_array_free(void *self) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list) return self;
+    if (!list)
+        return self;
 
     // in case of parent loop over ov_json_value_free
-    if (list->public.head.parent) return ov_json_value_free(self);
+    if (list->public.head.parent)
+        return ov_json_value_free(self);
 
-    if (!impl_json_array_clear(self)) return self;
+    if (!impl_json_array_clear(self))
+        return self;
 
     ov_list_free(list->data);
     free(list);
@@ -424,15 +451,20 @@ void *impl_json_array_free(void *self) {
 bool impl_json_array_push(json_array *self, ov_json_value *value) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data || !value) goto error;
+    if (!list || !list->data || !value)
+        goto error;
 
-    if (value == (ov_json_value *)self) goto error;
+    if (value == (ov_json_value *)self)
+        goto error;
 
-    if (!ov_json_value_validate(value)) goto error;
+    if (!ov_json_value_validate(value))
+        goto error;
 
-    if (!ov_json_value_set_parent(value, (ov_json_value *)self)) goto error;
+    if (!ov_json_value_set_parent(value, (ov_json_value *)self))
+        goto error;
 
-    if (ov_list_push(list->data, value)) return true;
+    if (ov_list_push(list->data, value))
+        return true;
 
     // unset on push failure
     value->parent = NULL;
@@ -445,10 +477,12 @@ error:
 ov_json_value *impl_json_array_pop(json_array *self) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     ov_json_value *value = ov_list_pop(list->data);
-    if (value) value->parent = NULL;
+    if (value)
+        value->parent = NULL;
 
     return value;
 error:
@@ -460,7 +494,8 @@ error:
 size_t impl_json_array_find(json_array *self, const ov_json_value *value) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     return ov_list_get_pos(list->data, (void *)value);
 error:
@@ -472,10 +507,12 @@ error:
 bool impl_json_array_del(json_array *self, size_t position) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     ov_json_value *value = impl_json_array_remove(self, position);
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     ov_json_value_free(value);
     return true;
@@ -489,7 +526,8 @@ error:
 ov_json_value *impl_json_array_get(json_array *self, size_t position) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     return (ov_json_value *)ov_list_get(list->data, position);
 error:
@@ -501,10 +539,12 @@ error:
 ov_json_value *impl_json_array_remove(json_array *self, size_t position) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     ov_json_value *value = ov_list_remove(list->data, position);
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     value->parent = NULL;
     return value;
@@ -514,24 +554,30 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool impl_json_array_insert(json_array *self,
-                            size_t pos,
+bool impl_json_array_insert(json_array *self, size_t pos,
                             ov_json_value *value) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
-    if (!ov_json_value_validate(value)) goto error;
+    if (!ov_json_value_validate(value))
+        goto error;
 
-    if (value->parent) goto error;
+    if (value->parent)
+        goto error;
 
-    if (value == (ov_json_value *)self) goto error;
+    if (value == (ov_json_value *)self)
+        goto error;
 
-    if (pos > (ov_list_count(list->data) + 1)) goto error;
+    if (pos > (ov_list_count(list->data) + 1))
+        goto error;
 
-    if (!ov_json_value_set_parent(value, (ov_json_value *)self)) goto error;
+    if (!ov_json_value_set_parent(value, (ov_json_value *)self))
+        goto error;
 
-    if (ov_list_insert(list->data, pos, value)) return true;
+    if (ov_list_insert(list->data, pos, value))
+        return true;
 
     // unset on insert failure
     value->parent = NULL;
@@ -544,7 +590,8 @@ error:
 size_t impl_json_array_count(const json_array *self) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     return ov_list_count(list->data);
 error:
@@ -556,7 +603,8 @@ error:
 bool impl_json_array_is_empty(const json_array *self) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     return ov_list_is_empty(list->data);
 error:
@@ -565,12 +613,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool impl_json_array_for_each(json_array *self,
-                              void *data,
+bool impl_json_array_for_each(json_array *self, void *data,
                               bool (*function)(void *value, void *data)) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
     return ov_list_for_each(list->data, data, function);
 
@@ -583,14 +631,18 @@ error:
 bool impl_json_array_remove_child(json_array *self, ov_json_value *child) {
 
     JsonList *list = AS_JSON_LIST(self);
-    if (!list || !list->data) goto error;
+    if (!list || !list->data)
+        goto error;
 
-    if (!child) return true;
+    if (!child)
+        return true;
 
     if (child->parent)
-        if (child->parent != (ov_json_value *)self) goto error;
+        if (child->parent != (ov_json_value *)self)
+            goto error;
 
-    if (!ov_list_remove_if_included(list->data, child)) goto error;
+    if (!ov_list_remove_if_included(list->data, child))
+        goto error;
 
     child->parent = NULL;
     return true;
@@ -609,7 +661,8 @@ error:
 bool ov_json_array_push(ov_json_value *array, ov_json_value *value) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->push || !value) return false;
+    if (!arr || !arr->push || !value)
+        return false;
 
     return arr->push(arr, value);
 }
@@ -619,7 +672,8 @@ bool ov_json_array_push(ov_json_value *array, ov_json_value *value) {
 ov_json_value *ov_json_array_pop(ov_json_value *array) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->pop) return NULL;
+    if (!arr || !arr->pop)
+        return NULL;
 
     return arr->pop(arr);
 }
@@ -629,7 +683,8 @@ ov_json_value *ov_json_array_pop(ov_json_value *array) {
 size_t ov_json_array_find(ov_json_value *array, const ov_json_value *child) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->find || !child) return 0;
+    if (!arr || !arr->find || !child)
+        return 0;
 
     return arr->find(arr, child);
 }
@@ -639,7 +694,8 @@ size_t ov_json_array_find(ov_json_value *array, const ov_json_value *child) {
 bool ov_json_array_del(ov_json_value *array, size_t position) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->del) return false;
+    if (!arr || !arr->del)
+        return false;
 
     return arr->del(arr, position);
 }
@@ -649,7 +705,8 @@ bool ov_json_array_del(ov_json_value *array, size_t position) {
 ov_json_value *ov_json_array_get(ov_json_value *array, size_t position) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->get) return NULL;
+    if (!arr || !arr->get)
+        return NULL;
 
     return arr->get(arr, position);
 }
@@ -659,19 +716,20 @@ ov_json_value *ov_json_array_get(ov_json_value *array, size_t position) {
 ov_json_value *ov_json_array_remove(ov_json_value *array, size_t position) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->remove) return NULL;
+    if (!arr || !arr->remove)
+        return NULL;
 
     return arr->remove(arr, position);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_json_array_insert(ov_json_value *array,
-                          size_t position,
+bool ov_json_array_insert(ov_json_value *array, size_t position,
                           ov_json_value *value) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->insert || !value) return false;
+    if (!arr || !arr->insert || !value)
+        return false;
 
     return arr->insert(arr, position, value);
 }
@@ -681,7 +739,8 @@ bool ov_json_array_insert(ov_json_value *array,
 size_t ov_json_array_count(const ov_json_value *array) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->count) return 0;
+    if (!arr || !arr->count)
+        return 0;
 
     return arr->count(arr);
 }
@@ -691,19 +750,20 @@ size_t ov_json_array_count(const ov_json_value *array) {
 bool ov_json_array_is_empty(const ov_json_value *array) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->is_empty) return false;
+    if (!arr || !arr->is_empty)
+        return false;
 
     return arr->is_empty(arr);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_json_array_for_each(ov_json_value *array,
-                            void *data,
+bool ov_json_array_for_each(ov_json_value *array, void *data,
                             bool (*function)(void *value, void *data)) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->for_each || !function) return false;
+    if (!arr || !arr->for_each || !function)
+        return false;
 
     return arr->for_each(arr, data, function);
 }
@@ -713,7 +773,8 @@ bool ov_json_array_for_each(ov_json_value *array,
 bool ov_json_array_remove_child(ov_json_value *array, ov_json_value *child) {
 
     json_array *arr = ov_json_array_cast(array);
-    if (!arr || !arr->remove_child || !child) return false;
+    if (!arr || !arr->remove_child || !child)
+        return false;
 
     return arr->remove_child(arr, child);
 }
@@ -1205,7 +1266,8 @@ int test_impl_json_array_is_empty() {
 
 static bool dummy_true(void *value, void *data) {
 
-    if (value || data) return true;
+    if (value || data)
+        return true;
 
     return true;
 }
@@ -1214,9 +1276,11 @@ static bool dummy_true(void *value, void *data) {
 
 static bool dummy_search_numbers(void *value, void *data) {
 
-    if (!value || !data) return false;
+    if (!value || !data)
+        return false;
 
-    if (ov_json_is_number(value)) ov_list_push(data, (void *)value);
+    if (ov_json_is_number(value))
+        ov_list_push(data, (void *)value);
 
     return true;
 }

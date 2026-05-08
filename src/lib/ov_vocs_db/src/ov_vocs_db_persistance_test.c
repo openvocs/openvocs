@@ -224,10 +224,8 @@ int test_ov_vocs_db_persistance_save() {
     testrun(ov_vocs_db_persistance_load(self));
     uint64_t stop2 = ov_time_get_current_time_usecs();
 
-    fprintf(stdout,
-            "save %" PRIu64 " usec load %" PRIu64 " usec\n",
-            stop1 - start,
-            stop2 - stop1);
+    fprintf(stdout, "save %" PRIu64 " usec load %" PRIu64 " usec\n",
+            stop1 - start, stop2 - stop1);
 
     out = ov_vocs_db_get_entity(db, OV_VOCS_DB_USER, "admin");
     testrun(out);
@@ -248,10 +246,8 @@ int test_ov_vocs_db_persistance_save() {
     testrun(ov_vocs_db_persistance_load(self));
     stop2 = ov_time_get_current_time_usecs();
 
-    fprintf(stdout,
-            "save %" PRIu64 " usec load %" PRIu64 " usec\n",
-            stop1 - start,
-            stop2 - stop1);
+    fprintf(stdout, "save %" PRIu64 " usec load %" PRIu64 " usec\n",
+            stop1 - start, stop2 - stop1);
 
     testrun(OV_VOCS_SEND ==
             ov_vocs_db_get_state(db, "user1", "role1", "loop1"));
@@ -279,9 +275,11 @@ int test_ov_vocs_db_persistance_save() {
 static bool create_db(ov_vocs_db *db, int domains, int projects, int items) {
 
     ov_json_value *empty = ov_json_object();
-    if (!ov_vocs_db_inject(db, OV_VOCS_DB_TYPE_AUTH, empty)) goto error;
+    if (!ov_vocs_db_inject(db, OV_VOCS_DB_TYPE_AUTH, empty))
+        goto error;
     empty = ov_json_object();
-    if (!ov_vocs_db_inject(db, OV_VOCS_DB_TYPE_STATE, empty)) goto error;
+    if (!ov_vocs_db_inject(db, OV_VOCS_DB_TYPE_STATE, empty))
+        goto error;
 
     // ov_vocs_db_dump(stdout, db);
 
@@ -293,8 +291,8 @@ static bool create_db(ov_vocs_db *db, int domains, int projects, int items) {
 
         snprintf(id, 100, "id%i", i);
 
-        if (!ov_vocs_db_create_entity(
-                db, OV_VOCS_DB_DOMAIN, id, OV_VOCS_DB_SCOPE_DOMAIN, NULL))
+        if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_DOMAIN, id,
+                                      OV_VOCS_DB_SCOPE_DOMAIN, NULL))
             goto error;
 
         for (int x = 0; x < projects; x++) {
@@ -304,11 +302,8 @@ static bool create_db(ov_vocs_db *db, int domains, int projects, int items) {
             char project[100] = {0};
             snprintf(project, 100, "project%i%i", i, x);
 
-            if (!ov_vocs_db_create_entity(db,
-                                          OV_VOCS_DB_PROJECT,
-                                          project,
-                                          OV_VOCS_DB_SCOPE_DOMAIN,
-                                          id))
+            if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_PROJECT, project,
+                                          OV_VOCS_DB_SCOPE_DOMAIN, id))
                 goto error;
 
             for (int y = 0; y < items; y++) {
@@ -318,23 +313,17 @@ static bool create_db(ov_vocs_db *db, int domains, int projects, int items) {
                 char name[100] = {0};
                 snprintf(name, 100, "name%i%i%i", i, x, y);
 
-                if (!ov_vocs_db_create_entity(db,
-                                              OV_VOCS_DB_LOOP,
-                                              name,
+                if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_LOOP, name,
                                               OV_VOCS_DB_SCOPE_PROJECT,
                                               project))
                     goto error;
 
-                if (!ov_vocs_db_create_entity(db,
-                                              OV_VOCS_DB_ROLE,
-                                              name,
+                if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_ROLE, name,
                                               OV_VOCS_DB_SCOPE_PROJECT,
                                               project))
                     goto error;
 
-                if (!ov_vocs_db_create_entity(db,
-                                              OV_VOCS_DB_USER,
-                                              name,
+                if (!ov_vocs_db_create_entity(db, OV_VOCS_DB_USER, name,
                                               OV_VOCS_DB_SCOPE_PROJECT,
                                               project))
                     goto error;
@@ -380,10 +369,8 @@ int check_performance() {
     testrun(ov_vocs_db_persistance_load(self));
     stop2 = ov_time_get_current_time_usecs();
 
-    fprintf(stdout,
-            "234 save %" PRIu64 " usec load %" PRIu64 " usec\n",
-            stop1 - start,
-            stop2 - stop1);
+    fprintf(stdout, "234 save %" PRIu64 " usec load %" PRIu64 " usec\n",
+            stop1 - start, stop2 - stop1);
 
     testrun(create_db(db, 10, 10, 10));
 
@@ -393,10 +380,8 @@ int check_performance() {
     testrun(ov_vocs_db_persistance_load(self));
     stop2 = ov_time_get_current_time_usecs();
 
-    fprintf(stdout,
-            "101010 save %" PRIu64 " usec load %" PRIu64 " usec\n",
-            stop1 - start,
-            stop2 - stop1);
+    fprintf(stdout, "101010 save %" PRIu64 " usec load %" PRIu64 " usec\n",
+            stop1 - start, stop2 - stop1);
 
     // reset filesystem data
     testrun(ov_vocs_db_inject(db, OV_VOCS_DB_TYPE_AUTH, cpy));

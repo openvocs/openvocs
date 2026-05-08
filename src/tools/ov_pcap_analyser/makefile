@@ -39,10 +39,10 @@ OV_LIBS        = -L$(OV_LIBDIR)
 OV_LIBS       += `pkg-config --libs opus`
 OV_LIBS       += -pthread
 OV_LIBS       += -l ov_arch$(OV_EDITION)
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_base2
-OV_LIBS       += -l ov_format2
-OV_LIBS       += -l ov_codec2
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_format$(OV_EDITION)
+OV_LIBS       += -l ov_codec$(OV_EDITION)
 
 #-----------------------------------------------------------------------------
 include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk

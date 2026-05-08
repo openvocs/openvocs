@@ -63,36 +63,32 @@ int test_ov_websocket_upgrade_request() {
 
     msg = ov_websocket_upgrade_request(host, uri, sec_key);
     testrun(msg);
-    header = ov_http_header_get_unique(
-        msg->header, msg->config.header.capacity, OV_HTTP_KEY_UPGRADE);
+    header = ov_http_header_get_unique(msg->header, msg->config.header.capacity,
+                                       OV_HTTP_KEY_UPGRADE);
     testrun(header);
-    testrun(0 == memcmp(OV_WEBSOCKET_KEY,
-                        header->value.start,
+    testrun(0 == memcmp(OV_WEBSOCKET_KEY, header->value.start,
                         header->value.length));
 
-    header = ov_http_header_get_unique(
-        msg->header, msg->config.header.capacity, OV_HTTP_KEY_CONNECTION);
+    header = ov_http_header_get_unique(msg->header, msg->config.header.capacity,
+                                       OV_HTTP_KEY_CONNECTION);
     testrun(header);
-    testrun(0 == memcmp(OV_WEBSOCKET_KEY_UPGRADE,
-                        header->value.start,
+    testrun(0 == memcmp(OV_WEBSOCKET_KEY_UPGRADE, header->value.start,
                         header->value.length));
 
-    header = ov_http_header_get_unique(
-        msg->header, msg->config.header.capacity, OV_HTTP_KEY_HOST);
+    header = ov_http_header_get_unique(msg->header, msg->config.header.capacity,
+                                       OV_HTTP_KEY_HOST);
     testrun(header);
     testrun(0 == memcmp(host, header->value.start, header->value.length));
 
-    header = ov_http_header_get_unique(
-        msg->header, msg->config.header.capacity, OV_WEBSOCKET_KEY_SECURE);
+    header = ov_http_header_get_unique(msg->header, msg->config.header.capacity,
+                                       OV_WEBSOCKET_KEY_SECURE);
     testrun(header);
     testrun(0 == memcmp(key, header->value.start, header->value.length));
 
-    header = ov_http_header_get_unique(msg->header,
-                                       msg->config.header.capacity,
+    header = ov_http_header_get_unique(msg->header, msg->config.header.capacity,
                                        OV_WEBSOCKET_KEY_SECURE_VERSION);
     testrun(header);
-    testrun(0 == memcmp(OV_WEBSOCKET_VERSION,
-                        header->value.start,
+    testrun(0 == memcmp(OV_WEBSOCKET_VERSION, header->value.start,
                         header->value.length));
 
     testrun(NULL == ov_http_message_free(msg));
@@ -115,21 +111,19 @@ int test_ov_websocket_is_upgrade_response() {
     testrun(ov_websocket_generate_secure_accept_key(
         key, OV_WEBSOCKET_SECURE_KEY_SIZE, &accept_key, &accept_key_length));
 
-    ov_memory_pointer sec_key = {
-        .start = key, .length = OV_WEBSOCKET_SECURE_KEY_SIZE};
+    ov_memory_pointer sec_key = {.start = key,
+                                 .length = OV_WEBSOCKET_SECURE_KEY_SIZE};
 
-    ov_http_message *msg =
-        ov_http_create_status_string((ov_http_message_config){0},
-                                     (ov_http_version){.major = 1, .minor = 1},
-                                     101,
-                                     OV_HTTP_SWITCH_PROTOCOLS);
+    ov_http_message *msg = ov_http_create_status_string(
+        (ov_http_message_config){0}, (ov_http_version){.major = 1, .minor = 1},
+        101, OV_HTTP_SWITCH_PROTOCOLS);
     testrun(msg);
 
-    testrun(ov_http_message_add_header_string(
-        msg, OV_HTTP_KEY_UPGRADE, OV_WEBSOCKET_KEY));
+    testrun(ov_http_message_add_header_string(msg, OV_HTTP_KEY_UPGRADE,
+                                              OV_WEBSOCKET_KEY));
 
-    testrun(ov_http_message_add_header_string(
-        msg, OV_HTTP_KEY_CONNECTION, OV_HTTP_KEY_UPGRADE));
+    testrun(ov_http_message_add_header_string(msg, OV_HTTP_KEY_CONNECTION,
+                                              OV_HTTP_KEY_UPGRADE));
 
     testrun(ov_http_message_add_header_string(
         msg, OV_WEBSOCKET_KEY_SECURE_ACCEPT, (char *)accept_key));

@@ -205,8 +205,7 @@ void *ov_hashtable_remove(ov_hashtable *table, const void *key);
         @return number of processed entries.
  */
 size_t ov_hashtable_for_each(const ov_hashtable *table,
-                             bool (*process)(void const *key,
-                                             void const *value,
+                             bool (*process)(void const *key, void const *value,
                                              void *arg),
                              void *arg);
 

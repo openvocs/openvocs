@@ -50,10 +50,8 @@ typedef struct ov_mc_loop_config {
     struct {
 
         void *userdata;
-        void (*io)(void *userdata,
-                   const ov_mc_loop_data *data,
-                   const uint8_t *buffer,
-                   size_t bytes,
+        void (*io)(void *userdata, const ov_mc_loop_data *data,
+                   const uint8_t *buffer, size_t bytes,
                    const ov_socket_data *remote);
 
     } callback;

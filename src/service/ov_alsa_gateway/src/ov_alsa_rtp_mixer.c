@@ -128,8 +128,8 @@ static ov_codec *get_codec_for_ssrc(ov_alsa_rtp_mixer *self, uint32_t ssrc) {
     intptr_t key = ssrc;
     codec_entry *codec = 0;
 
-    if (ov_ptr_valid(
-            self, "Cannot get Codec - invalid ALSA RTP mixer pointer")) {
+    if (ov_ptr_valid(self,
+                     "Cannot get Codec - invalid ALSA RTP mixer pointer")) {
 
         codec = ov_dict_get(self->codecs, (void *)key);
 
@@ -154,8 +154,8 @@ static ov_codec *get_codec_for_ssrc(ov_alsa_rtp_mixer *self, uint32_t ssrc) {
 static ov_codec *get_codec_for_frame(ov_alsa_rtp_mixer *mixer,
                                      const ov_rtp_frame *frame) {
 
-    if (ov_ptr_valid(
-            frame, "Cannot get codec for RTP frame: invalid frame pointer")) {
+    if (ov_ptr_valid(frame,
+                     "Cannot get codec for RTP frame: invalid frame pointer")) {
 
         return get_codec_for_ssrc(mixer, frame->expanded.ssrc);
 
@@ -167,8 +167,8 @@ static ov_codec *get_codec_for_frame(ov_alsa_rtp_mixer *mixer,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *create_comfort_noise_for_default_frame(
-    ov_alsa_rtp_mixer *self) {
+static ov_buffer *
+create_comfort_noise_for_default_frame(ov_alsa_rtp_mixer *self) {
 
     ov_buffer *buf16 = 0;
 
@@ -239,8 +239,8 @@ ov_alsa_rtp_mixer *ov_alsa_rtp_mixer_create(ov_alsa_rtp_mixer_config cfg) {
     d_config.value.data_function.free = codec_entry_free_void;
     mixer->codecs = ov_dict_create(d_config);
 
-    ov_thread_lock_init(
-        &mixer->frame_buffer_lock, 1000 * OV_DEFAULT_FRAME_LENGTH_MS / 2.0);
+    ov_thread_lock_init(&mixer->frame_buffer_lock,
+                        1000 * OV_DEFAULT_FRAME_LENGTH_MS / 2.0);
 
     return mixer;
 }
@@ -249,8 +249,8 @@ ov_alsa_rtp_mixer *ov_alsa_rtp_mixer_create(ov_alsa_rtp_mixer_config cfg) {
 
 ov_alsa_rtp_mixer *ov_alsa_rtp_mixer_free(ov_alsa_rtp_mixer *self) {
 
-    if (ov_ptr_valid(
-            as_mixer(self), "Cannot free ALSA RTP mixer: Invalid pointer")) {
+    if (ov_ptr_valid(as_mixer(self),
+                     "Cannot free ALSA RTP mixer: Invalid pointer")) {
 
         fprintf(stderr, "Freeing ALSA RTP mixer\n");
 
@@ -295,8 +295,8 @@ bool ov_alsa_rtp_mixer_add_frame(ov_alsa_rtp_mixer *self, ov_rtp_frame *frame) {
     if (ov_ptr_valid(
             self, "Cannot add RTP frame to mixing buffer - invalid pointer")) {
 
-        ov_rtp_frame_free(frame_buffer_add(
-            &self->frame_buffer_lock, self->frame_buffer, frame));
+        ov_rtp_frame_free(frame_buffer_add(&self->frame_buffer_lock,
+                                           self->frame_buffer, frame));
         return true;
 
     } else {
@@ -320,22 +320,19 @@ static ov_list *free_frame_list(ov_list *list) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool decode_frame(ov_codec *codec,
-                         ov_rtp_frame *frame,
+static bool decode_frame(ov_codec *codec, ov_rtp_frame *frame,
                          ov_buffer *target) {
 
     if (ov_ptr_valid(codec, "Cannot decode frame - invalid codec") &&
-        ov_ptr_valid(
-            frame, "Cannot decode RTP frame - invalid RTP frame pointer") &&
-        ov_ptr_valid(
-            target, "Cannot decode RTP frame - invalid target pointer")) {
+        ov_ptr_valid(frame,
+                     "Cannot decode RTP frame - invalid RTP frame pointer") &&
+        ov_ptr_valid(target,
+                     "Cannot decode RTP frame - invalid target pointer")) {
 
-        target->length = ov_codec_decode(codec,
-                                         frame->expanded.sequence_number,
+        target->length = ov_codec_decode(codec, frame->expanded.sequence_number,
                                          frame->expanded.payload.data,
                                          frame->expanded.payload.length,
-                                         target->start,
-                                         target->capacity);
+                                         target->start, target->capacity);
 
         return true;
 
@@ -347,8 +344,7 @@ static bool decode_frame(ov_codec *codec,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *mix_frames(ov_alsa_rtp_mixer *self,
-                             ov_list *frames,
+static ov_buffer *mix_frames(ov_alsa_rtp_mixer *self, ov_list *frames,
                              size_t frame_length_samples) {
 
     size_t num_frames = ov_list_count(frames);
@@ -371,19 +367,16 @@ static ov_buffer *mix_frames(ov_alsa_rtp_mixer *self,
 
         ov_rtp_frame *frame = ov_list_pop(frames);
 
-        if (decode_frame(
-                get_codec_for_frame(self, frame), frame, decoded_16bit) &&
+        if (decode_frame(get_codec_for_frame(self, frame), frame,
+                         decoded_16bit) &&
             (ov_ptr_valid(decoded_16bit, "Could not decode RTP frame") &&
              ov_cond_valid(len_16bit == decoded_16bit->length,
                            "Decoded RTP frame has unexpected length") &&
-             (ov_cond_valid(
-                 ov_pcm_16_scale_to_32(frame_length_samples,
-                                       (int16_t *)decoded_16bit->start,
-                                       (int32_t *)decoded_32bit->start,
-                                       1.0,
-                                       0,
-                                       0),
-                 "Could not scale decoded PCM to 32 bit")) &&
+             (ov_cond_valid(ov_pcm_16_scale_to_32(
+                                frame_length_samples,
+                                (int16_t *)decoded_16bit->start,
+                                (int32_t *)decoded_32bit->start, 1.0, 0, 0),
+                            "Could not scale decoded PCM to 32 bit")) &&
              ov_cond_valid(ov_pcm_32_add(frame_length_samples,
                                          (int32_t *)mixed_32bit->start,
                                          (int32_t *)decoded_32bit->start),
@@ -420,8 +413,7 @@ static ov_buffer *mix_frames(ov_alsa_rtp_mixer *self,
 
 /*----------------------------------------------------------------------------*/
 
-static bool process_frames(ov_alsa_rtp_mixer *self,
-                           ov_list *frames,
+static bool process_frames(ov_alsa_rtp_mixer *self, ov_list *frames,
                            ov_chunker *chunker_to_write_to) {
 
     bool ok = false;
@@ -442,8 +434,8 @@ static bool process_frames(ov_alsa_rtp_mixer *self,
             ov_log_debug("No frame to forward to ALSA");
             if (0 != self->comfort_noise.noisy_frame_16bit) {
                 ov_log_debug("Adding comfort noise");
-                ov_chunker_add(
-                    chunker_to_write_to, self->comfort_noise.noisy_frame_16bit);
+                ov_chunker_add(chunker_to_write_to,
+                               self->comfort_noise.noisy_frame_16bit);
 
             } else {
                 ov_log_debug("Comfort noise not added - not configured");
@@ -505,15 +497,13 @@ typedef struct {
 
 /*----------------------------------------------------------------------------*/
 
-static bool collect_stale_stream_ssids(const void *key,
-                                       void *value,
+static bool collect_stale_stream_ssids(const void *key, void *value,
                                        void *data) {
 
     gc_args *args = data;
 
-    if (ov_ptr_valid(args,
-                     "Cannot collect stale RTP streams - invalid args "
-                     "pointer") &&
+    if (ov_ptr_valid(args, "Cannot collect stale RTP streams - invalid args "
+                           "pointer") &&
         (sizeof(args->ssids) / sizeof(args->ssids[0]) > args->ssids_found)) {
 
         codec_entry *entry = value;
@@ -539,8 +529,8 @@ static void clean_codec_entries(ov_dict *codec_entries, gc_args args) {
 
     for (size_t i = 0; i < args.ssids_found; ++i) {
 
-        ov_log_info(
-            "ALSA RTP mixer: Removing stale stream %" PRIu32, args.ssids[i]);
+        ov_log_info("ALSA RTP mixer: Removing stale stream %" PRIu32,
+                    args.ssids[i]);
         intptr_t ssidptr = args.ssids[i];
         ov_dict_del(codec_entries, (void *)ssidptr);
     }

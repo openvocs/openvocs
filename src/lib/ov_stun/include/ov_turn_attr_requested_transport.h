@@ -71,10 +71,8 @@ size_t ov_turn_attr_requested_transport_encoding_length();
         @param protocol protocol to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_requested_transport_encode(uint8_t *buffer,
-                                             size_t length,
-                                             uint8_t **next,
-                                             uint8_t protocol);
+bool ov_turn_attr_requested_transport_encode(uint8_t *buffer, size_t length,
+                                             uint8_t **next, uint8_t protocol);
 
 /*----------------------------------------------------------------------------*/
 
@@ -86,7 +84,6 @@ bool ov_turn_attr_requested_transport_encode(uint8_t *buffer,
         @param protocol pointer to store decoded protocol
 */
 bool ov_turn_attr_requested_transport_decode(const uint8_t *buffer,
-                                             size_t length,
-                                             uint8_t *protocol);
+                                             size_t length, uint8_t *protocol);
 
 #endif /* ov_turn_attr_requested_transport_h */

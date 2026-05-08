@@ -57,7 +57,8 @@ char const *ov_config_default_config_file_for(char const *app_name) {
                   strlen(CONFIG_FILE_POSTFIX) <=
               CONFIG_FILE_MAXLEN);
 
-    if (0 == app_name) goto error;
+    if (0 == app_name)
+        goto error;
 
     if (APP_NAME_MAX_LEN < strnlen(app_name, APP_NAME_MAX_LEN + 1)) {
 
@@ -65,14 +66,12 @@ char const *ov_config_default_config_file_for(char const *app_name) {
         goto error;
     }
 
-    size_t num_printed = snprintf(config_file,
-                                  CONFIG_FILE_MAXLEN,
-                                  "%s/%s%s",
-                                  OV_DEFAULT_CONFIG_DIRECTORY,
-                                  app_name,
-                                  CONFIG_FILE_POSTFIX);
+    size_t num_printed =
+        snprintf(config_file, CONFIG_FILE_MAXLEN, "%s/%s%s",
+                 OV_DEFAULT_CONFIG_DIRECTORY, app_name, CONFIG_FILE_POSTFIX);
 
-    if (1 > num_printed) goto error;
+    if (1 > num_printed)
+        goto error;
 
     return config_file;
 
@@ -85,17 +84,16 @@ error:
 
 ov_json_value *ov_config_load(const char *path) {
 
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
     const char *failure = ov_file_read_check(path);
 
     if (failure) {
 
-        ov_log_error(
-            "READ, file (%s) "
-            " %s.",
-            path,
-            failure);
+        ov_log_error("READ, file (%s) "
+                     " %s.",
+                     path, failure);
 
         goto error;
     }
@@ -110,7 +108,8 @@ error:
 const char *ov_config_path_from_command_line(size_t argc, char **argv) {
 
     /* getopt is not 0-pointer safe */
-    if (0 == argv) return 0;
+    if (0 == argv)
+        return 0;
 
     char *optstring = "c:v";
 
@@ -120,17 +119,17 @@ const char *ov_config_path_from_command_line(size_t argc, char **argv) {
 
         switch (c) {
 
-            case 'c':
-                return optarg;
-                break;
+        case 'c':
+            return optarg;
+            break;
 
-            case 'v':
-                OV_VERSION_PRINT(stderr);
-                return VERSION_REQUEST_ONLY;
-                break;
+        case 'v':
+            OV_VERSION_PRINT(stderr);
+            return VERSION_REQUEST_ONLY;
+            break;
 
-            default:
-                break;
+        default:
+            break;
         };
     };
 
@@ -143,15 +142,15 @@ ov_json_value *ov_config_from_command_line(size_t argc, char *argv[]) {
 
     const char *path = ov_config_path_from_command_line(argc, argv);
 
-    if (VERSION_REQUEST_ONLY == path) return 0;
+    if (VERSION_REQUEST_ONLY == path)
+        return 0;
 
     return ov_config_load(path);
 }
 
 /*----------------------------------------------------------------------------*/
 
-double ov_config_double_or_default(ov_json_value const *jval,
-                                   char const *key,
+double ov_config_double_or_default(ov_json_value const *jval, char const *key,
                                    double default_val) {
 
     ov_json_value *ival = ov_json_object_get(jval, key);
@@ -165,8 +164,7 @@ double ov_config_double_or_default(ov_json_value const *jval,
 
 /*----------------------------------------------------------------------------*/
 
-uint32_t ov_config_u32_or_default(ov_json_value const *jval,
-                                  char const *key,
+uint32_t ov_config_u32_or_default(ov_json_value const *jval, char const *key,
                                   uint32_t default_val) {
 
     ov_json_value *ival = ov_json_object_get(jval, key);
@@ -175,8 +173,7 @@ uint32_t ov_config_u32_or_default(ov_json_value const *jval,
 
     if ((0 > dval) || (uint32max < dval)) {
         ov_log_error("%s out of range (expect value in [0;%" PRIu32 "]",
-                     ov_string_sanitize(key),
-                     UINT32_MAX);
+                     ov_string_sanitize(key), UINT32_MAX);
         return default_val;
     } else if (floor(dval) != dval) {
         ov_log_error("%f should be an integer", dval);
@@ -190,8 +187,7 @@ uint32_t ov_config_u32_or_default(ov_json_value const *jval,
 
 /*----------------------------------------------------------------------------*/
 
-uint64_t ov_config_u64_or_default(ov_json_value const *jval,
-                                  char const *key,
+uint64_t ov_config_u64_or_default(ov_json_value const *jval, char const *key,
                                   uint64_t default_val) {
 
     ov_json_value *ival = ov_json_object_get(jval, key);
@@ -200,8 +196,7 @@ uint64_t ov_config_u64_or_default(ov_json_value const *jval,
 
     if ((0 > dval) || (uint64max < dval)) {
         ov_log_error("%s out of range (expect value in [0;%" PRIu64 "]",
-                     ov_string_sanitize(key),
-                     UINT64_MAX);
+                     ov_string_sanitize(key), UINT64_MAX);
         return default_val;
     } else if (floor(dval) != dval) {
         ov_log_error("%f should be an integer", dval);
@@ -215,8 +210,7 @@ uint64_t ov_config_u64_or_default(ov_json_value const *jval,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_config_bool_or_default(ov_json_value const *jval,
-                               char const *key,
+bool ov_config_bool_or_default(ov_json_value const *jval, char const *key,
                                bool default_val) {
 
     ov_json_value *boolval = ov_json_object_get(jval, key);
@@ -233,8 +227,7 @@ bool ov_config_bool_or_default(ov_json_value const *jval,
 /*----------------------------------------------------------------------------*/
 
 ov_socket_configuration ov_config_socket_configuration_or_default(
-    ov_json_value const *jcfg,
-    char const *key,
+    ov_json_value const *jcfg, char const *key,
     ov_socket_configuration default_socket) {
 
     ov_json_value const *socket_json = ov_json_get(jcfg, key);

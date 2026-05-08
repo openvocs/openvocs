@@ -56,9 +56,7 @@ typedef struct {
     ov_buffer (*read_next_payload_chunk)(ov_format *, size_t, void *);
     ssize_t (*write_payload_chunk)(ov_format *, ov_buffer const *, void *);
 
-    ssize_t (*overwrite)(ov_format *f,
-                         size_t offset,
-                         ov_buffer const *chunk,
+    ssize_t (*overwrite)(ov_format *f, size_t offset, ov_buffer const *chunk,
                          void *data);
 
     void *(*free_data)(void *);
@@ -98,9 +96,11 @@ char const *MEM_TYPE = "mem";
 
 static internal *is_mem(ov_format const *f) {
 
-    if (0 == f) return 0;
+    if (0 == f)
+        return 0;
 
-    if (MEM_TYPE == f->type) return (internal *)f;
+    if (MEM_TYPE == f->type)
+        return (internal *)f;
 
     return 0;
 }
@@ -109,7 +109,8 @@ static internal *is_mem(ov_format const *f) {
 
 static mem_data *as_mem_data(void *data) {
 
-    if (0 == data) return data;
+    if (0 == data)
+        return data;
 
     return data;
 }
@@ -204,9 +205,8 @@ error:
 
 /* MEM read */
 
-static ov_buffer mem_read_next_payload_chunk(ov_format *f,
-                                             size_t requested_bytes,
-                                             void *data) {
+static ov_buffer
+mem_read_next_payload_chunk(ov_format *f, size_t requested_bytes, void *data) {
 
     UNUSED(data);
 
@@ -221,7 +221,8 @@ static void *mem_free_data(void *data) {
 
     mem_data *mem = as_mem_data(data);
 
-    if (0 == mem) return data;
+    if (0 == mem)
+        return data;
 
     memset(mem, 0, sizeof(*mem));
     free(mem);
@@ -237,7 +238,8 @@ static bool mem_has_more_data(ov_format const *f) {
 
     mem_data *mem = as_mem_data(ov_format_get_custom_data(f));
 
-    if (0 == mem) goto error;
+    if (0 == mem)
+        goto error;
 
     OV_ASSERT(mem->access_pointer >= mem->start);
 
@@ -321,8 +323,7 @@ static ssize_t mem_write_payload_chunk_nocheck(mem_data *mem,
 
         bytes_to_write = num_bytes_writable;
         ov_log_info("Requested to write %zu, but only %zu bytes writable",
-                    chunk->length,
-                    bytes_to_write);
+                    chunk->length, bytes_to_write);
     }
 
     memcpy(mem->access_pointer, chunk->start, bytes_to_write);
@@ -337,8 +338,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t mem_write_payload_chunk(ov_format *f,
-                                       ov_buffer const *chunk,
+static ssize_t mem_write_payload_chunk(ov_format *f, ov_buffer const *chunk,
                                        void *data) {
 
     UNUSED(data);
@@ -456,10 +456,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t mem_overwrite_payload_chunk(ov_format *f,
-                                           size_t offset,
-                                           ov_buffer const *chunk,
-                                           void *data) {
+static ssize_t mem_overwrite_payload_chunk(ov_format *f, size_t offset,
+                                           ov_buffer const *chunk, void *data) {
 
     if ((0 == chunk) || (0 == chunk->start)) {
 
@@ -508,7 +506,8 @@ static void *mem_write_free_data_auto_extend(void *data) {
 
     mem_data *mem = as_mem_data(data);
 
-    if (0 == mem) return data;
+    if (0 == mem)
+        return data;
 
     mem->start = ov_free(mem->start);
 
@@ -578,8 +577,7 @@ error:
 
 /* General ov_format_from_memory */
 
-ov_format *ov_format_from_memory(uint8_t *memory,
-                                 size_t length_bytes,
+ov_format *ov_format_from_memory(uint8_t *memory, size_t length_bytes,
                                  ov_format_mode mode) {
 
     if (OV_READ == mode) {
@@ -674,8 +672,8 @@ bool ov_format_attach_end_ptr_tracker(ov_format *fmt, uint8_t **tracker) {
 
             OV_ASSERT(0 != lower_fmt);
 
-            return ov_format_attach_end_ptr_tracker(
-                intformat->lower_layer, tracker);
+            return ov_format_attach_end_ptr_tracker(intformat->lower_layer,
+                                                    tracker);
 
         } else {
 
@@ -683,8 +681,8 @@ bool ov_format_attach_end_ptr_tracker(ov_format *fmt, uint8_t **tracker) {
 
             mem_data *mem = get_mem_data((ov_format *)fmt);
 
-            if (ov_ptr_valid(
-                    mem, "Cannot attach end tracker: Internal error")) {
+            if (ov_ptr_valid(mem,
+                             "Cannot attach end tracker: Internal error")) {
 
                 mem->end_tracker = tracker;
                 *tracker = mem->access_pointer;
@@ -712,10 +710,8 @@ bool ov_format_attach_end_ptr_tracker(ov_format *fmt, uint8_t **tracker) {
 
 /*----------------------------------------------------------------------------*/
 
-static void *map_file_unsafe(char const *path,
-                             ov_format_mode mode,
-                             int *filedesc,
-                             size_t *file_size) {
+static void *map_file_unsafe(char const *path, ov_format_mode mode,
+                             int *filedesc, size_t *file_size) {
 
     int fd = -1;
 
@@ -728,19 +724,19 @@ static void *map_file_unsafe(char const *path,
 
     switch (mode) {
 
-        case OV_READ:
+    case OV_READ:
 
-            fmode = O_RDONLY;
-            break;
+        fmode = O_RDONLY;
+        break;
 
-        case OV_WRITE:
+    case OV_WRITE:
 
-            fmode = O_RDWR | O_CREAT | O_TRUNC;
-            break;
+        fmode = O_RDWR | O_CREAT | O_TRUNC;
+        break;
 
-        default:
+    default:
 
-            OV_ASSERT(!"MUST NEVER HAPPEN!");
+        OV_ASSERT(!"MUST NEVER HAPPEN!");
     }
 
     fd = open(path, fmode | O_CLOEXEC, S_IRWXU);
@@ -771,8 +767,7 @@ static void *map_file_unsafe(char const *path,
 
         if (0 > lseek(fd, *file_size, SEEK_SET)) {
 
-            ov_log_error("Could not set file size on output file %s: %s",
-                         path,
+            ov_log_error("Could not set file size on output file %s: %s", path,
                          strerror(errno));
 
             goto error;
@@ -837,9 +832,11 @@ char const *FILE_TYPE = "file";
 
 static internal *is_file(ov_format const *f) {
 
-    if (0 == f) return 0;
+    if (0 == f)
+        return 0;
 
-    if (FILE_TYPE == f->type) return (internal *)f;
+    if (FILE_TYPE == f->type)
+        return (internal *)f;
 
     return 0;
 }
@@ -848,7 +845,8 @@ static internal *is_file(ov_format const *f) {
 
 static file_data *as_file_data(void *data) {
 
-    if (0 == data) return data;
+    if (0 == data)
+        return data;
 
     return data;
 }
@@ -874,9 +872,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer file_read_next_payload_chunk(ov_format *f,
-                                              size_t requested_bytes,
-                                              void *data) {
+static ov_buffer
+file_read_next_payload_chunk(ov_format *f, size_t requested_bytes, void *data) {
 
     UNUSED(data);
 
@@ -898,8 +895,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t file_write_payload_chunk(ov_format *f,
-                                        ov_buffer const *chunk,
+static ssize_t file_write_payload_chunk(ov_format *f, ov_buffer const *chunk,
                                         void *data) {
 
     if ((0 == chunk) || (0 == chunk->start)) {
@@ -936,8 +932,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t overwrite_on_fd_nocheck(int fd,
-                                       size_t offset,
+static ssize_t overwrite_on_fd_nocheck(int fd, size_t offset,
                                        ov_buffer const *chunk) {
 
     ssize_t bytes_written = -1;
@@ -959,8 +954,7 @@ static ssize_t overwrite_on_fd_nocheck(int fd,
     if (offset + chunk->length > (size_t)statbuf.st_size) {
 
         ov_log_error("File not big enough - need %zu bytes, only got %zu bytes",
-                     offset + chunk->length,
-                     (size_t)statbuf.st_size);
+                     offset + chunk->length, (size_t)statbuf.st_size);
         goto error;
     }
 
@@ -995,10 +989,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t file_overwrite(ov_format *f,
-                              size_t offset,
-                              ov_buffer const *chunk,
-                              void *data) {
+static ssize_t file_overwrite(ov_format *f, size_t offset,
+                              ov_buffer const *chunk, void *data) {
 
     file_data *fdata = data;
 
@@ -1043,7 +1035,8 @@ static void *file_free_data(void *data) {
 
     file_data *file = as_file_data(data);
 
-    if (0 == file) return data;
+    if (0 == file)
+        return data;
 
     if ((file->mapped) && (0 != file->mem.start)) {
 
@@ -1071,7 +1064,8 @@ static bool file_has_more_data(ov_format const *f) {
 
     file_data *file = as_file_data(ov_format_get_custom_data(f));
 
-    if (0 == file) goto error;
+    if (0 == file)
+        goto error;
 
     return file->mem.access_pointer < file->mem.start + file->mem.size;
 
@@ -1138,10 +1132,8 @@ static ov_format *open_file_write(char const *path) {
 
     if (0 >= fd) {
 
-        ov_log_error("Could not open %s for writing: %s (%i)",
-                     path,
-                     strerror(errno),
-                     errno);
+        ov_log_error("Could not open %s for writing: %s (%i)", path,
+                     strerror(errno), errno);
         goto error;
     }
 
@@ -1215,7 +1207,8 @@ ov_format *ov_format_close(ov_format *f) {
     internal *intformat = (internal *)f;
     f = 0;
 
-    if (0 == intformat) goto finish;
+    if (0 == intformat)
+        goto finish;
 
     ov_format *lower_fmt = intformat->lower_layer;
     OV_ASSERT(0 != lower_fmt);
@@ -1223,9 +1216,8 @@ ov_format *ov_format_close(ov_format *f) {
     if ((0 != intformat->ready_format) &&
         (!intformat->ready_format(lower_fmt, intformat->data))) {
 
-        ov_log_error(
-            "While closing format: Could not ready its content for "
-            "usage");
+        ov_log_error("While closing format: Could not ready its content for "
+                     "usage");
     }
 
     if (0 != intformat->free_data) {
@@ -1258,7 +1250,8 @@ ov_format *ov_format_close_non_recursive(ov_format *f) {
 
     internal *intformat = (internal *)f;
 
-    if (0 == intformat) goto finish;
+    if (0 == intformat)
+        goto finish;
 
     if (0 != intformat->free_data) {
 
@@ -1285,10 +1278,8 @@ static bool recursive_has_more_data(ov_format const *format) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_format *ov_format_wrap(ov_format *f,
-                          char const *type,
-                          ov_format_handler *handler,
-                          void *options) {
+ov_format *ov_format_wrap(ov_format *f, char const *type,
+                          ov_format_handler *handler, void *options) {
 
     internal *intformat = 0;
 
@@ -1358,8 +1349,10 @@ ov_format const *ov_format_get(ov_format const *f, char const *format_desc) {
 
     ov_format const *found = 0;
 
-    if (0 == f) goto error;
-    if (0 == format_desc) goto error;
+    if (0 == f)
+        goto error;
+    if (0 == format_desc)
+        goto error;
 
     OV_ASSERT(0 != f);
     OV_ASSERT(0 != format_desc);
@@ -1377,7 +1370,8 @@ ov_format const *ov_format_get(ov_format const *f, char const *format_desc) {
         found = intformat->responsible_for(f, format_desc);
     }
 
-    if (0 != found) goto found_format;
+    if (0 != found)
+        goto found_format;
 
     /* Are we the lowest layer already -> nothing suitable found */
     if (f == intformat->lower_layer) {
@@ -1408,13 +1402,15 @@ error:
 
 bool ov_format_has_more_data(ov_format const *f) {
 
-    if (0 == f) goto error;
+    if (0 == f)
+        goto error;
 
     internal *intformat = (internal *)f;
 
     OV_ASSERT(0 != intformat->lower_layer);
 
-    if (0 == intformat->has_more_data) goto error;
+    if (0 == intformat->has_more_data)
+        goto error;
 
     return intformat->has_more_data(intformat->lower_layer);
 
@@ -1427,9 +1423,11 @@ error:
 
 static ov_buffer *buffer_wrap(ov_buffer *buf) {
 
-    if (0 == buf) return 0;
+    if (0 == buf)
+        return 0;
 
-    if (0 == buf->length) return 0;
+    if (0 == buf->length)
+        return 0;
 
     ov_buffer *ret_buffer = ov_buffer_create(buf->length);
     OV_ASSERT(buf->length <= ret_buffer->capacity);
@@ -1446,13 +1444,15 @@ static ov_buffer *buffer_wrap(ov_buffer *buf) {
 
 ov_buffer *ov_format_payload_read_chunk(ov_format *f, size_t requested_bytes) {
 
-    if (0 == f) goto error;
+    if (0 == f)
+        goto error;
 
     internal *intformat = (internal *)f;
 
     OV_ASSERT(0 != intformat->lower_layer);
 
-    if (0 == intformat->read_next_payload_chunk) goto error;
+    if (0 == intformat->read_next_payload_chunk)
+        goto error;
 
     ov_buffer data = intformat->read_next_payload_chunk(
         intformat->lower_layer, requested_bytes, intformat->data);
@@ -1471,16 +1471,18 @@ ov_buffer ov_format_payload_read_chunk_nocopy(ov_format *f,
 
     ov_buffer buf = {0};
 
-    if (0 == f) goto error;
+    if (0 == f)
+        goto error;
 
     internal *intformat = (internal *)f;
 
     OV_ASSERT(0 != intformat->lower_layer);
 
-    if (0 == intformat->read_next_payload_chunk) goto error;
+    if (0 == intformat->read_next_payload_chunk)
+        goto error;
 
-    buf = intformat->read_next_payload_chunk(
-        intformat->lower_layer, requested_bytes, intformat->data);
+    buf = intformat->read_next_payload_chunk(intformat->lower_layer,
+                                             requested_bytes, intformat->data);
 
     if (0 == buf.length) {
 
@@ -1517,10 +1519,11 @@ ssize_t ov_format_payload_write_chunk(ov_format *f, ov_buffer const *chunk) {
 
     OV_ASSERT(0 != intformat->lower_layer);
 
-    if (0 == intformat->write_payload_chunk) goto error;
+    if (0 == intformat->write_payload_chunk)
+        goto error;
 
-    return intformat->write_payload_chunk(
-        intformat->lower_layer, chunk, intformat->data);
+    return intformat->write_payload_chunk(intformat->lower_layer, chunk,
+                                          intformat->data);
 
 error:
 
@@ -1529,8 +1532,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_format_payload_overwrite(ov_format *f,
-                                    size_t offset,
+ssize_t ov_format_payload_overwrite(ov_format *f, size_t offset,
                                     ov_buffer const *chunk) {
 
     if (0 == f) {
@@ -1555,8 +1557,8 @@ ssize_t ov_format_payload_overwrite(ov_format *f,
         goto error;
     }
 
-    return intformat->overwrite(
-        intformat->lower_layer, offset, chunk, intformat->data);
+    return intformat->overwrite(intformat->lower_layer, offset, chunk,
+                                intformat->data);
 
 error:
 
@@ -1567,7 +1569,8 @@ error:
 
 void *ov_format_get_custom_data(ov_format const *f) {
 
-    if (0 == f) goto error;
+    if (0 == f)
+        goto error;
 
     internal *intformat = (internal *)f;
 
@@ -1656,9 +1659,8 @@ error:
 bool ov_format_buffered_update(ov_format *f, uint8_t *new_data, size_t length) {
 
     if (0 == length) {
-        ov_log_error(
-            "refuse to update buffered format with zero length "
-            "data");
+        ov_log_error("refuse to update buffered format with zero length "
+                     "data");
         goto error;
     }
 

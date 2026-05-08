@@ -63,7 +63,8 @@ void *lock_locker(void *arg) {
     usecs = USECS_SINCE(usecs);
     r->usecs_passed_for_try_lock = usecs;
 
-    if (r->could_lock) ov_thread_lock_unlock(lock);
+    if (r->could_lock)
+        ov_thread_lock_unlock(lock);
 
     return r;
 }
@@ -79,35 +80,35 @@ typedef enum {
 
 /*---------------------------------------------------------------------------*/
 
-bool check_with_thread(ov_thread_lock *lock,
-                       lock_result_t expected,
-                       uint64_t min_usecs,
-                       uint64_t max_usecs) {
+bool check_with_thread(ov_thread_lock *lock, lock_result_t expected,
+                       uint64_t min_usecs, uint64_t max_usecs) {
 
     void *retval = 0;
     pthread_t id;
 
-    if (0 != pthread_create(&id, 0, lock_locker, lock)) return false;
-    if (0 != pthread_join(id, &retval)) return false;
+    if (0 != pthread_create(&id, 0, lock_locker, lock))
+        return false;
+    if (0 != pthread_join(id, &retval))
+        return false;
 
     struct lock_result *lr = (struct lock_result *)retval;
 
     bool success = false;
     switch (expected) {
 
-        case SHOULD_HAVE_BEEN_LOCKED:
+    case SHOULD_HAVE_BEEN_LOCKED:
 
-            success = lr->could_lock;
-            break;
+        success = lr->could_lock;
+        break;
 
-        case SHOULD_NOT_HAVE_BEEN_LOCKED:
+    case SHOULD_NOT_HAVE_BEEN_LOCKED:
 
-            success = !lr->could_lock;
-            break;
+        success = !lr->could_lock;
+        break;
 
-        default:
+    default:
 
-            testrun(!"INVALID CASE");
+        testrun(!"INVALID CASE");
     };
 
     success = success && (lr->usecs_passed_for_try_lock >= min_usecs);
@@ -206,8 +207,8 @@ int test_ov_thread_lock_try_lock() {
     ov_thread_lock lock = {0};
     testrun(ov_thread_lock_init(&lock, timeout_ms * 1000));
 
-    testrun(check_with_thread(
-        &lock, SHOULD_HAVE_BEEN_LOCKED, 0, timeout_ms * 1000));
+    testrun(check_with_thread(&lock, SHOULD_HAVE_BEEN_LOCKED, 0,
+                              timeout_ms * 1000));
 
     uint64_t usecs = USECS_SINCE(0);
     testrun(ov_thread_lock_try_lock(&lock));
@@ -222,20 +223,16 @@ int test_ov_thread_lock_try_lock() {
      *      Got some failure here during some tests.
      *      do we need to change the values?
      */
-    fprintf(stderr,
-            "usecs: %" PRIu64 " | min %" PRIu64 " max %" PRIu64 "\n",
-            usecs,
-            (timeout_ms - max_deviation_ms) * 1000,
+    fprintf(stderr, "usecs: %" PRIu64 " | min %" PRIu64 " max %" PRIu64 "\n",
+            usecs, (timeout_ms - max_deviation_ms) * 1000,
             (timeout_ms + max_deviation_ms) * 1000);
 
     testrun(usecs < (timeout_ms + max_deviation_ms) * 1000);
     testrun(usecs > (timeout_ms - max_deviation_ms) * 1000);
 
     /* Should also block other threads */
-    testrun(check_with_thread(&lock,
-                              SHOULD_NOT_HAVE_BEEN_LOCKED,
-                              timeout_ms * 1000,
-                              2 * timeout_ms * 1000));
+    testrun(check_with_thread(&lock, SHOULD_NOT_HAVE_BEEN_LOCKED,
+                              timeout_ms * 1000, 2 * timeout_ms * 1000));
 
     ov_thread_lock_unlock(&lock);
 
@@ -259,8 +256,8 @@ int test_ov_thread_lock_unlock() {
     testrun(ov_thread_lock_try_lock(&lock));
 
     // Should also work between threads...
-    testrun(check_with_thread(
-        &lock, SHOULD_NOT_HAVE_BEEN_LOCKED, 100 * 1000, 20 * 100 * 1000));
+    testrun(check_with_thread(&lock, SHOULD_NOT_HAVE_BEEN_LOCKED, 100 * 1000,
+                              20 * 100 * 1000));
 
     /* Increase the timeout value to 1 sec */
     testrun(ov_thread_lock_unlock(&lock));
@@ -365,10 +362,7 @@ int test_ov_thread_lock_notify() {
 
 /*---------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_thread_lock",
-            test_ov_thread_lock_init,
-            test_ov_thread_lock_clear,
-            test_ov_thread_lock_try_lock,
-            test_ov_thread_lock_unlock,
-            test_ov_thread_lock_wait,
+OV_TEST_RUN("ov_thread_lock", test_ov_thread_lock_init,
+            test_ov_thread_lock_clear, test_ov_thread_lock_try_lock,
+            test_ov_thread_lock_unlock, test_ov_thread_lock_wait,
             test_ov_thread_lock_notify);

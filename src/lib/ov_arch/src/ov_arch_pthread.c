@@ -56,12 +56,14 @@ int ov_arch_pthread_mutex_timedlock(pthread_mutex_t *restrict mutex,
         clock_gettime(CLOCK_REALTIME, &now);
 
         retval = pthread_mutex_trylock(mutex);
-        if (0 == retval) break;
+        if (0 == retval)
+            break;
 
         usleep(1000); // 1 millisecond
 
         if (now.tv_sec == abstime->tv_sec)
-            if (now.tv_nsec >= abstime->tv_nsec) return retval;
+            if (now.tv_nsec >= abstime->tv_nsec)
+                return retval;
 
     } while (now.tv_sec <= abstime->tv_sec);
 

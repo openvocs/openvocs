@@ -75,10 +75,8 @@ struct ov_event_async_data {
     struct {
 
         void *userdata;
-        void (*callback)(void *userdata,
-                         int socket,
-                         const ov_event_parameter *params,
-                         ov_json_value *input,
+        void (*callback)(void *userdata, int socket,
+                         const ov_event_parameter *params, ov_json_value *input,
                          ov_json_value *result);
 
     } callback;
@@ -92,8 +90,8 @@ struct ov_event_async_data {
  *      ------------------------------------------------------------------------
  */
 
-ov_event_async_store *ov_event_async_store_create(
-    ov_event_async_store_config config);
+ov_event_async_store *
+ov_event_async_store_create(ov_event_async_store_config config);
 
 ov_event_async_store *ov_event_async_store_free(ov_event_async_store *self);
 
@@ -123,10 +121,8 @@ void ov_event_async_data_clear(ov_event_async_data *data);
  *  NOTE transfer of the json value to the store, do NOT free a stored JSON
  *  pointer!!!
  */
-bool ov_event_async_set(ov_event_async_store *store,
-                        const char *id,
-                        ov_event_async_data data,
-                        uint64_t max_lifetime_usec);
+bool ov_event_async_set(ov_event_async_store *store, const char *id,
+                        ov_event_async_data data, uint64_t max_lifetime_usec);
 
 /*---------------------------------------------------------------------------*/
 

@@ -66,8 +66,8 @@ bool ov_stun_attr_is_password_algorithm(const uint8_t *buffer, size_t length);
  *      ------------------------------------------------------------------------
  */
 
-size_t ov_stun_attr_password_algorithm_encoding_length(
-    size_t password_algorithm);
+size_t
+ov_stun_attr_password_algorithm_encoding_length(size_t password_algorithm);
 
 /*----------------------------------------------------------------------------*/
 
@@ -82,10 +82,8 @@ size_t ov_stun_attr_password_algorithm_encoding_length(
         @param params   parameter
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_attr_password_algorithm_encode(uint8_t *buffer,
-                                            size_t length,
-                                            uint8_t **next,
-                                            uint16_t algorithm,
+bool ov_stun_attr_password_algorithm_encode(uint8_t *buffer, size_t length,
+                                            uint8_t **next, uint16_t algorithm,
                                             uint16_t len,
                                             const uint8_t *params);
 
@@ -101,8 +99,7 @@ bool ov_stun_attr_password_algorithm_encode(uint8_t *buffer,
         @param len      pointer to be set to length of password_algorithm
 */
 bool ov_stun_attr_password_algorithm_decode(const uint8_t *buffer,
-                                            size_t length,
-                                            uint16_t *algorithm,
+                                            size_t length, uint16_t *algorithm,
                                             uint16_t *len,
                                             const uint8_t **params);
 

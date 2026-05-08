@@ -39,9 +39,11 @@
 
 static ov_thread_message *free_message(ov_thread_message *message) {
 
-    if (0 == message) goto error;
+    if (0 == message)
+        goto error;
 
-    if (!OV_THREAD_MESSAGE_VALID(message)) goto error;
+    if (!OV_THREAD_MESSAGE_VALID(message))
+        goto error;
 
     ov_json_value *json = message->json_message;
 
@@ -62,25 +64,26 @@ error:
  *
  ******************************************************************************/
 
-ov_thread_message *ov_thread_message_standard_create(
-    ov_thread_message_type type, ov_json_value *json) {
+ov_thread_message *
+ov_thread_message_standard_create(ov_thread_message_type type,
+                                  ov_json_value *json) {
 
     ov_thread_message *message = 0;
 
     switch (type) {
 
-        case OV_THREAD_MESSAGE_TYPE_ENSURE_SIGNED_INT_TYPE:
+    case OV_THREAD_MESSAGE_TYPE_ENSURE_SIGNED_INT_TYPE:
 
-            /* THIS SHOULD NEVER HAPPEN !!! */
-            return 0;
+        /* THIS SHOULD NEVER HAPPEN !!! */
+        return 0;
 
-        case OV_GENERIC_MESSAGE:
-        default:
+    case OV_GENERIC_MESSAGE:
+    default:
 
-            message = calloc(1, sizeof(ov_thread_message));
-            message->free = free_message;
+        message = calloc(1, sizeof(ov_thread_message));
+        message->free = free_message;
 
-            break;
+        break;
     };
 
     if (0 != json) {
@@ -97,11 +100,13 @@ ov_thread_message *ov_thread_message_standard_create(
 
 ov_thread_message *ov_thread_message_cast(void *vptr) {
 
-    if (0 == vptr) return 0;
+    if (0 == vptr)
+        return 0;
 
     ov_thread_message *msg = vptr;
 
-    if (!OV_THREAD_MESSAGE_VALID(msg)) return 0;
+    if (!OV_THREAD_MESSAGE_VALID(msg))
+        return 0;
 
     return msg;
 }

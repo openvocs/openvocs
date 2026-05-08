@@ -46,6 +46,19 @@ export async function render(container) {
 
     console.log("(auth) View rendered");
     removed = false;
+
+    ov_Websockets.addEventListener("broadcast", (event) => {
+        if (event.detail.message.type === "page_update") {
+            if ('caches' in window) {
+                caches.keys().then(function (cache_name_list) {
+                    cache_name_list.forEach(function (cache_name) {
+                        caches.delete(cache_name);
+                    });
+                });
+            }
+            ov_Websockets.reload_page();
+        }
+    });
 }
 
 export function remove() {

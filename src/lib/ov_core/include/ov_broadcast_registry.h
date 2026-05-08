@@ -65,8 +65,8 @@ typedef struct ov_broadcast_registry ov_broadcast_registry;
  *      ------------------------------------------------------------------------
  */
 
-ov_broadcast_registry *ov_broadcast_registry_create(
-    ov_event_broadcast_config config);
+ov_broadcast_registry *
+ov_broadcast_registry_create(ov_event_broadcast_config config);
 
 ov_broadcast_registry *ov_broadcast_registry_free(ov_broadcast_registry *self);
 
@@ -84,9 +84,7 @@ ov_broadcast_registry *ov_broadcast_registry_free(ov_broadcast_registry *self);
     the registry.
 */
 bool ov_broadcast_registry_set(ov_broadcast_registry *registry,
-                               const char *name,
-                               int socket,
-                               uint8_t type);
+                               const char *name, int socket, uint8_t type);
 
 /*----------------------------------------------------------------------------*/
 
@@ -111,10 +109,8 @@ bool ov_broadcast_registry_del(ov_broadcast_registry *registry,
     @param socket       socket id
     @param result       result set on success
 */
-bool ov_broadcast_registry_get(ov_broadcast_registry *reg,
-                               const char *name,
-                               int socket,
-                               uint8_t *result);
+bool ov_broadcast_registry_get(ov_broadcast_registry *reg, const char *name,
+                               int socket, uint8_t *result);
 
 /*----------------------------------------------------------------------------*/
 
@@ -122,8 +118,7 @@ bool ov_broadcast_registry_get(ov_broadcast_registry *reg,
     Count all entries with type.
 */
 int64_t ov_broadcast_registry_count(ov_broadcast_registry *reg,
-                                    const char *name,
-                                    uint8_t type);
+                                    const char *name, uint8_t type);
 
 /*----------------------------------------------------------------------------*/
 
@@ -172,11 +167,9 @@ bool ov_broadcast_registry_unset(ov_broadcast_registry *registry, int socket);
     @param input        input to send
     @param type         type byte (or combined types possible)
 */
-bool ov_broadcast_registry_send(ov_broadcast_registry *self,
-                                const char *name,
+bool ov_broadcast_registry_send(ov_broadcast_registry *self, const char *name,
                                 const ov_event_parameter *parameter,
-                                const ov_json_value *input,
-                                uint8_t type);
+                                const ov_json_value *input, uint8_t type);
 
 /*----------------------------------------------------------------------------*/
 
@@ -187,7 +180,6 @@ bool ov_broadcast_registry_send(ov_broadcast_registry *self,
     otherwise a list (which may be empty for the type requested of intptr_t)
 */
 ov_list *ov_broadcast_registry_get_sockets(ov_broadcast_registry *self,
-                                           const char *name,
-                                           uint8_t type);
+                                           const char *name, uint8_t type);
 
 #endif /* ov_named_broadcast_h */

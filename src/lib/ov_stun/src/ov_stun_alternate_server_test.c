@@ -256,8 +256,7 @@ int test_ov_stun_alternate_server_encode() {
     sock6 = (struct sockaddr_in6 *)&sa;
     sock6->sin6_family = AF_INET6;
     sock6->sin6_port = htons(0xcaad);
-    testrun(1 == inet_pton(AF_INET6,
-                           "face:aaaa:bbbb:cccc:dddd:eeee:ffff:1234",
+    testrun(1 == inet_pton(AF_INET6, "face:aaaa:bbbb:cccc:dddd:eeee:ffff:1234",
                            &sock6->sin6_addr));
     testrun(ov_stun_alternate_server_encode(buffer, 24, &next, &sa));
     testrun(STUN_ALTERNATE_SERVER == ov_stun_attribute_get_type(buffer, size));
@@ -349,8 +348,7 @@ int test_ov_stun_alternate_server_decode() {
     buffer[4] = 0;
     buffer[5] = 2;
     *(uint16_t *)(buffer + 6) = htons(12345);
-    testrun(1 == inet_pton(AF_INET6,
-                           "2001:db8:85a3:8d3:1319:8a2e:370:7348",
+    testrun(1 == inet_pton(AF_INET6, "2001:db8:85a3:8d3:1319:8a2e:370:7348",
                            buffer + 8));
     testrun(ov_stun_alternate_server_decode(buffer, size, &address));
     testrun(address);
@@ -358,8 +356,7 @@ int test_ov_stun_alternate_server_decode() {
     testrun(sock6->sin6_family == AF_INET6);
     testrun(sock6->sin6_port == htons(12345));
     testrun(inet_ntop(AF_INET6, &sock6->sin6_addr, string, INET6_ADDRSTRLEN));
-    testrun(0 == strncmp(string,
-                         "2001:db8:85a3:8d3:1319:8a2e:370:7348",
+    testrun(0 == strncmp(string, "2001:db8:85a3:8d3:1319:8a2e:370:7348",
                          strlen("2001:db8:85a3:8d3:1319:8a2e:370:7348")));
 
     // ipv6 type wrong

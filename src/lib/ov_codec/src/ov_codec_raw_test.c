@@ -215,13 +215,8 @@ static int test_impl_get_samplerate_hertz() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_codec_raw",
-            test_ov_codec_raw_id,
-            test_impl_codec_create,
-            test_impl_free,
-            test_impl_encode,
-            test_impl_decode,
-            test_impl_get_parameters,
-            test_impl_get_samplerate_hertz);
+OV_TEST_RUN("ov_codec_raw", test_ov_codec_raw_id, test_impl_codec_create,
+            test_impl_free, test_impl_encode, test_impl_decode,
+            test_impl_get_parameters, test_impl_get_samplerate_hertz);
 
 /*----------------------------------------------------------------------------*/

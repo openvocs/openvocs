@@ -618,9 +618,11 @@ int test_impl_dict_remove() {
 
 static bool for_each_set_x(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    if (!value) return false;
+    if (!value)
+        return false;
 
     if (data) { /* unused */
     };
@@ -681,8 +683,8 @@ static bool pair_checker(const void *key, void *value, void *data) {
 
     if (0 != strcmp(arg->values_expected[key_index], (char const *)value)) {
 
-        testrun_log_error(
-            "Unexpected value found for key %s", (char const *)key);
+        testrun_log_error("Unexpected value found for key %s",
+                          (char const *)key);
         return false;
     }
 

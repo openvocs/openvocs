@@ -160,10 +160,10 @@ OV_PLUGINS_LOCAL_DIST_DIR=$(OV_BUILDDIR)/localdist_plugins
 
 OV_LIBS_TO_PACKAGE=arch backend base codec core database encryption format ice ldap \
             log os os_linux pcm16s pcm_gen sip snmp stun test value vm vocs vocs_db \
-            ice ice_proxy vad
+            ice ice_proxy vad interconnect
 
 OV_BINARIES_TO_PACKAGE=stun_server \
-    alsa_gateway mc_ice_proxy mc_mixer mc_vocs \
+    alsa_gateway mc_ice_proxy mc_mixer mc_vocs mc_interconnect \
     mc_socket_debug alsa_cli rtp_cli test_mc mc_vad mc_cli\
     domain_config_verify \
     ldap_test ldap_test_auth ldap_user_import password \
@@ -216,6 +216,8 @@ OV_PLUGINS_DIR      = src/plugins
 OV_PLUGINS_PRESENT  = $(shell if [ -d $(OV_PLUGINS_DIR) ]; then echo 1; else echo 0; fi)
 
 #.............................................................................
+
+OV_JAVASCRIPT_VERSION_FILE=$(OPENVOCS_ROOT)/src/HTML/VERSION.js
 
 # PYTHON configuration
 

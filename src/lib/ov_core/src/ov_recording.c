@@ -36,11 +36,8 @@
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_recording_set(ov_recording *self,
-                      char const *id,
-                      char const *loop,
-                      char const *uri,
-                      time_t start_epoch_secs,
+bool ov_recording_set(ov_recording *self, char const *id, char const *loop,
+                      char const *uri, time_t start_epoch_secs,
                       time_t end_epoch_secs) {
 
     if (ov_ptr_valid(self, "Cannot set recording - no recording")) {
@@ -90,10 +87,10 @@ ov_json_value *ov_recording_to_json(ov_recording recording) {
         ov_json_object_set(jval, OV_KEY_ID, ov_json_string(recording.id));
         ov_json_object_set(jval, OV_KEY_LOOP, ov_json_string(recording.loop));
         ov_json_object_set(jval, OV_KEY_URI, ov_json_string(recording.uri));
-        ov_json_object_set(
-            jval, START_EPOCH_SECS, ov_json_number(recording.start_epoch_secs));
-        ov_json_object_set(
-            jval, END_EPOCH_SECS, ov_json_number(recording.end_epoch_secs));
+        ov_json_object_set(jval, START_EPOCH_SECS,
+                           ov_json_number(recording.start_epoch_secs));
+        ov_json_object_set(jval, END_EPOCH_SECS,
+                           ov_json_number(recording.end_epoch_secs));
 
         return jval;
 

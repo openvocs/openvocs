@@ -51,6 +51,10 @@ export function render(loops, roles) {
     if (loops)
         for (let id of Object.keys(loops)) {
             let loop = View.add_loop(id, loops[id], roles);
+            if(loops[id].global)
+                loop.global = true;
+            if (loops[id].frozen)
+                loop.disabled = true;
             if (!first_loop)
                 first_loop = loop;
         }

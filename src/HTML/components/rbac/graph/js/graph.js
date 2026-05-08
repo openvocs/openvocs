@@ -55,12 +55,8 @@ export function create_node(type, data, subset_id) {
     if (subset_id)
         element.subset = subset_id;
     if (data) {
-        if (type === "role" && data.id === "admin")
-            element.node_id = data.id + "@" + subset_id;
-        else
-            element.node_id = data.id;
+        element.node_id = data.id;
         element.node_name = data.name;
-        element.node_abbreviation = data.abbreviation;
         if (type === "loop" && data.roles) {
             for (let role_id of Object.keys(data.roles))
                 element.linked_nodes.set(role_id, data.roles[role_id]);
@@ -68,10 +64,13 @@ export function create_node(type, data, subset_id) {
                 element.node_multicast_ip = data.multicast.host;
                 element.node_multicast_port = data.multicast.port;
             }
-        } else if (type === "role" && data.users) {
-            for (let user_id of Object.keys(data.users))
-                element.linked_nodes.set(user_id, data.users[user_id]);
-        }
+            if (data.highlight_color) {
+                element.node_highlight_color = data.highlight_color;
+            }
+        } else if (type === "role")
+            if (data.users)
+                for (let user_id of Object.keys(data.users))
+                    element.linked_nodes.set(user_id, data.users[user_id]);
         register_node(element);
     }
     element.onmouseenter = function () {

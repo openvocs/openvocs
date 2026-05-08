@@ -39,49 +39,21 @@ Copyright   2018        German Aerospace Center DLR e.V.,
 
 /* even bits not yet inverted ... */
 uint8_t alaw_encoded[] = {
-    0xff,
-    0xf0,
-    0xe0,
-    0xd0,
-    0xc0,
-    0xb0,
-    0xa0,
-    0x80, /* positive values */
-    0x00,
-    0x20,
-    0x30,
-    0x40,
-    0x50,
-    0x60,
-    0x70,
-    0x7f /* negative values */
+    0xff, 0xf0, 0xe0, 0xd0, 0xc0, 0xb0, 0xa0, 0x80, /* positive values */
+    0x00, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x7f  /* negative values */
 };
 
-int16_t alaw_decoded[] = {4032,
-                          2112,
-                          1056,
-                          528,
-                          264,
-                          132,
-                          66,
-                          1,
-                          -1,
-                          -66,
-                          -132,
-                          -264,
-                          -528,
-                          -1056,
-                          -2112,
-                          -4032};
+int16_t alaw_decoded[] = {4032, 2112, 1056, 528,  264,  132,   66,    1,
+                          -1,   -66,  -132, -264, -528, -1056, -2112, -4032};
 
 /* a-Law Reference signal taken from ITU Recommendation ITU-T G.711, Table
  * 5/G.711 */
 /* Fully G.711 A-Law encoded */
-uint8_t alaw_reference_encoded[] = {
-    0x34, 0x21, 0x21, 0x34, 0xb4, 0xa1, 0xa1, 0xb4};
+uint8_t alaw_reference_encoded[] = {0x34, 0x21, 0x21, 0x34,
+                                    0xb4, 0xa1, 0xa1, 0xb4};
 
-int16_t alaw_reference_decoded[] = {
-    -1120, -2624, -2624, -1120, 1120, 2624, 2624, 1120};
+int16_t alaw_reference_decoded[] = {-1120, -2624, -2624, -1120,
+                                    1120,  2624,  2624,  1120};
 
 /******************************************************************************
  *                                   u-law
@@ -103,11 +75,11 @@ int16_t ulaw_decoded[] = {8031, 4191,  2079,  1023,  495,   231,  99,
 /* u-Law Reference signal taken from ITU Recommendation ITU-T G.711, Table
  * 6/G.711 */
 /* Fully G.711 A-Law encoded */
-uint8_t ulaw_reference_encoded[] = {
-    0x34, 0x21, 0x21, 0x34, 0xb4, 0xa1, 0xa1, 0xb4};
+uint8_t ulaw_reference_encoded[] = {0x34, 0x21, 0x21, 0x34,
+                                    0xb4, 0xa1, 0xa1, 0xb4};
 
-int16_t ulaw_reference_decoded[] = {
-    -847, -1919, -1919, -847, 847, 1919, 1919, 847};
+int16_t ulaw_reference_decoded[] = {-847, -1919, -1919, -847,
+                                    847,  1919,  1919,  847};
 
 /*---------------------------------------------------------------------------*/
 
@@ -142,8 +114,7 @@ int test_impl_codec_create() {
 
     codec = codec->free(codec);
 
-    ov_json_value *parameters = ov_json_decode("{\"" CONFIG_KEY_G711_LAW
-                                               "\":"
+    ov_json_value *parameters = ov_json_decode("{\"" CONFIG_KEY_G711_LAW "\":"
                                                "\"Toblero"
                                                "ne\"}");
 
@@ -152,10 +123,9 @@ int test_impl_codec_create() {
     parameters = parameters->free(parameters);
     testrun(0 == parameters);
 
-    parameters =
-        ov_json_decode("{\"" CONFIG_KEY_G711_LAW "\":\"" CONFIG_KEY_G711_ULAW
-                       "\""
-                       "}");
+    parameters = ov_json_decode("{\"" CONFIG_KEY_G711_LAW
+                                "\":\"" CONFIG_KEY_G711_ULAW "\""
+                                "}");
 
     codec = impl_codec_create(0, parameters);
     codec_g711 = (struct codec_g711_struct *)codec;
@@ -174,10 +144,9 @@ int test_impl_codec_create() {
 
     codec = codec->free(codec);
 
-    parameters =
-        ov_json_decode("{\"" CONFIG_KEY_G711_LAW "\":\"" CONFIG_KEY_G711_ALAW
-                       "\""
-                       "}");
+    parameters = ov_json_decode("{\"" CONFIG_KEY_G711_LAW
+                                "\":\"" CONFIG_KEY_G711_ALAW "\""
+                                "}");
 
     codec = impl_codec_create(0, parameters);
     codec_g711 = (struct codec_g711_struct *)codec;
@@ -462,8 +431,10 @@ int test_alaw_compress() {
 
         /* Check whether cut appears if out of bounds */
 
-        if (upper_limit_decoded <= i) testrun(upper_limit_encoded == e);
-        if (lower_limit_decoded >= i) testrun(lower_limit_encoded == e);
+        if (upper_limit_decoded <= i)
+            testrun(upper_limit_encoded == e);
+        if (lower_limit_decoded >= i)
+            testrun(lower_limit_encoded == e);
     }
 
     return testrun_log_success();
@@ -524,8 +495,10 @@ int test_ulaw_compress() {
 
         /* Check whether cut appears if out of bounds */
 
-        if (upper_limit_decoded <= i) testrun(upper_limit_encoded == e);
-        if (lower_limit_decoded >= i) testrun(lower_limit_encoded == e);
+        if (upper_limit_decoded <= i)
+            testrun(upper_limit_encoded == e);
+        if (lower_limit_decoded >= i)
+            testrun(lower_limit_encoded == e);
     }
 
     return testrun_log_success();

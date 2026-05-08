@@ -127,13 +127,9 @@ int test_ov_stun_generate_binding_request_plain() {
     testrun(ov_stun_frame_generate_transaction_id(transaction_id));
 
     // check all set
-    testrun(ov_stun_generate_binding_request_plain(buf,
-                                                   size,
-                                                   &next,
-                                                   transaction_id,
-                                                   (uint8_t *)software,
-                                                   strlen(software),
-                                                   true));
+    testrun(ov_stun_generate_binding_request_plain(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        true));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -156,13 +152,9 @@ int test_ov_stun_generate_binding_request_plain() {
     memset(buf, 0, size);
 
     // check without fingerprint
-    testrun(ov_stun_generate_binding_request_plain(buf,
-                                                   size,
-                                                   &next,
-                                                   transaction_id,
-                                                   (uint8_t *)software,
-                                                   strlen(software),
-                                                   false));
+    testrun(ov_stun_generate_binding_request_plain(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        false));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -241,17 +233,10 @@ int test_ov_stun_generate_binding_request_short_term() {
     testrun(ov_stun_frame_generate_transaction_id(transaction_id));
 
     // check all set
-    testrun(ov_stun_generate_binding_request_short_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        true));
+    testrun(ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)key, strlen(key),
+        true));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -270,10 +255,10 @@ int test_ov_stun_generate_binding_request_short_term() {
         ov_stun_software_decode(arr[1], len - (arr[1] - buf), &content, &clen));
     testrun(0 == memcmp(software, content, clen));
     testrun(clen == strlen(software));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[2], len - (arr[2] - buf)));
-    testrun(ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[2],
+                                                         len - (arr[2] - buf)));
+    testrun(ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                            strlen(key), true));
     testrun(
         ov_stun_attribute_frame_is_fingerprint(arr[3], len - (arr[3] - buf)));
     testrun(ov_stun_check_fingerprint(buf, len, arr, az, true));
@@ -285,17 +270,10 @@ int test_ov_stun_generate_binding_request_short_term() {
     memset(buf, 0, size);
 
     // check without fingerprint
-    testrun(ov_stun_generate_binding_request_short_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)key, strlen(key),
+        false));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -314,10 +292,10 @@ int test_ov_stun_generate_binding_request_short_term() {
         ov_stun_software_decode(arr[1], len - (arr[1] - buf), &content, &clen));
     testrun(0 == memcmp(software, content, clen));
     testrun(clen == strlen(software));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[2], len - (arr[2] - buf)));
-    testrun(ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[2],
+                                                         len - (arr[2] - buf)));
+    testrun(ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                            strlen(key), true));
     for (size_t i = 4; i < az; i++) {
         testrun(arr[i] == NULL);
     }
@@ -325,116 +303,46 @@ int test_ov_stun_generate_binding_request_short_term() {
     memset(buf, 0, size);
 
     // optional input (software)
-    testrun(ov_stun_generate_binding_request_short_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        NULL,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, NULL, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)key, strlen(key),
+        false));
     memset(buf, 0, size);
 
     // invalid input
-    testrun(!ov_stun_generate_binding_request_short_term(buf,
-                                                         size,
-                                                         &next,
-                                                         transaction_id,
-                                                         (uint8_t *)software,
-                                                         0,
-                                                         (uint8_t *)username,
-                                                         strlen(username),
-                                                         (uint8_t *)key,
-                                                         strlen(key),
-                                                         false));
+    testrun(!ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, 0,
+        (uint8_t *)username, strlen(username), (uint8_t *)key, strlen(key),
+        false));
 
-    testrun(!ov_stun_generate_binding_request_short_term(buf,
-                                                         size,
-                                                         &next,
-                                                         transaction_id,
-                                                         non_valid,
-                                                         5,
-                                                         (uint8_t *)username,
-                                                         strlen(username),
-                                                         (uint8_t *)key,
-                                                         strlen(key),
-                                                         false));
+    testrun(!ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, non_valid, 5, (uint8_t *)username,
+        strlen(username), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_short_term(buf,
-                                                         size,
-                                                         &next,
-                                                         transaction_id,
-                                                         (uint8_t *)software,
-                                                         strlen(software),
-                                                         NULL,
-                                                         strlen(username),
-                                                         (uint8_t *)key,
-                                                         strlen(key),
-                                                         false));
+    testrun(!ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        NULL, strlen(username), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_short_term(buf,
-                                                         size,
-                                                         &next,
-                                                         transaction_id,
-                                                         (uint8_t *)software,
-                                                         strlen(software),
-                                                         (uint8_t *)username,
-                                                         0,
-                                                         (uint8_t *)key,
-                                                         strlen(key),
-                                                         false));
+    testrun(!ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, 0, (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_short_term(buf,
-                                                         size,
-                                                         &next,
-                                                         transaction_id,
-                                                         (uint8_t *)software,
-                                                         strlen(software),
-                                                         non_valid,
-                                                         5,
-                                                         (uint8_t *)key,
-                                                         strlen(key),
-                                                         false));
+    testrun(!ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        non_valid, 5, (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_short_term(buf,
-                                                         size,
-                                                         &next,
-                                                         transaction_id,
-                                                         (uint8_t *)software,
-                                                         strlen(software),
-                                                         (uint8_t *)username,
-                                                         strlen(username),
-                                                         NULL,
-                                                         strlen(key),
-                                                         false));
+    testrun(!ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), NULL, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_short_term(buf,
-                                                         size,
-                                                         &next,
-                                                         transaction_id,
-                                                         (uint8_t *)software,
-                                                         strlen(software),
-                                                         (uint8_t *)username,
-                                                         strlen(username),
-                                                         (uint8_t *)key,
-                                                         0,
-                                                         false));
+    testrun(!ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)key, 0, false));
 
     // check with whatever key
-    testrun(ov_stun_generate_binding_request_short_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        non_valid,
-                                                        5,
-                                                        false));
+    testrun(ov_stun_generate_binding_request_short_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), non_valid, 5, false));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -453,10 +361,10 @@ int test_ov_stun_generate_binding_request_short_term() {
         ov_stun_software_decode(arr[1], len - (arr[1] - buf), &content, &clen));
     testrun(0 == memcmp(software, content, clen));
     testrun(clen == strlen(software));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[2], len - (arr[2] - buf)));
-    testrun(!ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[2],
+                                                         len - (arr[2] - buf)));
+    testrun(!ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                             strlen(key), true));
     testrun(
         ov_stun_check_message_integrity(buf, len, arr, az, non_valid, 5, true));
     for (size_t i = 4; i < az; i++) {
@@ -502,21 +410,10 @@ int test_ov_stun_generate_binding_request_long_term() {
     testrun(ov_stun_frame_generate_transaction_id(transaction_id));
 
     // check all set
-    testrun(ov_stun_generate_binding_request_long_term(buf,
-                                                       size,
-                                                       &next,
-                                                       transaction_id,
-                                                       (uint8_t *)software,
-                                                       strlen(software),
-                                                       (uint8_t *)username,
-                                                       strlen(username),
-                                                       (uint8_t *)realm,
-                                                       strlen(realm),
-                                                       (uint8_t *)nonce,
-                                                       strlen(nonce),
-                                                       (uint8_t *)key,
-                                                       strlen(key),
-                                                       true));
+    testrun(ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), true));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -545,10 +442,10 @@ int test_ov_stun_generate_binding_request_long_term() {
         ov_stun_software_decode(arr[3], len - (arr[3] - buf), &content, &clen));
     testrun(0 == memcmp(software, content, clen));
     testrun(clen == strlen(software));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[4], len - (arr[4] - buf)));
-    testrun(ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[4],
+                                                         len - (arr[4] - buf)));
+    testrun(ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                            strlen(key), true));
     testrun(
         ov_stun_attribute_frame_is_fingerprint(arr[5], len - (arr[5] - buf)));
     testrun(ov_stun_check_fingerprint(buf, len, arr, az, true));
@@ -560,21 +457,10 @@ int test_ov_stun_generate_binding_request_long_term() {
     memset(buf, 0, size);
 
     // check without fingerprint
-    testrun(ov_stun_generate_binding_request_long_term(buf,
-                                                       size,
-                                                       &next,
-                                                       transaction_id,
-                                                       (uint8_t *)software,
-                                                       strlen(software),
-                                                       (uint8_t *)username,
-                                                       strlen(username),
-                                                       (uint8_t *)realm,
-                                                       strlen(realm),
-                                                       (uint8_t *)nonce,
-                                                       strlen(nonce),
-                                                       (uint8_t *)key,
-                                                       strlen(key),
-                                                       false));
+    testrun(ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), false));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -603,257 +489,92 @@ int test_ov_stun_generate_binding_request_long_term() {
         ov_stun_software_decode(arr[3], len - (arr[3] - buf), &content, &clen));
     testrun(0 == memcmp(software, content, clen));
     testrun(clen == strlen(software));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[4], len - (arr[4] - buf)));
-    testrun(ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[4],
+                                                         len - (arr[4] - buf)));
+    testrun(ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                            strlen(key), true));
     for (size_t i = 5; i < az; i++) {
         testrun(arr[i] == NULL);
     }
 
     // optional input (software)
-    testrun(ov_stun_generate_binding_request_long_term(buf,
-                                                       size,
-                                                       &next,
-                                                       transaction_id,
-                                                       NULL,
-                                                       strlen(software),
-                                                       (uint8_t *)username,
-                                                       strlen(username),
-                                                       (uint8_t *)realm,
-                                                       strlen(realm),
-                                                       (uint8_t *)nonce,
-                                                       strlen(nonce),
-                                                       (uint8_t *)key,
-                                                       strlen(key),
-                                                       false));
+    testrun(ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, NULL, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), false));
     memset(buf, 0, size);
 
     // invalid input
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        0,
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, 0,
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        non_valid,
-                                                        5,
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, non_valid, 5, (uint8_t *)username,
+        strlen(username), (uint8_t *)realm, strlen(realm), (uint8_t *)nonce,
+        strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        NULL,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        NULL, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        0,
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, 0, (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        non_valid,
-                                                        5,
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        non_valid, 5, (uint8_t *)realm, strlen(realm), (uint8_t *)nonce,
+        strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        NULL,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), NULL, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        0,
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, 0,
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        non_valid,
-                                                        5,
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), non_valid, 5, (uint8_t *)nonce,
+        strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        NULL,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        NULL, strlen(nonce), (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        0,
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, 0, (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        non_valid,
-                                                        5,
-                                                        (uint8_t *)key,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        non_valid, 5, (uint8_t *)key, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        NULL,
-                                                        strlen(key),
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), NULL, strlen(key), false));
 
-    testrun(!ov_stun_generate_binding_request_long_term(buf,
-                                                        size,
-                                                        &next,
-                                                        transaction_id,
-                                                        (uint8_t *)software,
-                                                        strlen(software),
-                                                        (uint8_t *)username,
-                                                        strlen(username),
-                                                        (uint8_t *)realm,
-                                                        strlen(realm),
-                                                        (uint8_t *)nonce,
-                                                        strlen(nonce),
-                                                        (uint8_t *)key,
-                                                        0,
-                                                        false));
+    testrun(!ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, 0, false));
 
     // check with whatever key
-    testrun(ov_stun_generate_binding_request_long_term(buf,
-                                                       size,
-                                                       &next,
-                                                       transaction_id,
-                                                       (uint8_t *)software,
-                                                       strlen(software),
-                                                       (uint8_t *)username,
-                                                       strlen(username),
-                                                       (uint8_t *)realm,
-                                                       strlen(realm),
-                                                       (uint8_t *)nonce,
-                                                       strlen(nonce),
-                                                       non_valid,
-                                                       5,
-                                                       false));
+    testrun(ov_stun_generate_binding_request_long_term(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), non_valid, 5, false));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -882,10 +603,10 @@ int test_ov_stun_generate_binding_request_long_term() {
         ov_stun_software_decode(arr[3], len - (arr[3] - buf), &content, &clen));
     testrun(0 == memcmp(software, content, clen));
     testrun(clen == strlen(software));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[4], len - (arr[4] - buf)));
-    testrun(!ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[4],
+                                                         len - (arr[4] - buf)));
+    testrun(!ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                             strlen(key), true));
     testrun(
         ov_stun_check_message_integrity(buf, len, arr, az, non_valid, 5, true));
     for (size_t i = 5; i < az; i++) {
@@ -932,22 +653,11 @@ int test_ov_stun_generate_binding_request() {
     testrun(ov_stun_frame_generate_transaction_id(transaction_id));
 
     // check all set
-    testrun(ov_stun_generate_binding_request(buf,
-                                             size,
-                                             &next,
-                                             transaction_id,
-                                             (uint8_t *)software,
-                                             strlen(software),
-                                             (uint8_t *)username,
-                                             strlen(username),
-                                             (uint8_t *)realm,
-                                             strlen(realm),
-                                             (uint8_t *)nonce,
-                                             strlen(nonce),
-                                             (uint8_t *)key,
-                                             strlen(key),
-                                             true,
-                                             true));
+    testrun(ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        (uint8_t *)username, strlen(username), (uint8_t *)realm, strlen(realm),
+        (uint8_t *)nonce, strlen(nonce), (uint8_t *)key, strlen(key), true,
+        true));
 
     len = next - buf;
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -976,10 +686,10 @@ int test_ov_stun_generate_binding_request() {
         ov_stun_software_decode(arr[3], len - (arr[3] - buf), &content, &clen));
     testrun(0 == memcmp(software, content, clen));
     testrun(clen == strlen(software));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[4], len - (arr[4] - buf)));
-    testrun(ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[4],
+                                                         len - (arr[4] - buf)));
+    testrun(ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                            strlen(key), true));
     testrun(
         ov_stun_attribute_frame_is_fingerprint(arr[5], len - (arr[5] - buf)));
     testrun(ov_stun_check_fingerprint(buf, len, arr, az, true));
@@ -990,91 +700,26 @@ int test_ov_stun_generate_binding_request() {
     memset(buf, 0, size);
 
     // check input parameter
-    testrun(!ov_stun_generate_binding_request(NULL,
-                                              size,
-                                              NULL,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
+    testrun(!ov_stun_generate_binding_request(NULL, size, NULL, transaction_id,
+                                              NULL, 0, NULL, 0, NULL, 0, NULL,
+                                              0, NULL, 0, false, false));
 
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              0,
-                                              NULL,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
+    testrun(!ov_stun_generate_binding_request(buf, 0, NULL, transaction_id,
+                                              NULL, 0, NULL, 0, NULL, 0, NULL,
+                                              0, NULL, 0, false, false));
 
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              NULL,
-                                              NULL,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
+    testrun(!ov_stun_generate_binding_request(buf, size, NULL, NULL, NULL, 0,
+                                              NULL, 0, NULL, 0, NULL, 0, NULL,
+                                              0, false, false));
 
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              19,
-                                              NULL,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
+    testrun(!ov_stun_generate_binding_request(buf, 19, NULL, transaction_id,
+                                              NULL, 0, NULL, 0, NULL, 0, NULL,
+                                              0, NULL, 0, false, false));
 
     // min input parameter
-    testrun(ov_stun_generate_binding_request(buf,
-                                             20,
-                                             NULL,
-                                             transaction_id,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             false,
-                                             false));
+    testrun(ov_stun_generate_binding_request(buf, 20, NULL, transaction_id,
+                                             NULL, 0, NULL, 0, NULL, 0, NULL, 0,
+                                             NULL, 0, false, false));
 
     testrun(ov_stun_frame_is_valid(buf, 20));
     testrun(ov_stun_frame_class_is_request(buf, 20));
@@ -1092,54 +737,15 @@ int test_ov_stun_generate_binding_request() {
     memset(buf, 0, size);
 
     // check message integrity
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              true,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              43,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              (uint8_t *)key,
-                                              strlen(key),
-                                              true,
-                                              false));
-    testrun(ov_stun_generate_binding_request(buf,
-                                             44,
-                                             &next,
-                                             transaction_id,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             (uint8_t *)key,
-                                             strlen(key),
-                                             true,
-                                             false));
+    testrun(!ov_stun_generate_binding_request(buf, size, &next, transaction_id,
+                                              NULL, 0, NULL, 0, NULL, 0, NULL,
+                                              0, NULL, 0, true, false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, 43, &next, transaction_id, NULL, 0, NULL, 0, NULL, 0, NULL, 0,
+        (uint8_t *)key, strlen(key), true, false));
+    testrun(ov_stun_generate_binding_request(
+        buf, 44, &next, transaction_id, NULL, 0, NULL, 0, NULL, 0, NULL, 0,
+        (uint8_t *)key, strlen(key), true, false));
     len = next - buf;
     testrun(len == 44);
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -1148,47 +754,21 @@ int test_ov_stun_generate_binding_request() {
     testrun(ov_stun_frame_has_magic_cookie(buf, len));
     testrun(0 == memcmp(transaction_id, buf + 8, 12));
     testrun(ov_stun_frame_slice(buf, len, arr, az));
-    testrun(ov_stun_attribute_frame_is_message_integrity(
-        arr[0], len - (arr[0] - buf)));
-    testrun(ov_stun_check_message_integrity(
-        buf, len, arr, az, (uint8_t *)key, strlen(key), true));
+    testrun(ov_stun_attribute_frame_is_message_integrity(arr[0],
+                                                         len - (arr[0] - buf)));
+    testrun(ov_stun_check_message_integrity(buf, len, arr, az, (uint8_t *)key,
+                                            strlen(key), true));
     testrun(arr[1] == NULL);
     // reset
     memset(buf, 0, size);
 
     // check fingerprint
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              27,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              true));
-    testrun(ov_stun_generate_binding_request(buf,
-                                             28,
-                                             &next,
-                                             transaction_id,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             false,
-                                             true));
+    testrun(!ov_stun_generate_binding_request(buf, 27, &next, transaction_id,
+                                              NULL, 0, NULL, 0, NULL, 0, NULL,
+                                              0, NULL, 0, false, true));
+    testrun(ov_stun_generate_binding_request(buf, 28, &next, transaction_id,
+                                             NULL, 0, NULL, 0, NULL, 0, NULL, 0,
+                                             NULL, 0, false, true));
     len = next - buf;
     testrun(len == 28);
     testrun(ov_stun_frame_is_valid(buf, len));
@@ -1204,73 +784,21 @@ int test_ov_stun_generate_binding_request() {
     memset(buf, 0, size);
 
     // check nonce
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              (uint8_t *)nonce,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              (uint8_t *)nonce,
-                                              765,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              non_valid,
-                                              5,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(ov_stun_generate_binding_request(buf,
-                                             size,
-                                             &next,
-                                             transaction_id,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             (uint8_t *)nonce,
-                                             strlen(nonce),
-                                             NULL,
-                                             0,
-                                             false,
-                                             false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, NULL, 0, NULL, 0,
+        (uint8_t *)nonce, 0, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, NULL, 0, NULL, 0,
+        (uint8_t *)nonce, 765, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, NULL, 0, NULL, 0, non_valid,
+        5, NULL, 0, false, false));
+    testrun(ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, NULL, 0, NULL, 0,
+        (uint8_t *)nonce, strlen(nonce), NULL, 0, false, false));
     len = next - buf;
-    testrun(len == 20 + ov_stun_nonce_encoding_length(
-                            (uint8_t *)nonce, strlen(nonce)));
+    testrun(len == 20 + ov_stun_nonce_encoding_length((uint8_t *)nonce,
+                                                      strlen(nonce)));
     testrun(ov_stun_frame_is_valid(buf, len));
     testrun(ov_stun_frame_class_is_request(buf, len));
     testrun(ov_stun_method_is_binding(buf, len));
@@ -1288,73 +816,21 @@ int test_ov_stun_generate_binding_request() {
     memset(buf, 0, size);
 
     // check relam
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              (uint8_t *)realm,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              (uint8_t *)realm,
-                                              765,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              non_valid,
-                                              5,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(ov_stun_generate_binding_request(buf,
-                                             size,
-                                             &next,
-                                             transaction_id,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             (uint8_t *)realm,
-                                             strlen(realm),
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             false,
-                                             false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, NULL, 0, (uint8_t *)realm, 0,
+        NULL, 0, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, NULL, 0, (uint8_t *)realm,
+        765, NULL, 0, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(buf, size, &next, transaction_id,
+                                              NULL, 0, NULL, 0, non_valid, 5,
+                                              NULL, 0, NULL, 0, false, false));
+    testrun(ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, NULL, 0, (uint8_t *)realm,
+        strlen(realm), NULL, 0, NULL, 0, false, false));
     len = next - buf;
-    testrun(len == 20 + ov_stun_realm_encoding_length(
-                            (uint8_t *)realm, strlen(realm)));
+    testrun(len == 20 + ov_stun_realm_encoding_length((uint8_t *)realm,
+                                                      strlen(realm)));
     testrun(ov_stun_frame_is_valid(buf, len));
     testrun(ov_stun_frame_class_is_request(buf, len));
     testrun(ov_stun_method_is_binding(buf, len));
@@ -1371,73 +847,21 @@ int test_ov_stun_generate_binding_request() {
     memset(buf, 0, size);
 
     // check username
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              (uint8_t *)username,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              (uint8_t *)username,
-                                              765,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              NULL,
-                                              0,
-                                              non_valid,
-                                              5,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(ov_stun_generate_binding_request(buf,
-                                             size,
-                                             &next,
-                                             transaction_id,
-                                             NULL,
-                                             0,
-                                             (uint8_t *)username,
-                                             strlen(username),
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             false,
-                                             false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, (uint8_t *)username, 0, NULL,
+        0, NULL, 0, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, (uint8_t *)username, 765,
+        NULL, 0, NULL, 0, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(buf, size, &next, transaction_id,
+                                              NULL, 0, non_valid, 5, NULL, 0,
+                                              NULL, 0, NULL, 0, false, false));
+    testrun(ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, NULL, 0, (uint8_t *)username,
+        strlen(username), NULL, 0, NULL, 0, NULL, 0, false, false));
     len = next - buf;
-    testrun(len == 20 + ov_stun_username_encoding_length(
-                            (uint8_t *)username, strlen(username)));
+    testrun(len == 20 + ov_stun_username_encoding_length((uint8_t *)username,
+                                                         strlen(username)));
     testrun(ov_stun_frame_is_valid(buf, len));
     testrun(ov_stun_frame_class_is_request(buf, len));
     testrun(ov_stun_method_is_binding(buf, len));
@@ -1454,73 +878,21 @@ int test_ov_stun_generate_binding_request() {
     memset(buf, 0, size);
 
     // check software
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              (uint8_t *)software,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              (uint8_t *)software,
-                                              765,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(!ov_stun_generate_binding_request(buf,
-                                              size,
-                                              &next,
-                                              transaction_id,
-                                              non_valid,
-                                              5,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              NULL,
-                                              0,
-                                              false,
-                                              false));
-    testrun(ov_stun_generate_binding_request(buf,
-                                             size,
-                                             &next,
-                                             transaction_id,
-                                             (uint8_t *)software,
-                                             strlen(software),
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             NULL,
-                                             0,
-                                             false,
-                                             false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, (uint8_t *)software, 0, NULL, 0, NULL,
+        0, NULL, 0, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, (uint8_t *)software, 765, NULL, 0,
+        NULL, 0, NULL, 0, NULL, 0, false, false));
+    testrun(!ov_stun_generate_binding_request(buf, size, &next, transaction_id,
+                                              non_valid, 5, NULL, 0, NULL, 0,
+                                              NULL, 0, NULL, 0, false, false));
+    testrun(ov_stun_generate_binding_request(
+        buf, size, &next, transaction_id, (uint8_t *)software, strlen(software),
+        NULL, 0, NULL, 0, NULL, 0, NULL, 0, false, false));
     len = next - buf;
-    testrun(len == 20 + ov_stun_software_encoding_length(
-                            (uint8_t *)software, strlen(software)));
+    testrun(len == 20 + ov_stun_software_encoding_length((uint8_t *)software,
+                                                         strlen(software)));
     testrun(ov_stun_frame_is_valid(buf, len));
     testrun(ov_stun_frame_class_is_request(buf, len));
     testrun(ov_stun_method_is_binding(buf, len));

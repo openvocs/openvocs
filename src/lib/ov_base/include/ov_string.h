@@ -52,9 +52,7 @@
 #define OV_STRING_DEFAULT_SIZE 255
 #define OV_DEFAULT_LINEBREAK "\n"
 
-const char *ov_string_find(const char *source,
-                           size_t sc_len,
-                           const char *delim,
+const char *ov_string_find(const char *source, size_t sc_len, const char *delim,
                            size_t dm_len);
 
 /*
@@ -92,9 +90,7 @@ const char *ov_string_find(const char *source,
         @param  delim   delimiter to use
         @param  dm_len  length of the delimiter (at most)
 */
-ov_list *ov_string_pointer(const char *source,
-                           size_t sc_len,
-                           const char *delim,
+ov_list *ov_string_pointer(const char *source, size_t sc_len, const char *delim,
                            size_t dm_len);
 
 /*----------------------------------------------------------------------------*/
@@ -124,11 +120,8 @@ ov_list *ov_string_pointer(const char *source,
         @param  dm_len          length of the delimiter (at most)
         @param  copy_delimiter  if true, the chunks will contain the delimiter
 */
-ov_list *ov_string_split(const char *source,
-                         size_t sc_len,
-                         const char *delim,
-                         size_t dm_len,
-                         bool copy_delimiter);
+ov_list *ov_string_split(const char *source, size_t sc_len, const char *delim,
+                         size_t dm_len, bool copy_delimiter);
 
 /*
  *      ------------------------------------------------------------------------
@@ -209,8 +202,7 @@ bool ov_string_to_double(const char *string, uint64_t size, double *number);
         @returns 0 on error with next == start if next != start the string is
         actually 0
  */
-int64_t ov_string_parse_hex_digits(const char *start,
-                                   uint64_t size,
+int64_t ov_string_parse_hex_digits(const char *start, uint64_t size,
                                    char **next);
 
 /*****************************************************************************
@@ -243,8 +235,7 @@ char const *ov_string_chr(char const *str, char c);
  * @return pointer to copy of source. Is either 0 (in case of error) or
  * zero-terminated!
  */
-char *ov_string_copy(char *restrict target,
-                     char const *restrict source,
+char *ov_string_copy(char *restrict target, char const *restrict source,
                      size_t max_len);
 
 /*----------------------------------------------------------------------------*/
@@ -329,10 +320,8 @@ char *ov_string_rtrim(char *str, char const *chars_to_skip);
  * @param assigner Char used to denote assignment of value to key: '=' in "a=b"
  * @param separator to split list into key-value pairs. Must not be zero.
  */
-ov_buffer *ov_string_value_for_key(char const *s,
-                                   char const *key,
-                                   char assigner,
-                                   char const *separator);
+ov_buffer *ov_string_value_for_key(char const *s, char const *key,
+                                   char assigner, char const *separator);
 
 /*****************************************************************************
                                 OV_DATAFUNCTIONS
@@ -393,9 +382,7 @@ bool ov_string_data_dump(FILE *stream, const void *string);
 
         @return         returns true on success,  false on error
  */
-bool ov_string_append(char **dest,
-                      size_t *const size,
-                      const char *source,
+bool ov_string_append(char **dest, size_t *const size, const char *source,
                       size_t len);
 
 /*----------------------------------------------------------------------------*/
@@ -440,15 +427,10 @@ bool ov_string_append(char **dest,
 
         @return         true on success, false on error
  */
-bool ov_string_replace_all(char **result,
-                           size_t *const size,
-                           const char *source,
-                           size_t sc_len,
-                           const char *old_item,
-                           size_t old_len,
-                           const char *new_item,
-                           size_t new_len,
-                           bool set_last);
+bool ov_string_replace_all(char **result, size_t *const size,
+                           const char *source, size_t sc_len,
+                           const char *old_item, size_t old_len,
+                           const char *new_item, size_t new_len, bool set_last);
 
 /*----------------------------------------------------------------------------*/
 

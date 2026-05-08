@@ -95,7 +95,8 @@ struct ov_thread_loop {
 
 static ov_thread_loop *as_thread_pool_process(void *vptr) {
 
-    if (0 == vptr) return 0;
+    if (0 == vptr)
+        return 0;
 
     ov_thread_loop *tpp = vptr;
 
@@ -220,8 +221,10 @@ static bool setup_msg_to_loop_signalling(ov_thread_loop *self) {
 
 error:
 
-    if (sp[0] > 0) close(sp[0]);
-    if (sp[1] > 0) close(sp[1]);
+    if (sp[0] > 0)
+        close(sp[0]);
+    if (sp[1] > 0)
+        close(sp[1]);
 
     return false;
 }
@@ -271,9 +274,8 @@ ov_thread_loop *ov_thread_loop_create(ov_event_loop *event_loop,
 
     if (!setup_msg_to_loop_signalling(self)) {
 
-        ov_log_error(
-            "Could not set up message signalling mechanism "
-            "to loop");
+        ov_log_error("Could not set up message signalling mechanism "
+                     "to loop");
 
         goto error;
     }
@@ -296,23 +298,16 @@ error:
 
 ov_thread_loop *ov_thread_loop_free(ov_thread_loop *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     if (0 != self->pool) {
 
         self->pool = self->pool->free(self->pool);
     }
 
-    if (0 != self->to_threads.queue) {
-
-        self->to_threads.queue =
-            self->to_threads.queue->free(self->to_threads.queue);
-    }
-
-    if (0 != self->to_loop.queue) {
-
-        self->to_loop.queue = self->to_loop.queue->free(self->to_loop.queue);
-    }
+    self->to_threads.queue = ov_ringbuffer_free(self->to_threads.queue);
+    self->to_loop.queue = ov_ringbuffer_free(self->to_loop.queue);
 
     ov_thread_lock_clear(&self->to_threads.lock);
     ov_thread_lock_clear(&self->to_loop.lock);
@@ -362,7 +357,8 @@ static void free_message(void *additional_arg, void *element_to_free) {
 
     UNUSED(additional_arg);
 
-    if (0 == element_to_free) goto error;
+    if (0 == element_to_free)
+        goto error;
 
     ov_thread_message *msg = element_to_free;
     msg = msg->free(msg);
@@ -492,8 +488,7 @@ error:
  ******************************************************************************/
 
 static bool put_into_queue(ov_ringbuffer *restrict queue,
-                           ov_thread_lock *restrict lock,
-                           void *element) {
+                           ov_thread_lock *restrict lock, void *element) {
 
     bool retval = false;
 
@@ -568,7 +563,8 @@ static bool send_message_pointer_to_loop(ov_thread_loop *restrict tpp,
         OV_ASSERT(!"MUST NEVER EVER HAPPEN - DEADLOCK!!!");
     }
 
-    if (!sent) goto error;
+    if (!sent)
+        goto error;
 
     /* Byte order unimportant since we remain on the same machine by
      * design (after all, we transfer POINTERS to process memory !!!)
@@ -597,29 +593,31 @@ bool ov_thread_loop_send_message(ov_thread_loop *self,
 
     bool retval = false;
 
-    if (0 == self) goto error;
-    if (0 == message) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == message)
+        goto error;
 
     OV_ASSERT(message);
     OV_ASSERT(self);
 
     switch (receiver) {
 
-        case OV_RECEIVER_EVENT_LOOP:
+    case OV_RECEIVER_EVENT_LOOP:
 
-            retval = send_message_pointer_to_loop(self, message);
-            break;
+        retval = send_message_pointer_to_loop(self, message);
+        break;
 
-        case OV_RECEIVER_THREAD:
+    case OV_RECEIVER_THREAD:
 
-            retval = put_into_queue(
-                self->to_threads.queue, &self->to_threads.lock, message);
+        retval = put_into_queue(self->to_threads.queue, &self->to_threads.lock,
+                                message);
 
-            break;
+        break;
 
-        default:
+    default:
 
-            OV_ASSERT(!"SHOULD NEVER EVER HAPPEN!");
+        OV_ASSERT(!"SHOULD NEVER EVER HAPPEN!");
     };
 
     return retval;
@@ -720,10 +718,10 @@ ov_json_value *ov_thread_loop_config_to_json(const ov_thread_loop_config config,
     val_to_add = ov_json_number(message_queue_capacity);
 
     if ((0 == val_to_add) ||
-        !ov_json_object_set(
-            json, CONFIG_KEY_MESSAGE_QUEUE_CAPACITY, val_to_add)) {
-        ov_log_error(
-            "Could not add %s to JSON", CONFIG_KEY_MESSAGE_QUEUE_CAPACITY);
+        !ov_json_object_set(json, CONFIG_KEY_MESSAGE_QUEUE_CAPACITY,
+                            val_to_add)) {
+        ov_log_error("Could not add %s to JSON",
+                     CONFIG_KEY_MESSAGE_QUEUE_CAPACITY);
         goto error;
     }
 
@@ -756,11 +754,11 @@ ov_json_value *ov_thread_loop_config_to_json(const ov_thread_loop_config config,
     }
 
     if ((0 != val_to_add) &&
-        (!ov_json_object_set(
-            json, CONFIG_KEY_DISABLE_TO_LOOP_QUEUE, val_to_add))) {
+        (!ov_json_object_set(json, CONFIG_KEY_DISABLE_TO_LOOP_QUEUE,
+                             val_to_add))) {
 
-        ov_log_error(
-            "Could not add %s to JSON", CONFIG_KEY_DISABLE_TO_LOOP_QUEUE);
+        ov_log_error("Could not add %s to JSON",
+                     CONFIG_KEY_DISABLE_TO_LOOP_QUEUE);
         goto error;
     }
 
@@ -785,8 +783,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_thread_loop_config ov_thread_loop_config_from_json(
-    ov_json_value const *json) {
+ov_thread_loop_config
+ov_thread_loop_config_from_json(ov_json_value const *json) {
 
     ov_json_value const *val = 0;
     ov_thread_loop_config config = {0};
@@ -807,11 +805,10 @@ ov_thread_loop_config ov_thread_loop_config_from_json(
 
     if (0 >= message_queue_capacity) {
 
-        ov_log_warning(
-            "No or invalid message queue capacity "
-            "given: "
-            "%" PRIi64,
-            message_queue_capacity);
+        ov_log_warning("No or invalid message queue capacity "
+                       "given: "
+                       "%" PRIi64,
+                       message_queue_capacity);
 
         message_queue_capacity = MESSAGE_QUEUE_CAPACITY_DEFAULT;
     }
@@ -822,10 +819,9 @@ ov_thread_loop_config ov_thread_loop_config_from_json(
 
     if (0 >= lock_timeout_usecs) {
 
-        ov_log_warning(
-            "No or invalid lock timeout given: "
-            "%" PRIi64,
-            lock_timeout_usecs);
+        ov_log_warning("No or invalid lock timeout given: "
+                       "%" PRIi64,
+                       lock_timeout_usecs);
 
         lock_timeout_usecs = LOCK_TIMEOUT_USECS_DEFAULT;
     }
@@ -836,10 +832,9 @@ ov_thread_loop_config ov_thread_loop_config_from_json(
 
     if ((0 >= num_threads) || (SIZE_MAX < (uint64_t)num_threads)) {
 
-        ov_log_warning(
-            "No or invalid number of threads: "
-            "%" PRIi64,
-            num_threads);
+        ov_log_warning("No or invalid number of threads: "
+                       "%" PRIi64,
+                       num_threads);
 
         num_threads = NUM_THREADS_DEFAULT;
     }

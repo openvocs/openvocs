@@ -52,7 +52,8 @@ int main(int argc, char **argv) {
 
         bytes_read = read(fh, in_buffer, sizeof(in_buffer));
 
-        if (1 > bytes_read) break;
+        if (1 > bytes_read)
+            break;
 
         for (size_t i = 0; i < bytes_read / 2; ++i) {
 

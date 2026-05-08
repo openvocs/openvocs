@@ -43,15 +43,15 @@ char const *ov_alsa_mode_to_string(ov_alsa_mode mode) {
 
     switch (mode) {
 
-        case CAPTURE:
+    case CAPTURE:
 
-            return "CAPTURE";
+        return "CAPTURE";
 
-        case PLAYBACK:
-            return "PLAYBACK";
+    case PLAYBACK:
+        return "PLAYBACK";
 
-        default:
-            return "INVALID";
+    default:
+        return "INVALID";
     };
 
     return "INVALID";
@@ -103,8 +103,7 @@ static char *device_to_card(char const *device) {
 
 /*----------------------------------------------------------------------------*/
 
-static snd_mixer_elem_t *get_mixer_elem(snd_mixer_t *mixer,
-                                        char const *device,
+static snd_mixer_elem_t *get_mixer_elem(snd_mixer_t *mixer, char const *device,
                                         char const *name) {
     snd_mixer_elem_t *elem = 0;
 
@@ -127,8 +126,7 @@ static snd_mixer_elem_t *get_mixer_elem(snd_mixer_t *mixer,
 
     if (0 == elem) {
         ov_log_error("Could not find mixer element for %s:%s",
-                     ov_string_sanitize(card),
-                     ov_string_sanitize(name));
+                     ov_string_sanitize(card), ov_string_sanitize(name));
     }
 
     card = ov_free(card);
@@ -156,10 +154,8 @@ static bool mute_element(snd_mixer_elem_t *elem, bool should_mute) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool element_volume_range(snd_mixer_elem_t *elem,
-                                 ov_alsa_mode mode,
-                                 long *min,
-                                 long *max) {
+static bool element_volume_range(snd_mixer_elem_t *elem, ov_alsa_mode mode,
+                                 long *min, long *max) {
     assert(0 != min);
     assert(0 != max);
 
@@ -169,41 +165,38 @@ static bool element_volume_range(snd_mixer_elem_t *elem,
 
     } else {
         switch (mode) {
-            case PLAYBACK:
+        case PLAYBACK:
 
-                if (1 == snd_mixer_selem_has_playback_volume(elem)) {
-                    snd_mixer_selem_get_playback_volume_range(elem, min, max);
-                    ov_log_info(
-                        "Playback volume range is %li - %li\n", *min, *max);
-                    return true;
-                } else {
-                    ov_log_info("Cannot get playback volume range\n");
-                    return false;
-                }
-
-            case CAPTURE:
-
-                if (1 == snd_mixer_selem_has_capture_volume(elem)) {
-                    snd_mixer_selem_get_capture_volume_range(elem, min, max);
-                    ov_log_info(
-                        "Capture volume range is %li - %li\n", *min, *max);
-                    return true;
-                } else {
-                    ov_log_info("Cannot get capture volume range\n");
-                    return false;
-                }
-
-            default:
-
+            if (1 == snd_mixer_selem_has_playback_volume(elem)) {
+                snd_mixer_selem_get_playback_volume_range(elem, min, max);
+                ov_log_info("Playback volume range is %li - %li\n", *min, *max);
+                return true;
+            } else {
+                ov_log_info("Cannot get playback volume range\n");
                 return false;
+            }
+
+        case CAPTURE:
+
+            if (1 == snd_mixer_selem_has_capture_volume(elem)) {
+                snd_mixer_selem_get_capture_volume_range(elem, min, max);
+                ov_log_info("Capture volume range is %li - %li\n", *min, *max);
+                return true;
+            } else {
+                ov_log_info("Cannot get capture volume range\n");
+                return false;
+            }
+
+        default:
+
+            return false;
         }
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool element_volume(snd_mixer_elem_t *elem,
-                           ov_alsa_mode mode,
+static bool element_volume(snd_mixer_elem_t *elem, ov_alsa_mode mode,
                            long volume) {
     if (0 == elem) {
         ov_log_error("Cannot set ALSA volume: No mixer element");
@@ -211,38 +204,37 @@ static bool element_volume(snd_mixer_elem_t *elem,
 
     } else {
         switch (mode) {
-            case PLAYBACK:
+        case PLAYBACK:
 
-                if (1 == snd_mixer_selem_has_playback_volume(elem)) {
-                    ov_log_info("Setting playback volume to %li\n", volume);
-                    snd_mixer_selem_set_playback_volume_all(elem, volume);
-                    return true;
-                } else {
-                    ov_log_info("Cannot set playback volume to %li\n", volume);
-                    return false;
-                }
-
-            case CAPTURE:
-
-                if (1 == snd_mixer_selem_has_capture_volume(elem)) {
-                    ov_log_info("Setting capture volume to %li\n", volume);
-                    snd_mixer_selem_set_capture_volume_all(elem, volume);
-                    return true;
-                } else {
-                    ov_log_info("Cannot set capture volume to %li\n", volume);
-                    return false;
-                }
-
-            default:
-
+            if (1 == snd_mixer_selem_has_playback_volume(elem)) {
+                ov_log_info("Setting playback volume to %li\n", volume);
+                snd_mixer_selem_set_playback_volume_all(elem, volume);
+                return true;
+            } else {
+                ov_log_info("Cannot set playback volume to %li\n", volume);
                 return false;
+            }
+
+        case CAPTURE:
+
+            if (1 == snd_mixer_selem_has_capture_volume(elem)) {
+                ov_log_info("Setting capture volume to %li\n", volume);
+                snd_mixer_selem_set_capture_volume_all(elem, volume);
+                return true;
+            } else {
+                ov_log_info("Cannot set capture volume to %li\n", volume);
+                return false;
+            }
+
+        default:
+
+            return false;
         }
     }
 }
 /*----------------------------------------------------------------------------*/
 
-static bool set_volume(snd_mixer_elem_t *elem,
-                       ov_alsa_mode mode,
+static bool set_volume(snd_mixer_elem_t *elem, ov_alsa_mode mode,
                        double volume) {
     if (0.0 > volume) {
         ov_log_error("Cannot set ALSA volume to %f: Volume negative", volume);
@@ -270,10 +262,8 @@ static bool set_volume(snd_mixer_elem_t *elem,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_alsa_set_volume(char const *device,
-                        char const *element,
-                        ov_alsa_mode mode,
-                        double volume) {
+bool ov_alsa_set_volume(char const *device, char const *element,
+                        ov_alsa_mode mode, double volume) {
 
     snd_mixer_t *handle = 0;
     snd_mixer_open(&handle, 0);
@@ -286,8 +276,7 @@ bool ov_alsa_set_volume(char const *device,
 
     if (ok) {
         ov_log_info("ALSA: %s mixer element %s: Set volume to %lf",
-                    ov_string_sanitize(device),
-                    ov_string_sanitize(element),
+                    ov_string_sanitize(device), ov_string_sanitize(element),
                     volume);
     }
 
@@ -316,8 +305,8 @@ int open_dump_fh(char const *device, snd_pcm_stream_t mode) {
 
         if (0 > fh) {
 
-            ov_log_error(
-                "Could not open dump file:%s", ov_string_sanitize(name));
+            ov_log_error("Could not open dump file:%s",
+                         ov_string_sanitize(name));
         }
     }
 
@@ -328,10 +317,10 @@ int open_dump_fh(char const *device, snd_pcm_stream_t mode) {
 
 static void dump_pcm(int fh, int16_t *buf, size_t num_samples) {
 
-    if ((-1 < fh) && (ov_ptr_valid(buf, "Cannot dump PCM: No PCM") &&
-                      ov_cond_valid(0 < num_samples,
-                                    "Cannot dump PCM: Number of samples is "
-                                    "0"))) {
+    if ((-1 < fh) &&
+        (ov_ptr_valid(buf, "Cannot dump PCM: No PCM") &&
+         ov_cond_valid(0 < num_samples, "Cannot dump PCM: Number of samples is "
+                                        "0"))) {
 
         ov_log_debug("Dumping %zu bytes\n", num_samples);
 
@@ -430,21 +419,18 @@ bool ov_alsa_reset(ov_alsa *self) {
 
 /*---------------------------------------------------------------------------*/
 
-static bool alsa_call(ov_alsa const *self,
-                      int alsa_retval,
+static bool alsa_call(ov_alsa const *self, int alsa_retval,
                       char const *message) {
 
     if (alsa_retval < 0) {
-        ov_log_error("%s (%s)",
-                     OV_OR_DEFAULT(message, "Unknown ALSA error"),
+        ov_log_error("%s (%s)", OV_OR_DEFAULT(message, "Unknown ALSA error"),
                      snd_strerror(alsa_retval));
         return false;
     } else {
 
         snd_pcm_t *pcm = get_handle(self);
 
-        printf("ALSA stream %s state: %s\n",
-               pcm_stream_name(pcm),
+        printf("ALSA stream %s state: %s\n", pcm_stream_name(pcm),
                pcm_state_as_string(pcm));
 
         return true;
@@ -499,8 +485,8 @@ static bool ensure_sample_rate(snd_pcm_hw_params_t const *params,
 
     if (ov_ptr_valid(params, "Cannot get actual sample rate - 0 pointer") &&
         (-1 < snd_pcm_hw_params_get_rate(params, &rate_hz, &dir)) &&
-        ov_cond_valid(
-            exp_rate_hz == rate_hz, "Could not set required sample rate")) {
+        ov_cond_valid(exp_rate_hz == rate_hz,
+                      "Could not set required sample rate")) {
 
         ov_log_info("ALSA: Using sample rate of %u Hz", rate_hz);
         return true;
@@ -516,26 +502,24 @@ static snd_pcm_access_t stream_mode_to_pcm_access_mode(snd_pcm_stream_t mode) {
 
     switch (mode) {
 
-        case SND_PCM_STREAM_PLAYBACK:
+    case SND_PCM_STREAM_PLAYBACK:
 
-            return SND_PCM_ACCESS_RW_NONINTERLEAVED;
+        return SND_PCM_ACCESS_RW_NONINTERLEAVED;
 
-        case SND_PCM_STREAM_CAPTURE:
-            return SND_PCM_ACCESS_RW_INTERLEAVED;
+    case SND_PCM_STREAM_CAPTURE:
+        return SND_PCM_ACCESS_RW_INTERLEAVED;
 
-        default:
+    default:
 
-            OV_ASSERT(!"MUST NEVER HAPPEN");
-            return SND_PCM_ACCESS_RW_NONINTERLEAVED;
+        OV_ASSERT(!"MUST NEVER HAPPEN");
+        return SND_PCM_ACCESS_RW_NONINTERLEAVED;
     };
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_alsa *alsa_create(char const *device_name,
-                            unsigned int sample_rate,
-                            size_t *samples_per_period,
-                            snd_pcm_stream_t mode) {
+static ov_alsa *alsa_create(char const *device_name, unsigned int sample_rate,
+                            size_t *samples_per_period, snd_pcm_stream_t mode) {
 
     if ((0 == device_name) || (0 == samples_per_period)) {
 
@@ -556,43 +540,39 @@ static ov_alsa *alsa_create(char const *device_name,
 
         if ((err = snd_pcm_open(&alsa->handle, device_name, mode, 0)) < 0) {
 
-            ov_log_error("cannot open audio device %s (%s)\n",
-                         device_name,
+            ov_log_error("cannot open audio device %s (%s)\n", device_name,
                          snd_strerror(err));
             return ov_free(alsa);
         }
 
         snd_config_update_free_global();
 
-        if (alsa_call(alsa,
-                      snd_pcm_hw_params_malloc(&hw_params),
+        if (alsa_call(alsa, snd_pcm_hw_params_malloc(&hw_params),
                       "cannot allocate hardware parameter structure") &&
 
-            alsa_call(alsa,
-                      snd_pcm_hw_params_any(alsa->handle, hw_params),
+            alsa_call(alsa, snd_pcm_hw_params_any(alsa->handle, hw_params),
                       "cannot initialize hardware parameter "
                       "structure") &&
 
             alsa_call(alsa,
                       snd_pcm_hw_params_set_access(
-                          alsa->handle,
-                          hw_params,
+                          alsa->handle, hw_params,
                           stream_mode_to_pcm_access_mode(mode)),
                       "cannot set access type") &&
 
             alsa_call(alsa,
-                      snd_pcm_hw_params_set_period_size(
-                          alsa->handle, hw_params, frames_per_period, 0),
+                      snd_pcm_hw_params_set_period_size(alsa->handle, hw_params,
+                                                        frames_per_period, 0),
                       "Cannot set period size") &&
 
             alsa_call(alsa,
-                      snd_pcm_hw_params_set_format(
-                          alsa->handle, hw_params, SND_PCM_FORMAT_S16_LE),
+                      snd_pcm_hw_params_set_format(alsa->handle, hw_params,
+                                                   SND_PCM_FORMAT_S16_LE),
                       "cannot set sample format") &&
 
             alsa_call(alsa,
-                      snd_pcm_hw_params_set_rate_near(
-                          alsa->handle, hw_params, &actual_sample_rate, 0),
+                      snd_pcm_hw_params_set_rate_near(alsa->handle, hw_params,
+                                                      &actual_sample_rate, 0),
                       "cannot set sample rate") &&
 
             alsa_call(
@@ -600,16 +580,14 @@ static ov_alsa *alsa_create(char const *device_name,
                 snd_pcm_hw_params_set_channels(alsa->handle, hw_params, 1),
                 "cannot set channel count to 1") &&
 
-            alsa_call(alsa,
-                      snd_pcm_hw_params(alsa->handle, hw_params),
+            alsa_call(alsa, snd_pcm_hw_params(alsa->handle, hw_params),
                       "cannot set parameters") &&
 
             ensure_number_of_channels(hw_params, 1) &&
             ensure_format(hw_params, SND_PCM_FORMAT_S16_LE) &&
             ensure_sample_rate(hw_params, sample_rate) &&
 
-            alsa_call(alsa,
-                      snd_pcm_prepare(alsa->handle),
+            alsa_call(alsa, snd_pcm_prepare(alsa->handle),
                       "cannot prepare audio interface for use")) {
 
             unsigned int val = 0;
@@ -618,8 +596,8 @@ static ov_alsa *alsa_create(char const *device_name,
             snd_pcm_hw_params_get_period_time(hw_params, &val, &dir);
             printf("period time = %d us\n", val);
 
-            snd_pcm_hw_params_get_period_size(
-                hw_params, samples_per_period, &dir);
+            snd_pcm_hw_params_get_period_size(hw_params, samples_per_period,
+                                              &dir);
             printf("period size = %d samples\n", (int)*samples_per_period);
 
             alsa->samples_per_period = *samples_per_period;
@@ -641,10 +619,8 @@ static ov_alsa *alsa_create(char const *device_name,
 
 /*----------------------------------------------------------------------------*/
 
-ov_alsa *ov_alsa_create(char const *device_name,
-                        unsigned int sample_rate,
-                        size_t *samples_per_period,
-                        ov_alsa_mode mode) {
+ov_alsa *ov_alsa_create(char const *device_name, unsigned int sample_rate,
+                        size_t *samples_per_period, ov_alsa_mode mode) {
 
     char *alsa_name = 0;
 
@@ -665,25 +641,21 @@ ov_alsa *ov_alsa_create(char const *device_name,
 
     switch (mode) {
 
-        case CAPTURE:
+    case CAPTURE:
 
-            self = alsa_create(alsa_name,
-                               sample_rate,
-                               samples_per_period,
-                               SND_PCM_STREAM_CAPTURE);
-            break;
+        self = alsa_create(alsa_name, sample_rate, samples_per_period,
+                           SND_PCM_STREAM_CAPTURE);
+        break;
 
-        case PLAYBACK:
+    case PLAYBACK:
 
-            self = alsa_create(alsa_name,
-                               sample_rate,
-                               samples_per_period,
-                               SND_PCM_STREAM_PLAYBACK);
+        self = alsa_create(alsa_name, sample_rate, samples_per_period,
+                           SND_PCM_STREAM_PLAYBACK);
 
-            break;
+        break;
 
-        default:
-            ov_log_error("Cannot create ALSA object: Invalid mode");
+    default:
+        ov_log_error("Cannot create ALSA object: Invalid mode");
     };
 
     alsa_name = ov_free(alsa_name);
@@ -721,8 +693,8 @@ size_t ov_alsa_get_buffer_size_samples(ov_alsa *self) {
 
     snd_pcm_t *handle = get_handle(self);
 
-    if (ov_ptr_valid(
-            handle, "Cannot get ALSA buffer size - invalid ALSA handle") &&
+    if (ov_ptr_valid(handle,
+                     "Cannot get ALSA buffer size - invalid ALSA handle") &&
         (0 == snd_pcm_get_params(handle, &buffer_size, &period_size))) {
 
         return buffer_size;
@@ -738,8 +710,8 @@ size_t ov_alsa_get_buffer_size_samples(ov_alsa *self) {
 
 size_t ov_alsa_get_samples_per_period(ov_alsa *self) {
 
-    if (ov_ptr_valid(
-            self, "Cannot get ALSA period size - invalid ALSA handle")) {
+    if (ov_ptr_valid(self,
+                     "Cannot get ALSA period size - invalid ALSA handle")) {
 
         return self->samples_per_period;
     } else {
@@ -754,16 +726,14 @@ ssize_t ov_alsa_get_no_available_samples(ov_alsa *self) {
     snd_pcm_t *handle = get_handle(self);
     snd_pcm_sframes_t available_frames = -1;
 
-    if (ov_ptr_valid(handle,
-                     "Cannot get number of available samples - invalid "
-                     "ALSA handler")) {
+    if (ov_ptr_valid(handle, "Cannot get number of available samples - invalid "
+                             "ALSA handler")) {
         available_frames = snd_pcm_avail(handle);
     }
 
     if (0 > available_frames) {
         ov_log_error("Cannot get available samples from ALSA: %li:%s\n",
-                     available_frames,
-                     snd_strerror(available_frames));
+                     available_frames, snd_strerror(available_frames));
 
         ov_alsa_reset(self);
     }
@@ -773,8 +743,7 @@ ssize_t ov_alsa_get_no_available_samples(ov_alsa *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static snd_pcm_sframes_t snd_pcm_writen_wrapper(snd_pcm_t *handle,
-                                                int16_t *buf,
+static snd_pcm_sframes_t snd_pcm_writen_wrapper(snd_pcm_t *handle, int16_t *buf,
                                                 size_t sample_number) {
 
     if (ov_ptr_valid(handle, "Cannot write to ALSA device - invalid handle")) {
@@ -815,15 +784,14 @@ bool ov_alsa_play_period(ov_alsa *self, int16_t *buf, ov_result *res) {
 
             if (-EPIPE == err) {
 
-                ov_result_set(
-                    res, OV_ERROR_AUDIO_UNDERRUN, "Buffer underrun occured");
+                ov_result_set(res, OV_ERROR_AUDIO_UNDERRUN,
+                              "Buffer underrun occured");
 
                 ov_counter_increase(self->counter.underruns, 1);
 
             } else {
 
-                ov_result_set(res,
-                              OV_ERROR_AUDIO_IO,
+                ov_result_set(res, OV_ERROR_AUDIO_IO,
                               "Could not write to AUDIO interface");
 
                 ov_log_error("write to audio interface failed (%s)\n",
@@ -854,8 +822,8 @@ static snd_pcm_sframes_t snd_pcm_readi_wrapper(snd_pcm_t *handle,
                                                int16_t *target_buffer,
                                                size_t samples_to_read) {
 
-    if (!ov_ptr_valid(
-            handle, "Cannot read from ALSA device - invalid ALSA handle")) {
+    if (!ov_ptr_valid(handle,
+                      "Cannot read from ALSA device - invalid ALSA handle")) {
 
         return -ENODEV;
 
@@ -873,8 +841,7 @@ static snd_pcm_sframes_t snd_pcm_readi_wrapper(snd_pcm_t *handle,
 
 /*----------------------------------------------------------------------------*/
 
-size_t ov_alsa_capture_period(ov_alsa *self,
-                              int16_t *target_buffer,
+size_t ov_alsa_capture_period(ov_alsa *self, int16_t *target_buffer,
                               ov_result *res) {
 
     snd_pcm_sframes_t err = snd_pcm_readi_wrapper(
@@ -888,11 +855,11 @@ size_t ov_alsa_capture_period(ov_alsa *self,
 
         } else {
 
-            ov_result_set(
-                res, OV_ERROR_AUDIO_IO, "Could not read from AUDIO interface");
+            ov_result_set(res, OV_ERROR_AUDIO_IO,
+                          "Could not read from AUDIO interface");
 
-            ov_log_error(
-                "Read from audio interface failed (%s)\n", snd_strerror(err));
+            ov_log_error("Read from audio interface failed (%s)\n",
+                         snd_strerror(err));
             ov_counter_increase(self->counter.other_error, 1);
         }
 
@@ -976,8 +943,8 @@ char const *ov_alsa_state_to_string(ov_alsa const *self) {
 bool ov_alsa_get_counters(ov_alsa const *self, ov_alsa_counters *counters) {
 
     if (ov_ptr_valid(self, "Cannot get counters - invalid ALSA objects") &&
-        ov_ptr_valid(
-            counters, "Cannot get counters - invalid counter object")) {
+        ov_ptr_valid(counters,
+                     "Cannot get counters - invalid counter object")) {
 
         *counters = self->counter;
         return true;
@@ -998,8 +965,7 @@ bool ov_alsa_enabled() { return true; }
 
 /*----------------------------------------------------------------------------*/
 
-ov_alsa *ov_alsa_create(char *device_name,
-                        unsigned int sample_rate,
+ov_alsa *ov_alsa_create(char *device_name, unsigned int sample_rate,
                         size_t *buffer_size_frames) {
 
     UNUSED(device_name);
@@ -1046,8 +1012,7 @@ int ov_alsa_play(ov_alsa *self, int16_t *buf, size_t sample_number) {
 
 /*----------------------------------------------------------------------------*/
 
-int ov_alsa_get_poll_descriptors(ov_alsa *self,
-                                 struct pollfd **target_array,
+int ov_alsa_get_poll_descriptors(ov_alsa *self, struct pollfd **target_array,
                                  size_t *num_fds) {
 
     UNUSED(self);

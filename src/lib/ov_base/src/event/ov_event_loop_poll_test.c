@@ -151,21 +151,13 @@ bool dummy_timer_callback(uint32_t id, void *data) {
 
     uint64_t current = ov_time_get_current_time_usecs();
 
-    testrun_log(
-        "Got id %i set id %i\n"
-        "current usec %" PRIu64
-        " \n"
-        "time    usec %" PRIu64
-        " \n"
-        "diff    usec %" PRIu64
-        " \n"
-        "rel     usec %" PRIu64 " \n",
-        id,
-        dummy->id,
-        current,
-        dummy->timestamp,
-        current - dummy->timestamp,
-        dummy->rel_timeout);
+    testrun_log("Got id %i set id %i\n"
+                "current usec %" PRIu64 " \n"
+                "time    usec %" PRIu64 " \n"
+                "diff    usec %" PRIu64 " \n"
+                "rel     usec %" PRIu64 " \n",
+                id, dummy->id, current, dummy->timestamp,
+                current - dummy->timestamp, dummy->rel_timeout);
 
     testrun(id == dummy->id);
     return true;
@@ -207,8 +199,7 @@ int check_poll_loop() {
     testrun(loop->run(loop, max_time));
     uint64_t stop = ov_time_get_current_time_usecs();
     testrun_log("start - stop %" PRIu64 " usec %" PRIu64 " usec offset",
-                stop - start,
-                (stop - start) - max_time);
+                stop - start, (stop - start) - max_time);
 
     testrun(NULL == ov_event_loop_free(loop));
     return testrun_log_success();
@@ -228,7 +219,8 @@ struct container1 {
 
 static bool counting_callback(uint32_t id, void *data) {
 
-    if (!data || (0 == id)) return false;
+    if (!data || (0 == id))
+        return false;
 
     struct container1 *container = data;
 
@@ -287,12 +279,12 @@ int check_interval_call() {
     container.timeout_usec = timeout_usec;
     container.counter = 0;
 
-    testrun(loop->timer.set(
-        loop, container.timeout_usec, &container, counting_callback));
+    testrun(loop->timer.set(loop, container.timeout_usec, &container,
+                            counting_callback));
 
     testrun(loop->run(loop, runtime_usec));
-    testrun_log(
-        "expect %i result %i offset range %i", runs, container.counter, offset);
+    testrun_log("expect %i result %i offset range %i", runs, container.counter,
+                offset);
 
     /*
      *  Uncommented the check due to test issues (offset to small),

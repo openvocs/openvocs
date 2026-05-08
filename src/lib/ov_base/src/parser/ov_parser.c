@@ -45,9 +45,11 @@
 
 ov_parser *ov_parser_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data == OV_PARSER_MAGIC_BYTE) return (ov_parser *)data;
+    if (*(uint16_t *)data == OV_PARSER_MAGIC_BYTE)
+        return (ov_parser *)data;
 
     return NULL;
 }
@@ -64,7 +66,8 @@ bool ov_parser_verify_interface(const void *data) {
 
     // in buffering mode the buffer MUST be checkable and cleanable
     if (parser->buffer.is_enabled(parser))
-        if (!parser->buffer.has_data || !parser->buffer.empty_out) goto error;
+        if (!parser->buffer.has_data || !parser->buffer.empty_out)
+            goto error;
 
     return true;
 error:
@@ -75,7 +78,8 @@ error:
 
 ov_parser *ov_parser_set_head(ov_parser *parser, uint16_t type) {
 
-    if (!parser) return NULL;
+    if (!parser)
+        return NULL;
 
     parser->magic_byte = OV_PARSER_MAGIC_BYTE;
     parser->type = type;
@@ -90,18 +94,18 @@ void *parser_free_chain(void *self) {
     ov_parser *next = ov_parser_cast(self);
     ov_parser *current = NULL;
 
-    if (!next) return self;
+    if (!next)
+        return self;
 
     do {
         current = next;
         next = current->next;
 
         if (!ov_parser_cast(current) || !current->free) {
-            ov_log_error(
-                "parser pointer in chain "
-                "NOT ov_parser OR free missing "
-                "for parser at pointer %p",
-                current);
+            ov_log_error("parser pointer in chain "
+                         "NOT ov_parser OR free missing "
+                         "for parser at pointer %p",
+                         current);
             goto error;
         }
 
@@ -120,7 +124,8 @@ error:
 void *ov_parser_free(void *self) {
 
     ov_parser *parser = ov_parser_cast(self);
-    if (!parser || !parser->free) return self;
+    if (!parser || !parser->free)
+        return self;
 
     return parser_free_chain(self);
 }
@@ -160,13 +165,14 @@ bool ov_parser_trash_buffered_data(ov_parser *self) {
         }
 
         if (!parser->buffer.empty_out(parser, &raw, &free_raw)) {
-            ov_log_error(
-                "failed to empty out buffer of %p|%s", parser, parser->name);
+            ov_log_error("failed to empty out buffer of %p|%s", parser,
+                         parser->name);
             goto error;
         }
 
         // apply function to free the raw pointer
-        if (free_raw) free_raw(raw);
+        if (free_raw)
+            free_raw(raw);
 
         parser = parser->next;
 
@@ -181,7 +187,8 @@ error:
 
 bool ov_parser_data_clear(ov_parser_data *data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
 
     ov_parser_data_clear_in(data);
     ov_parser_data_clear_out(data);
@@ -193,9 +200,11 @@ bool ov_parser_data_clear(ov_parser_data *data) {
 
 void ov_parser_data_clear_in(ov_parser_data *const data) {
 
-    if (!data) return;
+    if (!data)
+        return;
 
-    if (data->in.data && data->in.free) data->in.free(data->in.data);
+    if (data->in.data && data->in.free)
+        data->in.free(data->in.data);
 
     data->in.data = NULL;
     data->in.free = NULL;
@@ -206,9 +215,11 @@ void ov_parser_data_clear_in(ov_parser_data *const data) {
 
 void ov_parser_data_clear_out(ov_parser_data *const data) {
 
-    if (!data) return;
+    if (!data)
+        return;
 
-    if (data->out.data && data->out.free) data->out.free(data->out.data);
+    if (data->out.data && data->out.free)
+        data->out.free(data->out.data);
 
     data->out.data = NULL;
     data->out.free = NULL;
@@ -219,7 +230,8 @@ void ov_parser_data_clear_out(ov_parser_data *const data) {
 
 static void switch_output_to_input(ov_parser_data *const data) {
 
-    if (!data) return;
+    if (!data)
+        return;
 
     // free current input
     if (data->in.free) {
@@ -299,10 +311,12 @@ error:
 
 ov_parser_state ov_parser_decode(ov_parser *self, ov_parser_data *const data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_parser *parser = ov_parser_cast(self);
-    if (!parser || !parser->decode) goto error;
+    if (!parser || !parser->decode)
+        goto error;
 
     ov_parser_state state = parser->decode(parser, data);
 
@@ -327,17 +341,20 @@ error:
 
 ov_parser_state ov_parser_encode(ov_parser *self, ov_parser_data *const data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_parser *parser = ov_parser_cast(self);
-    if (!parser || !parser->encode) goto error;
+    if (!parser || !parser->encode)
+        goto error;
 
     ov_parser *next = parser->next;
 
     if (next) {
 
         ov_parser_state state = ov_parser_encode(next, data);
-        if (state != OV_PARSER_SUCCESS) return state;
+        if (state != OV_PARSER_SUCCESS)
+            return state;
 
         switch_output_to_input(data);
     }
@@ -369,7 +386,8 @@ error:
 static ov_parser *impl_dummy_parser_free(ov_parser *self) {
 
     ov_parser *parser = AS_DUMMY_PARSER(self);
-    if (!parser) return self;
+    if (!parser)
+        return self;
 
     free(parser);
     return NULL;
@@ -381,9 +399,11 @@ static ov_parser_state impl_dummy_parser_decode(ov_parser *self,
                                                 ov_parser_data *const data) {
 
     ov_parser *parser = AS_DUMMY_PARSER(self);
-    if (!parser || !data) goto error;
+    if (!parser || !data)
+        goto error;
 
-    if (!data->in.data) goto error;
+    if (!data->in.data)
+        goto error;
 
     data->out.data = data->in.data;
     data->out.free = data->in.free;
@@ -399,9 +419,11 @@ static ov_parser_state impl_dummy_parser_encode(ov_parser *self,
                                                 ov_parser_data *const data) {
 
     ov_parser *parser = AS_DUMMY_PARSER(self);
-    if (!parser || !data) goto error;
+    if (!parser || !data)
+        goto error;
 
-    if (!data->in.data) goto error;
+    if (!data->in.data)
+        goto error;
 
     data->out.data = data->in.data;
     data->out.free = data->in.free;
@@ -416,7 +438,8 @@ error:
 static bool impl_dummy_parser_buffer_is_enabled(const ov_parser *self) {
 
     ov_parser *parser = AS_DUMMY_PARSER(self);
-    if (!parser) return false;
+    if (!parser)
+        return false;
 
     return false;
 }
@@ -426,19 +449,20 @@ static bool impl_dummy_parser_buffer_is_enabled(const ov_parser *self) {
 static bool impl_dummy_parser_buffer_has_data(const ov_parser *self) {
 
     ov_parser *parser = AS_DUMMY_PARSER(self);
-    if (!parser) return false;
+    if (!parser)
+        return false;
 
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_dummy_parser_buffer_empty_out(ov_parser *self,
-                                               void **raw,
+static bool impl_dummy_parser_buffer_empty_out(ov_parser *self, void **raw,
                                                void *(**free_raw)(void *)) {
 
     ov_parser *parser = AS_DUMMY_PARSER(self);
-    if (!parser || !raw || !free_raw) return false;
+    if (!parser || !raw || !free_raw)
+        return false;
 
     return false;
 }
@@ -454,7 +478,8 @@ ov_parser *ov_parser_dummy_create(ov_parser_config config) {
     }
 
     ov_parser *parser = calloc(1, sizeof(ov_parser));
-    if (!parser) goto error;
+    if (!parser)
+        goto error;
 
     if (!ov_parser_set_head(parser, IMPL_DUMMY_PARSER)) {
         free(parser);
@@ -489,29 +514,29 @@ const char *ov_parser_state_to_string(ov_parser_state state) {
 
     switch (state) {
 
-        case OV_PARSER_ERROR:
-            return OV_KEY_ERROR;
+    case OV_PARSER_ERROR:
+        return OV_KEY_ERROR;
 
-        case OV_PARSER_MISMATCH:
-            return OV_KEY_MISMATCH;
+    case OV_PARSER_MISMATCH:
+        return OV_KEY_MISMATCH;
 
-        case OV_PARSER_PROGRESS:
-            return OV_KEY_PROGRESS;
+    case OV_PARSER_PROGRESS:
+        return OV_KEY_PROGRESS;
 
-        case OV_PARSER_SUCCESS:
-            return OV_KEY_SUCCESS;
+    case OV_PARSER_SUCCESS:
+        return OV_KEY_SUCCESS;
 
-        case OV_PARSER_ANSWER:
-            return OV_KEY_ANSWER;
+    case OV_PARSER_ANSWER:
+        return OV_KEY_ANSWER;
 
-        case OV_PARSER_ANSWER_CLOSE:
-            return OV_KEY_ANSWER_CLOSE;
+    case OV_PARSER_ANSWER_CLOSE:
+        return OV_KEY_ANSWER_CLOSE;
 
-        case OV_PARSER_CLOSE:
-            return OV_KEY_CLOSE;
+    case OV_PARSER_CLOSE:
+        return OV_KEY_CLOSE;
 
-        case OV_PARSER_DONE:
-            return OV_KEY_DONE;
+    case OV_PARSER_DONE:
+        return OV_KEY_DONE;
     }
 
     return NULL;
@@ -521,16 +546,20 @@ const char *ov_parser_state_to_string(ov_parser_state state) {
 
 ov_parser_state ov_parser_state_from_string(const char *string, size_t length) {
 
-    if (!string || 0 == length) goto error;
+    if (!string || 0 == length)
+        goto error;
 
     if (0 == strncmp(OV_KEY_SUCCESS, string, length))
-        if (length == strlen(OV_KEY_SUCCESS)) return OV_PARSER_SUCCESS;
+        if (length == strlen(OV_KEY_SUCCESS))
+            return OV_PARSER_SUCCESS;
 
     if (0 == strncmp(OV_KEY_MISMATCH, string, length))
-        if (length == strlen(OV_KEY_MISMATCH)) return OV_PARSER_MISMATCH;
+        if (length == strlen(OV_KEY_MISMATCH))
+            return OV_PARSER_MISMATCH;
 
     if (0 == strncmp(OV_KEY_PROGRESS, string, length))
-        if (length == strlen(OV_KEY_PROGRESS)) return OV_PARSER_PROGRESS;
+        if (length == strlen(OV_KEY_PROGRESS))
+            return OV_PARSER_PROGRESS;
 error:
     return OV_PARSER_ERROR;
 }

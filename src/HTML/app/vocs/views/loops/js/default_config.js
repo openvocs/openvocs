@@ -30,30 +30,13 @@
     ---------------------------------------------------------------------------
 */
 
-// signaling connection -------------------------------------------------------
-SIGNALING_SERVERS = [
-    // User interface supports up to 3 back up server, more are not displayed.
-    // If no server id is flagged as prime, than the first server is treated as prime.
-    // For one server connection use either HOST_WEBSOCKET OR WEBSOCKET_URL,
-    // if HOST_WEBSOCKET is set, WEBSOCKET_URL is ignored.
-    // HOST_WEBSOCKET extends the host address
-    {
-        HOST_WEBSOCKET: ":8001/vocs",
-        NAME: "local"
-    }
-]
-
 // audio connection -----------------------------------------------------------
 ICE_SERVERS = [
     {
-      urls: "turn:openvocs.net:33533",
+      urls: "stun:openvocs.net:33333",
       username: "openvocs",
       credential: "2simple!"
     }
-    /*
-    {
-        'urls': 'stun:openvocs.net:33479'
-    }*/
 ];
 
 SHARED_MULTICAST_ADDRESSES = true;
@@ -61,24 +44,14 @@ SHARED_MULTICAST_ADDRESSES = true;
 PERS_ERROR_TIMEOUT = 5000;
 
 // extensions
-
 SIP = false;
 
 // ui options -----------------------------------------------------------------
 COLOR_MODE = "dark"; // "dark" || "light"
-ACTIVITY_CONTENT = "name";
-
-// scale ----------------------------------------------------------------------
-SITE_SCALING_FACTOR = 1.0;
+ACTIVITY_CONTENT = "display_name";
 
 LOOP_GRID_MIN_ROWS = 1;
 LOOP_GRID_MIN_COLUMNS = 1;
-
-// sizing of loop components ----------------------------------------------------
-// maximal and minimal size of each component
-LOOP_ELEMENT_SIZE_MIN = 0.5;
-LOOP_ELEMENT_SIZE_MAX = 2.0;
-
 
 // mute/ptt trigger -----------------------------------------------------------
 SECURE_VOICE_PTT = false; //e.g. when using hardware ptt button with secure voice
@@ -101,4 +74,3 @@ DEBUG_MEDIA_STREAM_FILE = "./resources/sounds/Apollo13-wehaveaproblem.ogg";
 // developer vars -------------------------------------------------------------
 RETRIES_ON_TEMP_ERROR = 5;
 DEFAULT_LOOP_VOLUME = "50";
-VERSION_NUMBER = "2.0.0";

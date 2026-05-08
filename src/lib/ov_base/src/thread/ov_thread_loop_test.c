@@ -41,10 +41,14 @@ This file is part of the openvocs project. http://openvocs.org
 
 static bool configs_equal(ov_thread_loop_config c1, ov_thread_loop_config c2) {
 
-    if (c1.message_queue_capacity != c2.message_queue_capacity) return false;
-    if (c1.lock_timeout_usecs != c2.lock_timeout_usecs) return false;
-    if (c1.num_threads != c2.num_threads) return false;
-    if (c1.disable_to_loop_queue != c2.disable_to_loop_queue) return false;
+    if (c1.message_queue_capacity != c2.message_queue_capacity)
+        return false;
+    if (c1.lock_timeout_usecs != c2.lock_timeout_usecs)
+        return false;
+    if (c1.num_threads != c2.num_threads)
+        return false;
+    if (c1.disable_to_loop_queue != c2.disable_to_loop_queue)
+        return false;
 
     return true;
 }
@@ -241,7 +245,8 @@ typedef struct {
 
 ov_thread_message *free_num_message(ov_thread_message *msg) {
 
-    if (0 != msg) free(msg);
+    if (0 != msg)
+        free(msg);
 
     msg = 0;
 
@@ -269,9 +274,11 @@ ov_thread_message *create_num_message(size_t num) {
 
 ssize_t msg_get_num(ov_thread_message *msg) {
 
-    if (msg->magic_bytes != OV_THREAD_MESSAGE_MAGIC_BYTES) goto error;
+    if (msg->magic_bytes != OV_THREAD_MESSAGE_MAGIC_BYTES)
+        goto error;
 
-    if (msg->type != NUM_MESSAGE_TYPE) goto error;
+    if (msg->type != NUM_MESSAGE_TYPE)
+        goto error;
 
     num_message *nmsg = (num_message *)msg;
 
@@ -301,7 +308,8 @@ static bool test_in_loop_handler(ov_thread_loop *self,
 
     ssize_t num = msg_get_num(message);
 
-    if (0 > num) goto error;
+    if (0 > num)
+        goto error;
 
     in_loop_msg_received[num] = true;
 
@@ -328,7 +336,8 @@ static bool test_in_thread_handler(ov_thread_loop *self,
 
     ssize_t num = msg_get_num(message);
 
-    if (0 > num) goto error;
+    if (0 > num)
+        goto error;
 
     in_thread_msg_received[num] = true;
 
@@ -357,8 +366,8 @@ static void *feeder_thread(void *arg) {
 
     for (size_t i = 0; num_messages_to_send > i; ++i) {
 
-        ov_thread_loop_send_message(
-            tpp, create_num_message(i), OV_RECEIVER_THREAD);
+        ov_thread_loop_send_message(tpp, create_num_message(i),
+                                    OV_RECEIVER_THREAD);
     }
 
     /* Wait for loop to process ... */
@@ -464,8 +473,10 @@ int test_ov_thread_loop_send_message() {
 
     for (size_t i = 0; i < msg_array_len; ++i) {
 
-        if (in_thread_msg_received[i]) ++num_in_thread_msgs_received;
-        if (in_loop_msg_received[i]) ++num_in_loop_msgs_received;
+        if (in_thread_msg_received[i])
+            ++num_in_thread_msgs_received;
+        if (in_loop_msg_received[i])
+            ++num_in_loop_msgs_received;
     }
 
     testrun(msg_queue_len - 2 < num_in_thread_msgs_received);
@@ -645,8 +656,7 @@ int test_ov_thread_loop_config_from_json() {
 
     jval = jval->free(jval);
 
-    jval = ov_json_decode("{\"" CONFIG_KEY_MESSAGE_QUEUE_CAPACITY
-                          "\" : "
+    jval = ov_json_decode("{\"" CONFIG_KEY_MESSAGE_QUEUE_CAPACITY "\" : "
                           "13}");
 
     expected.message_queue_capacity = 13;
@@ -673,8 +683,7 @@ int test_ov_thread_loop_config_from_json() {
 
     jval = jval->free(jval);
 
-    jval = ov_json_decode("{\"" CONFIG_KEY_DISABLE_TO_LOOP_QUEUE
-                          "\":"
+    jval = ov_json_decode("{\"" CONFIG_KEY_DISABLE_TO_LOOP_QUEUE "\":"
                           "true}");
 
     expected = default_cfg;
@@ -684,14 +693,10 @@ int test_ov_thread_loop_config_from_json() {
 
     jval = jval->free(jval);
 
-    jval = ov_json_decode("{\"" CONFIG_KEY_DISABLE_TO_LOOP_QUEUE
-                          "\":true,"
-                          "\"" CONFIG_KEY_NUM_THREADS
-                          "\":9,"
-                          "\"" CONFIG_KEY_MESSAGE_QUEUE_CAPACITY
-                          "\":8,"
-                          "\"" CONFIG_KEY_LOCK_TIMEOUT_USECS
-                          "\":7"
+    jval = ov_json_decode("{\"" CONFIG_KEY_DISABLE_TO_LOOP_QUEUE "\":true,"
+                          "\"" CONFIG_KEY_NUM_THREADS "\":9,"
+                          "\"" CONFIG_KEY_MESSAGE_QUEUE_CAPACITY "\":8,"
+                          "\"" CONFIG_KEY_LOCK_TIMEOUT_USECS "\":7"
                           "}");
 
     expected = (ov_thread_loop_config){.message_queue_capacity = 8,
@@ -708,14 +713,10 @@ int test_ov_thread_loop_config_from_json() {
 
 /*---------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_thread_loop",
-            test_ov_thread_loop_create,
-            test_ov_thread_loop_free,
-            test_ov_thread_loop_get_data,
-            test_ov_thread_loop_reconfigure,
-            test_ov_thread_loop_send_message,
-            test_ov_thread_pool_process_start,
-            test_ov_thread_pool_process_stop,
+OV_TEST_RUN("ov_thread_loop", test_ov_thread_loop_create,
+            test_ov_thread_loop_free, test_ov_thread_loop_get_data,
+            test_ov_thread_loop_reconfigure, test_ov_thread_loop_send_message,
+            test_ov_thread_pool_process_start, test_ov_thread_pool_process_stop,
             test_ov_thread_loop_config_to_json,
             test_ov_thread_loop_config_from_json);
 

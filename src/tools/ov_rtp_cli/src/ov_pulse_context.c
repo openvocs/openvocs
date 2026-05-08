@@ -159,18 +159,15 @@ static ov_pulse_context *pulse_context_free(ov_pulse_context *context);
 static void context_state_changed_cb(struct pa_context *c, void *userdata);
 
 static void pulse_setup_stream(ov_pulse_context *context,
-                               pa_stream **target_stream,
-                               const char *device,
+                               pa_stream **target_stream, const char *device,
                                ov_stream_mode stream_mode);
 
 static void stream_state_callback(pa_stream *stream, void *userdata);
 
-static void stream_write_callback(pa_stream *stream,
-                                  size_t nbytes,
+static void stream_write_callback(pa_stream *stream, size_t nbytes,
                                   void *userdata);
 
-static void stream_read_callback(pa_stream *stream,
-                                 size_t nbytes,
+static void stream_read_callback(pa_stream *stream, size_t nbytes,
                                  void *userdata);
 
 static void stream_underflow_callback(pa_stream *stream, void *userdata);
@@ -191,8 +188,7 @@ static Buffer get_next_chunk_from_queue(AudioIo *audio_io,
                                         ov_cache *buffer_cache,
                                         size_t max_length_bytes,
                                         uint8_t *target_data_buffer,
-                                        double *bytes_avg,
-                                        double *frames_avg);
+                                        double *bytes_avg, double *frames_avg);
 
 static size_t ssmin(size_t s1, size_t s2);
 
@@ -204,8 +200,7 @@ static const char *get_stream_state(pa_stream *stream);
  */
 static Buffer *get_buffer(ov_cache *buffer_cache, size_t min_size_bytes);
 
-static void audio_io_init(AudioIo *audio_io,
-                          size_t lock_timeout_usecs,
+static void audio_io_init(AudioIo *audio_io, size_t lock_timeout_usecs,
                           size_t num_frames_to_buffer);
 
 static void audio_io_free(AudioIo *audio_io);
@@ -222,7 +217,8 @@ static void *free_buffer_void(void *vbuffer) {
 
     Buffer *buffer = vbuffer;
 
-    if (0 == buffer) return 0;
+    if (0 == buffer)
+        return 0;
 
     if (0 != buffer->data) {
         free(buffer->data);
@@ -268,7 +264,8 @@ ov_pulse_context *ov_pulse_connect(ov_pulse_parameters parameters) {
 
     char const *name = parameters.name;
 
-    if (0 == name) name = DEFAULT_NAME;
+    if (0 == name)
+        name = DEFAULT_NAME;
 
     if (0 == parameters.sample_rate_hertz) {
 
@@ -310,7 +307,8 @@ ov_pulse_context *ov_pulse_connect(ov_pulse_parameters parameters) {
 
     errval = pa_sample_spec_valid(&context->sample_spec);
 
-    if (0 > errval) goto print_error;
+    if (0 > errval)
+        goto print_error;
 
     size_t usecs_to_buffer = parameters.usecs_to_buffer;
 
@@ -329,7 +327,8 @@ ov_pulse_context *ov_pulse_connect(ov_pulse_parameters parameters) {
 
     context->mainloop = pa_threaded_mainloop_new();
 
-    if (0 == context->mainloop) goto error;
+    if (0 == context->mainloop)
+        goto error;
 
     pa_mainloop_api *loop_api = pa_threaded_mainloop_get_api(context->mainloop);
 
@@ -342,18 +341,21 @@ ov_pulse_context *ov_pulse_connect(ov_pulse_parameters parameters) {
 
     loop_api = 0;
 
-    if (0 == context->context) goto print_context_error;
+    if (0 == context->context)
+        goto print_context_error;
 
-    errval = pa_context_connect(
-        context->context, parameters.server, PA_CONTEXT_NOFLAGS, 0);
+    errval = pa_context_connect(context->context, parameters.server,
+                                PA_CONTEXT_NOFLAGS, 0);
 
-    if (0 > errval) goto print_error;
+    if (0 > errval)
+        goto print_error;
 
     errval = pa_threaded_mainloop_start(context->mainloop);
-    if (0 > errval) goto print_error;
+    if (0 > errval)
+        goto print_error;
 
-    pa_context_set_state_callback(
-        context->context, context_state_changed_cb, context);
+    pa_context_set_state_callback(context->context, context_state_changed_cb,
+                                  context);
 
     return context;
 
@@ -367,7 +369,8 @@ print_error:
 
 error:
 
-    if (0 != context) context = pulse_context_free(context);
+    if (0 != context)
+        context = pulse_context_free(context);
 
     return 0;
 }
@@ -376,7 +379,8 @@ error:
 
 ov_pulse_context *ov_pulse_disconnect(ov_pulse_context *context) {
 
-    if (0 == context) goto finish;
+    if (0 == context)
+        goto finish;
 
     return pulse_context_free(context);
 
@@ -434,8 +438,7 @@ bool ov_pulse_write(ov_pulse_context *context, ov_buffer const *input) {
         if (PA_STREAM_READY == pa_stream_get_state(context->playback.stream)) {
 
             stream_write_callback(context->playback.stream,
-                                  context->bytes_requested_by_pulse,
-                                  context);
+                                  context->bytes_requested_by_pulse, context);
         }
 
         pa_threaded_mainloop_unlock(context->mainloop);
@@ -450,8 +453,7 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-size_t ov_pulse_read(ov_pulse_context *context,
-                     uint8_t *buffer,
+size_t ov_pulse_read(ov_pulse_context *context, uint8_t *buffer,
                      size_t nbytes) {
 
     OV_ASSERT(context);
@@ -476,21 +478,17 @@ ov_json_value *ov_pulse_get_state(ov_pulse_context *restrict context) {
 
     stream_json = ov_json_object();
 
-    ov_json_object_set(stream_json,
-                       OV_KEY_UNDERFLOWS,
+    ov_json_object_set(stream_json, OV_KEY_UNDERFLOWS,
                        ov_json_number(context->stats.underflows));
 
-    ov_json_object_set(stream_json,
-                       OV_KEY_NO_DATA,
+    ov_json_object_set(stream_json, OV_KEY_NO_DATA,
                        ov_json_number(context->stats.no_data_to_write));
 
-    ov_json_object_set(stream_json,
-                       OV_KEY_FRAMES_PER_WRITE,
+    ov_json_object_set(stream_json, OV_KEY_FRAMES_PER_WRITE,
                        ov_json_number(context->stats.frames_per_write));
 
     ov_json_object_set(
-        stream_json,
-        OV_KEY_STREAM_STATE,
+        stream_json, OV_KEY_STREAM_STATE,
         ov_json_string(get_stream_state(context->playback.stream)));
 
     pulse_json = ov_json_object();
@@ -500,8 +498,7 @@ ov_json_value *ov_pulse_get_state(ov_pulse_context *restrict context) {
     stream_json = ov_json_object();
 
     ov_json_object_set(
-        stream_json,
-        OV_KEY_STREAM_STATE,
+        stream_json, OV_KEY_STREAM_STATE,
         ov_json_string(get_stream_state(context->record.stream)));
 
     ov_json_object_set(pulse_json, OV_KEY_RECORD, stream_json);
@@ -555,10 +552,12 @@ static void free_buffer(void *arg, void *buffer) {
  */
 static ov_pulse_context *pulse_context_free(ov_pulse_context *context) {
 
-    if (0 == context) goto finish;
+    if (0 == context)
+        goto finish;
 
     /* Free PulseAudio resources */
-    if (0 != context->mainloop) pa_threaded_mainloop_lock(context->mainloop);
+    if (0 != context->mainloop)
+        pa_threaded_mainloop_lock(context->mainloop);
 
     pa_stream *stream = context->record.stream;
     context->record.stream = 0;
@@ -627,48 +626,44 @@ static void context_state_changed_cb(struct pa_context *c, void *userdata) {
 
     switch (pa_context_get_state(c)) {
 
-        case PA_CONTEXT_UNCONNECTED:
-            ov_log_info("UNCONNECTED");
-            break;
+    case PA_CONTEXT_UNCONNECTED:
+        ov_log_info("UNCONNECTED");
+        break;
 
-        case PA_CONTEXT_CONNECTING:
-            ov_log_info("CONNECTING");
-            break;
+    case PA_CONTEXT_CONNECTING:
+        ov_log_info("CONNECTING");
+        break;
 
-        case PA_CONTEXT_AUTHORIZING:
-            ov_log_info("AUTHORIZING");
-            break;
+    case PA_CONTEXT_AUTHORIZING:
+        ov_log_info("AUTHORIZING");
+        break;
 
-        case PA_CONTEXT_SETTING_NAME:
-            ov_log_info("SETTING_NAME");
-            break;
+    case PA_CONTEXT_SETTING_NAME:
+        ov_log_info("SETTING_NAME");
+        break;
 
-        case PA_CONTEXT_READY:
+    case PA_CONTEXT_READY:
 
-            ov_log_info("READY");
+        ov_log_info("READY");
 
-            pulse_setup_stream(userdata,
-                               &context->playback.stream,
-                               context->playback_device,
-                               PLAYBACK);
+        pulse_setup_stream(userdata, &context->playback.stream,
+                           context->playback_device, PLAYBACK);
 
-            pulse_setup_stream(userdata,
-                               &context->record.stream,
-                               context->record_device,
-                               RECORD);
+        pulse_setup_stream(userdata, &context->record.stream,
+                           context->record_device, RECORD);
 
-            break;
+        break;
 
-        case PA_CONTEXT_FAILED:
-            ov_log_error("FAILED");
-            break;
+    case PA_CONTEXT_FAILED:
+        ov_log_error("FAILED");
+        break;
 
-        case PA_CONTEXT_TERMINATED:
-            ov_log_error("TERMINATED");
-            break;
+    case PA_CONTEXT_TERMINATED:
+        ov_log_error("TERMINATED");
+        break;
 
-        default:
-            OV_ASSERT(!"NEVER TO HAPPEN!");
+    default:
+        OV_ASSERT(!"NEVER TO HAPPEN!");
     }
 
     return;
@@ -693,15 +688,14 @@ static bool connect_playback_stream(pa_stream *stream,
 
     pa_stream_set_write_callback(stream, stream_write_callback, context);
 
-    int retval = pa_stream_connect_playback(
-        stream, device, &bufattr, PA_STREAM_ADJUST_LATENCY, &cv, 0);
+    int retval = pa_stream_connect_playback(stream, device, &bufattr,
+                                            PA_STREAM_ADJUST_LATENCY, &cv, 0);
 
     if (0 > retval) {
 
-        ov_log_error(
-            "Could not connect for playback: "
-            "%s",
-            pa_strerror(retval));
+        ov_log_error("Could not connect for playback: "
+                     "%s",
+                     pa_strerror(retval));
 
         goto error;
     }
@@ -715,8 +709,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool connect_record_stream(pa_stream *stream,
-                                  ov_pulse_context *context,
+static bool connect_record_stream(pa_stream *stream, ov_pulse_context *context,
                                   const char *device) {
 
     OV_ASSERT(0 != stream);
@@ -732,11 +725,9 @@ static bool connect_record_stream(pa_stream *stream,
 
     pa_stream_set_read_callback(stream, stream_read_callback, context);
 
-    int retval = pa_stream_connect_record(
-        stream,
-        device,
-        &bufattr,
-        PA_STREAM_START_UNMUTED | PA_STREAM_ADJUST_LATENCY);
+    int retval = pa_stream_connect_record(stream, device, &bufattr,
+                                          PA_STREAM_START_UNMUTED |
+                                              PA_STREAM_ADJUST_LATENCY);
 
     if (0 > retval) {
 
@@ -755,8 +746,7 @@ error:
 /*---------------------------------------------------------------------------*/
 
 static void pulse_setup_stream(ov_pulse_context *context,
-                               pa_stream **target_stream,
-                               const char *device,
+                               pa_stream **target_stream, const char *device,
                                ov_stream_mode stream_mode) {
 
     pa_stream *stream = 0;
@@ -778,23 +768,23 @@ static void pulse_setup_stream(ov_pulse_context *context,
 
     switch (stream_mode) {
 
-        case PLAYBACK:
+    case PLAYBACK:
 
-            stream_name = "PLAYBACK";
-            connect_stream = connect_playback_stream;
+        stream_name = "PLAYBACK";
+        connect_stream = connect_playback_stream;
 
-            break;
+        break;
 
-        case RECORD:
+    case RECORD:
 
-            stream_name = "RECORD";
-            connect_stream = connect_record_stream;
+        stream_name = "RECORD";
+        connect_stream = connect_record_stream;
 
-            break;
+        break;
 
-        default:
+    default:
 
-            OV_ASSERT(!"NEVER TO HAPPEN!");
+        OV_ASSERT(!"NEVER TO HAPPEN!");
     };
 
     OV_ASSERT(0 != connect_stream);
@@ -816,8 +806,8 @@ static void pulse_setup_stream(ov_pulse_context *context,
         goto error;
     }
 
-    pa_stream_set_underflow_callback(
-        stream, stream_underflow_callback, context);
+    pa_stream_set_underflow_callback(stream, stream_underflow_callback,
+                                     context);
 
     *target_stream = stream;
     stream = 0;
@@ -846,64 +836,56 @@ static void stream_state_callback(pa_stream *stream, void *userdata) {
 
     /* State changed for stream */
     switch (pa_stream_get_state(stream)) {
-        case PA_STREAM_CREATING:
-        case PA_STREAM_TERMINATED:
-            break;
+    case PA_STREAM_CREATING:
+    case PA_STREAM_TERMINATED:
+        break;
 
-        case PA_STREAM_READY:
+    case PA_STREAM_READY:
 
-            if (!(a = pa_stream_get_buffer_attr(stream)))
-
-                ov_log_error(
-                    "pa_stream_get_buffer_attr() "
-                    "failed: %s",
-                    pa_strerror(
-                        pa_context_errno(pa_stream_get_context(stream))));
-            else {
-
-                ov_log_info(
-                    "Buffer metrics: "
-                    "maxlength=%u, tlength=%u, "
-                    "prebuf=%u, "
-                    "minreq=%u",
-                    a->maxlength,
-                    a->tlength,
-                    a->prebuf,
-                    a->minreq);
-
-                ov_log_info(
-                    "Using sample spec '%s', channel "
-                    "map '%s'.",
-                    pa_sample_spec_snprint(
-                        sst, sizeof(sst), pa_stream_get_sample_spec(stream)),
-                    pa_channel_map_snprint(
-                        cmt, sizeof(cmt), pa_stream_get_channel_map(stream)));
-
-                ov_log_info(
-                    "Connected to device %s (%u, "
-                    "%ssuspended).",
-                    pa_stream_get_device_name(stream),
-                    pa_stream_get_device_index(stream),
-                    pa_stream_is_suspended(stream) ? "" : "not ");
-            }
-
-            break;
-
-        case PA_STREAM_FAILED:
-        default:
+        if (!(a = pa_stream_get_buffer_attr(stream)))
 
             ov_log_error(
-                "Stream error: %s",
+                "pa_stream_get_buffer_attr() "
+                "failed: %s",
                 pa_strerror(pa_context_errno(pa_stream_get_context(stream))));
+        else {
 
-            OV_ASSERT(!"NEVER TO HAPPEN!!!!");
+            ov_log_info("Buffer metrics: "
+                        "maxlength=%u, tlength=%u, "
+                        "prebuf=%u, "
+                        "minreq=%u",
+                        a->maxlength, a->tlength, a->prebuf, a->minreq);
+
+            ov_log_info(
+                "Using sample spec '%s', channel "
+                "map '%s'.",
+                pa_sample_spec_snprint(sst, sizeof(sst),
+                                       pa_stream_get_sample_spec(stream)),
+                pa_channel_map_snprint(cmt, sizeof(cmt),
+                                       pa_stream_get_channel_map(stream)));
+
+            ov_log_info("Connected to device %s (%u, "
+                        "%ssuspended).",
+                        pa_stream_get_device_name(stream),
+                        pa_stream_get_device_index(stream),
+                        pa_stream_is_suspended(stream) ? "" : "not ");
+        }
+
+        break;
+
+    case PA_STREAM_FAILED:
+    default:
+
+        ov_log_error("Stream error: %s", pa_strerror(pa_context_errno(
+                                             pa_stream_get_context(stream))));
+
+        OV_ASSERT(!"NEVER TO HAPPEN!!!!");
     }
 }
 
 /*---------------------------------------------------------------------------*/
 
-static void stream_write_callback(pa_stream *stream,
-                                  size_t nbytes,
+static void stream_write_callback(pa_stream *stream, size_t nbytes,
                                   void *userdata) {
 
     size_t bytes_written = 0;
@@ -918,25 +900,22 @@ static void stream_write_callback(pa_stream *stream,
 
     ENSURE_OV_PULSE_CONTEXT(context);
 
-    Buffer pcm_data =
-        get_next_chunk_from_queue(&context->playback,
-                                  context->buffer_cache,
-                                  nbytes,
-                                  0,
-                                  &context->stats.bytes_per_write_avg,
-                                  &context->stats.frames_per_write);
+    Buffer pcm_data = get_next_chunk_from_queue(
+        &context->playback, context->buffer_cache, nbytes, 0,
+        &context->stats.bytes_per_write_avg, &context->stats.frames_per_write);
 
-    if (0 == pcm_data.data) goto no_data_yet;
+    if (0 == pcm_data.data)
+        goto no_data_yet;
 
-    int retval = pa_stream_write(
-        stream, pcm_data.data, pcm_data.nbytes, free, 0, PA_SEEK_RELATIVE);
+    int retval = pa_stream_write(stream, pcm_data.data, pcm_data.nbytes, free,
+                                 0, PA_SEEK_RELATIVE);
 
     pcm_data.data = 0;
 
     if (0 > retval) {
 
-        ov_log_error(
-            "Could not write buffer to PA server: %s", pa_strerror(retval));
+        ov_log_error("Could not write buffer to PA server: %s",
+                     pa_strerror(retval));
 
         bytes_written = 0;
 
@@ -961,8 +940,7 @@ finish:
 
 /*---------------------------------------------------------------------------*/
 
-static void stream_read_callback(pa_stream *stream,
-                                 size_t nbytes,
+static void stream_read_callback(pa_stream *stream, size_t nbytes,
                                  void *userdata) {
 
     OV_ASSERT(0 != stream);
@@ -1078,8 +1056,7 @@ static Buffer get_next_chunk_from_queue(AudioIo *audio_io,
                                         ov_cache *buffer_cache,
                                         size_t nbytes_requested,
                                         uint8_t *target_data_buffer,
-                                        double *bytes_avg,
-                                        double *frames_avg) {
+                                        double *bytes_avg, double *frames_avg) {
 
     Buffer buffer = {
 
@@ -1157,8 +1134,7 @@ static Buffer get_next_chunk_from_queue(AudioIo *audio_io,
 
             remainder->nbytes = remaining_bytes;
 
-            memcpy(remainder->data,
-                   current->data + bytes_to_write,
+            memcpy(remainder->data, current->data + bytes_to_write,
                    remaining_bytes);
 
             current = release_buffer(buffer_cache, current);
@@ -1178,11 +1154,9 @@ static Buffer get_next_chunk_from_queue(AudioIo *audio_io,
     if (buffer.nbytes < nbytes_requested) {
 
         /* Not enough bytes available */
-        ov_log_error(
-            "Buffer underflow, requested %zu bytes, only got "
-            "%zu\n",
-            nbytes_requested,
-            buffer.nbytes);
+        ov_log_error("Buffer underflow, requested %zu bytes, only got "
+                     "%zu\n",
+                     nbytes_requested, buffer.nbytes);
 
         audio_io->current = get_buffer(buffer_cache, buffer.nbytes);
         memcpy(audio_io->current->data, buffer.data, buffer.nbytes);
@@ -1233,19 +1207,19 @@ static const char *get_stream_state(pa_stream *stream) {
 
     switch (pa_stream_get_state(stream)) {
 
-        case PA_STREAM_CREATING:
-            return "CREATING";
+    case PA_STREAM_CREATING:
+        return "CREATING";
 
-        case PA_STREAM_TERMINATED:
-            return "TERMINATED";
+    case PA_STREAM_TERMINATED:
+        return "TERMINATED";
 
-        case PA_STREAM_READY:
-            return "READY";
+    case PA_STREAM_READY:
+        return "READY";
 
-        case PA_STREAM_FAILED:
-        default:
+    case PA_STREAM_FAILED:
+    default:
 
-            return "FAILED";
+        return "FAILED";
     };
 
 error:
@@ -1291,8 +1265,7 @@ static Buffer *get_buffer(ov_cache *buffer_cache, size_t min_size_bytes) {
 
 /*---------------------------------------------------------------------------*/
 
-static void audio_io_init(AudioIo *audio_io,
-                          size_t lock_timeout_usecs,
+static void audio_io_init(AudioIo *audio_io, size_t lock_timeout_usecs,
                           size_t num_frames_to_buffer) {
 
     audio_io->lock = calloc(1, sizeof(ov_thread_lock));

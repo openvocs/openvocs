@@ -49,15 +49,14 @@
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_external_ssl(ov_ice_base *base,
-                            const uint8_t *buffer,
-                            size_t size,
-                            const ov_socket_data *remote) {
+static bool io_external_ssl(ov_ice_base *base, const uint8_t *buffer,
+                            size_t size, const ov_socket_data *remote) {
 
     OV_ASSERT(base);
     OV_ASSERT(remote);
 
-    if (!base || !remote) goto error;
+    if (!base || !remote)
+        goto error;
 
     ov_ice_stream *stream = base->stream;
 
@@ -79,8 +78,7 @@ static bool io_external_ssl(ov_ice_base *base,
     if (!pair) {
 
         ov_log_error("got input from %s:%i, not a valid remote candidate",
-                     remote->host,
-                     remote->port);
+                     remote->host, remote->port);
 
         goto ignore;
     }
@@ -90,15 +88,10 @@ static bool io_external_ssl(ov_ice_base *base,
         if (ov_ice_debug_dtls(base->stream->session->ice))
             ov_log_debug("DTLS handshake at pair %p %s|%i %s %" PRIu64
                          " %s:%i <-> %s:%i %s",
-                         pair,
-                         base->stream->session->uuid,
-                         base->stream->index,
+                         pair, base->stream->session->uuid, base->stream->index,
                          ov_ice_candidate_type_to_string(pair->local->type),
-                         pair->priority,
-                         pair->local->addr,
-                         pair->local->port,
-                         pair->remote->addr,
-                         pair->remote->port,
+                         pair->priority, pair->local->addr, pair->local->port,
+                         pair->remote->addr, pair->remote->port,
                          ov_ice_pair_state_to_string(pair->state));
 
         return ov_ice_pair_handshake_passive(pair, buffer, size);
@@ -114,12 +107,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_external_rtp(ov_ice_base *base,
-                            uint8_t *buffer,
-                            size_t size,
+static bool io_external_rtp(ov_ice_base *base, uint8_t *buffer, size_t size,
                             const ov_socket_data *remote) {
 
-    if (!base || !buffer || !size || !remote) goto error;
+    if (!base || !buffer || !size || !remote)
+        goto error;
 
     ov_ice_stream *stream = base->stream;
     ov_ice_config config = ov_ice_get_config(stream->session->ice);
@@ -128,20 +120,21 @@ static bool io_external_rtp(ov_ice_base *base,
 
     srtp_t srtp_session = stream->session->srtp.session;
 
-    if (!srtp_session) goto error;
+    if (!srtp_session)
+        goto error;
 
     srtp_err_status_t r = srtp_unprotect(srtp_session, buffer, &l);
 
     switch (r) {
 
-        case srtp_err_status_ok:
-            // ov_log_debug("SRTP unprotect success");
-            break;
+    case srtp_err_status_ok:
+        // ov_log_debug("SRTP unprotect success");
+        break;
 
-        default:
-            // ov_log_error("SRTP unprotect error");
-            goto ignore;
-            break;
+    default:
+        // ov_log_error("SRTP unprotect error");
+        goto ignore;
+        break;
     }
 
     /* We change the SSRC to the proxy SSRC and forward the RTP Frame
@@ -154,9 +147,7 @@ static bool io_external_rtp(ov_ice_base *base,
 
     if (config.callbacks.stream.io)
         config.callbacks.stream.io(config.callbacks.userdata,
-                                   stream->session->uuid,
-                                   stream->index,
-                                   buffer,
+                                   stream->session->uuid, stream->index, buffer,
                                    size);
 ignore:
     return true;
@@ -172,7 +163,8 @@ static bool set_unique_remote_foundation(ov_ice_candidate *candidate,
     OV_ASSERT(candidate);
     OV_ASSERT(stream);
 
-    if (!candidate || !stream) goto error;
+    if (!candidate || !stream)
+        goto error;
 
     ov_ice_candidate *next = NULL;
     bool unique = true;
@@ -208,10 +200,8 @@ error:
 
 static bool io_process_stun_request(ov_ice_base *base,
                                     const ov_socket_data *remote,
-                                    const uint8_t *buffer,
-                                    size_t length,
-                                    uint8_t *attr[],
-                                    size_t attr_size) {
+                                    const uint8_t *buffer, size_t length,
+                                    uint8_t *attr[], size_t attr_size) {
 
     size_t name_length = OV_UDP_PAYLOAD_OCTETS;
     uint8_t name[OV_UDP_PAYLOAD_OCTETS];
@@ -280,17 +270,18 @@ static bool io_process_stun_request(ov_ice_base *base,
     uint8_t *attr_use_candidate =
         ov_stun_attributes_get_type(attr, attr_size, ICE_USE_CANDIDATE);
 
-    if (!attr_username || !attr_integrity || !attr_priority) goto bad_request;
+    if (!attr_username || !attr_integrity || !attr_priority)
+        goto bad_request;
 
-    if (!attr_controlling && !attr_controlled) goto bad_request;
+    if (!attr_controlling && !attr_controlled)
+        goto bad_request;
 
     if (!ov_stun_ice_priority_decode(
             attr_priority, length - (attr_priority - buffer), &priority))
         goto bad_request;
 
     if (!ov_stun_username_decode(attr_username,
-                                 length - (buffer - attr_username),
-                                 &ptr,
+                                 length - (buffer - attr_username), &ptr,
                                  &name_length))
         goto error;
 
@@ -301,14 +292,17 @@ static bool io_process_stun_request(ov_ice_base *base,
     const char *pass = NULL;
 
     uint8_t *colon = memchr(ptr, ':', name_length);
-    if (!colon) goto unauthorized;
+    if (!colon)
+        goto unauthorized;
 
     ssize_t ufrag_in_len = colon - ptr;
-    if (ufrag_in_len < 1) goto bad_request;
+    if (ufrag_in_len < 1)
+        goto bad_request;
 
     if (0 != stream->uuid[0]) {
 
-        if (ufrag_in_len != (ssize_t)strlen(stream->uuid)) goto unauthorized;
+        if (ufrag_in_len != (ssize_t)strlen(stream->uuid))
+            goto unauthorized;
 
         if (0 != strncmp(stream->uuid, (char *)ptr, ufrag_in_len))
             goto unauthorized;
@@ -320,15 +314,12 @@ static bool io_process_stun_request(ov_ice_base *base,
         goto unauthorized;
     }
 
-    if (!pass) goto unauthorized;
+    if (!pass)
+        goto unauthorized;
 
-    if (!ov_stun_check_message_integrity((uint8_t *)buffer,
-                                         length,
-                                         attr,
-                                         attr_size,
-                                         (uint8_t *)pass,
-                                         strlen(pass),
-                                         true))
+    if (!ov_stun_check_message_integrity((uint8_t *)buffer, length, attr,
+                                         attr_size, (uint8_t *)pass,
+                                         strlen(pass), true))
         goto unauthorized;
 
     /*
@@ -347,12 +338,12 @@ static bool io_process_stun_request(ov_ice_base *base,
         if (attr_controlling) {
 
             if (!ov_stun_ice_controlling_decode(
-                    attr_controlling,
-                    length - (attr_controlling - buffer),
+                    attr_controlling, length - (attr_controlling - buffer),
                     &attr_tiebreaker))
                 goto bad_request;
 
-            if (session->tiebreaker >= attr_tiebreaker) goto role_conflict;
+            if (session->tiebreaker >= attr_tiebreaker)
+                goto role_conflict;
 
             ov_ice_session_change_role(session, attr_tiebreaker);
         }
@@ -367,13 +358,13 @@ static bool io_process_stun_request(ov_ice_base *base,
              */
 
             if (!ov_stun_ice_controlled_decode(
-                    attr_controlled,
-                    length - (attr_controlling - buffer),
+                    attr_controlled, length - (attr_controlling - buffer),
                     &attr_tiebreaker))
 
                 goto bad_request;
 
-            if (session->tiebreaker < attr_tiebreaker) goto role_conflict;
+            if (session->tiebreaker < attr_tiebreaker)
+                goto role_conflict;
 
             ov_ice_session_change_role(session, attr_tiebreaker);
         }
@@ -388,35 +379,32 @@ static bool io_process_stun_request(ov_ice_base *base,
     if (!ov_stun_frame_set_success_response(response, response_length))
         goto error;
 
-    if (!ov_stun_frame_set_magic_cookie(response, response_length)) goto error;
+    if (!ov_stun_frame_set_magic_cookie(response, response_length))
+        goto error;
 
     if (!ov_stun_frame_set_method(response, response_length, STUN_BINDING))
         goto error;
 
     if (!ov_stun_frame_set_transaction_id(
-            response,
-            response_length,
+            response, response_length,
             ov_stun_frame_get_transaction_id(buffer, length)))
         goto error;
 
     // add XOR MAPPED ADDRESS
-    if (!ov_stun_xor_mapped_address_encode(
-            response + 20, response_length - 20, response, &next, &remote->sa))
+    if (!ov_stun_xor_mapped_address_encode(response + 20, response_length - 20,
+                                           response, &next, &remote->sa))
         goto error;
 
-    if (!ov_stun_frame_set_length(
-            response, response_length, (next - response) - 20))
+    if (!ov_stun_frame_set_length(response, response_length,
+                                  (next - response) - 20))
         goto error;
 
     response_length = (next - response);
 
     // add a message integrity
-    if (!ov_stun_add_message_integrity(response,
-                                       OV_UDP_PAYLOAD_OCTETS,
-                                       response + response_length,
-                                       &next,
-                                       (uint8_t *)pass,
-                                       strlen(pass)))
+    if (!ov_stun_add_message_integrity(response, OV_UDP_PAYLOAD_OCTETS,
+                                       response + response_length, &next,
+                                       (uint8_t *)pass, strlen(pass)))
         goto error;
 
     response_length = (next - response);
@@ -429,13 +417,13 @@ static bool io_process_stun_request(ov_ice_base *base,
          */
         if (ov_ice_debug_stun(stream->session->ice))
             ov_log_debug("New PEER-REFLEXIVE candidate from %s:%i",
-                         remote->host,
-                         remote->port);
+                         remote->host, remote->port);
 
         ov_ice_candidate *local_candidate = ov_list_get(base->candidates, 1);
         ov_ice_candidate *remote_candidate = ov_ice_candidate_create(stream);
 
-        if (!remote_candidate) goto error;
+        if (!remote_candidate)
+            goto error;
 
         remote_candidate->type = OV_ICE_PEER_REFLEXIVE;
         remote_candidate->priority = priority;
@@ -456,8 +444,8 @@ static bool io_process_stun_request(ov_ice_base *base,
             goto error;
         }
 
-        if (!ov_node_push(
-                (void **)&stream->candidates.remote, remote_candidate)) {
+        if (!ov_node_push((void **)&stream->candidates.remote,
+                          remote_candidate)) {
             remote_candidate = ov_ice_candidate_free(remote_candidate);
             pair = ov_ice_pair_free(pair);
             goto error;
@@ -494,30 +482,30 @@ static bool io_process_stun_request(ov_ice_base *base,
 
         switch (pair->state) {
 
-            case OV_ICE_PAIR_SUCCESS:
-                pair->progress_count = 0;
-                break;
+        case OV_ICE_PAIR_SUCCESS:
+            pair->progress_count = 0;
+            break;
 
-            case OV_ICE_PAIR_WAITING:
-            case OV_ICE_PAIR_FROZEN:
-            case OV_ICE_PAIR_PROGRESS:
-            case OV_ICE_PAIR_FAILED:
+        case OV_ICE_PAIR_WAITING:
+        case OV_ICE_PAIR_FROZEN:
+        case OV_ICE_PAIR_PROGRESS:
+        case OV_ICE_PAIR_FAILED:
 
-                if (0 == ov_list_get_pos(stream->trigger, pair)) {
+            if (0 == ov_list_get_pos(stream->trigger, pair)) {
 
-                    if (ov_list_queue_push(stream->trigger, pair)) {
+                if (ov_list_queue_push(stream->trigger, pair)) {
 
-                        pair->state = OV_ICE_PAIR_WAITING;
+                    pair->state = OV_ICE_PAIR_WAITING;
 
-                        if (OV_ICE_FAILED == stream->state)
-                            stream->state = OV_ICE_RUNNING;
+                    if (OV_ICE_FAILED == stream->state)
+                        stream->state = OV_ICE_RUNNING;
 
-                    } else {
-                        pair->state = OV_ICE_PAIR_FAILED;
-                    }
+                } else {
+                    pair->state = OV_ICE_PAIR_FAILED;
                 }
+            }
 
-                break;
+            break;
         }
 
         if (stream->session->controlling && attr_use_candidate) {
@@ -530,12 +518,8 @@ static bool io_process_stun_request(ov_ice_base *base,
             ov_log_info(
                 "ICE session %s|%i selected pair at %s:%i from %s:%i - state "
                 "%s",
-                stream->session->uuid,
-                stream->index,
-                pair->local->addr,
-                pair->local->port,
-                pair->remote->addr,
-                pair->remote->port,
+                stream->session->uuid, stream->index, pair->local->addr,
+                pair->local->port, pair->remote->addr, pair->remote->port,
                 ov_ice_pair_state_to_string(pair->state));
 
             if (stream->type == OV_ICE_DTLS_ACTIVE)
@@ -546,30 +530,27 @@ static bool io_process_stun_request(ov_ice_base *base,
         ov_ice_session_checklists_run(stream->session);
 
         // set new length
-        if (!ov_stun_attribute_set_length(
-                response, OV_UDP_PAYLOAD_OCTETS, response_length - 20))
+        if (!ov_stun_attribute_set_length(response, OV_UDP_PAYLOAD_OCTETS,
+                                          response_length - 20))
             goto error;
 
         // add a fingerprint
-        if (!ov_stun_add_fingerprint(response,
-                                     OV_UDP_PAYLOAD_OCTETS,
-                                     response + response_length,
-                                     NULL))
+        if (!ov_stun_add_fingerprint(response, OV_UDP_PAYLOAD_OCTETS,
+                                     response + response_length, NULL))
             goto error;
 
         response_length += ov_stun_fingerprint_encoding_length();
 
         ssize_t bytes = ov_ice_pair_send(pair, response, response_length);
 
-        if (-1 == bytes) ov_log_error("Failed to send response.");
+        if (-1 == bytes)
+            ov_log_error("Failed to send response.");
 
         if (ov_ice_debug_stun(ice))
             ov_log_debug("STUN request at %s %s:%i from %s:%i - state %s",
                          ov_ice_candidate_type_to_string(pair->local->type),
-                         pair->local->addr,
-                         pair->local->port,
-                         pair->remote->addr,
-                         pair->remote->port,
+                         pair->local->addr, pair->local->port,
+                         pair->remote->addr, pair->remote->port,
                          ov_ice_pair_state_to_string(pair->state));
 
         pair = ov_list_pop(pair_list);
@@ -582,52 +563,46 @@ static bool io_process_stun_request(ov_ice_base *base,
 role_conflict:
 
     response_length = ov_stun_error_code_generate_response(
-        buffer,
-        length,
-        response,
-        response_length,
+        buffer, length, response, response_length,
         ov_stun_error_code_set_ice_role_conflict);
 
-    if (0 == response_length) goto error;
+    if (0 == response_length)
+        goto error;
 
     goto send_response;
 
 bad_request:
 
     response_length = ov_stun_error_code_generate_response(
-        buffer,
-        length,
-        response,
-        response_length,
+        buffer, length, response, response_length,
         ov_stun_error_code_set_bad_request);
 
-    if (0 == response_length) goto error;
+    if (0 == response_length)
+        goto error;
 
     goto send_response;
 
 unauthorized:
 
     response_length = ov_stun_error_code_generate_response(
-        buffer,
-        length,
-        response,
-        response_length,
+        buffer, length, response, response_length,
         ov_stun_error_code_set_unauthorized);
 
-    if (0 == response_length) goto error;
+    if (0 == response_length)
+        goto error;
 
     goto send_response;
 
 send_response:
 
     // set new length
-    if (!ov_stun_attribute_set_length(
-            response, OV_UDP_PAYLOAD_OCTETS, response_length - 20))
+    if (!ov_stun_attribute_set_length(response, OV_UDP_PAYLOAD_OCTETS,
+                                      response_length - 20))
         goto error;
 
     // add a fingerprint
-    if (!ov_stun_add_fingerprint(
-            response, OV_UDP_PAYLOAD_OCTETS, response + response_length, NULL))
+    if (!ov_stun_add_fingerprint(response, OV_UDP_PAYLOAD_OCTETS,
+                                 response + response_length, NULL))
         goto error;
 
     response_length += ov_stun_fingerprint_encoding_length();
@@ -640,16 +615,14 @@ send_response:
      * socket to the remote */
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (remote->sa.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (remote->sa.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
-    bytes = sendto(base->socket,
-                   response,
-                   response_length,
-                   0,
-                   (struct sockaddr *)&remote->sa,
-                   len);
+    bytes = sendto(base->socket, response, response_length, 0,
+                   (struct sockaddr *)&remote->sa, len);
 
-    if (-1 == bytes) ov_log_error("Failed to send response.");
+    if (-1 == bytes)
+        ov_log_error("Failed to send response.");
 
 done:
     ov_list_free(pair_list);
@@ -664,7 +637,8 @@ error:
 static bool send_keepalive_to_server(uint32_t timer_id, void *data) {
 
     ov_ice_candidate *candidate = ov_ice_candidate_cast(data);
-    if (!candidate) goto error;
+    if (!candidate)
+        goto error;
     UNUSED(timer_id);
 
     ov_event_loop *loop =
@@ -673,11 +647,9 @@ static bool send_keepalive_to_server(uint32_t timer_id, void *data) {
     if (!ov_ice_base_send_stun_binding_request(candidate->base, candidate))
         goto error;
 
-    candidate->server.timer.keepalive =
-        ov_event_loop_timer_set(loop,
-                                candidate->server.limits.keepalive_time_usecs,
-                                candidate,
-                                send_keepalive_to_server);
+    candidate->server.timer.keepalive = ov_event_loop_timer_set(
+        loop, candidate->server.limits.keepalive_time_usecs, candidate,
+        send_keepalive_to_server);
 
     return true;
 error:
@@ -687,13 +659,9 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool io_process_stun_candidate_success_response(
-    ov_ice_base *base,
-    ov_ice_candidate *candidate,
-    const ov_socket_data *remote,
-    const uint8_t *buffer,
-    size_t length,
-    uint8_t *attr[],
-    size_t attr_size) {
+    ov_ice_base *base, ov_ice_candidate *candidate,
+    const ov_socket_data *remote, const uint8_t *buffer, size_t length,
+    uint8_t *attr[], size_t attr_size) {
 
     if (!base || !candidate || !remote || !buffer || !length || !attr ||
         !attr_size)
@@ -702,22 +670,25 @@ static bool io_process_stun_candidate_success_response(
     ov_event_loop *loop = ov_ice_get_event_loop(base->stream->session->ice);
     ov_ice_config config = ov_ice_get_config(base->stream->session->ice);
 
-    if (OV_ICE_SERVER_REFLEXIVE != candidate->type) goto ignore;
+    if (OV_ICE_SERVER_REFLEXIVE != candidate->type)
+        goto ignore;
 
-    if (candidate->gathering == OV_ICE_GATHERING_SUCCESS) goto ignore;
+    if (candidate->gathering == OV_ICE_GATHERING_SUCCESS)
+        goto ignore;
 
     candidate->gathering = OV_ICE_GATHERING_SUCCESS;
 
     uint8_t *xmap =
         ov_stun_attributes_get_type(attr, attr_size, STUN_XOR_MAPPED_ADDRESS);
 
-    if (!xmap) goto ignore;
+    if (!xmap)
+        goto ignore;
 
     ov_socket_data xor_mapped = {0};
     struct sockaddr_storage *xor_ptr = &xor_mapped.sa;
 
-    if (!ov_stun_xor_mapped_address_decode(
-            xmap, length - (xmap - buffer), buffer, &xor_ptr))
+    if (!ov_stun_xor_mapped_address_decode(xmap, length - (xmap - buffer),
+                                           buffer, &xor_ptr))
         goto ignore;
 
     xor_mapped = ov_socket_data_from_sockaddr_storage(&xor_mapped.sa);
@@ -730,9 +701,7 @@ static bool io_process_stun_candidate_success_response(
     if (OV_TIMER_INVALID == candidate->server.timer.keepalive) {
 
         candidate->server.timer.keepalive =
-            loop->timer.set(loop,
-                            config.limits.stun.keepalive_usecs,
-                            candidate,
+            loop->timer.set(loop, config.limits.stun.keepalive_usecs, candidate,
                             send_keepalive_to_server);
     }
 
@@ -747,13 +716,9 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_process_stun_pair_success_response(ov_ice_base *base,
-                                                  ov_ice_pair *pair,
-                                                  const ov_socket_data *remote,
-                                                  const uint8_t *buffer,
-                                                  size_t length,
-                                                  uint8_t *attr[],
-                                                  size_t attr_size) {
+static bool io_process_stun_pair_success_response(
+    ov_ice_base *base, ov_ice_pair *pair, const ov_socket_data *remote,
+    const uint8_t *buffer, size_t length, uint8_t *attr[], size_t attr_size) {
 
     ov_ice_candidate *candidate = NULL;
 
@@ -769,13 +734,14 @@ static bool io_process_stun_pair_success_response(ov_ice_base *base,
 
     uint8_t *prio = ov_stun_attributes_get_type(attr, attr_size, ICE_PRIORITY);
 
-    if (!xmap) goto ignore;
+    if (!xmap)
+        goto ignore;
 
     ov_socket_data xor_mapped = {0};
     struct sockaddr_storage *xor_ptr = &xor_mapped.sa;
 
-    if (!ov_stun_xor_mapped_address_decode(
-            xmap, length - (xmap - buffer), buffer, &xor_ptr))
+    if (!ov_stun_xor_mapped_address_decode(xmap, length - (xmap - buffer),
+                                           buffer, &xor_ptr))
         goto ignore;
 
     xor_mapped = ov_socket_data_from_sockaddr_storage(&xor_mapped.sa);
@@ -784,8 +750,8 @@ static bool io_process_stun_pair_success_response(ov_ice_base *base,
 
     if (prio) {
 
-        if (!ov_stun_ice_priority_decode(
-                prio, length - (prio - buffer), &priority))
+        if (!ov_stun_ice_priority_decode(prio, length - (prio - buffer),
+                                         &priority))
             goto ignore;
     }
 
@@ -807,11 +773,11 @@ static bool io_process_stun_pair_success_response(ov_ice_base *base,
 
         if (ov_ice_debug_stun(base->stream->session->ice))
             ov_log_debug("New PEER-REFLEXIVE candidate from %s:%i",
-                         remote->host,
-                         remote->port);
+                         remote->host, remote->port);
 
         candidate = ov_ice_candidate_create(base->stream);
-        if (!candidate) goto ignore;
+        if (!candidate)
+            goto ignore;
 
         candidate->type = OV_ICE_PEER_REFLEXIVE;
         candidate->base = base;
@@ -830,12 +796,14 @@ static bool io_process_stun_pair_success_response(ov_ice_base *base,
         if (!ov_node_push((void **)&base->stream->candidates.local, candidate))
             goto error;
 
-        if (!ov_list_push(base->candidates, candidate)) goto error;
+        if (!ov_list_push(base->candidates, candidate))
+            goto error;
 
         ov_ice_candidate_calculate_priority(
             candidate, ov_ice_get_interfaces(base->stream->session->ice));
 
-        if (!ov_ice_stream_sort_priority(base->stream)) goto error;
+        if (!ov_ice_stream_sort_priority(base->stream))
+            goto error;
 
         pair = ov_ice_pair_create(base->stream, candidate, pair->remote);
 
@@ -850,11 +818,14 @@ static bool io_process_stun_pair_success_response(ov_ice_base *base,
 
         pair->state = OV_ICE_PAIR_SUCCESS;
 
-        if (!ov_ice_stream_order(base->stream)) goto error;
+        if (!ov_ice_stream_order(base->stream))
+            goto error;
 
-        if (!ov_ice_stream_prune(base->stream)) goto error;
+        if (!ov_ice_stream_prune(base->stream))
+            goto error;
 
-        if (!ov_list_queue_push(base->stream->trigger, pair)) goto error;
+        if (!ov_list_queue_push(base->stream->trigger, pair))
+            goto error;
     }
 
     pair->state = OV_ICE_PAIR_SUCCESS;
@@ -872,8 +843,8 @@ static bool io_process_stun_pair_success_response(ov_ice_base *base,
     if (0 == ov_list_get_pos(base->stream->trigger, pair))
         ov_list_queue_push(base->stream->trigger, pair);
 
-    ov_ice_session_unfreeze_foundation(
-        base->stream->session, pair->local->foundation);
+    ov_ice_session_unfreeze_foundation(base->stream->session,
+                                       pair->local->foundation);
 
     if (!base->stream->session->controlling) {
 
@@ -894,23 +865,20 @@ static bool io_process_stun_pair_success_response(ov_ice_base *base,
                     "ICE session %s|%i selected pair at %s:%i from %s:%i - "
                     "state "
                     "%s",
-                    base->stream->session->uuid,
-                    base->stream->index,
-                    base->local.data.host,
-                    base->local.data.port,
-                    pair->remote->addr,
-                    pair->remote->port,
+                    base->stream->session->uuid, base->stream->index,
+                    base->local.data.host, base->local.data.port,
+                    pair->remote->addr, pair->remote->port,
                     ov_ice_pair_state_to_string(pair->state));
 
             switch (base->stream->type) {
 
-                case OV_ICE_DTLS_ACTIVE:
+            case OV_ICE_DTLS_ACTIVE:
 
-                    ov_ice_pair_handshake_active(pair);
+                ov_ice_pair_handshake_active(pair);
 
-                    break;
-                default:
-                    break;
+                break;
+            default:
+                break;
             }
 
             base->stream->selected->state = OV_ICE_PAIR_SUCCESS;
@@ -924,7 +892,8 @@ ignore:
     return true;
 
 error:
-    if (pair) pair->state = OV_ICE_PAIR_FAILED;
+    if (pair)
+        pair->state = OV_ICE_PAIR_FAILED;
     return false;
 }
 
@@ -933,8 +902,7 @@ error:
 static bool io_process_stun_success_response(ov_ice_base *base,
                                              const ov_socket_data *remote,
                                              const uint8_t *buffer,
-                                             size_t length,
-                                             uint8_t *attr[],
+                                             size_t length, uint8_t *attr[],
                                              size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
@@ -950,8 +918,8 @@ static bool io_process_stun_success_response(ov_ice_base *base,
             base, data, remote, buffer, length, attr, attr_size);
 
     if (ov_ice_pair_cast(data))
-        return io_process_stun_pair_success_response(
-            base, data, remote, buffer, length, attr, attr_size);
+        return io_process_stun_pair_success_response(base, data, remote, buffer,
+                                                     length, attr, attr_size);
 
     if (ov_ice_debug_stun(ice))
         ov_log_debug("Transaction ID invalid - ignoring");
@@ -964,13 +932,9 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool io_process_stun_candidate_error_response(
-    ov_ice_base *base,
-    ov_ice_candidate *candidate,
-    const ov_socket_data *remote,
-    const uint8_t *buffer,
-    size_t length,
-    uint8_t *attr[],
-    size_t attr_size) {
+    ov_ice_base *base, ov_ice_candidate *candidate,
+    const ov_socket_data *remote, const uint8_t *buffer, size_t length,
+    uint8_t *attr[], size_t attr_size) {
 
     if (!candidate || !base || !remote || !buffer || !length || !attr ||
         !attr_size)
@@ -986,13 +950,9 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_process_stun_pair_error_response(ov_ice_base *base,
-                                                ov_ice_pair *pair,
-                                                const ov_socket_data *remote,
-                                                const uint8_t *buffer,
-                                                size_t length,
-                                                uint8_t *attr[],
-                                                size_t attr_size) {
+static bool io_process_stun_pair_error_response(
+    ov_ice_base *base, ov_ice_pair *pair, const ov_socket_data *remote,
+    const uint8_t *buffer, size_t length, uint8_t *attr[], size_t attr_size) {
 
     if (!pair || !base || !remote || !buffer || !length || !attr || !attr_size)
         goto error;
@@ -1004,7 +964,8 @@ static bool io_process_stun_pair_error_response(ov_ice_base *base,
     uint8_t *error =
         ov_stun_attributes_get_type(attr, attr_size, STUN_ERROR_CODE);
 
-    if (!error) goto ignore;
+    if (!error)
+        goto ignore;
 
     uint16_t errorcode =
         ov_stun_error_code_decode_code(error, length - (error - buffer));
@@ -1015,8 +976,8 @@ static bool io_process_stun_pair_error_response(ov_ice_base *base,
 
     if (ICE_ROLE_CONFLICT == errorcode) {
 
-        ov_ice_session_change_role(
-            base->stream->session, base->stream->session->tiebreaker);
+        ov_ice_session_change_role(base->stream->session,
+                                   base->stream->session->tiebreaker);
 
     } else {
 
@@ -1042,10 +1003,8 @@ error:
 
 static bool io_process_stun_error_response(ov_ice_base *base,
                                            const ov_socket_data *remote,
-                                           const uint8_t *buffer,
-                                           size_t length,
-                                           uint8_t *attr[],
-                                           size_t attr_size) {
+                                           const uint8_t *buffer, size_t length,
+                                           uint8_t *attr[], size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
         goto error;
@@ -1060,8 +1019,8 @@ static bool io_process_stun_error_response(ov_ice_base *base,
             base, data, remote, buffer, length, attr, attr_size);
 
     if (ov_ice_pair_cast(data))
-        return io_process_stun_pair_error_response(
-            base, data, remote, buffer, length, attr, attr_size);
+        return io_process_stun_pair_error_response(base, data, remote, buffer,
+                                                   length, attr, attr_size);
 
     if (ov_ice_debug_stun(ice))
         ov_log_debug("Transaction ID invalid - ignoring");
@@ -1075,10 +1034,8 @@ error:
 
 static bool io_base_stun_process(ov_ice_base *base,
                                  const ov_socket_data *remote,
-                                 const uint8_t *buffer,
-                                 size_t length,
-                                 uint8_t *attr[],
-                                 size_t attr_size) {
+                                 const uint8_t *buffer, size_t length,
+                                 uint8_t *attr[], size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
         goto error;
@@ -1090,13 +1047,15 @@ static bool io_base_stun_process(ov_ice_base *base,
      *              as well as the STUN method.
      */
 
-    if (STUN_BINDING != ov_stun_frame_get_method(buffer, length)) goto ignore;
+    if (STUN_BINDING != ov_stun_frame_get_method(buffer, length))
+        goto ignore;
 
     /*
      *      (2)     Any indication is dropped silently.
      */
 
-    if (ov_stun_frame_class_is_indication(buffer, length)) return true;
+    if (ov_stun_frame_class_is_indication(buffer, length))
+        return true;
 
     /*
      *      (3)     We received some actual STUN request
@@ -1107,37 +1066,31 @@ static bool io_base_stun_process(ov_ice_base *base,
 
         if (ov_ice_debug_stun(ice))
             ov_log_debug("STUN binding request at %s:%i from %s:%i",
-                         base->local.data.host,
-                         base->local.data.port,
-                         remote->host,
-                         remote->port);
+                         base->local.data.host, base->local.data.port,
+                         remote->host, remote->port);
 
-        return io_process_stun_request(
-            base, remote, buffer, length, attr, attr_size);
+        return io_process_stun_request(base, remote, buffer, length, attr,
+                                       attr_size);
 
     } else if (ov_stun_frame_class_is_success_response(buffer, length)) {
 
         if (ov_ice_debug_stun(ice))
             ov_log_debug("STUN binding success at %s:%i from %s:%i",
-                         base->local.data.host,
-                         base->local.data.port,
-                         remote->host,
-                         remote->port);
+                         base->local.data.host, base->local.data.port,
+                         remote->host, remote->port);
 
-        return io_process_stun_success_response(
-            base, remote, buffer, length, attr, attr_size);
+        return io_process_stun_success_response(base, remote, buffer, length,
+                                                attr, attr_size);
 
     } else if (ov_stun_frame_class_is_error_response(buffer, length)) {
 
         if (ov_ice_debug_stun(ice))
             ov_log_debug("STUN binding error at %s:%i from %s:%i",
-                         base->local.data.host,
-                         base->local.data.port,
-                         remote->host,
-                         remote->port);
+                         base->local.data.host, base->local.data.port,
+                         remote->host, remote->port);
 
-        return io_process_stun_error_response(
-            base, remote, buffer, length, attr, attr_size);
+        return io_process_stun_error_response(base, remote, buffer, length,
+                                              attr, attr_size);
 
     } else {
 
@@ -1164,10 +1117,8 @@ error:
 
 static bool io_base_turn_process_allocate(ov_ice_base *base,
                                           const ov_socket_data *remote,
-                                          const uint8_t *buffer,
-                                          size_t length,
-                                          uint8_t *attr[],
-                                          size_t attr_size) {
+                                          const uint8_t *buffer, size_t length,
+                                          uint8_t *attr[], size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
         goto error;
@@ -1182,10 +1133,8 @@ error:
 
 static bool io_base_turn_process_refresh(ov_ice_base *base,
                                          const ov_socket_data *remote,
-                                         const uint8_t *buffer,
-                                         size_t length,
-                                         uint8_t *attr[],
-                                         size_t attr_size) {
+                                         const uint8_t *buffer, size_t length,
+                                         uint8_t *attr[], size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
         goto error;
@@ -1200,10 +1149,8 @@ error:
 
 static bool io_base_turn_process_data(ov_ice_base *base,
                                       const ov_socket_data *remote,
-                                      const uint8_t *buffer,
-                                      size_t length,
-                                      uint8_t *attr[],
-                                      size_t attr_size) {
+                                      const uint8_t *buffer, size_t length,
+                                      uint8_t *attr[], size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
         goto error;
@@ -1216,12 +1163,9 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_base_turn_process_create_permission(ov_ice_base *base,
-                                                   const ov_socket_data *remote,
-                                                   const uint8_t *buffer,
-                                                   size_t length,
-                                                   uint8_t *attr[],
-                                                   size_t attr_size) {
+static bool io_base_turn_process_create_permission(
+    ov_ice_base *base, const ov_socket_data *remote, const uint8_t *buffer,
+    size_t length, uint8_t *attr[], size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
         goto error;
@@ -1237,8 +1181,7 @@ error:
 static bool io_base_turn_process_channel_bind(ov_ice_base *base,
                                               const ov_socket_data *remote,
                                               const uint8_t *buffer,
-                                              size_t length,
-                                              uint8_t *attr[],
+                                              size_t length, uint8_t *attr[],
                                               size_t attr_size) {
 
     if (!base || !remote || !buffer || !length || !attr || !attr_size)
@@ -1252,57 +1195,59 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool io_external_stun(ov_ice_base *base,
-                             uint8_t *buffer,
-                             size_t size,
+static bool io_external_stun(ov_ice_base *base, uint8_t *buffer, size_t size,
                              const ov_socket_data *remote) {
 
     size_t attr_size = IMPL_STUN_ATTR_FRAMES;
     uint8_t *attr[attr_size];
     memset(attr, 0, attr_size * sizeof(uint8_t *));
 
-    if (!base || !buffer || !size || !remote) goto error;
+    if (!base || !buffer || !size || !remote)
+        goto error;
 
     uint16_t method = ov_stun_frame_get_method(buffer, size);
 
-    if (!ov_stun_frame_is_valid(buffer, size)) goto ignore;
+    if (!ov_stun_frame_is_valid(buffer, size))
+        goto ignore;
 
-    if (!ov_stun_frame_has_magic_cookie(buffer, size)) goto ignore;
+    if (!ov_stun_frame_has_magic_cookie(buffer, size))
+        goto ignore;
 
-    if (!ov_stun_frame_slice(buffer, size, attr, attr_size)) goto ignore;
+    if (!ov_stun_frame_slice(buffer, size, attr, attr_size))
+        goto ignore;
 
     if (!ov_stun_check_fingerprint(buffer, size, attr, attr_size, false))
         goto ignore;
 
     switch (method) {
 
-        case STUN_BINDING:
-            return io_base_stun_process(
-                base, remote, buffer, size, attr, attr_size);
+    case STUN_BINDING:
+        return io_base_stun_process(base, remote, buffer, size, attr,
+                                    attr_size);
 
-        case TURN_ALLOCATE:
-            return io_base_turn_process_allocate(
-                base, remote, buffer, size, attr, attr_size);
+    case TURN_ALLOCATE:
+        return io_base_turn_process_allocate(base, remote, buffer, size, attr,
+                                             attr_size);
 
-        case TURN_REFRESH:
-            return io_base_turn_process_refresh(
-                base, remote, buffer, size, attr, attr_size);
+    case TURN_REFRESH:
+        return io_base_turn_process_refresh(base, remote, buffer, size, attr,
+                                            attr_size);
 
-        case TURN_DATA:
-            return io_base_turn_process_data(
-                base, remote, buffer, size, attr, attr_size);
+    case TURN_DATA:
+        return io_base_turn_process_data(base, remote, buffer, size, attr,
+                                         attr_size);
 
-        case TURN_CREATE_PERMISSION:
-            return io_base_turn_process_create_permission(
-                base, remote, buffer, size, attr, attr_size);
+    case TURN_CREATE_PERMISSION:
+        return io_base_turn_process_create_permission(base, remote, buffer,
+                                                      size, attr, attr_size);
 
-        case TURN_CHANNEL_BIND:
-            return io_base_turn_process_channel_bind(
-                base, remote, buffer, size, attr, attr_size);
+    case TURN_CHANNEL_BIND:
+        return io_base_turn_process_channel_bind(base, remote, buffer, size,
+                                                 attr, attr_size);
 
-        default:
+    default:
 
-            ov_log_error("ignoring unrecognized STUN method %" PRIu16, method);
+        ov_log_error("ignoring unrecognized STUN method %" PRIu16, method);
     }
 
 ignore:
@@ -1326,11 +1271,13 @@ static bool io_external(int socket, uint8_t events, void *userdata) {
 
     ov_ice_base *base = ov_ice_base_cast(userdata);
 
-    if (!base) goto error;
+    if (!base)
+        goto error;
 
     OV_ASSERT(socket == base->socket);
 
-    if (socket < 0) goto error;
+    if (socket < 0)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
@@ -1348,17 +1295,14 @@ static bool io_external(int socket, uint8_t events, void *userdata) {
 
     /* PEEK read to check for content */
 
-    ssize_t bytes = recvfrom(socket,
-                             (char *)buffer,
-                             OV_UDP_PAYLOAD_OCTETS,
-                             0,
-                             (struct sockaddr *)&remote.sa,
-                             &src_addr_len);
+    ssize_t bytes = recvfrom(socket, (char *)buffer, OV_UDP_PAYLOAD_OCTETS, 0,
+                             (struct sockaddr *)&remote.sa, &src_addr_len);
 
-    if (bytes < 1) goto error;
+    if (bytes < 1)
+        goto error;
 
-    if (!ov_socket_parse_sockaddr_storage(
-            &remote.sa, remote.host, OV_HOST_NAME_MAX, &remote.port))
+    if (!ov_socket_parse_sockaddr_storage(&remote.sa, remote.host,
+                                          OV_HOST_NAME_MAX, &remote.port))
         goto error;
 
     /*  -----------------------------------------------------------------
@@ -1384,7 +1328,8 @@ static bool io_external(int socket, uint8_t events, void *userdata) {
      *      process SSL
      */
 
-    if (buffer[0] <= 3) return io_external_stun(base, buffer, bytes, &remote);
+    if (buffer[0] <= 3)
+        return io_external_stun(base, buffer, bytes, &remote);
 
     if (buffer[0] <= 63 && buffer[0] >= 20) {
 
@@ -1407,12 +1352,14 @@ error:
 ov_ice_base *ov_ice_base_create(ov_ice_stream *stream, int socket) {
 
     ov_ice_base *base = NULL;
-    if (!stream || !socket) goto error;
+    if (!stream || !socket)
+        goto error;
 
     ov_event_loop *loop = ov_ice_get_event_loop(stream->session->ice);
 
     base = calloc(1, sizeof(ov_ice_base));
-    if (!base) goto error;
+    if (!base)
+        goto error;
 
     base->node.type = OV_ICE_BASE_MAGIC_BYTES;
     base->socket = socket;
@@ -1421,12 +1368,15 @@ ov_ice_base *ov_ice_base_create(ov_ice_stream *stream, int socket) {
 
     base->candidates = ov_linked_list_create((ov_list_config){0});
 
-    if (!ov_socket_get_data(base->socket, &base->local.data, NULL)) goto error;
+    if (!ov_socket_get_data(base->socket, &base->local.data, NULL))
+        goto error;
 
-    if (!ov_node_push((void **)&stream->bases, base)) goto error;
+    if (!ov_node_push((void **)&stream->bases, base))
+        goto error;
 
     ov_ice_candidate *candidate = ov_ice_candidate_create(stream);
-    if (!candidate) goto error;
+    if (!candidate)
+        goto error;
 
     if (!ov_node_push((void **)&stream->candidates.local, candidate)) {
         candidate = ov_ice_candidate_free(candidate);
@@ -1446,7 +1396,8 @@ ov_ice_base *ov_ice_base_create(ov_ice_stream *stream, int socket) {
     ov_ice_candidate_calculate_priority(
         candidate, ov_ice_get_interfaces(base->stream->session->ice));
 
-    if (!ov_list_push(base->candidates, candidate)) goto error;
+    if (!ov_list_push(base->candidates, candidate))
+        goto error;
 
     uint8_t event = OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE;
 
@@ -1456,8 +1407,7 @@ ov_ice_base *ov_ice_base_create(ov_ice_stream *stream, int socket) {
     if (!ov_ice_session_set_foundation(base->stream->session, candidate))
         goto error;
 
-    ov_log_debug("created ICE base at %s:%i",
-                 base->local.data.host,
+    ov_log_debug("created ICE base at %s:%i", base->local.data.host,
                  base->local.data.port);
 
     return base;
@@ -1470,11 +1420,13 @@ error:
 
 ov_ice_base *ov_ice_base_cast(const void *data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_node *node = (ov_node *)data;
 
-    if (node->type == OV_ICE_BASE_MAGIC_BYTES) return (ov_ice_base *)data;
+    if (node->type == OV_ICE_BASE_MAGIC_BYTES)
+        return (ov_ice_base *)data;
 error:
     return NULL;
 }
@@ -1484,7 +1436,8 @@ error:
 void *ov_ice_base_free(void *self) {
 
     ov_ice_base *base = ov_ice_base_cast(self);
-    if (!base) return self;
+    if (!base)
+        return self;
 
     ov_ice_candidate *candidate = ov_list_pop(base->candidates);
     while (candidate) {
@@ -1507,48 +1460,44 @@ bool ov_ice_base_send_stun_binding_request(ov_ice_base *base,
     uint8_t *ptr = buffer;
     uint8_t *nxt = NULL;
 
-    if (!base || !candidate) goto error;
-
-    if (candidate->base != base) goto error;
-
-    if (!ov_ice_transaction_create(base->stream->session->ice,
-                                   candidate->transaction_id,
-                                   13,
-                                   candidate))
+    if (!base || !candidate)
         goto error;
 
-    if (!ov_stun_generate_binding_request_plain(ptr,
-                                                OV_UDP_PAYLOAD_OCTETS,
-                                                &nxt,
-                                                candidate->transaction_id,
-                                                NULL,
-                                                0,
-                                                false)) {
+    if (candidate->base != base)
+        goto error;
 
-        ov_ice_transaction_unset(
-            base->stream->session->ice, candidate->transaction_id);
+    if (!ov_ice_transaction_create(base->stream->session->ice,
+                                   candidate->transaction_id, 13, candidate))
+        goto error;
+
+    if (!ov_stun_generate_binding_request_plain(ptr, OV_UDP_PAYLOAD_OCTETS,
+                                                &nxt, candidate->transaction_id,
+                                                NULL, 0, false)) {
+
+        ov_ice_transaction_unset(base->stream->session->ice,
+                                 candidate->transaction_id);
 
         goto error;
     }
 
     struct sockaddr_storage dest = {0};
 
-    if (!ov_socket_fill_sockaddr_storage(&dest,
-                                         base->local.data.sa.ss_family,
+    if (!ov_socket_fill_sockaddr_storage(&dest, base->local.data.sa.ss_family,
                                          candidate->server.socket.host,
                                          candidate->server.socket.port))
         goto error;
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (dest.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (dest.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
     ssize_t out =
         sendto(base->socket, ptr, nxt - ptr, 0, (struct sockaddr *)&dest, len);
 
     if (out <= 0) {
 
-        ov_ice_transaction_unset(
-            base->stream->session->ice, candidate->transaction_id);
+        ov_ice_transaction_unset(base->stream->session->ice,
+                                 candidate->transaction_id);
 
         goto error;
     }
@@ -1567,43 +1516,39 @@ bool ov_ice_base_send_turn_allocate_request(ov_ice_base *base,
     uint8_t *ptr = buffer;
     uint8_t *nxt = NULL;
 
-    if (!base || !candidate) goto error;
-
-    if (candidate->base != base) goto error;
-
-    if (!ov_ice_transaction_create(base->stream->session->ice,
-                                   candidate->transaction_id,
-                                   13,
-                                   candidate))
+    if (!base || !candidate)
         goto error;
 
-    if (!ov_turn_allocate_generate_request(ptr,
-                                           OV_UDP_PAYLOAD_OCTETS,
-                                           &nxt,
-                                           candidate->transaction_id,
-                                           NULL,
-                                           0,
+    if (candidate->base != base)
+        goto error;
+
+    if (!ov_ice_transaction_create(base->stream->session->ice,
+                                   candidate->transaction_id, 13, candidate))
+        goto error;
+
+    if (!ov_turn_allocate_generate_request(ptr, OV_UDP_PAYLOAD_OCTETS, &nxt,
+                                           candidate->transaction_id, NULL, 0,
                                            true))
         goto error;
 
     struct sockaddr_storage dest = {0};
 
-    if (!ov_socket_fill_sockaddr_storage(&dest,
-                                         base->local.data.sa.ss_family,
+    if (!ov_socket_fill_sockaddr_storage(&dest, base->local.data.sa.ss_family,
                                          candidate->server.socket.host,
                                          candidate->server.socket.port))
         goto error;
 
     socklen_t len = sizeof(struct sockaddr_in);
-    if (dest.ss_family == AF_INET6) len = sizeof(struct sockaddr_in6);
+    if (dest.ss_family == AF_INET6)
+        len = sizeof(struct sockaddr_in6);
 
     ssize_t out =
         sendto(base->socket, ptr, nxt - ptr, 0, (struct sockaddr *)&dest, len);
 
     if (out <= 0) {
 
-        ov_ice_transaction_unset(
-            base->stream->session->ice, candidate->transaction_id);
+        ov_ice_transaction_unset(base->stream->session->ice,
+                                 candidate->transaction_id);
 
         goto error;
     }

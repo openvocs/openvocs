@@ -96,9 +96,11 @@ typedef struct {
 
 ov_app *ov_app_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (*(uint16_t *)self == OV_APP_MAGIC_BYTE) return (ov_app *)self;
+    if (*(uint16_t *)self == OV_APP_MAGIC_BYTE)
+        return (ov_app *)self;
 error:
     return NULL;
 }
@@ -200,15 +202,12 @@ typedef struct {
 
 static ov_app *impl_app_free(ov_app *self);
 
-static bool impl_app_socket_open(ov_app *self,
-                                 ov_app_socket_config config,
-                                 void (*success_callback)(int socket,
-                                                          void *self),
-                                 void (*failure_callback)(int socket,
-                                                          void *self));
+static bool
+impl_app_socket_open(ov_app *self, ov_app_socket_config config,
+                     void (*success_callback)(int socket, void *self),
+                     void (*failure_callback)(int socket, void *self));
 
-static bool impl_app_socket_add(ov_app *self,
-                                ov_app_socket_config config,
+static bool impl_app_socket_add(ov_app *self, ov_app_socket_config config,
                                 int socket);
 
 static bool impl_app_socket_close(ov_app *self, int socket);
@@ -220,7 +219,8 @@ static bool socket_is_contained(ov_app *self, int socket) {
     intptr_t id = socket;
     DefaultApp *app = AS_IMPL_APP(self);
 
-    if (!app || socket < 0) return false;
+    if (!app || socket < 0)
+        return false;
 
     return ov_dict_is_set(app->sockets, (void *)id);
 }
@@ -231,10 +231,8 @@ static bool impl_app_connection_close(ov_app *self, const char *uuid);
 static int impl_app_connection_get_socket(ov_app *self, const char *uuid);
 static bool impl_app_connection_close_all(ov_app *self);
 
-static bool impl_app_send(ov_app *self,
-                          int socket,
-                          const ov_socket_data *remote,
-                          void *data);
+static bool impl_app_send(ov_app *self, int socket,
+                          const ov_socket_data *remote, void *data);
 
 /*----------------------------------------------------------------------------*/
 
@@ -386,8 +384,8 @@ static bool setup_trigger_parse_again(DefaultApp *app) {
 
     const uint8_t EVENTS = OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE;
 
-    if (!loop->callback.set(
-            loop, app->trigger_parse_again.out, EVENTS, app, cb_parse_again)) {
+    if (!loop->callback.set(loop, app->trigger_parse_again.out, EVENTS, app,
+                            cb_parse_again)) {
         ov_log_error("could not register trigger_parse_again callback");
         goto error;
     }
@@ -422,7 +420,8 @@ static bool close_trigger_parse_again(DefaultApp *app) {
 
 static ov_parser *parser_free(ov_parser *self) {
 
-    if (self) free(self);
+    if (self)
+        free(self);
     return NULL;
 }
 
@@ -455,7 +454,8 @@ static bool parser_buffer_is_enabled(const ov_parser *self) {
 
 static bool init_parser_buffer_switch(ov_parser *parser) {
 
-    if (!ov_parser_set_head(parser, 0x0815)) return false;
+    if (!ov_parser_set_head(parser, 0x0815))
+        return false;
 
     parser->free = parser_free;
     parser->decode = parser_parse_magic;
@@ -471,9 +471,11 @@ static bool init_parser_buffer_switch(ov_parser *parser) {
 
 static bool app_init(DefaultApp *app, ov_app_config config) {
 
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
 
     if (0 == config.cache.capacity)
         config.cache.capacity = OV_APP_DEFAULT_CACHE;
@@ -522,18 +524,18 @@ static bool app_init(DefaultApp *app, ov_app_config config) {
      *
      */
 
-    if (!app->sockets || !app->uuids) goto error;
+    if (!app->sockets || !app->uuids)
+        goto error;
 
     app->reconnect = 0;
 
     if (0 < config.reconnect.max_connections) {
 
-        app->reconnect =
-            ov_reconnect_manager_create(config.loop,
-                                        config.reconnect.interval_secs,
-                                        config.reconnect.max_connections);
-        app->reconnect_data = calloc(
-            config.reconnect.max_connections, sizeof(ReconnectDataEntry));
+        app->reconnect = ov_reconnect_manager_create(
+            config.loop, config.reconnect.interval_secs,
+            config.reconnect.max_connections);
+        app->reconnect_data = calloc(config.reconnect.max_connections,
+                                     sizeof(ReconnectDataEntry));
     }
 
     init_parser_buffer_switch(&app->parser_buffer_switch);
@@ -544,7 +546,8 @@ static bool app_init(DefaultApp *app, ov_app_config config) {
 
     return true;
 error:
-    if (app) impl_app_free((ov_app *)app);
+    if (app)
+        impl_app_free((ov_app *)app);
 
     return false;
 }
@@ -561,10 +564,8 @@ static bool cb_io_accept(int socket_fd, uint8_t events, void *data);
 
 static bool cb_io_stream(int socket, uint8_t events, void *app);
 
-static bool cb_io_raw(AppConnection *connection,
-                      const uint8_t *buffer,
-                      size_t size,
-                      const ov_socket_data *remote);
+static bool cb_io_raw(AppConnection *connection, const uint8_t *buffer,
+                      size_t size, const ov_socket_data *remote);
 
 /*
  *      ------------------------------------------------------------------------
@@ -574,27 +575,23 @@ static bool cb_io_raw(AppConnection *connection,
  *      ------------------------------------------------------------------------
  */
 
-static bool open_client_connection(ov_app *self,
-                                   ov_app_socket_config config,
+static bool open_client_connection(ov_app *self, ov_app_socket_config config,
                                    void (*cb_success)(int socket, void *self),
                                    void (*cb_failure)(int socket, void *self));
 
 static AppConnection *app_connection_cast(const void *data);
 
-static AppConnection *app_connection_create(DefaultApp *app,
-                                            ov_app_socket_config config,
-                                            int socket);
+static AppConnection *
+app_connection_create(DefaultApp *app, ov_app_socket_config config, int socket);
 
 static AppListener *app_listener_cast(const void *data);
 
-static AppListener *app_listener_create(DefaultApp *app,
-                                        ov_app_socket_config config,
-                                        int socket);
+static AppListener *
+app_listener_create(DefaultApp *app, ov_app_socket_config config, int socket);
 
 static void *app_listener_free(void *self);
 
-static bool default_send_buffer(ov_app *app,
-                                int socket,
+static bool default_send_buffer(ov_app *app, int socket,
                                 const ov_buffer *buffer);
 
 /*
@@ -608,9 +605,11 @@ static bool default_send_buffer(ov_app *app,
 ov_app *ov_app_create(ov_app_config config) {
 
     DefaultApp *app = calloc(1, sizeof(DefaultApp));
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
-    if (app_init(app, config)) return (ov_app *)app;
+    if (app_init(app, config))
+        return (ov_app *)app;
 
     free(app);
 error:
@@ -622,7 +621,8 @@ error:
 void *ov_app_free(void *self) {
 
     ov_app *app = ov_app_cast(self);
-    if (!app || !app->free) goto error;
+    if (!app || !app->free)
+        goto error;
 
     return app->free(app);
 error:
@@ -631,12 +631,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_app_open_socket(ov_app *self,
-                        ov_app_socket_config config,
+bool ov_app_open_socket(ov_app *self, ov_app_socket_config config,
                         void (*success)(int socket, void *self),
                         void (*failure)(int socket, void *self)) {
 
-    if (!ov_app_cast(self) || !self->socket.open) return false;
+    if (!ov_app_cast(self) || !self->socket.open)
+        return false;
 
     return (self->socket.open(self, config, success, failure));
 }
@@ -645,7 +645,8 @@ bool ov_app_open_socket(ov_app *self,
 
 bool ov_app_close_socket(ov_app *self, int socket) {
 
-    if (!ov_app_cast(self) || !self->socket.close || socket < 0) return false;
+    if (!ov_app_cast(self) || !self->socket.close || socket < 0)
+        return false;
 
     return (self->socket.close(self, socket));
 }
@@ -654,11 +655,14 @@ bool ov_app_close_socket(ov_app *self, int socket) {
 
 static void *app_socket_data_free(void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (app_listener_cast(data)) return app_listener_free(data);
+    if (app_listener_cast(data))
+        return app_listener_free(data);
 
-    if (app_connection_cast(data)) return app_connection_free(data);
+    if (app_connection_cast(data))
+        return app_connection_free(data);
 
     return data;
 }
@@ -667,7 +671,8 @@ static void *app_socket_data_free(void *data) {
 
 static AppConnection *app_connection_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == IMPL_CONNECTION_MAGIC_BYTES)
         return (AppConnection *)self;
@@ -685,11 +690,13 @@ static AppConnection *app_connection_create(DefaultApp *app,
 
     AppConnection *connection = calloc(1, sizeof(AppConnection));
 
-    if (!connection) goto error;
+    if (!connection)
+        goto error;
 
     intptr_t id = socket;
 
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     *connection = (AppConnection){
 
@@ -701,16 +708,18 @@ static AppConnection *app_connection_create(DefaultApp *app,
     };
 
     if (socket > -1)
-        if (!ov_socket_get_data(
-                socket, &connection->local, &connection->remote))
+        if (!ov_socket_get_data(socket, &connection->local,
+                                &connection->remote))
             goto error;
 
-    if (!ov_id_fill_with_uuid(connection->uuid)) goto error;
+    if (!ov_id_fill_with_uuid(connection->uuid))
+        goto error;
 
     if (config.parser.create) {
 
         connection->parser = config.parser.create(config.parser.config);
-        if (!connection->parser) goto error;
+        if (!connection->parser)
+            goto error;
     }
 
     if (socket > -1) {
@@ -723,7 +732,8 @@ static AppConnection *app_connection_create(DefaultApp *app,
             goto error;
 
         key = strdup(connection->uuid);
-        if (!key) goto error;
+        if (!key)
+            goto error;
 
         if (!ov_dict_set(app->uuids, key, (void *)id, NULL)) {
             ov_dict_del(app->sockets, (void *)id);
@@ -749,7 +759,8 @@ error:
 static void *app_connection_free(void *data) {
 
     AppConnection *connection = app_connection_cast(data);
-    if (!connection) return data;
+    if (!connection)
+        return data;
 
     DefaultApp *app = AS_IMPL_APP(connection->app);
     if (!app) {
@@ -759,7 +770,8 @@ static void *app_connection_free(void *data) {
 
     ov_event_loop *loop = app->public.config.loop;
 
-    if (!connection->uuid_skip) ov_dict_del(app->uuids, connection->uuid);
+    if (!connection->uuid_skip)
+        ov_dict_del(app->uuids, connection->uuid);
 
     connection->parser = ov_parser_free(connection->parser);
     ov_parser_data_clear(&connection->data);
@@ -775,8 +787,7 @@ static void *app_connection_free(void *data) {
 
     if (connection->config.callback.close)
         connection->config.callback.close((ov_app *)connection->app,
-                                          connection->socket,
-                                          connection->uuid,
+                                          connection->socket, connection->uuid,
                                           connection->config.callback.userdata);
 
     memset(connection, 0, sizeof(*connection));
@@ -791,7 +802,8 @@ static void *app_connection_free(void *data) {
 
 AppListener *app_listener_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == IMPL_LISTENER_MAGIC_BYTES)
         return (AppListener *)self;
@@ -801,14 +813,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-AppListener *app_listener_create(DefaultApp *app,
-                                 ov_app_socket_config config,
+AppListener *app_listener_create(DefaultApp *app, ov_app_socket_config config,
                                  int socket) {
 
     intptr_t id = socket;
 
     AppListener *listener = calloc(1, sizeof(AppListener));
-    if (!listener) goto error;
+    if (!listener)
+        goto error;
 
     *listener = (AppListener){
 
@@ -822,7 +834,8 @@ AppListener *app_listener_create(DefaultApp *app,
         goto error;
     }
 
-    if (!ov_dict_set(app->sockets, (void *)id, listener, NULL)) goto error;
+    if (!ov_dict_set(app->sockets, (void *)id, listener, NULL))
+        goto error;
 
     return listener;
 error:
@@ -842,17 +855,21 @@ struct container1 {
 
 static bool search_connections(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     struct container1 *container = data;
-    if (!container || !container->list || container->socket < 0) return false;
+    if (!container || !container->list || container->socket < 0)
+        return false;
 
     AppConnection *connection = app_connection_cast(value);
-    if (!connection) return true;
+    if (!connection)
+        return true;
 
     if (!connection->child)
         if (connection->master_socket == container->socket)
-            if (!ov_list_push(container->list, (void *)key)) return false;
+            if (!ov_list_push(container->list, (void *)key))
+                return false;
 
     return true;
 }
@@ -866,8 +883,10 @@ void *app_listener_free(void *data) {
     ov_list *list = NULL;
 
     AppListener *listener = app_listener_cast(data);
-    if (!listener) goto error;
-    if (!listener->app) goto error;
+    if (!listener)
+        goto error;
+    if (!listener->app)
+        goto error;
 
     DefaultApp *app = listener->app;
     ov_event_loop *loop = app->public.config.loop;
@@ -877,11 +896,9 @@ void *app_listener_free(void *data) {
     // delete all accepted sockets
     list = ov_list_create((ov_list_config){0});
     if (!list) {
-        ov_log_error(
-            "%s listener %i failed to create search "
-            "list",
-            app->public.config.name,
-            listener->socket);
+        ov_log_error("%s listener %i failed to create search "
+                     "list",
+                     app->public.config.name, listener->socket);
         goto done;
     }
 
@@ -890,11 +907,9 @@ void *app_listener_free(void *data) {
         .socket = listener->socket, .list = list};
 
     if (!ov_dict_for_each(app->sockets, &container, search_connections)) {
-        ov_log_error(
-            "%s listener %i failed to search "
-            "connections",
-            app->public.config.name,
-            listener->socket);
+        ov_log_error("%s listener %i failed to search "
+                     "connections",
+                     app->public.config.name, listener->socket);
         goto done;
     }
 
@@ -904,25 +919,20 @@ void *app_listener_free(void *data) {
     while (next) {
 
         next = list->next(list, next, &key);
-        if (!key) continue;
+        if (!key)
+            continue;
 
         id = (intptr_t)key;
 
         if (!ov_dict_del(app->sockets, (void *)id)) {
-            ov_log_error(
-                "%s listener %i failed to delete "
-                "conn %i",
-                app->public.config.name,
-                listener->socket,
-                socket);
+            ov_log_error("%s listener %i failed to delete "
+                         "conn %i",
+                         app->public.config.name, listener->socket, socket);
         } else {
 
-            ov_log_debug(
-                "%s listener %i delete "
-                "conn %i",
-                app->public.config.name,
-                listener->socket,
-                socket);
+            ov_log_debug("%s listener %i delete "
+                         "conn %i",
+                         app->public.config.name, listener->socket, socket);
         }
     }
 
@@ -936,8 +946,7 @@ done:
 
     if (listener->config.callback.close)
         listener->config.callback.close((ov_app *)listener->app,
-                                        listener->socket,
-                                        NULL,
+                                        listener->socket, NULL,
                                         listener->config.callback.userdata);
 
     free(listener);
@@ -952,16 +961,19 @@ error:
 
 static bool delete_socket(const void *key, void *item, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_dict *dict = ov_dict_cast(data);
 
-    if (!item || !dict) return false;
+    if (!item || !dict)
+        return false;
 
     intptr_t id = (intptr_t)item;
 
     AppConnection *conn = app_connection_cast(ov_dict_get(dict, (void *)id));
-    if (!conn) return false;
+    if (!conn)
+        return false;
 
     conn->uuid_skip = true;
 
@@ -973,7 +985,8 @@ static bool delete_socket(const void *key, void *item, void *data) {
 ov_app *impl_app_free(ov_app *self) {
 
     DefaultApp *app = AS_IMPL_APP(self);
-    if (!app) return self;
+    if (!app)
+        return self;
 
     close_trigger_parse_again(app);
 
@@ -998,8 +1011,7 @@ ov_app *impl_app_free(ov_app *self) {
 
 /*----------------------------------------------------------------------------*/
 
-bool impl_app_socket_open(ov_app *self,
-                          ov_app_socket_config config,
+bool impl_app_socket_open(ov_app *self, ov_app_socket_config config,
                           void (*cb_success)(int socket, void *self),
                           void (*cb_failure)(int socket, void *self)) {
 
@@ -1013,13 +1025,13 @@ bool impl_app_socket_open(ov_app *self,
         return open_client_connection(self, config, cb_success, cb_failure);
 
     loop = app->public.config.loop;
-    if (!loop || !loop->callback.set) goto error;
+    if (!loop || !loop->callback.set)
+        goto error;
 
     socket = ov_socket_create(config.socket_config, false, NULL);
     if (socket < 0) {
         ov_log_error("%s failed to open socket %s:%i | %s",
-                     app->public.config.name,
-                     config.socket_config.host,
+                     app->public.config.name, config.socket_config.host,
                      config.socket_config.port,
                      ov_socket_transport_to_string(config.socket_config.type));
         goto error;
@@ -1028,7 +1040,8 @@ bool impl_app_socket_open(ov_app *self,
     if (!self->socket.add || !self->socket.add(self, config, socket))
         goto error;
 
-    if (cb_success) cb_success(socket, self);
+    if (cb_success)
+        cb_success(socket, self);
     return true;
 
 error:
@@ -1044,21 +1057,24 @@ error:
     }
 
     // raise error callback
-    if (cb_failure) cb_failure(-1, self);
+    if (cb_failure)
+        cb_failure(-1, self);
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool fill_connection_key(char *key,
-                                size_t size,
+static bool fill_connection_key(char *key, size_t size,
                                 const ov_socket_data *remote) {
 
-    if (!key || !remote) return false;
+    if (!key || !remote)
+        return false;
 
     int bytes = snprintf(key, size, "%s%i", remote->host, remote->port);
-    if (bytes <= 0) return false;
-    if (bytes >= CONNECTION_KEY_LENGTH) return false;
+    if (bytes <= 0)
+        return false;
+    if (bytes >= CONNECTION_KEY_LENGTH)
+        return false;
     return true;
 }
 
@@ -1090,10 +1106,8 @@ static bool socket_config_valid(const ov_app_socket_config cfg, int fd) {
 static const uint8_t EVENTS =
     OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE;
 
-static bool tcp_add_nocheck(DefaultApp *app,
-                            ov_event_loop *loop,
-                            ov_app_socket_config config,
-                            int fd) {
+static bool tcp_add_nocheck(DefaultApp *app, ov_event_loop *loop,
+                            ov_app_socket_config config, int fd) {
 
     OV_ASSERT(0 != app);
     OV_ASSERT(0 != loop);
@@ -1137,18 +1151,22 @@ bool impl_app_socket_add(ov_app *self, ov_app_socket_config config, int fd) {
 
     DefaultApp *app = AS_IMPL_APP(self);
 
-    if (!app || fd < 0) goto error;
+    if (!app || fd < 0)
+        goto error;
 
     // check if already added
-    if (ov_dict_get(app->sockets, (void *)id)) goto done;
+    if (ov_dict_get(app->sockets, (void *)id))
+        goto done;
 
-    if (!socket_config_valid(config, fd)) goto error;
+    if (!socket_config_valid(config, fd))
+        goto error;
 
     OV_ASSERT(TCP == config.socket_config.type);
 
     ov_event_loop *loop = app->public.config.loop;
 
-    if (!loop || !loop->callback.set) goto error;
+    if (!loop || !loop->callback.set)
+        goto error;
 
     /*
      *      Open a server socket,
@@ -1158,15 +1176,14 @@ bool impl_app_socket_add(ov_app *self, ov_app_socket_config config, int fd) {
 
     // read config with opened port
     if (!ov_socket_get_config(fd, &config.socket_config, NULL, NULL)) {
-        ov_log_error(
-            "%s failed to read back config "
-            "from socket %i - closing",
-            app->public.config.name,
-            fd);
+        ov_log_error("%s failed to read back config "
+                     "from socket %i - closing",
+                     app->public.config.name, fd);
         goto error;
     }
 
-    if (!ov_socket_ensure_nonblocking(fd)) goto error;
+    if (!ov_socket_ensure_nonblocking(fd))
+        goto error;
 
     // reset correct input type
     config.socket_config.type = TCP;
@@ -1175,11 +1192,9 @@ bool impl_app_socket_add(ov_app *self, ov_app_socket_config config, int fd) {
 
     if (succeeded) {
         ov_log_info("%s added socket %i %s at %s:%" PRIu16 " | %s ",
-                    app->public.config.name,
-                    fd,
+                    app->public.config.name, fd,
                     config.as_client ? "client" : "server",
-                    config.socket_config.host,
-                    config.socket_config.port,
+                    config.socket_config.host, config.socket_config.port,
                     ov_socket_transport_to_string(config.socket_config.type));
     }
 
@@ -1191,15 +1206,15 @@ done:
 
 error:
 
-    if (app) ov_dict_del(app->sockets, (void *)id);
+    if (app)
+        ov_dict_del(app->sockets, (void *)id);
 
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool open_client_connection(ov_app *self,
-                                   ov_app_socket_config config,
+static bool open_client_connection(ov_app *self, ov_app_socket_config config,
                                    void (*cb_success)(int socket, void *self),
                                    void (*cb_failure)(int socket, void *self)) {
 
@@ -1212,7 +1227,8 @@ static bool open_client_connection(ov_app *self,
 
     ov_event_loop *loop = app->public.config.loop;
 
-    if (!loop || !loop->callback.set) goto error;
+    if (!loop || !loop->callback.set)
+        goto error;
 
     int socket = -1;
 
@@ -1230,13 +1246,13 @@ static bool open_client_connection(ov_app *self,
     if (socket < 0) {
 
         ov_log_error("%s failed to open client socket to %s:%i",
-                     app->public.config.name,
-                     config.socket_config.host,
+                     app->public.config.name, config.socket_config.host,
                      config.socket_config.port);
         goto error;
     }
 
-    if (!ov_socket_ensure_nonblocking(socket)) goto error;
+    if (!ov_socket_ensure_nonblocking(socket))
+        goto error;
 
     id = socket;
 
@@ -1249,18 +1265,17 @@ static bool open_client_connection(ov_app *self,
     uint8_t events = OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE;
 
     connection = app_connection_create(app, config, socket);
-    if (!connection) goto error;
+    if (!connection)
+        goto error;
 
     connection->success = cb_success;
     connection->failure = cb_failure;
 
     if (!loop->callback.set(loop, socket, events, app, cb_io_stream)) {
 
-        ov_log_error(
-            "%s failed to add STREAM "
-            "IO at %s",
-            app->public.config.name,
-            config.socket_config.host);
+        ov_log_error("%s failed to add STREAM "
+                     "IO at %s",
+                     app->public.config.name, config.socket_config.host);
 
         goto error;
     }
@@ -1269,12 +1284,8 @@ static bool open_client_connection(ov_app *self,
         "%s opened client connection "
         "with UUID %s at socket %i from %s:%i to %s:%i | "
         "%s",
-        app->public.config.name,
-        connection->uuid,
-        socket,
-        connection->local.host,
-        connection->local.port,
-        connection->remote.host,
+        app->public.config.name, connection->uuid, socket,
+        connection->local.host, connection->local.port, connection->remote.host,
         connection->remote.port,
         ov_socket_transport_to_string(connection->config.socket_config.type));
 
@@ -1287,13 +1298,13 @@ static bool open_client_connection(ov_app *self,
 
         switch (config.socket_config.type) {
 
-            case LOCAL:
-            case TCP:
-            case UDP:
-                cb_success(socket, self);
-                break;
-            default:
-                break;
+        case LOCAL:
+        case TCP:
+        case UDP:
+            cb_success(socket, self);
+            break;
+        default:
+            break;
         }
     }
 
@@ -1302,11 +1313,13 @@ error:
     // raise error callback
     if (app) {
 
-        if (connection) ov_dict_del(app->uuids, connection->uuid);
+        if (connection)
+            ov_dict_del(app->uuids, connection->uuid);
 
         ov_dict_del(app->sockets, (void *)id);
     }
-    if (cb_failure) cb_failure(-1, self);
+    if (cb_failure)
+        cb_failure(-1, self);
     return false;
 }
 
@@ -1316,7 +1329,8 @@ bool impl_app_socket_close(ov_app *self, int socket) {
 
     intptr_t id = socket;
     DefaultApp *app = AS_IMPL_APP(self);
-    if (!app || socket < 0) goto error;
+    if (!app || socket < 0)
+        goto error;
 
     ov_log_debug("%s closing socket %i", app->public.config.name, socket);
 
@@ -1331,14 +1345,13 @@ error:
 bool impl_app_connection_close(ov_app *self, const char *uuid) {
 
     DefaultApp *app = AS_IMPL_APP(self);
-    if (!app || !uuid) return false;
+    if (!app || !uuid)
+        return false;
 
     intptr_t id = (intptr_t)ov_dict_get(app->uuids, uuid);
 
-    ov_log_debug("%s connection close %s at socket %i",
-                 app->public.config.name,
-                 uuid,
-                 id);
+    ov_log_debug("%s connection close %s at socket %i", app->public.config.name,
+                 uuid, id);
 
     return impl_app_socket_close(self, id);
 }
@@ -1348,7 +1361,8 @@ bool impl_app_connection_close(ov_app *self, const char *uuid) {
 int impl_app_connection_get_socket(ov_app *self, const char *uuid) {
 
     DefaultApp *app = AS_IMPL_APP(self);
-    if (!app || !uuid) return false;
+    if (!app || !uuid)
+        return false;
 
     intptr_t id = (intptr_t)ov_dict_get(app->uuids, uuid);
     return id;
@@ -1365,11 +1379,14 @@ static bool close_connections(void *key, void *data) {
 
 static bool gather_client_socket_keys(const void *key, void *item, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     AppConnection *conn = app_connection_cast(item);
-    if (!conn) return true;
-    if (conn->server) return true;
+    if (!conn)
+        return true;
+    if (conn->server)
+        return true;
 
     return ov_list_push(data, (void *)key);
 }
@@ -1379,7 +1396,8 @@ static bool gather_client_socket_keys(const void *key, void *item, void *data) {
 bool impl_app_connection_close_all(ov_app *self) {
 
     DefaultApp *app = AS_IMPL_APP(self);
-    if (!app) return false;
+    if (!app)
+        return false;
 
     ov_list *keys = NULL;
 
@@ -1388,7 +1406,8 @@ bool impl_app_connection_close_all(ov_app *self) {
     if (!ov_dict_for_each(app->sockets, keys, gather_client_socket_keys))
         goto error;
 
-    if (!ov_list_for_each(keys, app, close_connections)) goto error;
+    if (!ov_list_for_each(keys, app, close_connections))
+        goto error;
 
     keys = ov_list_free(keys);
 
@@ -1400,8 +1419,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static AppConnection *connection_from_socket_data(
-    void *data, ov_socket_data const *remote) {
+static AppConnection *
+connection_from_socket_data(void *data, ov_socket_data const *remote) {
 
     AppConnection *connection = app_connection_cast(data);
 
@@ -1417,7 +1436,8 @@ static AppConnection *connection_from_socket_data(
     }
 
     char key[CONNECTION_KEY_LENGTH] = {0};
-    if (!fill_connection_key(key, CONNECTION_KEY_LENGTH, remote)) goto error;
+    if (!fill_connection_key(key, CONNECTION_KEY_LENGTH, remote))
+        goto error;
 
     return ov_dict_get(listener->connections, key);
 
@@ -1428,20 +1448,20 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_parser *app_get_send_parser(DefaultApp *app,
-                                      int socket,
+static ov_parser *app_get_send_parser(DefaultApp *app, int socket,
                                       const ov_socket_data *remote) {
 
     intptr_t id = socket;
 
-    if (!app || socket < 1) goto error;
+    if (!app || socket < 1)
+        goto error;
 
     void *socket_data = ov_dict_get(app->sockets, (void *)id);
 
     if (!socket_data) {
 
-        ov_log_debug(
-            "%s has no data for socket %i", app->public.config.name, socket);
+        ov_log_debug("%s has no data for socket %i", app->public.config.name,
+                     socket);
         goto error;
     }
 
@@ -1450,11 +1470,9 @@ static ov_parser *app_get_send_parser(DefaultApp *app,
 
     if (!connection) {
 
-        ov_log_debug(
-            "%s has no socket %i which is able to "
-            "send",
-            app->public.config.name,
-            socket);
+        ov_log_debug("%s has no socket %i which is able to "
+                     "send",
+                     app->public.config.name, socket);
         goto error;
     }
 
@@ -1479,20 +1497,22 @@ static bool cb_io_accept(int socket_fd, uint8_t events, void *data) {
     int nfd = 0;
 
     DefaultApp *app = AS_IMPL_APP(data);
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
     ov_event_loop *loop = app->public.config.loop;
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    if (socket_fd < 1) goto error;
+    if (socket_fd < 1)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
         if (!loop->callback.unset(loop, socket_fd, NULL)) {
-            ov_log_error(
-                "%s failed to unset accept "
-                "callback",
-                app->public.config.name);
+            ov_log_error("%s failed to unset accept "
+                         "callback",
+                         app->public.config.name);
             goto error;
         }
 
@@ -1500,7 +1520,8 @@ static bool cb_io_accept(int socket_fd, uint8_t events, void *data) {
     }
 
     // accept MUST have some incoming IO
-    if (!(events & OV_EVENT_IO_IN)) goto error;
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
 
     ov_socket_data local;
     memset(&local, 0, sizeof(local));
@@ -1512,74 +1533,59 @@ static bool cb_io_accept(int socket_fd, uint8_t events, void *data) {
     if (nfd < 0) {
 
         ov_log_error("%s failed to accept at socket %i",
-                     app->public.config.name,
-                     socket_fd);
+                     app->public.config.name, socket_fd);
         goto error;
     }
 
-    if (!ov_socket_ensure_nonblocking(nfd)) goto error;
+    if (!ov_socket_ensure_nonblocking(nfd))
+        goto error;
 
     if (!ov_socket_get_data(nfd, &local, &remote)) {
-        ov_log_error(
-            "%s failed to parse data at accepted fd "
-            "%i",
-            app->public.config.name,
-            nfd);
+        ov_log_error("%s failed to parse data at accepted fd "
+                     "%i",
+                     app->public.config.name, nfd);
         goto error;
     }
 
     if (local.host[0] != 0) {
 
-        ov_log_debug(
-            "%s accepted at socket fd %i | "
-            "LOCAL %s:%i REMOTE %s:%i | "
-            "new connection fd %i",
-            app->public.config.name,
-            socket_fd,
-            local.host,
-            local.port,
-            remote.host,
-            remote.port,
-            nfd);
+        ov_log_debug("%s accepted at socket fd %i | "
+                     "LOCAL %s:%i REMOTE %s:%i | "
+                     "new connection fd %i",
+                     app->public.config.name, socket_fd, local.host, local.port,
+                     remote.host, remote.port, nfd);
 
     } else {
 
-        ov_log_debug(
-            "%s accepted at socket fd %i | "
-            "new connection fd %i",
-            app->public.config.name,
-            socket_fd,
-            nfd);
+        ov_log_debug("%s accepted at socket fd %i | "
+                     "new connection fd %i",
+                     app->public.config.name, socket_fd, nfd);
     }
 
     AppListener *listener =
         app_listener_cast(ov_dict_get(app->sockets, (void *)id));
 
-    if (!listener) goto error;
+    if (!listener)
+        goto error;
 
     AppConnection *connection =
         app_connection_create(app, listener->config, nfd);
 
     if (!connection) {
-        ov_log_error(
-            "%s failed to create connection "
-            "at accepted socket %i",
-            app->public.config.name,
-            nfd);
+        ov_log_error("%s failed to create connection "
+                     "at accepted socket %i",
+                     app->public.config.name, nfd);
         goto error;
     }
 
     connection->master_socket = socket_fd;
 
     if (!loop->callback.set(
-            loop,
-            nfd,
-            OV_EVENT_IO_ERR | OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE,
-            app,
-            cb_io_stream)) {
+            loop, nfd, OV_EVENT_IO_ERR | OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE,
+            app, cb_io_stream)) {
 
-        ov_log_critical(
-            "%s failed to set io_callback at %i", app->public.config.name, nfd);
+        ov_log_critical("%s failed to set io_callback at %i",
+                        app->public.config.name, nfd);
 
         if (!impl_app_socket_close((ov_app *)app, nfd)) {
             ov_log_critical("%s failed to cleanup at %i", nfd);
@@ -1592,9 +1598,7 @@ static bool cb_io_accept(int socket_fd, uint8_t events, void *data) {
 
     if ((0 != listener->config.callback.accepted) &&
         (!listener->config.callback.accepted(
-            &app->public,
-            socket_fd,
-            nfd,
+            &app->public, socket_fd, nfd,
             listener->config.callback.userdata))) {
         ov_log_error("open callback signalled to close socket");
         if (!impl_app_socket_close((ov_app *)app, nfd)) {
@@ -1608,7 +1612,8 @@ static bool cb_io_accept(int socket_fd, uint8_t events, void *data) {
     return true;
 
 error:
-    if (nfd > -1) close(nfd);
+    if (nfd > -1)
+        close(nfd);
     return false;
 }
 
@@ -1625,12 +1630,11 @@ bool cb_io_stream(int socket, uint8_t events, void *self) {
 
     OV_ASSERT(0 != app);
 
-    if (!app) goto error;
+    if (!app)
+        goto error;
 
-    ov_log_debug("%s io stream at %i | event %i",
-                 app->public.config.name,
-                 socket,
-                 events);
+    ov_log_debug("%s io stream at %i | event %i", app->public.config.name,
+                 socket, events);
 
     if (events & OV_EVENT_IO_ERR) {
 
@@ -1662,8 +1666,8 @@ bool cb_io_stream(int socket, uint8_t events, void *self) {
     }
 
     if (in < 0) {
-        ov_log_debug(
-            "recv returned %i - errno is %i (%s)", in, errno, strerror(errno));
+        ov_log_debug("recv returned %i - errno is %i (%s)", in, errno,
+                     strerror(errno));
         goto error;
     }
 
@@ -1675,8 +1679,7 @@ bool cb_io_stream(int socket, uint8_t events, void *self) {
     if (!connection) {
 
         ov_log_critical("%s IO stream without connection at socket %i",
-                        app->public.config.name,
-                        socket);
+                        app->public.config.name, socket);
 
         goto error;
     }
@@ -1701,15 +1704,17 @@ bool cb_io_dgram(int socket, uint8_t events, void *self) {
     memset(buffer, 0, size);
 
     DefaultApp *app = AS_IMPL_APP(self);
-    if (!app || socket < 0) goto error;
+    if (!app || socket < 0)
+        goto error;
 
-    ov_log_debug(
-        "%s io dgram at %i events %i", app->public.config.name, socket, events);
+    ov_log_debug("%s io dgram at %i events %i", app->public.config.name, socket,
+                 events);
 
     AppConnection *connection =
         app_connection_cast(ov_dict_get(app->sockets, (void *)id));
 
-    if (!connection) goto error;
+    if (!connection)
+        goto error;
 
     if (events & OV_EVENT_IO_ERR || events & OV_EVENT_IO_CLOSE ||
         !(events & OV_EVENT_IO_IN))
@@ -1722,7 +1727,8 @@ bool cb_io_dgram(int socket, uint8_t events, void *self) {
         recvfrom(socket, buffer, size, 0, (struct sockaddr *)&sa, &sa_len);
 
     // read again
-    if (in < 0) return true;
+    if (in < 0)
+        return true;
 
     ov_socket_data remote = ov_socket_data_from_sockaddr_storage(&sa);
     return cb_io_raw(connection, buffer, in, &remote);
@@ -1731,8 +1737,8 @@ close:
     ov_log_debug("%s IO UDP close %i", app->public.config.name, socket);
 
     if (connection->config.callback.close)
-        connection->config.callback.close(
-            (ov_app *)app, socket, NULL, connection->config.callback.userdata);
+        connection->config.callback.close((ov_app *)app, socket, NULL,
+                                          connection->config.callback.userdata);
 
     return impl_app_socket_close((ov_app *)app, socket);
 error:
@@ -1742,22 +1748,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool send_parser_answer(DefaultApp *app,
-                               AppConnection *connection,
+static bool send_parser_answer(DefaultApp *app, AppConnection *connection,
                                const ov_socket_data *remote) {
 
-    if (!app || !connection || !remote) goto error;
+    if (!app || !connection || !remote)
+        goto error;
 
     ov_log_debug(
         "%s | %s connection IO parser %s answer "
         "at %s:%i from %s:%i",
-        app->public.config.name,
-        connection->uuid,
-        connection->parser->name,
+        app->public.config.name, connection->uuid, connection->parser->name,
         connection->config.socket_config.host,
-        connection->config.socket_config.port,
-        remote->host,
-        remote->port);
+        connection->config.socket_config.port, remote->host, remote->port);
 
     if ((!ov_buffer_cast(connection->data.out.data)) ||
         (connection->data.out.free != ov_buffer_free)) {
@@ -1765,29 +1767,21 @@ static bool send_parser_answer(DefaultApp *app,
             "%s | %s answer without ov_buffer data "
             "content or ov_buffer_free function %s "
             "at %s:%i from %s:%i",
-            app->public.config.name,
-            connection->uuid,
-            connection->parser->name,
+            app->public.config.name, connection->uuid, connection->parser->name,
             connection->config.socket_config.host,
-            connection->config.socket_config.port,
-            remote->host,
-            remote->port);
+            connection->config.socket_config.port, remote->host, remote->port);
         goto error;
     }
 
-    if (!default_send_buffer(
-            ov_app_cast(app), connection->socket, connection->data.out.data)) {
+    if (!default_send_buffer(ov_app_cast(app), connection->socket,
+                             connection->data.out.data)) {
 
         ov_log_error(
             "%s | %s failed to send answer %s "
             "at %s:%i from %s:%i",
-            app->public.config.name,
-            connection->uuid,
-            connection->parser->name,
+            app->public.config.name, connection->uuid, connection->parser->name,
             connection->config.socket_config.host,
-            connection->config.socket_config.port,
-            remote->host,
-            remote->port);
+            connection->config.socket_config.port, remote->host, remote->port);
         goto error;
     }
 
@@ -1855,12 +1849,9 @@ static bool app_connection_process_parsed_data(AppConnection *connection) {
 
     OV_ASSERT(0 != connection->config.callback.io);
 
-    bool ok =
-        connection->config.callback.io(&app->public,
-                                       connection->socket,
-                                       connection->uuid,
-                                       &connection->remote,
-                                       (void **)&connection->data.out.data);
+    bool ok = connection->config.callback.io(
+        &app->public, connection->socket, connection->uuid, &connection->remote,
+        (void **)&connection->data.out.data);
 
     if ((0 != connection->data.out.data) && (0 != connection->data.out.free)) {
 
@@ -1887,23 +1878,18 @@ error:
 
 #define PARSE_LOG_DEBUG(connection, msg)                                       \
     do {                                                                       \
-        ov_log_debug(                                                          \
-            "%s | %s connection (%s:%i from %s:%i): Parser %s "                \
-            "error: %s",                                                       \
-            app->public.config.name,                                           \
-            connection->uuid,                                                  \
-            connection->config.socket_config.host,                             \
-            connection->config.socket_config.port,                             \
-            connection->remote.host,                                           \
-            connection->remote.port,                                           \
-            connection->parser->name,                                          \
-            msg);                                                              \
+        ov_log_debug("%s | %s connection (%s:%i from %s:%i): Parser %s "       \
+                     "error: %s",                                              \
+                     app->public.config.name, connection->uuid,                \
+                     connection->config.socket_config.host,                    \
+                     connection->config.socket_config.port,                    \
+                     connection->remote.host, connection->remote.port,         \
+                     connection->parser->name, msg);                           \
     } while (0)
 
 /*----------------------------------------------------------------------------*/
 
-static bool app_connection_parse_nocheck(DefaultApp *app,
-                                         ov_event_loop *loop,
+static bool app_connection_parse_nocheck(DefaultApp *app, ov_event_loop *loop,
                                          AppConnection *connection) {
 
     OV_ASSERT(0 != app);
@@ -1914,70 +1900,70 @@ static bool app_connection_parse_nocheck(DefaultApp *app,
 
     switch (ov_parser_decode(connection->parser, &connection->data)) {
 
-        case OV_PARSER_ERROR:
+    case OV_PARSER_ERROR:
 
-            PARSE_LOG_DEBUG(connection, "error");
+        PARSE_LOG_DEBUG(connection, "error");
+        goto error;
+
+    case OV_PARSER_DONE:
+
+        ov_parser_data_clear_in(&connection->data);
+        ov_parser_data_clear_out(&connection->data);
+
+        PARSE_LOG_DEBUG(connection, "done");
+        break;
+
+    case OV_PARSER_CLOSE:
+
+        ov_parser_data_clear_in(&connection->data);
+        ov_parser_data_clear_out(&connection->data);
+
+        PARSE_LOG_DEBUG(connection, "close");
+        goto error;
+
+    case OV_PARSER_MISMATCH:
+
+        PARSE_LOG_DEBUG(connection, "mismatch");
+        goto error;
+
+    case OV_PARSER_PROGRESS:
+
+        PARSE_LOG_DEBUG(connection, "JSON incomplete: ");
+
+        buf = connection->data.in.data;
+        if (0 != buf) {
+            str = calloc(1, buf->length + 1);
+
+            memcpy(str, buf->start, buf->length);
+            str[buf->length] = 0;
+            ov_log_error("JSON incomplete: '%s'", str);
+
+            free(str);
+            str = 0;
+        }
+
+        break;
+
+    case OV_PARSER_SUCCESS:
+
+        PARSE_LOG_DEBUG(connection, "success");
+
+        if (!app_connection_process_parsed_data(connection)) {
             goto error;
+        }
 
-        case OV_PARSER_DONE:
+        break;
 
-            ov_parser_data_clear_in(&connection->data);
-            ov_parser_data_clear_out(&connection->data);
+    case OV_PARSER_ANSWER:
 
-            PARSE_LOG_DEBUG(connection, "done");
-            break;
-
-        case OV_PARSER_CLOSE:
-
-            ov_parser_data_clear_in(&connection->data);
-            ov_parser_data_clear_out(&connection->data);
-
-            PARSE_LOG_DEBUG(connection, "close");
+        if (!send_parser_answer(app, connection, &connection->remote))
             goto error;
+        break;
 
-        case OV_PARSER_MISMATCH:
+    case OV_PARSER_ANSWER_CLOSE:
 
-            PARSE_LOG_DEBUG(connection, "mismatch");
-            goto error;
-
-        case OV_PARSER_PROGRESS:
-
-            PARSE_LOG_DEBUG(connection, "JSON incomplete: ");
-
-            buf = connection->data.in.data;
-            if (0 != buf) {
-                str = calloc(1, buf->length + 1);
-
-                memcpy(str, buf->start, buf->length);
-                str[buf->length] = 0;
-                ov_log_error("JSON incomplete: '%s'", str);
-
-                free(str);
-                str = 0;
-            }
-
-            break;
-
-        case OV_PARSER_SUCCESS:
-
-            PARSE_LOG_DEBUG(connection, "success");
-
-            if (!app_connection_process_parsed_data(connection)) {
-                goto error;
-            }
-
-            break;
-
-        case OV_PARSER_ANSWER:
-
-            if (!send_parser_answer(app, connection, &connection->remote))
-                goto error;
-            break;
-
-        case OV_PARSER_ANSWER_CLOSE:
-
-            send_parser_answer(app, connection, &connection->remote);
-            goto error;
+        send_parser_answer(app, connection, &connection->remote);
+        goto error;
     }
 
     return true;
@@ -2010,9 +1996,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool cb_io_raw(AppConnection *connection,
-               const uint8_t *buffer,
-               size_t size,
+bool cb_io_raw(AppConnection *connection, const uint8_t *buffer, size_t size,
                const ov_socket_data *remote) {
 
     bool result = false;
@@ -2041,14 +2025,10 @@ bool cb_io_raw(AppConnection *connection,
     connection->last_io_in = ov_time_get_current_time_usecs();
 
     ov_log_debug("%s io raw at %i %s:%i from %s:%i | %.*s",
-                 app->public.config.name,
-                 connection->socket,
+                 app->public.config.name, connection->socket,
                  connection->config.socket_config.host,
-                 connection->config.socket_config.port,
-                 remote->host,
-                 remote->port,
-                 size,
-                 buffer);
+                 connection->config.socket_config.port, remote->host,
+                 remote->port, size, buffer);
 
     buf = ov_buffer_create(size);
     memcpy(buf->start, buffer, size);
@@ -2069,28 +2049,22 @@ bool cb_io_raw(AppConnection *connection,
 
         ov_buffer **pointer_to_buffer = &buf;
 
-        bool success =
-            connection->config.callback.io((ov_app *)app,
-                                           connection->socket,
-                                           connection->uuid,
-                                           remote,
-                                           (void **)pointer_to_buffer);
+        bool success = connection->config.callback.io(
+            (ov_app *)app, connection->socket, connection->uuid, remote,
+            (void **)pointer_to_buffer);
 
         buf = ov_buffer_free(*pointer_to_buffer);
 
-        if (!success) goto close;
+        if (!success)
+            goto close;
     }
 
-    ov_log_debug(
-        "%s | %s connection IO done "
-        "at %i | %s:%i from %s:%i",
-        app->public.config.name,
-        connection->uuid,
-        connection->socket,
-        connection->config.socket_config.host,
-        connection->config.socket_config.port,
-        remote->host,
-        remote->port);
+    ov_log_debug("%s | %s connection IO done "
+                 "at %i | %s:%i from %s:%i",
+                 app->public.config.name, connection->uuid, connection->socket,
+                 connection->config.socket_config.host,
+                 connection->config.socket_config.port, remote->host,
+                 remote->port);
 
     buf = ov_buffer_free(buf);
     OV_ASSERT(0 == buf);
@@ -2129,26 +2103,24 @@ error:
 
 static bool app_send_tcp(ov_app *app, const ov_buffer *buffer, int socket) {
 
-    if (!buffer) goto error;
+    if (!buffer)
+        goto error;
 
     size_t total = 0;
     ssize_t bytes = 0;
 
-    ov_log_debug("%s going to send at %i | %s | %.*s",
-                 app->config.name,
-                 socket,
-                 "TCP",
-                 (int)buffer->length,
-                 (char *)buffer->start);
+    ov_log_debug("%s going to send at %i | %s | %.*s", app->config.name, socket,
+                 "TCP", (int)buffer->length, (char *)buffer->start);
 
     while (total != buffer->length) {
 
-        bytes = send(
-            socket, (char *)buffer->start + total, buffer->length - total, 0);
+        bytes = send(socket, (char *)buffer->start + total,
+                     buffer->length - total, 0);
 
         if (bytes == -1) {
 
-            if (errno != EAGAIN) goto error;
+            if (errno != EAGAIN)
+                goto error;
 
         } else {
 
@@ -2165,7 +2137,8 @@ error:
 
 bool default_send_buffer(ov_app *app, int socket, const ov_buffer *buffer) {
 
-    if (!buffer) goto error;
+    if (!buffer)
+        goto error;
 
     OV_ASSERT(!ov_socket_is_dgram(socket));
 
@@ -2179,14 +2152,16 @@ error:
 
 static bool default_send_queue(ov_app *app, int socket, const ov_list *queue) {
 
-    if (!queue) goto error;
+    if (!queue)
+        goto error;
 
     OV_ASSERT(!ov_socket_is_dgram(socket));
 
     for (ov_buffer *buffer = ov_list_queue_pop((ov_list *)queue); 0 != buffer;
          buffer = ov_list_queue_pop((ov_list *)queue)) {
 
-        if (!app_send_tcp(app, buffer, socket)) goto error;
+        if (!app_send_tcp(app, buffer, socket))
+            goto error;
 
         buffer = ov_buffer_free(buffer);
     }
@@ -2198,16 +2173,14 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static bool app_send_parser(ov_app *app,
-                            ov_parser *parser,
-                            int socket,
-                            const ov_socket_data *remote,
-                            void *data) {
+static bool app_send_parser(ov_app *app, ov_parser *parser, int socket,
+                            const ov_socket_data *remote, void *data) {
 
     bool result = false;
     ov_parser_data parser_data;
     memset(&parser_data, 0, sizeof(parser_data));
-    if (!app || !data || !parser || socket <= 0) goto error;
+    if (!app || !data || !parser || socket <= 0)
+        goto error;
 
     /* For TCP, remote is not required and overwhelmingly
      * complex to supply. However, the error logs refer to
@@ -2223,13 +2196,9 @@ static bool app_send_parser(ov_app *app,
     parser_data.in.data = data;
 
     if (OV_PARSER_SUCCESS != ov_parser_encode(parser, &parser_data)) {
-        ov_log_error(
-            "%s failed to encode data at %i for "
-            "%s:%i",
-            app->config.name,
-            socket,
-            remote->host,
-            remote->port);
+        ov_log_error("%s failed to encode data at %i for "
+                     "%s:%i",
+                     app->config.name, socket, remote->host, remote->port);
         goto error;
     }
 
@@ -2246,14 +2215,10 @@ static bool app_send_parser(ov_app *app,
 
     } else {
 
-        ov_log_error(
-            "%s failed to send outgoing "
-            "at %i to %s:%i no valid buffer or "
-            "queue",
-            app->config.name,
-            socket,
-            remote->host,
-            remote->port);
+        ov_log_error("%s failed to send outgoing "
+                     "at %i to %s:%i no valid buffer or "
+                     "queue",
+                     app->config.name, socket, remote->host, remote->port);
         goto error;
     }
 
@@ -2264,14 +2229,13 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-bool impl_app_send(ov_app *app,
-                   int socket,
-                   const ov_socket_data *remote,
+bool impl_app_send(ov_app *app, int socket, const ov_socket_data *remote,
                    void *data) {
 
     DefaultApp *dapp = AS_IMPL_APP(app);
 
-    if ((0 == dapp) || (socket <= 0) || (0 == data)) goto error;
+    if ((0 == dapp) || (socket <= 0) || (0 == data))
+        goto error;
 
     if (!socket_is_contained(app, socket)) {
         goto error;
@@ -2282,12 +2246,11 @@ bool impl_app_send(ov_app *app,
     if (0 == parser) {
 
         if (!ov_buffer_cast(data)) {
-            ov_log_error(
-                "%s send input not ov_buffer "
-                "AND app params without parser, "
-                "cannot "
-                "send.",
-                app->config.name);
+            ov_log_error("%s send input not ov_buffer "
+                         "AND app params without parser, "
+                         "cannot "
+                         "send.",
+                         app->config.name);
             goto error;
         }
 
@@ -2302,12 +2265,11 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-bool ov_app_send(ov_app *app,
-                 int socket,
-                 const ov_socket_data *remote,
+bool ov_app_send(ov_app *app, int socket, const ov_socket_data *remote,
                  void *data) {
 
-    if (!app || !app->send) goto error;
+    if (!app || !app->send)
+        goto error;
 
     return app->send(app, socket, remote, data);
 error:
@@ -2334,52 +2296,59 @@ bool ov_app_stop(ov_app *app) {
 
 /*----------------------------------------------------------------------------*/
 
-const char *UNKNOWN_ARGUMENT_PRESENT =
-    "Unknown argument "
-    "present";
+const char *UNKNOWN_ARGUMENT_PRESENT = "Unknown argument "
+                                       "present";
 
-const char *ov_app_parse_command_line(int argc,
-                                      char *const argv[],
-                                      ov_app_parameters *restrict params) {
+/*----------------------------------------------------------------------------*/
 
-    NOT_IN_RELEASE("Function needs to be stripped");
+const char *
+ov_app_parse_command_line_optargs(int argc, char *const argv[],
+                                  ov_app_parameters *restrict params,
+                                  char const *optargs) {
 
     if ((0 == argc) || (0 == argv)) {
-
         return "Invalid argument - no args or nullpointer";
     }
 
-    char *optstring = "c:v";
+    char const *our_optstring = "c:v";
+    char *optstring = 0;
+
+    if (0 != optargs) {
+
+        optstring = calloc(1, strlen(our_optstring) + 1 + strlen(optargs) + 1);
+        strcpy(optstring, our_optstring);
+        strcat(optstring, optargs);
+
+    } else {
+        optstring = strdup(our_optstring);
+        optargs = "";
+    }
 
     int c = 0;
 
     const char *retval = 0;
 
     while (-1 != (c = getopt(argc, argv, optstring))) {
-
         switch (c) {
+        case 'c':
 
-            case 'c':
+            params->config_file = optarg;
+            break;
 
-                params->config_file = optarg;
-                break;
+        case 'v':
 
-            case 'v':
+            params->version_request = true;
+            break;
 
-                params->version_request = true;
-                break;
+        default:
 
-            default:
-                /* Unknown arguments are ignored since
-                 * they could be custom args for the
-                 * particular app
-                 */
+            if (0 == strchr(optargs, c)) {
                 retval = UNKNOWN_ARGUMENT_PRESENT;
+            }
         };
     };
 
     if (0 == params->config_file) {
-
         char *app_name = basename(argv[0]);
 
         params->config_file = ov_config_default_config_file_for(app_name);
@@ -2387,10 +2356,22 @@ const char *ov_app_parse_command_line(int argc,
         app_name = 0;
     }
 
+    optstring = ov_free(optstring);
+
     OV_ASSERT(0 != params->config_file);
+
+    optind =
+        1; // resets getopt in case of the arguments will scanned later again
 
     return retval;
 };
+
+/*----------------------------------------------------------------------------*/
+
+const char *ov_app_parse_command_line(int argc, char *const argv[],
+                                      ov_app_parameters *restrict params) {
+    return ov_app_parse_command_line_optargs(argc, argv, params, 0);
+}
 
 /******************************************************************************
  *                                 Reconnect
@@ -2398,7 +2379,6 @@ const char *ov_app_parse_command_line(int argc,
 
 static bool connect_socket_without_reconnect_unsafe(DefaultApp *app,
                                                     ov_app_socket_config cfg) {
-
     OV_ASSERT(0 != app);
 
     ov_socket_error err = {0};
@@ -2406,14 +2386,11 @@ static bool connect_socket_without_reconnect_unsafe(DefaultApp *app,
     int fd = ov_socket_create(cfg.socket_config, true, &err);
 
     if (0 > fd) {
-
-        ov_log_error(
-            "Could not create client socket. "
-            "errno: %s "
-            "gai_error: "
-            "%s",
-            strerror(err.err),
-            strerror(err.gai));
+        ov_log_error("Could not create client socket. "
+                     "errno: %s "
+                     "gai_error: "
+                     "%s",
+                     strerror(err.err), strerror(err.gai));
 
         goto error;
     }
@@ -2429,11 +2406,9 @@ error:
 
 const uint32_t reconnect_data_magic_bytes;
 
-static ReconnectData *get_unused_reconnect_data(
-    size_t no, ReconnectDataEntry *rd_entries) {
-
+static ReconnectData *
+get_unused_reconnect_data(size_t no, ReconnectDataEntry *rd_entries) {
     for (size_t i = 0; i < no; ++i) {
-
         if (!rd_entries[i].in_use) {
             rd_entries[i].in_use = true;
 
@@ -2447,33 +2422,27 @@ static ReconnectData *get_unused_reconnect_data(
 /*----------------------------------------------------------------------------*/
 
 static bool cb_io_stream_wrapper(int fd, uint8_t events, void *userdata) {
-
     if (0 == userdata) {
-        ov_log_error(
-            "Called with invalid argument (0 "
-            "pointer)");
+        ov_log_error("Called with invalid argument (0 "
+                     "pointer)");
         goto error;
     }
 
     ReconnectData *rd = userdata;
 
     if (reconnect_data_magic_bytes != rd->magic_bytes) {
-
-        ov_log_error(
-            "Called with invalid argument (magic "
-            "bytes don't "
-            "match");
+        ov_log_error("Called with invalid argument (magic "
+                     "bytes don't "
+                     "match");
         goto error;
     }
 
     OV_ASSERT(0 != rd->app);
 
     if (0 == rd->app) {
-
-        ov_log_error(
-            "Serious internal error - "
-            "ReconnectData without "
-            "app");
+        ov_log_error("Serious internal error - "
+                     "ReconnectData without "
+                     "app");
         goto error;
     }
 
@@ -2487,38 +2456,30 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool cb_reconnected(int fd, void *userdata) {
-
     if (0 == userdata) {
-
-        ov_log_error(
-            "Called with invalid argument (0 "
-            "pointer)");
+        ov_log_error("Called with invalid argument (0 "
+                     "pointer)");
         goto error;
     }
 
     ReconnectData *rd = userdata;
 
     if (reconnect_data_magic_bytes != rd->magic_bytes) {
-
-        ov_log_error(
-            "Called with invalid argument (magic "
-            "bytes don't "
-            "match");
+        ov_log_error("Called with invalid argument (magic "
+                     "bytes don't "
+                     "match");
         goto error;
     }
 
     if (0 == rd->app) {
-
-        ov_log_error(
-            "Called with invalid argument: app "
-            "missing");
+        ov_log_error("Called with invalid argument: app "
+                     "missing");
         goto error;
     }
 
     DefaultApp *app = AS_IMPL_APP(rd->app);
 
     if (0 == app) {
-
         ov_log_error("Called with wrong app");
         goto error;
     }
@@ -2526,16 +2487,14 @@ static bool cb_reconnected(int fd, void *userdata) {
     bool success = app_connection_create(app, rd->scfg, fd);
 
     if (!success) {
-
         ov_log_error("Could not create connection");
         goto error;
     }
 
-    success = rd->scfg.callback.reconnected(
-        &rd->app->public, fd, rd->scfg.callback.userdata);
+    success = rd->scfg.callback.reconnected(&rd->app->public, fd,
+                                            rd->scfg.callback.userdata);
 
     if (!success) {
-
         ov_log_error("reconnect callback failed");
         goto error;
     }
@@ -2554,7 +2513,6 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_app_connect(ov_app *self, ov_app_socket_config config) {
-
     /* Currently, reconnects are only supported with
      * TCP sockets, client of course, thus
      * forward any other valid connect request to
@@ -2568,35 +2526,28 @@ bool ov_app_connect(ov_app *self, ov_app_socket_config config) {
         return false;
 
     } else if (!config.as_client) {
-
         return self->socket.open(self, config, 0, 0);
 
     } else if (0 == config.callback.reconnected) {
-
         return connect_socket_without_reconnect_unsafe(app, config);
 
     } else if (TCP != config.socket_config.type) {
-
         ov_log_error("reconnects only supported with TCP");
         return false;
 
     } else if (0 == app->reconnect) {
-
         ov_log_error("App does not support reconnects");
         return false;
 
     } else {
-
         ReconnectData *rd = get_unused_reconnect_data(
             self->config.reconnect.max_connections, app->reconnect_data);
 
         if (0 == rd) {
-
             ov_log_error("Number of supported reconnect connections exhausted");
             return false;
 
         } else {
-
             rd->magic_bytes = reconnect_data_magic_bytes;
             rd->app = app;
             rd->scfg = config;

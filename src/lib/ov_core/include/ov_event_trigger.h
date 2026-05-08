@@ -66,12 +66,10 @@ ov_event_trigger *ov_event_trigger_create(ov_event_trigger_config config);
 ov_event_trigger *ov_event_trigger_cast(const void *data);
 void *ov_event_trigger_free(void *self);
 
-bool ov_event_trigger_register_listener(ov_event_trigger *self,
-                                        const char *key,
+bool ov_event_trigger_register_listener(ov_event_trigger *self, const char *key,
                                         ov_event_trigger_data data);
 
-bool ov_event_trigger_send(ov_event_trigger *self,
-                           const char *key,
+bool ov_event_trigger_send(ov_event_trigger *self, const char *key,
                            ov_json_value *event);
 
 #endif /* ov_event_trigger_h */

@@ -231,8 +231,7 @@ struct find_compare_header_arg {
 
 /*----------------------------------------------------------------------------*/
 
-static bool find_compare_header(char const *header,
-                                char const *value,
+static bool find_compare_header(char const *header, char const *value,
                                 void *additional) {
 
     struct find_compare_header_arg *arg = additional;
@@ -301,30 +300,29 @@ static bool messages_equal(ov_sip_message const *msg1,
 
     switch (ov_sip_message_type_get(msg1)) {
 
-        case OV_SIP_REQUEST:
+    case OV_SIP_REQUEST:
 
-            return (OV_SIP_REQUEST == ov_sip_message_type_get(msg2)) &&
-                   (0 == ov_string_compare(ov_sip_message_uri(msg1),
-                                           ov_sip_message_uri(msg2))) &&
-                   message_headers_equal(msg1, msg2) &&
-                   message_bodies_equal(
-                       ov_sip_message_body(msg1), ov_sip_message_body(msg2));
+        return (OV_SIP_REQUEST == ov_sip_message_type_get(msg2)) &&
+               (0 == ov_string_compare(ov_sip_message_uri(msg1),
+                                       ov_sip_message_uri(msg2))) &&
+               message_headers_equal(msg1, msg2) &&
+               message_bodies_equal(ov_sip_message_body(msg1),
+                                    ov_sip_message_body(msg2));
 
-        case OV_SIP_RESPONSE:
+    case OV_SIP_RESPONSE:
 
-            return (OV_SIP_REQUEST == ov_sip_message_type_get(msg2)) &&
-                   (0 ==
-                    ov_string_compare(ov_sip_message_response_reason(msg1),
-                                      ov_sip_message_response_reason(msg2))) &&
-                   message_headers_equal(msg1, msg2) &&
-                   message_bodies_equal(
-                       ov_sip_message_body(msg1), ov_sip_message_body(msg2));
+        return (OV_SIP_REQUEST == ov_sip_message_type_get(msg2)) &&
+               (0 == ov_string_compare(ov_sip_message_response_reason(msg1),
+                                       ov_sip_message_response_reason(msg2))) &&
+               message_headers_equal(msg1, msg2) &&
+               message_bodies_equal(ov_sip_message_body(msg1),
+                                    ov_sip_message_body(msg2));
 
-        case OV_SIP_INVALID:
-            return (0 == msg1) && (0 == msg2);
+    case OV_SIP_INVALID:
+        return (0 == msg1) && (0 == msg2);
 
-        default:
-            OV_PANIC("Invalid enum value");
+    default:
+        OV_PANIC("Invalid enum value");
     };
 }
 
@@ -420,16 +418,16 @@ static int test_ov_sip_message_cseq_set() {
     method = 0;
 
     testrun(0 ==
-            ov_string_compare(
-                ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ), "0 REGISTER"));
+            ov_string_compare(ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ),
+                              "0 REGISTER"));
 
     testrun(ov_sip_message_cseq_set(msg, "REGISTER", 17));
     testrun(17 == ov_sip_message_cseq(msg, &method));
     testrun(0 == ov_string_compare(method, "REGISTER"));
 
     testrun(0 ==
-            ov_string_compare(
-                ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ), "17 REGISTER"));
+            ov_string_compare(ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ),
+                              "17 REGISTER"));
 
     msg = ov_sip_message_free(msg);
     testrun(0 == msg);
@@ -451,16 +449,16 @@ static int test_ov_sip_message_cseq_set() {
     method = 0;
 
     testrun(0 ==
-            ov_string_compare(
-                ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ), "0 REGISTER"));
+            ov_string_compare(ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ),
+                              "0 REGISTER"));
 
     testrun(ov_sip_message_cseq_set(msg, "INVITE", 17));
     testrun(17 == ov_sip_message_cseq(msg, &method));
     testrun(0 == ov_string_compare(method, "INVITE"));
 
     testrun(0 ==
-            ov_string_compare(
-                ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ), "17 INVITE"));
+            ov_string_compare(ov_sip_message_header(msg, OV_SIP_HEADER_CSEQ),
+                              "17 INVITE"));
 
     msg = ov_sip_message_free(msg);
     testrun(0 == msg);
@@ -639,8 +637,7 @@ static int test_ov_sip_message_get_caller() {
     ov_sip_message *msg = ov_sip_message_request_create(
         "INVITE", "sip:001234567890@10.135.0.1:5060;user=phone");
     testrun(0 != msg);
-    ov_sip_message_header_set(msg,
-                              OV_SIP_HEADER_FROM,
+    ov_sip_message_header_set(msg, OV_SIP_HEADER_FROM,
                               " \"Calling User\" "
                               "<sip:151@10.135.0.1:5060>;tag=m3l2hbp");
 
@@ -649,22 +646,19 @@ static int test_ov_sip_message_get_caller() {
     testrun(!caller_equals(msg, "sip:151@10.135.0.1:5061"));
     testrun(!caller_equals(msg, "sip:151@10.145.0.1:5060"));
 
-    ov_sip_message_header_set(msg,
-                              OV_SIP_HEADER_FROM,
+    ov_sip_message_header_set(msg, OV_SIP_HEADER_FROM,
                               " \"Calling User\" "
                               "<sip:151@10.135.0.1:5060;tag=m3l2hbp");
 
     testrun(0 == ov_sip_message_get_caller(msg));
 
-    ov_sip_message_header_set(msg,
-                              OV_SIP_HEADER_FROM,
+    ov_sip_message_header_set(msg, OV_SIP_HEADER_FROM,
                               " \"Calling User\" "
                               "sip:151@10.135.0.1:5060>;tag=m3l2hbp");
 
     testrun(0 == ov_sip_message_get_caller(msg));
 
-    ov_sip_message_header_set(msg,
-                              OV_SIP_HEADER_FROM,
+    ov_sip_message_header_set(msg, OV_SIP_HEADER_FROM,
                               " \"Calling User\" "
                               "<sip:151@10.135.0.1:5060>;tag=m3l2hbp");
 
@@ -695,19 +689,12 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_sip_message",
-            test_ov_sip_message_request_create,
-            test_ov_sip_message_response_create,
-            test_ov_sip_message_copy,
-            test_ov_sip_message_cseq,
-            test_ov_sip_message_cseq_set,
-            test_ov_sip_message_header_set,
-            test_ov_sip_message_header,
-            test_ov_sip_message_header_for_each,
-            test_ov_sip_message_body,
-            test_ov_sip_message_body_set,
-            test_ov_sip_message_get_caller,
-            test_ov_sip_message_free,
-            tear_down);
+OV_TEST_RUN("ov_sip_message", test_ov_sip_message_request_create,
+            test_ov_sip_message_response_create, test_ov_sip_message_copy,
+            test_ov_sip_message_cseq, test_ov_sip_message_cseq_set,
+            test_ov_sip_message_header_set, test_ov_sip_message_header,
+            test_ov_sip_message_header_for_each, test_ov_sip_message_body,
+            test_ov_sip_message_body_set, test_ov_sip_message_get_caller,
+            test_ov_sip_message_free, tear_down);
 
 /*----------------------------------------------------------------------------*/

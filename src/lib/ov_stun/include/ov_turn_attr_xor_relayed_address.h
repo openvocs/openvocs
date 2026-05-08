@@ -77,10 +77,7 @@ size_t ov_turn_attr_xor_relayed_address_encoding_length(
         @returns true   if content of address is written to buffer
 */
 bool ov_turn_attr_xor_relayed_address_encode(
-    uint8_t *buffer,
-    size_t length,
-    const uint8_t *head,
-    uint8_t **next,
+    uint8_t *buffer, size_t length, const uint8_t *head, uint8_t **next,
     const struct sockaddr_storage *address);
 
 /*----------------------------------------------------------------------------*/
@@ -94,8 +91,7 @@ bool ov_turn_attr_xor_relayed_address_encode(
         @param address  pointer to sockaddr_storage to fill / create
 */
 bool ov_turn_attr_xor_relayed_address_decode(const uint8_t *buffer,
-                                             size_t length,
-                                             const uint8_t *head,
+                                             size_t length, const uint8_t *head,
                                              struct sockaddr_storage **address);
 
 #endif /* ov_turn_attr_xor_relayed_address_h */

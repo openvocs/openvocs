@@ -182,8 +182,7 @@ ov_vm_retval invalid_handler(ov_vm *vm, ov_vm_prog *prog) {
 
 static void abort_program(ov_vm *self, ov_vm_prog *prog);
 
-static void prune_overdue_requests(ov_vm *self,
-                                   ov_vm_prog_db *db,
+static void prune_overdue_requests(ov_vm *self, ov_vm_prog_db *db,
                                    uint64_t timeout_usecs,
                                    size_t max_no_to_prune) {
 
@@ -269,8 +268,8 @@ ov_vm *ov_vm_create(ov_vm_config cfg, ov_event_loop *loop) {
 
     vm->loop = loop;
     vm->program_timeout_usecs = 1000 * timeout_msecs;
-    vm->timer_id = ov_event_loop_timer_set(
-        vm->loop, vm->program_timeout_usecs, vm, timer_callback);
+    vm->timer_id = ov_event_loop_timer_set(vm->loop, vm->program_timeout_usecs,
+                                           vm, timer_callback);
 
     return vm;
 }
@@ -344,9 +343,7 @@ static char const *op_to_symbol(ov_vm *self, uint8_t oc) {
 
 #define DESC_OPCODE(self, buf, oc) describe_opcode(self, sizeof(buf), buf, oc)
 
-static char *describe_opcode(ov_vm *self,
-                             size_t blen_bytes,
-                             char *buffer,
+static char *describe_opcode(ov_vm *self, size_t blen_bytes, char *buffer,
                              uint8_t oc) {
 
     OV_ASSERT(0 != buffer);
@@ -379,8 +376,7 @@ static ov_vm_opcode_handler sanitize_inv_handler(ov_vm_opcode_handler handler,
     if (0 == handler) {
 
         ov_log_warning("No inverse handler given for %s (%" PRIu8 ")",
-                       ov_string_sanitize(symbol),
-                       opcode);
+                       ov_string_sanitize(symbol), opcode);
         return inv_handler_dummy;
     } else {
         return handler;
@@ -389,9 +385,7 @@ static ov_vm_opcode_handler sanitize_inv_handler(ov_vm_opcode_handler handler,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vm_register(ov_vm *self,
-                    uint8_t opcode,
-                    char const *symbol,
+bool ov_vm_register(ov_vm *self, uint8_t opcode, char const *symbol,
                     ov_vm_opcode_handler handler,
                     ov_vm_opcode_handler inv_handler) {
 
@@ -457,25 +451,25 @@ static void release_program(ov_vm *self, ov_vm_prog *prog) {
 
     switch (ov_vm_prog_state(prog)) {
 
-        case OV_VM_PROG_FAILED_TO_ABORT:
-            notify_program_failed_to_abort(self, prog);
-            ov_vm_prog_db_remove(self->db, ov_vm_prog_id(prog));
-            break;
+    case OV_VM_PROG_FAILED_TO_ABORT:
+        notify_program_failed_to_abort(self, prog);
+        ov_vm_prog_db_remove(self->db, ov_vm_prog_id(prog));
+        break;
 
-        case OV_VM_PROG_ABORTING:
-            notify_program_aborted(self, prog);
-            ov_vm_prog_db_remove(self->db, ov_vm_prog_id(prog));
-            break;
+    case OV_VM_PROG_ABORTING:
+        notify_program_aborted(self, prog);
+        ov_vm_prog_db_remove(self->db, ov_vm_prog_id(prog));
+        break;
 
-        case OV_VM_PROG_OK:
-            notify_program_done(self, prog);
-            ov_vm_prog_db_remove(self->db, ov_vm_prog_id(prog));
-            break;
+    case OV_VM_PROG_OK:
+        notify_program_done(self, prog);
+        ov_vm_prog_db_remove(self->db, ov_vm_prog_id(prog));
+        break;
 
-        case OV_VM_PROG_INVALID:
-            ov_log_error("Serious internal error: No program (0 pointer)");
-            // OV_ASSERT(! "MUST NEVER HAPPEN");
-            break;
+    case OV_VM_PROG_INVALID:
+        ov_log_error("Serious internal error: No program (0 pointer)");
+        // OV_ASSERT(! "MUST NEVER HAPPEN");
+        break;
     }
 }
 
@@ -483,51 +477,50 @@ static void release_program(ov_vm *self, ov_vm_prog *prog) {
 
 static ov_vm_exec_result execute(ov_vm *self, ov_vm_prog *prog);
 
-static void abort_program_with(ov_vm *self,
-                               ov_vm_prog *prog,
+static void abort_program_with(ov_vm *self, ov_vm_prog *prog,
                                ov_vm_abort_opts opts) {
 
     char *backtrace = 0;
 
     switch (ov_vm_prog_state(prog)) {
 
-        case OV_VM_PROG_ABORTING:
-            ov_vm_prog_state_set(prog, OV_VM_PROG_FAILED_TO_ABORT);
-            // Call failed handler
-            release_program(self, prog);
-            break;
+    case OV_VM_PROG_ABORTING:
+        ov_vm_prog_state_set(prog, OV_VM_PROG_FAILED_TO_ABORT);
+        // Call failed handler
+        release_program(self, prog);
+        break;
 
-        case OV_VM_PROG_OK:
-            ov_vm_prog_state_set(prog, OV_VM_PROG_ABORTING);
+    case OV_VM_PROG_OK:
+        ov_vm_prog_state_set(prog, OV_VM_PROG_ABORTING);
 
-            if ((!opts.finish_current_step) &&
-                (OC_WAIT_AND_NEXT == ov_vm_prog_get_last_instr_retval(prog))) {
-                // After trigger/continue returns, the program counter
-                // of our program points to the next instruction to execute.
-                // This is fine if the last instruction was completed.
-                // However, for WAIT_AND_REPEAT and WAIT_AND_NEXT, the
-                // last instruction was not completed, but interrupted.
-                // Hence we need to decrease the counter once more
-                // to prevent inverting the unfinished instruction
-                ov_vm_prog_propagate_program_counter(prog);
-            }
-
+        if ((!opts.finish_current_step) &&
+            (OC_WAIT_AND_NEXT == ov_vm_prog_get_last_instr_retval(prog))) {
+            // After trigger/continue returns, the program counter
+            // of our program points to the next instruction to execute.
+            // This is fine if the last instruction was completed.
+            // However, for WAIT_AND_REPEAT and WAIT_AND_NEXT, the
+            // last instruction was not completed, but interrupted.
+            // Hence we need to decrease the counter once more
+            // to prevent inverting the unfinished instruction
             ov_vm_prog_propagate_program_counter(prog);
-            execute(self, prog);
-            break;
+        }
 
-        case OV_VM_PROG_FAILED_TO_ABORT:
-            ov_log_warning("Program is in state 'FAILED_TO_ABORT'");
-            OV_ASSERT(!" NEVER TO HAPPEN");
-            abort();
-            break;
+        ov_vm_prog_propagate_program_counter(prog);
+        execute(self, prog);
+        break;
 
-        case OV_VM_PROG_INVALID:
-            ov_log_warning("Program is invalid: %p", prog);
-            backtrace = ov_arch_compile_backtrace(20);
-            ov_log_warning("Backtrace: %s", ov_string_sanitize(backtrace));
-            backtrace = ov_free(backtrace);
-            break;
+    case OV_VM_PROG_FAILED_TO_ABORT:
+        ov_log_warning("Program is in state 'FAILED_TO_ABORT'");
+        OV_ASSERT(!" NEVER TO HAPPEN");
+        abort();
+        break;
+
+    case OV_VM_PROG_INVALID:
+        ov_log_warning("Program is invalid: %p", prog);
+        backtrace = ov_arch_compile_backtrace(20);
+        ov_log_warning("Backtrace: %s", ov_string_sanitize(backtrace));
+        backtrace = ov_free(backtrace);
+        break;
     };
 }
 
@@ -554,8 +547,8 @@ static ov_vm_opcode_handler handler_from_opcode_def(OpcodeDef const *def) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_vm_opcode_handler inverse_handler_from_opcode_def(
-    OpcodeDef const *def) {
+static ov_vm_opcode_handler
+inverse_handler_from_opcode_def(OpcodeDef const *def) {
 
     if (0 == def) {
         ov_log_error("No opcode definition");
@@ -567,30 +560,31 @@ static ov_vm_opcode_handler inverse_handler_from_opcode_def(
 
 /*----------------------------------------------------------------------------*/
 
-static ov_vm_opcode_handler get_handler_from_opcode_def(
-    OpcodeDef const *def, ov_vm_prog_status prog_state) {
+static ov_vm_opcode_handler
+get_handler_from_opcode_def(OpcodeDef const *def,
+                            ov_vm_prog_status prog_state) {
 
     switch (prog_state) {
 
-        case OV_VM_PROG_OK:
+    case OV_VM_PROG_OK:
 
-            return handler_from_opcode_def(def);
+        return handler_from_opcode_def(def);
 
-        case OV_VM_PROG_ABORTING:
+    case OV_VM_PROG_ABORTING:
 
-            return inverse_handler_from_opcode_def(def);
+        return inverse_handler_from_opcode_def(def);
 
-        case OV_VM_PROG_FAILED_TO_ABORT:
-            ov_log_error("Invalid program - failed to abort");
-            return 0;
+    case OV_VM_PROG_FAILED_TO_ABORT:
+        ov_log_error("Invalid program - failed to abort");
+        return 0;
 
-        case OV_VM_PROG_INVALID:
-            ov_log_error("Invalid program");
-            return 0;
+    case OV_VM_PROG_INVALID:
+        ov_log_error("Invalid program");
+        return 0;
 
-        default:
-            OV_ASSERT(!"MUST NEVER HAPPEN");
-            abort();
+    default:
+        OV_ASSERT(!"MUST NEVER HAPPEN");
+        abort();
     }
 }
 
@@ -635,8 +629,7 @@ static int execute_current_instruction(ov_vm *self, ov_vm_prog *prog) {
 
         ov_vm_instr instr = ov_vm_prog_current_instr(prog);
         char buf[30] = {0};
-        ov_log_info("Executing program %s - %s",
-                    ov_vm_prog_id(prog),
+        ov_log_info("Executing program %s - %s", ov_vm_prog_id(prog),
                     DESC_OPCODE(self, buf, instr.opcode));
 
         return handler(self, prog);
@@ -658,39 +651,39 @@ static ov_vm_exec_result execute(ov_vm *self, ov_vm_prog *prog) {
 
         switch (retval) {
 
-            case OC_ERROR:
+        case OC_ERROR:
 
-                abort_program(self, prog);
-                return OV_EXEC_ERROR;
+            abort_program(self, prog);
+            return OV_EXEC_ERROR;
 
-            case OC_NEXT:
-                ov_vm_prog_propagate_program_counter(prog);
+        case OC_NEXT:
+            ov_vm_prog_propagate_program_counter(prog);
+            break;
+
+        case OC_WAIT_AND_NEXT:
+
+            ov_vm_prog_propagate_program_counter(prog);
+
+            if (OV_VM_PROG_ABORTING == ov_vm_prog_state(prog)) {
+                ov_log_error("WAIT ignored while aborting prorgram");
                 break;
+            } else {
+                return OV_EXEC_WAIT;
+            }
 
-            case OC_WAIT_AND_NEXT:
+        case OC_WAIT_AND_REPEAT:
 
-                ov_vm_prog_propagate_program_counter(prog);
+            if (OV_VM_PROG_ABORTING == ov_vm_prog_state(prog)) {
+                ov_log_error("WAIT ignored while aborting prorgram");
+                break;
+            } else {
+                return OV_EXEC_WAIT;
+            }
 
-                if (OV_VM_PROG_ABORTING == ov_vm_prog_state(prog)) {
-                    ov_log_error("WAIT ignored while aborting prorgram");
-                    break;
-                } else {
-                    return OV_EXEC_WAIT;
-                }
+        case OC_FINISHED:
 
-            case OC_WAIT_AND_REPEAT:
-
-                if (OV_VM_PROG_ABORTING == ov_vm_prog_state(prog)) {
-                    ov_log_error("WAIT ignored while aborting prorgram");
-                    break;
-                } else {
-                    return OV_EXEC_WAIT;
-                }
-
-            case OC_FINISHED:
-
-                release_program(self, prog);
-                return OV_EXEC_OK;
+            release_program(self, prog);
+            return OV_EXEC_OK;
         };
 
     } while (-1 < ov_vm_prog_program_counter(prog));
@@ -718,10 +711,8 @@ static ov_vm_exec_result execute_prog(ov_vm *self, ov_vm_prog *prog) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_vm_exec_result ov_vm_trigger(ov_vm *self,
-                                ov_vm_instr const *instructions,
-                                char const *id,
-                                void *data) {
+ov_vm_exec_result ov_vm_trigger(ov_vm *self, ov_vm_instr const *instructions,
+                                char const *id, void *data) {
 
     if ((!is_vm_valid(self)) || (!are_instr_valid(instructions)) ||
         (!is_id_valid(id))) {
@@ -762,6 +753,46 @@ bool ov_vm_abort_with(ov_vm *self, char const *id, ov_vm_abort_opts opts) {
         abort_program_with(self, prog, opts);
         return true;
     }
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool get_any_prog_from_db(char const *id,
+                                            ov_vm_prog const *prog,
+                                            uint64_t start_time_epoch_usecs,
+                                            void *data) {
+
+    UNUSED(prog);
+    UNUSED(start_time_epoch_usecs);
+
+    *((char const **)data) = id;
+    return false;
+
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vm_abort_all_with(ov_vm *self, ov_vm_abort_opts opts) {
+
+    if(0 == self) {
+        return false;
+    }
+
+    char *id = 0;
+    ov_vm_prog_db const *db = get_prog_db(self);
+
+    ov_vm_prog_db_for_each(db, get_any_prog_from_db, &id);
+
+    while (0 != id) {
+
+        ov_vm_prog *prog = prog_for_id(self, id);
+        abort_program_with(self, prog, opts);
+
+        id = 0;
+        ov_vm_prog_db_for_each(db, get_any_prog_from_db, &id);
+    }
+
+    return true;
 }
 
 /*****************************************************************************

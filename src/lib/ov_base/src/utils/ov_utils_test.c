@@ -75,7 +75,8 @@ static void set_random_value(void *varray, size_t capacity) {
      * 2nd step: try to find the first 'empty' index */
 
     for (i = 0; i < capacity - 1; ++i) {
-        if (array[i] == 0) break;
+        if (array[i] == 0)
+            break;
     }
 
     if (0 != array[i]) {
@@ -152,7 +153,8 @@ int test_ov_utils_add_to_array() {
     size_t nonzeros_found = 0;
     for (uintptr_t i = 0; i < 237; ++i) {
 
-        if (0 != array237[i]) ++nonzeros_found;
+        if (0 != array237[i])
+            ++nonzeros_found;
     }
 
     testrun(nonzeros_found == nums);
@@ -264,8 +266,5 @@ static int test_ov_utils_is_in_array() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_utils",
-            test_ov_free,
-            test_ov_utils_add_to_array,
-            test_ov_utils_del_from_array,
-            test_ov_utils_is_in_array);
+OV_TEST_RUN("ov_utils", test_ov_free, test_ov_utils_add_to_array,
+            test_ov_utils_del_from_array, test_ov_utils_is_in_array);

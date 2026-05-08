@@ -127,7 +127,7 @@ typedef struct ov_ice_proxy_generic_dtls_config {
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_generic_dtls_config ov_ice_proxy_generic_dtls_config_from_json(
-    const ov_json_value *v);
+ov_ice_proxy_generic_dtls_config
+ov_ice_proxy_generic_dtls_config_from_json(const ov_json_value *v);
 
 #endif /* ov_ice_proxy_generic_dtls_config_h */

@@ -209,8 +209,7 @@ bool ov_id_array_del(ov_id ids[], size_t capacity, char const *id) {
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_id_array_get_index(ov_id const *ids,
-                              size_t capacity,
+ssize_t ov_id_array_get_index(ov_id const *ids, size_t capacity,
                               char const *id) {
 
     if ((!ov_ptr_valid(ids, "Cannot add ID to array: No array")) ||
@@ -232,8 +231,7 @@ ssize_t ov_id_array_get_index(ov_id const *ids,
 
 /*----------------------------------------------------------------------------*/
 
-ssize_t ov_id_array_next(ov_id const *ids,
-                         size_t capacity,
+ssize_t ov_id_array_next(ov_id const *ids, size_t capacity,
                          ssize_t last_index) {
 
     if (-1 > last_index) {

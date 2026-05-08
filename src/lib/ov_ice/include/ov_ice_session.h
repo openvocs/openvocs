@@ -33,8 +33,8 @@
 typedef struct ov_ice_session ov_ice_session;
 
 #include "ov_ice.h"
-#include "ov_ice_state.h"
 #include "ov_ice_candidate.h"
+#include "ov_ice_state.h"
 #include "ov_ice_stream.h"
 
 #include <ov_base/ov_id.h>
@@ -90,16 +90,13 @@ void *ov_ice_session_free(void *self);
 bool ov_ice_session_process_answer_in(ov_ice_session *self,
                                       const ov_sdp_session *sdp);
 
-bool ov_ice_session_candidate(ov_ice_session *session,
-                              int stream_id,
+bool ov_ice_session_candidate(ov_ice_session *session, int stream_id,
                               const ov_ice_candidate *candidate);
 bool ov_ice_session_end_of_candidates(ov_ice_session *session, int stream_id);
 
 uint32_t ov_ice_session_get_stream_ssrc(ov_ice_session *session, int stream_id);
-ssize_t ov_ice_session_stream_send(ov_ice_session *session,
-                                   int stream_id,
-                                   const uint8_t *buffer,
-                                   size_t size);
+ssize_t ov_ice_session_stream_send(ov_ice_session *session, int stream_id,
+                                   const uint8_t *buffer, size_t size);
 
 bool ov_ice_session_set_foundation(ov_ice_session *session,
                                    ov_ice_candidate *candidate);

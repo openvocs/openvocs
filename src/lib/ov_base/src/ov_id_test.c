@@ -131,10 +131,9 @@ static int test_ov_id_match() {
                          "123456789012345678901234567890123456 trailing stuff "
                          "not to be ignored"));
 
-    testrun(
-        !ov_id_match("123456789012345678901234567890123456 trailing stuff "
-                     "ignored",
-                     "123456789012345678901234567890123456"));
+    testrun(!ov_id_match("123456789012345678901234567890123456 trailing stuff "
+                         "ignored",
+                         "123456789012345678901234567890123456"));
 
     return testrun_log_success();
 }
@@ -308,12 +307,7 @@ static int test_ov_id_array_get_index() {
 }
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_id",
-            test_ov_id_valid,
-            test_ov_id_set,
-            test_ov_id_fill_with_uuid,
-            test_ov_id_match,
-            test_ov_id_array_reset,
-            test_ov_id_array_add,
-            test_ov_id_array_del,
+OV_TEST_RUN("ov_id", test_ov_id_valid, test_ov_id_set,
+            test_ov_id_fill_with_uuid, test_ov_id_match, test_ov_id_array_reset,
+            test_ov_id_array_add, test_ov_id_array_del,
             test_ov_id_array_get_index);

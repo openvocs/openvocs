@@ -58,8 +58,7 @@ typedef struct ov_serde_app ov_serde_app;
                                 CREATE / DESTROY
  ****************************************************************************/
 
-ov_serde_app *ov_serde_app_create(char const *name,
-                                  ov_event_loop *loop,
+ov_serde_app *ov_serde_app_create(char const *name, ov_event_loop *loop,
                                   ov_serde_app_configuration cfg);
 
 ov_serde_app *ov_serde_app_free(ov_serde_app *app);
@@ -74,11 +73,17 @@ ov_serde_app *ov_serde_app_free(ov_serde_app *app);
  * types of Serde data is not supported.
  * If the parsed data does not fit `data_type` , the parsed data is dropped.
  */
-bool ov_serde_app_register_handler(ov_serde_app *self,
-                                   uint64_t data_type,
-                                   void (*handler)(void *data,
-                                                   int socket,
+bool ov_serde_app_register_handler(ov_serde_app *self, uint64_t data_type,
+                                   void (*handler)(void *data, int socket,
                                                    void *additional));
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_serde_app_enable_logging(ov_serde_app *self, char const *path);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_serde_app_disable_logging(ov_serde_app *self);
 
 /*----------------------------------------------------------------------------*/
 

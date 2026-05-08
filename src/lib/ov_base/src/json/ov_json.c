@@ -35,7 +35,8 @@
 
 ov_json_value *ov_json_decode(const char *string) {
 
-    if (!string) return NULL;
+    if (!string)
+        return NULL;
 
     int64_t len = strlen(string);
     ov_json_value *out = NULL;
@@ -65,7 +66,8 @@ ov_json_value *ov_json_read_file(const char *path) {
     char *buffer = NULL;
     ov_json_value *value = NULL;
 
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
     size_t size = 0;
     size_t filesize = 0;
@@ -73,10 +75,9 @@ ov_json_value *ov_json_read_file(const char *path) {
 
     if (access(path, F_OK) == -1) {
 
-        ov_log_warning(
-            "JSON READ, file (%s) "
-            "does not exist or no access.",
-            path);
+        ov_log_warning("JSON READ, file (%s) "
+                       "does not exist or no access.",
+                       path);
 
         goto error;
     }
@@ -90,10 +91,9 @@ ov_json_value *ov_json_read_file(const char *path) {
             filesize = ftell(fp);
 
             if ((int)filesize == -1) {
-                ov_log_error(
-                    "JSON READ, file (%s) "
-                    "could not read file size.",
-                    path);
+                ov_log_error("JSON READ, file (%s) "
+                             "could not read file size.",
+                             path);
                 fclose(fp);
                 goto error;
             }
@@ -107,20 +107,18 @@ ov_json_value *ov_json_read_file(const char *path) {
 
                 if (read == 0) {
 
-                    ov_log_error(
-                        "JSON READ, file (%s) "
-                        "could not read file.",
-                        path);
+                    ov_log_error("JSON READ, file (%s) "
+                                 "could not read file.",
+                                 path);
                     fclose(fp);
                     goto error;
                 }
 
             } else {
 
-                ov_log_error(
-                    "JSON READ, file (%s) "
-                    "could not get back to start.",
-                    path);
+                ov_log_error("JSON READ, file (%s) "
+                             "could not get back to start.",
+                             path);
 
                 fclose(fp);
                 goto error;
@@ -131,9 +129,8 @@ ov_json_value *ov_json_read_file(const char *path) {
 
     } else {
 
-        ov_log_error(
-            "JSON READ, file (%s) "
-            "could not open file.");
+        ov_log_error("JSON READ, file (%s) "
+                     "could not open file.");
 
         fclose(fp);
         goto error;
@@ -143,19 +140,20 @@ ov_json_value *ov_json_read_file(const char *path) {
 
     if (r < 1) {
 
-        ov_log_error(
-            "JSON READ, file (%s) "
-            "could not parse JSON.",
-            path);
+        ov_log_error("JSON READ, file (%s) "
+                     "could not parse JSON.",
+                     path);
         goto error;
     }
 
-    if (buffer) free(buffer);
+    if (buffer)
+        free(buffer);
 
     return value;
 
 error:
-    if (buffer) free(buffer);
+    if (buffer)
+        free(buffer);
     ov_json_value_free(value);
     return NULL;
 }
@@ -167,7 +165,8 @@ ov_json_value *ov_json_read_dir(const char *path, const char *extension) {
     ov_json_value *value = NULL;
     ov_json_value *content = NULL;
 
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
     errno = 0;
 
@@ -184,7 +183,8 @@ ov_json_value *ov_json_read_dir(const char *path, const char *extension) {
 
     if (extension) {
         extlen = strlen(extension);
-        if (extlen == 0) goto error;
+        if (extlen == 0)
+            goto error;
     }
 
     value = ov_json_object();
@@ -198,12 +198,9 @@ ov_json_value *ov_json_read_dir(const char *path, const char *extension) {
 
     if (dp == NULL) {
 
-        ov_log_debug(
-            "JSON LOAD,"
-            "could not open dir %s ERRNO %i | %s",
-            path,
-            errno,
-            strerror(errno));
+        ov_log_debug("JSON LOAD,"
+                     "could not open dir %s ERRNO %i | %s",
+                     path, errno, strerror(errno));
         goto error;
     }
 
@@ -220,14 +217,16 @@ ov_json_value *ov_json_read_dir(const char *path, const char *extension) {
             continue;
 
         strcpy(filename, path);
-        if (path[dirlen] != '/') strncat(filename, "/", PATH_MAX);
+        if (path[dirlen] != '/')
+            strncat(filename, "/", PATH_MAX);
 
         strcat(filename, ep->d_name);
 
         len = strlen(ep->d_name);
         i = len;
         while (i > 0) {
-            if (ep->d_name[i] == '.') break;
+            if (ep->d_name[i] == '.')
+                break;
             i--;
         }
 
@@ -255,10 +254,9 @@ ov_json_value *ov_json_read_dir(const char *path, const char *extension) {
 
             if (!ov_json_object_set(value, ep->d_name, content)) {
 
-                ov_log_debug(
-                    "JSON LOAD, file (%s) "
-                    "failure adding content.",
-                    filename);
+                ov_log_debug("JSON LOAD, file (%s) "
+                             "failure adding content.",
+                             filename);
 
                 content = ov_json_value_free(content);
             }
@@ -277,20 +275,23 @@ error:
 
 bool ov_json_write_file(const char *path, const ov_json_value *value) {
 
-    if (!path || !value) return false;
+    if (!path || !value)
+        return false;
 
     ov_json_stringify_config config = ov_json_config_stringify_default();
 
     size_t count = 0;
     size_t size = ov_json_parser_calculate(value, &config);
-    if (size < 1) return false;
+    if (size < 1)
+        return false;
 
     char buffer[size + 1];
     memset(buffer, 0, size + 1);
 
     int64_t r = ov_json_parser_encode(
         value, &config, ov_json_parser_collocate_ascending, buffer, size);
-    if ((size_t)r != size) goto error;
+    if ((size_t)r != size)
+        goto error;
 
     FILE *fp = fopen(path, "w");
 
@@ -308,20 +309,18 @@ bool ov_json_write_file(const char *path, const ov_json_value *value) {
             */
         } else {
 
-            ov_log_error(
-                "JSON WRITE, file (%s), "
-                "could not write",
-                path);
+            ov_log_error("JSON WRITE, file (%s), "
+                         "could not write",
+                         path);
 
             goto error;
         }
 
     } else {
 
-        ov_log_error(
-            "JSON WRITE, file (%s), "
-            "could not open path for write",
-            path);
+        ov_log_error("JSON WRITE, file (%s), "
+                     "could not open path for write",
+                     path);
 
         goto error;
     }
@@ -344,10 +343,12 @@ ov_json_value *ov_json_read(const char *buffer, size_t size) {
 
     ov_json_value *value = NULL;
 
-    if (!buffer || size < 1) goto error;
+    if (!buffer || size < 1)
+        goto error;
 
     int64_t r = ov_json_parser_decode(&value, buffer, size);
-    if (r < 1) goto error;
+    if (r < 1)
+        goto error;
 
     return value;
 error:
@@ -357,25 +358,27 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_json_write(ov_json_value *value,
-                   char *buffer,
-                   size_t size,
+bool ov_json_write(ov_json_value *value, char *buffer, size_t size,
                    char **next) {
 
-    if (!value || !buffer || size < 1) goto error;
+    if (!value || !buffer || size < 1)
+        goto error;
 
     ov_json_stringify_config config = ov_json_config_stringify_default();
 
     int64_t r = ov_json_parser_encode(
         value, &config, ov_json_parser_collocate_ascending, buffer, size);
-    if (r < 1) goto error;
+    if (r < 1)
+        goto error;
 
-    if (next) *next = buffer + r;
+    if (next)
+        *next = buffer + r;
 
     return true;
 
 error:
-    if (next) *next = buffer;
+    if (next)
+        *next = buffer;
 
     return false;
 }

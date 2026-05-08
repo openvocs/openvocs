@@ -65,17 +65,11 @@ static ov_codec *impl_codec_create(uint32_t ssid,
 
 static ov_codec *impl_free(ov_codec *self);
 
-static int32_t impl_encode(ov_codec *self,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
-                           size_t max_out_length);
+static int32_t impl_encode(ov_codec *self, const uint8_t *input, size_t length,
+                           uint8_t *output, size_t max_out_length);
 
-static int32_t impl_decode(ov_codec *self,
-                           uint64_t seq_number,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
+static int32_t impl_decode(ov_codec *self, uint64_t seq_number,
+                           const uint8_t *input, size_t length, uint8_t *output,
                            size_t max_out_length);
 
 static ov_json_value *impl_get_parameters(const ov_codec *self);
@@ -91,10 +85,11 @@ const char *ov_codec_opus_id() { return "opus"; }
 
 ov_codec_generator ov_codec_opus_install(ov_codec_factory *factory) {
 
-    if (0 == factory) goto error;
+    if (0 == factory)
+        goto error;
 
-    return ov_codec_factory_install_codec(
-        factory, ov_codec_opus_id(), impl_codec_create);
+    return ov_codec_factory_install_codec(factory, ov_codec_opus_id(),
+                                          impl_codec_create);
 
 error:
 
@@ -140,8 +135,8 @@ static ov_codec *impl_codec_create(uint32_t ssid,
         goto error;
     }
 
-    opus->encoder = opus_encoder_create(
-        opus->sample_rate_hertz, 1, OPUS_APPLICATION_VOIP, &error);
+    opus->encoder = opus_encoder_create(opus->sample_rate_hertz, 1,
+                                        OPUS_APPLICATION_VOIP, &error);
 
     if (OPUS_OK != error) {
 
@@ -173,7 +168,8 @@ error:
 
 static ov_codec *impl_free(ov_codec *self) {
 
-    if (0 == self) return 0;
+    if (0 == self)
+        return 0;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -207,15 +203,15 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_encode(ov_codec *self,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
-                           size_t max_out_length) {
+static int32_t impl_encode(ov_codec *self, const uint8_t *input, size_t length,
+                           uint8_t *output, size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
     if ((0 == length) || (2 * (unsigned)INT_MAX < length)) {
 
@@ -245,16 +241,13 @@ static int32_t impl_encode(ov_codec *self,
         goto error;
     }
 
-    int encoded_bytes = opus_encode(opus_codec->encoder,
-                                    (opus_int16 *)input,
-                                    num_samples,
-                                    output,
-                                    max_out_length);
+    int encoded_bytes = opus_encode(opus_codec->encoder, (opus_int16 *)input,
+                                    num_samples, output, max_out_length);
 
     if (0 > encoded_bytes) {
 
-        ov_log_error(
-            "Could not encode frame: %s", opus_strerror(encoded_bytes));
+        ov_log_error("Could not encode frame: %s",
+                     opus_strerror(encoded_bytes));
 
         goto error;
     }
@@ -268,18 +261,19 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int32_t impl_decode(ov_codec *self,
-                           uint64_t seq_number,
-                           const uint8_t *input,
-                           size_t length,
-                           uint8_t *output,
+static int32_t impl_decode(ov_codec *self, uint64_t seq_number,
+                           const uint8_t *input, size_t length, uint8_t *output,
                            size_t max_out_length) {
 
-    if (0 == self) goto error;
-    if (0 == input) goto error;
-    if (0 == output) goto error;
+    if (0 == self)
+        goto error;
+    if (0 == input)
+        goto error;
+    if (0 == output)
+        goto error;
 
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     if (MAGIC_NUMBER != self->type) {
 
@@ -334,17 +328,13 @@ static int32_t impl_decode(ov_codec *self,
         }
     */
 
-    int samples_decoded = opus_decode(codec->decoder,
-                                      input,
-                                      length,
-                                      (opus_int16 *)output,
-                                      max_num_samples,
-                                      0);
+    int samples_decoded = opus_decode(codec->decoder, input, length,
+                                      (opus_int16 *)output, max_num_samples, 0);
 
     if (0 > samples_decoded) {
 
-        ov_log_error(
-            "Could not decode frame: %s", opus_strerror(samples_decoded));
+        ov_log_error("Could not decode frame: %s",
+                     opus_strerror(samples_decoded));
 
         goto error;
     }
@@ -362,7 +352,8 @@ error:
 
 static ov_json_value *impl_get_parameters(const ov_codec *self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
     if (MAGIC_NUMBER != self->type) {
 
         ov_log_error("Called on invalid codec");

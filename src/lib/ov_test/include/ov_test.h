@@ -111,16 +111,15 @@ void ov_test_set_exit_hook(void (*hook)());
             };                                                                 \
         }                                                                      \
         end_t = clock();                                                       \
-        fprintf(stderr,                                                        \
-                "ALL TESTS RUN - %zu/%zu succeeded\n",                         \
-                tests_run - tests_failed,                                      \
-                tests_run);                                                    \
+        fprintf(stderr, "ALL TESTS RUN - %zu/%zu succeeded\n",                 \
+                tests_run - tests_failed, tests_run);                          \
         testrun_log_clock(start_t, end_t);                                     \
         void (*exit_hook)(void) = ov_test_get_exit_hook();                     \
         if (0 != exit_hook) {                                                  \
             exit_hook();                                                       \
         }                                                                      \
-        if (tests_failed != 0) exit(EXIT_FAILURE);                             \
+        if (tests_failed != 0)                                                 \
+            exit(EXIT_FAILURE);                                                \
         ov_test_clear_test_directory();                                        \
         result = result >= 0 ? EXIT_SUCCESS : EXIT_FAILURE;                    \
         exit(result);                                                          \
@@ -174,12 +173,11 @@ void ov_test_set_exit_hook(void (*hook)());
             };                                                                 \
         }                                                                      \
         end_t = clock();                                                       \
-        fprintf(stderr,                                                        \
-                "ALL TESTS RUN - %zu/%zu succeeded\n",                         \
-                tests_run - tests_failed,                                      \
-                tests_run);                                                    \
+        fprintf(stderr, "ALL TESTS RUN - %zu/%zu succeeded\n",                 \
+                tests_run - tests_failed, tests_run);                          \
         testrun_log_clock(start_t, end_t);                                     \
-        if (tests_failed != 0) exit(EXIT_FAILURE);                             \
+        if (tests_failed != 0)                                                 \
+            exit(EXIT_FAILURE);                                                \
         ov_test_clear_test_directory();                                        \
         void (*exit_hook)(void) = ov_test_get_exit_hook();                     \
         if (0 != exit_hook) {                                                  \
@@ -215,12 +213,8 @@ void ov_test_ignore_signals();
     do {                                                                       \
         bool cond = (x);                                                       \
         if (!cond) {                                                           \
-            fprintf(stderr,                                                    \
-                    "assertion failed: %s:%i (%s): %s\n",                      \
-                    __FILE__,                                                  \
-                    __LINE__,                                                  \
-                    __FUNCTION__,                                              \
-                    TEST_ASSERT_TO_STR_INTERNAL(x));                           \
+            fprintf(stderr, "assertion failed: %s:%i (%s): %s\n", __FILE__,    \
+                    __LINE__, __FUNCTION__, TEST_ASSERT_TO_STR_INTERNAL(x));   \
             abort();                                                           \
         }                                                                      \
     } while (0)

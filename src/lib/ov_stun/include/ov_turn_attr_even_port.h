@@ -76,10 +76,8 @@ size_t ov_turn_attr_even_port_encoding_length();
         @param number   number to encode
         @returns true   if content of address is written to buffer
 */
-bool ov_turn_attr_even_port_encode(uint8_t *buffer,
-                                   size_t length,
-                                   uint8_t **next,
-                                   bool set);
+bool ov_turn_attr_even_port_encode(uint8_t *buffer, size_t length,
+                                   uint8_t **next, bool set);
 
 /*----------------------------------------------------------------------------*/
 
@@ -90,8 +88,7 @@ bool ov_turn_attr_even_port_encode(uint8_t *buffer,
         @param length   length of the buffer
         @param number   pointer to store decoded number
 */
-bool ov_turn_attr_even_port_decode(const uint8_t *buffer,
-                                   size_t length,
+bool ov_turn_attr_even_port_decode(const uint8_t *buffer, size_t length,
                                    bool *set);
 
 #endif /* ov_turn_attr_even_port_h */

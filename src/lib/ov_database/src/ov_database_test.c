@@ -37,7 +37,8 @@ static bool dbi_equals(ov_database_info const i1, ov_database_info const i2) {
                                     ov_string_equal(i1.host, i2.host) &&
                                     ov_string_equal(i1.user, i2.user) &&
                                     ov_string_equal(i1.password, i2.password) &&
-                                    ov_string_equal(i1.type, i2.type));
+                                    ov_string_equal(i1.type, i2.type) &&
+                                    (i1.use_ssl == i2.use_ssl));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -93,6 +94,21 @@ static int test_ov_database_info_from_json() {
 
     testrun(dbi_equals(ov_database_info_from_json(jval), dbi));
 
+    jval = json_from_string("{\"" OV_KEY_HOST
+                            "\":\"krambambuli\","
+                            "\"" OV_KEY_PORT "\":2144, \"" OV_KEY_USER
+                            "\":\"arbol\","
+                            "\"" OV_KEY_PASSWORD "\":\"braga\", \"" OV_KEY_DB
+                            "\":\"db2\","
+                            "\"" OV_KEY_TYPE "\":\"baalburga\","
+                            "\"use_ssl\":true}");
+
+    testrun(!dbi_equals(ov_database_info_from_json(jval), dbi));
+
+    dbi.use_ssl = true;
+
+    testrun(dbi_equals(ov_database_info_from_json(jval), dbi));
+
     jval = ov_json_value_free(jval);
 
     return testrun_log_success();
@@ -120,6 +136,16 @@ static int test_ov_database_info_to_json() {
     jval = ov_database_info_to_json(dbi);
 
     ov_database_info dbi2 = ov_database_info_from_json(jval);
+
+    testrun(dbi_equals(dbi, dbi2));
+
+    jval = ov_json_value_free(jval);
+
+    dbi.use_ssl = true;
+
+    jval = ov_database_info_to_json(dbi);
+
+    dbi2 = ov_database_info_from_json(jval);
 
     testrun(dbi_equals(dbi, dbi2));
 

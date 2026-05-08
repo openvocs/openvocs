@@ -50,10 +50,9 @@ OV_LIB_DIRS      += ov_ice_proxy
 OV_LIB_DIRS      += ov_ldap
 OV_LIB_DIRS      += ov_vocs_db
 OV_LIB_DIRS      += ov_vocs
-OV_LIB_DIRS      += ov_mc_interconnect
+OV_LIB_DIRS      += ov_interconnect
 OV_LIB_DIRS      += ov_snmp
 OV_LIB_DIRS      += ov_vad
-OV_LIB_DIRS      += ov_multithreaded
 
 all    : target_build_all
 depend : target_depend

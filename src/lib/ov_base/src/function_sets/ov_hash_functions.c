@@ -36,7 +36,8 @@
 
 uint64_t ov_hash_simple_c_string(const void *c_string) {
 
-    if (0 == c_string) return 0;
+    if (0 == c_string)
+        return 0;
 
     const char *s = c_string;
 
@@ -99,7 +100,8 @@ static const uint8_t PEARSON_PERMUTATION_TABLE[256] = {
 
 uint64_t ov_hash_pearson_c_string(const void *c_string) {
 
-    if (0 == c_string) return 0;
+    if (0 == c_string)
+        return 0;
 
     const char *s = c_string;
     uint8_t h = 0;
@@ -125,10 +127,12 @@ uint64_t ov_hash_intptr(const void *intptr) {
 
 uint64_t ov_hash_uint64(const void *uint64) {
 
-    if (!uint64) return 0;
+    if (!uint64)
+        return 0;
 
     uint64_t *ptr = (uint64_t *)uint64;
-    if (!ptr) return 0;
+    if (!ptr)
+        return 0;
 
     return (uint64_t)*ptr;
 }
@@ -137,10 +141,12 @@ uint64_t ov_hash_uint64(const void *uint64) {
 
 uint64_t ov_hash_int64(const void *int64) {
 
-    if (!int64) return 0;
+    if (!int64)
+        return 0;
 
     int64_t *ptr = (int64_t *)int64;
-    if (!ptr) return 0;
+    if (!ptr)
+        return 0;
 
     return (uint64_t)*ptr;
 }

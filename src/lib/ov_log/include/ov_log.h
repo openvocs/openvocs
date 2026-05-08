@@ -105,19 +105,13 @@ typedef struct {
  * Set custom logger for a file or file/function
  * @return File handle if there was a file handle associated
  */
-int ov_log_set_output(char const *module_name,
-                      char const *function_name,
-                      ov_log_level level,
-                      const ov_log_output output);
+int ov_log_set_output(char const *module_name, char const *function_name,
+                      ov_log_level level, const ov_log_output output);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_log_ng(ov_log_level level,
-               char const *file,
-               char const *function,
-               size_t line,
-               char const *format,
-               ...);
+bool ov_log_ng(ov_log_level level, char const *file, char const *function,
+               size_t line, char const *format, ...);
 
 /*----------------------------------------------------------------------------*/
 
@@ -159,8 +153,8 @@ void ov_log_unmute();
     ov_log_ng(OV_LOG_NOTICE, __FILE__, __FUNCTION__, __LINE__, M, ##__VA_ARGS__)
 
 #define ov_log_warning(M, ...)                                                 \
-    ov_log_ng(                                                                 \
-        OV_LOG_WARNING, __FILE__, __FUNCTION__, __LINE__, M, ##__VA_ARGS__)
+    ov_log_ng(OV_LOG_WARNING, __FILE__, __FUNCTION__, __LINE__, M,             \
+              ##__VA_ARGS__)
 
 #define ov_log_error(M, ...)                                                   \
     ov_log_ng(OV_LOG_ERR, __FILE__, __FUNCTION__, __LINE__, M, ##__VA_ARGS__)

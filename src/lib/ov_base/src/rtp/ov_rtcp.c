@@ -36,29 +36,29 @@ char const *ov_rtcp_type_to_string(ov_rtcp_type type) {
 
     switch (type) {
 
-        case OV_RTCP_INVALID:
+    case OV_RTCP_INVALID:
 
-            return "INVALID";
+        return "INVALID";
 
-        case OV_RTCP_RECEIVER_REPORT:
+    case OV_RTCP_RECEIVER_REPORT:
 
-            return "RECEIVER REPORT";
+        return "RECEIVER REPORT";
 
-        case OV_RTCP_SENDER_REPORT:
+    case OV_RTCP_SENDER_REPORT:
 
-            return "SENDER REPORT";
+        return "SENDER REPORT";
 
-        case OV_RTCP_SOURCE_DESC:
+    case OV_RTCP_SOURCE_DESC:
 
-            return "SOURCE DESC";
+        return "SOURCE DESC";
 
-        case OV_RTCP_BYE:
+    case OV_RTCP_BYE:
 
-            return "BYE";
+        return "BYE";
 
-        default:
-            OV_ASSERT(!"MUST NEVER HAPPEN");
-            return "INVALID";
+    default:
+        OV_ASSERT(!"MUST NEVER HAPPEN");
+        return "INVALID";
     };
 }
 
@@ -100,8 +100,7 @@ ov_registered_cache *g_sdes_cache = 0;
 
 /*----------------------------------------------------------------------------*/
 
-static bool init_message(ov_rtcp_message *self,
-                         ov_rtcp_type type,
+static bool init_message(ov_rtcp_message *self, ov_rtcp_type type,
                          size_t payload_len_octets) {
 
     if (!ov_ptr_valid(self, "Cannot initialize message: 0 pointer")) {
@@ -156,24 +155,24 @@ ov_rtcp_message *ov_rtcp_message_free(ov_rtcp_message *self) {
 
     switch (ov_rtcp_message_type(self)) {
 
-        case OV_RTCP_INVALID:
+    case OV_RTCP_INVALID:
 
-            ov_log_error("Won't free RTCP object: Invalid object");
-            return self;
+        ov_log_error("Won't free RTCP object: Invalid object");
+        return self;
 
-        case OV_RTCP_SOURCE_DESC:
+    case OV_RTCP_SOURCE_DESC:
 
-            return ov_free(self);
+        return ov_free(self);
 
-        case OV_RTCP_BYE:
-        case OV_RTCP_SENDER_REPORT:
+    case OV_RTCP_BYE:
+    case OV_RTCP_SENDER_REPORT:
 
-            return ov_free(self);
+        return ov_free(self);
 
-        default:
+    default:
 
-            ov_log_error("Won't free message: Unsupported type");
-            return self;
+        ov_log_error("Won't free message: Unsupported type");
+        return self;
     }
 }
 
@@ -181,8 +180,8 @@ ov_rtcp_message *ov_rtcp_message_free(ov_rtcp_message *self) {
 
 size_t ov_rtcp_message_len_octets(ov_rtcp_message const *self) {
 
-    if (ov_ptr_valid(
-            as_rtcp_message((void *)self), "Not a valid RTCP message")) {
+    if (ov_ptr_valid(as_rtcp_message((void *)self),
+                     "Not a valid RTCP message")) {
 
         return self->len_octets;
 
@@ -206,8 +205,8 @@ static struct data to_data(uint8_t const **in, size_t *lenoctets) {
 
     if ((!ov_ptr_valid(in, "Cannot decode RTCP: No data (0 pointer)")) ||
         (!ov_ptr_valid(*in, "Cannot decode RTCP: No data (0 pointer)")) ||
-        (!ov_ptr_valid(
-            lenoctets, "Cannot decode RTCP: No data size (0 pointer)"))) {
+        (!ov_ptr_valid(lenoctets,
+                       "Cannot decode RTCP: No data size (0 pointer)"))) {
         return (struct data){0};
     } else {
 
@@ -224,20 +223,20 @@ static ov_rtcp_type to_type(uint8_t n) {
 
     switch (n) {
 
-        case 200:
-            return OV_RTCP_SENDER_REPORT;
+    case 200:
+        return OV_RTCP_SENDER_REPORT;
 
-        case 201:
-            return OV_RTCP_RECEIVER_REPORT;
+    case 201:
+        return OV_RTCP_RECEIVER_REPORT;
 
-        case 202:
-            return OV_RTCP_SOURCE_DESC;
+    case 202:
+        return OV_RTCP_SOURCE_DESC;
 
-        case 203:
-            return OV_RTCP_BYE;
+    case 203:
+        return OV_RTCP_BYE;
 
-        default:
-            return OV_RTCP_INVALID;
+    default:
+        return OV_RTCP_INVALID;
     };
 }
 
@@ -284,10 +283,8 @@ static struct rtcp_header decode_header(struct data *data) {
         header.type = to_type(data->ptr[1]);
         header.length = ntohs(*(uint16_t *)(data->ptr + 2)) * 4;
 
-        fprintf(stderr,
-                "RTCP type: %s, length %zu, Count: %i\n",
-                ov_rtcp_type_to_string(header.type),
-                header.length,
+        fprintf(stderr, "RTCP type: %s, length %zu, Count: %i\n",
+                ov_rtcp_type_to_string(header.type), header.length,
                 header.count);
 
         data->ptr += 4;
@@ -299,10 +296,8 @@ static struct rtcp_header decode_header(struct data *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool copy_text(char *target,
-                      size_t target_capacity_octets,
-                      uint8_t const *src,
-                      size_t octets_to_copy) {
+static bool copy_text(char *target, size_t target_capacity_octets,
+                      uint8_t const *src, size_t octets_to_copy) {
 
     if ((0 == target) ||
         (!ov_cond_valid(target_capacity_octets >= octets_to_copy + 1,
@@ -326,8 +321,7 @@ static size_t pad_octets_to_align(size_t num_unaligned_octets) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool skip_alignment(uint8_t const **data,
-                           size_t *num_octets,
+static bool skip_alignment(uint8_t const **data, size_t *num_octets,
                            size_t consumed_octets) {
 
     if ((0 != data) && (0 != *data) && (0 != num_octets)) {
@@ -345,9 +339,7 @@ static bool skip_alignment(uint8_t const **data,
 
 /*----------------------------------------------------------------------------*/
 
-static bool get_item(uint8_t const **in,
-                     size_t *in_octets,
-                     uint8_t item_type,
+static bool get_item(uint8_t const **in, size_t *in_octets, uint8_t item_type,
                      char *target_buffer,
                      size_t target_buffer_capacity_octets) {
 
@@ -394,10 +386,8 @@ static bool get_item(uint8_t const **in,
                 ov_log_info("Decoding SDES item: Found proper item: %" PRIu8,
                             item_type);
 
-                copy_text(target_buffer,
-                          target_buffer_capacity_octets,
-                          data + 2,
-                          len_item_octets);
+                copy_text(target_buffer, target_buffer_capacity_octets,
+                          data + 2, len_item_octets);
                 found = true;
             }
 
@@ -409,13 +399,11 @@ static bool get_item(uint8_t const **in,
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_chunk(uint8_t const **in,
-                        size_t *in_num_octets,
-                        size_t chunk_index,
-                        sdes_message *msg) {
+static bool parse_chunk(uint8_t const **in, size_t *in_num_octets,
+                        size_t chunk_index, sdes_message *msg) {
 
-    if ((!ov_ptr_valid(
-            in, "Cannot parse chunk of RTCP SDES message: No input")) ||
+    if ((!ov_ptr_valid(in,
+                       "Cannot parse chunk of RTCP SDES message: No input")) ||
         (!ov_ptr_valid(in_num_octets,
                        "Cannot parse chunk of RTCP SDES message: No input "
                        "length (0 pointer)")) ||
@@ -441,10 +429,7 @@ static bool parse_chunk(uint8_t const **in,
         data += 4;
         num_octets -= 4;
 
-        if (!get_item(&data,
-                      &num_octets,
-                      1,
-                      msg->chunks[chunk_index].cname,
+        if (!get_item(&data, &num_octets, 1, msg->chunks[chunk_index].cname,
                       sizeof(msg->chunks[chunk_index].cname))) {
 
             return false;
@@ -461,14 +446,12 @@ static bool parse_chunk(uint8_t const **in,
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_chunks(uint8_t const *in,
-                         size_t in_num_octets,
-                         size_t num_chunks,
-                         sdes_message *msg) {
+static bool parse_chunks(uint8_t const *in, size_t in_num_octets,
+                         size_t num_chunks, sdes_message *msg) {
 
     if ((!ov_ptr_valid(in, "Cannot decode RTCP SDES message: No input data")) ||
-        (!ov_ptr_valid(
-            msg, "Cannot decode RTCP SDES message: No target message"))) {
+        (!ov_ptr_valid(msg,
+                       "Cannot decode RTCP SDES message: No target message"))) {
 
         return false;
 
@@ -553,11 +536,9 @@ ov_rtcp_message *ov_rtcp_message_decode(uint8_t const **buf,
 
     } else if (data.length < header.length) {
 
-        ov_log_warning(
-            "Cannot decode RTCP message: Message incomplete - "
-            "expect %zu bytes, but only got %zu bytes",
-            header.length,
-            data.length);
+        ov_log_warning("Cannot decode RTCP message: Message incomplete - "
+                       "expect %zu bytes, but only got %zu bytes",
+                       header.length, data.length);
 
         return 0;
 
@@ -567,22 +548,22 @@ ov_rtcp_message *ov_rtcp_message_decode(uint8_t const **buf,
 
         switch (header.type) {
 
-            case OV_RTCP_SOURCE_DESC:
+        case OV_RTCP_SOURCE_DESC:
 
-                msg = decode_sdes(header, data);
-                break;
+            msg = decode_sdes(header, data);
+            break;
 
-            case OV_RTCP_BYE:
-            case OV_RTCP_INVALID:
-            case OV_RTCP_RECEIVER_REPORT:
-            case OV_RTCP_SENDER_REPORT:
+        case OV_RTCP_BYE:
+        case OV_RTCP_INVALID:
+        case OV_RTCP_RECEIVER_REPORT:
+        case OV_RTCP_SENDER_REPORT:
 
-                msg = decode_generic_message(header, data);
-                break;
+            msg = decode_generic_message(header, data);
+            break;
 
-            default:
-                OV_ASSERT(!"MUST NEVER HAPPEN");
-                return 0;
+        default:
+            OV_ASSERT(!"MUST NEVER HAPPEN");
+            return 0;
         };
 
         // Skip over read message
@@ -600,15 +581,14 @@ ov_rtcp_message *ov_rtcp_message_decode(uint8_t const **buf,
                                      encode
  ****************************************************************************/
 
-static bool encode_header(ov_rtcp_message const *self,
-                          uint8_t **out,
+static bool encode_header(ov_rtcp_message const *self, uint8_t **out,
                           size_t *out_len) {
 
     if ((!ov_ptr_valid(self, "Cannot encode RTCP header: No message")) ||
         (!ov_ptr_valid(out, "Cannot encode RTCP header: No target buffer")) ||
         (!ov_ptr_valid(*out, "Cannot encode RTCP header: No target buffer")) ||
-        (!ov_ptr_valid(
-            out_len, "Cannot encode RTCP header: No target buffer length")) ||
+        (!ov_ptr_valid(out_len,
+                       "Cannot encode RTCP header: No target buffer length")) ||
         (!ov_cond_valid(4 <= *out_len,
                         "Cannot encode RTCP header: Target buffer too "
                         "small"))) {
@@ -645,8 +625,8 @@ static bool encode_ssrc(uint32_t ssrc, uint8_t **out, size_t *out_len) {
 
     if ((!ov_ptr_valid(out, "Cannot encode RTCP header: No target buffer")) ||
         (!ov_ptr_valid(*out, "Cannot encode RTCP header: No target buffer")) ||
-        (!ov_ptr_valid(
-            out_len, "Cannot encode RTCP header: No target buffer length")) ||
+        (!ov_ptr_valid(out_len,
+                       "Cannot encode RTCP header: No target buffer length")) ||
         (!ov_cond_valid(4 <= *out_len,
                         "Cannot encode RTCP header: Target buffer too "
                         "small"))) {
@@ -674,8 +654,7 @@ static bool encode_ssrc(uint32_t ssrc, uint8_t **out, size_t *out_len) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool encode_cname_entry(char const *cname,
-                               uint8_t **out,
+static bool encode_cname_entry(char const *cname, uint8_t **out,
                                size_t *out_len) {
 
     size_t cname_len = ov_string_len(cname);
@@ -683,10 +662,10 @@ static bool encode_cname_entry(char const *cname,
     if ((!ov_ptr_valid(cname, "Cannot encode RTCP cname: No CNAME")) ||
         (!ov_ptr_valid(out, "Cannot encode RTCP cname: No target buffer")) ||
         (!ov_ptr_valid(*out, "Cannot encode RTCP cname: No target buffer")) ||
-        (!ov_ptr_valid(
-            out_len, "Cannot encode RTCP cname: No target buffer length")) ||
-        (!ov_cond_valid(
-            cname_len < 256, "Cannot encode RTCP cname: CNAME too long")) ||
+        (!ov_ptr_valid(out_len,
+                       "Cannot encode RTCP cname: No target buffer length")) ||
+        (!ov_cond_valid(cname_len < 256,
+                        "Cannot encode RTCP cname: CNAME too long")) ||
         (!ov_cond_valid(cname_len + 2 <= *out_len,
                         "Cannot encode RTCP cname: Target buffer too small"))) {
 
@@ -712,8 +691,7 @@ static bool encode_cname_entry(char const *cname,
 
 /*----------------------------------------------------------------------------*/
 
-static bool align_to_32_bit_boundary(uint8_t **data,
-                                     size_t *num_octets,
+static bool align_to_32_bit_boundary(uint8_t **data, size_t *num_octets,
                                      size_t consumed_octets) {
 
     if ((0 != data) && (0 != *data) && (0 != num_octets)) {
@@ -733,15 +711,14 @@ static bool align_to_32_bit_boundary(uint8_t **data,
 
 /*----------------------------------------------------------------------------*/
 
-static bool encode_sdes(ov_rtcp_message const *self,
-                        uint8_t **out,
+static bool encode_sdes(ov_rtcp_message const *self, uint8_t **out,
                         size_t *out_len) {
 
     if ((!ov_ptr_valid(self, "Cannot encode RTCP header: No message")) ||
         (!ov_ptr_valid(out, "Cannot encode RTCP header: No target buffer")) ||
         (!ov_ptr_valid(*out, "Cannot encode RTCP header: No target buffer")) ||
-        (!ov_ptr_valid(
-            out_len, "Cannot encode RTCP header: No target buffer length"))) {
+        (!ov_ptr_valid(out_len,
+                       "Cannot encode RTCP header: No target buffer length"))) {
 
         return false;
 
@@ -749,8 +726,8 @@ static bool encode_sdes(ov_rtcp_message const *self,
         uint8_t *start = *out;
 
         return encode_ssrc(ov_rtcp_message_sdes_ssrc(self, 0), out, out_len) &&
-               encode_cname_entry(
-                   ov_rtcp_message_sdes_cname(self, 0), out, out_len) &&
+               encode_cname_entry(ov_rtcp_message_sdes_cname(self, 0), out,
+                                  out_len) &&
                align_to_32_bit_boundary(out, out_len, *out - start);
     }
 }
@@ -784,26 +761,24 @@ static size_t calc_required_octets(ov_rtcp_message const *msgs[]) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool encode_message(ov_rtcp_message const *self,
-                           uint8_t **data,
+static bool encode_message(ov_rtcp_message const *self, uint8_t **data,
                            size_t *len) {
 
     if (encode_header(self, data, len)) {
 
         switch (ov_rtcp_message_type(self)) {
 
-            case OV_RTCP_SOURCE_DESC:
+        case OV_RTCP_SOURCE_DESC:
 
-                return encode_sdes(self, data, len);
+            return encode_sdes(self, data, len);
 
-            default:
+        default:
 
-                ov_log_error(
-                    "Cannot encode RTCP Message - type %s currently "
-                    "unsupported",
-                    ov_string_sanitize(
-                        ov_rtcp_type_to_string(ov_rtcp_message_type(self))));
-                return false;
+            ov_log_error("Cannot encode RTCP Message - type %s currently "
+                         "unsupported",
+                         ov_string_sanitize(ov_rtcp_type_to_string(
+                             ov_rtcp_message_type(self))));
+            return false;
         };
 
     } else {
@@ -855,8 +830,8 @@ ov_buffer *ov_rtcp_messages_encode(ov_rtcp_message const *msgs[]) {
 
 ov_rtcp_type ov_rtcp_message_type(ov_rtcp_message const *self) {
 
-    if (ov_ptr_valid(
-            as_rtcp_message((void *)self), "Not a valid RTCP message")) {
+    if (ov_ptr_valid(as_rtcp_message((void *)self),
+                     "Not a valid RTCP message")) {
 
         return self->type;
 
@@ -895,8 +870,8 @@ ov_rtcp_message *ov_rtcp_message_sdes(char const *cname, uint32_t ssrc) {
 
         sdes_message *msg = new_sdes_message(calculate_sdes_msg_len(cname));
 
-        ov_string_copy(
-            msg->chunks[0].cname, cname, sizeof(msg->chunks[0].cname));
+        ov_string_copy(msg->chunks[0].cname, cname,
+                       sizeof(msg->chunks[0].cname));
         msg->chunks[0].ssrc = ssrc;
 
         return &msg->general;

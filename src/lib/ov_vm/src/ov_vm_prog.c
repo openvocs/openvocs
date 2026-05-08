@@ -35,21 +35,21 @@ char const *ov_vm_prog_status_to_string(ov_vm_prog_status status) {
 
     switch (status) {
 
-        case OV_VM_PROG_OK:
-            return "OK";
+    case OV_VM_PROG_OK:
+        return "OK";
 
-        case OV_VM_PROG_ABORTING:
-            return "ABORTING";
+    case OV_VM_PROG_ABORTING:
+        return "ABORTING";
 
-        case OV_VM_PROG_FAILED_TO_ABORT:
-            return "FAILED_TO_ABORT";
+    case OV_VM_PROG_FAILED_TO_ABORT:
+        return "FAILED_TO_ABORT";
 
-        case OV_VM_PROG_INVALID:
-            return "INVALID";
+    case OV_VM_PROG_INVALID:
+        return "INVALID";
 
-        default:
-            OV_ASSERT(!"MUST NEVER HAPPEN");
-            return "INVALID";
+    default:
+        OV_ASSERT(!"MUST NEVER HAPPEN");
+        return "INVALID";
     };
 }
 
@@ -227,24 +227,22 @@ void ov_vm_prog_log_result(ov_vm_prog *prog) {
 
     switch (res.error_code) {
 
-        case OV_ERROR_NOERROR:
-            ov_log_info("Program %s stopped - result is %s (%" PRIu64 ")",
-                        ov_vm_prog_id(prog),
-                        ov_string_sanitize(res.message),
-                        res.error_code);
-            break;
+    case OV_ERROR_NOERROR:
+        ov_log_info("Program %s stopped - result is %s (%" PRIu64 ")",
+                    ov_vm_prog_id(prog), ov_string_sanitize(res.message),
+                    res.error_code);
+        break;
 
-        case OV_ERROR_INVALID_RESULT:
-            ov_log_error("Program %s invalid", ov_vm_prog_id(prog));
-            break;
+    case OV_ERROR_INVALID_RESULT:
+        ov_log_error("Program %s invalid", ov_vm_prog_id(prog));
+        break;
 
-        default:
+    default:
 
-            ov_log_info("Program %s failed - result is %s (%" PRIu64 ")",
-                        ov_vm_prog_id(prog),
-                        ov_string_sanitize(res.message),
-                        res.error_code);
-            break;
+        ov_log_info("Program %s failed - result is %s (%" PRIu64 ")",
+                    ov_vm_prog_id(prog), ov_string_sanitize(res.message),
+                    res.error_code);
+        break;
     };
 }
 
@@ -287,20 +285,20 @@ void ov_vm_prog_propagate_program_counter(ov_vm_prog *prog) {
 
     switch (ov_vm_prog_state(prog)) {
 
-        case OV_VM_PROG_OK:
+    case OV_VM_PROG_OK:
 
-            ++prog->program_counter;
-            break;
+        ++prog->program_counter;
+        break;
 
-        case OV_VM_PROG_ABORTING:
+    case OV_VM_PROG_ABORTING:
 
-            --prog->program_counter;
-            break;
+        --prog->program_counter;
+        break;
 
-        case OV_VM_PROG_FAILED_TO_ABORT:
-        case OV_VM_PROG_INVALID:
-            ov_log_warning("Cannot propagate program counter: Program invalid");
-            // OV_ASSERT(!"NEVER TO HAPPEN");
+    case OV_VM_PROG_FAILED_TO_ABORT:
+    case OV_VM_PROG_INVALID:
+        ov_log_warning("Cannot propagate program counter: Program invalid");
+        // OV_ASSERT(!"NEVER TO HAPPEN");
     }
 }
 

@@ -126,8 +126,7 @@ ov_sdp_connection ov_ice_stream_get_connection(ov_ice_stream *stream,
 bool ov_ice_stream_candidate(ov_ice_stream *stream, const ov_ice_candidate *c);
 bool ov_ice_stream_end_of_candidates(ov_ice_stream *stream);
 uint32_t ov_ice_stream_get_stream_ssrc(ov_ice_stream *stream);
-ssize_t ov_ice_stream_send_stream(ov_ice_stream *stream,
-                                  const uint8_t *buffer,
+ssize_t ov_ice_stream_send_stream(ov_ice_stream *stream, const uint8_t *buffer,
                                   size_t size);
 
 bool ov_ice_stream_set_active(ov_ice_stream *stream, const char *fingerprint);

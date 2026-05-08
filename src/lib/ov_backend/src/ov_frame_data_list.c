@@ -35,7 +35,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-static ov_registered_cache *g_list_cache = 0;
+static ov_registered_cache *g_frame_list_cache = 0;
 
 /*----------------------------------------------------------------------------*/
 
@@ -43,11 +43,13 @@ static ov_registered_cache *g_list_cache = 0;
 
 static ov_frame_data_list *as_frame_data_list(void *vptr) {
 
-    if (0 == vptr) return 0;
+    if (0 == vptr)
+        return 0;
 
     ov_frame_data_list *list = vptr;
 
-    if (FRAME_DATA_LIST_MAGIC_BYTES != list->magic_bytes) return 0;
+    if (FRAME_DATA_LIST_MAGIC_BYTES != list->magic_bytes)
+        return 0;
 
     return list;
 }
@@ -105,7 +107,7 @@ void ov_frame_data_list_enable_caching(size_t capacity) {
 
     };
 
-    g_list_cache = ov_registered_cache_extend("frame_data_list", cfg);
+    g_frame_list_cache = ov_registered_cache_extend("frame_data_list", cfg);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -117,7 +119,7 @@ ov_frame_data_list *ov_frame_data_list_create(size_t num_entries) {
         goto error;
     }
 
-    ov_frame_data_list *list = ov_registered_cache_get(g_list_cache);
+    ov_frame_data_list *list = ov_registered_cache_get(g_frame_list_cache);
 
     if (0 == list) {
         list = calloc(1, sizeof(ov_frame_data_list));
@@ -160,7 +162,7 @@ ov_frame_data_list *ov_frame_data_list_free(ov_frame_data_list *list) {
 
     clear_frame_data_list_nocheck(list);
 
-    list = ov_registered_cache_put(g_list_cache, list);
+    list = ov_registered_cache_put(g_frame_list_cache, list);
 
     if (0 != list) {
         free_frame_data_list(list);
@@ -193,8 +195,8 @@ ov_frame_data *ov_frame_data_list_push_data(ov_frame_data_list *list,
 
         if (data->ssid == list->frames[i]->ssid) {
 
-            ov_log_warning(
-                "Frame with SSID %" PRIu32 " already there", data->ssid);
+            ov_log_warning("Frame with SSID %" PRIu32 " already there",
+                           data->ssid);
             index_to_insert = i;
             break;
         }
@@ -221,11 +223,13 @@ error:
 ov_frame_data *ov_frame_data_list_pop_data(ov_frame_data_list *list,
                                            uint32_t sid) {
 
-    if (0 == list) goto error;
+    if (0 == list)
+        goto error;
 
     for (size_t i = 0; i < list->capacity; ++i) {
 
-        if (0 == list->frames[i]) continue;
+        if (0 == list->frames[i])
+            continue;
 
         if (sid == list->frames[i]->ssid) {
 

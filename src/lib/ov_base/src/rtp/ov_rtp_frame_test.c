@@ -51,27 +51,39 @@ bool frames_equal(const ov_rtp_frame_expansion ref, const ov_rtp_frame *frame) {
 
     const ov_rtp_frame_expansion *exp = &frame->expanded;
 
-    if (ref.version != exp->version) return false;
-    if (ref.payload.length != exp->payload.length) return false;
-    if (ref.padding_bit != exp->padding_bit) return false;
-    if (ref.padding.length != exp->padding.length) return false;
-    if (ref.marker_bit != exp->marker_bit) return false;
-    if (ref.extension_bit != exp->extension_bit) return false;
-    if (ref.extension.type != exp->extension.type) return false;
-    if (ref.extension.length != exp->extension.length) return false;
-    if (ref.payload_type != exp->payload_type) return false;
-    if (ref.sequence_number != exp->sequence_number) return false;
-    if (ref.timestamp != exp->timestamp) return false;
-    if (ref.ssrc != exp->ssrc) return false;
-    if (ref.csrc_count != exp->csrc_count) return false;
+    if (ref.version != exp->version)
+        return false;
+    if (ref.payload.length != exp->payload.length)
+        return false;
+    if (ref.padding_bit != exp->padding_bit)
+        return false;
+    if (ref.padding.length != exp->padding.length)
+        return false;
+    if (ref.marker_bit != exp->marker_bit)
+        return false;
+    if (ref.extension_bit != exp->extension_bit)
+        return false;
+    if (ref.extension.type != exp->extension.type)
+        return false;
+    if (ref.extension.length != exp->extension.length)
+        return false;
+    if (ref.payload_type != exp->payload_type)
+        return false;
+    if (ref.sequence_number != exp->sequence_number)
+        return false;
+    if (ref.timestamp != exp->timestamp)
+        return false;
+    if (ref.ssrc != exp->ssrc)
+        return false;
+    if (ref.csrc_count != exp->csrc_count)
+        return false;
 
     if (0 != ref.csrc_count) {
 
         OV_ASSERT(ref.csrc_ids);
         OV_ASSERT(exp->csrc_ids);
 
-        if (0 != memcmp(ref.csrc_ids,
-                        exp->csrc_ids,
+        if (0 != memcmp(ref.csrc_ids, exp->csrc_ids,
                         ref.csrc_count * sizeof(uint32_t))) {
 
             return false;
@@ -83,12 +95,12 @@ bool frames_equal(const ov_rtp_frame_expansion ref, const ov_rtp_frame *frame) {
         bool ref_extension_present = 0 != ref.extension.data;
         bool exp_extension_present = 0 != exp->extension.data;
 
-        if (ref_extension_present != exp_extension_present) return false;
+        if (ref_extension_present != exp_extension_present)
+            return false;
 
         if (ref_extension_present) {
 
-            if (0 != memcmp(ref.extension.data,
-                            exp->extension.data,
+            if (0 != memcmp(ref.extension.data, exp->extension.data,
                             ref.extension.length)) {
 
                 return false;
@@ -334,10 +346,9 @@ int test_ov_rtp_frame_encode() {
     expected_bytes[12 + +5 * sizeof(uint32_t)] = 0x15;
     expected_bytes[12 + +5 * sizeof(uint32_t) + 1] = 0xaa;
 
-    ASSERT_BYTES_EQUAL(
-        expected_bytes,
-        frame,
-        RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t) + sizeof(uint32_t));
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
+                       RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t) +
+                           sizeof(uint32_t));
 
     data.extension_bit = false;
     expected_bytes[0] &= ~0x10;
@@ -349,8 +360,8 @@ int test_ov_rtp_frame_encode() {
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
 
-    ASSERT_BYTES_EQUAL(
-        expected_bytes, frame, RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t));
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
+                       RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t));
 
     memset(frame->bytes.data, 0, frame->bytes.length);
 
@@ -367,8 +378,7 @@ int test_ov_rtp_frame_encode() {
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
 
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t) + 1);
 
     /*--------------------*/
@@ -388,8 +398,7 @@ int test_ov_rtp_frame_encode() {
 
     testrun(frame);
 
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t) + 1);
 
     /* ENCODE PAYLOAD TYPE CORRECTLY */
@@ -401,8 +410,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t) + 1);
 
     data.marker_bit = false;
@@ -413,8 +421,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t) + 1);
 
     /* Alter some data in byte 0 to ensure no cross-relations */
@@ -445,8 +452,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 5 * sizeof(uint32_t) + 1);
 
     data.csrc_count = 2;
@@ -459,8 +465,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 2 * sizeof(uint32_t) + 1);
 
     /* Check timestamp */
@@ -475,8 +480,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 2 * sizeof(uint32_t) + 1);
 
     data.extension_bit = false;
@@ -487,8 +491,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 2 * sizeof(uint32_t) + 1);
 
     /*Check synchronisation Source ID */
@@ -503,8 +506,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 2 * sizeof(uint32_t) + 1);
 
     data.marker_bit = false;
@@ -515,8 +517,7 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(expected_bytes,
-                       frame,
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
                        RTP_HEADER_MIN_LENGTH + 2 * sizeof(uint32_t) + 1);
 
     data.csrc_count = 5;
@@ -530,10 +531,9 @@ int test_ov_rtp_frame_encode() {
 
     frame = ov_rtp_frame_encode(&data);
     testrun(frame);
-    ASSERT_BYTES_EQUAL(
-        expected_bytes,
-        frame,
-        RTP_HEADER_MIN_LENGTH + data.csrc_count * sizeof(uint32_t) + 1);
+    ASSERT_BYTES_EQUAL(expected_bytes, frame,
+                       RTP_HEADER_MIN_LENGTH +
+                           data.csrc_count * sizeof(uint32_t) + 1);
 
     /* Check payload */
 
@@ -714,8 +714,8 @@ int test_ov_rtp_frame_encode() {
     /* The allocated buffer in target_frame should be freed */
     frame->expanded.extension.allocated_bytes = sizeof(extension_data) + 7;
     frame->expanded.extension.data = calloc(1, sizeof(extension_data) + 7);
-    memcpy(
-        frame->expanded.extension.data, extension_data, sizeof(extension_data));
+    memcpy(frame->expanded.extension.data, extension_data,
+           sizeof(extension_data));
 
     data.extension.data = extension_data;
     data.extension.length = 8;
@@ -1135,22 +1135,8 @@ int test_ov_rtp_frame_decode() {
 
     /*--------------------------------------------------------------------*/
     /* Check payload */
-    uint8_t payload[] = {0x01,
-                         0x02,
-                         0x03,
-                         0x04,
-                         0x05,
-                         0x06,
-                         0x07,
-                         0x08,
-                         0x09,
-                         0x0a,
-                         0x0b,
-                         0x0c,
-                         0x0d,
-                         0x0e,
-                         0x0f,
-                         0x10};
+    uint8_t payload[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                         0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
     ref.payload.length = 9;
     ref.payload.data = payload;
@@ -1306,7 +1292,8 @@ bool assert_dump_equals(const ov_rtp_frame_expansion *exp, const char *ref) {
 
     FILE *s = open_memstream(&buffer, &buflen);
 
-    if (!s) goto error;
+    if (!s)
+        goto error;
 
     if (!ov_rtp_frame_dump(exp, s)) {
         goto error;
@@ -1320,22 +1307,26 @@ bool assert_dump_equals(const ov_rtp_frame_expansion *exp, const char *ref) {
 
     fflush(s);
 
-    if (strlen(ref) != buflen) goto error;
+    if (strlen(ref) != buflen)
+        goto error;
 
     size_t i;
     for (i = 0; i < buflen + 1; i++) {
 
-        if (ref[i] != buffer[i]) goto error;
+        if (ref[i] != buffer[i])
+            goto error;
     }
 
     retval = true;
 
 error:
 
-    if (s) fclose(s);
+    if (s)
+        fclose(s);
     s = 0;
 
-    if (buffer) free(buffer);
+    if (buffer)
+        free(buffer);
     buffer = 0;
 
     return retval;
@@ -1357,155 +1348,148 @@ int test_ov_rtp_frame_dump() {
     exp.version = RTP_VERSION_INVALID;
     exp.payload_type = OV_RTP_PAYLOAD_TYPE_DEFAULT;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             0\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             0\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.version = RTP_VERSION_2;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             2\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             2\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.padding_bit = true;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             2\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             2\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.padding_bit = false;
     exp.version = 0;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             0\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             0\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.extension_bit = true;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             0\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit    true\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension type            0\n"
-                       "RTP Extension Length          0\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             0\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit    true\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension type            0\n"
+                             "RTP Extension Length          0\n"
+                             "\n");
 
     exp.extension.type = 0x15aa;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             0\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit    true\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension type         5546\n"
-                       "RTP Extension Length          0\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             0\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit    true\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension type         5546\n"
+                             "RTP Extension Length          0\n"
+                             "\n");
 
     exp.version = RTP_VERSION_2;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             2\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit    true\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension type         5546\n"
-                       "RTP Extension Length          0\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             2\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit    true\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension type         5546\n"
+                             "RTP Extension Length          0\n"
+                             "\n");
 
     /* ENCODE CSRCS */
     uint32_t csrcs[] = {3, 4, 7, 11, 0x192837ff};
@@ -1513,495 +1497,477 @@ int test_ov_rtp_frame_dump() {
     exp.csrc_ids = csrcs;
     exp.csrc_count = 5;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             2\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit    true\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension type         5546\n"
-                       "RTP Extension Length          0\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             2\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit    true\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension type         5546\n"
+                             "RTP Extension Length          0\n"
+                             "\n");
 
     exp.extension_bit = false;
     exp.version = RTP_VERSION_1;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.padding_bit = true;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.marker_bit = true;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type        0\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type        0\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.payload_type = 0x7f;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.marker_bit = false;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.csrc_count = 0;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  0\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  0\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.csrc_count = 5;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number     0\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number     0\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.sequence_number = 0x1234;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.csrc_count = 2;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)                      0\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  2\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)                      0\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  2\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.timestamp = 0xa2b3c4d5;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                                   0\n"
-                       "RTP CSRC IDs                                  2\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                                   0\n"
+                             "RTP CSRC IDs                                  2\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.ssrc = 0xd1c2b3a4;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit      false\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  2\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit      false\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  2\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.marker_bit = true;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  2\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  2\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.csrc_count = 5;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding Length            1\n"
-                       "\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding Length            1\n"
+                             "\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.padding_bit = false;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload   NONE\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload   NONE\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     uint8_t payload[] = {0xf1, 0xe2, 0xd3, 0xc4, 0xb5, 0xa6};
     const size_t payload_length = 6;
     exp.payload.data = payload;
     exp.payload.length = payload_length;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit     false\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload Length            6\n"
-                       " f1 e2 d3 c4 b5 a6\n"
-                       "\n"
-                       "RTP Padding   NONE\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit     false\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload Length            6\n"
+                             " f1 e2 d3 c4 b5 a6\n"
+                             "\n"
+                             "RTP Padding   NONE\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.padding.data = (uint8_t[]){0x10, 0x02, 0x30};
     exp.padding.length = 3;
     exp.padding_bit = true;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      127\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload Length            6\n"
-                       " f1 e2 d3 c4 b5 a6\n"
-                       "\n"
-                       "RTP Padding Length            4\n"
-                       " 10 02 30\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      127\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload Length            6\n"
+                             " f1 e2 d3 c4 b5 a6\n"
+                             "\n"
+                             "RTP Padding Length            4\n"
+                             " 10 02 30\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     exp.payload_type = 0x71;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit   false\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      113\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload Length            6\n"
-                       " f1 e2 d3 c4 b5 a6\n"
-                       "\n"
-                       "RTP Padding Length            4\n"
-                       " 10 02 30\n"
-                       "\n"
-                       "RTP Extension NONE\n"
-                       "\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit   false\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      113\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload Length            6\n"
+                             " f1 e2 d3 c4 b5 a6\n"
+                             "\n"
+                             "RTP Padding Length            4\n"
+                             " 10 02 30\n"
+                             "\n"
+                             "RTP Extension NONE\n"
+                             "\n");
 
     /* Check Extension */
     exp.extension.data =
@@ -2012,34 +1978,33 @@ int test_ov_rtp_frame_dump() {
 
     exp.extension_bit = true;
 
-    ASSERT_DUMP_EQUALS(&exp,
-                       "\n"
-                       "RTP Frame dump\n"
-                       "\n"
-                       "RTP Version             1\n"
-                       "RTP Padding bit      true\n"
-                       "RTP Extension bit    true\n"
-                       "RTP Marker bit       true\n"
-                       "RTP Payload type      113\n"
-                       "RTP Sequence number  4660\n"
-                       "RTP Timestamp (SR Units)             2729690325\n"
-                       "RTP SSRC ID                          3519198116\n"
-                       "RTP CSRC IDs                                  5\n"
-                       "     CSRC ID                                  3\n"
-                       "     CSRC ID                                  4\n"
-                       "     CSRC ID                                  7\n"
-                       "     CSRC ID                                 11\n"
-                       "     CSRC ID                          422066175\n"
-                       "\n"
-                       "RTP Payload Length            6\n"
-                       " f1 e2 d3 c4 b5 a6\n"
-                       "\n"
-                       "RTP Padding Length            4\n"
-                       " 10 02 30\n"
-                       "\n"
-                       "RTP Extension type          258\n"
-                       "RTP Extension Length          8\n"
-                       " 43 8f 85 86 01 1a f7 dd\n");
+    ASSERT_DUMP_EQUALS(&exp, "\n"
+                             "RTP Frame dump\n"
+                             "\n"
+                             "RTP Version             1\n"
+                             "RTP Padding bit      true\n"
+                             "RTP Extension bit    true\n"
+                             "RTP Marker bit       true\n"
+                             "RTP Payload type      113\n"
+                             "RTP Sequence number  4660\n"
+                             "RTP Timestamp (SR Units)             2729690325\n"
+                             "RTP SSRC ID                          3519198116\n"
+                             "RTP CSRC IDs                                  5\n"
+                             "     CSRC ID                                  3\n"
+                             "     CSRC ID                                  4\n"
+                             "     CSRC ID                                  7\n"
+                             "     CSRC ID                                 11\n"
+                             "     CSRC ID                          422066175\n"
+                             "\n"
+                             "RTP Payload Length            6\n"
+                             " f1 e2 d3 c4 b5 a6\n"
+                             "\n"
+                             "RTP Padding Length            4\n"
+                             " 10 02 30\n"
+                             "\n"
+                             "RTP Extension type          258\n"
+                             "RTP Extension Length          8\n"
+                             " 43 8f 85 86 01 1a f7 dd\n");
 
     return testrun_log_success();
 
@@ -2203,13 +2168,8 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_rtp_frame",
-            test_ov_rtp_frame_enable_caching,
-            test_ov_rtp_frame_encode,
-            test_ov_rtp_frame_decode,
-            test_ov_rtp_frame_free,
-            test_ov_rtp_frame_dump,
-            test_rtp_frame_create,
-            test_impl_rtp_frame_free,
-            test_impl_rtp_frame_copy,
-            tear_down);
+OV_TEST_RUN("ov_rtp_frame", test_ov_rtp_frame_enable_caching,
+            test_ov_rtp_frame_encode, test_ov_rtp_frame_decode,
+            test_ov_rtp_frame_free, test_ov_rtp_frame_dump,
+            test_rtp_frame_create, test_impl_rtp_frame_free,
+            test_impl_rtp_frame_copy, tear_down);

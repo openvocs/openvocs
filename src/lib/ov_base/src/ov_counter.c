@@ -60,8 +60,7 @@ ov_json_value *ov_counter_to_json(ov_counter self) {
     ov_json_value *jval = ov_json_object();
 
     ov_json_object_set(jval, OV_KEY_COUNT, ov_json_number(self.counter));
-    ov_json_object_set(jval,
-                       OV_KEY_AVERAGE_PER_SEC,
+    ov_json_object_set(jval, OV_KEY_AVERAGE_PER_SEC,
                        ov_json_number(ov_counter_average_per_sec(self)));
 
     return jval;

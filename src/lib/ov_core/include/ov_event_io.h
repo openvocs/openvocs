@@ -158,8 +158,7 @@ typedef struct ov_event_io_config {
          *  NOTE input is a full pointer handover and MUST be freed
          *  using ov_json_value_free, when no longer required
          */
-        bool (*process)(void *userdata,
-                        const int socket,
+        bool (*process)(void *userdata, const int socket,
                         const ov_event_parameter *parameter,
                         ov_json_value *input);
 
@@ -187,10 +186,10 @@ typedef struct ov_event_io_config {
     but may be for other socket destinations.
 */
 static inline bool ov_event_io_send(const ov_event_parameter *params,
-                                    int socket,
-                                    const ov_json_value *val) {
+                                    int socket, const ov_json_value *val) {
 
-    if (!params || !params->send.instance || !params->send.send) return false;
+    if (!params || !params->send.instance || !params->send.send)
+        return false;
 
     return params->send.send(params->send.instance, socket, val);
 }

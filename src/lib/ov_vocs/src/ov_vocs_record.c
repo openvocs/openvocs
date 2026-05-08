@@ -43,7 +43,8 @@
 ov_vocs_record *ov_vocs_record_create(ov_vocs_record_config config) {
 
     ov_vocs_record *self = calloc(1, sizeof(ov_vocs_record));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->config = config;
 
@@ -55,7 +56,8 @@ error:
 
 void *ov_vocs_record_free_void(void *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     ov_vocs_record *record = (ov_vocs_record *)self;
 
@@ -70,14 +72,12 @@ void *ov_vocs_record_free_void(void *self) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_record_set_active(ov_vocs_record *self,
-                               char const *id,
-                               char const *loop,
-                               char const *uri,
+bool ov_vocs_record_set_active(ov_vocs_record *self, char const *id,
+                               char const *loop, char const *uri,
                                int recorder_fh) {
 
-    if (ov_ptr_valid(
-            self, "Cannot set recording active - no recording object") &&
+    if (ov_ptr_valid(self,
+                     "Cannot set recording active - no recording object") &&
         ov_ptr_valid(id, "Cannot set recording active - no ID") &&
         ov_ptr_valid(loop, "Cannot set recording active - no loop") &&
         ov_ptr_valid(uri, "Cannot set recording active - no URI")) {
@@ -121,9 +121,11 @@ bool ov_vocs_record_reset_active(ov_vocs_record *self) {
 
 bool ov_vocs_record_add_ptt(ov_vocs_record *self, const char *session) {
 
-    if (!self || !session) goto error;
+    if (!self || !session)
+        goto error;
 
-    if (!self->data) self->data = ov_json_object();
+    if (!self->data)
+        self->data = ov_json_object();
 
     ov_json_value *ptt = ov_json_object_get(self->data, OV_KEY_PTT);
 
@@ -136,7 +138,8 @@ bool ov_vocs_record_add_ptt(ov_vocs_record *self, const char *session) {
         }
     }
 
-    if (!ov_json_object_set(ptt, session, ov_json_true())) goto error;
+    if (!ov_json_object_set(ptt, session, ov_json_true()))
+        goto error;
 
     return true;
 error:
@@ -147,10 +150,12 @@ error:
 
 bool ov_vocs_record_drop_ptt(ov_vocs_record *self, const char *session) {
 
-    if (!self || !session) goto error;
+    if (!self || !session)
+        goto error;
 
     ov_json_value *ptt = ov_json_object_get(self->data, OV_KEY_PTT);
-    if (!ptt) goto done;
+    if (!ptt)
+        goto done;
 
     return ov_json_object_del(ptt, session);
 
@@ -166,10 +171,12 @@ int64_t ov_vocs_record_get_ptt_count(const ov_vocs_record *self) {
 
     int64_t result = 0;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     ov_json_value *ptt = ov_json_object_get(self->data, OV_KEY_PTT);
-    if (!ptt) goto done;
+    if (!ptt)
+        goto done;
 
     result = ov_json_object_count(ptt);
 

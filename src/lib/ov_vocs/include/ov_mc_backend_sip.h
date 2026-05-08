@@ -61,6 +61,7 @@ typedef struct ov_mc_backend_sip_config {
     struct {
 
         uint64_t response_usec;
+        uint64_t threadlock_usec;
 
     } timeout;
 
@@ -70,52 +71,35 @@ typedef struct ov_mc_backend_sip_config {
 
         struct {
 
-            void (*init)(void *userdata,
-                         const char *uuid,
-                         const char *loopname,
-                         const char *call_id,
-                         const char *caller,
-                         const char *callee,
-                         uint8_t error_code,
+            void (*init)(void *userdata, const char *uuid, const char *loopname,
+                         const char *call_id, const char *caller,
+                         const char *callee, uint8_t error_code,
                          const char *error_desc);
 
-            void (*new)(void *userdata,
-                        const char *loopname,
-                        const char *call_id,
-                        const char *peer);
+            void (*new)(void *userdata, const char *loopname,
+                        const char *call_id, const char *peer);
 
-            void (*terminated)(void *userdata,
-                               const char *call_id,
+            void (*terminated)(void *userdata, const char *call_id,
                                const char *loopname);
 
-            void (*permit)(void *userdata,
-                           const ov_sip_permission permission,
-                           uint64_t error_code,
-                           const char *error_desc);
+            void (*permit)(void *userdata, const ov_sip_permission permission,
+                           uint64_t error_code, const char *error_desc);
 
-            void (*revoke)(void *userdata,
-                           const ov_sip_permission permission,
-                           uint64_t error_code,
-                           const char *error_desc);
+            void (*revoke)(void *userdata, const ov_sip_permission permission,
+                           uint64_t error_code, const char *error_desc);
 
         } call;
 
-        void (*list_calls)(void *userdata,
-                           const char *uuid,
-                           const ov_json_value *calls,
-                           uint64_t error_code,
+        void (*list_calls)(void *userdata, const char *uuid,
+                           const ov_json_value *calls, uint64_t error_code,
                            const char *error_desc);
 
-        void (*list_permissions)(void *userdata,
-                                 const char *uuid,
+        void (*list_permissions)(void *userdata, const char *uuid,
                                  const ov_json_value *permissions,
-                                 uint64_t error_code,
-                                 const char *error_desc);
+                                 uint64_t error_code, const char *error_desc);
 
-        void (*get_status)(void *userdata,
-                           const char *uuid,
-                           const ov_json_value *status,
-                           uint64_t error_code,
+        void (*get_status)(void *userdata, const char *uuid,
+                           const ov_json_value *status, uint64_t error_code,
                            const char *error_desc);
 
         void (*connected)(void *userdata, bool status);
@@ -138,13 +122,12 @@ ov_mc_backend_sip *ov_mc_backend_sip_cast(const void *self);
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_sip_config ov_mc_backend_sip_config_from_json(
-    const ov_json_value *val);
+ov_mc_backend_sip_config
+ov_mc_backend_sip_config_from_json(const ov_json_value *val);
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_mc_backend_sip_create_call(ov_mc_backend_sip *self,
-                                    const char *loop,
+char *ov_mc_backend_sip_create_call(ov_mc_backend_sip *self, const char *loop,
                                     const char *destination_number,
                                     const char *from_number);
 

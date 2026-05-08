@@ -46,8 +46,7 @@ static char const WHITESPACE_CHARS[] = " \n\t\r";
 
 /*----------------------------------------------------------------------------*/
 
-static char const *skip_chars(char const *in,
-                              char const *skip_chars,
+static char const *skip_chars(char const *in, char const *skip_chars,
                               size_t len) {
 
     OV_ASSERT(0 != in);
@@ -57,7 +56,8 @@ static char const *skip_chars(char const *in,
 
     for (; i < len; ++i) {
 
-        if (0 == strchr(skip_chars, in[i])) break;
+        if (0 == strchr(skip_chars, in[i]))
+            break;
     }
 
     return in + i;
@@ -65,14 +65,12 @@ static char const *skip_chars(char const *in,
 
 /*----------------------------------------------------------------------------*/
 
-typedef ov_value *(*ParseFunc)(char const *in,
-                               size_t len,
+typedef ov_value *(*ParseFunc)(char const *in, size_t len,
                                char const **remainder);
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_next_token(char const *in,
-                                  size_t len,
+static ov_value *parse_next_token(char const *in, size_t len,
                                   char const **remainder);
 
 /*----------------------------------------------------------------------------*/
@@ -80,13 +78,12 @@ static ov_value *parse_next_token(char const *in,
 #define CHECK_INPUT(in, len, min_len, remainder)                               \
     OV_ASSERT(0 != in);                                                        \
     OV_ASSERT(0 != remainder);                                                 \
-    if (len < min_len) goto error;
+    if (len < min_len)                                                         \
+        goto error;
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_partial(const char *valid,
-                               char const *in,
-                               size_t len,
+static ov_value *parse_partial(const char *valid, char const *in, size_t len,
                                char const **remainder) {
 
     OV_ASSERT(valid);
@@ -97,7 +94,8 @@ static ov_value *parse_partial(const char *valid,
     size_t pos = 0;
     for (pos = 0; pos < len; pos++) {
 
-        if (in[pos] != valid[pos]) break;
+        if (in[pos] != valid[pos])
+            break;
     }
 
     *remainder = in + pos;
@@ -106,15 +104,16 @@ static ov_value *parse_partial(const char *valid,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_null(char const *in,
-                            size_t len,
+static ov_value *parse_null(char const *in, size_t len,
                             char const **remainder) {
 
     CHECK_INPUT(in, len, 1, remainder);
 
-    if (len < 4) return parse_partial("null", in, len, remainder);
+    if (len < 4)
+        return parse_partial("null", in, len, remainder);
 
-    if (0 != memcmp(in, "null", 4)) goto error;
+    if (0 != memcmp(in, "null", 4))
+        goto error;
 
     *remainder = in + 4;
 
@@ -122,22 +121,24 @@ static ov_value *parse_null(char const *in,
 
 error:
 
-    if (remainder) *remainder = in;
+    if (remainder)
+        *remainder = in;
 
     return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_true(char const *in,
-                            size_t len,
+static ov_value *parse_true(char const *in, size_t len,
                             char const **remainder) {
 
     CHECK_INPUT(in, len, 1, remainder);
 
-    if (len < 4) return parse_partial("true", in, len, remainder);
+    if (len < 4)
+        return parse_partial("true", in, len, remainder);
 
-    if (0 != memcmp(in, "true", 4)) goto error;
+    if (0 != memcmp(in, "true", 4))
+        goto error;
 
     *remainder = in + 4;
 
@@ -145,22 +146,24 @@ static ov_value *parse_true(char const *in,
 
 error:
 
-    if (remainder) *remainder = in;
+    if (remainder)
+        *remainder = in;
 
     return 0;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_false(char const *in,
-                             size_t len,
+static ov_value *parse_false(char const *in, size_t len,
                              char const **remainder) {
 
     CHECK_INPUT(in, len, 1, remainder);
 
-    if (len < 5) return parse_partial("false", in, len, remainder);
+    if (len < 5)
+        return parse_partial("false", in, len, remainder);
 
-    if (0 != memcmp(in, "false", 5)) goto error;
+    if (0 != memcmp(in, "false", 5))
+        goto error;
 
     *remainder = in + 5;
 
@@ -168,7 +171,8 @@ static ov_value *parse_false(char const *in,
 
 error:
 
-    if (remainder) *remainder = in;
+    if (remainder)
+        *remainder = in;
 
     return 0;
 }
@@ -232,17 +236,21 @@ static bool unescape_json(const uint8_t *start, size_t len, ov_buffer *result) {
     OV_ASSERT(start);
     OV_ASSERT(result);
 
-    if (!ov_buffer_clear(result)) goto error;
+    if (!ov_buffer_clear(result))
+        goto error;
 
-    if (0 == len) return true;
+    if (0 == len)
+        return true;
 
     /* RFC 8259 specifies UTF8 as basis,
      * \uXXXX escaped or on word byte input level! */
 
-    if (!ov_utf8_validate_sequence(start, len)) goto error;
+    if (!ov_utf8_validate_sequence(start, len))
+        goto error;
 
     /* Expected input is the string between the quotes (no quotes contained) */
-    if (start[0] == '"') goto error;
+    if (start[0] == '"')
+        goto error;
 
     size_t check = 0;
     uint8_t *next = result->start;
@@ -260,9 +268,11 @@ static bool unescape_json(const uint8_t *start, size_t len, ov_buffer *result) {
              * smaller 0x80 except of UTF8 1 byte sequences (ascii),
              * which is actually the byte under test here! */
 
-            if (start[check] < 0x1F) goto error;
+            if (start[check] < 0x1F)
+                goto error;
 
-            if (start[check] == '"') goto error;
+            if (start[check] == '"')
+                goto error;
 
             *next = start[check];
 
@@ -273,84 +283,84 @@ static bool unescape_json(const uint8_t *start, size_t len, ov_buffer *result) {
         }
 
         // ensure we do not overparse
-        if (check == len - 1) goto error;
+        if (check == len - 1)
+            goto error;
 
         switch (start[check + 1]) {
 
-            case 0x22: // "    quotation mark  U+0022
+        case 0x22: // "    quotation mark  U+0022
 
-                *next = 0x22;
-                next++;
-                check += 2;
-                break;
+            *next = 0x22;
+            next++;
+            check += 2;
+            break;
 
-            case 0x5C: // \    reverse solidus U+005C
+        case 0x5C: // \    reverse solidus U+005C
 
-                *next = 0x5C;
-                next++;
-                check += 2;
-                break;
+            *next = 0x5C;
+            next++;
+            check += 2;
+            break;
 
-            case 0x2F: // /    solidus         U+002F
+        case 0x2F: // /    solidus         U+002F
 
-                *next = 0x2F;
-                next++;
-                check += 2;
-                break;
+            *next = 0x2F;
+            next++;
+            check += 2;
+            break;
 
-            case 0x62: // b    backspace       U+0008
+        case 0x62: // b    backspace       U+0008
 
-                *next = '\b';
-                next++;
-                check += 2;
-                break;
+            *next = '\b';
+            next++;
+            check += 2;
+            break;
 
-            case 0x66: // f    form feed       U+000C
+        case 0x66: // f    form feed       U+000C
 
-                *next = '\f';
-                next++;
-                check += 2;
-                break;
+            *next = '\f';
+            next++;
+            check += 2;
+            break;
 
-            case 0x6E: // n    line feed       U+000A
+        case 0x6E: // n    line feed       U+000A
 
-                *next = '\n';
-                next++;
-                check += 2;
-                break;
+            *next = '\n';
+            next++;
+            check += 2;
+            break;
 
-            case 0x72: // r    carriage return U+000D
+        case 0x72: // r    carriage return U+000D
 
-                *next = '\r';
-                next++;
-                check += 2;
-                break;
+            *next = '\r';
+            next++;
+            check += 2;
+            break;
 
-            case 0x74: // t    tab             U+0009
+        case 0x74: // t    tab             U+0009
 
-                *next = '\t';
-                next++;
-                check += 2;
-                break;
+            *next = '\t';
+            next++;
+            check += 2;
+            break;
 
-            case 0x75: // uXXXX                U+XXXX
+        case 0x75: // uXXXX                U+XXXX
 
-                if (!ov_convert_hex_string_to_uint64(
-                        (char *)start + check + 2, 4, &codepoint_utf8))
-                    goto error;
-
-                if (!ov_utf8_encode_code_point(
-                        codepoint_utf8, &next, 4, &bytes))
-                    goto error;
-
-                next += bytes;
-                check += 6;
-                break;
-
-            default:
-
-                // invalid, so the whole string is invalid
+            if (!ov_convert_hex_string_to_uint64((char *)start + check + 2, 4,
+                                                 &codepoint_utf8))
                 goto error;
+
+            if (!ov_utf8_encode_code_point(codepoint_utf8, &next, 4, &bytes))
+                goto error;
+
+            next += bytes;
+            check += 6;
+            break;
+
+        default:
+
+            // invalid, so the whole string is invalid
+            goto error;
         }
     }
 
@@ -364,8 +374,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_string(char const *in,
-                              size_t len,
+static ov_value *parse_string(char const *in, size_t len,
                               char const **remainder) {
 
     ov_buffer *buf = NULL;
@@ -376,7 +385,8 @@ static ov_value *parse_string(char const *in,
     uint8_t *start = (uint8_t *)in;
     size_t check = 0;
 
-    if (start[0] != '"') goto error;
+    if (start[0] != '"')
+        goto error;
 
     start++;
     len--;
@@ -387,39 +397,42 @@ static ov_value *parse_string(char const *in,
         if (start[check] == 0x5C) {
 
             // check sign following backslash
-            if (check == len - 1) goto matching;
+            if (check == len - 1)
+                goto matching;
 
             switch (start[check + 1]) {
-                case 0x22: // "    quotation mark  U+0022
-                case 0x5C: // \    reverse solidus U+005C
-                case 0x2F: // /    solidus         U+002F
-                case 0x62: // b    backspace       U+0008
-                case 0x66: // f    form feed       U+000C
-                case 0x6E: // n    line feed       U+000A
-                case 0x72: // r    carriage return U+000D
-                case 0x74: // t    tab             U+0009
+            case 0x22: // "    quotation mark  U+0022
+            case 0x5C: // \    reverse solidus U+005C
+            case 0x2F: // /    solidus         U+002F
+            case 0x62: // b    backspace       U+0008
+            case 0x66: // f    form feed       U+000C
+            case 0x6E: // n    line feed       U+000A
+            case 0x72: // r    carriage return U+000D
+            case 0x74: // t    tab             U+0009
 
-                    // one byte escape, skip checking next
-                    if (check + 2 > len) goto matching;
+                // one byte escape, skip checking next
+                if (check + 2 > len)
+                    goto matching;
 
-                    check += 2;
-                    break;
+                check += 2;
+                break;
 
-                case 0x75: // uXXXX                U+XXXX
+            case 0x75: // uXXXX                U+XXXX
 
-                    if (check + 6 > len) goto matching;
+                if (check + 6 > len)
+                    goto matching;
 
-                    // 4 byte unicode escape,
-                    // skip checking \uXXXX sequence
-                    check += 6;
+                // 4 byte unicode escape,
+                // skip checking \uXXXX sequence
+                check += 6;
 
-                    break;
+                break;
 
-                default:
+            default:
 
-                    // invalid, escaped char not in JSON spec
-                    *remainder = in + 2 + check;
-                    return NULL;
+                // invalid, escaped char not in JSON spec
+                *remainder = in + 2 + check;
+                return NULL;
             }
 
         } else if (start[check] < 0x1F) {
@@ -443,7 +456,8 @@ static ov_value *parse_string(char const *in,
 
             buf = ov_buffer_create(check + 1);
 
-            if (!unescape_json(start, check, buf)) goto error;
+            if (!unescape_json(start, check, buf))
+                goto error;
 
             val = ov_value_string((char *)buf->start);
             buf = ov_buffer_free(buf);
@@ -466,7 +480,8 @@ error:
     ov_buffer_free(buf);
     ov_value_free(val);
 
-    if (remainder) *remainder = in;
+    if (remainder)
+        *remainder = in;
 
     return NULL;
 }
@@ -475,8 +490,7 @@ error:
                                      Number
  ****************************************************************************/
 
-static ov_value *parse_number(char const *in,
-                              size_t len,
+static ov_value *parse_number(char const *in, size_t len,
                               char const **remainder) {
 
     ov_buffer *buf = NULL;
@@ -495,7 +509,8 @@ static ov_value *parse_number(char const *in,
     size_t max_digits = 20;
 
     /* This maybe OK for strtod, but is not JSON spec, so rule out here */
-    if (in[0] == '.') goto error;
+    if (in[0] == '.')
+        goto error;
 
     buf = ov_buffer_create(max_digits + 1);
 
@@ -514,7 +529,8 @@ static ov_value *parse_number(char const *in,
 
     double number = strtod((char const *)buf->start, &rem);
 
-    if (rem == (char const *)buf->start) goto error;
+    if (rem == (char const *)buf->start)
+        goto error;
 
     ptrdiff_t remainder_offset = 0;
 
@@ -533,59 +549,60 @@ static ov_value *parse_number(char const *in,
 
     switch (len - remainder_offset) {
 
-        case 0:
-            break;
+    case 0:
+        break;
 
-        case 1:
+    case 1:
 
-            /* allow e as valid charater */
+        /* allow e as valid charater */
 
-            if ((rem[0] == 'e') || (rem[0] == 'E')) {
-                *remainder = in + remainder_offset + 1;
+        if ((rem[0] == 'e') || (rem[0] == 'E')) {
+            *remainder = in + remainder_offset + 1;
+            buf = ov_buffer_free(buf);
+            return NULL;
+        }
+
+        break;
+
+    case 2:
+
+        /* allow e followed by +/- as valid character */
+
+        if ((rem[0] == 'e') || (rem[0] == 'E')) {
+
+            if ((rem[1] == '-') || (rem[1] == '+')) {
+
+                *remainder = in + remainder_offset + 2;
                 buf = ov_buffer_free(buf);
                 return NULL;
+
+            } else if (0 == isdigit(rem[1])) {
+                goto error;
             }
+        }
 
-            break;
+        break;
 
-        case 2:
+    case 3:
 
-            /* allow e followed by +/- as valid character */
+        /* allow e followed by +/- as valid character + some digit */
 
-            if ((rem[0] == 'e') || (rem[0] == 'E')) {
+        if ((rem[0] == 'e') || (rem[0] == 'E')) {
 
-                if ((rem[1] == '-') || (rem[1] == '+')) {
+            if ((rem[1] == '-') || (rem[1] == '+')) {
 
-                    *remainder = in + remainder_offset + 2;
-                    buf = ov_buffer_free(buf);
-                    return NULL;
-
-                } else if (0 == isdigit(rem[1])) {
+                if (0 == isdigit(rem[2]))
                     goto error;
-                }
+
+            } else {
+                goto error;
             }
+        }
 
-            break;
+        break;
 
-        case 3:
-
-            /* allow e followed by +/- as valid character + some digit */
-
-            if ((rem[0] == 'e') || (rem[0] == 'E')) {
-
-                if ((rem[1] == '-') || (rem[1] == '+')) {
-
-                    if (0 == isdigit(rem[2])) goto error;
-
-                } else {
-                    goto error;
-                }
-            }
-
-            break;
-
-        default:
-            break;
+    default:
+        break;
     }
 
     ov_value *result = ov_value_number(number);
@@ -600,7 +617,8 @@ error:
     buf = ov_buffer_free(buf);
     OV_ASSERT(0 == buf);
 
-    if (remainder) *remainder = in;
+    if (remainder)
+        *remainder = in;
 
     return 0;
 }
@@ -609,8 +627,7 @@ error:
                                       LIST
  ****************************************************************************/
 
-static ov_value *parse_list(char const *in,
-                            size_t len,
+static ov_value *parse_list(char const *in, size_t len,
                             char const **remainder) {
 
     ov_value *list = NULL;
@@ -621,11 +638,13 @@ static ov_value *parse_list(char const *in,
     bool require_comma = false;
 
     // Skip initial '['
-    if (ptr[0] != '[') goto error;
+    if (ptr[0] != '[')
+        goto error;
 
     ptr++;
 
-    if (len == 1) goto error;
+    if (len == 1)
+        goto error;
 
     list = ov_value_list(0);
 
@@ -637,7 +656,8 @@ static ov_value *parse_list(char const *in,
 
         new_len = len - (ptr - in);
 
-        if (0 == new_len) goto error;
+        if (0 == new_len)
+            goto error;
 
         if (']' == *ptr) {
 
@@ -648,18 +668,21 @@ static ov_value *parse_list(char const *in,
             return list;
         }
 
-        if (require_comma && (',' != *ptr)) goto error;
+        if (require_comma && (',' != *ptr))
+            goto error;
 
         if (require_comma) {
             ++ptr;
             --new_len;
         }
 
-        if (0 == new_len) goto error;
+        if (0 == new_len)
+            goto error;
 
         ov_value *entry = parse_next_token(ptr, new_len, &ptr);
 
-        if (!entry) goto error;
+        if (!entry)
+            goto error;
 
         if (!ov_value_list_push(list, entry)) {
 
@@ -676,7 +699,8 @@ error:
     list = ov_value_free(list);
     OV_ASSERT(0 == list);
 
-    if (remainder) *remainder = ptr;
+    if (remainder)
+        *remainder = ptr;
 
     return 0;
 }
@@ -694,8 +718,7 @@ typedef struct {
 
 /*----------------------------------------------------------------------------*/
 
-static kv_pair parse_kv_pair(char const *in,
-                             size_t len,
+static kv_pair parse_kv_pair(char const *in, size_t len,
                              char const **remainder) {
 
     kv_pair pair = {0};
@@ -706,7 +729,8 @@ static kv_pair parse_kv_pair(char const *in,
 
     pair.key = parse_next_token(in, len, &ptr);
 
-    if (0 == ov_value_get_string(pair.key)) goto error;
+    if (0 == ov_value_get_string(pair.key))
+        goto error;
 
     OV_ASSERT(0 != ptr);
 
@@ -716,17 +740,21 @@ static kv_pair parse_kv_pair(char const *in,
 
     new_len = len - (ptr - in);
 
-    if (0 == new_len) goto error;
+    if (0 == new_len)
+        goto error;
 
-    if (':' != *ptr) goto error;
+    if (':' != *ptr)
+        goto error;
 
     ptr++;
     new_len--;
 
-    if (0 == new_len) goto error;
+    if (0 == new_len)
+        goto error;
 
     ov_value *value = parse_next_token(ptr, new_len, &ptr);
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     pair.value = value;
 
@@ -740,15 +768,15 @@ error:
     OV_ASSERT(0 == pair.key);
     OV_ASSERT(0 == pair.value);
 
-    if (remainder) *remainder = ptr;
+    if (remainder)
+        *remainder = ptr;
 
     return pair;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_object(char const *in,
-                              size_t len,
+static ov_value *parse_object(char const *in, size_t len,
                               char const **remainder) {
 
     ov_value *object = NULL;
@@ -759,11 +787,13 @@ static ov_value *parse_object(char const *in,
 
     char const *ptr = in;
 
-    if (ptr[0] != '{') goto error;
+    if (ptr[0] != '{')
+        goto error;
 
     ptr++;
 
-    if (len == 1) goto error;
+    if (len == 1)
+        goto error;
 
     object = ov_value_object();
 
@@ -775,7 +805,8 @@ static ov_value *parse_object(char const *in,
 
         new_len = len - (ptr - in);
 
-        if (0 == new_len) goto error;
+        if (0 == new_len)
+            goto error;
 
         if ('}' == *ptr) {
 
@@ -786,22 +817,26 @@ static ov_value *parse_object(char const *in,
             return object;
         }
 
-        if (require_comma && (',' != *ptr)) goto error;
+        if (require_comma && (',' != *ptr))
+            goto error;
 
         if (require_comma) {
             ++ptr;
             --new_len;
         }
 
-        if (0 == new_len) goto error;
+        if (0 == new_len)
+            goto error;
 
         kv_pair pair = parse_kv_pair(ptr, new_len, &ptr);
 
         char const *key_str = ov_value_get_string(pair.key);
 
-        if (NULL == key_str) goto error;
+        if (NULL == key_str)
+            goto error;
 
-        if (NULL == pair.value) goto error;
+        if (NULL == pair.value)
+            goto error;
 
         if (0 != ov_value_object_set(object, key_str, pair.value)) {
 
@@ -825,7 +860,8 @@ error:
     object = ov_value_free(object);
     OV_ASSERT(0 == object);
 
-    if (remainder) *remainder = ptr;
+    if (remainder)
+        *remainder = ptr;
 
     return 0;
 }
@@ -838,35 +874,35 @@ static ParseFunc get_parse_func_for(char c) {
 
     switch (c) {
 
-        case 'n':
-            return parse_null;
-        case 't':
-            return parse_true;
-        case 'f':
-            return parse_false;
-        case '"':
-            return parse_string;
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-        case '0':
-        case '-':
-        case '+':
-            return parse_number;
-        case '[':
-            return parse_list;
+    case 'n':
+        return parse_null;
+    case 't':
+        return parse_true;
+    case 'f':
+        return parse_false;
+    case '"':
+        return parse_string;
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+    case '0':
+    case '-':
+    case '+':
+        return parse_number;
+    case '[':
+        return parse_list;
 
-        case '{':
-            return parse_object;
+    case '{':
+        return parse_object;
 
-        default:
-            return 0;
+    default:
+        return 0;
     };
 
     return 0;
@@ -874,8 +910,7 @@ static ParseFunc get_parse_func_for(char c) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_value *parse_next_token(char const *in,
-                                  size_t len,
+static ov_value *parse_next_token(char const *in, size_t len,
                                   char const **remainder) {
 
     OV_ASSERT(0 != in);
@@ -894,7 +929,8 @@ static ov_value *parse_next_token(char const *in,
 
     ParseFunc func = get_parse_func_for(*start_token);
 
-    if (0 == func) goto error;
+    if (0 == func)
+        goto error;
 
     return func(start_token, new_len, remainder);
 
@@ -907,14 +943,16 @@ error:
 
 ov_value *ov_value_parse_json(ov_buffer const *in, char const **remainder) {
 
-    if ((0 == in) || (0 == in->length) || (0 == in->start)) goto error;
+    if ((0 == in) || (0 == in->length) || (0 == in->start))
+        goto error;
 
     char const *rem = 0;
 
     ov_value *result =
         parse_next_token((char const *)in->start, in->length, &rem);
 
-    if (0 != remainder) *remainder = rem;
+    if (0 != remainder)
+        *remainder = rem;
 
     return result;
 
@@ -930,9 +968,11 @@ ov_value *ov_value_from_json(ov_buffer const *in) {
     const char *next = NULL;
     ov_value *value = ov_value_parse_json(in, &next);
 
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
-    if ((uint8_t *)next != in->start + in->length) goto error;
+    if ((uint8_t *)next != in->start + in->length)
+        goto error;
 
     return value;
 error:

@@ -97,10 +97,8 @@ size_t ov_stun_xor_mapped_address_encoding_length(
         @param address  sockaddr_storage to encode.
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_xor_mapped_address_encode(uint8_t *buffer,
-                                       size_t length,
-                                       const uint8_t *head,
-                                       uint8_t **next,
+bool ov_stun_xor_mapped_address_encode(uint8_t *buffer, size_t length,
+                                       const uint8_t *head, uint8_t **next,
                                        const struct sockaddr_storage *address);
 
 /*----------------------------------------------------------------------------*/
@@ -113,8 +111,7 @@ bool ov_stun_xor_mapped_address_encode(uint8_t *buffer,
         @param head     pointer to header of the STUN frame
         @param address  pointer to sockaddr_storage to fill / create
 */
-bool ov_stun_xor_mapped_address_decode(const uint8_t *buffer,
-                                       size_t length,
+bool ov_stun_xor_mapped_address_decode(const uint8_t *buffer, size_t length,
                                        const uint8_t *head,
                                        struct sockaddr_storage **address);
 

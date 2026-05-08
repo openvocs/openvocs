@@ -78,8 +78,7 @@ ov_data_function ov_json_object_data_functions();
  *      ------------------------------------------------------------------------
  */
 
-bool ov_json_object_set(ov_json_value *obj,
-                        const char *key,
+bool ov_json_object_set(ov_json_value *obj, const char *key,
                         ov_json_value *value);
 
 bool ov_json_object_del(ov_json_value *obj, const char *key);
@@ -92,10 +91,8 @@ size_t ov_json_object_count(const ov_json_value *obj);
 
 bool ov_json_object_is_empty(const ov_json_value *obj);
 
-bool ov_json_object_for_each(ov_json_value *obj,
-                             void *data,
-                             bool (*function)(const void *key,
-                                              void *value,
+bool ov_json_object_for_each(ov_json_value *obj, void *data,
+                             bool (*function)(const void *key, void *value,
                                               void *data));
 
 bool ov_json_object_remove_child(ov_json_value *obj, ov_json_value *child);

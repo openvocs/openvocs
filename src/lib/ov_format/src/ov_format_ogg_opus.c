@@ -99,16 +99,15 @@ static uint16_t decode16(uint8_t const **in) {
                                     Strings
  ****************************************************************************/
 
-static size_t encode_string(char const *str,
-                            uint8_t *write_ptr,
+static size_t encode_string(char const *str, uint8_t *write_ptr,
                             size_t write_capacity_octets) {
 
     size_t str_len = ov_string_len(str);
 
     if (ov_cond_valid(4 + str_len <= write_capacity_octets,
                       "Cannot write Comment Header - string too long") &&
-        ov_ptr_valid(
-            write_ptr, "cannot write Comment Header - no memory (0 poiner)") &&
+        ov_ptr_valid(write_ptr,
+                     "cannot write Comment Header - no memory (0 poiner)") &&
         ov_cond_valid(4 == encode32(str_len, write_ptr),
                       "Cannot write Comment Header - could not write string "
                       "length")) {
@@ -188,10 +187,8 @@ typedef struct {
 const size_t ID_HEADER_SIZE = 19;
 const char *ID_OGG_OPUS = "OpusHead";
 
-uint8_t *write_id_header_to(IdHeader header,
-                            uint8_t ogg_opus_version,
-                            uint8_t *write_ptr,
-                            size_t write_capacity_octets) {
+uint8_t *write_id_header_to(IdHeader header, uint8_t ogg_opus_version,
+                            uint8_t *write_ptr, size_t write_capacity_octets) {
 
     if (ov_cond_valid(write_capacity_octets >= ID_HEADER_SIZE,
                       "Cannot write ID header - insufficient memory "
@@ -226,14 +223,13 @@ uint8_t *write_id_header_to(IdHeader header,
 
 /*----------------------------------------------------------------------------*/
 
-size_t read_id_header_from(uint8_t const *read_ptr,
-                           size_t available_octets,
+size_t read_id_header_from(uint8_t const *read_ptr, size_t available_octets,
                            IdHeader *header) {
 
     if (ov_cond_valid(ID_HEADER_SIZE <= available_octets,
                       "Cannot read ID header - header incomplete") &&
-        ov_ptr_valid(
-            read_ptr, "Cannot read ID Header - no input (0 pointer)") &&
+        ov_ptr_valid(read_ptr,
+                     "Cannot read ID Header - no input (0 pointer)") &&
         ov_ptr_valid(header,
                      "Cannot read ID Header - no id header object to store "
                      "data") &&
@@ -324,17 +320,16 @@ const size_t COMMENT_HEADER_ID_LEN = 8;
  * Writes comment header start, i.e. magic bytes and vendor info.
  * vendor must be ASCII-encoded!
  */
-size_t write_start_comment_header_to(char const *vendor,
-                                     uint8_t *write_ptr,
+size_t write_start_comment_header_to(char const *vendor, uint8_t *write_ptr,
                                      size_t write_capacity_octets) {
 
     size_t vendor_len = ov_string_len(vendor);
 
     if (ov_ptr_valid(vendor, "Cannot write Comment Header - no vendor name") &&
         ov_ptr_valid(write_ptr, "Cannot write Comment Header - no memory") &&
-        ov_cond_valid(
-            COMMENT_HEADER_ID_LEN + 4 + vendor_len <= write_capacity_octets,
-            "")) {
+        ov_cond_valid(COMMENT_HEADER_ID_LEN + 4 + vendor_len <=
+                          write_capacity_octets,
+                      "")) {
 
         memcpy(write_ptr, COMMENT_HEADER_ID, COMMENT_HEADER_ID_LEN);
         return 8 +
@@ -348,8 +343,7 @@ size_t write_start_comment_header_to(char const *vendor,
 
 /*----------------------------------------------------------------------------*/
 
-uint8_t *write_comments_to(uint8_t *write_ptr,
-                           size_t write_capacity_octets,
+uint8_t *write_comments_to(uint8_t *write_ptr, size_t write_capacity_octets,
                            char const *const *const comments,
                            size_t num_comments) {
 
@@ -411,15 +405,14 @@ static uint8_t *write_comment_header_to(const CommentHeader header,
                                         uint8_t *write_ptr,
                                         size_t write_capacity_octets) {
 
-    size_t written = write_start_comment_header_to(
-        header.vendor, write_ptr, write_capacity_octets);
+    size_t written = write_start_comment_header_to(header.vendor, write_ptr,
+                                                   write_capacity_octets);
 
     if (0 < written) {
 
-        return write_comments_to(write_ptr + written,
-                                 write_capacity_octets - written,
-                                 (char const *const *)header.comments,
-                                 header.num_comments);
+        return write_comments_to(
+            write_ptr + written, write_capacity_octets - written,
+            (char const *const *)header.comments, header.num_comments);
     }
 
     return 0;
@@ -588,8 +581,8 @@ static OggOpus const *as_ogg_opus(void const *vptr) {
     OggOpus const *opus = vptr;
 
     if (ov_ptr_valid(opus, "No Ogg Opus object (0 pointer)") &&
-        ov_cond_valid(
-            opus->magic_bytes, "No Ogg Opus object (Magic bytes mismatch)")) {
+        ov_cond_valid(opus->magic_bytes,
+                      "No Ogg Opus object (Magic bytes mismatch)")) {
 
         return opus;
 
@@ -623,8 +616,8 @@ static bool serialize_id_header(ov_format *f, OggOpus *self) {
 
     ov_buffer *buffer = ov_buffer_create(24);
 
-    uint8_t *ptr = write_id_header_to(
-        get_id_header(self), 1, buffer->start, buffer->capacity);
+    uint8_t *ptr = write_id_header_to(get_id_header(self), 1, buffer->start,
+                                      buffer->capacity);
 
     bool retval = false;
 
@@ -705,9 +698,8 @@ static bool deserialize_id_header(OurChunker chunker, OggOpus *self) {
 
 static bool serialize_comment_header(ov_format *f, OggOpus *self) {
 
-    if (ov_ptr_valid(self,
-                     "Cannot serialize comment header - Invalid Ogg Opus "
-                     "object")) {
+    if (ov_ptr_valid(self, "Cannot serialize comment header - Invalid Ogg Opus "
+                           "object")) {
 
         if (!self->comments_serialized) {
 
@@ -716,8 +708,8 @@ static bool serialize_comment_header(ov_format *f, OggOpus *self) {
 
             ov_buffer *buf = ov_buffer_create(required_octets);
 
-            uint8_t *ptr = write_comment_header_to(
-                self->comments, buf->start, buf->capacity);
+            uint8_t *ptr = write_comment_header_to(self->comments, buf->start,
+                                                   buf->capacity);
 
             buf->length = ptr - buf->start;
 
@@ -817,9 +809,8 @@ static bool comment_header_from_format(OurChunker chunker,
     chunk = ov_buffer_free(chunk);
 
     if (ov_cond_valid(ok, "Cannot deserialize comment header ID not found") &&
-        ov_ptr_valid(header,
-                     "Cannot deserialize comment header - no target "
-                     "CommentHeader object")) {
+        ov_ptr_valid(header, "Cannot deserialize comment header - no target "
+                             "CommentHeader object")) {
 
         char *vendor = string_from_format(chunker);
         if (0 != vendor) {
@@ -873,8 +864,8 @@ static bool deserialize_comment_header(OurChunker chunker, OggOpus *self) {
 
 static bool deserialize_headers(ov_format *f, OggOpus *self) {
 
-    if (ov_ptr_valid(
-            self, "Cannot deserialize headers - Invalid Ogg Opus object")) {
+    if (ov_ptr_valid(self,
+                     "Cannot deserialize headers - Invalid Ogg Opus object")) {
 
         OurChunker chunker = {
             .chunker = ov_chunker_create(),
@@ -898,8 +889,8 @@ static bool deserialize_headers(ov_format *f, OggOpus *self) {
 
 static bool serialize_headers(ov_format *f, OggOpus *self) {
 
-    if (ov_ptr_valid(
-            self, "Cannot serialze headers - Invalid Ogg Opus object")) {
+    if (ov_ptr_valid(self,
+                     "Cannot serialze headers - Invalid Ogg Opus object")) {
 
         return self->comments_serialized || (serialize_id_header(f, self) &&
                                              serialize_comment_header(f, self));
@@ -962,8 +953,7 @@ static void *impl_free_data(void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(data);
@@ -972,8 +962,7 @@ static ov_buffer impl_next_chunk(ov_format *f,
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     if (serialize_headers(f, as_ogg_opus_mut(data))) {
@@ -996,8 +985,8 @@ bool ov_format_ogg_opus_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_OGG_OPUS_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_OGG_OPUS_TYPE_STRING,
+                                            handler, registry);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1044,8 +1033,7 @@ char const *ov_format_ogg_opus_comment(ov_format *self, char const *key) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_format_ogg_opus_comment_set(ov_format *self,
-                                    char const *key,
+bool ov_format_ogg_opus_comment_set(ov_format *self, char const *key,
                                     char const *value) {
 
     OggOpus *opus = as_ogg_opus_mut(ov_format_get_custom_data(self));

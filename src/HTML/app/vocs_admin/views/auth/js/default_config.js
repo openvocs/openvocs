@@ -28,21 +28,19 @@
 
     ---------------------------------------------------------------------------
 */
+
+APP = "admin";
+
 SIGNALING_SERVERS = [
-    // user interface supports up to 3 back up server, more are not displayed
-    // if no server id flagged as prime, than the first server is treated as prime
-    // use HOST_WEBSOCKET OR WEBSOCKET_URL, if HOST_WEBSOCKET is set, WEBSOCKET_URL is ignored.
-    // HOST_WEBSOCKET extends the host address
+    // User interface supports up to 1 back up server, more are not displayed.
+    // If no server id is flagged as prime, than the first server is treated as prime.
+    // If you want to use the host address only define a name
+    // otherwise define a WEBSOCKET_URL
     {
-        HOST_WEBSOCKET: ":8001/vocs", 
         NAME: "local"
-    },
-    /*{
-        //PRIME: true,
-        WEBSOCKET_URL: "wss://openvocs.net/vocs",
-        NAME: "openvocs.net"
-    }*/
+    }
 ]
+
 
 //time to wait before resending a signaling request
 SIGNALING_REQUEST_TIMEOUT = 10000;
@@ -52,7 +50,19 @@ DEBUG_LOG_INCOMING_EVENTS = true;
 DEBUG_LOG_OUTGOING_EVENTS = true;
 
 SIP = false;
+RECORDER = false;
 
 DEFAULT_MULTICAST_ADDRESS = false;
+MIN_MULTICAST_PORT = 10000; //10000 < port < 65535
 
 BROADCAST_REGISTRATION = false;
+
+ALLOW_IMPORT_EXPORT = true;
+
+ALLOW_HIGHLIGHTED_LOOPS = false;
+
+VIEW = {
+    AUTH: "authentication",
+    OVERVIEW: "overview",
+    CONFIG: "config"
+}

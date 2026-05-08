@@ -84,7 +84,8 @@ static ov_event_broadcast *broadcast_cast(const void *self) {
 
     /* NOT external, as it is not required external */
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == OV_EVENT_BROADCAST_MAGIC_BYTE)
         return (ov_event_broadcast *)self;
@@ -97,7 +98,8 @@ error:
 static void cb_close(void *userdata, int socket) {
 
     ov_event_broadcast *bcast = broadcast_cast(userdata);
-    if (!bcast || socket < 0) goto error;
+    if (!bcast || socket < 0)
+        goto error;
 
     ov_event_broadcast_set(bcast, socket, OV_BROADCAST_UNSET);
 
@@ -107,15 +109,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_process(void *userdata,
-                       const int socket,
-                       const ov_event_parameter *params,
-                       ov_json_value *input) {
+static bool cb_process(void *userdata, const int socket,
+                       const ov_event_parameter *params, ov_json_value *input) {
 
     ov_event_broadcast *bcast = broadcast_cast(userdata);
-    if (!bcast || !input || socket < 0) goto error;
+    if (!bcast || !input || socket < 0)
+        goto error;
 
-    if (!ov_event_broadcast_set(bcast, socket, OV_BROADCAST)) goto error;
+    if (!ov_event_broadcast_set(bcast, socket, OV_BROADCAST))
+        goto error;
 
     bool result =
         ov_event_broadcast_send_params(bcast, params, input, OV_BROADCAST);
@@ -129,8 +131,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_event_broadcast *ov_event_broadcast_create(
-    ov_event_broadcast_config config) {
+ov_event_broadcast *
+ov_event_broadcast_create(ov_event_broadcast_config config) {
 
     if (0 == config.lock_timeout_usec)
         config.lock_timeout_usec = IMPL_THREADLOCK_TIMEOUT_USEC;
@@ -147,7 +149,8 @@ ov_event_broadcast *ov_event_broadcast_create(
     uint64_t size = sizeof(ov_event_broadcast) +
                     (config.max_sockets * sizeof(struct connection));
 
-    if (size >= INT_MAX) goto error;
+    if (size >= INT_MAX)
+        goto error;
 
     bcast = calloc(1, (size_t)size);
     if (!bcast) {
@@ -183,14 +186,16 @@ error:
 
 ov_event_broadcast *ov_event_broadcast_free(ov_event_broadcast *self) {
 
-    if (!broadcast_cast(self)) return self;
+    if (!broadcast_cast(self))
+        return self;
 
     int i = 0;
     int max = 100;
 
     for (i = 0; i < max; i++) {
 
-        if (ov_thread_lock_try_lock(&self->lock)) break;
+        if (ov_thread_lock_try_lock(&self->lock))
+            break;
     }
 
     if (i == max) {
@@ -211,12 +216,14 @@ ov_event_broadcast *ov_event_broadcast_free(ov_event_broadcast *self) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_event_io_config ov_event_broadcast_configure_uri_event_io(
-    ov_event_broadcast *self, const char *name) {
+ov_event_io_config
+ov_event_broadcast_configure_uri_event_io(ov_event_broadcast *self,
+                                          const char *name) {
 
     ov_event_io_config config = {0};
 
-    if (!self || !name) goto error;
+    if (!self || !name)
+        goto error;
 
     /* Check max name length fit to ov_event_config max */
 
@@ -226,7 +233,8 @@ ov_event_io_config ov_event_broadcast_configure_uri_event_io(
         goto error;
     }
 
-    if (!strncat(config.name, name, PATH_MAX - 1)) goto error;
+    if (!strncat(config.name, name, PATH_MAX - 1))
+        goto error;
 
     config.callback.close = cb_close;
     config.callback.process = cb_process;
@@ -240,58 +248,60 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_broadcast_set(ov_event_broadcast *self,
-                            int socket,
+bool ov_event_broadcast_set(ov_event_broadcast *self, int socket,
                             uint8_t type) {
 
-    if (!self || (socket < 0)) return false;
+    if (!self || (socket < 0))
+        return false;
 
-    if ((uint32_t)socket > self->config.max_sockets) return false;
+    if ((uint32_t)socket > self->config.max_sockets)
+        return false;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) return false;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        return false;
 
     self->connections[socket].type = type;
 
     switch (type) {
 
-        case OV_BROADCAST_UNSET:
+    case OV_BROADCAST_UNSET:
 
-            /* In case of unset and last,
-             * move last pointer to last set entry */
+        /* In case of unset and last,
+         * move last pointer to last set entry */
 
-            if (self->last == socket) {
+        if (self->last == socket) {
 
-                for (int i = socket; i > 0; i--) {
+            for (int i = socket; i > 0; i--) {
 
-                    if (self->connections[i].type == OV_BROADCAST_UNSET)
-                        continue;
+                if (self->connections[i].type == OV_BROADCAST_UNSET)
+                    continue;
 
-                    self->last = i;
-                    goto done;
-                }
-
-                self->last = 0;
+                self->last = i;
+                goto done;
             }
 
-            break;
+            self->last = 0;
+        }
 
-        default:
+        break;
 
-            /* In case we set a broadcast to a socket > last,
-             * the id of last need to advance to socket */
+    default:
 
-            if (self->last < socket) self->last = socket;
+        /* In case we set a broadcast to a socket > last,
+         * the id of last need to advance to socket */
 
-            break;
+        if (self->last < socket)
+            self->last = socket;
+
+        break;
     }
 
 done:
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
@@ -301,60 +311,61 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_broadcast_set_send(ov_event_broadcast *self,
-                                 int socket,
-                                 uint8_t type,
-                                 ov_event_parameter_send send) {
+bool ov_event_broadcast_set_send(ov_event_broadcast *self, int socket,
+                                 uint8_t type, ov_event_parameter_send send) {
 
-    if (!self || (socket < 0)) return false;
+    if (!self || (socket < 0))
+        return false;
 
-    if ((uint32_t)socket > self->config.max_sockets) return false;
+    if ((uint32_t)socket > self->config.max_sockets)
+        return false;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) return false;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        return false;
 
     self->connections[socket].type = type;
     self->connections[socket].send = send;
 
     switch (type) {
 
-        case OV_BROADCAST_UNSET:
+    case OV_BROADCAST_UNSET:
 
-            /* In case of unset and last,
-             * move last pointer to last set entry */
+        /* In case of unset and last,
+         * move last pointer to last set entry */
 
-            if (self->last == socket) {
+        if (self->last == socket) {
 
-                for (int i = socket; i > 0; i--) {
+            for (int i = socket; i > 0; i--) {
 
-                    if (self->connections[i].type == OV_BROADCAST_UNSET)
-                        continue;
+                if (self->connections[i].type == OV_BROADCAST_UNSET)
+                    continue;
 
-                    self->last = i;
-                    goto done;
-                }
-
-                self->last = 0;
+                self->last = i;
+                goto done;
             }
 
-            break;
+            self->last = 0;
+        }
 
-        default:
+        break;
 
-            /* In case we set a broadcast to a socket > last,
-             * the id of last need to advance to socket */
+    default:
 
-            if (self->last < socket) self->last = socket;
+        /* In case we set a broadcast to a socket > last,
+         * the id of last need to advance to socket */
 
-            break;
+        if (self->last < socket)
+            self->last = socket;
+
+        break;
     }
 
 done:
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
@@ -366,9 +377,11 @@ done:
 
 uint8_t ov_event_broadcast_get(ov_event_broadcast *self, int socket) {
 
-    if (!self || (socket < 0)) return 0;
+    if (!self || (socket < 0))
+        return 0;
 
-    if ((uint32_t)socket > self->config.max_sockets) return 0;
+    if ((uint32_t)socket > self->config.max_sockets)
+        return 0;
 
     return self->connections[socket].type;
 }
@@ -380,13 +393,16 @@ ov_list *ov_event_broadcast_get_sockets(ov_event_broadcast *self,
 
     ov_list *list = NULL;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (OV_BROADCAST_UNSET == type) goto error;
+    if (OV_BROADCAST_UNSET == type)
+        goto error;
 
     list = ov_list_create((ov_list_config){0});
 
-    if (!ov_thread_lock_try_lock(&self->lock)) return false;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        return false;
 
     bool result = true;
 
@@ -403,14 +419,14 @@ ov_list *ov_event_broadcast_get_sockets(ov_event_broadcast *self,
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
 
-    if (result) return list;
+    if (result)
+        return list;
 
 error:
     list = ov_list_free(list);
@@ -419,14 +435,16 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_event_broadcast_send(ov_event_broadcast *self,
-                             const ov_json_value *input,
-                             uint8_t type) {
+                             const ov_json_value *input, uint8_t type) {
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
-    if (OV_BROADCAST_UNSET == type) goto error;
+    if (OV_BROADCAST_UNSET == type)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) return false;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        return false;
 
     int result = true;
 
@@ -446,9 +464,8 @@ bool ov_event_broadcast_send(ov_event_broadcast *self,
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
@@ -462,16 +479,19 @@ error:
 
 bool ov_event_broadcast_send_params(ov_event_broadcast *self,
                                     const ov_event_parameter *params,
-                                    const ov_json_value *input,
-                                    uint8_t type) {
+                                    const ov_json_value *input, uint8_t type) {
 
-    if (!self || !params || !input) goto error;
+    if (!self || !params || !input)
+        goto error;
 
-    if (!params->send.instance || !params->send.send) goto error;
+    if (!params->send.instance || !params->send.send)
+        goto error;
 
-    if (OV_BROADCAST_UNSET == type) goto error;
+    if (OV_BROADCAST_UNSET == type)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) return false;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        return false;
 
     int result = true;
 
@@ -488,9 +508,8 @@ bool ov_event_broadcast_send_params(ov_event_broadcast *self,
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
@@ -506,9 +525,11 @@ bool ov_event_broadcast_is_empty(ov_event_broadcast *self) {
 
     bool result = false;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     result = true;
 
@@ -523,9 +544,8 @@ bool ov_event_broadcast_is_empty(ov_event_broadcast *self) {
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
@@ -538,11 +558,13 @@ error:
 
 int64_t ov_event_broadcast_count(ov_event_broadcast *self, uint8_t type) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     int64_t count = 0;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     for (int i = 0; i <= self->last; i++) {
 
@@ -553,9 +575,8 @@ int64_t ov_event_broadcast_count(ov_event_broadcast *self, uint8_t type) {
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
@@ -572,9 +593,11 @@ static bool add_socket_state(ov_json_value *socket, uint8_t state) {
     ov_json_value *val = NULL;
 
     OV_ASSERT(socket);
-    if (!socket) return false;
+    if (!socket)
+        return false;
 
-    if (0 == state) return true;
+    if (0 == state)
+        return true;
 
     if (state & OV_BROADCAST) {
         val = ov_json_true();
@@ -602,15 +625,15 @@ static bool add_socket_state(ov_json_value *socket, uint8_t state) {
 
     if (state & OV_LOOP_SENDER_BROADCAST) {
         val = ov_json_true();
-        if (!ov_json_object_set(
-                socket, OV_BROADCAST_KEY_LOOP_SENDER_BROADCAST, val))
+        if (!ov_json_object_set(socket, OV_BROADCAST_KEY_LOOP_SENDER_BROADCAST,
+                                val))
             goto error;
     }
 
     if (state & OV_PROJECT_BROADCAST) {
         val = ov_json_true();
-        if (!ov_json_object_set(
-                socket, OV_BROADCAST_KEY_PROJECT_BROADCAST, val))
+        if (!ov_json_object_set(socket, OV_BROADCAST_KEY_PROJECT_BROADCAST,
+                                val))
             goto error;
     }
 
@@ -643,9 +666,11 @@ ov_json_value *ov_event_broadcast_state(ov_event_broadcast *self) {
     char *ptr = key;
     size_t len = 0;
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
 
     out = ov_json_object();
 
@@ -653,7 +678,8 @@ ov_json_value *ov_event_broadcast_state(ov_event_broadcast *self) {
 
     for (int i = 0; i <= self->last; i++) {
 
-        if (0 == self->connections[i].type) continue;
+        if (0 == self->connections[i].type)
+            continue;
 
         len = 30;
         memset(key, 0, len);
@@ -678,15 +704,15 @@ ov_json_value *ov_event_broadcast_state(ov_event_broadcast *self) {
 
     if (!ov_thread_lock_unlock(&self->lock)) {
 
-        ov_log_critical(
-            "Unlocking failed"
-            " - service restart required.");
+        ov_log_critical("Unlocking failed"
+                        " - service restart required.");
 
         OV_ASSERT(1 == 0);
     }
 
     OV_ASSERT(result);
-    if (!result) goto error;
+    if (!result)
+        goto error;
 
     return out;
 error:

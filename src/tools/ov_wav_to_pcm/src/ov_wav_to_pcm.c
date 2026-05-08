@@ -64,7 +64,8 @@ static ov_format *as_wav(ov_format *fmt) {
 
     ov_format *wav = ov_format_as(fmt, "wav", &wav_options, 0);
 
-    if (0 == wav) return 0;
+    if (0 == wav)
+        return 0;
 
     char const *pcm_le_str =
         "{\"" OV_KEY_ENDIANNESS "\":\"" OV_KEY_LITTLE_ENDIAN "\"}";
@@ -102,21 +103,18 @@ static ov_format *as_pcm(ov_format *fmt) {
 
 /*----------------------------------------------------------------------------*/
 
-static void get_in_out_formats(int argc,
-                               char **argv,
-                               ov_format **in,
+static void get_in_out_formats(int argc, char **argv, ov_format **in,
                                ov_format **out) {
 
     ov_format_wav_install(0);
     ov_format_codec_install(0);
 
     if (argc != 3) {
-        PANIC(
-            "Expect 2 arguments: INFILE OUTFILE\n\n"
-            "If INFILE is wave, outputs PCM (parameters as in WAVE, esp. "
-            "LITTLE ENDIAN)\n"
-            "otherwise assumes INPUT to be PCM16S LITTLE ENDIAN and outputs "
-            "wave");
+        PANIC("Expect 2 arguments: INFILE OUTFILE\n\n"
+              "If INFILE is wave, outputs PCM (parameters as in WAVE, esp. "
+              "LITTLE ENDIAN)\n"
+              "otherwise assumes INPUT to be PCM16S LITTLE ENDIAN and outputs "
+              "wave");
     }
 
     ov_format *in_fmt = ov_format_open(argv[1], OV_READ);

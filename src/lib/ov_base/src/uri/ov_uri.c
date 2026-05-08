@@ -51,13 +51,17 @@
 
 static bool chars_are_percent_encoded(const char *buffer, size_t size) {
 
-    if (!buffer || size < 3) return false;
+    if (!buffer || size < 3)
+        return false;
 
-    if (buffer[0] != '%') return false;
+    if (buffer[0] != '%')
+        return false;
 
-    if (!isxdigit(buffer[1])) return false;
+    if (!isxdigit(buffer[1]))
+        return false;
 
-    if (!isxdigit(buffer[2])) return false;
+    if (!isxdigit(buffer[2]))
+        return false;
 
     return true;
 }
@@ -67,15 +71,16 @@ static bool chars_are_percent_encoded(const char *buffer, size_t size) {
 static bool char_is_unreserved(char byte) {
 
     // ALPHA NUMMERIC
-    if (isalnum(byte)) return true;
+    if (isalnum(byte))
+        return true;
 
     switch (byte) {
 
-        case '-':
-        case '.':
-        case '_':
-        case '~':
-            return true;
+    case '-':
+    case '.':
+    case '_':
+    case '~':
+        return true;
     }
 
     return false;
@@ -87,14 +92,14 @@ static bool char_is_reserved_general_delimiter(char byte) {
 
     switch (byte) {
 
-        case ':':
-        case '/':
-        case '?':
-        case '#':
-        case '[':
-        case ']':
-        case '@':
-            return true;
+    case ':':
+    case '/':
+    case '?':
+    case '#':
+    case '[':
+    case ']':
+    case '@':
+        return true;
     }
 
     return false;
@@ -106,18 +111,18 @@ static bool char_is_reserved_sub_delimiter(char byte) {
 
     switch (byte) {
 
-        case '!':
-        case '$':
-        case '&':
-        case '\'':
-        case '(':
-        case ')':
-        case '*':
-        case '+':
-        case ',':
-        case ';':
-        case '=':
-            return true;
+    case '!':
+    case '$':
+    case '&':
+    case '\'':
+    case '(':
+    case ')':
+    case '*':
+    case '+':
+    case ',':
+    case ';':
+    case '=':
+        return true;
     }
 
     return false;
@@ -127,9 +132,11 @@ static bool char_is_reserved_sub_delimiter(char byte) {
 
 static bool char_is_reserved(char byte) {
 
-    if (char_is_reserved_general_delimiter(byte)) return true;
+    if (char_is_reserved_general_delimiter(byte))
+        return true;
 
-    if (char_is_reserved_sub_delimiter(byte)) return true;
+    if (char_is_reserved_sub_delimiter(byte))
+        return true;
 
     return false;
 }
@@ -137,22 +144,26 @@ static bool char_is_reserved(char byte) {
 
 static bool chars_are_allowed(const char *buffer, size_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     for (size_t i = 0; i < length; i++) {
 
         if (buffer[i] == '%') {
 
-            if ((length - i) < 3) return false;
+            if ((length - i) < 3)
+                return false;
 
-            if (!chars_are_percent_encoded(buffer + i, 3)) return false;
+            if (!chars_are_percent_encoded(buffer + i, 3))
+                return false;
 
             i = i + 2;
 
         } else {
 
             if (!char_is_reserved(buffer[i]))
-                if (!char_is_unreserved(buffer[i])) return false;
+                if (!char_is_unreserved(buffer[i]))
+                    return false;
         }
     }
 
@@ -165,13 +176,14 @@ static bool char_is_scheme(char byte) {
 
     switch (byte) {
 
-        case '+':
-        case '-':
-        case '.':
-            return true;
+    case '+':
+    case '-':
+    case '.':
+        return true;
     }
 
-    if (isalnum(byte)) return true;
+    if (isalnum(byte))
+        return true;
 
     return false;
 }
@@ -180,22 +192,25 @@ static bool char_is_scheme(char byte) {
 
 static bool chars_are_scheme(const char *buffer, size_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
-    if (!isalpha(buffer[0])) return false;
+    if (!isalpha(buffer[0]))
+        return false;
 
     switch (buffer[length]) {
 
-        case 0:
-        case ':':
-            break;
-        default:
-            return false;
+    case 0:
+    case ':':
+        break;
+    default:
+        return false;
     }
 
     for (size_t i = 0; i < length; i++) {
 
-        if (!char_is_scheme(buffer[i])) return false;
+        if (!char_is_scheme(buffer[i]))
+            return false;
     }
 
     return true;
@@ -205,25 +220,31 @@ static bool chars_are_scheme(const char *buffer, size_t length) {
 
 static bool chars_are_user(const char *buffer, size_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     for (size_t i = 0; i < length; i++) {
 
         if (buffer[i] == '%') {
 
-            if ((length - i) < 3) return false;
+            if ((length - i) < 3)
+                return false;
 
-            if (!chars_are_percent_encoded(buffer + i, 3)) return false;
+            if (!chars_are_percent_encoded(buffer + i, 3))
+                return false;
 
             i = i + 2;
             continue;
         }
 
-        if (buffer[i] == ':') continue;
+        if (buffer[i] == ':')
+            continue;
 
-        if (char_is_unreserved(buffer[i])) continue;
+        if (char_is_unreserved(buffer[i]))
+            continue;
 
-        if (char_is_reserved_sub_delimiter(buffer[i])) continue;
+        if (char_is_reserved_sub_delimiter(buffer[i]))
+            continue;
 
         return false;
     }
@@ -235,10 +256,12 @@ static bool chars_are_user(const char *buffer, size_t length) {
 
 static bool chars_are_ip(int type, const char *buffer, size_t length) {
 
-    if (!buffer || length < 2) return false;
+    if (!buffer || length < 2)
+        return false;
 
     if (type != AF_INET)
-        if (type != AF_INET6) return false;
+        if (type != AF_INET6)
+            return false;
 
     char terminated[length + 1];
     memset(terminated, 0, length + 1);
@@ -246,10 +269,12 @@ static bool chars_are_ip(int type, const char *buffer, size_t length) {
     struct sockaddr_storage sa;
     int r = 0;
 
-    if (!strncpy(terminated, buffer, length)) return false;
+    if (!strncpy(terminated, buffer, length))
+        return false;
 
     r = inet_pton(type, terminated, &sa);
-    if (r != 1) return false;
+    if (r != 1)
+        return false;
 
     return true;
 }
@@ -258,21 +283,28 @@ static bool chars_are_ip(int type, const char *buffer, size_t length) {
 
 static bool chars_are_ip_future(const char *buffer, size_t length) {
 
-    if (!buffer || length < 4) return false;
+    if (!buffer || length < 4)
+        return false;
 
-    if (tolower(buffer[0]) != 'v') return false;
+    if (tolower(buffer[0]) != 'v')
+        return false;
 
-    if (!isxdigit(buffer[1])) return false;
+    if (!isxdigit(buffer[1]))
+        return false;
 
-    if (buffer[2] != '.') return false;
+    if (buffer[2] != '.')
+        return false;
 
     for (size_t i = 3; i < length; i++) {
 
-        if (buffer[i] == ':') continue;
+        if (buffer[i] == ':')
+            continue;
 
-        if (char_is_unreserved(buffer[i])) continue;
+        if (char_is_unreserved(buffer[i]))
+            continue;
 
-        if (char_is_reserved_sub_delimiter(buffer[i])) continue;
+        if (char_is_reserved_sub_delimiter(buffer[i]))
+            continue;
 
         return false;
     }
@@ -284,15 +316,20 @@ static bool chars_are_ip_future(const char *buffer, size_t length) {
 
 static bool chars_are_ip_literal(const char *buffer, size_t length) {
 
-    if (!buffer || length < 4) return false;
+    if (!buffer || length < 4)
+        return false;
 
-    if (buffer[0] != '[') return false;
+    if (buffer[0] != '[')
+        return false;
 
-    if (buffer[length - 1] != ']') return false;
+    if (buffer[length - 1] != ']')
+        return false;
 
-    if (chars_are_ip(AF_INET6, buffer + 1, length - 2)) return true;
+    if (chars_are_ip(AF_INET6, buffer + 1, length - 2))
+        return true;
 
-    if (chars_are_ip_future(buffer + 1, length - 2)) return true;
+    if (chars_are_ip_future(buffer + 1, length - 2))
+        return true;
 
     return false;
 }
@@ -301,24 +338,29 @@ static bool chars_are_ip_literal(const char *buffer, size_t length) {
 
 static bool chars_are_reg_name(const char *buffer, size_t length) {
 
-    if (!buffer) return false;
+    if (!buffer)
+        return false;
 
-    if (length == 0) return true;
+    if (length == 0)
+        return true;
 
     for (size_t i = 0; i < length; i++) {
 
         if (buffer[i] == '%') {
 
-            if (length < (i + 2)) return false;
+            if (length < (i + 2))
+                return false;
 
-            if (!chars_are_percent_encoded(buffer + i, 3)) return false;
+            if (!chars_are_percent_encoded(buffer + i, 3))
+                return false;
 
             i += 2;
 
         } else {
 
             if (!char_is_unreserved(buffer[i]))
-                if (!char_is_reserved_sub_delimiter(buffer[i])) return false;
+                if (!char_is_reserved_sub_delimiter(buffer[i]))
+                    return false;
         }
     }
 
@@ -329,36 +371,40 @@ static bool chars_are_reg_name(const char *buffer, size_t length) {
 
 static bool chars_are_host(const char *buffer, size_t length) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     switch (buffer[length]) {
 
-        case 0:
-        case ':':
-        case '/':
-        case '?':
-        case '#':
-            break;
-        default:
-            return false;
+    case 0:
+    case ':':
+    case '/':
+    case '?':
+    case '#':
+        break;
+    default:
+        return false;
     }
 
-    if (chars_are_ip_literal(buffer, length)) return true;
+    if (chars_are_ip_literal(buffer, length))
+        return true;
 
-    if (chars_are_ip(AF_INET, buffer, length)) return true;
+    if (chars_are_ip(AF_INET, buffer, length))
+        return true;
 
-    if (chars_are_reg_name(buffer, length)) return true;
+    if (chars_are_reg_name(buffer, length))
+        return true;
 
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool chars_are_path_chars(const char *buffer,
-                                 size_t length,
+static bool chars_are_path_chars(const char *buffer, size_t length,
                                  bool colon) {
 
-    if (!buffer || length < 1) return false;
+    if (!buffer || length < 1)
+        return false;
 
     for (size_t i = 0; i < length; i++) {
 
@@ -374,20 +420,22 @@ static bool chars_are_path_chars(const char *buffer,
 
         switch (buffer[i]) {
 
-            case ':':
-                if (!colon) {
-                    return false;
-                } else {
-                    continue;
-                }
-
-            case '@':
+        case ':':
+            if (!colon) {
+                return false;
+            } else {
                 continue;
+            }
+
+        case '@':
+            continue;
         }
 
-        if (char_is_unreserved(buffer[i])) continue;
+        if (char_is_unreserved(buffer[i]))
+            continue;
 
-        if (char_is_reserved_sub_delimiter(buffer[i])) continue;
+        if (char_is_reserved_sub_delimiter(buffer[i]))
+            continue;
 
         return false;
     }
@@ -403,10 +451,11 @@ static bool chars_are_path_chars(const char *buffer,
  *      ------------------------------------------------------------------------
  */
 
-static bool mask_scheme(
-    const char *start, size_t length, char **item, size_t *len, char **next) {
+static bool mask_scheme(const char *start, size_t length, char **item,
+                        size_t *len, char **next) {
 
-    if (!start || !item || !next || !len) goto error;
+    if (!start || !item || !next || !len)
+        goto error;
 
     char *ptr = memchr(start, ':', length);
     if (!ptr) {
@@ -436,10 +485,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool mask_user(
-    const char *start, size_t length, char **item, size_t *len, char **next) {
+static bool mask_user(const char *start, size_t length, char **item,
+                      size_t *len, char **next) {
 
-    if (!start || !item || !next || !len) goto error;
+    if (!start || !item || !next || !len)
+        goto error;
 
     char *ptr = memchr(start, '@', length);
 
@@ -452,7 +502,8 @@ static bool mask_user(
         return true;
     }
 
-    if (!chars_are_user(start, (ptr - start))) goto error;
+    if (!chars_are_user(start, (ptr - start)))
+        goto error;
 
     *item = (char *)start;
     *next = ptr + 1;
@@ -467,11 +518,13 @@ error:
 
 static const char *next_general_delimiter(const char *start, size_t length) {
 
-    if (!start) goto error;
+    if (!start)
+        goto error;
 
     for (size_t i = 0; i < length; i++) {
 
-        if (char_is_reserved_general_delimiter(start[i])) return start + i;
+        if (char_is_reserved_general_delimiter(start[i]))
+            return start + i;
     }
 
 error:
@@ -482,16 +535,17 @@ error:
 
 static const char *next_major_delimiter(const char *start, size_t length) {
 
-    if (!start) goto error;
+    if (!start)
+        goto error;
 
     for (size_t i = 0; i < length; i++) {
 
         switch (start[i]) {
 
-            case '/':
-            case '?':
-            case '#':
-                return start + i;
+        case '/':
+        case '?':
+        case '#':
+            return start + i;
         }
     }
 
@@ -503,7 +557,8 @@ error:
 
 static const char *next_ip_future(const char *start, size_t length) {
 
-    if (!start) goto error;
+    if (!start)
+        goto error;
 
     for (size_t i = 0; i < length; i++) {
 
@@ -520,10 +575,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool mask_host(
-    const char *start, size_t length, char **item, size_t *len, char **next) {
+static bool mask_host(const char *start, size_t length, char **item,
+                      size_t *len, char **next) {
 
-    if (!start || !item || !next || !len) goto error;
+    if (!start || !item || !next || !len)
+        goto error;
 
     if (0 == length) {
 
@@ -565,62 +621,68 @@ static bool mask_host(
 
     switch (start[0]) {
 
-        case '[':
+    case '[':
 
-            ptr = memchr(start, ']', length);
-            if (!ptr) goto error;
-            ptr++;
+        ptr = memchr(start, ']', length);
+        if (!ptr)
+            goto error;
+        ptr++;
+
+        *len = ptr - start;
+        *next = ptr;
+
+        if (!chars_are_ip_literal(start, *len))
+            goto error;
+
+        break;
+
+    case 'v':
+
+        if (3 < length)
+            goto error;
+        if (!isxdigit(start[1]))
+            goto error;
+        if (start[2] != '.')
+            goto error;
+
+        ptr = (char *)next_ip_future(start + 2, length - 2);
+
+        if (ptr) {
 
             *len = ptr - start;
             *next = ptr;
 
-            if (!chars_are_ip_literal(start, *len)) goto error;
+        } else {
 
-            break;
+            *len = length;
+            *next = (char *)start + length;
+        }
 
-        case 'v':
+        if (!chars_are_ip_future((char *)start, *len))
+            goto error;
 
-            if (3 < length) goto error;
-            if (!isxdigit(start[1])) goto error;
-            if (start[2] != '.') goto error;
+        break;
 
-            ptr = (char *)next_ip_future(start + 2, length - 2);
+    default:
 
-            if (ptr) {
+        ptr = (char *)next_general_delimiter(start, length);
 
-                *len = ptr - start;
-                *next = ptr;
+        if (ptr) {
 
-            } else {
+            *len = ptr - start;
+            *next = ptr;
 
-                *len = length;
-                *next = (char *)start + length;
-            }
+        } else {
 
-            if (!chars_are_ip_future((char *)start, *len)) goto error;
+            *len = length;
+            *next = (char *)start + length;
+        }
 
-            break;
+        if ((!chars_are_ip(AF_INET, start, *len)) &&
+            (!chars_are_reg_name(start, *len)))
+            goto error;
 
-        default:
-
-            ptr = (char *)next_general_delimiter(start, length);
-
-            if (ptr) {
-
-                *len = ptr - start;
-                *next = ptr;
-
-            } else {
-
-                *len = length;
-                *next = (char *)start + length;
-            }
-
-            if ((!chars_are_ip(AF_INET, start, *len)) &&
-                (!chars_are_reg_name(start, *len)))
-                goto error;
-
-            break;
+        break;
     }
 
     *item = (char *)start;
@@ -631,14 +693,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool mask_port(const char *start,
-                      size_t length,
-                      char **item,
-                      size_t *len,
-                      char **next,
-                      ov_uri *uri) {
+static bool mask_port(const char *start, size_t length, char **item,
+                      size_t *len, char **next, ov_uri *uri) {
 
-    if (!start || !item || !next) goto error;
+    if (!start || !item || !next)
+        goto error;
 
     /*
      *      no port string contained?
@@ -666,13 +725,16 @@ static bool mask_port(const char *start,
      *      check port string
      */
 
-    if (length < 2) goto error;
+    if (length < 2)
+        goto error;
 
     int64_t number = 0;
     number = strtoll(start + 1, next, 10);
 
-    if (number < 0) goto error;
-    if (number > 65535) goto error;
+    if (number < 0)
+        goto error;
+    if (number > 65535)
+        goto error;
 
     *item = (char *)start + 1;
 
@@ -682,7 +744,8 @@ static bool mask_port(const char *start,
         *len = length - 1;
     }
 
-    if (uri) uri->port = number;
+    if (uri)
+        uri->port = number;
 
     return true;
 error:
@@ -699,10 +762,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_with_delimiter(
-    const char *start, size_t length, char **next, char delimiter, bool colon) {
+static bool check_with_delimiter(const char *start, size_t length, char **next,
+                                 char delimiter, bool colon) {
 
-    if (!start || !next || !delimiter) goto error;
+    if (!start || !next || !delimiter)
+        goto error;
 
     char *ptr = (char *)start;
     char *nxt = NULL;
@@ -716,7 +780,8 @@ static bool check_with_delimiter(
 
         if (nxt) {
 
-            if (!chars_are_path_chars(ptr, (nxt - ptr), colon)) goto error;
+            if (!chars_are_path_chars(ptr, (nxt - ptr), colon))
+                goto error;
 
             ptr = nxt + 1;
         }
@@ -742,7 +807,8 @@ static bool check_with_delimiter(
     } else {
 
         if (nxt != ptr)
-            if (!chars_are_path_chars(ptr, nxt - ptr, colon)) goto error;
+            if (!chars_are_path_chars(ptr, nxt - ptr, colon))
+                goto error;
 
         *next = nxt;
     }
@@ -754,9 +820,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_path(const char *start,
-                       size_t length,
-                       char **next,
+static bool check_path(const char *start, size_t length, char **next,
                        bool colon) {
 
     return check_with_delimiter(start, length, next, '/', colon);
@@ -764,21 +828,24 @@ static bool check_path(const char *start,
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_path_absolute(const char *start,
-                                size_t length,
-                                char **next,
+static bool check_path_absolute(const char *start, size_t length, char **next,
                                 ov_uri *uri) {
 
-    if (!start || !next || length < 1) goto error;
+    if (!start || !next || length < 1)
+        goto error;
 
     /* path-absolute   ; begins with "/" but not "//" */
 
-    if (start[0] != '/') goto error;
-    if (start[1] == '/') goto error;
+    if (start[0] != '/')
+        goto error;
+    if (start[1] == '/')
+        goto error;
 
-    if (!check_path(start + 1, length - 1, next, true)) goto error;
+    if (!check_path(start + 1, length - 1, next, true))
+        goto error;
 
-    if (uri) uri->path = strndup(start, (*next - start));
+    if (uri)
+        uri->path = strndup(start, (*next - start));
 
     return true;
 
@@ -788,38 +855,42 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_with_authority(const char *start,
-                                 size_t length,
-                                 char **next,
+static bool check_with_authority(const char *start, size_t length, char **next,
                                  ov_uri *uri) {
 
-    if (!start || !next || length < 2) goto error;
+    if (!start || !next || length < 2)
+        goto error;
 
     size_t len = 0;
     char *ptr = NULL;
     char *nxt = (char *)start;
 
-    if (!mask_user(nxt, length - (nxt - start), &ptr, &len, &nxt)) goto error;
+    if (!mask_user(nxt, length - (nxt - start), &ptr, &len, &nxt))
+        goto error;
 
-    if (uri && (len > 0)) uri->user = strndup(ptr, len);
+    if (uri && (len > 0))
+        uri->user = strndup(ptr, len);
 
-    if (!mask_host(nxt, length - (nxt - start), &ptr, &len, &nxt)) goto error;
+    if (!mask_host(nxt, length - (nxt - start), &ptr, &len, &nxt))
+        goto error;
 
-    if (uri && len > 0) uri->host = strndup(ptr, len);
+    if (uri && len > 0)
+        uri->host = strndup(ptr, len);
 
     if (!mask_port(nxt, length - (nxt - start), &ptr, &len, &nxt, uri))
         goto error;
 
     *next = nxt;
 
-    if ((ssize_t)length == (nxt - start)) return true;
+    if ((ssize_t)length == (nxt - start))
+        return true;
 
     switch (nxt[0]) {
 
-        case '?':
-        case '#':
-            /* path empty */
-            return true;
+    case '?':
+    case '#':
+        /* path empty */
+        return true;
     }
 
     return check_path_absolute(nxt, length - (nxt - start), next, uri);
@@ -830,22 +901,25 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_path_rootless(const char *start,
-                                size_t length,
-                                char **next,
+static bool check_path_rootless(const char *start, size_t length, char **next,
                                 ov_uri *uri) {
 
-    if (!start || !next || length < 1) goto error;
+    if (!start || !next || length < 1)
+        goto error;
 
     /* path-rootless   ; begins with a segment */
 
-    if (start[0] == '/') goto error;
+    if (start[0] == '/')
+        goto error;
 
-    if (check_with_authority(start, length, next, uri)) return true;
+    if (check_with_authority(start, length, next, uri))
+        return true;
 
-    if (!check_path(start, length, next, true)) goto error;
+    if (!check_path(start, length, next, true))
+        goto error;
 
-    if (uri) uri->path = strndup(start, (*next - start));
+    if (uri)
+        uri->path = strndup(start, (*next - start));
 
     return true;
 
@@ -855,19 +929,21 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_path_no_scheme(const char *start,
-                                 size_t length,
-                                 char **next,
+static bool check_path_no_scheme(const char *start, size_t length, char **next,
                                  ov_uri *uri) {
 
-    if (!start || !next || length < 1) goto error;
+    if (!start || !next || length < 1)
+        goto error;
 
     /* path-noscheme   ; begins with a non-colon segment */
 
-    if (start[0] == '/') goto error;
-    if (!check_path(start, length, next, false)) goto error;
+    if (start[0] == '/')
+        goto error;
+    if (!check_path(start, length, next, false))
+        goto error;
 
-    if (uri) uri->path = strndup(start, (*next - start));
+    if (uri)
+        uri->path = strndup(start, (*next - start));
 
     return true;
 error:
@@ -876,41 +952,47 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_path_with_authority(const char *start,
-                                      size_t length,
-                                      char **next,
-                                      ov_uri *uri) {
+static bool check_path_with_authority(const char *start, size_t length,
+                                      char **next, ov_uri *uri) {
 
-    if (!start || !next || length < 2) goto error;
+    if (!start || !next || length < 2)
+        goto error;
 
-    if (start[0] != '/') goto error;
-    if (start[1] != '/') goto error;
+    if (start[0] != '/')
+        goto error;
+    if (start[1] != '/')
+        goto error;
 
     size_t len = 0;
     char *ptr = NULL;
     char *nxt = (char *)start + 2;
 
-    if (!mask_user(nxt, length - (nxt - start), &ptr, &len, &nxt)) goto error;
+    if (!mask_user(nxt, length - (nxt - start), &ptr, &len, &nxt))
+        goto error;
 
-    if (uri && (len > 0)) uri->user = strndup(ptr, len);
+    if (uri && (len > 0))
+        uri->user = strndup(ptr, len);
 
-    if (!mask_host(nxt, length - (nxt - start), &ptr, &len, &nxt)) goto error;
+    if (!mask_host(nxt, length - (nxt - start), &ptr, &len, &nxt))
+        goto error;
 
-    if (uri && len > 0) uri->host = strndup(ptr, len);
+    if (uri && len > 0)
+        uri->host = strndup(ptr, len);
 
     if (!mask_port(nxt, length - (nxt - start), &ptr, &len, &nxt, uri))
         goto error;
 
     *next = nxt;
 
-    if ((ssize_t)length == (nxt - start)) return true;
+    if ((ssize_t)length == (nxt - start))
+        return true;
 
     switch (nxt[0]) {
 
-        case '?':
-        case '#':
-            /* path empty */
-            return true;
+    case '?':
+    case '#':
+        /* path empty */
+        return true;
     }
 
     return check_path_absolute(nxt, length - (nxt - start), next, uri);
@@ -921,12 +1003,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_hierarchical_path(const char *start,
-                                    size_t length,
-                                    char **next,
-                                    ov_uri *uri) {
+static bool check_hierarchical_path(const char *start, size_t length,
+                                    char **next, ov_uri *uri) {
 
-    if (!start || !next) goto error;
+    if (!start || !next)
+        goto error;
 
     /*
      *      hier-part     = "//" authority path-abempty
@@ -936,21 +1017,23 @@ static bool check_hierarchical_path(const char *start,
      *
      */
 
-    if (0 == length) return true;
+    if (0 == length)
+        return true;
 
     switch (start[0]) {
 
-        case '/':
+    case '/':
 
-            if (check_path_absolute(start, length, next, uri)) return true;
-
-            return check_path_with_authority(start, length, next, uri);
-
-        case '?':
+        if (check_path_absolute(start, length, next, uri))
             return true;
 
-        default:
-            return check_path_rootless(start, length, next, uri);
+        return check_path_with_authority(start, length, next, uri);
+
+    case '?':
+        return true;
+
+    default:
+        return check_path_rootless(start, length, next, uri);
     }
 error:
     return false;
@@ -958,12 +1041,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_relative_path(const char *start,
-                                size_t length,
-                                char **next,
+static bool check_relative_path(const char *start, size_t length, char **next,
                                 ov_uri *uri) {
 
-    if (!start || !next) goto error;
+    if (!start || !next)
+        goto error;
 
     /*
      *      relative-part = "//" authority path-abempty
@@ -973,22 +1055,24 @@ static bool check_relative_path(const char *start,
      *
      */
 
-    if (0 == length) return true;
+    if (0 == length)
+        return true;
 
     switch (start[0]) {
 
-        case '/':
+    case '/':
 
-            if (check_path_absolute(start, length, next, uri)) return true;
-
-            return check_path_with_authority(start, length, next, uri);
-
-        case '?':
-        case '#':
+        if (check_path_absolute(start, length, next, uri))
             return true;
 
-        default:
-            return check_path_no_scheme(start, length, next, uri);
+        return check_path_with_authority(start, length, next, uri);
+
+    case '?':
+    case '#':
+        return true;
+
+    default:
+        return check_path_no_scheme(start, length, next, uri);
     }
 error:
     return false;
@@ -1004,7 +1088,8 @@ error:
 
 bool ov_uri_clear(ov_uri *uri) {
 
-    if (!uri) return false;
+    if (!uri)
+        return false;
 
     uri->scheme = ov_data_pointer_free(uri->scheme);
     uri->path = ov_data_pointer_free(uri->path);
@@ -1022,7 +1107,8 @@ bool ov_uri_clear(ov_uri *uri) {
 
 ov_uri *ov_uri_free(ov_uri *uri) {
 
-    if (!ov_uri_clear(uri)) return uri;
+    if (!ov_uri_clear(uri))
+        return uri;
     free(uri);
     return NULL;
 }
@@ -1037,39 +1123,46 @@ ov_uri *ov_uri_free(ov_uri *uri) {
 
 bool ov_uri_string_is_valid(const char *string, size_t length) {
 
-    if (ov_uri_string_is_absolute(string, length)) return true;
+    if (ov_uri_string_is_absolute(string, length))
+        return true;
 
     return ov_uri_string_is_reference(string, length);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_uri_string_absolute(const char *start,
-                                      size_t length,
+static bool parse_uri_string_absolute(const char *start, size_t length,
                                       ov_uri *uri) {
 
-    if (!start || (0 == length)) goto error;
+    if (!start || (0 == length))
+        goto error;
 
     /* absolute-URI  = scheme ":" hier-part [ "?" query ] */
 
-    if (!chars_are_allowed(start, length)) goto error;
+    if (!chars_are_allowed(start, length))
+        goto error;
 
     char *ptr = NULL;
     char *next = NULL;
     size_t len = 0;
 
-    if (!mask_scheme(start, length, &ptr, &len, &next)) goto error;
+    if (!mask_scheme(start, length, &ptr, &len, &next))
+        goto error;
 
-    if (0 == len) goto error;
+    if (0 == len)
+        goto error;
 
-    if (uri) uri->scheme = strndup(ptr, len);
+    if (uri)
+        uri->scheme = strndup(ptr, len);
 
     if (!check_hierarchical_path(next, (length - (next - start)), &next, uri))
         goto error;
 
-    if ((ssize_t)length == next - start) return true;
+    if ((ssize_t)length == next - start)
+        return true;
 
-    if (*next != '?') goto error;
+    if (*next != '?')
+        goto error;
 
     char *query = next;
     next++;
@@ -1077,9 +1170,11 @@ static bool parse_uri_string_absolute(const char *start,
     if (!check_with_delimiter(next, length - (next - start), &next, '?', true))
         goto error;
 
-    if (uri) uri->query = strndup(query, next - query);
+    if (uri)
+        uri->query = strndup(query, next - query);
 
-    if ((ssize_t)length == next - start) return true;
+    if ((ssize_t)length == next - start)
+        return true;
 error:
     return false;
 }
@@ -1092,42 +1187,49 @@ bool ov_uri_string_is_absolute(const char *start, size_t length) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_uri_string_reference(const char *start,
-                                       size_t length,
+static bool parse_uri_string_reference(const char *start, size_t length,
                                        ov_uri *uri) {
 
-    if (!start || (0 == length)) goto error;
+    if (!start || (0 == length))
+        goto error;
 
-    if (!chars_are_allowed(start, length)) goto error;
+    if (!chars_are_allowed(start, length))
+        goto error;
 
     char *ptr = NULL;
     char *next = NULL;
     size_t len = 0;
 
-    if (!mask_scheme(start, length, &ptr, &len, &next)) goto error;
+    if (!mask_scheme(start, length, &ptr, &len, &next))
+        goto error;
 
-    if (uri && len > 0) uri->scheme = strndup(ptr, len);
+    if (uri && len > 0)
+        uri->scheme = strndup(ptr, len);
 
     if (!check_relative_path(next, (length - (next - start)), &next, uri))
         goto error;
 
-    if ((ssize_t)length == next - start) return true;
+    if ((ssize_t)length == next - start)
+        return true;
 
     if (*next == '?') {
 
         char *query = next;
 
         next++;
-        if (!check_with_delimiter(
-                next, length - (next - start), &next, '?', true))
+        if (!check_with_delimiter(next, length - (next - start), &next, '?',
+                                  true))
             goto error;
 
-        if (uri) uri->query = strndup(query, next - query);
+        if (uri)
+            uri->query = strndup(query, next - query);
 
-        if ((ssize_t)length == next - start) return true;
+        if ((ssize_t)length == next - start)
+            return true;
     }
 
-    if (*next != '#') goto error;
+    if (*next != '#')
+        goto error;
 
     char *fragment = next;
 
@@ -1136,9 +1238,11 @@ static bool parse_uri_string_reference(const char *start,
     if (!check_with_delimiter(next, length - (next - start), &next, '#', true))
         goto error;
 
-    if (uri) uri->fragment = strndup(fragment, next - fragment);
+    if (uri)
+        uri->fragment = strndup(fragment, next - fragment);
 
-    if ((ssize_t)length == next - start) return true;
+    if ((ssize_t)length == next - start)
+        return true;
 
 error:
     return false;
@@ -1163,14 +1267,17 @@ bool ov_uri_string_is_reference(const char *start, size_t length) {
 ov_uri *ov_uri_from_string(const char *string, size_t length) {
 
     ov_uri *uri = NULL;
-    if (!string || (0 == length)) goto error;
+    if (!string || (0 == length))
+        goto error;
 
     uri = calloc(1, sizeof(ov_uri));
-    if (parse_uri_string_absolute(string, length, uri)) return uri;
+    if (parse_uri_string_absolute(string, length, uri))
+        return uri;
 
     ov_uri_clear(uri);
 
-    if (parse_uri_string_reference(string, length, uri)) return uri;
+    if (parse_uri_string_reference(string, length, uri))
+        return uri;
 error:
     uri = ov_uri_free(uri);
     return NULL;
@@ -1180,7 +1287,8 @@ error:
 
 size_t ov_uri_string_length(const ov_uri *uri) {
 
-    if (!uri) goto error;
+    if (!uri)
+        goto error;
 
     size_t len = 0;
     size_t length = 0;
@@ -1191,18 +1299,21 @@ size_t ov_uri_string_length(const ov_uri *uri) {
 
         len = strlen(uri->scheme);
 
-        if (!chars_are_scheme(uri->scheme, len)) goto error;
+        if (!chars_are_scheme(uri->scheme, len))
+            goto error;
 
         length += len + 1;
     }
 
-    if (uri->host || uri->user || (0 != uri->port)) length += 2;
+    if (uri->host || uri->user || (0 != uri->port))
+        length += 2;
 
     if (uri->user) {
 
         len = strlen(uri->user);
 
-        if (!chars_are_user(uri->user, len)) goto error;
+        if (!chars_are_user(uri->user, len))
+            goto error;
 
         length += len + 1;
     }
@@ -1211,12 +1322,14 @@ size_t ov_uri_string_length(const ov_uri *uri) {
 
         len = strlen(uri->host);
 
-        if (!chars_are_host(uri->host, len)) goto error;
+        if (!chars_are_host(uri->host, len))
+            goto error;
 
         length += len;
     }
 
-    if (0 != uri->port) length += 6;
+    if (0 != uri->port)
+        length += 6;
 
     if (uri->path) {
 
@@ -1226,7 +1339,8 @@ size_t ov_uri_string_length(const ov_uri *uri) {
 
     if (uri->query) {
 
-        if (uri->query[0] != '?') goto error;
+        if (uri->query[0] != '?')
+            goto error;
         len = strlen(uri->query);
 
         if (!check_with_delimiter(uri->query + 1, len - 1, &next, '?', true))
@@ -1237,7 +1351,8 @@ size_t ov_uri_string_length(const ov_uri *uri) {
 
     if (uri->fragment) {
 
-        if (uri->fragment[0] != '#') goto error;
+        if (uri->fragment[0] != '#')
+            goto error;
         len = strlen(uri->fragment);
 
         if (!check_with_delimiter(uri->fragment + 1, len - 1, &next, '#', true))
@@ -1256,14 +1371,17 @@ error:
 char *ov_uri_to_string(const ov_uri *uri) {
 
     char *out = NULL;
-    if (!uri) goto error;
+    if (!uri)
+        goto error;
 
     size_t len = 0;
     size_t length = ov_uri_string_length(uri);
-    if (0 == length) goto error;
+    if (0 == length)
+        goto error;
 
     out = calloc(length, sizeof(char));
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     char *ptr = out;
 
@@ -1271,7 +1389,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), "%s:", uri->scheme);
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1279,7 +1398,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), "//");
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1287,7 +1407,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), "%s@", uri->user);
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1295,7 +1416,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), "%s", uri->host);
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1303,7 +1425,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), ":%i", uri->port);
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1311,7 +1434,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), "%s", uri->path);
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1319,7 +1443,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), "%s", uri->query);
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1327,7 +1452,8 @@ char *ov_uri_to_string(const ov_uri *uri) {
 
         len = snprintf(ptr, length - (ptr - out), "%s", uri->fragment);
 
-        if (len <= 0) goto error;
+        if (len <= 0)
+            goto error;
         ptr += len;
     }
 
@@ -1341,11 +1467,13 @@ error:
 
 bool ov_uri_path_remove_dot_segments(const char *in, char *out) {
 
-    if (!in || !out) goto error;
+    if (!in || !out)
+        goto error;
 
     size_t len = 0;
     size_t size = strlen(in);
-    if (size == 0) goto error;
+    if (size == 0)
+        goto error;
 
     ov_memory_pointer curr = {0};
 
@@ -1379,56 +1507,59 @@ bool ov_uri_path_remove_dot_segments(const char *in, char *out) {
 
         switch (curr.length) {
 
-            case 1:
+        case 1:
 
-                /* Ignore ./ */
+            /* Ignore ./ */
 
-                if (curr.start[0] == '.') {
-                    ptr = del + 1;
-                    del = memchr(ptr, '/', size - (ptr - in));
-                    continue;
-                }
+            if (curr.start[0] == '.') {
+                ptr = del + 1;
+                del = memchr(ptr, '/', size - (ptr - in));
+                continue;
+            }
 
-                break;
+            break;
 
-            case 2:
+        case 2:
 
-                if ((curr.start[0] == '.') && (curr.start[1] == '.')) {
+            if ((curr.start[0] == '.') && (curr.start[1] == '.')) {
 
-                    if (level == 0) goto error;
+                if (level == 0)
+                    goto error;
 
-                    /* remove prev */
+                /* remove prev */
 
-                    len = wptr - out;
-                    size_t i = len;
+                len = wptr - out;
+                size_t i = len;
 
-                    for (i = len; i > 0; i--) {
+                for (i = len; i > 0; i--) {
 
-                        if (out[i] == '/') {
-                            out[i] = 0;
-                            wptr = out + i - 1;
-                            break;
-                        }
+                    if (out[i] == '/') {
+                        out[i] = 0;
+                        wptr = out + i - 1;
+                        break;
                     }
-
-                    if (i == 0) wptr = out;
-
-                    level--;
-
-                    ptr = del + 1;
-                    del = memchr(ptr, '/', size - (ptr - in));
-                    continue;
                 }
 
-                break;
+                if (i == 0)
+                    wptr = out;
 
-            default:
-                break;
+                level--;
+
+                ptr = del + 1;
+                del = memchr(ptr, '/', size - (ptr - in));
+                continue;
+            }
+
+            break;
+
+        default:
+            break;
         }
 
         len = del - ptr;
 
-        if (!strncpy(wptr, (char *)ptr, len)) goto error;
+        if (!strncpy(wptr, (char *)ptr, len))
+            goto error;
 
         wptr += len;
 
@@ -1445,12 +1576,14 @@ bool ov_uri_path_remove_dot_segments(const char *in, char *out) {
 
     /* add last to out e.g. index.html */
 
-    if (!strncpy(wptr, ptr, size - (ptr - in))) goto error;
+    if (!strncpy(wptr, ptr, size - (ptr - in)))
+        goto error;
 
     // fprintf(stdout, "IN : %s\nOUT: %s\n", in, out);
     return true;
 error:
-    if (out) memset(out, 0, PATH_MAX);
+    if (out)
+        memset(out, 0, PATH_MAX);
     return false;
 }
 
@@ -1461,50 +1594,58 @@ ov_json_value *ov_uri_to_json(const ov_uri *uri) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!uri) goto error;
+    if (!uri)
+        goto error;
 
     out = ov_json_object();
 
     if (NULL != uri->scheme) {
 
         val = ov_json_string(uri->scheme);
-        if (!ov_json_object_set(out, OV_KEY_SCHEME, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_SCHEME, val))
+            goto error;
     }
 
     if (NULL != uri->path) {
 
         val = ov_json_string(uri->path);
-        if (!ov_json_object_set(out, OV_KEY_PATH, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_PATH, val))
+            goto error;
     }
 
     if (NULL != uri->user) {
 
         val = ov_json_string(uri->user);
-        if (!ov_json_object_set(out, OV_KEY_USER, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_USER, val))
+            goto error;
     }
 
     if (NULL != uri->host) {
 
         val = ov_json_string(uri->host);
-        if (!ov_json_object_set(out, OV_KEY_HOST, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_HOST, val))
+            goto error;
     }
 
     if (0 != uri->port) {
 
         val = ov_json_number(uri->port);
-        if (!ov_json_object_set(out, OV_KEY_PORT, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_PORT, val))
+            goto error;
     }
 
     if (NULL != uri->query) {
 
         val = ov_json_string(uri->query);
-        if (!ov_json_object_set(out, OV_KEY_QUERY, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_QUERY, val))
+            goto error;
     }
 
     if (NULL != uri->fragment) {
 
         val = ov_json_string(uri->fragment);
-        if (!ov_json_object_set(out, OV_KEY_FRAGMENT, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_FRAGMENT, val))
+            goto error;
     }
 
     return out;

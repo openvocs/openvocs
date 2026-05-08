@@ -37,7 +37,8 @@ ov_ice_dtls_config ov_ice_dtls_config_from_json(const ov_json_value *input) {
     ov_ice_dtls_config out = {0};
 
     const ov_json_value *conf = ov_json_object_get(input, OV_ICE_SSL_KEY);
-    if (!conf) conf = input;
+    if (!conf)
+        conf = input;
 
     /*
      *      We perform a read access on the cert and key,
@@ -60,30 +61,28 @@ ov_ice_dtls_config ov_ice_dtls_config_from_json(const ov_json_value *input) {
     const char *error = ov_file_read_check(cert);
 
     if (error) {
-        ov_log_error(
-            "SSL config cannot read certificate "
-            "at %s error %s",
-            cert,
-            error);
+        ov_log_error("SSL config cannot read certificate "
+                     "at %s error %s",
+                     cert, error);
         goto error;
     }
 
     error = ov_file_read_check(key);
 
     if (error) {
-        ov_log_error(
-            "SSL config cannot read key "
-            "at %s error %s",
-            key,
-            error);
+        ov_log_error("SSL config cannot read key "
+                     "at %s error %s",
+                     key, error);
         goto error;
     }
 
     bytes = snprintf(out.cert, PATH_MAX, "%s", cert);
-    if (bytes != strlen(cert)) goto error;
+    if (bytes != strlen(cert))
+        goto error;
 
     bytes = snprintf(out.key, PATH_MAX, "%s", key);
-    if (bytes != strlen(key)) goto error;
+    if (bytes != strlen(key))
+        goto error;
 
     const char *string =
         ov_json_string_get(ov_json_object_get(conf, OV_ICE_SSL_KEY_CA_FILE));
@@ -93,16 +92,15 @@ ov_ice_dtls_config ov_ice_dtls_config_from_json(const ov_json_value *input) {
         error = ov_file_read_check(string);
 
         if (error) {
-            ov_log_error(
-                "SSL config cannot read CA FILE "
-                "at %s error %s",
-                string,
-                error);
+            ov_log_error("SSL config cannot read CA FILE "
+                         "at %s error %s",
+                         string, error);
             goto error;
         }
 
         bytes = snprintf(out.ca.file, PATH_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
+        if (bytes != strlen(string))
+            goto error;
     }
 
     string =
@@ -114,40 +112,40 @@ ov_ice_dtls_config ov_ice_dtls_config_from_json(const ov_json_value *input) {
 
         if (!error) {
 
-            ov_log_error(
-                "SSL config wrong path for CA PATH "
-                "at %s error %s",
-                string,
-                error);
+            ov_log_error("SSL config wrong path for CA PATH "
+                         "at %s error %s",
+                         string, error);
             goto error;
 
         } else if (0 != strcmp(error, OV_FILE_IS_DIR)) {
 
-            ov_log_error(
-                "SSL config wrong path for CA PATH "
-                "at %s error %s",
-                string,
-                error);
+            ov_log_error("SSL config wrong path for CA PATH "
+                         "at %s error %s",
+                         string, error);
             goto error;
         }
 
         bytes = snprintf(out.ca.path, PATH_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
+        if (bytes != strlen(string))
+            goto error;
     }
 
     string =
         ov_json_string_get(ov_json_object_get(conf, OV_ICE_SSL_KEY_DTLS_STRP));
-    if (!string) string = OV_ICE_DTLS_SRTP_PROFILES;
+    if (!string)
+        string = OV_ICE_DTLS_SRTP_PROFILES;
 
     if (string) {
         bytes =
             snprintf(out.srtp.profile, OV_ICE_SRTP_PROFILE_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
+        if (bytes != strlen(string))
+            goto error;
     }
 
     ov_json_value *dtls = ov_json_object_get(conf, OV_ICE_SSL_KEY_DTLS);
 
-    if (!dtls) goto done;
+    if (!dtls)
+        goto done;
 
     out.dtls.keys.quantity = ov_json_number_get(
         ov_json_object_get(dtls, OV_ICE_SSL_KEY_DTLS_KEY_QUANTITY));
@@ -169,7 +167,8 @@ error:
 
 bool ov_ice_dtls_config_init(ov_ice_dtls_config *c) {
 
-    if (!c) goto error;
+    if (!c)
+        goto error;
 
     if (0 == c->cert[0]) {
 
@@ -184,9 +183,7 @@ bool ov_ice_dtls_config_init(ov_ice_dtls_config *c) {
     }
 
     if (0 == c->srtp.profile[0])
-        snprintf(c->srtp.profile,
-                 OV_ICE_SRTP_PROFILE_MAX,
-                 "%s",
+        snprintf(c->srtp.profile, OV_ICE_SRTP_PROFILE_MAX, "%s",
                  OV_ICE_DTLS_SRTP_PROFILES);
 
     if (0 == c->reconnect_interval_usec)
@@ -198,7 +195,8 @@ bool ov_ice_dtls_config_init(ov_ice_dtls_config *c) {
     if (0 == c->dtls.keys.quantity)
         c->dtls.keys.quantity = OV_ICE_DTLS_KEY_QUANTITY;
 
-    if (0 == c->dtls.keys.length) c->dtls.keys.length = OV_ICE_DTLS_KEY_LENGTH;
+    if (0 == c->dtls.keys.length)
+        c->dtls.keys.length = OV_ICE_DTLS_KEY_LENGTH;
 
     return true;
 

@@ -86,17 +86,16 @@ analyser_config configuration = {0};
 
 /*----------------------------------------------------------------------------*/
 
-static const char usage_string[] =
-    "Prints analysis of an IP/UDP/RTP/OPUS "
-    "stream captured in a PCAP file\n\n"
-    "      PATH_TO_FILE\n"
-    "      OPTION might be one of\n"
-    "      -s SSID, --stream=SSID Analyse Opus "
-    "stream with SSID\n"
-    "      -L, --log      turn on logging\n"
-    "      -l, --list     list ssids of all "
-    "streams found at the end of the report\n"
-    "      -c, --csv      Output PCM as Tex \n";
+static const char usage_string[] = "Prints analysis of an IP/UDP/RTP/OPUS "
+                                   "stream captured in a PCAP file\n\n"
+                                   "      PATH_TO_FILE\n"
+                                   "      OPTION might be one of\n"
+                                   "      -s SSID, --stream=SSID Analyse Opus "
+                                   "stream with SSID\n"
+                                   "      -L, --log      turn on logging\n"
+                                   "      -l, --list     list ssids of all "
+                                   "streams found at the end of the report\n"
+                                   "      -c, --csv      Output PCM as Tex \n";
 
 _Noreturn void usage(char const *binary_path) {
 
@@ -104,8 +103,7 @@ _Noreturn void usage(char const *binary_path) {
             "Usage:\n\n"
             "    %s -f PATH_TO_FILE [OPTION [...]]\n\n"
             "%s\n\n\n",
-            binary_path,
-            usage_string);
+            binary_path, usage_string);
 
     exit(EXIT_SUCCESS);
 }
@@ -171,12 +169,8 @@ static analyser_config get_config(int argc, char **argv) {
 
     struct option opt_null = {0};
 
-    struct option longopts[] = {opt_list_streams,
-                                opt_csv,
-                                opt_stream,
-                                opt_log,
-                                opt_pcap_file,
-                                opt_null};
+    struct option longopts[] = {opt_list_streams, opt_csv,       opt_stream,
+                                opt_log,          opt_pcap_file, opt_null};
 
     int c = 0;
 
@@ -191,43 +185,42 @@ static analyser_config get_config(int argc, char **argv) {
 
         switch (c) {
 
-            case 'c':
+        case 'c':
 
-                LOG("Outputting as csv\n");
-                cfg.stream.csv = true;
-                break;
+            LOG("Outputting as csv\n");
+            cfg.stream.csv = true;
+            break;
 
-            case 's':
+        case 's':
 
-                cfg.stream.ssid = strtol(optarg, 0, 0);
-                cfg.stream.analyze = true;
+            cfg.stream.ssid = strtol(optarg, 0, 0);
+            cfg.stream.analyze = true;
 
-                LOG("Analysing single stream SSID %" PRIu32 "\n",
-                    cfg.stream.ssid);
+            LOG("Analysing single stream SSID %" PRIu32 "\n", cfg.stream.ssid);
 
-                break;
+            break;
 
-            case 'f':
+        case 'f':
 
-                LOG("setting to %s\n", optarg);
-                cfg.pcap_file = optarg;
+            LOG("setting to %s\n", optarg);
+            cfg.pcap_file = optarg;
 
-                break;
+            break;
 
-            case 'l':
+        case 'l':
 
-                cfg.list_streams = true;
-                break;
+            cfg.list_streams = true;
+            break;
 
-            case 'L':
+        case 'L':
 
-                cfg.enable_log = true;
-                break;
+            cfg.enable_log = true;
+            break;
 
-            default:
+        default:
 
-                LOG_WARN("unknown option %c\n", c);
-                usage(argv[0]);
+            LOG_WARN("unknown option %c\n", c);
+            usage(argv[0]);
         };
     }
 
@@ -259,7 +252,8 @@ static bool create_codec(char const *name, uint32_t ssid) {
 
 static void *free_codec(void *vptr) {
 
-    if (0 == vptr) return vptr;
+    if (0 == vptr)
+        return vptr;
 
     ov_codec *codec = (ov_codec *)vptr;
 
@@ -284,7 +278,8 @@ static bool initialize_codec_registry() {
         return false;
     }
 
-    if (!configuration.stream.analyze) return true;
+    if (!configuration.stream.analyze)
+        return true;
 
     return create_codec(configuration.codec_name, configuration.stream.ssid);
 }
@@ -312,8 +307,10 @@ static bool is_srtp(ov_format *rtp_fmt) {
 
     ov_buffer *padding = ov_format_rtp_get_padding(rtp_fmt);
 
-    if (0 == padding) return false;
-    if (OV_FORMAT_RTP_NO_PADDING == padding) return false;
+    if (0 == padding)
+        return false;
+    if (OV_FORMAT_RTP_NO_PADDING == padding)
+        return false;
 
     return true;
 }
@@ -331,10 +328,12 @@ ov_format *open_pcap_as_rtp_format(char const *pcap_path) {
     ov_format *rtp_fmt = 0;
 
     file_fmt = ov_format_open(pcap_path, OV_READ);
-    if (0 == file_fmt) goto error;
+    if (0 == file_fmt)
+        goto error;
 
     pcap_fmt = ov_format_as(file_fmt, "pcap", 0, 0);
-    if (0 == pcap_fmt) goto error;
+    if (0 == pcap_fmt)
+        goto error;
 
     file_fmt = 0;
 
@@ -345,12 +344,9 @@ ov_format *open_pcap_as_rtp_format(char const *pcap_path) {
         PANIC("could not get global PCAP header");
     }
 
-    LOG("PCAP file version: %" PRIu16 ".%" PRIu16
-        "  Bytes swapped: %s   "
+    LOG("PCAP file version: %" PRIu16 ".%" PRIu16 "  Bytes swapped: %s   "
         "snaplen %" PRIu32 "\n",
-        hdr.version_major,
-        hdr.version_minor,
-        hdr.bytes_swapped ? "Yes" : "No",
+        hdr.version_major, hdr.version_minor, hdr.bytes_swapped ? "Yes" : "No",
         hdr.snaplen);
 
     network_layer_fmt = ov_format_pcap_create_network_layer_format(pcap_fmt);
@@ -366,7 +362,8 @@ ov_format *open_pcap_as_rtp_format(char const *pcap_path) {
 
     udp_fmt = ov_format_as(network_layer_fmt, "udp", 0, 0);
 
-    if (0 == udp_fmt) goto error;
+    if (0 == udp_fmt)
+        goto error;
 
     network_layer_fmt = 0;
 
@@ -428,8 +425,7 @@ static bool analyse_frame(ov_format const *fmt) {
     }
 
     LOG("PCAP num bytes: %" PRIu32 " (stored)  %" PRIu32 " (orig)\n",
-        hdr.length_stored_bytes,
-        hdr.length_origin_bytes);
+        hdr.length_stored_bytes, hdr.length_origin_bytes);
 
     return true;
 
@@ -442,7 +438,8 @@ error:
 
 static void write_binary(int fd, uint8_t *pcm_buffer, size_t num_bytes) {
 
-    if (0 >= fd) return;
+    if (0 >= fd)
+        return;
 
     int retval = write(fd, pcm_buffer, num_bytes);
 
@@ -458,7 +455,8 @@ static void write_csv(FILE *fh, uint8_t *pcm_buffer, size_t num_bytes) {
 
     int16_t *sample = (int16_t *)pcm_buffer;
 
-    if (0 == fh) return;
+    if (0 == fh)
+        return;
 
     fprintf(fh, "# Frame: %zu samples\n", num_bytes / 2);
 
@@ -474,11 +472,8 @@ static void write_csv(FILE *fh, uint8_t *pcm_buffer, size_t num_bytes) {
 
 /*----------------------------------------------------------------------------*/
 
-static void analyse_stream(int out_fd,
-                           FILE *out_file,
-                           ov_buffer encoded_audio,
-                           ov_format *fmt,
-                           uint32_t ssid) {
+static void analyse_stream(int out_fd, FILE *out_file, ov_buffer encoded_audio,
+                           ov_format *fmt, uint32_t ssid) {
 
     OV_ASSERT((0 != out_fd) || (0 != out_file));
     OV_ASSERT(0 != fmt);
@@ -501,8 +496,7 @@ static void analyse_stream(int out_fd,
         return;
     }
 
-    LOG("Found another frame for %" PRIu32 " (%" PRIu32 " in header)\n",
-        ssid,
+    LOG("Found another frame for %" PRIu32 " (%" PRIu32 " in header)\n", ssid,
         rhdr.ssrc);
 
     ov_codec *codec = get_codec_for(ssid);
@@ -511,12 +505,9 @@ static void analyse_stream(int out_fd,
 
     uint8_t pcm_buffer[MAX_SAMPLES_PER_FRAME * sizeof(int16_t)] = {0};
 
-    size_t num_bytes_written = codec->decode(codec,
-                                             rhdr.sequence_number,
-                                             encoded_audio.start,
-                                             encoded_audio.length,
-                                             pcm_buffer,
-                                             sizeof(pcm_buffer));
+    size_t num_bytes_written =
+        codec->decode(codec, rhdr.sequence_number, encoded_audio.start,
+                      encoded_audio.length, pcm_buffer, sizeof(pcm_buffer));
 
     if (0 == num_bytes_written) {
         LOG_WARN("Could not decode audio\n");
@@ -549,10 +540,7 @@ static void parse_rtp_analyze_stream(ov_format *rtp_fmt, uint32_t ssid) {
         extension = "csv";
     }
 
-    snprintf(out_file_path,
-             sizeof(out_file_path),
-             "%" PRIu32 ".%s",
-             ssid,
+    snprintf(out_file_path, sizeof(out_file_path), "%" PRIu32 ".%s", ssid,
              extension);
 
     int out_fd =
@@ -610,19 +598,16 @@ static void parse_rtp_analyze_stream(ov_format *rtp_fmt, uint32_t ssid) {
     fprintf(stdout,
             "Analysed %zu RTP frames, totalling to %zu bytes of encoded "
             "audio.    Encountered %zu faulty chunks\n",
-            num_frames_read,
-            total_payload_bytes,
-            num_faulty_chunks);
+            num_frames_read, total_payload_bytes, num_faulty_chunks);
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void print_analysis_header(FILE *out) {
 
-    fprintf(out,
-            "# timestamp    timestamp(rtp)   SSRC (Src Port>Dst Port)   "
-            "SEQ number     Num samples    Num channels     encoded "
-            "(octets)\n");
+    fprintf(out, "# timestamp    timestamp(rtp)   SSRC (Src Port>Dst Port)   "
+                 "SEQ number     Num samples    Num channels     encoded "
+                 "(octets)\n");
 }
 
 /*----------------------------------------------------------------------------*/
@@ -677,15 +662,9 @@ static void analyse_audio(FILE *out, ov_buffer encoded_audio, ov_format *fmt) {
     fprintf(out,
             "%" PRIu32 ".%" PRIu32 "   %" PRIu32 "   %" PRIu32 " (%" PRIu16
             ">%" PRIu16 ")   %" PRIu16 "    %i   %i   %zu\n",
-            phdr.timestamp_secs,
-            phdr.timestamp_usecs,
-            rhdr.timestamp,
-            rhdr.ssrc,
-            uhdr.source_port,
-            uhdr.destination_port,
-            rhdr.sequence_number,
-            num_samples,
-            num_channels,
+            phdr.timestamp_secs, phdr.timestamp_usecs, rhdr.timestamp,
+            rhdr.ssrc, uhdr.source_port, uhdr.destination_port,
+            rhdr.sequence_number, num_samples, num_channels,
             encoded_audio.length);
 }
 
@@ -801,9 +780,7 @@ static void parse_rtp(ov_format *rtp_fmt, bool print_ssrcs) {
     fprintf(stdout,
             "Analysed %zu RTP frames, totalling to %zu bytes of encoded "
             "audio.    Encountered %zu SRTP, %zu faulty chunks\n",
-            num_frames_read,
-            total_payload_bytes,
-            num_srtp_frames,
+            num_frames_read, total_payload_bytes, num_srtp_frames,
             num_faulty_chunks);
 
     if (print_ssrcs) {
@@ -824,9 +801,7 @@ int main(int argc, char **argv) {
     configuration = get_config(argc, argv);
 
     if (configuration.enable_log) {
-        ov_log_set_output(0,
-                          0,
-                          OV_LOG_INFO,
+        ov_log_set_output(0, 0, OV_LOG_INFO,
                           (ov_log_output){
                               .use.systemd = true,
                               .filehandle = fileno(stderr),

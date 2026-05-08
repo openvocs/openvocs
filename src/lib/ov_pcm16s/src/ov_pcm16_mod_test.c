@@ -88,8 +88,8 @@ static int ov_pcm_16_scale_test() {
     testrun(
         DEQUALS(power_per_sample, vad.powerlevel_density_per_sample, 0.00001));
 
-    testrun(DEQUALS(
-        zero_crossings_per_sample, vad.zero_crossings_per_sample, 0.00001));
+    testrun(DEQUALS(zero_crossings_per_sample, vad.zero_crossings_per_sample,
+                    0.00001));
 
     memset(out, 0, sizeof(out));
     int16_t max = 0;
@@ -168,8 +168,8 @@ static int ov_pcm_32_clip_to_16_test() {
 
     _Static_assert(NUM <= NUM_SAMPLES, "NUM exceeds max NUM");
 
-    int32_t const IN[NUM] = {
-        -17, 37, ((int32_t)INT16_MIN) - 1, ((int32_t)INT16_MAX) + 1};
+    int32_t const IN[NUM] = {-17, 37, ((int32_t)INT16_MIN) - 1,
+                             ((int32_t)INT16_MAX) + 1};
 
     int16_t const REF[NUM] = {-17, 37, INT16_MIN, INT16_MAX};
     int16_t out[NUM] = {0};
@@ -275,8 +275,8 @@ static int ov_pcm_32_get_vad_parameters_test() {
     testrun(
         DEQUALS(power_per_sample, vad.powerlevel_density_per_sample, 0.00001));
 
-    testrun(DEQUALS(
-        zero_crossings_per_sample, vad.zero_crossings_per_sample, 0.00001));
+    testrun(DEQUALS(zero_crossings_per_sample, vad.zero_crossings_per_sample,
+                    0.00001));
 
     return testrun_log_success();
 }
@@ -331,10 +331,8 @@ static int ov_pcm_vad_detected_test() {
 
 int ov_pcm_16_scale_to_32_bare_test() {
 
-    bool ov_pcm_16_scale_to_32_bare(size_t number_of_samples,
-                                    int16_t const *in,
-                                    int32_t *out,
-                                    double scale_factor);
+    bool ov_pcm_16_scale_to_32_bare(size_t number_of_samples, int16_t const *in,
+                                    int32_t *out, double scale_factor);
 
     int16_t const IN[NUM_SAMPLES] = {1, 2, 3, 4, 0, 4, 3, 2, 1, -1};
     int32_t const RF[NUM_SAMPLES] = {2, 4, 6, 8, 0, 8, 6, 4, 2, -2};
@@ -402,8 +400,7 @@ int ov_pcm_16_fade_to_32_test() {
 
 int ov_pcm_16_get_audio_params_test() {
 
-    bool ov_pcm_16_get_audio_params(size_t number_of_samples,
-                                    int16_t const *in,
+    bool ov_pcm_16_get_audio_params(size_t number_of_samples, int16_t const *in,
                                     ov_vad_parameters *params,
                                     int16_t *max_amplitude);
 
@@ -434,8 +431,8 @@ int ov_pcm_16_get_audio_params_test() {
     testrun(
         DEQUALS(power_per_sample, vad.powerlevel_density_per_sample, 0.00001));
 
-    testrun(DEQUALS(
-        zero_crossings_per_sample, vad.zero_crossings_per_sample, 0.00001));
+    testrun(DEQUALS(zero_crossings_per_sample, vad.zero_crossings_per_sample,
+                    0.00001));
 
     max = 0;
     memset(&vad, 0, sizeof(vad));
@@ -446,24 +443,18 @@ int ov_pcm_16_get_audio_params_test() {
     testrun(
         DEQUALS(power_per_sample, vad.powerlevel_density_per_sample, 0.00001));
 
-    testrun(DEQUALS(
-        zero_crossings_per_sample, vad.zero_crossings_per_sample, 0.00001));
+    testrun(DEQUALS(zero_crossings_per_sample, vad.zero_crossings_per_sample,
+                    0.00001));
 
     return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_pcm16_mod",
-            ov_pcm_16_scale_to_32_bare_test,
-            ov_pcm_16_fade_to_32_test,
-            ov_pcm_16_get_audio_params_test,
-            ov_pcm_16_scale_test,
-            ov_pcm_32_scale_test,
-            ov_pcm_32_normalize_to_test,
-            ov_pcm_32_clip_to_16_test,
-            ov_pcm_32_compress_to_16_test,
-            ov_pcm_32_subtract_test,
-            ov_pcm_32_add_test,
-            ov_pcm_32_get_vad_parameters_test,
+OV_TEST_RUN("ov_pcm16_mod", ov_pcm_16_scale_to_32_bare_test,
+            ov_pcm_16_fade_to_32_test, ov_pcm_16_get_audio_params_test,
+            ov_pcm_16_scale_test, ov_pcm_32_scale_test,
+            ov_pcm_32_normalize_to_test, ov_pcm_32_clip_to_16_test,
+            ov_pcm_32_compress_to_16_test, ov_pcm_32_subtract_test,
+            ov_pcm_32_add_test, ov_pcm_32_get_vad_parameters_test,
             ov_pcm_vad_detected_test);

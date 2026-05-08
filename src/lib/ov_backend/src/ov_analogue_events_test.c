@@ -35,8 +35,8 @@ static int test_ov_analogue_event_type_to_string() {
 
     testrun(ov_string_equal(ov_analogue_event_type_to_string(132), "INVALID"));
 
-    testrun(ov_string_equal(
-        ov_analogue_event_type_to_string(ANALOGUE_INVALID), "INVALID"));
+    testrun(ov_string_equal(ov_analogue_event_type_to_string(ANALOGUE_INVALID),
+                            "INVALID"));
 
     testrun(
         ov_string_equal(ov_analogue_event_type_to_string(ANALOGUE_IN), "IN"));
@@ -90,29 +90,22 @@ int test_ov_analogue_event_from_json() {
         "{\"" OV_KEY_DESTINATION "\" : { \"" OV_KEY_CHANNEL "\" : 0}}", 0);
     testrun(NETWORK_TRANSPORT_TYPE_ERROR == rpe.rtp.mc_socket.type);
 
-    rpe = replay_from_json("{\"" OV_KEY_RTP
-                           "\" : {},"
+    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : {},"
                            "\"" OV_KEY_CHANNEL "\" : 0}",
                            0);
 
-    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : { \"" OV_KEY_LOOP
-                           "\" : {}},"
+    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : { \"" OV_KEY_LOOP "\" : {}},"
                            "\"" OV_KEY_CHANNEL "\" : 0}",
                            0);
 
-    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : { \"" OV_KEY_LOOP
-                           "\" : {},"
-                           "\"" OV_KEY_CODEC
-                           "\": {}},"
+    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : { \"" OV_KEY_LOOP "\" : {},"
+                           "\"" OV_KEY_CODEC "\": {}},"
                            "\"" OV_KEY_CHANNEL "\" : 0}",
                            0);
 
-    rpe = replay_from_json("{\"" OV_KEY_RTP
-                           "\" : {"
-                           "\"" OV_KEY_LOOP
-                           "\" : {},"
-                           "\"" OV_KEY_CODEC
-                           "\": {\"codec\":\"opus\"}},"
+    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : {"
+                           "\"" OV_KEY_LOOP "\" : {},"
+                           "\"" OV_KEY_CODEC "\": {\"codec\":\"opus\"}},"
                            "\"" OV_KEY_CHANNEL "\" : 0}",
                            0);
 
@@ -121,12 +114,9 @@ int test_ov_analogue_event_from_json() {
     // rpe = replay_from_json(
     //     "{\"rtp\" : { \"loop\" : \"abc\", \"codec\" : { \"codec\" : "
     //     "\"opus\"}}, \"destination\" : { \"channel\" : 12}}", &jval);
-    rpe = replay_from_json("{\"" OV_KEY_RTP
-                           "\" : {"
-                           "\"" OV_KEY_LOOP
-                           "\" : \"abc\","
-                           "\"" OV_KEY_CODEC
-                           "\": {\"codec\":\"opus\"}},"
+    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : {"
+                           "\"" OV_KEY_LOOP "\" : \"abc\","
+                           "\"" OV_KEY_CODEC "\": {\"codec\":\"opus\"}},"
                            "\"" OV_KEY_CHANNEL "\" : 12}",
                            &jval);
 
@@ -139,14 +129,10 @@ int test_ov_analogue_event_from_json() {
 
     jval = ov_json_value_free(jval);
 
-    rpe = replay_from_json("{\"" OV_KEY_RTP
-                           "\" : {"
-                           "\"" OV_KEY_SSRC
-                           "\": 13,"
-                           "\"" OV_KEY_LOOP
-                           "\" : \"abc\","
-                           "\"" OV_KEY_CODEC
-                           "\": {\"codec\":\"opus\"}},"
+    rpe = replay_from_json("{\"" OV_KEY_RTP "\" : {"
+                           "\"" OV_KEY_SSRC "\": 13,"
+                           "\"" OV_KEY_LOOP "\" : \"abc\","
+                           "\"" OV_KEY_CODEC "\": {\"codec\":\"opus\"}},"
                            "\"" OV_KEY_CHANNEL "\" : 12}",
                            &jval);
 
@@ -164,8 +150,7 @@ int test_ov_analogue_event_from_json() {
 
 /*----------------------------------------------------------------------------*/
 
-static bool stop_equals(char const *jstring,
-                        ov_analogue_event_type type,
+static bool stop_equals(char const *jstring, ov_analogue_event_type type,
                         size_t channel) {
 
     ov_json_value *jval = 0;
@@ -187,19 +172,17 @@ static int test_ov_analogue_stop_event_from_json() {
     testrun(stop_equals(0, ANALOGUE_INVALID, 0));
     testrun(stop_equals("{}", ANALOGUE_INVALID, 0));
     testrun(stop_equals("{\"" OV_KEY_TYPE "\": {}}", ANALOGUE_INVALID, 0));
-    testrun(stop_equals(
-        "{\"" OV_KEY_TYPE "\": \"arrrgghh\"}", ANALOGUE_INVALID, 0));
+    testrun(stop_equals("{\"" OV_KEY_TYPE "\": \"arrrgghh\"}", ANALOGUE_INVALID,
+                        0));
     testrun(stop_equals("{\"" OV_KEY_TYPE "\": \"in\"}", ANALOGUE_IN, 0));
     testrun(stop_equals("{\"" OV_KEY_TYPE "\": \"out\"}", ANALOGUE_OUT, 0));
     testrun(stop_equals("{\"" OV_KEY_TYPE "\": \"in\", \"" OV_KEY_CHANNEL "\": "
                         "13}",
-                        ANALOGUE_IN,
-                        13));
+                        ANALOGUE_IN, 13));
     testrun(stop_equals("{\"" OV_KEY_TYPE "\": \"out\", \"" OV_KEY_CHANNEL "\":"
                         " 13"
                         "}",
-                        ANALOGUE_OUT,
-                        13));
+                        ANALOGUE_OUT, 13));
 
     return testrun_log_success();
 }
@@ -233,8 +216,8 @@ static int test_ov_analogue_list_channel_event_from_json() {
     testrun(list_channel_equals(0, ANALOGUE_INVALID));
     testrun(list_channel_equals("{}", ANALOGUE_INVALID));
     testrun(list_channel_equals("{\"" OV_KEY_TYPE "\": {}}", ANALOGUE_INVALID));
-    testrun(list_channel_equals(
-        "{\"" OV_KEY_TYPE "\": \"arrrgghh\"}", ANALOGUE_INVALID));
+    testrun(list_channel_equals("{\"" OV_KEY_TYPE "\": \"arrrgghh\"}",
+                                ANALOGUE_INVALID));
     testrun(list_channel_equals("{\"" OV_KEY_TYPE "\": \"in\"}", ANALOGUE_IN));
     testrun(
         list_channel_equals("{\"" OV_KEY_TYPE "\": \"out\"}", ANALOGUE_OUT));
@@ -256,8 +239,7 @@ static int test_ov_analogue_list_channel_event_from_json() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_analogue_events",
-            test_ov_analogue_event_type_to_string,
+OV_TEST_RUN("ov_analogue_events", test_ov_analogue_event_type_to_string,
             test_ov_analogue_event_from_json,
             test_ov_analogue_stop_event_from_json,
             test_ov_analogue_list_channel_event_from_json);

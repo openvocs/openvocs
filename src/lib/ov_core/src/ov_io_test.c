@@ -98,9 +98,8 @@ int domains_init() {
 
     test_resource_dir = ov_test_get_resource_path("/resources");
 
-    domain_config_file = ov_test_get_resource_path(
-        "resources"
-        "/" TEST_DOMAIN_NAME);
+    domain_config_file = ov_test_get_resource_path("resources"
+                                                   "/" TEST_DOMAIN_NAME);
     domain_config_file_one =
         ov_test_get_resource_path("resources/" TEST_DOMAIN_NAME_ONE);
     domain_config_file_two =
@@ -112,9 +111,8 @@ int domains_init() {
     /* Since strings have been freed, reinit */
     test_resource_dir = ov_test_get_resource_path("/resources");
 
-    domain_config_file = ov_test_get_resource_path(
-        "resources"
-        "/" TEST_DOMAIN_NAME);
+    domain_config_file = ov_test_get_resource_path("resources"
+                                                   "/" TEST_DOMAIN_NAME);
     domain_config_file_one =
         ov_test_get_resource_path("resources/" TEST_DOMAIN_NAME_ONE);
     domain_config_file_two =
@@ -204,9 +202,7 @@ static bool dummy_accept(void *userdata, int listener, int socket) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool dummy_io(void *userdata,
-                     int connection,
-                     const char *domain,
+static bool dummy_io(void *userdata, int connection, const char *domain,
                      const ov_memory_pointer buffer) {
 
     dummy_userdata *data = (dummy_userdata *)userdata;
@@ -215,7 +211,8 @@ static bool dummy_io(void *userdata,
     data->flag = flag_io;
 
     data->socket = connection;
-    if (domain) data->domain = ov_string_dup(domain);
+    if (domain)
+        data->domain = ov_string_dup(domain);
 
     data->data = ov_buffer_create(buffer.length);
     ov_buffer_set(data->data, buffer.start, buffer.length);
@@ -256,7 +253,8 @@ static int dummy_client_hello_cb(SSL *s, int *al, void *arg) {
      *      so we add some dummy callback, to resume
      *      standard SSL operation.
      */
-    if (!s) return SSL_CLIENT_HELLO_ERROR;
+    if (!s)
+        return SSL_CLIENT_HELLO_ERROR;
 
     if (al || arg) { /* ignored */
     };
@@ -265,9 +263,7 @@ static int dummy_client_hello_cb(SSL *s, int *al, void *arg) {
 
 /*----------------------------------------------------------------------------*/
 
-static int run_client_handshake(ov_event_loop *loop,
-                                SSL *ssl,
-                                int *err,
+static int run_client_handshake(ov_event_loop *loop, SSL *ssl, int *err,
                                 int *errorcode) {
 
     testrun(loop);
@@ -288,52 +284,52 @@ static int run_client_handshake(ov_event_loop *loop,
 
         switch (r) {
 
-            case 1:
-                /* SUCCESS */
+        case 1:
+            /* SUCCESS */
+            run = false;
+            break;
+
+        default:
+
+            n = SSL_get_error(ssl, r);
+
+            switch (n) {
+
+            case SSL_ERROR_NONE:
+                /* SHOULD not be returned in 0 */
+                break;
+
+            case SSL_ERROR_ZERO_RETURN:
+                /* close */
                 run = false;
                 break;
 
-            default:
-
-                n = SSL_get_error(ssl, r);
-
-                switch (n) {
-
-                    case SSL_ERROR_NONE:
-                        /* SHOULD not be returned in 0 */
-                        break;
-
-                    case SSL_ERROR_ZERO_RETURN:
-                        /* close */
-                        run = false;
-                        break;
-
-                    case SSL_ERROR_WANT_READ:
-                    case SSL_ERROR_WANT_WRITE:
-                    case SSL_ERROR_WANT_CONNECT:
-                    case SSL_ERROR_WANT_X509_LOOKUP:
-                    case SSL_ERROR_WANT_ASYNC:
-                    case SSL_ERROR_WANT_ASYNC_JOB:
-                    case SSL_ERROR_WANT_CLIENT_HELLO_CB:
-                        /* try async again */
-                        break;
-
-                    case SSL_ERROR_SYSCALL:
-                        /* nonrecoverable IO error */
-                        *errorcode = ERR_get_error();
-                        run = false;
-                        break;
-
-                    case SSL_ERROR_SSL:
-                        *errorcode = ERR_get_error();
-                        run = false;
-                        break;
-
-                    case SSL_ERROR_WANT_ACCEPT:
-                        run = false;
-                        break;
-                }
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+            case SSL_ERROR_WANT_CONNECT:
+            case SSL_ERROR_WANT_X509_LOOKUP:
+            case SSL_ERROR_WANT_ASYNC:
+            case SSL_ERROR_WANT_ASYNC_JOB:
+            case SSL_ERROR_WANT_CLIENT_HELLO_CB:
+                /* try async again */
                 break;
+
+            case SSL_ERROR_SYSCALL:
+                /* nonrecoverable IO error */
+                *errorcode = ERR_get_error();
+                run = false;
+                break;
+
+            case SSL_ERROR_SSL:
+                *errorcode = ERR_get_error();
+                run = false;
+                break;
+
+            case SSL_ERROR_WANT_ACCEPT:
+                run = false;
+                break;
+            }
+            break;
         }
 
         // fprintf(stdout, "\nr %i n %i\n", r, n);
@@ -448,8 +444,7 @@ int test_ov_io_open_listener() {
     testrun(-1 == recv(client, buf, size, 0));
 
     testrun(ov_io_send(
-        io,
-        conn,
+        io, conn,
         (ov_memory_pointer){.start = (uint8_t *)"test", .length = 4}));
 
     ssize_t bytes = -1;
@@ -552,10 +547,10 @@ int test_ov_io_open_listener() {
     ctx = SSL_CTX_new(TLS_client_method());
     SSL_CTX_set_client_hello_cb(ctx, dummy_client_hello_cb, NULL);
     testrun(1 == SSL_CTX_load_verify_locations(ctx, OV_TEST_CERT_ONE, NULL));
-    testrun(1 == SSL_CTX_use_certificate_file(
-                     ctx, OV_TEST_CERT_ONE, SSL_FILETYPE_PEM));
-    testrun(1 == SSL_CTX_use_PrivateKey_file(
-                     ctx, OV_TEST_CERT_ONE_KEY, SSL_FILETYPE_PEM));
+    testrun(1 == SSL_CTX_use_certificate_file(ctx, OV_TEST_CERT_ONE,
+                                              SSL_FILETYPE_PEM));
+    testrun(1 == SSL_CTX_use_PrivateKey_file(ctx, OV_TEST_CERT_ONE_KEY,
+                                             SSL_FILETYPE_PEM));
     SSL_CTX_set_mode(ctx, SSL_MODE_AUTO_RETRY);
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, NULL);
     SSL_CTX_set_verify_depth(ctx, 1);
@@ -631,9 +626,8 @@ int test_ov_io_open_connection() {
     testrun(-1 != server_tcp);
 
     int client_tcp = ov_io_open_connection(
-        io,
-        (ov_io_socket_config){.socket = socket_config.socket,
-                              .callbacks = socket_config.callbacks});
+        io, (ov_io_socket_config){.socket = socket_config.socket,
+                                  .callbacks = socket_config.callbacks});
 
     ov_event_loop_run(loop, OV_RUN_ONCE);
     testrun(-1 != client_tcp);
@@ -709,8 +703,7 @@ int test_ov_io_open_connection() {
     }
 
     testrun(ov_io_send(
-        io,
-        client,
+        io, client,
         (ov_memory_pointer){.start = (uint8_t *)"test1234", .length = 8}));
 
     while (!data.data) {
@@ -737,13 +730,10 @@ int test_ov_io_open_connection() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_io",
-            domains_init,
+OV_TEST_RUN("ov_io", domains_init,
 
-            test_ov_io_create,
-            test_ov_io_free,
+            test_ov_io_create, test_ov_io_free,
 
-            test_ov_io_open_listener,
-            test_ov_io_open_connection,
+            test_ov_io_open_listener, test_ov_io_open_connection,
 
             domains_deinit);

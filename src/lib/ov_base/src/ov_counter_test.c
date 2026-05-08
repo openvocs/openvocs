@@ -157,8 +157,5 @@ int test_ov_counter_to_json() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_counter",
-            test_ov_counter_reset,
-            test_ov_counter_increase,
-            test_ov_counter_average_per_sec,
-            test_ov_counter_to_json);
+OV_TEST_RUN("ov_counter", test_ov_counter_reset, test_ov_counter_increase,
+            test_ov_counter_average_per_sec, test_ov_counter_to_json);

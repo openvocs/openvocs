@@ -110,8 +110,7 @@ struct ov_serde {
     /**
      * @param res optional - if there, might be filled with result
      */
-    ov_serde_state (*add_raw)(ov_serde *self,
-                              ov_buffer const *raw,
+    ov_serde_state (*add_raw)(ov_serde *self, ov_buffer const *raw,
                               ov_result *res);
 
     ov_serde_data (*pop_datum)(ov_serde *self, ov_result *res);
@@ -121,9 +120,7 @@ struct ov_serde {
     /**
      * @param res optional - if there, might be filled with result
      */
-    bool (*serialize)(ov_serde *self,
-                      int fh,
-                      ov_serde_data data,
+    bool (*serialize)(ov_serde *self, int fh, ov_serde_data data,
                       ov_result *res);
 
     ov_serde *(*free)(ov_serde *self);
@@ -133,8 +130,7 @@ struct ov_serde {
                                    FUNCTIONS
  ****************************************************************************/
 
-ov_serde_state ov_serde_add_raw(ov_serde *self,
-                                ov_buffer const *raw,
+ov_serde_state ov_serde_add_raw(ov_serde *self, ov_buffer const *raw,
                                 ov_result *res);
 
 /*----------------------------------------------------------------------------*/
@@ -152,9 +148,7 @@ bool ov_serde_clear_buffer(ov_serde *self);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_serde_serialize(ov_serde *self,
-                        int fh,
-                        ov_serde_data data,
+bool ov_serde_serialize(ov_serde *self, int fh, ov_serde_data data,
                         ov_result *res);
 
 /*----------------------------------------------------------------------------*/

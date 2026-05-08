@@ -53,8 +53,7 @@ static size_t count_headers(ov_sip_message const *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool header_there(ov_sip_message const *msg,
-                         char const *header,
+static bool header_there(ov_sip_message const *msg, char const *header,
                          char const *value) {
 
     char const *hval = ov_sip_message_header(msg, header);
@@ -240,12 +239,12 @@ static int test_impl_add_raw() {
     body = 0;
 
     testrun(OV_SERDE_END ==
-            sip_serde_add(
-                serde,
-                " 200 OK" CRLF OV_SIP_HEADER_CONTENT_LENGTH
-                ":2" CRLF OV_SIP_HEADER_CONTENT_TYPE ":bor" CRLF CRLF
-                "ZZ" SIP_VERSION " 210 OK-OK" CRLF OV_SIP_HEADER_CONTENT_LENGTH
-                ":1" CRLF OV_SIP_HEADER_CONTENT_TYPE ":caesium" CRLF CRLF "Y"));
+            sip_serde_add(serde, " 200 OK" CRLF OV_SIP_HEADER_CONTENT_LENGTH
+                                 ":2" CRLF OV_SIP_HEADER_CONTENT_TYPE
+                                 ":bor" CRLF CRLF "ZZ" SIP_VERSION
+                                 " 210 OK-OK" CRLF OV_SIP_HEADER_CONTENT_LENGTH
+                                 ":1" CRLF OV_SIP_HEADER_CONTENT_TYPE
+                                 ":caesium" CRLF CRLF "Y"));
 
     msg = ov_sip_serde_pop_datum(serde, 0);
 
@@ -323,10 +322,9 @@ static int test_ov_sip_message_to_string() {
 
     str = ov_sip_message_to_string(serde, msg);
 
-    testrun(0 == ov_string_compare(str,
-                                   "SIP/2.0 120 I don't "
-                                   "know" CRLF OV_SIP_HEADER_CONTENT_LENGTH
-                                   ": 0" CRLF CRLF));
+    testrun(0 == ov_string_compare(str, "SIP/2.0 120 I don't "
+                                        "know" CRLF OV_SIP_HEADER_CONTENT_LENGTH
+                                        ": 0" CRLF CRLF));
     free(str);
 
     msg = ov_sip_message_free(msg);
@@ -390,8 +388,7 @@ static int test_impl_clear_buffer() {
     testrun(ov_serde_clear_buffer(serde));
 
     testrun(OV_SERDE_PROGRESS ==
-            sip_serde_add(serde,
-                          CRLF CRLF SIP_VERSION
+            sip_serde_add(serde, CRLF CRLF SIP_VERSION
                           " 290 OEL" CRLF OV_SIP_HEADER_CONTENT_LENGTH
                           ":5" CRLF OV_SIP_HEADER_CONTENT_TYPE ":hiffenmar"
                           "k" CRLF CRLF));
@@ -428,8 +425,5 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_sip_serde",
-            test_impl_add_raw,
-            test_ov_sip_message_to_string,
-            test_impl_clear_buffer,
-            tear_down);
+OV_TEST_RUN("ov_sip_serde", test_impl_add_raw, test_ov_sip_message_to_string,
+            test_impl_clear_buffer, tear_down);

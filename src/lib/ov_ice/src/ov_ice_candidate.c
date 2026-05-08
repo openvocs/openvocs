@@ -47,7 +47,8 @@
 ov_ice_candidate *ov_ice_candidate_create(ov_ice_stream *stream) {
 
     ov_ice_candidate *c = calloc(1, sizeof(ov_ice_candidate));
-    if (!c) return NULL;
+    if (!c)
+        return NULL;
 
     c->node.type = OV_ICE_CANDIDATE_MAGIC_BYTES;
     c->stream = stream;
@@ -59,7 +60,8 @@ ov_ice_candidate *ov_ice_candidate_create(ov_ice_stream *stream) {
 
 ov_ice_candidate *ov_ice_candidate_cast(const void *data) {
 
-    if (!data) goto error;
+    if (!data)
+        goto error;
 
     ov_node *node = (ov_node *)data;
 
@@ -74,7 +76,8 @@ error:
 void *ov_ice_candidate_free(void *self) {
 
     ov_ice_candidate *candidate = ov_ice_candidate_cast(self);
-    if (!candidate) return self;
+    if (!candidate)
+        return self;
 
     if (candidate->stream) {
 
@@ -85,9 +88,11 @@ void *ov_ice_candidate_free(void *self) {
 
             drop = NULL;
 
-            if (pair->local == candidate) drop = pair;
+            if (pair->local == candidate)
+                drop = pair;
 
-            if (pair->remote == candidate) drop = pair;
+            if (pair->remote == candidate)
+                drop = pair;
 
             pair = ov_node_next(pair);
             drop = ov_ice_pair_free(drop);
@@ -122,8 +127,7 @@ void *ov_ice_candidate_free(void *self) {
 
             ov_event_loop_timer_unset(
                 ov_ice_get_event_loop(candidate->base->stream->session->ice),
-                candidate->server.timer.keepalive,
-                NULL);
+                candidate->server.timer.keepalive, NULL);
 
             candidate->server.timer.keepalive = OV_TIMER_INVALID;
         }
@@ -143,20 +147,20 @@ const char *ov_ice_candidate_type_to_string(ov_ice_candidate_type type) {
 
     switch (type) {
 
-        case OV_ICE_HOST:
-            return ICE_STRING_HOST;
+    case OV_ICE_HOST:
+        return ICE_STRING_HOST;
 
-        case OV_ICE_SERVER_REFLEXIVE:
-            return ICE_STRING_SERVER_REFLEXIVE;
+    case OV_ICE_SERVER_REFLEXIVE:
+        return ICE_STRING_SERVER_REFLEXIVE;
 
-        case OV_ICE_PEER_REFLEXIVE:
-            return ICE_STRING_PEER_REFLEXIVE;
+    case OV_ICE_PEER_REFLEXIVE:
+        return ICE_STRING_PEER_REFLEXIVE;
 
-        case OV_ICE_RELAYED:
-            return ICE_STRING_RELAYED;
+    case OV_ICE_RELAYED:
+        return ICE_STRING_RELAYED;
 
-        default:
-            break;
+    default:
+        break;
     }
 
     return NULL;
@@ -167,9 +171,11 @@ const char *ov_ice_candidate_type_to_string(ov_ice_candidate_type type) {
 ov_ice_candidate_type ov_ice_candidate_type_from_string(const char *string,
                                                         size_t length) {
 
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
-    if (0 == strncmp(ICE_STRING_HOST, string, length)) return OV_ICE_HOST;
+    if (0 == strncmp(ICE_STRING_HOST, string, length))
+        return OV_ICE_HOST;
 
     if (0 == strncmp(ICE_STRING_PEER_REFLEXIVE, string, length))
         return OV_ICE_PEER_REFLEXIVE;
@@ -177,7 +183,8 @@ ov_ice_candidate_type ov_ice_candidate_type_from_string(const char *string,
     if (0 == strncmp(ICE_STRING_SERVER_REFLEXIVE, string, length))
         return OV_ICE_SERVER_REFLEXIVE;
 
-    if (0 == strncmp(ICE_STRING_RELAYED, string, length)) return OV_ICE_RELAYED;
+    if (0 == strncmp(ICE_STRING_RELAYED, string, length))
+        return OV_ICE_RELAYED;
 
 error:
     return OV_ICE_INVALID;
@@ -190,7 +197,8 @@ char *ov_ice_candidate_to_string(const ov_ice_candidate *candidate) {
     char *string = NULL;
     char *ptr = NULL;
 
-    if (!candidate) goto error;
+    if (!candidate)
+        goto error;
 
     ov_ice_candidate_extension *ext = NULL;
 
@@ -199,22 +207,23 @@ char *ov_ice_candidate_to_string(const ov_ice_candidate *candidate) {
     size_t count = 0;
 
     string = calloc(size, sizeof(char));
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     const char *transport = "udp";
 
     switch (candidate->transport) {
 
-        case UDP:
-        case DTLS:
-            transport = "udp";
-            break;
-        case TCP:
-        case TLS:
-            transport = "tcp";
-            break;
-        default:
-            goto error;
+    case UDP:
+    case DTLS:
+        transport = "udp";
+        break;
+    case TCP:
+    case TLS:
+        transport = "tcp";
+        break;
+    default:
+        goto error;
     }
 
     while (true) {
@@ -222,31 +231,24 @@ char *ov_ice_candidate_to_string(const ov_ice_candidate *candidate) {
         count++;
 
         ptr = string;
-        len = snprintf(ptr,
-                       size,
-                       "%s %i %s %i %s %i %s %s",
-                       candidate->foundation,
-                       candidate->component_id,
-                       transport,
-                       candidate->priority,
-                       candidate->addr,
-                       candidate->port,
-                       ICE_STRING_TYPE,
+        len = snprintf(ptr, size, "%s %i %s %i %s %i %s %s",
+                       candidate->foundation, candidate->component_id,
+                       transport, candidate->priority, candidate->addr,
+                       candidate->port, ICE_STRING_TYPE,
                        ov_ice_candidate_type_to_string(candidate->type));
 
-        if ((len == 0) || (len >= size)) goto reallocate;
+        if ((len == 0) || (len >= size))
+            goto reallocate;
 
         ptr += len;
 
         if (0 != candidate->raddr[0]) {
 
-            len = snprintf(ptr,
-                           size - (ptr - string),
-                           " raddr %s rport %i",
-                           candidate->raddr,
-                           candidate->rport);
+            len = snprintf(ptr, size - (ptr - string), " raddr %s rport %i",
+                           candidate->raddr, candidate->rport);
 
-            if ((len == 0) || (len >= size)) goto reallocate;
+            if ((len == 0) || (len >= size))
+                goto reallocate;
 
             ptr += len;
         }
@@ -258,15 +260,12 @@ char *ov_ice_candidate_to_string(const ov_ice_candidate *candidate) {
             if (!ext->key || !ext->key->start || !ext->val || !ext->val->start)
                 goto error;
 
-            len = snprintf(ptr,
-                           size - (ptr - string),
-                           " %.*s %.*s",
-                           (int)ext->key->length,
-                           (char *)ext->key->start,
-                           (int)ext->val->length,
-                           (char *)ext->val->start);
+            len = snprintf(ptr, size - (ptr - string), " %.*s %.*s",
+                           (int)ext->key->length, (char *)ext->key->start,
+                           (int)ext->val->length, (char *)ext->val->start);
 
-            if ((len == 0) || (len >= size)) goto reallocate;
+            if ((len == 0) || (len >= size))
+                goto reallocate;
 
             ptr += len;
 
@@ -277,11 +276,13 @@ char *ov_ice_candidate_to_string(const ov_ice_candidate *candidate) {
 
     reallocate:
         count++;
-        if (100 == count) goto error;
+        if (100 == count)
+            goto error;
 
         size = size + IMPL_DEFAULT_BUFFER_SIZE;
         ptr = realloc(string, size);
-        if (!ptr) goto error;
+        if (!ptr)
+            goto error;
         string = ptr;
     }
 
@@ -293,30 +294,33 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
-                            const char *string,
+bool ov_ice_candidate_parse(ov_ice_candidate *candidate, const char *string,
                             size_t length) {
 
     char transport[OV_UDP_PAYLOAD_OCTETS] = {0};
 
-    if (!candidate || !string || length < 1) goto error;
+    if (!candidate || !string || length < 1)
+        goto error;
 
     char *ptr = (char *)string;
     char *space = strchr(ptr, ' ');
 
     size_t len = 0;
 
-    if (!space || !ov_ice_string_is_foundation(ptr, space - ptr)) goto error;
+    if (!space || !ov_ice_string_is_foundation(ptr, space - ptr))
+        goto error;
 
-    if (!memcpy(candidate->foundation, ptr, space - ptr)) goto error;
+    if (!memcpy(candidate->foundation, ptr, space - ptr))
+        goto error;
 
     ptr = space + 1;
     space = memchr(ptr, ' ', length - (ptr - string));
 
-    if (!space || !ov_ice_string_is_component_id(ptr, space - ptr)) goto error;
+    if (!space || !ov_ice_string_is_component_id(ptr, space - ptr))
+        goto error;
 
-    if (!ov_string_to_uint64(
-            ptr, space - ptr, (uint64_t *)&candidate->component_id))
+    if (!ov_string_to_uint64(ptr, space - ptr,
+                             (uint64_t *)&candidate->component_id))
         goto error;
 
     ptr = space + 1;
@@ -326,17 +330,19 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
         !ov_ice_string_is_transport_extension(ptr, space - ptr))
         goto error;
 
-    if (!memcpy(transport, ptr, space - ptr)) goto error;
+    if (!memcpy(transport, ptr, space - ptr))
+        goto error;
 
     candidate->transport = ov_socket_transport_from_string(transport);
 
     ptr = space + 1;
     space = memchr(ptr, ' ', length - (ptr - string));
 
-    if (!space || !ov_ice_string_is_priority(ptr, space - ptr)) goto error;
+    if (!space || !ov_ice_string_is_priority(ptr, space - ptr))
+        goto error;
 
-    if (!ov_string_to_uint64(
-            ptr, space - ptr, (uint64_t *)&candidate->priority))
+    if (!ov_string_to_uint64(ptr, space - ptr,
+                             (uint64_t *)&candidate->priority))
         goto error;
 
     ptr = space + 1;
@@ -345,7 +351,8 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
     if (!space || !ov_ice_string_is_connection_address(ptr, space - ptr))
         goto error;
 
-    if (!strncpy(candidate->addr, ptr, space - ptr)) goto error;
+    if (!strncpy(candidate->addr, ptr, space - ptr))
+        goto error;
 
     ptr = space + 1;
     space = memchr(ptr, ' ', length - (ptr - string));
@@ -359,7 +366,8 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
     ptr = space + 1;
     space = memchr(ptr, ' ', length - (ptr - string));
 
-    if (!space || (0 != strncmp(ptr, ICE_STRING_TYPE, space - ptr))) goto error;
+    if (!space || (0 != strncmp(ptr, ICE_STRING_TYPE, space - ptr)))
+        goto error;
 
     ptr = space + 1;
     space = memchr(ptr, ' ', length - (ptr - string));
@@ -370,13 +378,16 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
         len = space - ptr;
     }
 
-    if (len > OV_UDP_PAYLOAD_OCTETS) goto error;
+    if (len > OV_UDP_PAYLOAD_OCTETS)
+        goto error;
 
     candidate->type = ov_ice_candidate_type_from_string(ptr, len);
 
-    if (OV_ICE_INVALID == candidate->type) goto error;
+    if (OV_ICE_INVALID == candidate->type)
+        goto error;
 
-    if (!space) goto done;
+    if (!space)
+        goto done;
 
     ptr = space + 1;
 
@@ -391,7 +402,8 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
         raddr = space + 1;
 
         space = memchr(raddr, ' ', length - (raddr - string));
-        if (!space) goto error;
+        if (!space)
+            goto error;
 
         if (!ov_ice_string_is_connection_address(raddr, space - raddr))
             goto error;
@@ -404,7 +416,8 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
             goto error;
 
         space = memchr(rport, ' ', length - (rport - string));
-        if (!space || (space - rport) != 5) goto error;
+        if (!space || (space - rport) != 5)
+            goto error;
 
         rport = space + 1;
         space = memchr(rport, ' ', length - (rport - string));
@@ -417,8 +430,8 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
             ptr = rport + len;
         }
 
-        if (!ov_string_to_uint64(
-                (char *)rport, len, (uint64_t *)&candidate->rport))
+        if (!ov_string_to_uint64((char *)rport, len,
+                                 (uint64_t *)&candidate->rport))
             goto error;
     }
 
@@ -450,11 +463,13 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
             ptr = val + val_len;
         }
 
-        if (!val || (val_len < 1) || (key_len < 1)) goto error;
+        if (!val || (val_len < 1) || (key_len < 1))
+            goto error;
 
         ov_ice_candidate_extension *ext =
             calloc(1, sizeof(ov_ice_candidate_extension));
-        if (!ext) goto error;
+        if (!ext)
+            goto error;
 
         if (!ov_node_push((void **)&candidate->ext, ext)) {
             free(ext);
@@ -462,13 +477,16 @@ bool ov_ice_candidate_parse(ov_ice_candidate *candidate,
         }
 
         ext->key = ov_buffer_create(key_len);
-        if (!ov_buffer_set(ext->key, key, key_len)) goto error;
+        if (!ov_buffer_set(ext->key, key, key_len))
+            goto error;
 
         ext->val = ov_buffer_create(val_len);
-        if (!ov_buffer_set(ext->val, val, val_len)) goto error;
+        if (!ov_buffer_set(ext->val, val, val_len))
+            goto error;
     }
 
-    if (length - (ptr - string) != 0) goto error;
+    if (length - (ptr - string) != 0)
+        goto error;
 
 done:
     return true;
@@ -482,9 +500,11 @@ ov_ice_candidate *ov_ice_candidate_from_string(const char *string,
                                                size_t length) {
 
     ov_ice_candidate *candidate = ov_ice_candidate_create(NULL);
-    if (!candidate) goto error;
+    if (!candidate)
+        goto error;
 
-    if (!ov_ice_candidate_parse(candidate, string, length)) goto error;
+    if (!ov_ice_candidate_parse(candidate, string, length))
+        goto error;
 
     return candidate;
 error:
@@ -500,11 +520,14 @@ ov_ice_candidate *ov_ice_candidate_from_string_candidate(const char *string,
     const char *pre = "candidate:";
     size_t pre_len = strlen(pre);
 
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
-    if (length < pre_len + 5) goto error;
+    if (length < pre_len + 5)
+        goto error;
 
-    if (0 != strncmp(string, pre, pre_len)) goto error;
+    if (0 != strncmp(string, pre, pre_len))
+        goto error;
 
     return ov_ice_candidate_from_string(string + pre_len, length - pre_len);
 error:
@@ -513,23 +536,27 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *create_candidate_extensions(
-    ov_ice_candidate_extension *ext) {
+static ov_json_value *
+create_candidate_extensions(ov_ice_candidate_extension *ext) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!ext) goto error;
+    if (!ext)
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     while (ext) {
 
-        if (!ext->val || !ext->key) goto error;
+        if (!ext->val || !ext->key)
+            goto error;
 
         val = ov_json_string((char *)ext->val);
-        if (!ov_json_object_set(out, (char *)ext->key, val)) goto error;
+        if (!ov_json_object_set(out, (char *)ext->key, val))
+            goto error;
 
         ext = ov_node_next(ext);
     }
@@ -548,10 +575,12 @@ ov_json_value *ov_ice_candidate_to_json(const ov_ice_candidate *candidate) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!candidate) goto error;
+    if (!candidate)
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     const char *str = ov_ice_candidate_type_to_string(candidate->type);
     if (str) {
@@ -559,7 +588,8 @@ ov_json_value *ov_ice_candidate_to_json(const ov_ice_candidate *candidate) {
     } else {
         val = ov_json_null();
     }
-    if (!ov_json_object_set(out, OV_KEY_TYPE, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_TYPE, val))
+        goto error;
 
     str = ov_socket_transport_to_string(candidate->transport);
     if (str) {
@@ -567,40 +597,48 @@ ov_json_value *ov_ice_candidate_to_json(const ov_ice_candidate *candidate) {
     } else {
         val = ov_json_null();
     }
-    if (!ov_json_object_set(out, OV_KEY_TRANSPORT, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_TRANSPORT, val))
+        goto error;
 
     if (0 != candidate->foundation[0]) {
         val = ov_json_string((char *)candidate->foundation);
     } else {
         val = ov_json_null();
     }
-    if (!ov_json_object_set(out, OV_KEY_FOUNDATION, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_FOUNDATION, val))
+        goto error;
 
     val = ov_json_number(candidate->component_id);
-    if (!ov_json_object_set(out, OV_KEY_COMPONENT, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_COMPONENT, val))
+        goto error;
 
     val = ov_json_number(candidate->priority);
-    if (!ov_json_object_set(out, OV_KEY_PRIORITY, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_PRIORITY, val))
+        goto error;
 
     if (!candidate->addr[0]) {
         val = ov_json_null();
     } else {
         val = ov_json_string(candidate->addr);
     }
-    if (!ov_json_object_set(out, OV_KEY_ADDR, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ADDR, val))
+        goto error;
 
     val = ov_json_number(candidate->port);
-    if (!ov_json_object_set(out, OV_KEY_PORT, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_PORT, val))
+        goto error;
 
     if (!candidate->raddr[0]) {
         val = ov_json_null();
     } else {
         val = ov_json_string(candidate->raddr);
     }
-    if (!ov_json_object_set(out, OV_KEY_RADDR, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_RADDR, val))
+        goto error;
 
     val = ov_json_number(candidate->rport);
-    if (!ov_json_object_set(out, OV_KEY_RPORT, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_RPORT, val))
+        goto error;
 
     if (!candidate->ext) {
         val = ov_json_null();
@@ -608,7 +646,8 @@ ov_json_value *ov_ice_candidate_to_json(const ov_ice_candidate *candidate) {
         val = create_candidate_extensions(candidate->ext);
     }
 
-    if (!ov_json_object_set(out, OV_KEY_EXTENTIONS, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_EXTENTIONS, val))
+        goto error;
 
     if (0 != candidate->server.socket.host[0]) {
 
@@ -616,7 +655,8 @@ ov_json_value *ov_ice_candidate_to_json(const ov_ice_candidate *candidate) {
         if (!ov_socket_configuration_to_json(candidate->server.socket, &val))
             goto error;
 
-        if (!ov_json_object_set(out, OV_KEY_SERVER, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_SERVER, val))
+            goto error;
     }
 
     return out;
@@ -630,7 +670,8 @@ error:
 
 ov_ice_candidate ov_ice_candidate_from_json(const ov_json_value *candidate) {
 
-    if (!ov_json_is_object(candidate)) goto error;
+    if (!ov_json_is_object(candidate))
+        goto error;
 
     ov_ice_candidate out =
         (ov_ice_candidate){.node.type = OV_ICE_CANDIDATE_MAGIC_BYTES};
@@ -642,7 +683,8 @@ ov_ice_candidate ov_ice_candidate_from_json(const ov_json_value *candidate) {
     if (ov_json_is_string(value)) {
 
         string = ov_json_string_get(value);
-        if (!string) goto error;
+        if (!string)
+            goto error;
 
         out.type = ov_ice_candidate_type_from_string(string, strlen(string));
     }
@@ -651,7 +693,8 @@ ov_ice_candidate ov_ice_candidate_from_json(const ov_json_value *candidate) {
     if (ov_json_is_string(value)) {
 
         string = ov_json_string_get(value);
-        if (!string) goto error;
+        if (!string)
+            goto error;
 
         out.transport = ov_socket_transport_from_string(string);
     }
@@ -660,7 +703,8 @@ ov_ice_candidate ov_ice_candidate_from_json(const ov_json_value *candidate) {
     if (ov_json_is_string(value)) {
 
         string = ov_json_string_get(value);
-        if (!string) goto error;
+        if (!string)
+            goto error;
         memcpy(out.foundation, string, strlen(string));
     }
 
@@ -677,7 +721,8 @@ ov_ice_candidate ov_ice_candidate_from_json(const ov_json_value *candidate) {
     value = ov_json_get(candidate, "/" OV_KEY_ADDR);
     if (ov_json_is_string(value)) {
         string = ov_json_string_get(value);
-        if (!string) goto error;
+        if (!string)
+            goto error;
         strncpy(out.addr, string, OV_HOST_NAME_MAX);
     }
 
@@ -689,7 +734,8 @@ ov_ice_candidate ov_ice_candidate_from_json(const ov_json_value *candidate) {
     value = ov_json_get(candidate, "/" OV_KEY_RADDR);
     if (ov_json_is_string(value)) {
         string = ov_json_string_get(value);
-        if (!string) goto error;
+        if (!string)
+            goto error;
         strncpy(out.raddr, string, OV_HOST_NAME_MAX);
     }
 
@@ -705,11 +751,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_ice_candidate_info ov_ice_candidate_info_from_json(
-    const ov_json_value *input) {
+ov_ice_candidate_info
+ov_ice_candidate_info_from_json(const ov_json_value *input) {
 
     ov_ice_candidate_info info = (ov_ice_candidate_info){0};
-    if (!input) goto error;
+    if (!input)
+        goto error;
 
     info.candidate =
         ov_json_string_get(ov_json_object_get(input, OV_KEY_CANDIDATE));
@@ -738,23 +785,28 @@ ov_json_value *ov_ice_candidate_info_to_json(ov_ice_candidate_info info) {
     ov_json_value *val = NULL;
     ov_json_value *out = NULL;
 
-    if (!info.ufrag) goto error;
+    if (!info.ufrag)
+        goto error;
 
     out = ov_json_object();
 
     if (info.candidate) {
         val = ov_json_string(info.candidate);
-        if (!ov_json_object_set(out, OV_KEY_CANDIDATE, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_CANDIDATE, val))
+            goto error;
     }
 
     val = ov_json_string(info.ufrag);
-    if (!ov_json_object_set(out, OV_ICE_STRING_UFRAG, val)) goto error;
+    if (!ov_json_object_set(out, OV_ICE_STRING_UFRAG, val))
+        goto error;
 
     val = ov_json_number(info.SDPMlineIndex);
-    if (!ov_json_object_set(out, OV_ICE_STRING_SDP_MLINEINDEX, val)) goto error;
+    if (!ov_json_object_set(out, OV_ICE_STRING_SDP_MLINEINDEX, val))
+        goto error;
 
     val = ov_json_number(info.SDPMid);
-    if (!ov_json_object_set(out, OV_ICE_STRING_SDP_MID, val)) goto error;
+    if (!ov_json_object_set(out, OV_ICE_STRING_SDP_MID, val))
+        goto error;
 
     return out;
 error:
@@ -765,25 +817,30 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_ice_candidate *ov_ice_candidate_from_json_string(
-    const ov_json_value *input) {
+ov_ice_candidate *
+ov_ice_candidate_from_json_string(const ov_json_value *input) {
 
     const char *pre = "candidate:";
     size_t pre_len = strlen(pre);
 
-    if (!input) goto error;
+    if (!input)
+        goto error;
 
     const ov_json_value *in = ov_json_object_get(input, OV_KEY_CANDIDATE);
-    if (!in) in = input;
+    if (!in)
+        in = input;
 
     const char *src = ov_json_string_get(in);
-    if (!src) goto error;
+    if (!src)
+        goto error;
 
     size_t src_len = strlen(src);
 
-    if (src_len < pre_len + 5) goto error;
+    if (src_len < pre_len + 5)
+        goto error;
 
-    if (0 != strncmp(src, pre, pre_len)) goto error;
+    if (0 != strncmp(src, pre, pre_len))
+        goto error;
 
     return ov_ice_candidate_from_string(src + pre_len, src_len - pre_len);
 error:
@@ -803,10 +860,12 @@ ov_json_value *ov_ice_candidate_json_info(ov_ice_candidate *candidate,
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
 
-    if (!candidate || !session_uuid) goto error;
+    if (!candidate || !session_uuid)
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_CANDIDATE, NULL, 0);
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     par = ov_event_api_set_parameter(out);
 
@@ -815,19 +874,24 @@ ov_json_value *ov_ice_candidate_json_info(ov_ice_candidate *candidate,
 
     snprintf(string, OV_UDP_PAYLOAD_OCTETS, "candidate:%s", candidate->string);
     val = ov_json_string(string);
-    if (!ov_json_object_set(par, OV_KEY_CANDIDATE, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_CANDIDATE, val))
+        goto error;
 
     val = ov_json_string(session_uuid);
-    if (!ov_json_object_set(par, OV_KEY_SESSION, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_SESSION, val))
+        goto error;
 
     val = ov_json_string(ufrag);
-    if (!ov_json_object_set(par, OV_ICE_STRING_UFRAG, val)) goto error;
+    if (!ov_json_object_set(par, OV_ICE_STRING_UFRAG, val))
+        goto error;
 
     val = ov_json_number(stream_id);
-    if (!ov_json_object_set(par, OV_ICE_STRING_SDP_MLINEINDEX, val)) goto error;
+    if (!ov_json_object_set(par, OV_ICE_STRING_SDP_MLINEINDEX, val))
+        goto error;
 
     val = ov_json_number(stream_id);
-    if (!ov_json_object_set(par, OV_ICE_STRING_SDP_MID, val)) goto error;
+    if (!ov_json_object_set(par, OV_ICE_STRING_SDP_MID, val))
+        goto error;
 
     return out;
 
@@ -847,30 +911,30 @@ static uint32_t type_preference(ov_ice_candidate_type type) {
 
     switch (type) {
 
-        case OV_ICE_HOST:
+    case OV_ICE_HOST:
 
-            preference = 126;
-            break;
+        preference = 126;
+        break;
 
-        case OV_ICE_SERVER_REFLEXIVE:
+    case OV_ICE_SERVER_REFLEXIVE:
 
-            preference = 100;
-            break;
+        preference = 100;
+        break;
 
-        case OV_ICE_PEER_REFLEXIVE:
+    case OV_ICE_PEER_REFLEXIVE:
 
-            // MUST be higher than ICE_SERVER_REFLEXIVE
-            preference = 110;
-            break;
+        // MUST be higher than ICE_SERVER_REFLEXIVE
+        preference = 110;
+        break;
 
-        case OV_ICE_RELAYED:
+    case OV_ICE_RELAYED:
 
-            preference = 0;
-            break;
+        preference = 0;
+        break;
 
-        default:
-            preference = 0;
-            break;
+    default:
+        preference = 0;
+        break;
     }
 
     return preference;
@@ -887,28 +951,30 @@ static uint32_t local_preference(ov_ice_candidate *candidate,
     OV_ASSERT(candidate->base);
     OV_ASSERT(candidate->base->stream);
 
-    if (!candidate || !candidate->base) goto error;
+    if (!candidate || !candidate->base)
+        goto error;
 
     ov_ice_base *base = candidate->base;
     ov_ice_stream *stream = base->stream;
 
     // 0 (lowest) - 65535 (MAX)
-    if (1 == interfaces) return 65535;
+    if (1 == interfaces)
+        return 65535;
 
     switch (base->local.data.sa.ss_family) {
 
-        case AF_INET:
+    case AF_INET:
 
-            preference = 40000;
-            break;
+        preference = 40000;
+        break;
 
-        case AF_INET6:
+    case AF_INET6:
 
-            preference = 50000;
-            break;
+        preference = 50000;
+        break;
 
-        default:
-            goto error;
+    default:
+        goto error;
     }
 
     /*
@@ -923,7 +989,8 @@ static uint32_t local_preference(ov_ice_candidate *candidate,
 
     while (test) {
 
-        if (test == candidate) slot = pos;
+        if (test == candidate)
+            slot = pos;
 
         pos++;
 
@@ -938,7 +1005,8 @@ static uint32_t local_preference(ov_ice_candidate *candidate,
         test = ov_node_next(test);
     }
 
-    if (same) preference = preference - slot;
+    if (same)
+        preference = preference - slot;
 
     return preference;
 error:
@@ -953,7 +1021,8 @@ bool ov_ice_candidate_calculate_priority(ov_ice_candidate *cand,
     OV_ASSERT(cand);
     OV_ASSERT(interfaces > 0);
 
-    if (!cand) return false;
+    if (!cand)
+        return false;
 
     /*
      *      This is an implementation of RFC 8445 5.1.2.1,

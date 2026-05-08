@@ -29,7 +29,6 @@
 */
 #include "../include/ov_mc_backend.h"
 
-#include "../include/ov_mc_backend_registry.h"
 #include "../include/ov_mc_mixer_data.h"
 #include "../include/ov_mc_mixer_msg.h"
 
@@ -38,6 +37,8 @@
 #include <ov_base/ov_convert.h>
 #include <ov_base/ov_error_codes.h>
 #include <ov_base/ov_id.h>
+#include <ov_base/ov_string.h>
+#include <ov_base/ov_thread_lock.h>
 #include <ov_core/ov_callback.h>
 #include <ov_core/ov_event_app.h>
 
@@ -58,7 +59,19 @@ struct ov_mc_backend {
 
     ov_event_app *app;
 
-    ov_mc_backend_registry *registry;
+    struct {
+
+        ov_thread_lock lock;
+        ov_dict *data;
+
+    } user;
+
+    struct {
+
+        ov_thread_lock lock;
+        ov_dict *data;
+
+    } mixer;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -77,18 +90,36 @@ static bool cb_accept(void *userdata, int listener, int connection) {
 
 static void close_mixer_data(ov_mc_backend *self, int socket) {
 
-    ov_mc_mixer_data data =
-        ov_mc_backend_registry_get_socket(self->registry, socket);
+    ov_mc_mixer_data out = {0};
 
-    ov_mc_backend_registry_unregister_mixer(self->registry, socket);
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
 
-    if (0 != data.user[0]) {
+    ov_mc_mixer_data *data = (ov_mc_mixer_data *)ov_dict_get(
+        self->mixer.data, (void *)(intptr_t)socket);
+
+    if (!data)
+        goto unlock_mixer;
+
+    ov_thread_lock_try_lock(&self->user.lock);
+    ov_dict_del(self->user.data, data->user);
+    ov_thread_lock_unlock(&self->user.lock);
+
+    out = *data;
+    ov_dict_del(self->mixer.data, (void *)(intptr_t)socket);
+
+unlock_mixer:
+
+    ov_thread_lock_unlock(&self->mixer.lock);
+
+    if (0 != out.user[0]) {
 
         if (self->config.callback.mixer.lost)
-            self->config.callback.mixer.lost(
-                self->config.callback.userdata, data.user);
+            self->config.callback.mixer.lost(self->config.callback.userdata,
+                                             out.user);
     }
 
+error:
     return;
 }
 
@@ -97,7 +128,6 @@ static void close_mixer_data(ov_mc_backend *self, int socket) {
 static void close_mixer(ov_mc_backend *self, int socket) {
 
     close_mixer_data(self, socket);
-    ov_mc_backend_registry_unregister_mixer(self->registry, socket);
     ov_event_app_close(self->app, socket);
     return;
 }
@@ -123,15 +153,14 @@ static void cb_close(void *userdata, int connection) {
  *      ------------------------------------------------------------------------
  */
 
-static void cb_event_register(void *userdata,
-                              const char *name,
-                              int socket,
+static void cb_event_register(void *userdata, const char *name, int socket,
                               ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     const char *uuid = ov_json_string_get(
         ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_UUID));
@@ -139,27 +168,36 @@ static void cb_event_register(void *userdata,
     const char *type = ov_json_string_get(
         ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_TYPE));
 
-    if (!uuid || !type) goto error;
+    if (!uuid || !type)
+        goto error;
 
-    if (0 != strcmp(type, OV_KEY_AUDIO)) goto error;
+    if (0 != strcmp(type, OV_KEY_AUDIO))
+        goto error;
 
     ov_mc_mixer_data data = ov_mc_mixer_data_set_socket(socket);
     strncpy(data.uuid, uuid, sizeof(ov_id));
 
-    if (!ov_mc_backend_registry_register_mixer(self->registry, data))
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
         goto error;
+    ov_mc_mixer_data *val = calloc(1, sizeof(ov_mc_mixer_data));
+    *val = data;
+    ov_dict_set(self->mixer.data, (void *)(intptr_t)socket, val, NULL);
+    ov_thread_lock_unlock(&self->mixer.lock);
 
     out = ov_mc_mixer_msg_configure(self->config.mixer.config);
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
-    if (!ov_event_app_send(self->app, socket, out)) goto error;
+    if (!ov_event_app_send(self->app, socket, out))
+        goto error;
 
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
@@ -167,11 +205,60 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_acquire_response(ov_mc_backend *self,
-                                      int socket,
+static bool drop_user_data_from_mixer(ov_mc_backend *self, int socket,
+                                      const char *user_uuid) {
+
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
+
+    ov_mc_mixer_data *data =
+        ov_dict_get(self->mixer.data, (void *)(intptr_t)socket);
+
+    ov_id_clear(data->user);
+    ov_thread_lock_unlock(&self->mixer.lock);
+
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
+    ov_dict_del(self->user.data, user_uuid);
+    ov_thread_lock_unlock(&self->user.lock);
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_user_data(ov_mc_backend *self, const char *user) {
+
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
+    int mixer = (intptr_t)ov_dict_get(self->user.data, user);
+    ov_dict_del(self->user.data, user);
+    ov_thread_lock_unlock(&self->user.lock);
+
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
+
+    ov_mc_mixer_data *data =
+        ov_dict_get(self->mixer.data, (void *)(intptr_t)mixer);
+
+    if (data)
+        ov_id_clear(data->user);
+    ov_thread_lock_unlock(&self->mixer.lock);
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_acquire_response(ov_mc_backend *self, int socket,
                                       ov_json_value *input) {
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
     uint64_t code = 0;
     const char *desc = NULL;
@@ -181,10 +268,14 @@ static void cb_event_acquire_response(ov_mc_backend *self,
     const char *uuid = ov_event_api_get_uuid(input);
     const char *user_uuid = ov_mc_mixer_msg_aquire_get_username(request);
 
-    if (!uuid || !user_uuid) goto error;
+    if (!uuid || !user_uuid)
+        goto error;
 
-    if (0 != code)
-        ov_mc_backend_registry_release_user(self->registry, user_uuid);
+    if (0 != code) {
+
+        if (!drop_user_data_from_mixer(self, socket, user_uuid))
+            goto error;
+    }
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
 
@@ -203,20 +294,20 @@ static void cb_event_acquire_response(ov_mc_backend *self,
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_acquire(void *userdata,
-                             const char *name,
-                             int socket,
+static void cb_event_acquire(void *userdata, const char *name, int socket,
                              ov_json_value *input) {
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     if (ov_event_api_get_response(input))
         return cb_event_acquire_response(self, socket, input);
@@ -224,18 +315,19 @@ static void cb_event_acquire(void *userdata,
     // we do not expext some acquire, which is not a response
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_release_response(ov_mc_backend *self,
-                                      int socket,
+static void cb_event_release_response(ov_mc_backend *self, int socket,
                                       ov_json_value *input) {
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
     uint64_t code = 0;
     const char *desc = NULL;
@@ -245,13 +337,17 @@ static void cb_event_release_response(ov_mc_backend *self,
     const char *user_uuid =
         ov_mc_mixer_msg_aquire_get_username(ov_event_api_get_request(input));
 
-    if (!uuid || !user_uuid) goto error;
+    if (!uuid || !user_uuid)
+        goto error;
 
     if (0 != code) {
+
         ov_event_app_close(self->app, socket);
+
     } else {
-        if (!ov_mc_backend_registry_release_user(self->registry, user_uuid))
-            ov_event_app_close(self->app, socket);
+
+        if (!drop_user_data(self, user_uuid))
+            goto error;
     }
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
@@ -266,22 +362,22 @@ static void cb_event_release_response(ov_mc_backend *self,
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_release(void *userdata,
-                             const char *name,
-                             int socket,
+static void cb_event_release(void *userdata, const char *name, int socket,
                              ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     if (ov_event_api_get_response(input))
         return cb_event_release_response(self, socket, input);
@@ -289,7 +385,8 @@ static void cb_event_release(void *userdata,
     // we do not expext some release, which is not a response
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
@@ -297,11 +394,44 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_join_response(ov_mc_backend *self,
-                                   int socket,
+static ov_mc_mixer_data get_mixer_data(ov_mc_backend *self, int socket) {
+
+    ov_mc_mixer_data out = {0};
+
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
+    ov_mc_mixer_data *d =
+        ov_dict_get(self->mixer.data, (void *)(intptr_t)socket);
+    if (d)
+        out = *d;
+    ov_thread_lock_unlock(&self->mixer.lock);
+
+error:
+    return out;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_mc_mixer_data get_mixer_data_by_user(ov_mc_backend *self,
+                                               const char *user) {
+
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
+    int socket = (intptr_t)ov_dict_get(self->user.data, user);
+    ov_thread_lock_unlock(&self->user.lock);
+
+    return get_mixer_data(self, socket);
+error:
+    return (ov_mc_mixer_data){0};
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_event_join_response(ov_mc_backend *self, int socket,
                                    ov_json_value *input) {
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
     uint64_t code = 0;
     const char *desc = NULL;
@@ -310,11 +440,11 @@ static void cb_event_join_response(ov_mc_backend *self,
     const char *uuid = ov_event_api_get_uuid(input);
 
     ov_json_value *request = ov_event_api_get_request(input);
-    if (!request) goto error;
+    if (!request)
+        goto error;
 
-    ov_mc_loop_data data = ov_mc_mixer_msg_join_from_json(request);
-    ov_mc_mixer_data mdata =
-        ov_mc_backend_registry_get_socket(self->registry, socket);
+    ov_mc_loop_data loopdata = ov_mc_mixer_msg_join_from_json(request);
+    ov_mc_mixer_data mixerdata = get_mixer_data(self, socket);
 
     OV_ASSERT(uuid);
 
@@ -323,7 +453,8 @@ static void cb_event_join_response(ov_mc_backend *self,
     if (cb.function) {
 
         ov_mc_backend_cb_loop function = cb.function;
-        function((void *)cb.userdata, uuid, mdata.user, data.name, code, desc);
+        function((void *)cb.userdata, uuid, mixerdata.user, loopdata.name, code,
+                 desc);
 
     } else {
 
@@ -335,22 +466,22 @@ static void cb_event_join_response(ov_mc_backend *self,
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_join(void *userdata,
-                          const char *name,
-                          int socket,
+static void cb_event_join(void *userdata, const char *name, int socket,
                           ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     if (ov_event_api_get_response(input))
         return cb_event_join_response(self, socket, input);
@@ -358,7 +489,8 @@ static void cb_event_join(void *userdata,
     // we do not expext some join, which is not a response
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
@@ -366,11 +498,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_state_response(ov_mc_backend *self,
-                                    int socket,
+static void cb_event_state_response(ov_mc_backend *self, int socket,
                                     ov_json_value *input) {
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
     const char *uuid = ov_event_api_get_uuid(input);
 
@@ -386,22 +518,22 @@ static void cb_event_state_response(ov_mc_backend *self,
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_state(void *userdata,
-                           const char *name,
-                           int socket,
+static void cb_event_state(void *userdata, const char *name, int socket,
                            ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     if (ov_event_api_get_response(input))
         return cb_event_state_response(self, socket, input);
@@ -409,7 +541,8 @@ static void cb_event_state(void *userdata,
     // we do not expext some join, which is not a response
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
@@ -417,11 +550,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_leave_response(ov_mc_backend *self,
-                                    int socket,
+static void cb_event_leave_response(ov_mc_backend *self, int socket,
                                     ov_json_value *input) {
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
     uint64_t code = 0;
     const char *desc = NULL;
@@ -430,11 +563,11 @@ static void cb_event_leave_response(ov_mc_backend *self,
     const char *uuid = ov_event_api_get_uuid(input);
 
     ov_json_value *request = ov_event_api_get_request(input);
-    if (!request) goto error;
+    if (!request)
+        goto error;
 
     const char *loop = ov_mc_mixer_msg_leave_from_json(request);
-    ov_mc_mixer_data mdata =
-        ov_mc_backend_registry_get_socket(self->registry, socket);
+    ov_mc_mixer_data mdata = get_mixer_data(self, socket);
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
 
@@ -448,22 +581,22 @@ static void cb_event_leave_response(ov_mc_backend *self,
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_leave(void *userdata,
-                           const char *name,
-                           int socket,
+static void cb_event_leave(void *userdata, const char *name, int socket,
                            ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     if (ov_event_api_get_response(input))
         return cb_event_leave_response(self, socket, input);
@@ -471,7 +604,8 @@ static void cb_event_leave(void *userdata,
     // we do not expext some leave, which is not a response
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
@@ -479,11 +613,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_volume_response(ov_mc_backend *self,
-                                     int socket,
+static void cb_event_volume_response(ov_mc_backend *self, int socket,
                                      ov_json_value *input) {
 
-    if (!self || !input) goto error;
+    if (!self || !input)
+        goto error;
 
     uint64_t code = 0;
     const char *desc = NULL;
@@ -495,8 +629,7 @@ static void cb_event_volume_response(ov_mc_backend *self,
     const char *loop = ov_mc_mixer_msg_volume_get_name(request);
     uint8_t vol = ov_mc_mixer_msg_volume_get_volume(request);
 
-    ov_mc_mixer_data mdata =
-        ov_mc_backend_registry_get_socket(self->registry, socket);
+    ov_mc_mixer_data mdata = get_mixer_data(self, socket);
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
 
@@ -510,22 +643,22 @@ static void cb_event_volume_response(ov_mc_backend *self,
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_volume(void *userdata,
-                            const char *name,
-                            int socket,
+static void cb_event_volume(void *userdata, const char *name, int socket,
                             ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     if (ov_event_api_get_response(input))
         return cb_event_volume_response(self, socket, input);
@@ -533,7 +666,8 @@ static void cb_event_volume(void *userdata,
     // we do not expext some volume, which is not a response
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
@@ -541,9 +675,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_event_forward(void *userdata,
-                             const char *name,
-                             int socket,
+static void cb_event_forward(void *userdata, const char *name, int socket,
                              ov_json_value *input) {
 
     ov_json_value *out = NULL;
@@ -552,15 +684,15 @@ static void cb_event_forward(void *userdata,
     const char *desc = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
-    if (!self || !name || socket < 0 || !input) goto error;
+    if (!self || !name || socket < 0 || !input)
+        goto error;
 
     const char *uuid = ov_event_api_get_uuid(input);
     ov_event_api_get_error_parameter(input, &code, &desc);
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
 
-    ov_mc_mixer_data mdata =
-        ov_mc_backend_registry_get_socket(self->registry, socket);
+    ov_mc_mixer_data mdata = get_mixer_data(self, socket);
 
     if (cb.function) {
 
@@ -573,7 +705,8 @@ static void cb_event_forward(void *userdata,
     return;
 
 error:
-    if (self) close_mixer(self, socket);
+    if (self)
+        close_mixer(self, socket);
     ov_json_value_free(input);
     ov_json_value_free(out);
     return;
@@ -585,16 +718,16 @@ static bool register_app_callbacks(ov_mc_backend *self) {
 
     OV_ASSERT(self);
 
-    if (!ov_event_app_register(
-            self->app, OV_KEY_REGISTER, self, cb_event_register))
+    if (!ov_event_app_register(self->app, OV_KEY_REGISTER, self,
+                               cb_event_register))
         goto error;
 
-    if (!ov_event_app_register(
-            self->app, OV_KEY_ACQUIRE, self, cb_event_acquire))
+    if (!ov_event_app_register(self->app, OV_KEY_ACQUIRE, self,
+                               cb_event_acquire))
         goto error;
 
-    if (!ov_event_app_register(
-            self->app, OV_KEY_RELEASE, self, cb_event_release))
+    if (!ov_event_app_register(self->app, OV_KEY_RELEASE, self,
+                               cb_event_release))
         goto error;
 
     if (!ov_event_app_register(self->app, OV_KEY_JOIN, self, cb_event_join))
@@ -609,8 +742,8 @@ static bool register_app_callbacks(ov_mc_backend *self) {
     if (!ov_event_app_register(self->app, OV_KEY_STATE, self, cb_event_state))
         goto error;
 
-    if (!ov_event_app_register(
-            self->app, OV_KEY_FORWARD, self, cb_event_forward))
+    if (!ov_event_app_register(self->app, OV_KEY_FORWARD, self,
+                               cb_event_forward))
         goto error;
 
     return true;
@@ -630,12 +763,17 @@ ov_mc_backend *ov_mc_backend_create(ov_mc_backend_config config) {
 
     ov_mc_backend *self = NULL;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
     if (0 == config.timeout.request_usec)
         config.timeout.request_usec = OV_MC_BACKEND_DEFAULT_TIMEOUT;
 
+    if (0 == config.timeout.threadlock_usec)
+        config.timeout.threadlock_usec = 100000;
+
     self = calloc(1, sizeof(ov_mc_backend));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_bytes = OV_MC_BACKEND_MAGIC_BYTES;
     self->config = config;
@@ -647,7 +785,8 @@ ov_mc_backend *ov_mc_backend_create(ov_mc_backend_config config) {
                               .callbacks.close = cb_close};
 
     self->app = ov_event_app_create(app_config);
-    if (!self->app) goto error;
+    if (!self->app)
+        goto error;
 
     self->socket.manager = ov_event_app_open_listener(
         self->app,
@@ -662,17 +801,33 @@ ov_mc_backend *ov_mc_backend_create(ov_mc_backend_config config) {
         goto error;
     }
 
-    if (!register_app_callbacks(self)) goto error;
-
-    self->registry =
-        ov_mc_backend_registry_create((ov_mc_backend_registry_config){0});
-
-    if (!self->registry) goto error;
+    if (!register_app_callbacks(self))
+        goto error;
 
     self->callbacks = ov_callback_registry_create(
         (ov_callback_registry_config){.loop = self->config.loop});
 
-    if (!self->callbacks) goto error;
+    if (!self->callbacks)
+        goto error;
+
+    if (!ov_thread_lock_init(&self->user.lock,
+                             self->config.timeout.threadlock_usec))
+        goto error;
+    if (!ov_thread_lock_init(&self->mixer.lock,
+                             self->config.timeout.threadlock_usec))
+        goto error;
+
+    ov_dict_config d_config = ov_dict_string_key_config(255);
+    self->user.data = ov_dict_create(d_config);
+    if (!self->user.data)
+        goto error;
+
+    d_config = ov_dict_intptr_key_config(255);
+    d_config.value.data_function.free = ov_data_pointer_free;
+    self->mixer.data = ov_dict_create(d_config);
+    if (!self->mixer.data)
+        goto error;
+
     return self;
 error:
     ov_mc_backend_free(self);
@@ -683,11 +838,17 @@ error:
 
 ov_mc_backend *ov_mc_backend_free(ov_mc_backend *self) {
 
-    if (!ov_mc_backend_cast(self)) return self;
+    if (!ov_mc_backend_cast(self))
+        return self;
+
+    ov_thread_lock_clear(&self->user.lock);
+    ov_thread_lock_clear(&self->mixer.lock);
+
+    self->mixer.data = ov_dict_free(self->mixer.data);
+    self->user.data = ov_dict_free(self->user.data);
 
     self->app = ov_event_app_free(self->app);
     self->callbacks = ov_callback_registry_free(self->callbacks);
-    self->registry = ov_mc_backend_registry_free(self->registry);
     self = ov_data_pointer_free(self);
     return NULL;
 }
@@ -696,71 +857,134 @@ ov_mc_backend *ov_mc_backend_free(ov_mc_backend *self) {
 
 ov_mc_backend *ov_mc_backend_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_MC_BACKEND_MAGIC_BYTES) return NULL;
+    if (*(uint16_t *)data != OV_MC_BACKEND_MAGIC_BYTES)
+        return NULL;
 
     return (ov_mc_backend *)data;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_backend_acquire_mixer(ov_mc_backend *self,
-                                 const char *uuid,
+struct container {
+    int socket;
+    const char *user;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool get_empty_mixer(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+    ov_mc_mixer_data *mixer = (ov_mc_mixer_data *)val;
+    struct container *container = (struct container *)data;
+
+    if (container->socket > 0)
+        return true;
+
+    if (0 == mixer->user[0]) {
+
+        container->socket = (intptr_t)key;
+        ov_id_set(mixer->user, container->user);
+    }
+
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool acquire_user(ov_mc_backend *self, const char *user) {
+
+    if (!self || !user)
+        return false;
+
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
+
+    struct container container = (struct container){.socket = 0, .user = user};
+
+    ov_dict_for_each(self->mixer.data, &container, get_empty_mixer);
+    ov_thread_lock_unlock(&self->mixer.lock);
+
+    if (0 == container.socket)
+        goto error;
+
+    if (!ov_thread_lock_try_lock(&self->user.lock))
+        goto error;
+    ov_dict_set(self->user.data, ov_string_dup(user),
+                (void *)(intptr_t)container.socket, NULL);
+    ov_thread_lock_unlock(&self->user.lock);
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_acquire_mixer(ov_mc_backend *self, const char *uuid,
                                  const char *user_uuid,
-                                 ov_mc_mixer_core_forward data,
-                                 void *userdata,
+                                 ov_mc_mixer_core_forward data, void *userdata,
                                  ov_mc_backend_cb_mixer callback) {
+
+    ov_mc_mixer_data mixer = {0};
 
     ov_json_value *msg = NULL;
 
-    if (!self || !user_uuid || !uuid) goto error;
-    if (!userdata || !callback) goto error;
+    if (!self || !user_uuid || !uuid)
+        goto error;
+    if (!userdata || !callback)
+        goto error;
 
-    ov_mc_mixer_data mixer =
-        ov_mc_backend_registry_acquire_user(self->registry, user_uuid);
+    if (!acquire_user(self, user_uuid)) {
+
+        callback((void *)userdata, uuid, user_uuid, OV_ERROR_NO_RESOURCE,
+                 OV_ERROR_DESC_NO_RESOURCE);
+    }
+
+    mixer = get_mixer_data_by_user(self, user_uuid);
 
     if (0 >= mixer.socket) {
 
-        callback((void *)userdata,
-                 uuid,
-                 user_uuid,
-                 OV_ERROR_NO_RESOURCE,
+        callback((void *)userdata, uuid, user_uuid, OV_ERROR_NO_RESOURCE,
                  OV_ERROR_DESC_NO_RESOURCE);
 
         goto done;
     }
 
     if (!ov_callback_registry_register(
-            self->callbacks,
-            uuid,
+            self->callbacks, uuid,
             (ov_callback){.userdata = userdata, .function = callback},
             self->config.timeout.request_usec))
         goto error;
 
     msg = ov_mc_mixer_msg_acquire(user_uuid, data);
-    if (!msg) goto rollback;
+    if (!msg)
+        goto error;
 
-    if (!ov_event_api_set_uuid(msg, uuid)) goto rollback;
+    if (!ov_event_api_set_uuid(msg, uuid))
+        goto error;
 
-    if (!ov_event_app_send(self->app, mixer.socket, msg)) goto rollback;
+    if (!ov_event_app_send(self->app, mixer.socket, msg))
+        goto error;
 
     msg = ov_json_value_free(msg);
 
 done:
     return true;
-
-rollback:
-    ov_mc_backend_registry_release_user(self->registry, user_uuid);
 error:
+    if (mixer.socket > 0)
+        close_mixer(self, mixer.socket);
     msg = ov_json_value_free(msg);
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_backend_set_mixer_forward(ov_mc_backend *self,
-                                     const char *uuid,
+bool ov_mc_backend_set_mixer_forward(ov_mc_backend *self, const char *uuid,
                                      const char *user_uuid,
                                      ov_mc_mixer_core_forward data,
                                      void *userdata,
@@ -768,36 +992,36 @@ bool ov_mc_backend_set_mixer_forward(ov_mc_backend *self,
 
     ov_json_value *msg = NULL;
 
-    if (!self || !user_uuid || !uuid) goto error;
-    if (!userdata || !callback) goto error;
+    if (!self || !user_uuid || !uuid)
+        goto error;
+    if (!userdata || !callback)
+        goto error;
 
-    ov_mc_mixer_data mixer =
-        ov_mc_backend_registry_get_user(self->registry, user_uuid);
+    ov_mc_mixer_data mixer = get_mixer_data_by_user(self, user_uuid);
 
     if (0 >= mixer.socket) {
 
-        callback((void *)userdata,
-                 uuid,
-                 user_uuid,
-                 OV_ERROR_CODE_UNKNOWN,
+        callback((void *)userdata, uuid, user_uuid, OV_ERROR_CODE_UNKNOWN,
                  OV_ERROR_DESC_UNKNOWN);
 
         goto done;
     }
 
     if (!ov_callback_registry_register(
-            self->callbacks,
-            uuid,
+            self->callbacks, uuid,
             (ov_callback){.userdata = userdata, .function = callback},
             self->config.timeout.request_usec))
         goto error;
 
     msg = ov_mc_mixer_msg_forward(user_uuid, data);
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
-    if (!ov_event_api_set_uuid(msg, uuid)) goto error;
+    if (!ov_event_api_set_uuid(msg, uuid))
+        goto error;
 
-    if (!ov_event_app_send(self->app, mixer.socket, msg)) goto error;
+    if (!ov_event_app_send(self->app, mixer.socket, msg))
+        goto error;
     msg = ov_json_value_free(msg);
 
 done:
@@ -810,19 +1034,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_backend_release_mixer(ov_mc_backend *self,
-                                 const char *uuid,
-                                 const char *user_uuid,
-                                 void *userdata,
+bool ov_mc_backend_release_mixer(ov_mc_backend *self, const char *uuid,
+                                 const char *user_uuid, void *userdata,
                                  ov_mc_backend_cb_mixer callback) {
 
     ov_json_value *msg = NULL;
 
-    if (!self || !user_uuid || !uuid) goto error;
-    if (!userdata || !callback) goto error;
+    if (!self || !user_uuid || !uuid)
+        goto error;
+    if (!userdata || !callback)
+        goto error;
 
-    ov_mc_mixer_data mixer =
-        ov_mc_backend_registry_get_user(self->registry, user_uuid);
+    ov_mc_mixer_data mixer = get_mixer_data_by_user(self, user_uuid);
 
     if (0 >= mixer.socket) {
 
@@ -831,19 +1054,21 @@ bool ov_mc_backend_release_mixer(ov_mc_backend *self,
         goto done;
     }
 
-    if (0 >= mixer.socket) goto done;
+    if (0 >= mixer.socket)
+        goto done;
 
     if (!ov_callback_registry_register(
-            self->callbacks,
-            uuid,
+            self->callbacks, uuid,
             (ov_callback){.userdata = userdata, .function = callback},
             self->config.timeout.request_usec))
         goto error;
 
     msg = ov_mc_mixer_msg_release(user_uuid);
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
-    if (!ov_event_api_set_uuid(msg, uuid)) goto error;
+    if (!ov_event_api_set_uuid(msg, uuid))
+        goto error;
 
     if (!ov_event_app_send(self->app, mixer.socket, msg)) {
         ov_event_app_close(self->app, mixer.socket);
@@ -852,7 +1077,7 @@ bool ov_mc_backend_release_mixer(ov_mc_backend *self,
     msg = ov_json_value_free(msg);
 
 done:
-    return ov_mc_backend_registry_release_user(self->registry, user_uuid);
+    return drop_user_data(self, user_uuid);
 
 error:
     msg = ov_json_value_free(msg);
@@ -861,18 +1086,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool send_message(ov_mc_backend *self,
-                         const char *user_uuid,
+static bool send_message(ov_mc_backend *self, const char *user_uuid,
                          const ov_json_value *msg) {
 
-    if (!self || !user_uuid || !msg) goto error;
+    if (!self || !user_uuid || !msg)
+        goto error;
 
-    ov_mc_mixer_data mixer =
-        ov_mc_backend_registry_get_user(self->registry, user_uuid);
+    ov_mc_mixer_data mixer = get_mixer_data_by_user(self, user_uuid);
 
-    if (0 >= mixer.socket) goto error;
+    if (0 >= mixer.socket)
+        goto error;
 
-    if (!ov_event_app_send(self->app, mixer.socket, msg)) goto error;
+    if (!ov_event_app_send(self->app, mixer.socket, msg))
+        goto error;
 
     return true;
 error:
@@ -881,32 +1107,33 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_backend_join_loop(ov_mc_backend *self,
-                             const char *uuid,
-                             const char *user_uuid,
-                             ov_mc_loop_data data,
-                             void *userdata,
-                             ov_mc_backend_cb_loop callback) {
+bool ov_mc_backend_join_loop(ov_mc_backend *self, const char *uuid,
+                             const char *user_uuid, ov_mc_loop_data data,
+                             void *userdata, ov_mc_backend_cb_loop callback) {
 
     ov_json_value *msg = NULL;
 
-    if (!self || !uuid || !user_uuid) goto error;
+    if (!self || !uuid || !user_uuid)
+        goto error;
 
-    if (!userdata || !callback) goto error;
+    if (!userdata || !callback)
+        goto error;
 
     if (!ov_callback_registry_register(
-            self->callbacks,
-            uuid,
+            self->callbacks, uuid,
             (ov_callback){.userdata = userdata, .function = callback},
             self->config.timeout.request_usec))
         goto error;
 
     msg = ov_mc_mixer_msg_join(data);
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
-    if (!ov_event_api_set_uuid(msg, uuid)) goto error;
+    if (!ov_event_api_set_uuid(msg, uuid))
+        goto error;
 
-    if (!send_message(self, user_uuid, msg)) goto error;
+    if (!send_message(self, user_uuid, msg))
+        goto error;
 
     msg = ov_json_value_free(msg);
     return true;
@@ -917,32 +1144,33 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_backend_leave_loop(ov_mc_backend *self,
-                              const char *uuid,
-                              const char *user_uuid,
-                              const char *loopname,
-                              void *userdata,
-                              ov_mc_backend_cb_loop callback) {
+bool ov_mc_backend_leave_loop(ov_mc_backend *self, const char *uuid,
+                              const char *user_uuid, const char *loopname,
+                              void *userdata, ov_mc_backend_cb_loop callback) {
 
     ov_json_value *msg = NULL;
 
-    if (!self || !uuid || !user_uuid || !loopname) goto error;
+    if (!self || !uuid || !user_uuid || !loopname)
+        goto error;
 
-    if (!userdata || !callback) goto error;
+    if (!userdata || !callback)
+        goto error;
 
     if (!ov_callback_registry_register(
-            self->callbacks,
-            uuid,
+            self->callbacks, uuid,
             (ov_callback){.userdata = userdata, .function = callback},
             self->config.timeout.request_usec))
         goto error;
 
     msg = ov_mc_mixer_msg_leave(loopname);
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
-    if (!ov_event_api_set_uuid(msg, uuid)) goto error;
+    if (!ov_event_api_set_uuid(msg, uuid))
+        goto error;
 
-    if (!send_message(self, user_uuid, msg)) goto error;
+    if (!send_message(self, user_uuid, msg))
+        goto error;
 
     msg = ov_json_value_free(msg);
     return true;
@@ -953,23 +1181,21 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_backend_set_loop_volume(ov_mc_backend *self,
-                                   const char *uuid,
-                                   const char *user_uuid,
-                                   const char *loopname,
-                                   uint8_t volume_percent,
-                                   void *userdata,
+bool ov_mc_backend_set_loop_volume(ov_mc_backend *self, const char *uuid,
+                                   const char *user_uuid, const char *loopname,
+                                   uint8_t volume_percent, void *userdata,
                                    ov_mc_backend_cb_volume callback) {
 
     ov_json_value *msg = NULL;
 
-    if (!self || !uuid || !user_uuid || !loopname) goto error;
+    if (!self || !uuid || !user_uuid || !loopname)
+        goto error;
 
-    if (!userdata || !callback) goto error;
+    if (!userdata || !callback)
+        goto error;
 
     if (!ov_callback_registry_register(
-            self->callbacks,
-            uuid,
+            self->callbacks, uuid,
             (ov_callback){.userdata = userdata, .function = callback},
             self->config.timeout.request_usec))
         goto error;
@@ -977,11 +1203,14 @@ bool ov_mc_backend_set_loop_volume(ov_mc_backend *self,
     uint8_t volume_scale = ov_convert_from_vol_percent(volume_percent, 3);
 
     msg = ov_mc_mixer_msg_volume(loopname, volume_scale);
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
-    if (!ov_event_api_set_uuid(msg, uuid)) goto error;
+    if (!ov_event_api_set_uuid(msg, uuid))
+        goto error;
 
-    if (!send_message(self, user_uuid, msg)) goto error;
+    if (!send_message(self, user_uuid, msg))
+        goto error;
 
     msg = ov_json_value_free(msg);
     return true;
@@ -997,7 +1226,8 @@ ov_mc_backend_config ov_mc_backend_config_from_json(const ov_json_value *val) {
     ov_mc_backend_config config = (ov_mc_backend_config){0};
 
     const ov_json_value *data = ov_json_object_get(val, OV_KEY_BACKEND);
-    if (!data) data = val;
+    if (!data)
+        data = val;
 
     config.socket.manager = ov_socket_configuration_from_json(
         ov_json_get(data, "/" OV_KEY_SOCKET "/" OV_KEY_MANAGER),
@@ -1054,43 +1284,69 @@ ov_mc_backend_config ov_mc_backend_config_from_json(const ov_json_value *val) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_registry_count ov_mc_backend_state_mixers(ov_mc_backend *self) {
+static bool count_mixers(const void *key, void *val, void *data) {
 
-    if (!self) goto error;
+    if (!key)
+        return true;
+    ov_mc_mixer_data *d = (ov_mc_mixer_data *)val;
+    ov_mc_backend_count *count = (ov_mc_backend_count *)data;
 
-    return ov_mc_backend_registry_count_mixers(self->registry);
+    count->mixers++;
+    if (0 != d->user[0])
+        count->used++;
 
-error:
-    return (ov_mc_backend_registry_count){0};
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_mc_backend_get_session_state(ov_mc_backend *self,
-                                     const char *uuid,
-                                     const char *session_id,
-                                     void *userdata,
+ov_mc_backend_count ov_mc_backend_state_mixers(ov_mc_backend *self) {
+
+    if (!self)
+        goto error;
+
+    ov_mc_backend_count count = {0};
+
+    if (!ov_thread_lock_try_lock(&self->mixer.lock))
+        goto error;
+    ov_dict_for_each(self->mixer.data, &count, count_mixers);
+    ov_thread_lock_unlock(&self->mixer.lock);
+
+    return count;
+
+error:
+    return (ov_mc_backend_count){0};
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_get_session_state(ov_mc_backend *self, const char *uuid,
+                                     const char *session_id, void *userdata,
                                      ov_mc_backend_cb_state callback) {
 
     ov_json_value *msg = NULL;
 
-    if (!self || !uuid || !session_id) goto error;
+    if (!self || !uuid || !session_id)
+        goto error;
 
-    if (!userdata || !callback) goto error;
+    if (!userdata || !callback)
+        goto error;
 
     if (!ov_callback_registry_register(
-            self->callbacks,
-            uuid,
+            self->callbacks, uuid,
             (ov_callback){.userdata = userdata, .function = callback},
             self->config.timeout.request_usec))
         goto error;
 
     msg = ov_mc_mixer_msg_state();
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
-    if (!ov_event_api_set_uuid(msg, uuid)) goto error;
+    if (!ov_event_api_set_uuid(msg, uuid))
+        goto error;
 
-    if (!send_message(self, session_id, msg)) goto error;
+    if (!send_message(self, session_id, msg))
+        goto error;
 
     msg = ov_json_value_free(msg);
     return true;

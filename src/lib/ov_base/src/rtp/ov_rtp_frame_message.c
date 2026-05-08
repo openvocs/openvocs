@@ -41,9 +41,11 @@ static ov_rtp_frame_message *as_rtp_frame_message(void *vptr) {
 
     ov_thread_message *msg = ov_thread_message_cast(vptr);
 
-    if (0 == msg) return 0;
+    if (0 == msg)
+        return 0;
 
-    if (OV_RTP_FRAME_MESSAGE_TYPE != msg->type) return 0;
+    if (OV_RTP_FRAME_MESSAGE_TYPE != msg->type)
+        return 0;
 
     return (ov_rtp_frame_message *)msg;
 }
@@ -58,9 +60,8 @@ static ov_thread_message *impl_rtp_frame_message_free(ov_thread_message *msg) {
 
     if (0 == rtp_message) {
 
-        ov_log_error(
-            "Wrong argument - expected "
-            "ov_rtp_frame_message");
+        ov_log_error("Wrong argument - expected "
+                     "ov_rtp_frame_message");
         goto error;
     }
 

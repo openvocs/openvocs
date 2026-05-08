@@ -44,8 +44,7 @@
  * `OV_TEST_FILE_TMP_PATH_LEN` chars
  * @return file descriptor of the opened file.
  */
-int ov_test_file_tmp_write(uint8_t const *content,
-                           size_t length,
+int ov_test_file_tmp_write(uint8_t const *content, size_t length,
                            char *file_name);
 
 /*----------------------------------------------------------------------------*/

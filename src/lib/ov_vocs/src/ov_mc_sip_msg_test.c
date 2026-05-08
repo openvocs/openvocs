@@ -65,16 +65,16 @@ int test_ov_mc_sip_msg_get_multicast() {
 
     testrun(ov_event_api_event_is(msg, OV_SIP_EVENT_GET_MULTICAST));
     testrun(0 == strcmp("loop1",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_LOOP))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_LOOP))));
     msg = ov_json_value_free(msg);
 
     msg = ov_mc_sip_msg_get_multicast("1-2-3", "loop1");
     testrun(ov_event_api_event_is(msg, OV_SIP_EVENT_GET_MULTICAST));
     testrun(0 == strcmp("1-2-3", ov_event_api_get_uuid(msg)));
     testrun(0 == strcmp("loop1",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_LOOP))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_LOOP))));
     msg = ov_json_value_free(msg);
 
     return testrun_log_success();
@@ -187,9 +187,7 @@ int test_ov_mc_sip_msg_set_sc() {
         ov_mc_sip_msg_set_sc(NULL, NULL, NULL, (ov_mc_mixer_core_forward){0});
     testrun(!msg);
 
-    msg = ov_mc_sip_msg_set_sc(NULL,
-                               "user",
-                               "loop1",
+    msg = ov_mc_sip_msg_set_sc(NULL, "user", "loop1",
                                (ov_mc_mixer_core_forward){.socket.host = "127."
                                                                          "0.0."
                                                                          "1",
@@ -213,9 +211,7 @@ int test_ov_mc_sip_msg_set_sc() {
     // OV_KEY_LOOP))
     msg = ov_json_value_free(msg);
 
-    msg = ov_mc_sip_msg_set_sc("1-2-3",
-                               "user",
-                               "loop",
+    msg = ov_mc_sip_msg_set_sc("1-2-3", "user", "loop",
                                (ov_mc_mixer_core_forward){.socket.host = "192."
                                                                          "168."
                                                                          "0.1",
@@ -242,9 +238,7 @@ int test_ov_mc_sip_msg_set_sc() {
 int test_ov_mc_sip_msg_get_loop_socket() {
 
     ov_json_value *msg =
-        ov_mc_sip_msg_set_sc(NULL,
-                             "user",
-                             "loop",
+        ov_mc_sip_msg_set_sc(NULL, "user", "loop",
                              (ov_mc_mixer_core_forward){.socket.host = "127.0."
                                                                        "0.1",
                                                         .socket.type = UDP,
@@ -294,16 +288,16 @@ int test_ov_mc_sip_msg_release() {
 
     testrun(ov_event_api_event_is(msg, OV_KEY_RELEASE));
     testrun(0 == strcmp("user1",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_USER))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_USER))));
     msg = ov_json_value_free(msg);
 
     msg = ov_mc_sip_msg_release("1-2-3", "user1");
     testrun(ov_event_api_event_is(msg, OV_KEY_RELEASE));
     testrun(0 == strcmp("1-2-3", ov_event_api_get_uuid(msg)));
     testrun(0 == strcmp("user1",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_USER))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_USER))));
     msg = ov_json_value_free(msg);
 
     return testrun_log_success();
@@ -321,8 +315,8 @@ int test_ov_mc_sip_msg_create_call() {
 
     testrun(ov_event_api_event_is(msg, OV_SIP_EVENT_CALL));
     testrun(0 == strcmp("loop",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_LOOP))));
+                        ov_json_string_get(ov_json_get(msg, "/" OV_KEY_PARAMETER
+                                                            "/" OV_KEY_LOOP))));
     testrun(0 == strcmp("destination",
                         ov_json_string_get(ov_json_get(
                             msg, "/" OV_KEY_PARAMETER "/" OV_KEY_CALLEE))));
@@ -342,9 +336,8 @@ int test_ov_mc_sip_msg_terminate_call() {
     msg = ov_mc_sip_msg_terminate_call("id");
 
     testrun(ov_event_api_event_is(msg, OV_KEY_HANGUP));
-    testrun(0 == strcmp("id",
-                        ov_json_string_get(ov_json_get(
-                            msg, "/" OV_KEY_PARAMETER "/" OV_KEY_CALL))));
+    testrun(0 == strcmp("id", ov_json_string_get(ov_json_get(
+                                  msg, "/" OV_KEY_PARAMETER "/" OV_KEY_CALL))));
     msg = ov_json_value_free(msg);
 
     return testrun_log_success();

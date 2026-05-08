@@ -111,15 +111,10 @@ static bool io_callback(int fd, uint8_t events, void *userdata) {
 
     if (sizeof(recvd) != retval) {
 
-        testrun_log(
-            "Could not read from fd %i: "
-            "retval: %i(%s), "
-            "errno: %i(%s)\n",
-            fd,
-            retval,
-            strerror(-retval),
-            errno,
-            strerror(errno));
+        testrun_log("Could not read from fd %i: "
+                    "retval: %i(%s), "
+                    "errno: %i(%s)\n",
+                    fd, retval, strerror(-retval), errno, strerror(errno));
 
         return false;
     }
@@ -127,14 +122,12 @@ static bool io_callback(int fd, uint8_t events, void *userdata) {
     server_called_counter = recvd;
     io_callback_reads_counter += 1;
 
-    testrun_log(
-        "server_called_counter: %i "
-        "io_callback_reads_counter: %zu   "
-        "socket_reconnected_counter: "
-        "%zu\n",
-        server_called_counter,
-        io_callback_reads_counter,
-        socket_reconnected_counter);
+    testrun_log("server_called_counter: %i "
+                "io_callback_reads_counter: %zu   "
+                "socket_reconnected_counter: "
+                "%zu\n",
+                server_called_counter, io_callback_reads_counter,
+                socket_reconnected_counter);
 
     return true;
 }
@@ -186,8 +179,7 @@ int ov_reconnect_manager_connect_test(
 
     testrun(ov_test_tcp_server(&server_pid, &server_port, cfg));
 
-    testrun_log("Our test server listens on %i, with pid %i\n",
-                server_port,
+    testrun_log("Our test server listens on %i, with pid %i\n", server_port,
                 server_pid);
 
     ov_socket_configuration server_scfg = {0};
@@ -239,8 +231,8 @@ int ov_reconnect_manager_connect_test(
     testrun(
         !ov_reconnect_manager_connect(0, server_scfg, 0, cbs, test_userdata));
 
-    testrun(!ov_reconnect_manager_connect(
-        0, server_scfg, OV_EVENT_IO_IN, cbs, test_userdata));
+    testrun(!ov_reconnect_manager_connect(0, server_scfg, OV_EVENT_IO_IN, cbs,
+                                          test_userdata));
 
     cbs.io = io_callback;
 
@@ -254,13 +246,13 @@ int ov_reconnect_manager_connect_test(
     testrun(
         !ov_reconnect_manager_connect(0, server_scfg, 0, cbs, test_userdata));
 
-    testrun(!ov_reconnect_manager_connect(
-        0, server_scfg, OV_EVENT_IO_IN, cbs, test_userdata));
+    testrun(!ov_reconnect_manager_connect(0, server_scfg, OV_EVENT_IO_IN, cbs,
+                                          test_userdata));
 
     cbs.io = io_callback;
 
-    testrun(!ov_reconnect_manager_connect(
-        0, server_scfg, OV_EVENT_IO_IN, cbs, test_userdata));
+    testrun(!ov_reconnect_manager_connect(0, server_scfg, OV_EVENT_IO_IN, cbs,
+                                          test_userdata));
 
     testrun(0 == io_callback_reads_counter);
     testrun(0 == socket_reconnected_counter);
@@ -278,8 +270,8 @@ int ov_reconnect_manager_connect_test(
         .reconnected = reconnected_callback,
     };
 
-    testrun(ov_reconnect_manager_connect(
-        rm, server_scfg, OV_EVENT_IO_IN, cbs, test_userdata));
+    testrun(ov_reconnect_manager_connect(rm, server_scfg, OV_EVENT_IO_IN, cbs,
+                                         test_userdata));
 
     testrun(0 == io_callback_reads_counter);
     testrun(0 == socket_reconnected_counter);
@@ -287,14 +279,12 @@ int ov_reconnect_manager_connect_test(
 
     loop->run(loop, loop_runtime_secs * 1000 * 1000);
 
-    testrun_log(
-        "server_called_counter: %i "
-        "io_callback_reads_counter: %zu   "
-        "socket_reconnected_counter: "
-        "%zu\n",
-        server_called_counter,
-        io_callback_reads_counter,
-        socket_reconnected_counter);
+    testrun_log("server_called_counter: %i "
+                "io_callback_reads_counter: %zu   "
+                "socket_reconnected_counter: "
+                "%zu\n",
+                server_called_counter, io_callback_reads_counter,
+                socket_reconnected_counter);
 
     size_t expected_count = loop_runtime_secs / reconnect_timer_interval_secs;
 
@@ -323,8 +313,7 @@ int ov_reconnect_manager_connect_test(
     testrun(ov_test_tcp_stop_process(server_pid));
     testrun(ov_test_tcp_server(&server_pid, &server_port, cfg));
 
-    testrun_log("Our test server listens on %i, with pid %i\n",
-                server_port,
+    testrun_log("Our test server listens on %i, with pid %i\n", server_port,
                 server_pid);
 
     server_scfg.port = server_port;
@@ -334,22 +323,20 @@ int ov_reconnect_manager_connect_test(
     socket_reconnected_counter = 0;
 
     /* Connect 2 clients */
-    testrun(ov_reconnect_manager_connect(
-        rm, server_scfg, OV_EVENT_IO_IN, cbs, test_userdata));
+    testrun(ov_reconnect_manager_connect(rm, server_scfg, OV_EVENT_IO_IN, cbs,
+                                         test_userdata));
 
-    testrun(ov_reconnect_manager_connect(
-        rm, server_scfg, OV_EVENT_IO_IN, cbs, test_userdata));
+    testrun(ov_reconnect_manager_connect(rm, server_scfg, OV_EVENT_IO_IN, cbs,
+                                         test_userdata));
 
     loop->run(loop, loop_runtime_secs * 1000 * 1000);
 
-    testrun_log(
-        "server_called_counter: %i "
-        "io_callback_reads_counter: %zu   "
-        "socket_reconnected_counter: "
-        "%zu\n",
-        server_called_counter,
-        io_callback_reads_counter,
-        socket_reconnected_counter);
+    testrun_log("server_called_counter: %i "
+                "io_callback_reads_counter: %zu   "
+                "socket_reconnected_counter: "
+                "%zu\n",
+                server_called_counter, io_callback_reads_counter,
+                socket_reconnected_counter);
 
     testrun(-1 < server_called_counter);
 

@@ -92,8 +92,7 @@ static bool log_dl_error(char const *id, bool error_happened) {
 
     if (error_happened) {
 
-        ov_log_error("Loading/Unloading %s failed: %s",
-                     ov_string_sanitize(id),
+        ov_log_error("Loading/Unloading %s failed: %s", ov_string_sanitize(id),
                      ov_string_sanitize(dlerror()));
     }
 
@@ -118,8 +117,7 @@ static bool close_so(char const *id, void *handle) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool unload_module(void const *id,
-                          void const *restrict entry,
+static bool unload_module(void const *id, void const *restrict entry,
                           void *arg) {
 
     UNUSED(arg);
@@ -136,8 +134,8 @@ static bool unload_module(void const *id,
             unload();
             ov_log_info("Unloaded plugin %s", ov_string_sanitize(id));
         } else {
-            ov_log_warning(
-                "Could not unload plugin %s", ov_string_sanitize(id));
+            ov_log_warning("Could not unload plugin %s",
+                           ov_string_sanitize(id));
         }
 
         return close_so(id, (void *)handle);
@@ -188,19 +186,17 @@ static void *load_so(char const *path) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool register_so_handle_id(char const *path,
-                                  char const *id,
+static bool register_so_handle_id(char const *path, char const *id,
                                   void *handle) {
 
     if (ov_ptr_valid(id, "Cannot register plugin - it did not provide an id")) {
 
-        void *old = ov_hashtable_set(
-            get_g_plugins(), id, plugin_entry_create(path, handle));
+        void *old = ov_hashtable_set(get_g_plugins(), id,
+                                     plugin_entry_create(path, handle));
 
         if (0 != old) {
 
-            ov_log_error("Plugin %s overwritten by %s",
-                         ov_string_sanitize(id),
+            ov_log_error("Plugin %s overwritten by %s", ov_string_sanitize(id),
                          ov_string_sanitize(path));
 
             unload_module(id, old, 0);
@@ -284,9 +280,7 @@ struct so_dir_loader_args_struct {
 
 } so_dir_loader_args;
 
-static int so_dir_loader(const char *fpath,
-                         const struct stat *sb,
-                         int typeflag,
+static int so_dir_loader(const char *fpath, const struct stat *sb, int typeflag,
                          struct FTW *ftwbuf) {
 
     UNUSED(sb);
@@ -300,8 +294,8 @@ static int so_dir_loader(const char *fpath,
             ov_log_info("Loaded plugin from %s", fpath);
 
         } else {
-            ov_log_info(
-                "Could not load plugin from %s", ov_string_sanitize(fpath));
+            ov_log_info("Could not load plugin from %s",
+                        ov_string_sanitize(fpath));
         }
     }
 
@@ -354,8 +348,8 @@ void *ov_plugin_system_get_symbol(void *restrict handle,
                                   char const *restrict symname) {
 
     if (ov_ptr_valid(handle, "Cannot get symbol - invalid plugin handle") &&
-        ov_ptr_valid(
-            symname, "Cannot get plugin symbol - invalid symbol name")) {
+        ov_ptr_valid(symname,
+                     "Cannot get plugin symbol - invalid symbol name")) {
         return dlsym(handle, symname);
     } else {
         return 0;

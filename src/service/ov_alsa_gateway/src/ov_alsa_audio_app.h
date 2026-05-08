@@ -94,10 +94,10 @@ typedef struct {
 
 /*----------------------------------------------------------------------------*/
 
-ov_alsa_audio_app_config ov_alsa_audio_app_config_from_json(
-    ov_json_value const *jcfg,
-    ov_alsa_audio_app_config default_config,
-    bool *ok);
+ov_alsa_audio_app_config
+ov_alsa_audio_app_config_from_json(ov_json_value const *jcfg,
+                                   ov_alsa_audio_app_config default_config,
+                                   bool *ok);
 
 /*----------------------------------------------------------------------------*/
 
@@ -128,8 +128,7 @@ bool ov_alsa_audio_app_start_recordings(ov_alsa_audio_app *self,
 
 bool ov_alsa_audio_app_stop_stream(ov_alsa_audio_app *self,
                                    ov_analogue_event_type type,
-                                   uint32_t channel,
-                                   ov_result *res);
+                                   uint32_t channel, ov_result *res);
 
 /*---------------------------------------------------------------------------*/
 
@@ -137,8 +136,7 @@ bool ov_alsa_audio_app_record_to(ov_alsa_audio_app *self,
                                  ov_socket_configuration mcsocket,
                                  uint32_t ssid,
                                  ov_json_value const *codec_config,
-                                 uint32_t analogue_channel,
-                                 ov_result *res);
+                                 uint32_t analogue_channel, ov_result *res);
 
 /*----------------------------------------------------------------------------*/
 

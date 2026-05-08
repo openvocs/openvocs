@@ -37,9 +37,11 @@ static const ov_data init_data = (ov_data){.magic_byte = OV_DATA_MAGIC_BYTE};
 
 ov_data *ov_data_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data == OV_DATA_MAGIC_BYTE) return (ov_data *)data;
+    if (*(uint16_t *)data == OV_DATA_MAGIC_BYTE)
+        return (ov_data *)data;
 
     return NULL;
 }
@@ -49,7 +51,8 @@ ov_data *ov_data_cast(const void *data) {
 void *ov_data_free(void *self) {
 
     ov_data *data = ov_data_cast(self);
-    if (data && data->free) return data->free(data);
+    if (data && data->free)
+        return data->free(data);
 
     return self;
 }
@@ -58,7 +61,8 @@ void *ov_data_free(void *self) {
 
 ov_data *ov_data_init(void *self, size_t size) {
 
-    if (!self || size < sizeof(ov_data)) goto error;
+    if (!self || size < sizeof(ov_data))
+        goto error;
 
     memcpy(self, &init_data, sizeof(ov_data));
     return ov_data_cast(self);

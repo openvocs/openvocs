@@ -32,18 +32,22 @@ import * as CSS from "/css/css.js";
 
 import ov_Dialog from "/components/dialog/dialog.js";
 
+import * as ov_DB from "/lib/ov_db.js";
+
 export default class ov_RBAC_Node extends HTMLElement {
     #type;
     #value;
     #frozen;
+    #global;
     #subset;
+    #allow_highlighting;
 
     #node_name;
     #node_id;
-    #node_abbreviation;
     #node_multicast_ip;
     #node_multicast_port;
     #node_password;
+    #node_highlight_color;
     #linked_nodes;
     #passive_linked_entries;
 
@@ -66,7 +70,7 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["type", "value", "frozen"];
+        return ["type", "value", "frozen", "global", "allow_highlighting"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -78,6 +82,10 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#update_value(newValue);
         } else if (name === "frozen") {
             this.#update_frozen(this.hasAttribute("frozen"));
+        } else if (name === "global") {
+            this.#update_global(this.hasAttribute("global"));
+        } else if (name === "allow_highlighting") {
+            this.#allow_highlighting = newValue;
         }
     }
 
@@ -108,6 +116,17 @@ export default class ov_RBAC_Node extends HTMLElement {
         return this.hasAttribute("frozen");
     }
 
+    set global(boolean) {
+        if (boolean)
+            this.setAttribute("global", "");
+        else
+            this.removeAttribute("global");
+    }
+
+    get global() {
+        return this.hasAttribute("global");
+    }
+
     set subset(id) {
         this.#subset = id;
     }
@@ -118,9 +137,8 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_id(text) {
         this.#node_id = text;
-        if (text && !this.node_abbreviation && (!this.node_name || this.node_name.length > 16)) {
-            this.value = text.length > 16 ? text.slice(0, 13) + "..." : text;
-        }
+        if (text && !this.#node_name)
+            this.value = text;
     }
 
     get node_id() {
@@ -129,22 +147,12 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     set node_name(text) {
         this.#node_name = text;
-        if (text && text.length <= 16)
+        if (text)
             this.value = text;
     }
 
     get node_name() {
         return this.#node_name;
-    }
-
-    set node_abbreviation(text) {
-        this.#node_abbreviation = text;
-        if (text && (!this.node_name || this.node_name.length > 16))
-            this.value = text;
-    }
-
-    get node_abbreviation() {
-        return this.#node_abbreviation;
     }
 
     set node_password(text) {
@@ -171,6 +179,14 @@ export default class ov_RBAC_Node extends HTMLElement {
         return this.#node_multicast_port;
     }
 
+    set node_highlight_color(color) {
+        this.#node_highlight_color = color;
+    }
+
+    get node_highlight_color() {
+        return this.#node_highlight_color;
+    }
+
     set linked_nodes(obj) {
         this.#linked_nodes = obj;
     }
@@ -193,11 +209,11 @@ export default class ov_RBAC_Node extends HTMLElement {
             name: this.node_name ? this.node_name : null
         }
 
-        if (this.node_abbreviation)
-            data.abbreviation = this.node_abbreviation;
-
         if (this.node_multicast_ip && this.node_multicast_port)
             data.multicast = { host: this.node_multicast_ip, port: parseInt(this.node_multicast_port) };
+
+        if (this.#node_highlight_color)
+            data.highlight_color = this.node_highlight_color;
 
         if (!this.passive_linked_entries)
             this.passive_linked_entries = {};
@@ -209,10 +225,19 @@ export default class ov_RBAC_Node extends HTMLElement {
                 ...this.passive_linked_entries,
                 ...Object.fromEntries([...this.linked_nodes.entries()].filter(([node, permission]) => permission === null))
             };
-            if (this.node_id.startsWith("admin@"))
-                data.id = "admin";
         }
         return data;
+    }
+
+    set allow_highlighting(boolean) {
+        if (boolean)
+            this.setAttribute("allow_highlighting", "");
+        else
+            this.removeAttribute("allow_highlighting");
+    }
+
+    get allow_highlighting() {
+        return this.#allow_highlighting;
     }
 
     #update_value(text) {
@@ -226,26 +251,30 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#frozen = boolean;
         this.edit_id = this.shadowRoot.querySelector("#edit_id");
         let edit_name = this.shadowRoot.querySelector("#edit_name");
-        let edit_abbr = this.shadowRoot.querySelector("#edit_abbreviation");
         let edit_pass = this.shadowRoot.querySelector("#edit_password");
         let edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         let edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
+        let edit_highlight_color = this.shadowRoot.querySelector("#edit_highlight_color");
         let delete_button = this.shadowRoot.querySelector("#delete_element");
         if (edit_id)
             edit_id.disabled = boolean;
         if (edit_name)
             edit_name.disabled = boolean;
-        if (edit_abbr)
-            edit_abbr.disabled = boolean;
         if (edit_pass)
             edit_pass.disabled = boolean;
         if (edit_multicast_ip)
             edit_multicast_ip.disabled = boolean;
         if (edit_multicast_port)
             edit_multicast_port.disabled = boolean;
+        if (edit_highlight_color)
+            edit_highlight_color.disabled = boolean;
         if (delete_button)
             delete_button.disabled = boolean;
 
+    }
+
+    #update_global(boolean) {
+        this.#global = boolean;
     }
 
     // -----------------------------------------------------------------
@@ -257,11 +286,12 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#dom.dialog.querySelector("h3").innerText = "Edit " + this.#type;
         this.#dom.edit_id = this.shadowRoot.querySelector("#edit_id");
         this.#dom.edit_name = this.shadowRoot.querySelector("#edit_name");
-        this.#dom.edit_abbr = this.shadowRoot.querySelector("#edit_abbreviation");
         this.#dom.edit_pass = this.shadowRoot.querySelector("#edit_password");
         this.#dom.edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         this.#dom.edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
         this.#dom.error_msg = this.shadowRoot.querySelector("#dialog_error_message");
+        this.#dom.name_char_count = this.shadowRoot.querySelector("#name_char_count");
+        this.#dom.edit_highlight_color = this.shadowRoot.querySelector("#edit_highlight_color");
 
         this.shadowRoot.querySelector("#edit_icon").onclick = () => {
             this.show_settings();
@@ -275,11 +305,9 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#delete();
         };
 
-        this.#dom.dialog.onclick = (e) => {
-            if (e.target === this.#dom.dialog) {
-                this.#abort();
-            }
-        }
+        this.#dom.edit_id.addEventListener("keyup", () => {
+            this.#dom.edit_id.value = this.#dom.edit_id.value.replace(/[^a-zA-Z0-9.@_-]/g, '');
+        });
 
         this.#dom.dialog.querySelector(".close_button").onclick = () => {
             this.#abort();
@@ -290,6 +318,10 @@ export default class ov_RBAC_Node extends HTMLElement {
                 this.#save();
             else if (event.keyCode === 27)
                 this.#abort();
+        });
+
+        this.#dom.edit_name.addEventListener("input", () => {
+            this.#dom.name_char_count.textContent = this.#dom.edit_name.value.length;
         });
 
         this.shadowRoot.querySelector("#network_icon").onclick = (event) => {
@@ -331,13 +363,16 @@ export default class ov_RBAC_Node extends HTMLElement {
         if (this.frozen)
             this.#update_frozen(this.frozen);
 
+        if (this.global)
+            this.#update_global(this.global);
+
         if (this.value)
             this.#update_value(this.value);
         else
             this.show_settings();
     }
 
-    show_settings(error) {
+    async show_settings(error) {
         if (error)
             this.#dom.error_msg.innerText = error;
         else
@@ -346,16 +381,31 @@ export default class ov_RBAC_Node extends HTMLElement {
         if (this.node_id) {
             this.#dom.edit_id.value = this.node_id;
             this.#dom.edit_id.disabled = true;
-        } else
+        } else if (this.type !== "user")
             this.#dom.edit_id.value = create_uuid();
 
         this.#dom.edit_name.value = this.node_name ? this.node_name : null;
-        this.#dom.edit_abbr.value = this.node_abbreviation ? this.node_abbreviation : null;
         this.#dom.edit_pass.value = this.node_password ? this.node_password : null;
         this.#dom.edit_multicast_ip.value = this.node_multicast_ip ? this.node_multicast_ip :
             ((DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") ? DEFAULT_MULTICAST_ADDRESS : null);
-        this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port : null;
+        this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port : await (async () => {
+            let port = null;
+            if (DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") {
+                port = await ov_DB.get_highest_multicast_port();
+                port = MIN_MULTICAST_PORT > port ? MIN_MULTICAST_PORT + 1 : port + 1;
+                MIN_MULTICAST_PORT = port;
+            }
+            if (port > 65535) {
+                port = null;
+                let error_msg = "The highest possible multicast port (65535) is already in use. Please find a smaller unused port.";
+                this.#dom.error_msg.innerText = error_msg;
+                console.warn(error_msg);
+            }
+            return port;
+        })();
+        this.#dom.edit_highlight_color.value = this.node_highlight_color ? this.node_highlight_color : "";
 
+        this.#dom.name_char_count.textContent = this.#dom.edit_name.value.length;
         this.#dom.dialog.showModal();
     }
 
@@ -363,15 +413,17 @@ export default class ov_RBAC_Node extends HTMLElement {
         if (this.frozen)
             this.#dom.dialog.close();
         if (!this.#dom.edit_id.disabled && this.type === "user" && (!this.#dom.edit_id.value || !this.#dom.edit_pass.value)) {
-            this.#dom.error_msg.innerText = "Please set ID and password."
+            this.#dom.error_msg.innerText = "Please set username and password."
         } else if (!this.#dom.edit_id.disabled && !this.#dom.edit_id.value) {
             this.#dom.error_msg.innerText = "Please set an ID."
+        } else if (this.type === "loop" && (!this.#dom.edit_multicast_ip.value || !this.#dom.edit_multicast_port.value)) {
+            this.#dom.error_msg.innerText = "Please set multicast id and port."
         } else {
             this.node_name = this.#dom.edit_name.value ? this.#dom.edit_name.value : undefined;
-            this.node_abbreviation = this.#dom.edit_abbr.value ? this.#dom.edit_abbr.value : undefined;
             this.node_password = this.#dom.edit_pass.value ? this.#dom.edit_pass.value : undefined;
             this.node_multicast_ip = this.#dom.edit_multicast_ip.value ? this.#dom.edit_multicast_ip.value : undefined;
             this.node_multicast_port = this.#dom.edit_multicast_port.value ? this.#dom.edit_multicast_port.value : undefined;
+            this.node_highlight_color = this.#dom.edit_highlight_color.value && this.#dom.edit_highlight_color.value !== "" ? this.#dom.edit_highlight_color.value : undefined;
             let update = true;
             if (!this.node_id) {
                 this.node_id = this.#dom.edit_id.value;

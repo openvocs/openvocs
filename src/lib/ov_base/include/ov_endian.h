@@ -70,9 +70,7 @@
         @param next     (optional) pointer to byte after write
         @param number   number to write in network byte order.
 */
-bool ov_endian_write_uint16_be(uint8_t *buffer,
-                               size_t length,
-                               uint8_t **next,
+bool ov_endian_write_uint16_be(uint8_t *buffer, size_t length, uint8_t **next,
                                uint16_t number);
 
 /*----------------------------------------------------------------------------*/
@@ -85,9 +83,7 @@ bool ov_endian_write_uint16_be(uint8_t *buffer,
         @param next     (optional) pointer to byte after write
         @param number   number to write in network byte order.
 */
-bool ov_endian_write_uint32_be(uint8_t *buffer,
-                               size_t length,
-                               uint8_t **next,
+bool ov_endian_write_uint32_be(uint8_t *buffer, size_t length, uint8_t **next,
                                uint32_t number);
 
 /*----------------------------------------------------------------------------*/
@@ -100,9 +96,7 @@ bool ov_endian_write_uint32_be(uint8_t *buffer,
         @param next     (optional) pointer to byte after write
         @param number   number to write in network byte order.
 */
-bool ov_endian_write_uint64_be(uint8_t *buffer,
-                               size_t length,
-                               uint8_t **next,
+bool ov_endian_write_uint64_be(uint8_t *buffer, size_t length, uint8_t **next,
                                uint64_t number);
 
 /*
@@ -120,8 +114,7 @@ bool ov_endian_write_uint64_be(uint8_t *buffer,
         @param length   of the buffer to read from (MUST be at least 2)
         @param number   pointer to number
 */
-bool ov_endian_read_uint16_be(const uint8_t *buffer,
-                              size_t length,
+bool ov_endian_read_uint16_be(const uint8_t *buffer, size_t length,
                               uint16_t *number);
 
 /*----------------------------------------------------------------------------*/
@@ -133,8 +126,7 @@ bool ov_endian_read_uint16_be(const uint8_t *buffer,
         @param length   of the buffer to read from (MUST be at least 4)
         @param number   pointer to number
 */
-bool ov_endian_read_uint32_be(const uint8_t *buffer,
-                              size_t length,
+bool ov_endian_read_uint32_be(const uint8_t *buffer, size_t length,
                               uint32_t *number);
 
 /*----------------------------------------------------------------------------*/
@@ -146,8 +138,7 @@ bool ov_endian_read_uint32_be(const uint8_t *buffer,
         @param length   of the buffer to read from (MUST be at least 8)
         @param number   pointer to number
 */
-bool ov_endian_read_uint64_be(const uint8_t *buffer,
-                              size_t length,
+bool ov_endian_read_uint64_be(const uint8_t *buffer, size_t length,
                               uint64_t *number);
 
 #endif /* ov_endian_h */

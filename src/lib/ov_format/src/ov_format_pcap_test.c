@@ -72,11 +72,9 @@ static int test_impl_next_chunk() {
 
         testrun(ov_format_pcap_get_current_packet_header(pcap_fmt, &phdr));
 
-        ov_log_info("packet length acc. to packet header: %" PRIu32
-                    ", got "
+        ov_log_info("packet length acc. to packet header: %" PRIu32 ", got "
                     "%zu\n",
-                    phdr.length_stored_bytes,
-                    buffer->length);
+                    phdr.length_stored_bytes, buffer->length);
 
         testrun(phdr.length_stored_bytes == buffer->length);
 
@@ -206,9 +204,7 @@ int test_ov_format_pcap_get_current_packet_header() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_format_pcap",
-            test_ov_format_pcap_install,
-            test_impl_next_chunk,
+OV_TEST_RUN("ov_format_pcap", test_ov_format_pcap_install, test_impl_next_chunk,
             test_ov_format_pcap_get_global_header,
             test_ov_format_pcap_get_current_packet_header);
 

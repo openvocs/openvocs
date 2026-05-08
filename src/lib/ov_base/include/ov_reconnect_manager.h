@@ -93,10 +93,10 @@ typedef struct ov_reconnect_manager_struct ov_reconnect_manager;
  * BEWARE: Free the reconnect_manager *before* freeing the attached
  * loop!
  */
-ov_reconnect_manager *ov_reconnect_manager_create(
-    ov_event_loop *loop,
-    uint32_t reconnect_interval_secs,
-    size_t max_reconnect_sockets);
+ov_reconnect_manager *
+ov_reconnect_manager_create(ov_event_loop *loop,
+                            uint32_t reconnect_interval_secs,
+                            size_t max_reconnect_sockets);
 
 /*----------------------------------------------------------------------------*/
 
@@ -125,8 +125,7 @@ typedef struct {
  * @return True if successful, false otherwise.
  */
 bool ov_reconnect_manager_connect(ov_reconnect_manager *self,
-                                  ov_socket_configuration cfg,
-                                  uint8_t events,
+                                  ov_socket_configuration cfg, uint8_t events,
                                   ov_reconnect_callbacks callbacks,
                                   void *userdata);
 

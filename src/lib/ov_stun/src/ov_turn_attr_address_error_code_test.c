@@ -71,8 +71,8 @@ int test_ov_turn_attr_address_error_code_encode() {
     testrun(ov_stun_attribute_set_type(buffer, 4, TURN_ADDRESS_ERROR_CODE));
     testrun(ov_stun_attribute_set_length(buffer, 4, 4));
 
-    testrun(ov_turn_attr_address_error_code_encode(
-        buffer, 100, &next, 1, 102, (uint8_t *)"test", 4));
+    testrun(ov_turn_attr_address_error_code_encode(buffer, 100, &next, 1, 102,
+                                                   (uint8_t *)"test", 4));
     testrun(next = buffer + 13);
     testrun(buffer[0] == 0x80);
     testrun(buffer[1] == 0x01);
@@ -89,8 +89,8 @@ int test_ov_turn_attr_address_error_code_encode() {
     testrun(buffer[12] == 0);
     testrun(buffer[13] == 0);
 
-    testrun(ov_turn_attr_address_error_code_encode(
-        buffer, 100, &next, 0x02, 999, (uint8_t *)"testa", 5));
+    testrun(ov_turn_attr_address_error_code_encode(buffer, 100, &next, 0x02,
+                                                   999, (uint8_t *)"testa", 5));
     testrun(next = buffer + 8);
     testrun(buffer[0] == 0x80);
     testrun(buffer[1] == 0x01);
@@ -122,29 +122,29 @@ int test_ov_turn_attr_address_error_code_decode() {
     const uint8_t *phrase = NULL;
     size_t len = 0;
 
-    testrun(ov_turn_attr_address_error_code_encode(
-        buffer, 100, NULL, 0x02, 999, (uint8_t *)"testa", 5));
+    testrun(ov_turn_attr_address_error_code_encode(buffer, 100, NULL, 0x02, 999,
+                                                   (uint8_t *)"testa", 5));
 
-    testrun(!ov_turn_attr_address_error_code_decode(
-        NULL, 0, NULL, NULL, NULL, NULL));
+    testrun(!ov_turn_attr_address_error_code_decode(NULL, 0, NULL, NULL, NULL,
+                                                    NULL));
 
-    testrun(!ov_turn_attr_address_error_code_decode(
-        NULL, 100, &family, &code, &phrase, &len));
+    testrun(!ov_turn_attr_address_error_code_decode(NULL, 100, &family, &code,
+                                                    &phrase, &len));
 
-    testrun(!ov_turn_attr_address_error_code_decode(
-        buffer, 100, NULL, &code, &phrase, &len));
+    testrun(!ov_turn_attr_address_error_code_decode(buffer, 100, NULL, &code,
+                                                    &phrase, &len));
 
-    testrun(!ov_turn_attr_address_error_code_decode(
-        buffer, 100, &family, NULL, &phrase, &len));
+    testrun(!ov_turn_attr_address_error_code_decode(buffer, 100, &family, NULL,
+                                                    &phrase, &len));
 
-    testrun(!ov_turn_attr_address_error_code_decode(
-        buffer, 100, &family, &code, NULL, &len));
+    testrun(!ov_turn_attr_address_error_code_decode(buffer, 100, &family, &code,
+                                                    NULL, &len));
 
-    testrun(!ov_turn_attr_address_error_code_decode(
-        buffer, 100, &family, &code, &phrase, NULL));
+    testrun(!ov_turn_attr_address_error_code_decode(buffer, 100, &family, &code,
+                                                    &phrase, NULL));
 
-    testrun(ov_turn_attr_address_error_code_decode(
-        buffer, 100, &family, &code, &phrase, &len));
+    testrun(ov_turn_attr_address_error_code_decode(buffer, 100, &family, &code,
+                                                   &phrase, &len));
 
     testrun(2 == family);
     testrun(999 == code);

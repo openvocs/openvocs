@@ -73,7 +73,8 @@ ov_ice_dtls_cookie_store *ov_ice_dtls_cookie_store_create() {
     ov_ice_dtls_cookie_store *store =
         calloc(1, sizeof(ov_ice_dtls_cookie_store));
 
-    if (!store) goto error;
+    if (!store)
+        goto error;
     store->magic_bytes = OV_ICE_DTLS_COOKIE_STORE_MAGIC_BYTES;
     global_dtls_ice_cookie_store = store;
 
@@ -88,10 +89,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_ice_dtls_cookie_store *ov_ice_dtls_cookie_store_free(
-    ov_ice_dtls_cookie_store *self) {
+ov_ice_dtls_cookie_store *
+ov_ice_dtls_cookie_store_free(ov_ice_dtls_cookie_store *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     /* Delete all cookies */
     ov_ice_dtls_cookie *cookie = NULL;
@@ -117,20 +119,25 @@ static bool create_cookie(size_t length) {
 
     ov_ice_dtls_cookie *cookie = NULL;
 
-    if (NULL == global_dtls_ice_cookie_store) goto error;
+    if (NULL == global_dtls_ice_cookie_store)
+        goto error;
 
-    if (length >= DTLS1_COOKIE_LENGTH) length = DTLS1_COOKIE_LENGTH - 1;
+    if (length >= DTLS1_COOKIE_LENGTH)
+        length = DTLS1_COOKIE_LENGTH - 1;
 
     cookie = calloc(1, sizeof(ov_ice_dtls_cookie));
-    if (!cookie) goto error;
+    if (!cookie)
+        goto error;
 
     char *ptr = cookie->secret;
-    if (!ov_random_string((char **)&ptr, length, NULL)) goto error;
+    if (!ov_random_string((char **)&ptr, length, NULL))
+        goto error;
 
     bool result =
         ov_node_push((void **)&global_dtls_ice_cookie_store->cookie, cookie);
 
-    if (!result) goto error;
+    if (!result)
+        goto error;
 
     return true;
 error:
@@ -141,12 +148,13 @@ error:
 /*----------------------------------------------------------------------------*/
 
 bool ov_ice_dtls_cookie_store_initialize(ov_ice_dtls_cookie_store *self,
-                                         size_t quantity,
-                                         size_t length) {
+                                         size_t quantity, size_t length) {
 
-    if (!self || quantity < 1 || length < 2) goto error;
+    if (!self || quantity < 1 || length < 2)
+        goto error;
 
-    if (NULL == global_dtls_ice_cookie_store) goto error;
+    if (NULL == global_dtls_ice_cookie_store)
+        goto error;
 
     /* Delete all cookies */
     ov_ice_dtls_cookie *cookie = NULL;
@@ -162,7 +170,8 @@ bool ov_ice_dtls_cookie_store_initialize(ov_ice_dtls_cookie_store *self,
 
     for (uint8_t i = 0; i < quantity; i++) {
 
-        if (!create_cookie(length)) goto error;
+        if (!create_cookie(length))
+            goto error;
     }
 
     self->cookie_counter = ov_node_count(self->cookie);
@@ -176,13 +185,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-int ov_ice_dtls_cookie_verify(SSL *ssl,
-                              const unsigned char *cookie,
+int ov_ice_dtls_cookie_verify(SSL *ssl, const unsigned char *cookie,
                               unsigned int cookie_len) {
 
-    if (!ssl || !cookie || !cookie_len) goto error;
+    if (!ssl || !cookie || !cookie_len)
+        goto error;
 
-    if (!global_dtls_ice_cookie_store) goto error;
+    if (!global_dtls_ice_cookie_store)
+        goto error;
 
     if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
         goto error;
@@ -207,13 +217,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-int ov_ice_dtls_cookie_generate(SSL *ssl,
-                                unsigned char *cookie,
+int ov_ice_dtls_cookie_generate(SSL *ssl, unsigned char *cookie,
                                 unsigned int *cookie_len) {
 
-    if (!ssl || !cookie || !cookie_len) goto error;
+    if (!ssl || !cookie || !cookie_len)
+        goto error;
 
-    if (!global_dtls_ice_cookie_store) goto error;
+    if (!global_dtls_ice_cookie_store)
+        goto error;
 
     if (!ov_thread_lock_try_lock(&global_dtls_ice_cookie_store->lock))
         goto error;
@@ -226,7 +237,8 @@ int ov_ice_dtls_cookie_generate(SSL *ssl,
 
     OV_ASSERT(selected);
 
-    if (!selected) goto done;
+    if (!selected)
+        goto done;
 
     memcpy(cookie, selected->secret, strlen((char *)selected->secret));
     *cookie_len = strlen((char *)selected->secret);

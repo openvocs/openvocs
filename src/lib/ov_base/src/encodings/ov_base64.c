@@ -66,11 +66,13 @@ static uint8_t padding = 0x3D;
 */
 static int ov_base64_alphabetPosition(uint8_t byte, uint8_t alphabet[]) {
 
-    if (!byte || !alphabet) goto error;
+    if (!byte || !alphabet)
+        goto error;
 
     int i;
     for (i = 0; i < 64; i++) {
-        if (alphabet[i] == byte) return i;
+        if (alphabet[i] == byte)
+            return i;
     }
 
 error:
@@ -87,12 +89,12 @@ error:
  */
 
 static bool ov_base64_encode_with_alphabet(const uint8_t *source,
-                                           size_t source_length,
-                                           uint8_t **dest,
+                                           size_t source_length, uint8_t **dest,
                                            size_t *dest_length,
                                            uint8_t alphabet[]) {
 
-    if (!source || source_length < 1 || !dest || !dest_length) return false;
+    if (!source || source_length < 1 || !dest || !dest_length)
+        return false;
 
     uint8_t *result = NULL;
 
@@ -106,12 +108,14 @@ static bool ov_base64_encode_with_alphabet(const uint8_t *source,
 
     if (*dest) {
 
-        if (*dest_length < length) return false;
+        if (*dest_length < length)
+            return false;
 
     } else {
 
         *dest = calloc(length + 1, sizeof(uint8_t));
-        if (!*dest) return false;
+        if (!*dest)
+            return false;
     }
 
     result = *dest;
@@ -134,27 +138,27 @@ static bool ov_base64_encode_with_alphabet(const uint8_t *source,
 
     switch (fillbits) {
 
-        case 0:
-            result[k] = alphabet[(0x3F & (source[i] >> 2))];
-            result[k + 1] =
-                alphabet[(0x3F & (source[i] << 4 | source[i + 1] >> 4))];
-            result[k + 2] =
-                alphabet[(0x3F & (source[i + 1] << 2 | source[i + 2] >> 6))];
-            result[k + 3] = alphabet[(0x3F & (source[i + 2]))];
-            break;
-        case 1:
-            result[k] = alphabet[(0x3F & (source[i] >> 2))];
-            result[k + 1] =
-                alphabet[(0x3F & (source[i] << 4 | source[i + 1] >> 4))];
-            result[k + 2] = alphabet[(0x3C & (source[i + 1] << 2))];
-            result[k + 3] = padding;
-            break;
-        case 2:
-            result[k] = alphabet[(0x3F & (source[i] >> 2))];
-            result[k + 1] = alphabet[(0x3F & (source[i] << 4))];
-            result[k + 2] = padding;
-            result[k + 3] = padding;
-            break;
+    case 0:
+        result[k] = alphabet[(0x3F & (source[i] >> 2))];
+        result[k + 1] =
+            alphabet[(0x3F & (source[i] << 4 | source[i + 1] >> 4))];
+        result[k + 2] =
+            alphabet[(0x3F & (source[i + 1] << 2 | source[i + 2] >> 6))];
+        result[k + 3] = alphabet[(0x3F & (source[i + 2]))];
+        break;
+    case 1:
+        result[k] = alphabet[(0x3F & (source[i] >> 2))];
+        result[k + 1] =
+            alphabet[(0x3F & (source[i] << 4 | source[i + 1] >> 4))];
+        result[k + 2] = alphabet[(0x3C & (source[i + 1] << 2))];
+        result[k + 3] = padding;
+        break;
+    case 2:
+        result[k] = alphabet[(0x3F & (source[i] >> 2))];
+        result[k + 1] = alphabet[(0x3F & (source[i] << 4))];
+        result[k + 2] = padding;
+        result[k + 3] = padding;
+        break;
     }
 
     return true;
@@ -162,24 +166,20 @@ static bool ov_base64_encode_with_alphabet(const uint8_t *source,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_base64_encode(const uint8_t *buffer,
-                      size_t length,
-                      uint8_t **result,
+bool ov_base64_encode(const uint8_t *buffer, size_t length, uint8_t **result,
                       size_t *result_length) {
 
-    return ov_base64_encode_with_alphabet(
-        buffer, length, result, result_length, base64Alphabet);
+    return ov_base64_encode_with_alphabet(buffer, length, result, result_length,
+                                          base64Alphabet);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_base64_url_encode(const uint8_t *buffer,
-                          size_t length,
-                          uint8_t **result,
-                          size_t *result_length) {
+bool ov_base64_url_encode(const uint8_t *buffer, size_t length,
+                          uint8_t **result, size_t *result_length) {
 
-    return ov_base64_encode_with_alphabet(
-        buffer, length, result, result_length, base64urlAlphabet);
+    return ov_base64_encode_with_alphabet(buffer, length, result, result_length,
+                                          base64urlAlphabet);
 }
 
 /*
@@ -192,14 +192,15 @@ bool ov_base64_url_encode(const uint8_t *buffer,
  */
 
 static bool ov_base64_decode_with_alphabet(const uint8_t *source,
-                                           size_t source_length,
-                                           uint8_t **dest,
+                                           size_t source_length, uint8_t **dest,
                                            size_t *dest_length,
                                            uint8_t alphabet[]) {
 
-    if (!source || source_length < 1 || !dest || !dest_length) return false;
+    if (!source || source_length < 1 || !dest || !dest_length)
+        return false;
 
-    if (source_length % 4) return false;
+    if (source_length % 4)
+        return false;
 
     bool created = false;
     uint8_t *result = NULL;
@@ -207,19 +208,23 @@ static bool ov_base64_decode_with_alphabet(const uint8_t *source,
     size_t length = source_length / 4 * 3;
     int fillbits = 0;
 
-    if (source[source_length - 1] == padding) fillbits++;
-    if (source[source_length - 2] == padding) fillbits++;
+    if (source[source_length - 1] == padding)
+        fillbits++;
+    if (source[source_length - 2] == padding)
+        fillbits++;
 
     length = length - fillbits;
 
     if (*dest) {
 
-        if (*dest_length < length) return false;
+        if (*dest_length < length)
+            return false;
 
     } else {
 
         *dest = calloc(length + 1, sizeof(uint8_t));
-        if (!*dest) return false;
+        if (!*dest)
+            return false;
         created = true;
     }
 
@@ -237,16 +242,20 @@ static bool ov_base64_decode_with_alphabet(const uint8_t *source,
     while (k + 4 < source_length) {
 
         pos0 = ov_base64_alphabetPosition(source[k], alphabet);
-        if (pos0 < 0) goto error;
+        if (pos0 < 0)
+            goto error;
 
         pos1 = ov_base64_alphabetPosition(source[k + 1], alphabet);
-        if (pos1 < 0) goto error;
+        if (pos1 < 0)
+            goto error;
 
         pos2 = ov_base64_alphabetPosition(source[k + 2], alphabet);
-        if (pos2 < 0) goto error;
+        if (pos2 < 0)
+            goto error;
 
         pos3 = ov_base64_alphabetPosition(source[k + 3], alphabet);
-        if (pos3 < 0) goto error;
+        if (pos3 < 0)
+            goto error;
 
         // xxAA AAAA xxAA BBBB xxBB BBCC xxCC CCCC
 
@@ -258,49 +267,58 @@ static bool ov_base64_decode_with_alphabet(const uint8_t *source,
     }
 
     switch (fillbits) {
-        case 0:
-            pos0 = ov_base64_alphabetPosition(source[k], alphabet);
-            if (pos0 < 0) goto error;
+    case 0:
+        pos0 = ov_base64_alphabetPosition(source[k], alphabet);
+        if (pos0 < 0)
+            goto error;
 
-            pos1 = ov_base64_alphabetPosition(source[k + 1], alphabet);
-            if (pos1 < 0) goto error;
+        pos1 = ov_base64_alphabetPosition(source[k + 1], alphabet);
+        if (pos1 < 0)
+            goto error;
 
-            pos2 = ov_base64_alphabetPosition(source[k + 2], alphabet);
-            if (pos2 < 0) goto error;
+        pos2 = ov_base64_alphabetPosition(source[k + 2], alphabet);
+        if (pos2 < 0)
+            goto error;
 
-            pos3 = ov_base64_alphabetPosition(source[k + 3], alphabet);
-            if (pos3 < 0) goto error;
+        pos3 = ov_base64_alphabetPosition(source[k + 3], alphabet);
+        if (pos3 < 0)
+            goto error;
 
-            result[i] = pos0 << 2 | pos1 >> 4;
-            result[i + 1] = pos1 << 4 | pos2 >> 2;
-            result[i + 2] = pos2 << 6 | pos3;
-            break;
+        result[i] = pos0 << 2 | pos1 >> 4;
+        result[i + 1] = pos1 << 4 | pos2 >> 2;
+        result[i + 2] = pos2 << 6 | pos3;
+        break;
 
-        case 1:
-            pos0 = ov_base64_alphabetPosition(source[k], alphabet);
-            if (pos0 < 0) goto error;
+    case 1:
+        pos0 = ov_base64_alphabetPosition(source[k], alphabet);
+        if (pos0 < 0)
+            goto error;
 
-            pos1 = ov_base64_alphabetPosition(source[k + 1], alphabet);
-            if (pos1 < 0) goto error;
+        pos1 = ov_base64_alphabetPosition(source[k + 1], alphabet);
+        if (pos1 < 0)
+            goto error;
 
-            pos2 = ov_base64_alphabetPosition(source[k + 2], alphabet);
-            if (pos2 < 0) goto error;
+        pos2 = ov_base64_alphabetPosition(source[k + 2], alphabet);
+        if (pos2 < 0)
+            goto error;
 
-            pos3 = 0;
-            result[i] = pos0 << 2 | pos1 >> 4;
-            result[i + 1] = pos1 << 4 | pos2 >> 2;
-            break;
-        case 2:
-            pos0 = ov_base64_alphabetPosition(source[k], alphabet);
-            if (pos0 < 0) goto error;
+        pos3 = 0;
+        result[i] = pos0 << 2 | pos1 >> 4;
+        result[i + 1] = pos1 << 4 | pos2 >> 2;
+        break;
+    case 2:
+        pos0 = ov_base64_alphabetPosition(source[k], alphabet);
+        if (pos0 < 0)
+            goto error;
 
-            pos1 = ov_base64_alphabetPosition(source[k + 1], alphabet);
-            if (pos1 < 0) goto error;
+        pos1 = ov_base64_alphabetPosition(source[k + 1], alphabet);
+        if (pos1 < 0)
+            goto error;
 
-            pos2 = 0;
-            pos3 = 0;
-            result[i] = pos0 << 2 | pos1 >> 4;
-            break;
+        pos2 = 0;
+        pos3 = 0;
+        result[i] = pos0 << 2 | pos1 >> 4;
+        break;
     }
 
     return true;
@@ -318,22 +336,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_base64_decode(const uint8_t *buffer,
-                      size_t length,
-                      uint8_t **result,
+bool ov_base64_decode(const uint8_t *buffer, size_t length, uint8_t **result,
                       size_t *result_length) {
 
-    return ov_base64_decode_with_alphabet(
-        buffer, length, result, result_length, base64Alphabet);
+    return ov_base64_decode_with_alphabet(buffer, length, result, result_length,
+                                          base64Alphabet);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_base64_url_decode(const uint8_t *buffer,
-                          size_t length,
-                          uint8_t **result,
-                          size_t *result_length) {
+bool ov_base64_url_decode(const uint8_t *buffer, size_t length,
+                          uint8_t **result, size_t *result_length) {
 
-    return ov_base64_decode_with_alphabet(
-        buffer, length, result, result_length, base64urlAlphabet);
+    return ov_base64_decode_with_alphabet(buffer, length, result, result_length,
+                                          base64urlAlphabet);
 }

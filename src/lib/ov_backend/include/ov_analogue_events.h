@@ -74,8 +74,8 @@ typedef struct {
 /**
  * On error, "type" is set to "INVALID"
  */
-ov_analogue_stop_event ov_analogue_stop_event_from_json(
-    ov_json_value const *jval);
+ov_analogue_stop_event
+ov_analogue_stop_event_from_json(ov_json_value const *jval);
 
 /*----------------------------------------------------------------------------*/
 
@@ -85,8 +85,8 @@ typedef struct {
 
 } ov_analogue_list_channel_event;
 
-ov_analogue_list_channel_event ov_analogue_list_channel_event_from_json(
-    ov_json_value const *jval);
+ov_analogue_list_channel_event
+ov_analogue_list_channel_event_from_json(ov_json_value const *jval);
 
 /*----------------------------------------------------------------------------*/
 

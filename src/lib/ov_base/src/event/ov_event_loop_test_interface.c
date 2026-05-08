@@ -88,9 +88,11 @@ static void *run_the_loop(void *arg) {
      */
 
     ov_event_loop *loop = ov_event_loop_cast(arg);
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    if (!loop->run(loop, OV_RUN_MAX)) goto error;
+    if (!loop->run(loop, OV_RUN_MAX))
+        goto error;
 
     // DONE exit anyway
 error:
@@ -109,7 +111,8 @@ static void *run_the_loop_with_timeout(void *arg) {
         goto error;
     }
 
-    if (!loop->run(loop, container->timemax_usec)) goto error;
+    if (!loop->run(loop, container->timemax_usec))
+        goto error;
 
     // DONE exit anyway
 error:
@@ -153,7 +156,8 @@ static bool dummy_callback(int socket, uint8_t events, void *data) {
 
 static bool counting_called_callback(int socket, uint8_t events, void *data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
 
     errno = 0;
 
@@ -173,11 +177,8 @@ static bool counting_called_callback(int socket, uint8_t events, void *data) {
 
     *(int *)data = i + 1;
 
-    fprintf(stdout,
-            "read %i bytes at socket %i - counter is at %i\n",
-            r,
-            socket,
-            i + 1);
+    fprintf(stdout, "read %i bytes at socket %i - counter is at %i\n", r,
+            socket, i + 1);
 
     if ((socket == 0) || (events == 0)) { /* whatever */
     };
@@ -192,7 +193,8 @@ static bool counting_timer_cb(uint32_t id, void *data) {
      *      Increase int data counter
      */
 
-    if (!data) return false;
+    if (!data)
+        return false;
 
     if (id == 0) { /* unused */
     };
@@ -211,7 +213,8 @@ static bool counting_timer_cb(uint32_t id, void *data) {
 
 static bool counting_timestamped_cb(uint32_t id, void *data) {
 
-    if (!data || (id == 0)) return false;
+    if (!data || (id == 0))
+        return false;
 
     struct container2 *container = data;
 
@@ -229,18 +232,18 @@ static bool counting_timestamped_cb(uint32_t id, void *data) {
 
 static bool counting_timestamped_reset_cb(uint32_t id, void *data) {
 
-    if (!data || (id == 0)) return false;
+    if (!data || (id == 0))
+        return false;
 
     struct container2 *container = data;
 
-    if (!container->loop || !container->loop->timer.set) return false;
+    if (!container->loop || !container->loop->timer.set)
+        return false;
 
     container->counter++;
     container->timestamp = ov_time_get_current_time_usecs();
 
-    container->loop->timer.set(container->loop,
-                               container->timeout,
-                               container,
+    container->loop->timer.set(container->loop, container->timeout, container,
                                counting_timestamped_reset_cb);
 
     return true;
@@ -298,8 +301,8 @@ int test_impl_event_loop_free() {
     testrun(0 == getsockopt(client, SOL_SOCKET, SO_ERROR, &opt, &len));
     testrun(0 == opt);
 
-    testrun(loop->callback.set(
-        loop, socket, OV_EVENT_IO_IN, NULL, dummy_socket_callback));
+    testrun(loop->callback.set(loop, socket, OV_EVENT_IO_IN, NULL,
+                               dummy_socket_callback));
 
     uint32_t timer_id =
         loop->timer.set(loop, 1000000, NULL, dummy_timer_callback);
@@ -339,7 +342,8 @@ int test_impl_event_loop_is_running() {
     for (i = 0; i < 1000; i++) {
 
         usleep(wait);
-        if (loop->is_running(loop)) break;
+        if (loop->is_running(loop))
+            break;
     }
 
     testrun_log("Run time setup < %zu nano seconds", (i + 1) * wait);
@@ -385,8 +389,8 @@ int test_impl_event_loop_stop() {
     int client = ov_socket_create(socket_config, true, NULL);
     testrun(client > 0);
 
-    testrun(loop->callback.set(
-        loop, socket, OV_EVENT_IO_IN, NULL, dummy_socket_callback));
+    testrun(loop->callback.set(loop, socket, OV_EVENT_IO_IN, NULL,
+                               dummy_socket_callback));
 
     uint32_t timer_id =
         loop->timer.set(loop, 1000000, NULL, dummy_timer_callback);
@@ -403,7 +407,8 @@ int test_impl_event_loop_stop() {
     for (i = 0; i < 1000; i++) {
 
         usleep(wait);
-        if (loop->is_running(loop)) break;
+        if (loop->is_running(loop))
+            break;
     }
 
     testrun(loop->is_running(loop) == true);
@@ -451,8 +456,8 @@ int test_impl_event_loop_run() {
     container.loop = loop;
     container.timemax_usec = 1 * 1000 * 1000;
 
-    testrun(0 == pthread_create(
-                     &thread, NULL, run_the_loop_with_timeout, &container));
+    testrun(0 == pthread_create(&thread, NULL, run_the_loop_with_timeout,
+                                &container));
 
     int wait = 10;
     size_t i = 0;
@@ -461,7 +466,8 @@ int test_impl_event_loop_run() {
     for (i = 0; i < 1000; i++) {
 
         usleep(wait);
-        if (loop->is_running(loop)) break;
+        if (loop->is_running(loop))
+            break;
     }
 
     testrun(loop->is_running(loop) == true);
@@ -485,8 +491,8 @@ int test_impl_event_loop_run() {
 
     // run max
     container.timemax_usec = OV_RUN_MAX;
-    testrun(0 == pthread_create(
-                     &thread, NULL, run_the_loop_with_timeout, &container));
+    testrun(0 == pthread_create(&thread, NULL, run_the_loop_with_timeout,
+                                &container));
 
     usleep(10000);
     testrun(loop->is_running(loop) == true);
@@ -501,8 +507,8 @@ int test_impl_event_loop_run() {
     testrun(socket > 0);
 
     // open a socket callback
-    testrun(loop->callback.set(
-        loop, socket, OV_EVENT_IO_IN, &scount, counting_called_callback));
+    testrun(loop->callback.set(loop, socket, OV_EVENT_IO_IN, &scount,
+                               counting_called_callback));
 
     // stop running
     loop->stop(loop);
@@ -547,7 +553,8 @@ int test_impl_event_loop_callback_set() {
     for (i = 0; i < 10; i++) {
 
         sockets[i] = ov_socket_create(socket_config, false, NULL);
-        if (first == -1) first = sockets[i];
+        if (first == -1)
+            first = sockets[i];
 
         testrun(sockets[i] >= 0);
         testrun(0 == getsockopt(sockets[i], SOL_SOCKET, SO_ERROR, &opt, &len));
@@ -566,8 +573,8 @@ int test_impl_event_loop_callback_set() {
 
     int counter = 0;
 
-    testrun(loop->callback.set(
-        loop, first, OV_EVENT_IO_IN, &counter, counting_called_callback));
+    testrun(loop->callback.set(loop, first, OV_EVENT_IO_IN, &counter,
+                               counting_called_callback));
 
     /*
      *      Performing a FULL functional callback test with set.
@@ -597,8 +604,8 @@ int test_impl_event_loop_callback_set() {
         .timemax_usec = 3000 * 1000,
     };
 
-    testrun(0 == pthread_create(
-                     &thread, NULL, run_the_loop_with_timeout, &container));
+    testrun(0 == pthread_create(&thread, NULL, run_the_loop_with_timeout,
+                                &container));
 
     while (!loop->is_running(loop)) {
         sleep(1);
@@ -630,28 +637,28 @@ int test_impl_event_loop_callback_set() {
     // <--- end of FULL functional verification test
 
     // override callback
-    testrun(loop->callback.set(
-        loop, last, OV_EVENT_IO_IN, &counter, dummy_callback));
+    testrun(loop->callback.set(loop, last, OV_EVENT_IO_IN, &counter,
+                               dummy_callback));
 
-    testrun(loop->callback.set(
-        loop, last, OV_EVENT_IO_IN, &counter, counting_called_callback));
+    testrun(loop->callback.set(loop, last, OV_EVENT_IO_IN, &counter,
+                               counting_called_callback));
 
-    testrun(loop->callback.set(
-        loop, last, OV_EVENT_IO_IN, &counter, dummy_callback));
+    testrun(loop->callback.set(loop, last, OV_EVENT_IO_IN, &counter,
+                               dummy_callback));
 
-    testrun(loop->callback.set(
-        loop, last, OV_EVENT_IO_IN, &counter, dummy_callback));
+    testrun(loop->callback.set(loop, last, OV_EVENT_IO_IN, &counter,
+                               dummy_callback));
 
     // try to add without event
     testrun(!loop->callback.set(loop, last, 0, &counter, dummy_callback));
 
-    testrun(loop->callback.set(
-        loop, last, OV_EVENT_IO_IN, &counter, dummy_callback));
+    testrun(loop->callback.set(loop, last, OV_EVENT_IO_IN, &counter,
+                               dummy_callback));
 
     // try to add with closed socket
     close(last);
-    testrun(!loop->callback.set(
-        loop, last, OV_EVENT_IO_IN, &counter, dummy_callback));
+    testrun(!loop->callback.set(loop, last, OV_EVENT_IO_IN, &counter,
+                                dummy_callback));
 
     testrun(NULL == ov_event_loop_free(loop));
 
@@ -690,8 +697,8 @@ int test_impl_event_loop_callback_unset() {
     // set a callback
     int counter = 0;
 
-    testrun(loop->callback.set(
-        loop, socket, OV_EVENT_IO_IN, &counter, counting_called_callback));
+    testrun(loop->callback.set(loop, socket, OV_EVENT_IO_IN, &counter,
+                               counting_called_callback));
 
     // check behaviour
     testrun(!loop->callback.unset(NULL, 0, NULL));
@@ -714,11 +721,11 @@ int test_impl_event_loop_callback_unset() {
     };
 
     // set callback
-    testrun(loop->callback.set(
-        loop, socket, OV_EVENT_IO_IN, &counter, counting_called_callback));
+    testrun(loop->callback.set(loop, socket, OV_EVENT_IO_IN, &counter,
+                               counting_called_callback));
 
-    testrun(0 == pthread_create(
-                     &thread, NULL, run_the_loop_with_timeout, &container));
+    testrun(0 == pthread_create(&thread, NULL, run_the_loop_with_timeout,
+                                &container));
 
     usleep(TEST_DEFAULT_WAIT_USEC);
     while (!loop->is_running(loop)) {
@@ -750,8 +757,8 @@ int test_impl_event_loop_callback_unset() {
 
     testrun(loop->callback.unset(loop, socket, NULL));
 
-    testrun(0 == pthread_create(
-                     &thread, NULL, run_the_loop_with_timeout, &container));
+    testrun(0 == pthread_create(&thread, NULL, run_the_loop_with_timeout,
+                                &container));
 
     // another run
     testrun(0 < send(client, "test3", 5, 0));
@@ -769,8 +776,8 @@ int test_impl_event_loop_callback_unset() {
     usleep(TEST_DEFAULT_WAIT_USEC);
 
     // reset callback
-    testrun(loop->callback.set(
-        loop, socket, OV_EVENT_IO_IN, &counter, counting_called_callback));
+    testrun(loop->callback.set(loop, socket, OV_EVENT_IO_IN, &counter,
+                               counting_called_callback));
 
     // another run
     testrun(0 < send(client, "test5", 5, 0));
@@ -838,21 +845,18 @@ int test_impl_event_loop_timer_set() {
         container.timeout = 1000 * i; // i ms
         container.counter = 0;
         container.timestamp = 0;
-        id = loop->timer.set(
-            loop, container.timeout, &container, counting_timestamped_cb);
+        id = loop->timer.set(loop, container.timeout, &container,
+                             counting_timestamped_cb);
         start = ov_time_get_current_time_usecs();
         testrun(OV_TIMER_INVALID != id);
         while (0 == container.counter) {
             loop->run(loop, idle_usec);
         }
         testrun(1 == container.counter);
-        testrun_log("Timeout %10" PRIu64
-                    " usec "
-                    "called after %10" PRIu64
-                    " usec "
+        testrun_log("Timeout %10" PRIu64 " usec "
+                    "called after %10" PRIu64 " usec "
                     "offset %10" PRIi64 " usec ",
-                    container.timeout,
-                    container.timestamp - start,
+                    container.timeout, container.timestamp - start,
                     container.timestamp - start - container.timeout);
         testrun(loop->timer.unset(loop, id, NULL));
     }
@@ -862,21 +866,18 @@ int test_impl_event_loop_timer_set() {
         container.timeout = 1000 * i; // i ms
         container.counter = 0;
         container.timestamp = 0;
-        id = loop->timer.set(
-            loop, container.timeout, &container, counting_timestamped_cb);
+        id = loop->timer.set(loop, container.timeout, &container,
+                             counting_timestamped_cb);
         testrun(OV_TIMER_INVALID != id);
         start = ov_time_get_current_time_usecs();
         while (0 == container.counter) {
             loop->run(loop, idle_usec);
         }
         testrun(1 == container.counter);
-        testrun_log("Timeout %10" PRIu64
-                    " usec "
-                    "called after %10" PRIu64
-                    " usec "
+        testrun_log("Timeout %10" PRIu64 " usec "
+                    "called after %10" PRIu64 " usec "
                     "offset %10" PRIi64 " usec ",
-                    container.timeout,
-                    container.timestamp - start,
+                    container.timeout, container.timestamp - start,
                     container.timestamp - start - container.timeout);
         testrun(loop->timer.unset(loop, id, NULL));
     }
@@ -897,16 +898,15 @@ int test_impl_event_loop_timer_set() {
         data[i].timeout = 1000 * 100 * i; // i ms
         data[i].counter = 0;
         data[i].timestamp = 0;
-        timer_id[i] = loop->timer.set(
-            loop, data[i].timeout, &data[i], counting_timestamped_cb);
+        timer_id[i] = loop->timer.set(loop, data[i].timeout, &data[i],
+                                      counting_timestamped_cb);
 
         testrun(OV_TIMER_INVALID != timer_id);
     }
 
-    testrun_log(
-        "Check %zd parallel timers with different "
-        "timespans",
-        max_timers);
+    testrun_log("Check %zd parallel timers with different "
+                "timespans",
+                max_timers);
 
     start = ov_time_get_current_time_usecs();
     while (0 == data[max_timers - 1].counter) {
@@ -915,13 +915,10 @@ int test_impl_event_loop_timer_set() {
 
     for (size_t i = 1; i < max_timers; i++) {
 
-        testrun_log("Timeout %10" PRIu64
-                    " usec "
-                    "called after %10" PRIu64
-                    " usec "
+        testrun_log("Timeout %10" PRIu64 " usec "
+                    "called after %10" PRIu64 " usec "
                     "offset %10" PRIi64 " usec ",
-                    data[i].timeout,
-                    data[i].timestamp - start,
+                    data[i].timeout, data[i].timestamp - start,
                     data[i].timestamp - start - data[i].timeout);
 
         testrun(loop->timer.unset(loop, timer_id[i], NULL));
@@ -946,8 +943,8 @@ int test_impl_event_loop_timer_set() {
         data[i].counter = 0;
         data[i].timestamp = 0;
         data[i].loop = loop;
-        timer_id[i] = loop->timer.set(
-            loop, data[i].timeout, &data[i], counting_timestamped_reset_cb);
+        timer_id[i] = loop->timer.set(loop, data[i].timeout, &data[i],
+                                      counting_timestamped_reset_cb);
         testrun(OV_TIMER_INVALID != timer_id[i]);
     }
 
@@ -958,8 +955,10 @@ int test_impl_event_loop_timer_set() {
 
     for (size_t i = 1; i < 10; i++) {
 
-        if (i % 2 == 0) a++;
-        if (i % 3 == 0) b++;
+        if (i % 2 == 0)
+            a++;
+        if (i % 3 == 0)
+            b++;
 
         testrun(loop->run(loop, idle_usec));
     }

@@ -98,11 +98,11 @@ ov_cache *ov_cache_extend(ov_cache *cache, size_t capacity) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_cache *ov_cache_free(ov_cache *restrict self,
-                        uint64_t timeout_usec,
+ov_cache *ov_cache_free(ov_cache *restrict self, uint64_t timeout_usec,
                         void *(*item_free)(void *)) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     uint64_t start = ov_time_get_current_time_usecs();
     uint64_t current = 0;
@@ -111,9 +111,11 @@ ov_cache *ov_cache_free(ov_cache *restrict self,
 
         current = ov_time_get_current_time_usecs();
 
-        if (0 == timeout_usec) continue;
+        if (0 == timeout_usec)
+            continue;
 
-        if (current > timeout_usec + start) goto error;
+        if (current > timeout_usec + start)
+            goto error;
     }
 
     if ((0 != self->elements) && (item_free != 0)) {
@@ -141,7 +143,8 @@ error:
 
 void *ov_cache_get(ov_cache *restrict self) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     if (atomic_flag_test_and_set(&self->in_use)) {
 
@@ -149,7 +152,8 @@ void *ov_cache_get(ov_cache *restrict self) {
         goto error;
     }
 
-    if (0 == self->elements) goto error;
+    if (0 == self->elements)
+        goto error;
 
     void *object = 0;
 
@@ -184,7 +188,8 @@ static bool element_type_correct_nocheck(ov_cache *restrict self,
 
 void *ov_cache_put(ov_cache *restrict self, void *object) {
 
-    if (0 == self) goto error;
+    if (0 == self)
+        goto error;
 
     if (!element_type_correct_nocheck(self, object)) {
 
@@ -197,7 +202,8 @@ void *ov_cache_put(ov_cache *restrict self, void *object) {
         goto error;
     }
 
-    if (0 == self->elements) goto error;
+    if (0 == self->elements)
+        goto error;
 
     if (self->capacity == self->next_free) {
         goto set_unused_and_return;
@@ -250,8 +256,7 @@ ov_cache *ov_cache_extend(ov_cache *cache, size_t capacity) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_cache *ov_cache_free(ov_cache *restrict self,
-                        uint64_t timeout_usec,
+ov_cache *ov_cache_free(ov_cache *restrict self, uint64_t timeout_usec,
                         void *(*item_free)(void *)) {
 
     UNUSED(self);

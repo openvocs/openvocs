@@ -147,11 +147,9 @@ static ov_alsa_playback_play_result play_pcm(ov_alsa *alsa, uint8_t *pcm) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_alsa_playback_play_result feed_alsa_buffer_next_period(
-    ov_chunker *chunker,
-    ov_alsa *alsa,
-    uint8_t *buffer,
-    size_t octets_per_period) {
+static ov_alsa_playback_play_result
+feed_alsa_buffer_next_period(ov_chunker *chunker, ov_alsa *alsa,
+                             uint8_t *buffer, size_t octets_per_period) {
 
     if (ov_ptr_valid(buffer, "Cannot play period - invalid buffer")) {
 
@@ -172,12 +170,12 @@ static ov_alsa_playback_play_result feed_alsa_buffer_next_period(
 
 /*----------------------------------------------------------------------------*/
 
-static ov_alsa_playback_play_result feed_alsa_buffer_up_to(
-    ov_alsa_playback *self, ov_chunker *pcm, size_t num_max_periods) {
+static ov_alsa_playback_play_result
+feed_alsa_buffer_up_to(ov_alsa_playback *self, ov_chunker *pcm,
+                       size_t num_max_periods) {
 
-    if (ov_ptr_valid(self,
-                     "Cannot feed ALSA buffer new audio - invalid "
-                     "ov_alsa_playback object")) {
+    if (ov_ptr_valid(self, "Cannot feed ALSA buffer new audio - invalid "
+                           "ov_alsa_playback object")) {
 
         OV_ASSERT(0 != self->alsa_period_buffer);
 
@@ -188,11 +186,9 @@ static ov_alsa_playback_play_result feed_alsa_buffer_up_to(
              (ALSA_REPLAY_OK == result) && (periods_fed <= num_max_periods);
              periods_fed++) {
 
-            result =
-                feed_alsa_buffer_next_period(pcm,
-                                             self->alsa,
-                                             self->alsa_period_buffer->start,
-                                             self->alsa_octets_per_period);
+            result = feed_alsa_buffer_next_period(
+                pcm, self->alsa, self->alsa_period_buffer->start,
+                self->alsa_octets_per_period);
         };
 
         --periods_fed; // Loop is iterated over one time too much
@@ -213,11 +209,10 @@ static ov_alsa_playback_play_result feed_alsa_buffer_up_to(
 
         } else {
 
-            ov_counter_increase(
-                self->counter.periods_played, (size_t)periods_fed);
+            ov_counter_increase(self->counter.periods_played,
+                                (size_t)periods_fed);
 
-            ov_log_debug("ALSA: Wrote %zu periods == %zu samples",
-                         periods_fed,
+            ov_log_debug("ALSA: Wrote %zu periods == %zu samples", periods_fed,
                          (size_t)(periods_fed * self->alsa_octets_per_period) /
                              OV_DEFAULT_OCTETS_PER_SAMPLE);
             return ALSA_REPLAY_OK;
@@ -231,11 +226,9 @@ static ov_alsa_playback_play_result feed_alsa_buffer_up_to(
 
 /*----------------------------------------------------------------------------*/
 
-static ov_alsa_playback_play_result replay_if_necessary(
-    ov_alsa_playback *self,
-    ov_alsa *alsa,
-    ov_chunker *pcm,
-    size_t bufsize_samples) {
+static ov_alsa_playback_play_result
+replay_if_necessary(ov_alsa_playback *self, ov_alsa *alsa, ov_chunker *pcm,
+                    size_t bufsize_samples) {
 
     ssize_t writeable_samples = ov_alsa_get_no_available_samples(alsa);
 
@@ -244,9 +237,8 @@ static ov_alsa_playback_play_result replay_if_necessary(
 
     if (writeable_samples > (ssize_t)bufsize_samples) {
 
-        ov_log_error(
-            "Serious ALSA problem: ALSA buffer smaller than number of "
-            "writeable octets");
+        ov_log_error("Serious ALSA problem: ALSA buffer smaller than number of "
+                     "writeable octets");
         writeable_samples = bufsize_samples;
     }
 
@@ -285,8 +277,7 @@ static ov_alsa_playback_play_result replay_if_necessary(
         ov_log_debug(
             "ALSA: Writing ... writeable %i samples, ALSA buffer size %zu "
             "samples",
-            (int)writeable_samples,
-            bufsize_samples);
+            (int)writeable_samples, bufsize_samples);
 
         self->buffer_after_interrupt = false;
 
@@ -307,13 +298,13 @@ static ov_alsa_playback_play_result replay_if_necessary(
 ov_alsa_playback_play_result ov_alsa_playback_play(ov_alsa_playback *self,
                                                    ov_chunker *pcm) {
 
-    if (ov_ptr_valid(
-            self, "ALSA: Cannot replay: Invalid ov_alsa_playback pointer") &&
-        ov_ptr_valid(
-            self->alsa, "ALSA: Cannot replay: Invalid ov_alsa pointer")) {
+    if (ov_ptr_valid(self,
+                     "ALSA: Cannot replay: Invalid ov_alsa_playback pointer") &&
+        ov_ptr_valid(self->alsa,
+                     "ALSA: Cannot replay: Invalid ov_alsa pointer")) {
 
-        return replay_if_necessary(
-            self, self->alsa, pcm, self->alsa_buffer_size_samples);
+        return replay_if_necessary(self, self->alsa, pcm,
+                                   self->alsa_buffer_size_samples);
 
     } else {
 
@@ -325,8 +316,8 @@ ov_alsa_playback_play_result ov_alsa_playback_play(ov_alsa_playback *self,
 
 bool ov_alsa_playback_play_comfort_noise(ov_alsa_playback *self) {
 
-    if (ov_ptr_valid(
-            self, "Cannot play comfort noise - invalid ALSA pointer") &&
+    if (ov_ptr_valid(self,
+                     "Cannot play comfort noise - invalid ALSA pointer") &&
         ov_ptr_valid(self->comfort_noise,
                      "Cannot play comfort noise - comfort noise not "
                      "initialized")) {
@@ -350,8 +341,8 @@ static ov_alsa_playback *create_alsa_playback(const ov_alsa_playback_config cfg,
     size_t samples_per_period = ov_convert_msecs_to_samples(
         OV_DEFAULT_FRAME_LENGTH_MS, OV_DEFAULT_SAMPLERATE);
 
-    self->alsa = ov_alsa_create(
-        cfg.alsa_device, OV_DEFAULT_SAMPLERATE, &samples_per_period, PLAYBACK);
+    self->alsa = ov_alsa_create(cfg.alsa_device, OV_DEFAULT_SAMPLERATE,
+                                &samples_per_period, PLAYBACK);
 
     self->alsa_samples_per_period = samples_per_period;
     self->alsa_octets_per_period = 2 * samples_per_period;
@@ -370,8 +361,8 @@ static ov_alsa_playback *create_alsa_playback(const ov_alsa_playback_config cfg,
     if (0 == self->alsa) {
 
         ov_log_error("Could not create alsa wrapper");
-        ov_result_set(
-            res, OV_ERROR_INTERNAL_SERVER, "Could not create alsa wrapper");
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
+                      "Could not create alsa wrapper");
         self = ov_alsa_playback_free(self);
 
     } else {
@@ -389,13 +380,10 @@ ov_alsa_playback *ov_alsa_playback_create(const ov_alsa_playback_config cfg,
 
     if ((0 != cfg.mixer_element) &&
         (!ov_alsa_set_volume(
-            cfg.alsa_device,
-            cfg.mixer_element,
-            PLAYBACK,
+            cfg.alsa_device, cfg.mixer_element, PLAYBACK,
             OV_OR_DEFAULT(cfg.volume, OV_ALSA_PLAYBACK_DEFAULT_VOLUME)))) {
 
-        ov_result_set(res,
-                      OV_ERROR_INTERNAL_SERVER,
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                       "Cannot set ALSA volume for playback");
         return 0;
 

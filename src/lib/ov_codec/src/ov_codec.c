@@ -81,23 +81,18 @@ static struct resampling *resampling_create(size_t max_num_out_samples,
     res->data = calloc(1, sizeof(int16_t) * max_num_samples);
     res->data_capacity_samples = max_num_samples;
 
-    ov_log_info(
-        "Enabling resampling from %zu (max %zu samples) to %zu (max "
-        "%zu samples)",
-        OV_DEFAULT_SAMPLERATE,
-        max_num_in_samples,
-        sample_rate_out_hz,
-        max_num_out_samples);
+    ov_log_info("Enabling resampling from %zu (max %zu samples) to %zu (max "
+                "%zu samples)",
+                OV_DEFAULT_SAMPLERATE, max_num_in_samples, sample_rate_out_hz,
+                max_num_out_samples);
 
-    res->resampler_decode = ov_pcm_16_resampler_create(max_num_out_samples,
-                                                       max_num_in_samples,
-                                                       sample_rate_out_hz,
-                                                       OV_DEFAULT_SAMPLERATE);
+    res->resampler_decode =
+        ov_pcm_16_resampler_create(max_num_out_samples, max_num_in_samples,
+                                   sample_rate_out_hz, OV_DEFAULT_SAMPLERATE);
 
-    res->resampler_encode = ov_pcm_16_resampler_create(max_num_in_samples,
-                                                       max_num_out_samples,
-                                                       OV_DEFAULT_SAMPLERATE,
-                                                       sample_rate_out_hz);
+    res->resampler_encode =
+        ov_pcm_16_resampler_create(max_num_in_samples, max_num_out_samples,
+                                   OV_DEFAULT_SAMPLERATE, sample_rate_out_hz);
 
     return res;
 }
@@ -139,8 +134,8 @@ typedef enum {
 
 } resample_dir;
 
-static ov_pcm_16_resampler *get_resampler_for(
-    struct resampling const *resampling, resample_dir direction) {
+static ov_pcm_16_resampler *
+get_resampler_for(struct resampling const *resampling, resample_dir direction) {
 
     if (0 == resampling) {
         return 0;
@@ -148,13 +143,13 @@ static ov_pcm_16_resampler *get_resampler_for(
 
     switch (direction) {
 
-        case RESAMPLE_DECODE:
+    case RESAMPLE_DECODE:
 
-            return resampling->resampler_decode;
+        return resampling->resampler_decode;
 
-        case RESAMPLE_ENCODE:
+    case RESAMPLE_ENCODE:
 
-            return resampling->resampler_encode;
+        return resampling->resampler_encode;
     };
 
     return 0;
@@ -162,12 +157,9 @@ static ov_pcm_16_resampler *get_resampler_for(
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t resample_if_necessary_nocheck(struct resampling *resampling,
-                                             resample_dir direction,
-                                             uint8_t const *input,
-                                             size_t length_bytes,
-                                             uint8_t **resampled,
-                                             size_t *resampled_length_bytes) {
+static ssize_t resample_if_necessary_nocheck(
+    struct resampling *resampling, resample_dir direction, uint8_t const *input,
+    size_t length_bytes, uint8_t **resampled, size_t *resampled_length_bytes) {
 
     ssize_t out_samples = 0;
 
@@ -191,8 +183,8 @@ static ssize_t resample_if_necessary_nocheck(struct resampling *resampling,
 
     size_t num_input_samples = length_bytes / sizeof(int16_t);
 
-    out_samples = ov_pcm_16_resample(
-        resampler, (int16_t *)input, num_input_samples, data, capacity_samples);
+    out_samples = ov_pcm_16_resample(resampler, (int16_t *)input,
+                                     num_input_samples, data, capacity_samples);
 
     if (0 > out_samples) {
         ov_log_error("Resampling failed");
@@ -208,11 +200,9 @@ static ssize_t resample_if_necessary_nocheck(struct resampling *resampling,
 
     if (capacity_samples < (size_t)out_samples) {
 
-        ov_log_error(
-            "Resampling: Output buffer too small - "
-            "is: %zu samples, should be %zu samples",
-            capacity_samples,
-            out_samples);
+        ov_log_error("Resampling: Output buffer too small - "
+                     "is: %zu samples, should be %zu samples",
+                     capacity_samples, out_samples);
         goto error;
     }
 
@@ -238,7 +228,8 @@ char const CODEC_NONE_STRING[] = "None";
 
 ov_codec *ov_codec_free(ov_codec *codec) {
 
-    if (0 == codec) return 0;
+    if (0 == codec)
+        return 0;
 
     OV_ASSERT(0 != codec->free);
 
@@ -263,11 +254,8 @@ char const *ov_codec_type_id(ov_codec const *codec) {
 
 /*----------------------------------------------------------------------------*/
 
-int32_t ov_codec_encode(ov_codec *codec,
-                        const uint8_t *input,
-                        size_t length,
-                        uint8_t *output,
-                        size_t max_out_length) {
+int32_t ov_codec_encode(ov_codec *codec, const uint8_t *input, size_t length,
+                        uint8_t *output, size_t max_out_length) {
 
     if (0 == codec) {
 
@@ -280,12 +268,9 @@ int32_t ov_codec_encode(ov_codec *codec,
     uint8_t *resampled_input = 0;
     size_t resampled_input_len = 0;
 
-    ssize_t out_samples = resample_if_necessary_nocheck(codec->resampling,
-                                                        RESAMPLE_ENCODE,
-                                                        input,
-                                                        length,
-                                                        &resampled_input,
-                                                        &resampled_input_len);
+    ssize_t out_samples = resample_if_necessary_nocheck(
+        codec->resampling, RESAMPLE_ENCODE, input, length, &resampled_input,
+        &resampled_input_len);
 
     if (0 > out_samples) {
         return -1;
@@ -303,11 +288,8 @@ int32_t ov_codec_encode(ov_codec *codec,
 
 /*----------------------------------------------------------------------------*/
 
-int32_t ov_codec_decode(ov_codec *codec,
-                        uint64_t seq_number,
-                        const uint8_t *input,
-                        size_t length,
-                        uint8_t *output,
+int32_t ov_codec_decode(ov_codec *codec, uint64_t seq_number,
+                        const uint8_t *input, size_t length, uint8_t *output,
                         size_t max_out_length) {
 
     int32_t result = -1;
@@ -339,12 +321,9 @@ int32_t ov_codec_decode(ov_codec *codec,
     uint8_t *resampled_input = 0;
     size_t resampled_input_len = 0;
 
-    ssize_t out_samples = resample_if_necessary_nocheck(codec->resampling,
-                                                        RESAMPLE_DECODE,
-                                                        output,
-                                                        length,
-                                                        &resampled_input,
-                                                        &resampled_input_len);
+    ssize_t out_samples = resample_if_necessary_nocheck(
+        codec->resampling, RESAMPLE_DECODE, output, length, &resampled_input,
+        &resampled_input_len);
 
     if (0 == out_samples) {
         goto finish;
@@ -373,10 +352,22 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_codec_get_parameters(const ov_codec *codec) {
-
+int8_t ov_codec_get_rtp_payload_type(ov_codec const *codec) {
     if (0 == codec) {
+        ov_log_error(
+            "Cannot get RTP payload type for undefined codec (null pointer)");
+        return 0;
+    } else if (0 == codec->rtp_payload_type) {
+        return -1;
+    } else {
+        return codec->rtp_payload_type(codec);
+    }
+}
 
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_codec_get_parameters(const ov_codec *codec) {
+    if (0 == codec) {
         ov_log_error("No codec given");
         return 0;
     }
@@ -389,15 +380,12 @@ ov_json_value *ov_codec_get_parameters(const ov_codec *codec) {
 /*----------------------------------------------------------------------------*/
 
 uint32_t ov_codec_get_samplerate_hertz(ov_codec const *codec) {
-
     if (0 == codec) {
-
         ov_log_error("No codec given");
         return 0;
     }
 
     if (0 == codec->get_samplerate_hertz) {
-
         ov_log_info("Codec does not provide samplerate - assuming default one");
         return OV_DEFAULT_SAMPLERATE;
     }
@@ -410,17 +398,19 @@ uint32_t ov_codec_get_samplerate_hertz(ov_codec const *codec) {
  ******************************************************************************/
 
 ov_json_value *ov_codec_to_json(const ov_codec *codec) {
-
     ov_json_value *json = 0;
 
-    if (0 == codec) goto error;
+    if (0 == codec)
+        goto error;
 
     json = codec->get_parameters(codec);
 
-    if (0 == json) goto error;
+    if (0 == json)
+        goto error;
 
     const char *type = codec->type_id(codec);
-    if (0 == type) goto error;
+    if (0 == type)
+        goto error;
 
     ov_json_object_set(json, OV_KEY_CODEC, ov_json_string(type));
 
@@ -428,7 +418,8 @@ ov_json_value *ov_codec_to_json(const ov_codec *codec) {
 
 error:
 
-    if (0 != json) json = json->free(json);
+    if (0 != json)
+        json = json->free(json);
 
     return 0;
 }
@@ -436,16 +427,18 @@ error:
 /*---------------------------------------------------------------------------*/
 
 uint32_t ov_codec_parameters_get_sample_rate_hertz(const ov_json_value *json) {
-
-    if (0 == json) goto error;
+    if (0 == json)
+        goto error;
 
     double sample_rate_hertz =
         ov_json_number_get(ov_json_get(json, "/" OV_KEY_SAMPLE_RATE_HERTZ));
 
-    if (1 > sample_rate_hertz) goto error;
+    if (1 > sample_rate_hertz)
+        goto error;
 
     double max = (double)INT64_MAX;
-    if (max < sample_rate_hertz) goto error;
+    if (max < sample_rate_hertz)
+        goto error;
 
     return (uint32_t)sample_rate_hertz;
 
@@ -458,10 +451,10 @@ error:
 
 bool ov_codec_parameters_set_sample_rate_hertz(ov_json_value *json,
                                                uint32_t sample_rate_hertz) {
-
     ov_json_value *old = 0;
 
-    if (0 == json) goto error;
+    if (0 == json)
+        goto error;
 
     /* If entry already contained, get rid of it ... */
 
@@ -472,8 +465,7 @@ bool ov_codec_parameters_set_sample_rate_hertz(ov_json_value *json,
         goto error;
     }
 
-    if (!ov_json_object_set(json,
-                            OV_KEY_SAMPLE_RATE_HERTZ,
+    if (!ov_json_object_set(json, OV_KEY_SAMPLE_RATE_HERTZ,
                             ov_json_number(sample_rate_hertz))) {
         goto error;
     }
@@ -504,7 +496,6 @@ error:
 /*---------------------------------------------------------------------------*/
 
 bool ov_codec_enable_resampling(ov_codec *codec) {
-
     if (0 == codec) {
         goto error;
     }

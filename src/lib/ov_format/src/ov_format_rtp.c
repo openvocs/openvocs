@@ -68,11 +68,13 @@ typedef struct {
 
 static rtp_data *as_rtp_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     rtp_data *rtp_data = data;
 
-    if (RTP_MAGIC_BYTES != rtp_data->magic_bytes) return 0;
+    if (RTP_MAGIC_BYTES != rtp_data->magic_bytes)
+        return 0;
 
     return rtp_data;
 }
@@ -88,8 +90,7 @@ typedef struct {
 } implicit_header;
 
 static bool get_rtp_header_unsafe(ov_format_rtp_header *out,
-                                  implicit_header *iheader,
-                                  uint8_t **rd_ptr,
+                                  implicit_header *iheader, uint8_t **rd_ptr,
                                   size_t *length) {
 
     OV_ASSERT(0 != out);
@@ -161,11 +162,10 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool get_contributing_sources_unsafe(
-    ov_format_rtp_contributing_sources *csrcs_out,
-    size_t num_csrcs,
-    uint8_t **rd_ptr,
-    size_t *length) {
+static bool
+get_contributing_sources_unsafe(ov_format_rtp_contributing_sources *csrcs_out,
+                                size_t num_csrcs, uint8_t **rd_ptr,
+                                size_t *length) {
 
     OV_ASSERT(0 != csrcs_out);
     OV_ASSERT(0 != rd_ptr);
@@ -203,8 +203,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool get_extension_header_unsafe(ov_format_rtp_extension_header *hdr_out,
-                                        uint8_t **rd_ptr,
-                                        size_t *length) {
+                                        uint8_t **rd_ptr, size_t *length) {
 
     OV_ASSERT(0 != hdr_out);
     OV_ASSERT(0 != rd_ptr);
@@ -289,8 +288,7 @@ payload_too_short:
                                    Interface
  ****************************************************************************/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -314,29 +312,29 @@ static ov_buffer impl_next_chunk(ov_format *f,
 
     implicit_header iheader = {0};
 
-    if (!get_rtp_header_unsafe(
-            &rdata->header, &iheader, &buf.start, &buf.length)) {
+    if (!get_rtp_header_unsafe(&rdata->header, &iheader, &buf.start,
+                               &buf.length)) {
 
         goto error;
     }
 
     if (2 != rdata->header.version) {
 
-        ov_log_error(
-            "Only supporting RTP v2, but %u found", rdata->header.version);
+        ov_log_error("Only supporting RTP v2, but %u found",
+                     rdata->header.version);
         goto error;
     }
 
-    if (!get_contributing_sources_unsafe(
-            &rdata->csrcs, iheader.num_csrcs, &buf.start, &buf.length)) {
+    if (!get_contributing_sources_unsafe(&rdata->csrcs, iheader.num_csrcs,
+                                         &buf.start, &buf.length)) {
 
         ov_log_error("Could not read contributing sources");
         goto error;
     }
 
     if ((iheader.ext_header_set) &&
-        (!get_extension_header_unsafe(
-            &rdata->ext_header, &buf.start, &buf.length))) {
+        (!get_extension_header_unsafe(&rdata->ext_header, &buf.start,
+                                      &buf.length))) {
 
         ov_log_error("Could not get extension header from RTP frame");
         goto error;
@@ -359,8 +357,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     UNUSED(f);
@@ -418,8 +415,8 @@ bool ov_format_rtp_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_RTP_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_RTP_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -484,9 +481,8 @@ bool ov_format_rtp_get_extension_header(ov_format const *f,
 
     if (0 == ext) {
 
-        ov_log_error(
-            "Require receiving extension header struct, got 0 "
-            "pointer");
+        ov_log_error("Require receiving extension header struct, got 0 "
+                     "pointer");
         goto error;
     }
 

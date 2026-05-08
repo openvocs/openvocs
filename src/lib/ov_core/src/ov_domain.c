@@ -50,48 +50,39 @@ static const ov_domain init = {.magic_byte = OV_DOMAIN_MAGIC_BYTE};
 
 static bool load_certificate(SSL_CTX *ctx, const ov_domain_config *config) {
 
-    if (!ctx || !config) goto error;
+    if (!ctx || !config)
+        goto error;
 
     if (SSL_CTX_use_certificate_chain_file(ctx, config->certificate.cert) !=
         1) {
-        ov_log_error(
-            "%s failed to load certificate "
-            "from %s | error %d | %s",
-            config->name,
-            config->certificate.cert,
-            errno,
-            strerror(errno));
+        ov_log_error("%s failed to load certificate "
+                     "from %s | error %d | %s",
+                     config->name, config->certificate.cert, errno,
+                     strerror(errno));
         goto error;
     }
 
-    if (SSL_CTX_use_PrivateKey_file(
-            ctx, config->certificate.key, SSL_FILETYPE_PEM) != 1) {
-        ov_log_error(
-            "%s failed to load key "
-            "from %s | error %d | %s",
-            config->name,
-            config->certificate.key,
-            errno,
-            strerror(errno));
+    if (SSL_CTX_use_PrivateKey_file(ctx, config->certificate.key,
+                                    SSL_FILETYPE_PEM) != 1) {
+        ov_log_error("%s failed to load key "
+                     "from %s | error %d | %s",
+                     config->name, config->certificate.key, errno,
+                     strerror(errno));
         goto error;
     }
 
     if (SSL_CTX_check_private_key(ctx) != 1) {
-        ov_log_error(
-            "%s failure private key for\n"
-            "CERT | %s\n"
-            " KEY | %s",
-            config->name,
-            config->certificate.cert,
-            config->certificate.key);
+        ov_log_error("%s failure private key for\n"
+                     "CERT | %s\n"
+                     " KEY | %s",
+                     config->name, config->certificate.cert,
+                     config->certificate.key);
         goto error;
     }
 
     ov_log_debug("DOMAIN %.*s loaded SSL certificate \n file %s\n key %s\n",
-                 (int)config->name.length,
-                 config->name.start,
-                 config->certificate.cert,
-                 config->certificate.key);
+                 (int)config->name.length, config->name.start,
+                 config->certificate.cert, config->certificate.key);
 
     return true;
 error:
@@ -102,7 +93,8 @@ error:
 
 static bool init_tls_context(ov_domain *domain) {
 
-    if (!domain) goto error;
+    if (!domain)
+        goto error;
 
     if (domain->context.tls) {
         ov_log_error("TLS context for domain |%.*s| already set",
@@ -121,7 +113,8 @@ static bool init_tls_context(ov_domain *domain) {
 
     SSL_CTX_set_min_proto_version(domain->context.tls, TLS1_2_VERSION);
 
-    if (load_certificate(domain->context.tls, &domain->config)) return true;
+    if (load_certificate(domain->context.tls, &domain->config))
+        return true;
 
     /* Failure certificate load - cleanup */
     SSL_CTX_free(domain->context.tls);
@@ -141,9 +134,11 @@ error:
 
 bool ov_domain_init(ov_domain *domain) {
 
-    if (!domain) goto error;
+    if (!domain)
+        goto error;
 
-    if (!memcpy(domain, &init, sizeof(ov_domain))) goto error;
+    if (!memcpy(domain, &init, sizeof(ov_domain)))
+        goto error;
 
     return true;
 error:
@@ -154,7 +149,8 @@ error:
 
 void ov_domain_deinit_tls_context(ov_domain *domain) {
 
-    if (!domain) goto error;
+    if (!domain)
+        goto error;
 
     if (domain->context.tls) {
         SSL_CTX_free(domain->context.tls);
@@ -169,7 +165,8 @@ error:
 
 bool ov_domain_array_clean(size_t size, ov_domain *array) {
 
-    if (!array) goto error;
+    if (!array)
+        goto error;
 
     for (size_t i = 0; i < size; i++) {
         array[i].config = (ov_domain_config){0};
@@ -188,7 +185,8 @@ error:
 
 ov_domain *ov_domain_array_free(size_t size, ov_domain *array) {
 
-    if (!ov_domain_array_clean(size, array)) return array;
+    if (!ov_domain_array_clean(size, array))
+        return array;
 
     return ov_data_pointer_free(array);
 }
@@ -197,45 +195,41 @@ ov_domain *ov_domain_array_free(size_t size, ov_domain *array) {
 
 bool ov_domain_config_verify(const ov_domain_config *config) {
 
-    if (!config) goto error;
+    if (!config)
+        goto error;
 
-    if (0 == config->name.start[0]) goto error;
+    if (0 == config->name.start[0])
+        goto error;
 
     if (!ov_dir_access_to_path(config->path)) {
         ov_log_error("Unsufficient access to path|%s| domain |%.*s|",
-                     config->path,
-                     (int)config->name.length,
+                     config->path, (int)config->name.length,
                      config->name.start);
         goto error;
     }
 
     if (0 != ov_file_read_check(config->certificate.cert)) {
         ov_log_error("Unsufficient access to certificate |%s| domain |%.*s|",
-                     config->certificate.cert,
-                     (int)config->name.length,
+                     config->certificate.cert, (int)config->name.length,
                      config->name.start);
         goto error;
     }
 
     if (0 != ov_file_read_check(config->certificate.key)) {
-        ov_log_error(
-            "Unsufficient access to certificate key |%s| domain "
-            "|%.*s|",
-            config->certificate.key,
-            (int)config->name.length,
-            config->name.start);
+        ov_log_error("Unsufficient access to certificate key |%s| domain "
+                     "|%.*s|",
+                     config->certificate.key, (int)config->name.length,
+                     config->name.start);
         goto error;
     }
 
     if (0 != config->certificate.ca.file[0]) {
 
         if (0 != ov_file_read_check(config->certificate.ca.file)) {
-            ov_log_error(
-                "Unsufficient access to certificate authority file"
-                " |%s| domain |%.*s|",
-                config->certificate.ca.file,
-                (int)config->name.length,
-                config->name.start);
+            ov_log_error("Unsufficient access to certificate authority file"
+                         " |%s| domain |%.*s|",
+                         config->certificate.ca.file, (int)config->name.length,
+                         config->name.start);
 
             goto error;
         }
@@ -244,12 +238,10 @@ bool ov_domain_config_verify(const ov_domain_config *config) {
     if (0 != config->certificate.ca.path[0]) {
 
         if (!ov_dir_access_to_path(config->certificate.ca.path)) {
-            ov_log_error(
-                "Unsufficient access to certificate authority path"
-                " |%s| domain |%.*s|",
-                config->certificate.ca.path,
-                (int)config->name.length,
-                config->name.start);
+            ov_log_error("Unsufficient access to certificate authority path"
+                         " |%s| domain |%.*s|",
+                         config->certificate.ca.path, (int)config->name.length,
+                         config->name.start);
 
             goto error;
         }
@@ -273,18 +265,22 @@ struct container1 {
 
 static bool add_config_to_array(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *val = ov_json_value_cast(value);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     struct container1 *container = (struct container1 *)data;
 
     OV_ASSERT(container->next < container->max);
 
-    if (container->next == container->max) goto error;
+    if (container->next == container->max)
+        goto error;
 
-    if (!ov_domain_init(&container->array[container->next])) goto error;
+    if (!ov_domain_init(&container->array[container->next]))
+        goto error;
 
     container->array[container->next].config =
         ov_domain_config_from_json(value);
@@ -297,8 +293,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_domain_load(const char *path,
-                    size_t *array_size,
+bool ov_domain_load(const char *path, size_t *array_size,
                     ov_domain **array_out) {
 
     ov_json_value *conf = NULL;
@@ -306,9 +301,11 @@ bool ov_domain_load(const char *path,
 
     size_t entries = 0;
 
-    if (!path || !array_size || !array_out) goto error;
+    if (!path || !array_size || !array_out)
+        goto error;
 
-    if (*array_out) return false;
+    if (*array_out)
+        return false;
 
     conf = ov_json_read_dir(path, NULL);
     if (!conf) {
@@ -319,12 +316,14 @@ bool ov_domain_load(const char *path,
     ov_log_debug("Reading domains at %s", path);
 
     entries = ov_json_object_count(conf);
-    if (0 == entries) goto error;
+    if (0 == entries)
+        goto error;
 
     size_t size = entries * sizeof(ov_domain);
 
     arr = calloc(1, size);
-    if (!arr) goto error;
+    if (!arr)
+        goto error;
 
     struct container1 container = (struct container1){
 
@@ -340,7 +339,8 @@ bool ov_domain_load(const char *path,
     /* Verify the domain configurations load certificates */
     for (size_t i = 0; i < entries; i++) {
 
-        if (!ov_domain_config_verify(&arr[i].config)) goto cleanup;
+        if (!ov_domain_config_verify(&arr[i].config))
+            goto cleanup;
 
         if (arr[i].config.is_default) {
 
@@ -354,7 +354,8 @@ bool ov_domain_load(const char *path,
 
         ov_log_debug("Loaded domain %s", arr[i].config.name.start);
 
-        if (!init_tls_context(&arr[i])) goto cleanup;
+        if (!init_tls_context(&arr[i]))
+            goto cleanup;
     }
 
     conf = ov_json_value_free(conf);
@@ -371,7 +372,8 @@ cleanup:
 error:
     arr = ov_domain_array_free(entries, arr);
     conf = ov_json_value_free(conf);
-    if (array_size) *array_size = 0;
+    if (array_size)
+        *array_size = 0;
     return false;
 }
 
@@ -386,10 +388,12 @@ error:
 ov_domain_config ov_domain_config_from_json(const ov_json_value *value) {
 
     ov_domain_config cfg = {0};
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     const ov_json_value *config = ov_json_object_get(value, OV_KEY_DOMAIN);
-    if (!config) config = value;
+    if (!config)
+        config = value;
 
     const char *str = NULL;
     size_t bytes = 0;
@@ -402,7 +406,8 @@ ov_domain_config ov_domain_config_from_json(const ov_json_value *value) {
         /* NOTE this will work for ASCII domains, but not non ascii */
 
         cfg.name.length = strlen(str);
-        if (cfg.name.length > PATH_MAX) goto error;
+        if (cfg.name.length > PATH_MAX)
+            goto error;
 
         memcpy(cfg.name.start, str, cfg.name.length);
     }
@@ -413,7 +418,8 @@ ov_domain_config ov_domain_config_from_json(const ov_json_value *value) {
     if (str) {
 
         bytes = snprintf(cfg.path, PATH_MAX, "%s", str);
-        if ((bytes < 1) || (bytes == PATH_MAX)) goto error;
+        if ((bytes < 1) || (bytes == PATH_MAX))
+            goto error;
     }
 
     /* default */
@@ -424,36 +430,44 @@ ov_domain_config ov_domain_config_from_json(const ov_json_value *value) {
     /* certificate */
 
     ov_json_value *cert = ov_json_object_get(config, OV_KEY_CERTIFICATE);
-    if (!cert) goto done;
+    if (!cert)
+        goto done;
 
     str = ov_json_string_get(ov_json_object_get(cert, OV_KEY_FILE));
-    if (!str) goto error;
+    if (!str)
+        goto error;
 
     bytes = snprintf(cfg.certificate.cert, PATH_MAX, "%s", str);
-    if ((bytes < 1) || (bytes == PATH_MAX)) goto error;
+    if ((bytes < 1) || (bytes == PATH_MAX))
+        goto error;
 
     str = ov_json_string_get(ov_json_object_get(cert, OV_KEY_KEY));
-    if (!str) goto error;
+    if (!str)
+        goto error;
 
     bytes = snprintf(cfg.certificate.key, PATH_MAX, "%s", str);
-    if ((bytes < 1) || (bytes == PATH_MAX)) goto error;
+    if ((bytes < 1) || (bytes == PATH_MAX))
+        goto error;
 
     /* (optional) Authority */
     ov_json_value *auth = ov_json_object_get(cert, OV_KEY_AUTHORITY);
-    if (!auth) goto done;
+    if (!auth)
+        goto done;
 
     str = ov_json_string_get(ov_json_object_get(auth, OV_KEY_FILE));
     if (str) {
 
         bytes = snprintf(cfg.certificate.ca.file, PATH_MAX, "%s", str);
-        if ((bytes < 1) || (bytes == PATH_MAX)) goto error;
+        if ((bytes < 1) || (bytes == PATH_MAX))
+            goto error;
     }
 
     str = ov_json_string_get(ov_json_object_get(auth, OV_KEY_PATH));
     if (str) {
 
         bytes = snprintf(cfg.certificate.ca.path, PATH_MAX, "%s", str);
-        if ((bytes < 1) || (bytes == PATH_MAX)) goto error;
+        if ((bytes < 1) || (bytes == PATH_MAX))
+            goto error;
     }
 
 done:
@@ -470,7 +484,8 @@ ov_json_value *ov_domain_config_to_json(ov_domain_config config) {
     ov_json_value *val = NULL;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     /* domain name */
 
@@ -480,7 +495,8 @@ ov_json_value *ov_domain_config_to_json(ov_domain_config config) {
         val = ov_json_string((char *)config.name.start);
     }
 
-    if (!ov_json_object_set(out, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_NAME, val))
+        goto error;
 
     /* document root */
 
@@ -490,19 +506,22 @@ ov_json_value *ov_domain_config_to_json(ov_domain_config config) {
         val = ov_json_string(config.path);
     }
 
-    if (!ov_json_object_set(out, OV_KEY_PATH, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_PATH, val))
+        goto error;
 
     /* default */
 
     if (config.is_default) {
         val = ov_json_true();
-        if (!ov_json_object_set(out, OV_KEY_DEFAULT, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_DEFAULT, val))
+            goto error;
     }
 
     /* certificate */
 
     val = ov_json_object();
-    if (!ov_json_object_set(out, OV_KEY_CERTIFICATE, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_CERTIFICATE, val))
+        goto error;
 
     ov_json_value *cert = val;
     val = NULL;
@@ -513,7 +532,8 @@ ov_json_value *ov_domain_config_to_json(ov_domain_config config) {
         val = ov_json_string(config.certificate.cert);
     }
 
-    if (!ov_json_object_set(cert, OV_KEY_FILE, val)) goto error;
+    if (!ov_json_object_set(cert, OV_KEY_FILE, val))
+        goto error;
 
     if (0 == config.certificate.key[0]) {
         val = ov_json_null();
@@ -521,10 +541,12 @@ ov_json_value *ov_domain_config_to_json(ov_domain_config config) {
         val = ov_json_string(config.certificate.key);
     }
 
-    if (!ov_json_object_set(cert, OV_KEY_KEY, val)) goto error;
+    if (!ov_json_object_set(cert, OV_KEY_KEY, val))
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(cert, OV_KEY_AUTHORITY, val)) goto error;
+    if (!ov_json_object_set(cert, OV_KEY_AUTHORITY, val))
+        goto error;
 
     ov_json_value *auth = val;
     val = NULL;
@@ -535,7 +557,8 @@ ov_json_value *ov_domain_config_to_json(ov_domain_config config) {
         val = ov_json_string(config.certificate.ca.file);
     }
 
-    if (!ov_json_object_set(auth, OV_KEY_FILE, val)) goto error;
+    if (!ov_json_object_set(auth, OV_KEY_FILE, val))
+        goto error;
 
     if (0 == config.certificate.ca.path[0]) {
         val = ov_json_null();
@@ -543,7 +566,8 @@ ov_json_value *ov_domain_config_to_json(ov_domain_config config) {
         val = ov_json_string(config.certificate.ca.path);
     }
 
-    if (!ov_json_object_set(auth, OV_KEY_PATH, val)) goto error;
+    if (!ov_json_object_set(auth, OV_KEY_PATH, val))
+        goto error;
 
     return out;
 error:

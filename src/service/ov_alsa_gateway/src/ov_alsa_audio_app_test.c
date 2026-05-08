@@ -51,17 +51,16 @@ int ov_alsa_audio_app_config_from_json_test() {
 
     testrun(ok);
 
-    ov_json_value *jval = json_from_string(
-        "{"
-        " \"channels\": {"
-        "     \"input\": ["
-        "         \"d1\""
-        "     ],"
-        "     \"output\": ["
-        "         \"d2\""
-        "     ]"
-        " }"
-        "}");
+    ov_json_value *jval = json_from_string("{"
+                                           " \"channels\": {"
+                                           "     \"input\": ["
+                                           "         \"d1\""
+                                           "     ],"
+                                           "     \"output\": ["
+                                           "         \"d2\""
+                                           "     ]"
+                                           " }"
+                                           "}");
 
     testrun(0 != jval);
 
@@ -80,19 +79,18 @@ int ov_alsa_audio_app_config_from_json_test() {
 
     jval = ov_json_value_free(jval);
 
-    jval = json_from_string(
-        "{"
-        " \"channels\": {"
-        "     \"input\": ["
-        "         {\"" OV_KEY_DEVICE "\":\"din\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.2\"},"
-        "     ],"
-        "     \"output\": ["
-        "         {\"" OV_KEY_DEVICE "\":\"dout\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.3\"},"
-        "     ]"
-        " }"
-        "}");
+    jval = json_from_string("{"
+                            " \"channels\": {"
+                            "     \"input\": ["
+                            "         {\"" OV_KEY_DEVICE
+                            "\":\"din\", \"" OV_KEY_LOOP "\":\"1.11.111.2\"},"
+                            "     ],"
+                            "     \"output\": ["
+                            "         {\"" OV_KEY_DEVICE
+                            "\":\"dout\", \"" OV_KEY_LOOP "\":\"1.11.111.3\"},"
+                            "     ]"
+                            " }"
+                            "}");
 
     testrun(0 != jval);
 
@@ -117,13 +115,11 @@ int ov_alsa_audio_app_config_from_json_test() {
         " \"channels\": {"
         "     \"input\": ["
         "         {\"" OV_KEY_DEVICE "\":\"din\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.2\", \"" OV_KEY_PORT
-        "\": 8512}"
+        "\":\"1.11.111.2\", \"" OV_KEY_PORT "\": 8512}"
         "     ],"
         "     \"output\": ["
         "         {\"" OV_KEY_DEVICE "\":\"dout\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.3\", \"" OV_KEY_PORT
-        "\": 777}"
+        "\":\"1.11.111.3\", \"" OV_KEY_PORT "\": 777}"
         "     ]"
         " }"
         "}");
@@ -151,13 +147,11 @@ int ov_alsa_audio_app_config_from_json_test() {
         " \"channels\": {"
         "     \"input\": ["
         "         {\"" OV_KEY_DEVICE "\":\"din\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.2\", \"" OV_KEY_PORT
-        "\": 8512}"
+        "\":\"1.11.111.2\", \"" OV_KEY_PORT "\": 8512}"
         "     ],"
         "     \"output\": ["
         "         {\"" OV_KEY_DEVICE "\":\"dout\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.3\", \"" OV_KEY_PORT
-        "\": 777}"
+        "\":\"1.11.111.3\", \"" OV_KEY_PORT "\": 777}"
         "     ]"
         " },"
         " \"debug\" : {"
@@ -187,21 +181,20 @@ int ov_alsa_audio_app_config_from_json_test() {
 
 #if OV_ALSA_MAX_DEVICE > 1
 
-    jval = json_from_string(
-        "{"
-        " \"channels\": {"
-        "     \"input\": ["
-        "         {\"" OV_KEY_DEVICE "\":\"din\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.2\"},"
-        "         \"d1\""
-        "     ],"
-        "     \"output\": ["
-        "         {\"" OV_KEY_DEVICE "\":\"dout\", \"" OV_KEY_LOOP
-        "\":\"1.11.111.3\"},"
-        "         \"d2\""
-        "     ]"
-        " }"
-        "}");
+    jval = json_from_string("{"
+                            " \"channels\": {"
+                            "     \"input\": ["
+                            "         {\"" OV_KEY_DEVICE
+                            "\":\"din\", \"" OV_KEY_LOOP "\":\"1.11.111.2\"},"
+                            "         \"d1\""
+                            "     ],"
+                            "     \"output\": ["
+                            "         {\"" OV_KEY_DEVICE
+                            "\":\"dout\", \"" OV_KEY_LOOP "\":\"1.11.111.3\"},"
+                            "         \"d2\""
+                            "     ]"
+                            " }"
+                            "}");
 
     testrun(0 != jval);
 
@@ -237,14 +230,12 @@ int ov_alsa_audio_app_config_from_json_test() {
         "     \"input\": ["
         "         \"din\","
         "         {\"" OV_KEY_DEVICE "\":\"d1\", \"" OV_KEY_VOLUME
-        "\":0.2, \"" OV_KEY_LOOP
-        "\":\"2.11.111.2\"}"
+        "\":0.2, \"" OV_KEY_LOOP "\":\"2.11.111.2\"}"
         "     ],"
         "     \"output\": ["
         "         \"dout\","
         "         {\"" OV_KEY_DEVICE "\":\"d2\", \"" OV_KEY_VOLUME
-        "\": 0.1, \"" OV_KEY_LOOP
-        "\":\"2.11.111.3\"}"
+        "\": 0.1, \"" OV_KEY_LOOP "\":\"2.11.111.3\"}"
         "     ]"
         " }"
         "}");
@@ -286,14 +277,12 @@ int ov_alsa_audio_app_config_from_json_test() {
         "     \"input\": ["
         "         \"din\","
         "         {\"" OV_KEY_DEVICE "\":\"d1\", \"" OV_KEY_VOLUME
-        "\":0.2, \"" OV_KEY_LOOP "\":\"2.11.111.2\", \"" OV_KEY_PORT
-        "\": 312}"
+        "\":0.2, \"" OV_KEY_LOOP "\":\"2.11.111.2\", \"" OV_KEY_PORT "\": 312}"
         "     ],"
         "     \"output\": ["
         "         \"dout\","
         "         {\"" OV_KEY_DEVICE "\":\"d2\", \"" OV_KEY_VOLUME
-        "\": 0.1, \"" OV_KEY_LOOP "\":\"2.11.111.3\", \"" OV_KEY_PORT
-        "\": 188}"
+        "\": 0.1, \"" OV_KEY_LOOP "\":\"2.11.111.3\", \"" OV_KEY_PORT "\": 188}"
         "     ]"
         " }"
         "}");

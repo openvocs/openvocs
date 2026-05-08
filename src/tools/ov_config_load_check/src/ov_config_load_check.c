@@ -52,7 +52,8 @@ int main(int argc, char *argv[]) {
 
     ov_json_value *value = ov_config_from_command_line(argc, argv);
 
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     char *string = ov_json_value_to_string(value);
     fprintf(stdout, "CONFIG DUMP\n%s", string);

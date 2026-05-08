@@ -81,8 +81,7 @@ typedef struct ov_vm_prog_db_struct ov_vm_prog_db;
  *                                 FUNCTIONS
  ******************************************************************************/
 
-ov_vm_prog_db *ov_vm_prog_db_create(size_t buckets,
-                                    void *additional,
+ov_vm_prog_db *ov_vm_prog_db_create(size_t buckets, void *additional,
                                     void (*release_data)(void *, void *));
 
 /*----------------------------------------------------------------------------*/
@@ -97,10 +96,8 @@ ov_vm_prog_db *ov_vm_prog_db_free(ov_vm_prog_db *self);
  *
  * @param original_message might be omitted. If there, will be copied!
  */
-ov_vm_prog *ov_vm_prog_db_insert(ov_vm_prog_db *self,
-                                 char const *id,
-                                 ov_vm_instr const *instructions,
-                                 void *data);
+ov_vm_prog *ov_vm_prog_db_insert(ov_vm_prog_db *self, char const *id,
+                                 ov_vm_instr const *instructions, void *data);
 
 /*----------------------------------------------------------------------------*/
 
@@ -113,8 +110,7 @@ ov_vm_prog *ov_vm_prog_db_insert(ov_vm_prog_db *self,
  * You get the same program if you call `ov_vm_prog_db_get` with the id
  * of the program or one of it's aliases e.g.
  */
-bool ov_vm_prog_db_alias(ov_vm_prog_db *self,
-                         char const *id,
+bool ov_vm_prog_db_alias(ov_vm_prog_db *self, char const *id,
                          char const *alias);
 
 /*----------------------------------------------------------------------------*/

@@ -19,8 +19,7 @@
 * **lib**                   openvocs core web library
 * **plugin**                third party plugins
 
-* **config_vocs_admin.js**  **!important** user configuration for the vocs admin interface
-* **config_vocs.js**        **!important** user configuration for the vocs interface
+* **config_vocs.js**        **!important** user configuration for the vocs user interfaces
 * **index.html**            overview page containing links to all openvocs apps, documentation, testing tools and examples
 
 ## Copyright

@@ -130,15 +130,13 @@ static JsonValueSerde *as_json_value_serde(ov_serde *self) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state impl_add_raw(ov_serde *self,
-                                   ov_buffer const *raw,
+static ov_serde_state impl_add_raw(ov_serde *self, ov_buffer const *raw,
                                    ov_result *res) {
 
     JsonValueSerde *serde = as_json_value_serde(self);
 
     if (!ov_ptr_valid(serde, "Cannot add data: Invalid serde object")) {
-        ov_result_set(res,
-                      OV_ERROR_INTERNAL_SERVER,
+        ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                       "Cannot add data: Invalid serde object");
 
         return OV_SERDE_ERROR;
@@ -228,13 +226,11 @@ static bool parse_incomplete(JsonValueSerde *serde, ov_result *result) {
 
     } else if (!ov_value_parse_stream(
                    (char const *)serde->incomplete_input->start,
-                   serde->incomplete_input->length,
-                   add_datum,
-                   serde,
+                   serde->incomplete_input->length, add_datum, serde,
                    &remainder)) {
 
-        ov_result_set(
-            result, OV_ERROR_CODE_INPUT_ERROR, "Could not parse input");
+        ov_result_set(result, OV_ERROR_CODE_INPUT_ERROR,
+                      "Could not parse input");
         return false;
 
     } else if (0 == remainder) {
@@ -306,16 +302,14 @@ static bool write_string(int fh, char const *str, ov_result *res) {
 
     if (0 == str) {
 
-        ov_result_set(res,
-                      OV_ERROR_CODE_INPUT_ERROR,
+        ov_result_set(res, OV_ERROR_CODE_INPUT_ERROR,
                       "Could not serialize datum to string");
         return false;
 
-    } else if (!ov_cond_valid(
-                   -1 < fh, "Cannot serialize: Invalid file handle")) {
+    } else if (!ov_cond_valid(-1 < fh,
+                              "Cannot serialize: Invalid file handle")) {
 
-        ov_result_set(res,
-                      OV_ERROR_CODE_INPUT_ERROR,
+        ov_result_set(res, OV_ERROR_CODE_INPUT_ERROR,
                       "Cannot serialize: Invalid file handle");
         return false;
 
@@ -327,8 +321,7 @@ static bool write_string(int fh, char const *str, ov_result *res) {
         if ((written_len < 0) || ((size_t)written_len != len)) {
 
             ov_log_error("Cannot serialize: Cannot write to handle %i", fh);
-            ov_result_set(res,
-                          OV_ERROR_INTERNAL_SERVER,
+            ov_result_set(res, OV_ERROR_INTERNAL_SERVER,
                           "Cannot serialize: Cannot write to file handle");
             return false;
 
@@ -341,9 +334,7 @@ static bool write_string(int fh, char const *str, ov_result *res) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_serialize(ov_serde *self,
-                           int fh,
-                           ov_serde_data data,
+static bool impl_serialize(ov_serde *self, int fh, ov_serde_data data,
                            ov_result *res) {
 
     UNUSED(self);
@@ -351,8 +342,7 @@ static bool impl_serialize(ov_serde *self,
     if (!ov_cond_valid(OV_VALUE_SERDE_TYPE == data.data_type,
                        "Unexpected data: Wrong data type")) {
 
-        ov_result_set(res,
-                      OV_ERROR_CODE_INPUT_ERROR,
+        ov_result_set(res, OV_ERROR_CODE_INPUT_ERROR,
                       "Cannot serialize: Wrong data type");
         return false;
 
@@ -407,10 +397,8 @@ ov_serde *ov_value_serde_create() {
 
 /*----------------------------------------------------------------------------*/
 
-ov_serde_state ov_value_serde_serialize(ov_serde *self,
-                                        int fh,
-                                        ov_value const *value,
-                                        ov_result *res) {
+ov_serde_state ov_value_serde_serialize(ov_serde *self, int fh,
+                                        ov_value const *value, ov_result *res) {
 
     ov_serde_data datum = {
         .data_type = OV_VALUE_SERDE_TYPE,
@@ -428,8 +416,7 @@ ov_value *ov_value_serde_pop_datum(ov_serde *self, ov_result *res) {
 
     if (OV_VALUE_SERDE_TYPE != data.data_type) {
 
-        ov_result_set(res,
-                      OV_ERROR_CODE_INPUT_ERROR,
+        ov_result_set(res, OV_ERROR_CODE_INPUT_ERROR,
                       "Cannot get next value from serde: Wrong data type");
         return 0;
 

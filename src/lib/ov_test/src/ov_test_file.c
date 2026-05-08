@@ -50,8 +50,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-int ov_test_file_tmp_write(uint8_t const *content,
-                           size_t length,
+int ov_test_file_tmp_write(uint8_t const *content, size_t length,
                            char *file_name) {
 
     static char const *TEMP_PATTERN = "/tmp/openvocsXXXXXX";

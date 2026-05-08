@@ -85,8 +85,7 @@ static bool put_into_buffer(void *queue, void *element) {
 
 /*---------------------------------------------------------------------------*/
 
-ov_thread_pool *create_test_pool(ov_ringbuffer **b1,
-                                 ov_thread_lock *l1,
+ov_thread_pool *create_test_pool(ov_ringbuffer **b1, ov_thread_lock *l1,
                                  ov_thread_queue *queue) {
 
     OV_ASSERT(0 != queue);
@@ -126,8 +125,7 @@ ov_thread_pool *create_test_pool(ov_ringbuffer **b1,
         .lock = l1,
     };
 
-    return ov_thread_pool_create(incoming,
-                                 put_into_buffer,
+    return ov_thread_pool_create(incoming, put_into_buffer,
                                  (ov_thread_pool_config){
                                      .userdata = queue,
                                  });
@@ -405,8 +403,7 @@ static int test_thread_run() {
             .lock = &in_lock,
             .queue = in_buf,
         },
-        put_into_buffer,
-        config);
+        put_into_buffer, config);
 
     testrun(thread);
 
@@ -489,8 +486,7 @@ static int test_thread_run() {
             .lock = &in_lock,
             .queue = in_buf,
         },
-        dummy_process_function,
-        config);
+        dummy_process_function, config);
 
     testrun(thread);
     testrun(thread->start(thread));
@@ -612,8 +608,8 @@ static int test_ov_thread_pool_free() {
         .queue = buf1,
     };
 
-    ov_thread_pool *thread = ov_thread_pool_create(
-        incoming, put_into_buffer, (ov_thread_pool_config){0});
+    ov_thread_pool *thread = ov_thread_pool_create(incoming, put_into_buffer,
+                                                   (ov_thread_pool_config){0});
 
     testrun(thread);
 
@@ -629,9 +625,5 @@ static int test_ov_thread_pool_free() {
 
 /*---------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_thread_pool",
-            test_ov_thread_pool_create,
-            test_thread_start,
-            test_thread_stop,
-            test_thread_run,
-            test_ov_thread_pool_free);
+OV_TEST_RUN("ov_thread_pool", test_ov_thread_pool_create, test_thread_start,
+            test_thread_stop, test_thread_run, test_ov_thread_pool_free);

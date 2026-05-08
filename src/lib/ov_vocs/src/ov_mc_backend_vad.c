@@ -70,22 +70,29 @@ static void cb_socket_close(void *userdata, int socket) {
 
 /*---------------------------------------------------------------------------*/
 
-static void cb_register(void *userdata,
-                        const char *name,
-                        int socket,
+static void cb_register(void *userdata, const char *name, int socket,
                         ov_json_value *input) {
 
     ov_mc_backend_vad *self = ov_mc_backend_vad_cast(userdata);
-    if (!self || !name || !socket || !input) goto error;
+    if (!self || !name || !socket || !input)
+        goto error;
 
     Connection *conn = calloc(1, sizeof(Connection));
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
     conn->socket = socket;
 
     ov_dict_set(self->connections, (void *)(intptr_t)socket, conn, NULL);
 
     ov_json_value *out = ov_event_api_create_success_response(input);
+    ov_json_value *par = ov_event_api_get_response(out);
+    ov_vad_config_to_json(self->config.vad, par);
+
+    char *str = ov_json_value_to_string(out);
+    ov_log_debug("SET VAD %s", str);
+    str = ov_data_pointer_free(str);
+
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
@@ -96,16 +103,16 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static void cb_loops(void *userdata,
-                     const char *name,
-                     int socket,
+static void cb_loops(void *userdata, const char *name, int socket,
                      ov_json_value *input) {
 
     ov_mc_backend_vad *self = ov_mc_backend_vad_cast(userdata);
-    if (!self || !name || !socket || !input) goto error;
+    if (!self || !name || !socket || !input)
+        goto error;
 
     ov_json_value *loops = ov_vocs_db_get_all_loops(self->config.db);
-    if (!loops) goto error;
+    if (!loops)
+        goto error;
 
     ov_json_value *out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
@@ -121,15 +128,14 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static void cb_vad(void *userdata,
-                   const char *name,
-                   int socket,
+static void cb_vad(void *userdata, const char *name, int socket,
                    ov_json_value *input) {
 
     bool vad_on = false;
 
     ov_mc_backend_vad *self = ov_mc_backend_vad_cast(userdata);
-    if (!self || !name || !socket || !input) goto error;
+    if (!self || !name || !socket || !input)
+        goto error;
 
     const char *loop = ov_json_string_get(
         ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_LOOP));
@@ -137,11 +143,12 @@ static void cb_vad(void *userdata,
     const ov_json_value *on =
         ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_ON);
 
-    if (ov_json_is_true(on)) vad_on = true;
+    if (ov_json_is_true(on))
+        vad_on = true;
 
     if (self->config.callbacks.vad)
-        self->config.callbacks.vad(
-            self->config.callbacks.userdata, loop, vad_on);
+        self->config.callbacks.vad(self->config.callbacks.userdata, loop,
+                                   vad_on);
 
 error:
     ov_json_value_free(input);
@@ -152,7 +159,8 @@ error:
 
 static bool register_callbacks(ov_mc_backend_vad *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (!ov_event_app_register(self->app, OV_KEY_REGISTER, self, cb_register))
         goto error;
@@ -160,7 +168,8 @@ static bool register_callbacks(ov_mc_backend_vad *self) {
     if (!ov_event_app_register(self->app, OV_KEY_LOOPS, self, cb_loops))
         goto error;
 
-    if (!ov_event_app_register(self->app, OV_KEY_VAD, self, cb_vad)) goto error;
+    if (!ov_event_app_register(self->app, OV_KEY_VAD, self, cb_vad))
+        goto error;
 
     return true;
 error:
@@ -171,10 +180,13 @@ error:
 
 static bool init_config(ov_mc_backend_vad_config *config) {
 
-    if (!config->loop) goto error;
-    if (!config->io) goto error;
+    if (!config->loop)
+        goto error;
+    if (!config->io)
+        goto error;
 
-    if (0 == config->socket.host[0]) goto error;
+    if (0 == config->socket.host[0])
+        goto error;
 
     return true;
 error:
@@ -187,10 +199,12 @@ ov_mc_backend_vad *ov_mc_backend_vad_create(ov_mc_backend_vad_config config) {
 
     ov_mc_backend_vad *self = NULL;
 
-    if (!init_config(&config)) goto error;
+    if (!init_config(&config))
+        goto error;
 
     self = calloc(1, sizeof(ov_mc_backend_vad));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_bytes = OV_MC_BACKEND_VAD_MAGIC_BYTES;
     self->config = config;
@@ -200,27 +214,29 @@ ov_mc_backend_vad *ov_mc_backend_vad_create(ov_mc_backend_vad_config config) {
                               .callbacks.userdata = self,
                               .callbacks.close = cb_socket_close});
 
-    if (!self->app) goto error;
+    if (!self->app)
+        goto error;
 
     self->socket = ov_event_app_open_listener(
         self->app, (ov_io_socket_config){.socket = config.socket});
 
     if (-1 == self->socket) {
 
-        ov_log_error("Failed to open socket %s:%i",
-                     config.socket.host,
+        ov_log_error("Failed to open socket %s:%i", config.socket.host,
                      config.socket.port);
 
         goto error;
     }
 
-    if (!register_callbacks(self)) goto error;
+    if (!register_callbacks(self))
+        goto error;
 
     ov_dict_config d_config = ov_dict_intptr_key_config(255);
     d_config.value.data_function.free = ov_data_pointer_free;
 
     self->connections = ov_dict_create(d_config);
-    if (!self->connections) goto error;
+    if (!self->connections)
+        goto error;
 
     return self;
 error:
@@ -232,7 +248,8 @@ error:
 
 ov_mc_backend_vad *ov_mc_backend_vad_free(ov_mc_backend_vad *self) {
 
-    if (!ov_mc_backend_vad_cast(self)) return self;
+    if (!ov_mc_backend_vad_cast(self))
+        return self;
 
     self->app = ov_event_app_free(self->app);
     self->connections = ov_dict_free(self->connections);
@@ -245,24 +262,39 @@ ov_mc_backend_vad *ov_mc_backend_vad_free(ov_mc_backend_vad *self) {
 
 ov_mc_backend_vad *ov_mc_backend_vad_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_MC_BACKEND_VAD_MAGIC_BYTES) return NULL;
+    if (*(uint16_t *)data != OV_MC_BACKEND_VAD_MAGIC_BYTES)
+        return NULL;
 
     return (ov_mc_backend_vad *)data;
 }
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_backend_vad_config ov_mc_backend_vad_config_from_json(
-    const ov_json_value *in) {
+ov_mc_backend_vad_config
+ov_mc_backend_vad_config_from_json(const ov_json_value *in) {
 
     ov_mc_backend_vad_config config = {0};
+
     const ov_json_value *conf = ov_json_object_get(in, OV_KEY_VAD);
-    if (!conf) conf = in;
+    if (!conf)
+        conf = in;
+
+    const ov_json_value *vad = ov_json_get(conf, "/" OV_KEY_VAD);
 
     config.socket = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET), (ov_socket_configuration){0});
+
+    if (vad) {
+
+        config.vad.zero_crossings_rate_threshold_hertz =
+            ov_json_number_get(ov_json_get(vad, "/zero_crossings_rate_hertz"));
+
+        config.vad.powerlevel_density_threshold_db =
+            ov_json_number_get(ov_json_get(vad, "/powerlevel_density_dbfs"));
+    }
 
     return config;
 }

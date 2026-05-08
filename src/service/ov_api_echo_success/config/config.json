@@ -1,0 +1,16 @@
+{
+	"log" : {
+
+		"systemd" : false,
+		"file" : "stdout",
+		"level" : "debug"
+	},
+	"echo" : {
+		"client" : true,
+		"socket" :{
+			"host" : "192.168.178.25",
+			"type" : "TCP",
+			"port" : 12344
+		}
+	}
+}

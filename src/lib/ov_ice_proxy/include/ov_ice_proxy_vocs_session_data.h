@@ -54,8 +54,8 @@ typedef struct ov_ice_proxy_vocs_session_data {
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_vocs_session_data ov_ice_proxy_vocs_session_data_clear(
-    ov_ice_proxy_vocs_session_data *self);
+ov_ice_proxy_vocs_session_data
+ov_ice_proxy_vocs_session_data_clear(ov_ice_proxy_vocs_session_data *self);
 
 /*---------------------------------------------------------------------------*/
 

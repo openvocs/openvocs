@@ -73,27 +73,32 @@
 
 static bool path_is_project_top_dir(char const *const path) {
 
-    if (!path) goto error;
+    if (!path)
+        goto error;
 
     char include[PATH_MAX] = {0};
     char source[PATH_MAX] = {0};
 
-    ssize_t bytes = snprintf(
-        include, PATH_MAX, "%s/%s", path, OV_SOURCE_FILE_FOLDER_INCLUDE);
+    ssize_t bytes = snprintf(include, PATH_MAX, "%s/%s", path,
+                             OV_SOURCE_FILE_FOLDER_INCLUDE);
 
-    if (bytes < 0 || bytes == PATH_MAX) goto error;
+    if (bytes < 0 || bytes == PATH_MAX)
+        goto error;
 
     bytes =
         snprintf(source, PATH_MAX, "%s/%s", path, OV_SOURCE_FILE_FOLDER_SOURCE);
 
-    if (bytes < 0 || bytes == PATH_MAX) goto error;
+    if (bytes < 0 || bytes == PATH_MAX)
+        goto error;
 
     struct stat stat_include = {0};
     struct stat stat_source = {0};
 
-    if (0 != stat(include, &stat_include)) goto error;
+    if (0 != stat(include, &stat_include))
+        goto error;
 
-    if (0 != stat(source, &stat_source)) goto error;
+    if (0 != stat(source, &stat_source))
+        goto error;
 
     return (S_ISDIR(stat_include.st_mode) && S_ISDIR(stat_source.st_mode));
 error:
@@ -107,19 +112,22 @@ char *ov_source_file_search_project_path(const char *input) {
     char *parent = NULL;
     char *current = NULL;
 
-    if (!input) return NULL;
+    if (!input)
+        return NULL;
 
     char path[PATH_MAX];
 
     current = realpath(input, current);
-    if (!current) goto error;
+    if (!current)
+        goto error;
 
     if (!path_is_project_top_dir(current)) {
 
         /* walk up one level */
         sprintf(path, "%s/%s/", current, "..");
         parent = realpath(path, parent);
-        if (!parent) goto error;
+        if (!parent)
+            goto error;
 
         if (strcmp(current, parent) == 0) {
 
@@ -138,18 +146,20 @@ char *ov_source_file_search_project_path(const char *input) {
     return current;
 
 error:
-    if (current) free(current);
-    if (parent) free(parent);
+    if (current)
+        free(current);
+    if (parent)
+        free(parent);
     return NULL;
 }
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_source_file_insert_at_each_line(const char *text,
-                                         const char *intro,
+char *ov_source_file_insert_at_each_line(const char *text, const char *intro,
                                          const char *outro) {
 
-    if (!text) return NULL;
+    if (!text)
+        return NULL;
 
     char *result = NULL;
     char *ptr = NULL;
@@ -163,11 +173,14 @@ char *ov_source_file_insert_at_each_line(const char *text,
     size_t lines = 0;
     size_t size = 0;
 
-    if (text) tlen = strlen(text);
+    if (text)
+        tlen = strlen(text);
 
-    if (intro) ilen = strlen(intro);
+    if (intro)
+        ilen = strlen(intro);
 
-    if (outro) olen = strlen(outro);
+    if (outro)
+        olen = strlen(outro);
 
     cur = (char *)text;
     nxt = memchr(cur, '\n', tlen);
@@ -178,11 +191,13 @@ char *ov_source_file_insert_at_each_line(const char *text,
         nxt = memchr(cur, '\n', tlen - (cur - text));
     }
 
-    if (0 == lines) goto error;
+    if (0 == lines)
+        goto error;
 
     size = (lines * ilen) + (lines * olen) + tlen + 1;
     result = calloc(size, sizeof(char));
-    if (!result) goto error;
+    if (!result)
+        goto error;
 
     ptr = result;
     cur = (char *)text;
@@ -194,20 +209,24 @@ char *ov_source_file_insert_at_each_line(const char *text,
 
         if (len > 0) {
 
-            if (!strncat(ptr, intro, ilen)) goto error;
+            if (!strncat(ptr, intro, ilen))
+                goto error;
 
             ptr += ilen;
 
-            if (!strncat(ptr, cur, len)) goto error;
+            if (!strncat(ptr, cur, len))
+                goto error;
 
             ptr += len;
 
-            if (!strncat(ptr, outro, olen)) goto error;
+            if (!strncat(ptr, outro, olen))
+                goto error;
 
             ptr += olen;
         }
 
-        if (!strcat(ptr, "\n")) goto error;
+        if (!strcat(ptr, "\n"))
+            goto error;
 
         ptr++;
 
@@ -218,12 +237,14 @@ char *ov_source_file_insert_at_each_line(const char *text,
     // copy rest after last linebreak
     len = tlen - (cur - text);
     if (len > 0)
-        if (!strncat(ptr, cur, len)) goto error;
+        if (!strncat(ptr, cur, len))
+            goto error;
 
     return result;
 
 error:
-    if (result) free(result);
+    if (result)
+        free(result);
     return NULL;
 }
 
@@ -231,7 +252,8 @@ error:
 
 bool ov_source_file_get_git_author(char *buffer, size_t size) {
 
-    if (!buffer || size < 1) return false;
+    if (!buffer || size < 1)
+        return false;
 
     bool set = false;
     FILE *in;
@@ -263,10 +285,12 @@ error:
 
 static bool create_path(const char *path) {
 
-    if (!path) return false;
+    if (!path)
+        return false;
 
     size_t size = strlen(path);
-    if (size > PATH_MAX) return false;
+    if (size > PATH_MAX)
+        return false;
 
     bool created = false;
 
@@ -289,11 +313,13 @@ static bool create_path(const char *path) {
             continue;
         }
 
-        if (slash >= path + size) break;
+        if (slash >= path + size)
+            break;
 
         if (!slash) {
 
-            if (0 > snprintf(new_path, size + 1, "%s", path)) goto error;
+            if (0 > snprintf(new_path, size + 1, "%s", path))
+                goto error;
 
         } else {
 
@@ -306,9 +332,8 @@ static bool create_path(const char *path) {
             // PATH exists access OK
             (void)closedir(dp);
 
-        } else if (mkdir(new_path,
-                         S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IXGRP |
-                             S_IROTH | S_IXOTH) != 0) {
+        } else if (mkdir(new_path, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP |
+                                       S_IXGRP | S_IROTH | S_IXOTH) != 0) {
 
             fprintf(stderr, "NO ACCESS TO PATH %s", new_path);
             goto error;
@@ -324,9 +349,7 @@ static bool create_path(const char *path) {
         }
     }
 
-    fprintf(stdout,
-            "PATH OK %s (%s)\n",
-            new_path,
+    fprintf(stdout, "PATH OK %s (%s)\n", new_path,
             created ? "created" : "existing");
     return true;
 error:
@@ -335,13 +358,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_file(const char *filename,
-                        const char *ext,
-                        const char *content,
-                        const char *root_path,
+static bool create_file(const char *filename, const char *ext,
+                        const char *content, const char *root_path,
                         const char *relative_path) {
 
-    if (!filename || !content || !root_path) return false;
+    if (!filename || !content || !root_path)
+        return false;
 
     FILE *file;
 
@@ -365,20 +387,18 @@ static bool create_file(const char *filename,
             return false;
     } else {
 
-        if (snprintf(path, PATH_MAX, "%s", root_path) < 0) return false;
+        if (snprintf(path, PATH_MAX, "%s", root_path) < 0)
+            return false;
     }
 
     // ensure create path
-    if (!create_path(path)) return false;
+    if (!create_path(path))
+        return false;
 
     // add file to path
     if (relative_path) {
 
-        if (snprintf(path,
-                     PATH_MAX,
-                     "%s/%s/%s",
-                     root_path,
-                     relative_path,
+        if (snprintf(path, PATH_MAX, "%s/%s/%s", root_path, relative_path,
                      file_name) < 0)
             return false;
     } else {
@@ -399,7 +419,8 @@ static bool create_file(const char *filename,
     }
 
     r = fputs(content, file);
-    if (r < 0) return false;
+    if (r < 0)
+        return false;
 
     fclose(file);
 
@@ -421,8 +442,7 @@ static bool create_c_header_file(const char *project_root_path,
     char content[5000];
     memset(content, 0, 5000);
 
-    if (!snprintf(content,
-                  5000,
+    if (!snprintf(content, 5000,
                   "%s%s"
                   "        @file           %s.h\n"
                   "        @author         %s\n"
@@ -447,21 +467,13 @@ static bool create_c_header_file(const char *project_root_path,
                   "\n"
                   "\n"
                   "#endif /* %s_h */\n",
-                  copyright_header,
-                  DOCUMENTATION_PREFIX,
-                  config->project.name,
-                  config->copyright.author,
-                  date,
-                  DOCUMENTATION_SUFFIX,
-                  config->project.name,
-                  config->project.name,
+                  copyright_header, DOCUMENTATION_PREFIX, config->project.name,
+                  config->copyright.author, date, DOCUMENTATION_SUFFIX,
+                  config->project.name, config->project.name,
                   config->project.name))
         goto error;
 
-    if (!create_file(config->project.name,
-                     ".h",
-                     content,
-                     project_root_path,
+    if (!create_file(config->project.name, ".h", content, project_root_path,
                      OV_SOURCE_FILE_FOLDER_INCLUDE))
         goto error;
 
@@ -483,8 +495,7 @@ static bool create_c_source_file(const char *project_root_path,
     char content[5000];
     memset(content, 0, 5000);
 
-    if (!snprintf(content,
-                  5000,
+    if (!snprintf(content, 5000,
                   "%s%s"
                   "        @file           %s.c\n"
                   "        @author         %s\n"
@@ -492,21 +503,12 @@ static bool create_c_source_file(const char *project_root_path,
                   "\n"
                   "%s\n"
                   "#include \"%s%s/%s.h\"\n",
-                  copyright_header,
-                  DOCUMENTATION_PREFIX,
-                  config->project.name,
-                  config->copyright.author,
-                  date,
-                  DOCUMENTATION_SUFFIX,
-                  "../",
-                  OV_SOURCE_FILE_FOLDER_INCLUDE,
-                  config->project.name))
+                  copyright_header, DOCUMENTATION_PREFIX, config->project.name,
+                  config->copyright.author, date, DOCUMENTATION_SUFFIX, "../",
+                  OV_SOURCE_FILE_FOLDER_INCLUDE, config->project.name))
         goto error;
 
-    if (!create_file(config->project.name,
-                     ".c",
-                     content,
-                     project_root_path,
+    if (!create_file(config->project.name, ".c", content, project_root_path,
                      OV_SOURCE_FILE_FOLDER_SOURCE))
         goto error;
 
@@ -519,8 +521,7 @@ error:
 
 static bool create_c_test_file(const char *project_root_path,
                                const ov_source_file_config *config,
-                               const char *copyright_header,
-                               const char *date) {
+                               const char *copyright_header, const char *date) {
 
     if (!project_root_path || !config || !copyright_header || !date)
         return false;
@@ -528,8 +529,7 @@ static bool create_c_test_file(const char *project_root_path,
     char content[5000];
     memset(content, 0, 5000);
 
-    if (!snprintf(content,
-                  5000,
+    if (!snprintf(content, 5000,
                   "%s%s"
                   "        @file           %s_test.c\n"
                   "        @author         %s\n"
@@ -596,20 +596,13 @@ static bool create_c_test_file(const char *project_root_path,
                   " */\n"
                   "\n"
                   "testrun_run(all_tests);\n",
-                  copyright_header,
-                  DOCUMENTATION_PREFIX,
-                  config->project.name,
-                  config->copyright.author,
-                  date,
-                  DOCUMENTATION_SUFFIX,
+                  copyright_header, DOCUMENTATION_PREFIX, config->project.name,
+                  config->copyright.author, date, DOCUMENTATION_SUFFIX,
                   config->project.name))
         goto error;
 
-    if (!create_file(config->project.name,
-                     "_test.c",
-                     content,
-                     project_root_path,
-                     OV_SOURCE_FILE_FOLDER_SOURCE))
+    if (!create_file(config->project.name, "_test.c", content,
+                     project_root_path, OV_SOURCE_FILE_FOLDER_SOURCE))
         goto error;
 
     return true;
@@ -621,8 +614,7 @@ error:
 
 static bool create_makefile(const char *project_root_path,
                             const ov_source_file_config *config,
-                            const char *copyright_header,
-                            const char *date) {
+                            const char *copyright_header, const char *date) {
 
     if (!project_root_path || !config || !copyright_header || !date)
         return false;
@@ -630,8 +622,7 @@ static bool create_makefile(const char *project_root_path,
     char content[10000];
     memset(content, 0, 10000);
 
-    if (!snprintf(content,
-                  10000,
+    if (!snprintf(content, 10000,
                   "# -*- Makefile -*-\n"
                   "#       "
                   "--------------------------------------------------------"
@@ -706,18 +697,19 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool generate_project_root_path(ov_source_file_config *config,
-                                       char *buffer,
-                                       size_t size) {
+                                       char *buffer, size_t size) {
 
-    if (!config || !buffer) return false;
+    if (!config || !buffer)
+        return false;
 
-    if (!config->project.path || !config->project.name) return false;
+    if (!config->project.path || !config->project.name)
+        return false;
 
     if (strlen(config->project.path) + strlen(config->project.name) + 2 > size)
         return false;
 
-    if (!snprintf(
-            buffer, size, "%s/%s", config->project.path, config->project.name))
+    if (!snprintf(buffer, size, "%s/%s", config->project.path,
+                  config->project.name))
         return false;
 
     return true;
@@ -732,46 +724,43 @@ static bool create_module_files(ov_source_file_config *config, bool project) {
     char path[PATH_MAX];
     memset(path, 0, PATH_MAX);
 
-    if (!config) return false;
+    if (!config)
+        return false;
 
     char *time_string = ov_time_string(TIME_SCOPE_YEAR);
     char *copyright_string = config->copyright.copyright.generate_header_string(
-        COPYRIGHT_PREFIX,
-        COPYRIGHT_DEFAULT_INTRO,
-        time_string,
-        config->copyright.owner,
-        config->copyright.note,
-        COPYRIGHT_SUFFIX,
-        8,
-        true,
-        config->copyright.gpl_parameter);
+        COPYRIGHT_PREFIX, COPYRIGHT_DEFAULT_INTRO, time_string,
+        config->copyright.owner, config->copyright.note, COPYRIGHT_SUFFIX, 8,
+        true, config->copyright.gpl_parameter);
 
     free(time_string);
 
-    if (!copyright_string) goto error;
-
-    if (!create_c_header_file(
-            config->project.path, config, copyright_string, date))
+    if (!copyright_string)
         goto error;
 
-    if (!create_c_source_file(
-            config->project.path, config, copyright_string, date))
+    if (!create_c_header_file(config->project.path, config, copyright_string,
+                              date))
         goto error;
 
-    if (!create_c_test_file(
-            config->project.path, config, copyright_string, date))
+    if (!create_c_source_file(config->project.path, config, copyright_string,
+                              date))
+        goto error;
+
+    if (!create_c_test_file(config->project.path, config, copyright_string,
+                            date))
         goto error;
 
     if (project) {
 
-        if (!create_makefile(
-                config->project.path, config, copyright_string, date))
+        if (!create_makefile(config->project.path, config, copyright_string,
+                             date))
             goto error;
 
         if (!snprintf(path, PATH_MAX, "%s/copyright", config->project.path))
             goto error;
 
-        if (!create_path(path)) goto error;
+        if (!create_path(path))
+            goto error;
 
         if (!create_file("copyright", NULL, copyright_string, path, NULL))
             goto error;
@@ -783,7 +772,8 @@ static bool create_module_files(ov_source_file_config *config, bool project) {
                 config->copyright.copyright.generate_full_text_licence(
                     &config->copyright.gpl_parameter);
 
-            if (!copyright_string) goto error;
+            if (!copyright_string)
+                goto error;
 
             if (!create_file("license.txt", NULL, copyright_string, path, NULL))
                 goto error;
@@ -794,8 +784,10 @@ static bool create_module_files(ov_source_file_config *config, bool project) {
     free(date);
     return true;
 error:
-    if (date) free(date);
-    if (copyright_string) free(copyright_string);
+    if (date)
+        free(date);
+    if (copyright_string)
+        free(copyright_string);
     return false;
 }
 
@@ -803,7 +795,8 @@ error:
 
 bool ov_source_file_create_source_files(ov_source_file_config *config) {
 
-    if (!config) goto error;
+    if (!config)
+        goto error;
 
     char *project_path =
         ov_source_file_search_project_path(config->project.path);
@@ -829,17 +822,21 @@ error:
 
 bool ov_source_file_create_project(ov_source_file_config *config) {
 
-    if (!config) goto error;
+    if (!config)
+        goto error;
 
     char project_root[PATH_MAX];
     memset(project_root, 0, PATH_MAX);
 
-    if (!generate_project_root_path(config, project_root, PATH_MAX)) goto error;
+    if (!generate_project_root_path(config, project_root, PATH_MAX))
+        goto error;
 
-    if (!create_path(project_root)) goto error;
+    if (!create_path(project_root))
+        goto error;
 
     config->project.path = project_root;
-    if (!create_module_files(config, true)) goto error;
+    if (!create_module_files(config, true))
+        goto error;
 
     return true;
 error:
@@ -868,38 +865,33 @@ static void print_usage(const char *name) {
     fprintf(stdout,
             "               -n,     --name          define the target name "
             "explizit as argument\n");
-    fprintf(stdout,
-            "               -o,     --owner         define the target "
-            "owner explizit as argument\n");
-    fprintf(stdout,
-            "               -u,     --author        define an author "
-            "explizit as argument\n");
+    fprintf(stdout, "               -o,     --owner         define the target "
+                    "owner explizit as argument\n");
+    fprintf(stdout, "               -u,     --author        define an author "
+                    "explizit as argument\n");
     fprintf(stdout,
             "               -x,     --note          define an copyright "
             "end note as argument\n");
-    fprintf(stdout,
-            "               -w,     --web           define a webpage "
-            "explizit as argument\n");
+    fprintf(stdout, "               -w,     --web           define a webpage "
+                    "explizit as argument\n");
     fprintf(stdout,
             "               -d,     --dir           set the project's top "
             "dir (e.g. ~/home/projects)\n");
     fprintf(stdout,
             "               -v      --version       print the file version "
             "\n");
-    fprintf(
-        stdout, "               -h      --help          print this text \n");
+    fprintf(stdout,
+            "               -h      --help          print this text \n");
     fprintf(stdout, "\n");
     fprintf(stdout, "               (COPRIGHT)\n");
     fprintf(stdout, "\n");
-    fprintf(stdout,
-            "               -r       --res           set copyright to "
-            "\"All rights reserved.\" \n");
+    fprintf(stdout, "               -r       --res           set copyright to "
+                    "\"All rights reserved.\" \n");
     fprintf(stdout,
             "               -g       --gpl           set copyright to GPL "
             "v3 \n");
-    fprintf(stdout,
-            "               -a       --apache        set copyright to "
-            "APACHE v2 \n");
+    fprintf(stdout, "               -a       --apache        set copyright to "
+                    "APACHE v2 \n");
     fprintf(stdout,
             "               -b       --bsd           set copyright to BSD "
             "3Clause \n");
@@ -911,12 +903,12 @@ static void print_usage(const char *name) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_source_file_read_user_input(int argc,
-                                    char *argv[],
+bool ov_source_file_read_user_input(int argc, char *argv[],
                                     ov_source_file_config *config,
                                     const char *app_name) {
 
-    if (!config || !argv || (argc < 2)) goto error;
+    if (!config || !argv || (argc < 2))
+        goto error;
 
     int c;
     int option_index = 0;
@@ -933,7 +925,8 @@ bool ov_source_file_read_user_input(int argc,
     config->project.name = NULL;
     config->project.url = NULL;
 
-    if (!app_name) app_name = OV_SOURCE_FILE_NAME;
+    if (!app_name)
+        app_name = OV_SOURCE_FILE_NAME;
 
     char *string = NULL;
 
@@ -968,102 +961,104 @@ bool ov_source_file_read_user_input(int argc,
 
         /* getopt_long stores the option index here. */
 
-        c = getopt_long(
-            argc, argv, "n:o:u:x:w:n:d:?hpabgmr", long_options, &option_index);
+        c = getopt_long(argc, argv, "n:o:u:x:w:n:d:?hpabgmr", long_options,
+                        &option_index);
 
         /* Detect the end of the options. */
-        if (c == -1) break;
+        if (c == -1)
+            break;
 
         switch (c) {
-            case 0:
-                /* If this option set a flag, do nothing else
-                 * now. */
-                if (long_options[option_index].flag != 0) break;
-
-                printf("option %s", long_options[option_index].name);
-                if (optarg) printf(" with arg %s", optarg);
-                printf("\n");
+        case 0:
+            /* If this option set a flag, do nothing else
+             * now. */
+            if (long_options[option_index].flag != 0)
                 break;
 
-            case 'h':
-                print_usage(app_name);
-                goto error;
-                break;
+            printf("option %s", long_options[option_index].name);
+            if (optarg)
+                printf(" with arg %s", optarg);
+            printf("\n");
+            break;
 
-            case '?':
-                print_usage(app_name);
-                goto error;
-                break;
+        case 'h':
+            print_usage(app_name);
+            goto error;
+            break;
 
-            case 'p':
-                flag_project = 1;
-                break;
+        case '?':
+            print_usage(app_name);
+            goto error;
+            break;
 
-            case 'n':
-                printf("option -n (NAME of PROJECT) `%s'\n", optarg);
-                config->project.name = optarg;
-                break;
+        case 'p':
+            flag_project = 1;
+            break;
 
-            case 'o':
-                printf("option -o (OWNER of PROJECT) `%s'\n", optarg);
-                config->copyright.owner = optarg;
-                break;
+        case 'n':
+            printf("option -n (NAME of PROJECT) `%s'\n", optarg);
+            config->project.name = optarg;
+            break;
 
-            case 'u':
-                printf("option -u (AUTHOR of PROJECT) `%s'\n", optarg);
-                config->copyright.author = optarg;
-                break;
+        case 'o':
+            printf("option -o (OWNER of PROJECT) `%s'\n", optarg);
+            config->copyright.owner = optarg;
+            break;
 
-            case 'x':
-                printf("option -x (NOTE to PROJECT) `%s'\n", optarg);
-                config->copyright.note = optarg;
-                break;
+        case 'u':
+            printf("option -u (AUTHOR of PROJECT) `%s'\n", optarg);
+            config->copyright.author = optarg;
+            break;
 
-            case 'w':
-                printf("option -w (WEBPAGE of PROJECT) `%s'\n", optarg);
-                config->project.url = optarg;
-                break;
+        case 'x':
+            printf("option -x (NOTE to PROJECT) `%s'\n", optarg);
+            config->copyright.note = optarg;
+            break;
 
-            case 'd':
-                printf("option -d (DIR) `%s'\n", optarg);
-                config->project.path = optarg;
-                break;
+        case 'w':
+            printf("option -w (WEBPAGE of PROJECT) `%s'\n", optarg);
+            config->project.url = optarg;
+            break;
 
-            case 'v':
-                OV_VERSION_PRINT(stdout);
-                goto error;
-                break;
+        case 'd':
+            printf("option -d (DIR) `%s'\n", optarg);
+            config->project.path = optarg;
+            break;
 
-            case 'a':
-                flag_apache = 1;
-                break;
+        case 'v':
+            OV_VERSION_PRINT(stdout);
+            goto error;
+            break;
 
-            case 'b':
-                flag_bsd3 = 1;
-                break;
+        case 'a':
+            flag_apache = 1;
+            break;
 
-            case 'g':
-                flag_gpl = 1;
-                break;
+        case 'b':
+            flag_bsd3 = 1;
+            break;
 
-            case 'm':
-                flag_mit = 1;
-                break;
+        case 'g':
+            flag_gpl = 1;
+            break;
 
-            case 'r':
-                flag_res = 1;
-                break;
+        case 'm':
+            flag_mit = 1;
+            break;
 
-            default:
-                print_usage(app_name);
-                goto error;
+        case 'r':
+            flag_res = 1;
+            break;
+
+        default:
+            print_usage(app_name);
+            goto error;
         }
     }
 
     /* Validate input */
 
-    fprintf(stdout,
-            "Going to create a %s \n",
+    fprintf(stdout, "Going to create a %s \n",
             (flag_project == 1) ? "PROJECT" : "MODULE");
 
     /* ... at max 1 copyright statement is selected */
@@ -1082,9 +1077,8 @@ bool ov_source_file_read_user_input(int argc,
             config->project.name = string;
 
         } else {
-            fprintf(stderr,
-                    "ERROR, no name given, add -n \"name\" or "
-                    "add a target_name as argument.\n");
+            fprintf(stderr, "ERROR, no name given, add -n \"name\" or "
+                            "add a target_name as argument.\n");
             print_usage(app_name);
             goto error;
         }
@@ -1129,7 +1123,8 @@ bool ov_source_file_read_user_input(int argc,
 
     return true;
 error:
-    if (config) (*config) = (ov_source_file_config){0};
+    if (config)
+        (*config) = (ov_source_file_config){0};
     return false;
 }
 
@@ -1138,7 +1133,8 @@ error:
 bool ov_source_file_config_dump(FILE *stream,
                                 const ov_source_file_config *config) {
 
-    if (!stream || !config) goto error;
+    if (!stream || !config)
+        goto error;
 
     if (!fprintf(stream,
                  "\n"
@@ -1155,12 +1151,9 @@ bool ov_source_file_config_dump(FILE *stream,
                  "    owner:%s\n"
                  "     note:%s\n"
                  "\n",
-                 config->project.name,
-                 config->project.path,
-                 config->project.url,
-                 config->project.create,
-                 config->copyright.author,
-                 config->copyright.owner,
+                 config->project.name, config->project.path,
+                 config->project.url, config->project.create,
+                 config->copyright.author, config->copyright.owner,
                  config->copyright.note))
         goto error;
 

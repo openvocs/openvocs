@@ -35,7 +35,8 @@
 
 static ov_thread_message *thread_msg_free(ov_thread_message *msg) {
 
-    if (msg->type != OV_VAD_THREAD_MSG_TYPE) return msg;
+    if (msg->type != OV_VAD_THREAD_MSG_TYPE)
+        return msg;
 
     ov_vad_thread_msg *m = (ov_vad_thread_msg *)msg;
 
@@ -51,7 +52,8 @@ ov_vad_thread_msg *ov_vad_thread_msg_create() {
     ov_vad_thread_msg *self = NULL;
 
     self = calloc(1, sizeof(ov_vad_thread_msg));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->public.magic_bytes = OV_THREAD_MESSAGE_MAGIC_BYTES;
     self->public.type = OV_VAD_THREAD_MSG_TYPE;

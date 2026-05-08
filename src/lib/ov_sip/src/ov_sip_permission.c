@@ -52,8 +52,7 @@ struct put_return {
     bool ok;
 };
 
-static struct put_return put(ov_json_value *object,
-                             char const *key,
+static struct put_return put(ov_json_value *object, char const *key,
                              ov_json_value *value) {
 
     struct put_return ret = {0};
@@ -147,8 +146,8 @@ struct uint64_from_json_retval {
     bool not_there;
 };
 
-static struct uint64_from_json_retval uint64_from_json(
-    ov_json_value const *jval) {
+static struct uint64_from_json_retval
+uint64_from_json(ov_json_value const *jval) {
 
     struct uint64_from_json_retval retval = {
         .ok = false,
@@ -269,10 +268,8 @@ static void *permission_copy(void **destination, const void *source) {
 
 /*----------------------------------------------------------------------------*/
 
-char const *str_with_prefix(char *target,
-                            size_t target_size,
-                            char const *prefix,
-                            char const *str) {
+char const *str_with_prefix(char *target, size_t target_size,
+                            char const *prefix, char const *str) {
 
     if (0 == str) {
 
@@ -300,13 +297,11 @@ static bool permission_dump(FILE *stream, const void *source) {
 
         char buf[255] = {0};
 
-        fprintf(stream,
-                "Permission:\n%s%s%s%" PRIu64 "%" PRIu64 "\n",
+        fprintf(stream, "Permission:\n%s%s%s%" PRIu64 "%" PRIu64 "\n",
                 str_with_prefix(buf, sizeof(buf), "Loop:   ", perm->loop),
                 str_with_prefix(buf, sizeof(buf), "Caller: ", perm->caller),
                 str_with_prefix(buf, sizeof(buf), "Callee: ", perm->callee),
-                perm->from_epoch,
-                perm->until_epoch);
+                perm->from_epoch, perm->until_epoch);
 
         return true;
 

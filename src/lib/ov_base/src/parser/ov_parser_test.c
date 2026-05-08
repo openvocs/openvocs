@@ -75,7 +75,8 @@ int test_ov_parser_cast() {
 
 static bool dummy_enable_buffer(const ov_parser *self) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return true;
 }
@@ -239,7 +240,8 @@ int check_parser_free_chain() {
 
 static bool dummy_buffer_has_data(const ov_parser *self) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     return true;
 }
@@ -328,7 +330,8 @@ int test_ov_parser_trash_buffered_data() {
 
 static void *dont_free(void *data) {
 
-    if (data) return NULL;
+    if (data)
+        return NULL;
     return NULL;
 }
 
@@ -338,16 +341,19 @@ static ov_parser_state dummy_buffer_copy_parse(ov_parser *self,
                                                ov_parser_data *const data) {
 
     ov_parser *parser = AS_DUMMY_PARSER(self);
-    if (!parser || !data) goto error;
+    if (!parser || !data)
+        goto error;
 
-    if (!ov_buffer_cast(data->in.data)) goto error;
+    if (!ov_buffer_cast(data->in.data))
+        goto error;
 
     OV_ASSERT(data->in.data);
     OV_ASSERT(data->in.free);
 
     // copy incoming to outgoing
     data->out.data = NULL;
-    if (!ov_buffer_copy(&data->out.data, data->in.data)) goto error;
+    if (!ov_buffer_copy(&data->out.data, data->in.data))
+        goto error;
 
     data->out.free = data->in.free;
 
@@ -453,8 +459,7 @@ int test_ov_parser_encode() {
     testrun(NULL == data.in.free);
     testrun(ov_buffer_free == data.out.free);
     testrun(ov_buffer_cast(data.out.data));
-    testrun(0 == strncmp((char *)((ov_buffer *)data.out.data)->start,
-                         content,
+    testrun(0 == strncmp((char *)((ov_buffer *)data.out.data)->start, content,
                          strlen(content)));
     testrun(NULL == data.out.free(data.out.data));
 
@@ -557,8 +562,7 @@ int test_ov_parser_decode() {
     testrun(NULL == data.in.free);
     testrun(ov_buffer_free == data.out.free);
     testrun(ov_buffer_cast(data.out.data));
-    testrun(0 == strncmp((char *)((ov_buffer *)data.out.data)->start,
-                         content,
+    testrun(0 == strncmp((char *)((ov_buffer *)data.out.data)->start, content,
                          strlen(content)));
     testrun(NULL == data.out.free(data.out.data));
 
@@ -697,16 +701,16 @@ int test_ov_parser_state_from_string() {
         ov_parser_state_from_string(OV_KEY_MISMATCH, strlen(OV_KEY_MISMATCH)));
 
     testrun(OV_PARSER_ERROR ==
-            ov_parser_state_from_string(
-                OV_KEY_MISMATCH, strlen(OV_KEY_MISMATCH) - 1));
+            ov_parser_state_from_string(OV_KEY_MISMATCH,
+                                        strlen(OV_KEY_MISMATCH) - 1));
 
     testrun(
         OV_PARSER_PROGRESS ==
         ov_parser_state_from_string(OV_KEY_PROGRESS, strlen(OV_KEY_PROGRESS)));
 
     testrun(OV_PARSER_ERROR ==
-            ov_parser_state_from_string(
-                OV_KEY_PROGRESS, strlen(OV_KEY_PROGRESS) - 1));
+            ov_parser_state_from_string(OV_KEY_PROGRESS,
+                                        strlen(OV_KEY_PROGRESS) - 1));
 
     testrun(OV_PARSER_SUCCESS == ov_parser_state_from_string(
                                      OV_KEY_SUCCESS, strlen(OV_KEY_SUCCESS)));

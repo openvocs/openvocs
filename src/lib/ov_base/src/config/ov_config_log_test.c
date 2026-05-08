@@ -91,7 +91,8 @@ static bool file_empty(char *path) {
 
     FILE *f = fopen(path, "r");
 
-    if (0 == f) return true;
+    if (0 == f)
+        return true;
 
     bool empty = file_object_empty(f);
 
@@ -113,7 +114,8 @@ static bool file_object_clear(FILE *f) {
 static bool file_clear(char const *path) {
 
     FILE *f = fopen(path, "w+");
-    if (0 == f) return false;
+    if (0 == f)
+        return false;
     bool clear = file_object_clear(f);
     fclose(f);
 
@@ -197,15 +199,11 @@ static int test_ov_log_output_from_json() {
     ov_log_output out = ov_log_output_from_json(0);
     testrun(output_empty(out));
 
-    out = log_output_from_string(
-        "{"
-        "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : true"
-        "}");
+    out = log_output_from_string("{"
+                                 "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON "\","
+                                 "\"" OV_KEY_LEVEL "\" : \"info\","
+                                 "\"" OV_KEY_SYSTEMD "\" : true"
+                                 "}");
 
     testrun(!output_empty(out));
 
@@ -221,17 +219,12 @@ static int test_ov_log_output_from_json() {
 
     memset(&out, 0, sizeof(out));
 
-    out = log_output_from_string(
-        "{"
-        "\"" OV_KEY_FILE "\" : \"" LOG_FILE_NAME
-        "\","
-        "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : false"
-        "}");
+    out = log_output_from_string("{"
+                                 "\"" OV_KEY_FILE "\" : \"" LOG_FILE_NAME "\","
+                                 "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON "\","
+                                 "\"" OV_KEY_LEVEL "\" : \"info\","
+                                 "\"" OV_KEY_SYSTEMD "\" : false"
+                                 "}");
 
     testrun(!output_empty(out));
 
@@ -248,20 +241,14 @@ static int test_ov_log_output_from_json() {
 
     // Check extended file config format - no log rotation
 
-    out = log_output_from_string(
-        "{"
-        "\"" OV_KEY_FILE
-        "\" : {"
-        "\"" OV_KEY_FILE "\":\"" LOG_FILE_NAME
-        ".r\""
-        "},"
-        "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : false"
-        "}");
+    out = log_output_from_string("{"
+                                 "\"" OV_KEY_FILE "\" : {"
+                                 "\"" OV_KEY_FILE "\":\"" LOG_FILE_NAME ".r\""
+                                 "},"
+                                 "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON "\","
+                                 "\"" OV_KEY_LEVEL "\" : \"info\","
+                                 "\"" OV_KEY_SYSTEMD "\" : false"
+                                 "}");
 
     testrun(!out.use.systemd);
     testrun(0 != out.filehandle);
@@ -278,24 +265,16 @@ static int test_ov_log_output_from_json() {
     //
     // Check extended file config format with log rotation
 
-    out = log_output_from_string(
-        "{"
-        "\"" OV_KEY_FILE
-        "\" : {"
-        "\"" OV_KEY_FILE "\":\"" LOG_FILE_NAME
-        ".s\","
-        "\"" OV_KEY_ROTATE_AFTER_MESSAGES
-        "\": 7,"
-        "\"" OV_KEY_KEEP_FILES
-        "\" : 3"
-        "},"
-        "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : false"
-        "}");
+    out = log_output_from_string("{"
+                                 "\"" OV_KEY_FILE "\" : {"
+                                 "\"" OV_KEY_FILE "\":\"" LOG_FILE_NAME ".s\","
+                                 "\"" OV_KEY_ROTATE_AFTER_MESSAGES "\": 7,"
+                                 "\"" OV_KEY_KEEP_FILES "\" : 3"
+                                 "},"
+                                 "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON "\","
+                                 "\"" OV_KEY_LEVEL "\" : \"info\","
+                                 "\"" OV_KEY_SYSTEMD "\" : false"
+                                 "}");
 
     testrun(!out.use.systemd);
     testrun(0 != out.filehandle);
@@ -312,24 +291,16 @@ static int test_ov_log_output_from_json() {
 
     remove(LOG_FILE_NAME ".s");
 
-    out = log_output_from_string(
-        "{"
-        "\"" OV_KEY_FILE
-        "\" : {"
-        "\"" OV_KEY_FILE "\":\"" LOG_FILE_NAME
-        ".t\","
-        "\"" OV_KEY_ROTATE_AFTER_MESSAGES
-        "\": 7,"
-        "\"" OV_KEY_KEEP_FILES
-        "\" : 3"
-        "},"
-        "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : false"
-        "}");
+    out = log_output_from_string("{"
+                                 "\"" OV_KEY_FILE "\" : {"
+                                 "\"" OV_KEY_FILE "\":\"" LOG_FILE_NAME ".t\","
+                                 "\"" OV_KEY_ROTATE_AFTER_MESSAGES "\": 7,"
+                                 "\"" OV_KEY_KEEP_FILES "\" : 3"
+                                 "},"
+                                 "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON "\","
+                                 "\"" OV_KEY_LEVEL "\" : \"info\","
+                                 "\"" OV_KEY_SYSTEMD "\" : false"
+                                 "}");
 
     testrun(!out.use.systemd);
     testrun(0 != out.filehandle);
@@ -384,15 +355,12 @@ static int test_ov_config_log_from_json() {
     testrun(stdout_clear());
     testrun(stderr_clear());
 
-    ov_json_value *log_cfg = json_from_string(
-        "{"
-        "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : \"false\""
-        "}");
+    ov_json_value *log_cfg =
+        json_from_string("{"
+                         "\"" OV_KEY_FORMAT "\" : \"" OV_KEY_JSON "\","
+                         "\"" OV_KEY_LEVEL "\" : \"info\","
+                         "\"" OV_KEY_SYSTEMD "\" : \"false\""
+                         "}");
 
     testrun(0 != log_cfg);
 
@@ -415,22 +383,16 @@ static int test_ov_config_log_from_json() {
 
 #define AAA_FILE_NAME OUR_TEMP_DIR "/aaa"
 
-    log_cfg = json_from_string(
-        "{"
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : \"false\","
-        "\"" OV_KEY_MODULES
-        "\" : {"
-        "\"aaa\" : {"
-        "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\""
-        "}"
-        "}"
-        "}");
+    log_cfg = json_from_string("{"
+                               "\"" OV_KEY_LEVEL "\" : \"info\","
+                               "\"" OV_KEY_SYSTEMD "\" : \"false\","
+                               "\"" OV_KEY_MODULES "\" : {"
+                               "\"aaa\" : {"
+                               "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"info\""
+                               "}"
+                               "}"
+                               "}");
 
     testrun(0 != log_cfg);
 
@@ -451,28 +413,21 @@ static int test_ov_config_log_from_json() {
 
 #define OV_LOG_CONFIGURE_TEST_FILE_NAME OUR_TEMP_DIR "/ov_config_log_test_c"
 
-    log_cfg = json_from_string(
-        "{"
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : \"false\","
-        "\"" OV_KEY_MODULES
-        "\" : {"
-        "\"aaa\" : {"
-        "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\""
-        "},"
-        "\"ov_config_log_test.c\" : {"
-        "\"" OV_KEY_FILE "\" : \"" OV_LOG_CONFIGURE_TEST_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\""
-        "}"
-        "}"
-        "}");
+    log_cfg = json_from_string("{"
+                               "\"" OV_KEY_LEVEL "\" : \"info\","
+                               "\"" OV_KEY_SYSTEMD "\" : \"false\","
+                               "\"" OV_KEY_MODULES "\" : {"
+                               "\"aaa\" : {"
+                               "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"info\""
+                               "},"
+                               "\"ov_config_log_test.c\" : {"
+                               "\"" OV_KEY_FILE
+                               "\" : \"" OV_LOG_CONFIGURE_TEST_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"info\""
+                               "}"
+                               "}"
+                               "}");
 
     testrun(0 != log_cfg);
 
@@ -498,43 +453,30 @@ static int test_ov_config_log_from_json() {
 
 #define LETS_LOG_SOMETHING_FILE_NAME OUR_TEMP_DIR "/lets_log_something"
 
-    log_cfg = json_from_string(
-        "{"
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : \"false\","
-        "\"" OV_KEY_MODULES
-        "\" : {"
-        "\"aaa\" : {"
-        "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\""
-        "},"
-        "\"ov_config_log_test.c\" : {"
-        "\"" OV_KEY_FILE "\" : \"" OV_LOG_CONFIGURE_TEST_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"warning\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : true,"
-        "\"" OV_KEY_FUNCTIONS
-        "\" : {"
-        "\"lets_log_something\" : {"
-        "\"" OV_KEY_FILE
-        "\" : "
-        "\"" LETS_LOG_SOMETHING_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"warning\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : true"
-        "}"
-        "}"
-        "}"
-        "}"
-        "}");
+    log_cfg = json_from_string("{"
+                               "\"" OV_KEY_LEVEL "\" : \"info\","
+                               "\"" OV_KEY_SYSTEMD "\" : \"false\","
+                               "\"" OV_KEY_MODULES "\" : {"
+                               "\"aaa\" : {"
+                               "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"info\""
+                               "},"
+                               "\"ov_config_log_test.c\" : {"
+                               "\"" OV_KEY_FILE
+                               "\" : \"" OV_LOG_CONFIGURE_TEST_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"warning\","
+                               "\"" OV_KEY_SYSTEMD "\" : true,"
+                               "\"" OV_KEY_FUNCTIONS "\" : {"
+                               "\"lets_log_something\" : {"
+                               "\"" OV_KEY_FILE "\" : "
+                               "\"" LETS_LOG_SOMETHING_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"warning\","
+                               "\"" OV_KEY_SYSTEMD "\" : true"
+                               "}"
+                               "}"
+                               "}"
+                               "}"
+                               "}");
 
     testrun(0 != log_cfg);
 
@@ -583,47 +525,32 @@ static int test_ov_config_log_from_json() {
 
 #define LETS_LOG_SOMETHING_FILE_NAME OUR_TEMP_DIR "/lets_log_something"
 
-    log_cfg = json_from_string(
-        "{"
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : \"false\","
-        "\"" OV_KEY_MODULES
-        "\" : {"
-        "\"aaa\" : {"
-        "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\""
-        "},"
-        "\"ov_config_log_test.c\" : {"
-        "\"" OV_KEY_FILE "\" : \"" OV_LOG_CONFIGURE_TEST_FILE_NAME
-        "\","
-        "\"" OV_KEY_LEVEL
-        "\" : \"warning\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : true,"
-        "\"" OV_KEY_FUNCTIONS
-        "\" : {"
-        "\"lets_log_something\" : {"
-        "\"" OV_KEY_FILE
-        "\" : "
-        "\"" LETS_LOG_SOMETHING_FILE_NAME
-        "\","
-        "\"" OV_KEY_ROTATE_AFTER_MESSAGES
-        "\": 3,"
-        "\"" OV_KEY_KEEP_FILES
-        "\" : 3,"
-        "\"" OV_KEY_LEVEL
-        "\" : \"warning\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : true"
-        "}"
-        "}"
-        "}"
-        "}"
-        "}");
+    log_cfg = json_from_string("{"
+                               "\"" OV_KEY_LEVEL "\" : \"info\","
+                               "\"" OV_KEY_SYSTEMD "\" : \"false\","
+                               "\"" OV_KEY_MODULES "\" : {"
+                               "\"aaa\" : {"
+                               "\"" OV_KEY_FILE "\" : \"" AAA_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"info\""
+                               "},"
+                               "\"ov_config_log_test.c\" : {"
+                               "\"" OV_KEY_FILE
+                               "\" : \"" OV_LOG_CONFIGURE_TEST_FILE_NAME "\","
+                               "\"" OV_KEY_LEVEL "\" : \"warning\","
+                               "\"" OV_KEY_SYSTEMD "\" : true,"
+                               "\"" OV_KEY_FUNCTIONS "\" : {"
+                               "\"lets_log_something\" : {"
+                               "\"" OV_KEY_FILE "\" : "
+                               "\"" LETS_LOG_SOMETHING_FILE_NAME "\","
+                               "\"" OV_KEY_ROTATE_AFTER_MESSAGES "\": 3,"
+                               "\"" OV_KEY_KEEP_FILES "\" : 3,"
+                               "\"" OV_KEY_LEVEL "\" : \"warning\","
+                               "\"" OV_KEY_SYSTEMD "\" : true"
+                               "}"
+                               "}"
+                               "}"
+                               "}"
+                               "}");
 
     testrun(0 != log_cfg);
 
@@ -700,19 +627,14 @@ static int test_ov_config_log_from_json() {
 
 #define EXISTING_LOG_FILE OUR_TEMP_DIR "/we_exist"
 
-    char const test_content[] =
-        "denn weit und breit sieht sie ueber die "
-        "welten all\n";
+    char const test_content[] = "denn weit und breit sieht sie ueber die "
+                                "welten all\n";
 
-    log_cfg = json_from_string(
-        "{"
-        "\"" OV_KEY_LEVEL
-        "\" : \"info\","
-        "\"" OV_KEY_SYSTEMD
-        "\" : \"false\","
-        "\"" OV_KEY_FILE "\" : \"" EXISTING_LOG_FILE
-        "\""
-        "}");
+    log_cfg = json_from_string("{"
+                               "\"" OV_KEY_LEVEL "\" : \"info\","
+                               "\"" OV_KEY_SYSTEMD "\" : \"false\","
+                               "\"" OV_KEY_FILE "\" : \"" EXISTING_LOG_FILE "\""
+                               "}");
 
     testrun(0 != log_cfg);
     testrun(ov_config_log_from_json(log_cfg));
@@ -765,8 +687,5 @@ static int tear_down() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_config_log",
-            init,
-            test_ov_log_output_from_json,
-            test_ov_config_log_from_json,
-            tear_down);
+OV_TEST_RUN("ov_config_log", init, test_ov_log_output_from_json,
+            test_ov_config_log_from_json, tear_down);

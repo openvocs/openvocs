@@ -342,8 +342,7 @@ int test_impl_generate_white_noise() {
 
     for (size_t i = 0; i < buffer->length / sizeof(int16_t); ++i) {
 
-        printf("%" PRIi16 " (max %" PRIu16 ") \n",
-               samples[i],
+        printf("%" PRIi16 " (max %" PRIu16 ") \n", samples[i],
                wnoise.max_amplitude);
 
         testrun(wnoise.max_amplitude >= samples[i]);
@@ -431,8 +430,8 @@ int test_impl_generate_from_file() {
     /* As we write using the "PCM 16s BIG ENDIAN" codec,
      * let's transform our test data to big endian */
 
-    testrun(ov_byteorder_to_big_endian_16_bit(
-        (int16_t *)file_content, FILE_LENGTH_SAMPLES));
+    testrun(ov_byteorder_to_big_endian_16_bit((int16_t *)file_content,
+                                              FILE_LENGTH_SAMPLES));
 
     from_file_config.file_name = file_path;
     pcm = ov_pcm_gen_create(OV_FROM_FILE, config, &from_file_config);
@@ -529,13 +528,9 @@ int test_ov_pcm_gen_config_print() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_pcm_gen",
-            test_ov_pcm_gen_create,
-            test_ov_pcm_gen_free,
-            test_ov_pcm_gen_generate_frame,
-            test_impl_generate_sinusoids,
-            test_impl_generate_white_noise,
-            test_impl_generate_from_file,
+OV_TEST_RUN("ov_pcm_gen", test_ov_pcm_gen_create, test_ov_pcm_gen_free,
+            test_ov_pcm_gen_generate_frame, test_impl_generate_sinusoids,
+            test_impl_generate_white_noise, test_impl_generate_from_file,
             test_ov_pcm_gen_config_print);
 
 /*----------------------------------------------------------------------------*/

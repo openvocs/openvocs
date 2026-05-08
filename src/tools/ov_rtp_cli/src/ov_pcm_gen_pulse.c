@@ -87,8 +87,7 @@ static ov_buffer *impl_generate_frame(ov_pcm_gen *self) {
 
     if (bytes_read != length) {
 
-        ov_log_error("Requested %zu bytes, but only got %zu bytes\n",
-                     length,
+        ov_log_error("Requested %zu bytes, but only got %zu bytes\n", length,
                      bytes_read);
         memset(output, 0, length);
     }
@@ -109,7 +108,8 @@ error:
 
 void *impl_free(void *self) {
 
-    if (0 == self) return 0;
+    if (0 == self)
+        return 0;
 
     pcm_internal *internal = self;
 

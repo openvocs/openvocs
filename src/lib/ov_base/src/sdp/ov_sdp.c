@@ -113,53 +113,60 @@ static ov_static_global_sdp_cache ov_sdp_cache = {0};
         @param out      if true \r\n will be checked (last != outer)
         @param intro    char of the intro start
 */
-static bool parse_line_frame(const char *start,
-                             size_t size,
-                             char **next,
-                             char **inner,
-                             char **outer,
-                             bool in,
-                             bool out,
+static bool parse_line_frame(const char *start, size_t size, char **next,
+                             char **inner, char **outer, bool in, bool out,
                              char intro) {
 
     char *last = NULL;
 
-    if (!start || !inner) return false;
+    if (!start || !inner)
+        return false;
 
     if (in && out)
-        if (size < 4) return false;
+        if (size < 4)
+            return false;
 
     if (in) {
 
-        if (size < 2) return false;
+        if (size < 2)
+            return false;
 
-        if (start[0] != intro) return false;
+        if (start[0] != intro)
+            return false;
 
-        if (start[1] != '=') return false;
+        if (start[1] != '=')
+            return false;
 
-        if (next) *next = (char *)start + 2;
+        if (next)
+            *next = (char *)start + 2;
 
     } else {
 
-        if (next) *next = (char *)start;
+        if (next)
+            *next = (char *)start;
     }
 
     if (out) {
 
-        if (size < 2) return false;
+        if (size < 2)
+            return false;
 
         last = memchr(start, '\n', size);
-        if (!last) return false;
+        if (!last)
+            return false;
 
-        if (last[-1] != '\r') return false;
+        if (last[-1] != '\r')
+            return false;
 
         *inner = last - 2;
-        if (outer) *outer = last + 1;
+        if (outer)
+            *outer = last + 1;
 
     } else {
 
         *inner = (char *)start + size - 1;
-        if (outer) *outer = (char *)start + size;
+        if (outer)
+            *outer = (char *)start + size;
     }
 
     return true;
@@ -169,7 +176,8 @@ static bool parse_line_frame(const char *start,
 
 static bool parse_number(const char *start, size_t size, uint64_t *number) {
 
-    if (!start || size < 1 || !number) return false;
+    if (!start || size < 1 || !number)
+        return false;
 
     char buffer[size + 1];
     memset(buffer, 0, size + 1);
@@ -180,31 +188,33 @@ static bool parse_number(const char *start, size_t size, uint64_t *number) {
 
     nbr = strtoll(buffer, &end, 10);
 
-    if ((end - buffer) != (ssize_t)size) goto error;
+    if ((end - buffer) != (ssize_t)size)
+        goto error;
 
     *number = nbr;
 
     return true;
 error:
-    if (number) *number = 0;
+    if (number)
+        *number = 0;
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_content_line(const char *start,
-                               size_t size,
-                               char **content_start,
-                               size_t *content_length,
-                               char **next,
-                               char intro,
+static bool parse_content_line(const char *start, size_t size,
+                               char **content_start, size_t *content_length,
+                               char **next, char intro,
                                bool (*match)(const char *, uint64_t)) {
 
-    if (!start || size < 5 || !intro) return false;
+    if (!start || size < 5 || !intro)
+        return false;
 
-    if (!content_start || !content_length) goto error;
+    if (!content_start || !content_length)
+        goto error;
 
-    if (*start != intro) goto error;
+    if (*start != intro)
+        goto error;
 
     char *ptr = NULL;
     char *last = NULL;
@@ -213,45 +223,47 @@ static bool parse_content_line(const char *start,
         goto error;
 
     if (match)
-        if (!match(ptr, last + 1 - ptr)) goto error;
+        if (!match(ptr, last + 1 - ptr))
+            goto error;
 
     *content_start = ptr;
     *content_length = (last + 1 - ptr);
 
     return true;
 error:
-    if (content_start) *content_start = NULL;
+    if (content_start)
+        *content_start = NULL;
 
-    if (content_length) *content_length = 0;
+    if (content_length)
+        *content_length = 0;
 
-    if (next) *next = (char *)start;
+    if (next)
+        *next = (char *)start;
 
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_information(const char *start,
-                              size_t size,
-                              char **content,
+static bool parse_information(const char *start, size_t size, char **content,
                               size_t *length) {
 
-    if (!start || size < 5 || !content || !length) return false;
+    if (!start || size < 5 || !content || !length)
+        return false;
 
     char *next = NULL;
 
-    return parse_content_line(
-        start, size, content, length, &next, 'i', ov_sdp_is_text);
+    return parse_content_line(start, size, content, length, &next, 'i',
+                              ov_sdp_is_text);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool parse_uri(const char *start,
-                      size_t size,
-                      char **content,
+static bool parse_uri(const char *start, size_t size, char **content,
                       size_t *length) {
 
-    if (!start || size < 5 || !content || !length) return false;
+    if (!start || size < 5 || !content || !length)
+        return false;
 
     char *next = NULL;
     char *ptr = (char *)start;
@@ -271,15 +283,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool validate_content_list(const char *start,
-                                  size_t size,
-                                  char **next,
+static bool validate_content_list(const char *start, size_t size, char **next,
                                   char intro,
                                   bool (*match)(const char *, uint64_t)) {
 
-    if (!next || !start || !match || size < 1) goto error;
+    if (!next || !start || !match || size < 1)
+        goto error;
 
-    if (*start != intro) goto error;
+    if (*start != intro)
+        goto error;
 
     char *ptr = (char *)start;
     char *content = NULL;
@@ -290,19 +302,16 @@ static bool validate_content_list(const char *start,
         content = NULL;
         length = 0;
 
-        if (!parse_content_line(ptr,
-                                size - (ptr - start),
-                                &content,
-                                &length,
-                                &ptr,
-                                intro,
-                                match))
+        if (!parse_content_line(ptr, size - (ptr - start), &content, &length,
+                                &ptr, intro, match))
             goto error;
 
-        if (!content || length < 1) goto error;
+        if (!content || length < 1)
+            goto error;
     }
 
-    if (next) *next = ptr;
+    if (next)
+        *next = ptr;
 
     return true;
 error:
@@ -313,15 +322,20 @@ error:
 
 static bool validate_line(const char *start, size_t size, char **next) {
 
-    if (!start || !next) return false;
+    if (!start || !next)
+        return false;
 
-    if (size < 5) goto error;
-    if (start[1] != '=') goto error;
+    if (size < 5)
+        goto error;
+    if (start[1] != '=')
+        goto error;
 
     char *last = memchr(start, '\n', size);
-    if (!last) goto error;
+    if (!last)
+        goto error;
 
-    if (last[-1] != '\r') goto error;
+    if (last[-1] != '\r')
+        goto error;
 
     *next = last + 1;
     return true;
@@ -333,9 +347,11 @@ error:
 
 static bool validate_version(const char *line, size_t length) {
 
-    if (!line || length < 5) goto error;
+    if (!line || length < 5)
+        goto error;
 
-    if (0 != strncmp(line, "v=0\r\n", length)) goto error;
+    if (0 != strncmp(line, "v=0\r\n", length))
+        goto error;
 
     return true;
 error:
@@ -346,11 +362,15 @@ error:
 
 static bool validate_session_name(const char *line, size_t length) {
 
-    if (!line || length < 5) goto error;
+    if (!line || length < 5)
+        goto error;
 
-    if (line[0] != 's') goto error;
-    if (line[length - 2] != '\r') goto error;
-    if (line[length - 1] != '\n') goto error;
+    if (line[0] != 's')
+        goto error;
+    if (line[length - 2] != '\r')
+        goto error;
+    if (line[length - 1] != '\n')
+        goto error;
 
     return ov_sdp_is_token(line + 2, length - 4);
 error:
@@ -361,11 +381,15 @@ error:
 
 static bool validate_key(const char *line, size_t length) {
 
-    if (!line || length < 5) goto error;
+    if (!line || length < 5)
+        goto error;
 
-    if (line[0] != 'k') goto error;
-    if (line[length - 2] != '\r') goto error;
-    if (line[length - 1] != '\n') goto error;
+    if (line[0] != 'k')
+        goto error;
+    if (line[length - 2] != '\r')
+        goto error;
+    if (line[length - 1] != '\n')
+        goto error;
 
     return ov_sdp_is_key(line + 2, length - 4);
 error:
@@ -374,39 +398,47 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool validate_connection(const char *line,
-                                size_t length,
-                                bool intro,
+static bool validate_connection(const char *line, size_t length, bool intro,
                                 bool outro) {
 
-    if (!line || length < 5) goto error;
+    if (!line || length < 5)
+        goto error;
 
     char *space = NULL;
     char *ptr = (char *)line;
 
     if (intro) {
-        if (ptr[0] != 'c') goto error;
-        if (ptr[1] != '=') goto error;
+        if (ptr[0] != 'c')
+            goto error;
+        if (ptr[1] != '=')
+            goto error;
         ptr += 2;
     }
 
     if (outro) {
-        if (line[length - 2] != '\r') goto error;
-        if (line[length - 1] != '\n') goto error;
+        if (line[length - 2] != '\r')
+            goto error;
+        if (line[length - 1] != '\n')
+            goto error;
         length -= 2;
     }
 
     space = memchr(ptr, 0x20, length);
-    if (!space) goto error;
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!space)
+        goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     ptr = space + 1;
     space = memchr(ptr, 0x20, length);
-    if (!space) goto error;
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!space)
+        goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     ptr = space + 1;
-    if (!ov_sdp_is_address(ptr, length - (ptr - line))) goto error;
+    if (!ov_sdp_is_address(ptr, length - (ptr - line)))
+        goto error;
 
     return true;
 error:
@@ -417,29 +449,37 @@ error:
 
 static bool validate_origin(const char *line, size_t length) {
 
-    if (!line || length < 11) goto error;
+    if (!line || length < 11)
+        goto error;
 
-    if (line[0] != 'o') goto error;
+    if (line[0] != 'o')
+        goto error;
 
     char *space = NULL;
     char *ptr = (char *)line;
 
     space = memchr(ptr, 0x20, length);
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
-    if (!ov_sdp_is_username(ptr, space - ptr)) goto error;
-
-    ptr = space + 1;
-    space = memchr(ptr, 0x20, length);
-    if (!space) goto error;
-
-    if (!ov_sdp_is_digit(ptr, space - ptr)) goto error;
+    if (!ov_sdp_is_username(ptr, space - ptr))
+        goto error;
 
     ptr = space + 1;
     space = memchr(ptr, 0x20, length);
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
-    if (!ov_sdp_is_digit(ptr, space - ptr)) goto error;
+    if (!ov_sdp_is_digit(ptr, space - ptr))
+        goto error;
+
+    ptr = space + 1;
+    space = memchr(ptr, 0x20, length);
+    if (!space)
+        goto error;
+
+    if (!ov_sdp_is_digit(ptr, space - ptr))
+        goto error;
 
     ptr = space + 1;
 
@@ -455,12 +495,14 @@ error:
 
 static bool validate_information(const char *line, size_t length) {
 
-    if (!line || length < 5) goto error;
+    if (!line || length < 5)
+        goto error;
 
     char *content = NULL;
     size_t clength = 0;
 
-    if (!parse_information(line, length, &content, &clength)) goto error;
+    if (!parse_information(line, length, &content, &clength))
+        goto error;
 
     return true;
 error:
@@ -471,12 +513,14 @@ error:
 
 static bool validate_uri(const char *line, size_t length) {
 
-    if (!line || length < 5) goto error;
+    if (!line || length < 5)
+        goto error;
 
     char *content = NULL;
     size_t clength = 0;
 
-    if (!parse_uri(line, length, &content, &clength)) goto error;
+    if (!parse_uri(line, length, &content, &clength))
+        goto error;
 
     return true;
 error:
@@ -487,7 +531,8 @@ error:
 
 static bool validate_time(const char *line, size_t length, char **next) {
 
-    if (!line || !next || length < 5) goto error;
+    if (!line || !next || length < 5)
+        goto error;
 
     /*
      *  "t=0 0\r\n
@@ -502,22 +547,27 @@ static bool validate_time(const char *line, size_t length, char **next) {
     char *ptr = NULL;
     char *last = NULL;
 
-    if (out[0] != 't') goto error;
+    if (out[0] != 't')
+        goto error;
 
     while (out[0] == 't') {
 
         ptr = out;
-        if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+        if (!validate_line(ptr, length - (ptr - line), &out))
+            goto error;
 
         ptr += 2;
         space = memchr(ptr, 0x20, (out - ptr));
-        if (!space) goto error;
+        if (!space)
+            goto error;
 
-        if (!ov_sdp_is_time(ptr, (space - ptr))) goto error;
+        if (!ov_sdp_is_time(ptr, (space - ptr)))
+            goto error;
 
         ptr = space + 1;
 
-        if (!ov_sdp_is_time(ptr, (out - 2 - ptr))) goto error;
+        if (!ov_sdp_is_time(ptr, (out - 2 - ptr)))
+            goto error;
 
         while (out[0] == 'r') {
 
@@ -535,19 +585,23 @@ static bool validate_time(const char *line, size_t length, char **next) {
             ptr = out;
             last = out - 2;
 
-            if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+            if (!validate_line(ptr, length - (ptr - line), &out))
+                goto error;
 
             ptr += 2;
 
             space = memchr(ptr, 0x20, (last - ptr));
-            if (!space) goto error;
+            if (!space)
+                goto error;
 
-            if (!ov_sdp_is_typed_time(ptr, (space - ptr), false)) goto error;
+            if (!ov_sdp_is_typed_time(ptr, (space - ptr), false))
+                goto error;
 
             ptr = space + 1;
 
             space = memchr(ptr, 0x20, (last - ptr));
-            if (!space) goto error;
+            if (!space)
+                goto error;
 
             while (space) {
 
@@ -558,7 +612,8 @@ static bool validate_time(const char *line, size_t length, char **next) {
                 space = memchr(ptr, 0x20, (out - ptr));
             }
 
-            if (!ov_sdp_is_typed_time(ptr, (out - ptr) - 2, false)) goto error;
+            if (!ov_sdp_is_typed_time(ptr, (out - ptr) - 2, false))
+                goto error;
         }
 
         if (out[0] == 'z') {
@@ -576,11 +631,13 @@ static bool validate_time(const char *line, size_t length, char **next) {
              */
             ptr = out + 2;
 
-            if (!validate_line(out, length - (out - line), &out)) goto error;
+            if (!validate_line(out, length - (out - line), &out))
+                goto error;
 
             do {
                 space = memchr(ptr, 0x20, (out - ptr));
-                if (!space) goto error;
+                if (!space)
+                    goto error;
 
                 if (!ov_sdp_is_typed_time(ptr, (space - ptr), false))
                     goto error;
@@ -617,7 +674,8 @@ error:
 
 static bool validate_attributes(const char *line, size_t length, char **next) {
 
-    if (!line || !next || length < 5) goto error;
+    if (!line || !next || length < 5)
+        goto error;
 
     /*
      *  EXAMPLES:
@@ -639,25 +697,30 @@ static bool validate_attributes(const char *line, size_t length, char **next) {
     char *out = (char *)line;
     char *ptr = NULL;
     char *col = NULL;
-    if (out[0] != 'a') goto error;
+    if (out[0] != 'a')
+        goto error;
 
     while (out[0] == 'a') {
 
         ptr = out + 2;
-        if (!validate_line(out, length - (out - line), &out)) goto error;
+        if (!validate_line(out, length - (out - line), &out))
+            goto error;
 
         col = memchr(ptr, ':', out - ptr);
 
         if (col) {
 
-            if (!ov_sdp_is_token(ptr, (col - ptr))) goto error;
+            if (!ov_sdp_is_token(ptr, (col - ptr)))
+                goto error;
 
             ptr = col + 1;
-            if (!ov_sdp_is_byte_string(ptr, (out - ptr) - 2)) goto error;
+            if (!ov_sdp_is_byte_string(ptr, (out - ptr) - 2))
+                goto error;
 
         } else {
 
-            if (!ov_sdp_is_token(ptr, (out - ptr) - 2)) goto error;
+            if (!ov_sdp_is_token(ptr, (out - ptr) - 2))
+                goto error;
         }
     }
 
@@ -672,9 +735,11 @@ error:
 
 static bool validate_media(const char *start, size_t size, char **next) {
 
-    if (!start || size < 11 || !next) goto error;
+    if (!start || size < 11 || !next)
+        goto error;
 
-    if (start[0] != 'm') goto error;
+    if (start[0] != 'm')
+        goto error;
 
     /*
      *  EXAMPLES:
@@ -693,26 +758,32 @@ static bool validate_media(const char *start, size_t size, char **next) {
 
     uint32_t port = 0;
 
-    if (!validate_line(ptr, size - (ptr - start), &nxt)) goto error;
+    if (!validate_line(ptr, size - (ptr - start), &nxt))
+        goto error;
 
     ptr += 2;
 
     *next = nxt;
 
     space = memchr(ptr, ' ', (nxt - ptr));
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     ptr = space + 1;
 
     space = memchr(ptr, ' ', (nxt - ptr));
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
     port = strtol(ptr, &end, 10);
-    if (!end) goto error;
+    if (!end)
+        goto error;
 
-    if (((end - ptr < 1)) || ((end - ptr) > 5)) goto error;
+    if (((end - ptr < 1)) || ((end - ptr) > 5))
+        goto error;
 
     if (0 == port) { /* ignore */
     };
@@ -724,20 +795,25 @@ static bool validate_media(const char *start, size_t size, char **next) {
         ptr++;
 
         port = strtol(ptr, &end, 10);
-        if (!end) goto error;
+        if (!end)
+            goto error;
 
-        if (((end - ptr < 1)) || ((end - ptr) > 5)) goto error;
+        if (((end - ptr < 1)) || ((end - ptr) > 5))
+            goto error;
 
         ptr = end;
     }
 
-    if (end != space) goto error;
+    if (end != space)
+        goto error;
 
     ptr = space + 1;
     space = memchr(ptr, ' ', (nxt - ptr));
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
-    if (!ov_sdp_is_proto(ptr, (space - ptr))) goto error;
+    if (!ov_sdp_is_proto(ptr, (space - ptr)))
+        goto error;
 
     ptr = space + 1;
 
@@ -745,13 +821,15 @@ static bool validate_media(const char *start, size_t size, char **next) {
 
     while (space) {
 
-        if (!ov_sdp_is_token(ptr, (space - ptr))) goto error;
+        if (!ov_sdp_is_token(ptr, (space - ptr)))
+            goto error;
 
         ptr = space + 1;
         space = memchr(ptr, ' ', (nxt - ptr));
     }
 
-    if (!ov_sdp_is_token(ptr, (nxt - 2 - ptr))) goto error;
+    if (!ov_sdp_is_token(ptr, (nxt - 2 - ptr)))
+        goto error;
 
     return true;
 error:
@@ -760,31 +838,36 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool validate_media_descriptions(const char *line,
-                                        size_t length,
+static bool validate_media_descriptions(const char *line, size_t length,
                                         char **next) {
 
-    if (!line || !next || length < 11) goto error;
+    if (!line || !next || length < 11)
+        goto error;
 
     char *ptr = NULL;
     char *out = (char *)line;
 
-    if (out[0] != 'm') goto error;
+    if (out[0] != 'm')
+        goto error;
 
     while (out[0] == 'm') {
 
         ptr = out;
-        if (!validate_line(out, length - (out - line), &out)) goto error;
+        if (!validate_line(out, length - (out - line), &out))
+            goto error;
 
-        if (!validate_media(ptr, (out - ptr), &ptr)) goto error;
+        if (!validate_media(ptr, (out - ptr), &ptr))
+            goto error;
 
         // OPTIONAL INFO
 
         if (*ptr == 'i') {
 
-            if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+            if (!validate_line(ptr, length - (ptr - line), &out))
+                goto error;
 
-            if (!validate_information(ptr, (out - ptr))) goto error;
+            if (!validate_information(ptr, (out - ptr)))
+                goto error;
 
             ptr = out;
         }
@@ -793,9 +876,11 @@ static bool validate_media_descriptions(const char *line,
 
         while (*ptr == 'c') {
 
-            if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+            if (!validate_line(ptr, length - (ptr - line), &out))
+                goto error;
 
-            if (!validate_connection(ptr, (out - ptr), true, true)) goto error;
+            if (!validate_connection(ptr, (out - ptr), true, true))
+                goto error;
 
             ptr = out;
         }
@@ -804,8 +889,8 @@ static bool validate_media_descriptions(const char *line,
 
         if (*ptr == 'b') {
 
-            if (!validate_content_list(
-                    ptr, length - (ptr - line), &out, 'b', ov_sdp_is_bandwidth))
+            if (!validate_content_list(ptr, length - (ptr - line), &out, 'b',
+                                       ov_sdp_is_bandwidth))
                 goto error;
 
             ptr = out;
@@ -815,9 +900,11 @@ static bool validate_media_descriptions(const char *line,
 
         if (*ptr == 'k') {
 
-            if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+            if (!validate_line(ptr, length - (ptr - line), &out))
+                goto error;
 
-            if (!validate_key(ptr, (out - ptr))) goto error;
+            if (!validate_key(ptr, (out - ptr)))
+                goto error;
 
             ptr = out;
         }
@@ -844,8 +931,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool masked_session_connection(ov_sdp_connection *connection,
-                                      char *line_start,
-                                      size_t line_length) {
+                                      char *line_start, size_t line_length) {
 
     /*
      *      connection-field =  'c' "="
@@ -853,20 +939,25 @@ static bool masked_session_connection(ov_sdp_connection *connection,
      *
      */
 
-    if (!connection || !line_start || line_length < 7) goto error;
+    if (!connection || !line_start || line_length < 7)
+        goto error;
 
     char *ptr = line_start;
     char *space = NULL;
 
-    if (line_start[line_length - 2] != '\r') goto error;
-    if (line_start[line_length - 1] != '\n') goto error;
+    if (line_start[line_length - 2] != '\r')
+        goto error;
+    if (line_start[line_length - 1] != '\n')
+        goto error;
 
     line_start[line_length - 2] = 0;
     line_start[line_length - 1] = 0;
 
     space = memchr(ptr, 0x20, line_length);
-    if (!space) goto error;
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!space)
+        goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     connection->nettype = ptr;
 
@@ -874,8 +965,10 @@ static bool masked_session_connection(ov_sdp_connection *connection,
     *space = 0;
 
     space = memchr(ptr, 0x20, line_length - (ptr - line_start));
-    if (!space) goto error;
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!space)
+        goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     connection->addrtype = ptr;
 
@@ -898,8 +991,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool mask_origin(DefaultSession *session,
-                        char *line_start,
+static bool mask_origin(DefaultSession *session, char *line_start,
                         size_t line_length) {
 
     /*
@@ -911,19 +1003,23 @@ static bool mask_origin(DefaultSession *session,
      *      "o=u 1 2 n a x\r\n"
      */
 
-    if (!session || !line_start || line_length < 11) goto error;
+    if (!session || !line_start || line_length < 11)
+        goto error;
 
     char *ptr = NULL;
     char *space = NULL;
     uint64_t nbr = 0;
 
-    if (line_start[0] != 'o') goto error;
-    if (line_start[1] != '=') goto error;
+    if (line_start[0] != 'o')
+        goto error;
+    if (line_start[1] != '=')
+        goto error;
 
     ptr = line_start + 2;
 
     space = memchr(ptr, 0x20, line_length - (ptr - line_start));
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
     /*
      *      MASK the name string within the original buffer
@@ -933,34 +1029,37 @@ static bool mask_origin(DefaultSession *session,
 
     ptr = space + 1;
     space = memchr(ptr, 0x20, line_length - (ptr - line_start));
-    if (!space) goto error;
+    if (!space)
+        goto error;
     *space = 0;
 
     /*
      *      Parse the id number
      */
 
-    if (!parse_number(ptr, space - ptr, &nbr)) goto error;
+    if (!parse_number(ptr, space - ptr, &nbr))
+        goto error;
 
     session->public.origin.id = nbr;
 
     ptr = space + 1;
     space = memchr(ptr, 0x20, line_length - (ptr - line_start));
-    if (!space) goto error;
+    if (!space)
+        goto error;
     *space = 0;
 
     /*
      *      Parse the version number
      */
 
-    if (!parse_number(ptr, space - ptr, &nbr)) goto error;
+    if (!parse_number(ptr, space - ptr, &nbr))
+        goto error;
 
     session->public.origin.version = nbr;
 
     ptr = space + 1;
 
-    if (!masked_session_connection(&session->public.origin.connection,
-                                   ptr,
+    if (!masked_session_connection(&session->public.origin.connection, ptr,
                                    line_length - (ptr - line_start)))
         goto error;
 
@@ -975,11 +1074,13 @@ static ov_sdp_list *create_list_node(ov_sdp_list **head) {
 
     ov_sdp_list *list = NULL;
 
-    if (!head) goto error;
+    if (!head)
+        goto error;
 
     list = ov_sdp_list_create();
 
-    if (!ov_node_push((void **)head, list)) goto error;
+    if (!ov_node_push((void **)head, list))
+        goto error;
 
     return list;
 
@@ -989,19 +1090,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_masked_list(ov_sdp_list **head,
-                               char *start,
-                               size_t length,
-                               char **next,
-                               char intro,
+static bool create_masked_list(ov_sdp_list **head, char *start, size_t length,
+                               char **next, char intro,
                                bool (*match)(const char *, uint64_t)) {
 
     ov_sdp_list *list = NULL;
 
-    if (!head || !start || length < 5 || !next || !match) goto error;
+    if (!head || !start || length < 5 || !next || !match)
+        goto error;
 
-    if (start[0] != intro) goto error;
-    if (start[1] != '=') goto error;
+    if (start[0] != intro)
+        goto error;
+    if (start[1] != '=')
+        goto error;
 
     char *ptr = start;
     char *val = NULL;
@@ -1013,14 +1114,16 @@ static bool create_masked_list(ov_sdp_list **head,
         len = 0;
         list = NULL;
 
-        if (!parse_content_line(
-                ptr, length - (ptr - start), &val, &len, &ptr, intro, match))
+        if (!parse_content_line(ptr, length - (ptr - start), &val, &len, &ptr,
+                                intro, match))
             goto error;
 
-        if (!val || len < 1) goto error;
+        if (!val || len < 1)
+            goto error;
 
         list = create_list_node(head);
-        if (!list) goto error;
+        if (!list)
+            goto error;
 
         list->value = val;
 
@@ -1037,16 +1140,15 @@ static bool create_masked_list(ov_sdp_list **head,
 
     return true;
 error:
-    if (head) *head = ov_sdp_list_free(*head);
+    if (head)
+        *head = ov_sdp_list_free(*head);
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_masked_connection(ov_sdp_connection **head,
-                                     char *line_start,
-                                     size_t line_length,
-                                     bool intro) {
+static bool create_masked_connection(ov_sdp_connection **head, char *line_start,
+                                     size_t line_length, bool intro) {
 
     ov_sdp_connection *connection = NULL;
 
@@ -1056,27 +1158,34 @@ static bool create_masked_connection(ov_sdp_connection **head,
      *
      */
 
-    if (!head || !line_start || line_length < 7) goto error;
+    if (!head || !line_start || line_length < 7)
+        goto error;
 
     char *ptr = line_start;
     char *space = NULL;
 
     if (intro) {
 
-        if (line_start[0] != 'c') goto error;
-        if (line_start[1] != '=') goto error;
+        if (line_start[0] != 'c')
+            goto error;
+        if (line_start[1] != '=')
+            goto error;
         ptr += 2;
     }
 
-    if (line_start[line_length - 2] != '\r') goto error;
-    if (line_start[line_length - 1] != '\n') goto error;
+    if (line_start[line_length - 2] != '\r')
+        goto error;
+    if (line_start[line_length - 1] != '\n')
+        goto error;
 
     line_start[line_length - 2] = 0;
     line_start[line_length - 1] = 0;
 
     space = memchr(ptr, 0x20, line_length);
-    if (!space) goto error;
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!space)
+        goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     connection = ov_sdp_connection_create();
     connection->nettype = ptr;
@@ -1085,8 +1194,10 @@ static bool create_masked_connection(ov_sdp_connection **head,
     *space = 0;
 
     space = memchr(ptr, 0x20, line_length - (ptr - line_start));
-    if (!space) goto error;
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!space)
+        goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     connection->addrtype = ptr;
 
@@ -1102,7 +1213,8 @@ static bool create_masked_connection(ov_sdp_connection **head,
     if (!ov_sdp_is_address(connection->address, strlen(connection->address)))
         goto error;
 
-    if (!ov_node_push((void **)head, connection)) goto error;
+    if (!ov_node_push((void **)head, connection))
+        goto error;
 
     return true;
 error:
@@ -1112,20 +1224,21 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_bandwith_dict(ov_dict **head,
-                                 char *start,
-                                 size_t length,
+static bool create_bandwith_dict(ov_dict **head, char *start, size_t length,
                                  char **next) {
 
     ov_dict *dict = NULL;
     char *key = NULL;
 
-    if (!head || !start || length < 5 || !next) goto error;
+    if (!head || !start || length < 5 || !next)
+        goto error;
 
     char intro = 'b';
 
-    if (start[0] != intro) goto error;
-    if (start[1] != '=') goto error;
+    if (start[0] != intro)
+        goto error;
+    if (start[1] != '=')
+        goto error;
 
     char *ptr = start;
     char *val = NULL;
@@ -1135,7 +1248,8 @@ static bool create_bandwith_dict(ov_dict **head,
     intptr_t value = 0;
 
     dict = ov_sdp_bandwidth_create();
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
     *head = dict;
 
@@ -1145,32 +1259,31 @@ static bool create_bandwith_dict(ov_dict **head,
         len = 0;
         col = NULL;
 
-        if (!parse_content_line(ptr,
-                                length - (ptr - start),
-                                &val,
-                                &len,
-                                &ptr,
-                                intro,
-                                ov_sdp_is_bandwidth))
+        if (!parse_content_line(ptr, length - (ptr - start), &val, &len, &ptr,
+                                intro, ov_sdp_is_bandwidth))
             goto error;
 
         col = memchr(val, ':', len);
-        if (!col) goto error;
+        if (!col)
+            goto error;
         *col = 0;
 
         key = strdup(val);
-        if (!key) goto error;
+        if (!key)
+            goto error;
 
         len = len - (col + 1 - val);
         val = col + 1;
         col = col + len + 1;
         *col = 0;
 
-        if (!parse_number(val, len, &nbr)) goto error;
+        if (!parse_number(val, len, &nbr))
+            goto error;
 
         value = nbr;
 
-        if (!ov_dict_set(dict, key, (void *)value, NULL)) goto error;
+        if (!ov_dict_set(dict, key, (void *)value, NULL))
+            goto error;
 
         key = NULL;
     }
@@ -1178,18 +1291,18 @@ static bool create_bandwith_dict(ov_dict **head,
     *next = ptr;
     return true;
 error:
-    if (key) free(key);
+    if (key)
+        free(key);
 
     ov_sdp_bandwidth_free(dict);
-    if (head) *head = NULL;
+    if (head)
+        *head = NULL;
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_masked_time(ov_sdp_time **head,
-                               char *line,
-                               size_t length,
+static bool create_masked_time(ov_sdp_time **head, char *line, size_t length,
                                char **next) {
 
     /*
@@ -1203,7 +1316,8 @@ static bool create_masked_time(ov_sdp_time **head,
     ov_sdp_time *data = NULL;
     ov_sdp_list *list = NULL;
 
-    if (!head || !line || length < 7 || !next) goto error;
+    if (!head || !line || length < 7 || !next)
+        goto error;
 
     char *space = NULL;
     char *out = (char *)line;
@@ -1211,7 +1325,8 @@ static bool create_masked_time(ov_sdp_time **head,
     char *last = NULL;
     uint64_t nbr = 0;
 
-    if (out[0] != 't') goto error;
+    if (out[0] != 't')
+        goto error;
 
     while (out[0] == 't') {
 
@@ -1223,26 +1338,32 @@ static bool create_masked_time(ov_sdp_time **head,
         }
 
         ptr = out;
-        if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+        if (!validate_line(ptr, length - (ptr - line), &out))
+            goto error;
 
         ptr += 2;
         out[-1] = 0;
         out[-2] = 0;
 
         space = memchr(ptr, 0x20, (out - ptr));
-        if (!space) goto error;
+        if (!space)
+            goto error;
 
-        if (!ov_sdp_is_digit(ptr, (space - ptr))) goto error;
+        if (!ov_sdp_is_digit(ptr, (space - ptr)))
+            goto error;
 
-        if (!parse_number(ptr, space - ptr, &nbr)) goto error;
+        if (!parse_number(ptr, space - ptr, &nbr))
+            goto error;
 
         data->start = nbr;
 
         ptr = space + 1;
 
-        if (!ov_sdp_is_time(ptr, (out - 2 - ptr))) goto error;
+        if (!ov_sdp_is_time(ptr, (out - 2 - ptr)))
+            goto error;
 
-        if (!parse_number(ptr, (out - 2 - ptr), &nbr)) goto error;
+        if (!parse_number(ptr, (out - 2 - ptr), &nbr))
+            goto error;
 
         data->stop = nbr;
 
@@ -1265,17 +1386,21 @@ static bool create_masked_time(ov_sdp_time **head,
             out[-1] = 0;
             out[-2] = 0;
 
-            if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+            if (!validate_line(ptr, length - (ptr - line), &out))
+                goto error;
 
             ptr += 2;
 
             space = memchr(ptr, 0x20, (last - ptr));
-            if (!space) goto error;
+            if (!space)
+                goto error;
 
-            if (!ov_sdp_is_typed_time(ptr, (space - ptr), false)) goto error;
+            if (!ov_sdp_is_typed_time(ptr, (space - ptr), false))
+                goto error;
 
             list = create_list_node(&data->repeat);
-            if (!list) goto error;
+            if (!list)
+                goto error;
 
             list->key = ptr;
             *space = 0;
@@ -1283,7 +1408,8 @@ static bool create_masked_time(ov_sdp_time **head,
             ptr = space + 1;
 
             space = memchr(ptr, 0x20, (last - ptr));
-            if (!space) goto error;
+            if (!space)
+                goto error;
 
             list->value = space + 1;
 
@@ -1296,7 +1422,8 @@ static bool create_masked_time(ov_sdp_time **head,
                 space = memchr(ptr, 0x20, (out - ptr));
             }
 
-            if (!ov_sdp_is_typed_time(ptr, (out - ptr) - 2, false)) goto error;
+            if (!ov_sdp_is_typed_time(ptr, (out - ptr) - 2, false))
+                goto error;
         }
 
         if (out[0] == 'z') {
@@ -1318,17 +1445,20 @@ static bool create_masked_time(ov_sdp_time **head,
             out[-1] = 0;
             out[-2] = 0;
 
-            if (!validate_line(out, length - (out - line), &out)) goto error;
+            if (!validate_line(out, length - (out - line), &out))
+                goto error;
 
             do {
                 space = memchr(ptr, 0x20, (out - ptr));
-                if (!space) goto error;
+                if (!space)
+                    goto error;
 
                 if (!ov_sdp_is_typed_time(ptr, (space - ptr), false))
                     goto error;
 
                 list = create_list_node(&data->zone);
-                if (!list) goto error;
+                if (!list)
+                    goto error;
 
                 list->key = ptr;
                 *space = 0;
@@ -1358,16 +1488,15 @@ static bool create_masked_time(ov_sdp_time **head,
 
     return true;
 error:
-    if (head) *head = ov_sdp_time_free(*head);
+    if (head)
+        *head = ov_sdp_time_free(*head);
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_masked_attributes(ov_sdp_list **head,
-                                     char *start,
-                                     size_t length,
-                                     char **next) {
+static bool create_masked_attributes(ov_sdp_list **head, char *start,
+                                     size_t length, char **next) {
 
     ov_sdp_list *list = NULL;
 
@@ -1388,23 +1517,28 @@ static bool create_masked_attributes(ov_sdp_list **head,
      *  att-value =           byte-string
      */
 
-    if (!head || !start || length < 5 || !next) goto error;
+    if (!head || !start || length < 5 || !next)
+        goto error;
 
     char intro = 'a';
 
-    if (start[0] != intro) goto error;
-    if (start[1] != '=') goto error;
+    if (start[0] != intro)
+        goto error;
+    if (start[1] != '=')
+        goto error;
 
     char *out = (char *)start;
     char *ptr = NULL;
     char *col = NULL;
 
-    if (out[0] != 'a') goto error;
+    if (out[0] != 'a')
+        goto error;
 
     while (*out == intro) {
 
         ptr = out + 2;
-        if (!validate_line(out, length - (out - start), &out)) goto error;
+        if (!validate_line(out, length - (out - start), &out))
+            goto error;
 
         out[-1] = 0;
         out[-2] = 0;
@@ -1412,46 +1546,51 @@ static bool create_masked_attributes(ov_sdp_list **head,
         col = memchr(ptr, ':', out - ptr);
 
         list = create_list_node(head);
-        if (!list) goto error;
+        if (!list)
+            goto error;
         list->key = ptr;
 
         if (col) {
 
             *col = 0;
 
-            if (!ov_sdp_is_token(ptr, (col - ptr))) goto error;
+            if (!ov_sdp_is_token(ptr, (col - ptr)))
+                goto error;
 
             ptr = col + 1;
-            if (!ov_sdp_is_byte_string(ptr, (out - ptr) - 2)) goto error;
+            if (!ov_sdp_is_byte_string(ptr, (out - ptr) - 2))
+                goto error;
 
             list->value = ptr;
 
         } else {
 
-            if (!ov_sdp_is_token(ptr, (out - ptr) - 2)) goto error;
+            if (!ov_sdp_is_token(ptr, (out - ptr) - 2))
+                goto error;
         }
     }
 
     *next = out;
     return true;
 error:
-    if (head) *head = ov_sdp_list_free(*head);
+    if (head)
+        *head = ov_sdp_list_free(*head);
 
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool masked_media(ov_sdp_description *desc,
-                         const char *start,
-                         size_t size,
-                         char **next) {
+static bool masked_media(ov_sdp_description *desc, const char *start,
+                         size_t size, char **next) {
 
     ov_sdp_list *list = NULL;
 
-    if (!desc || !start || size < 11 || !next) goto error;
+    if (!desc || !start || size < 11 || !next)
+        goto error;
 
-    if (start[0] != 'm') goto error;
+    if (start[0] != 'm')
+        goto error;
 
     /*
      *  EXAMPLES:
@@ -1470,7 +1609,8 @@ static bool masked_media(ov_sdp_description *desc,
 
     uint32_t port = 0;
 
-    if (!validate_line(ptr, size - (ptr - start), &nxt)) goto error;
+    if (!validate_line(ptr, size - (ptr - start), &nxt))
+        goto error;
 
     ptr += 2;
 
@@ -1480,9 +1620,11 @@ static bool masked_media(ov_sdp_description *desc,
     *next = nxt;
 
     space = memchr(ptr, ' ', (nxt - ptr));
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
-    if (!ov_sdp_is_token(ptr, space - ptr)) goto error;
+    if (!ov_sdp_is_token(ptr, space - ptr))
+        goto error;
 
     *space = 0;
     desc->media.name = ptr;
@@ -1490,13 +1632,16 @@ static bool masked_media(ov_sdp_description *desc,
     ptr = space + 1;
 
     space = memchr(ptr, ' ', (nxt - ptr));
-    if (!space) goto error;
+    if (!space)
+        goto error;
     *space = 0;
 
     port = strtol(ptr, &end, 10);
-    if (!end) goto error;
+    if (!end)
+        goto error;
 
-    if (((end - ptr < 1)) || ((end - ptr) > 5)) goto error;
+    if (((end - ptr < 1)) || ((end - ptr) > 5))
+        goto error;
 
     desc->media.port = port;
 
@@ -1508,22 +1653,27 @@ static bool masked_media(ov_sdp_description *desc,
         ptr++;
 
         port = strtol(ptr, &end, 10);
-        if (!end) goto error;
+        if (!end)
+            goto error;
 
-        if (((end - ptr < 1)) || ((end - ptr) > 5)) goto error;
+        if (((end - ptr < 1)) || ((end - ptr) > 5))
+            goto error;
 
         desc->media.port2 = port;
 
         ptr = end;
     }
 
-    if (end != space) goto error;
+    if (end != space)
+        goto error;
 
     ptr = space + 1;
     space = memchr(ptr, ' ', (nxt - ptr));
-    if (!space) goto error;
+    if (!space)
+        goto error;
 
-    if (!ov_sdp_is_proto(ptr, (space - ptr))) goto error;
+    if (!ov_sdp_is_proto(ptr, (space - ptr)))
+        goto error;
 
     *space = 0;
     desc->media.protocol = ptr;
@@ -1534,10 +1684,12 @@ static bool masked_media(ov_sdp_description *desc,
 
     while (space) {
 
-        if (!ov_sdp_is_token(ptr, (space - ptr))) goto error;
+        if (!ov_sdp_is_token(ptr, (space - ptr)))
+            goto error;
 
         list = create_list_node(&desc->media.formats);
-        if (!list) goto error;
+        if (!list)
+            goto error;
 
         *space = 0;
         list->value = ptr;
@@ -1546,10 +1698,12 @@ static bool masked_media(ov_sdp_description *desc,
         space = memchr(ptr, ' ', (nxt - ptr));
     }
 
-    if (!ov_sdp_is_token(ptr, (nxt - 2 - ptr))) goto error;
+    if (!ov_sdp_is_token(ptr, (nxt - 2 - ptr)))
+        goto error;
 
     list = create_list_node(&desc->media.formats);
-    if (!list) goto error;
+    if (!list)
+        goto error;
 
     list->value = ptr;
 
@@ -1560,26 +1714,27 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_masked_descriptions(ov_sdp_description **head,
-                                       char *line,
-                                       size_t length,
-                                       char **next) {
+static bool create_masked_descriptions(ov_sdp_description **head, char *line,
+                                       size_t length, char **next) {
 
     ov_sdp_description *desc = NULL;
 
-    if (!line || !next || length < 11) goto error;
+    if (!line || !next || length < 11)
+        goto error;
 
     char *ptr = NULL;
     char *out = (char *)line;
     char *val = NULL;
     size_t len = 0;
 
-    if (out[0] != 'm') goto error;
+    if (out[0] != 'm')
+        goto error;
 
     while (out[0] == 'm') {
 
         ptr = out;
-        if (!validate_line(out, length - (out - line), &out)) goto error;
+        if (!validate_line(out, length - (out - line), &out))
+            goto error;
 
         desc = ov_sdp_description_create();
 
@@ -1588,7 +1743,8 @@ static bool create_masked_descriptions(ov_sdp_description **head,
             goto error;
         }
 
-        if (!masked_media(desc, ptr, (out - ptr), &out)) goto error;
+        if (!masked_media(desc, ptr, (out - ptr), &out))
+            goto error;
 
         ptr = out;
 
@@ -1596,9 +1752,11 @@ static bool create_masked_descriptions(ov_sdp_description **head,
 
         if (*ptr == 'i') {
 
-            if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+            if (!validate_line(ptr, length - (ptr - line), &out))
+                goto error;
 
-            if (!parse_information(ptr, (out - ptr), &val, &len)) goto error;
+            if (!parse_information(ptr, (out - ptr), &val, &len))
+                goto error;
 
             desc->info = val;
             val = (char *)desc->info + len + 1;
@@ -1613,10 +1771,11 @@ static bool create_masked_descriptions(ov_sdp_description **head,
 
         while (*ptr == 'c') {
 
-            if (!validate_line(ptr, length - (ptr - line), &out)) goto error;
+            if (!validate_line(ptr, length - (ptr - line), &out))
+                goto error;
 
-            if (!create_masked_connection(
-                    &desc->connection, ptr, (out - ptr), true))
+            if (!create_masked_connection(&desc->connection, ptr, (out - ptr),
+                                          true))
                 goto error;
 
             out[-1] = 0;
@@ -1628,8 +1787,8 @@ static bool create_masked_descriptions(ov_sdp_description **head,
 
         if (*ptr == 'b') {
 
-            if (!create_bandwith_dict(
-                    &desc->bandwidth, ptr, length - (ptr - line), &out))
+            if (!create_bandwith_dict(&desc->bandwidth, ptr,
+                                      length - (ptr - line), &out))
                 goto error;
 
             out[-1] = 0;
@@ -1641,11 +1800,12 @@ static bool create_masked_descriptions(ov_sdp_description **head,
 
         if (*ptr == 'k') {
 
-            if (!parse_content_line(
-                    ptr, length - (ptr - line), &val, &len, &out, 'k', NULL))
+            if (!parse_content_line(ptr, length - (ptr - line), &val, &len,
+                                    &out, 'k', NULL))
                 goto error;
 
-            if (!ov_sdp_is_key(val, len)) goto error;
+            if (!ov_sdp_is_key(val, len))
+                goto error;
 
             desc->key = val;
             val = (char *)desc->key + len + 1;
@@ -1660,8 +1820,8 @@ static bool create_masked_descriptions(ov_sdp_description **head,
 
         if (*ptr == 'a') {
 
-            if (!create_masked_attributes(
-                    &desc->attributes, ptr, length - (ptr - line), &out))
+            if (!create_masked_attributes(&desc->attributes, ptr,
+                                          length - (ptr - line), &out))
                 goto error;
 
             out[-1] = 0;
@@ -1673,7 +1833,8 @@ static bool create_masked_descriptions(ov_sdp_description **head,
     return true;
 error:
 
-    if (head) *head = ov_sdp_description_free(*head);
+    if (head)
+        *head = ov_sdp_description_free(*head);
     return false;
 }
 
@@ -1691,34 +1852,34 @@ static bool validate_connection_pointers(ov_sdp_connection *connection) {
 
     while (connection) {
 
-        if (!connection->nettype) goto error;
-        if (!connection->addrtype) goto error;
-        if (!connection->address) goto error;
+        if (!connection->nettype)
+            goto error;
+        if (!connection->addrtype)
+            goto error;
+        if (!connection->address)
+            goto error;
 
-        if (!ov_sdp_is_token(
-                connection->nettype, strlen(connection->nettype))) {
-            ov_log_error(
-                "SDP connection nettype %s"
-                "- NOT an SDP token",
-                connection->nettype);
+        if (!ov_sdp_is_token(connection->nettype,
+                             strlen(connection->nettype))) {
+            ov_log_error("SDP connection nettype %s"
+                         "- NOT an SDP token",
+                         connection->nettype);
             goto error;
         }
 
-        if (!ov_sdp_is_token(
-                connection->addrtype, strlen(connection->addrtype))) {
-            ov_log_error(
-                "SDP connection addrtype %s"
-                "- NOT an SDP token",
-                connection->addrtype);
+        if (!ov_sdp_is_token(connection->addrtype,
+                             strlen(connection->addrtype))) {
+            ov_log_error("SDP connection addrtype %s"
+                         "- NOT an SDP token",
+                         connection->addrtype);
             goto error;
         }
 
-        if (!ov_sdp_is_address(
-                connection->address, strlen(connection->address))) {
-            ov_log_error(
-                "SDP connection address %s"
-                "- NOT an SDP address",
-                connection->address);
+        if (!ov_sdp_is_address(connection->address,
+                               strlen(connection->address))) {
+            ov_log_error("SDP connection address %s"
+                         "- NOT an SDP address",
+                         connection->address);
             goto error;
         }
 
@@ -1734,7 +1895,8 @@ error:
 
 static bool validate_vos(const ov_sdp_session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     if (!session->origin.name || !session->origin.connection.nettype ||
         !session->origin.connection.addrtype ||
@@ -1742,10 +1904,9 @@ static bool validate_vos(const ov_sdp_session *session) {
         goto error;
 
     if (!ov_sdp_is_text(session->name, strlen(session->name))) {
-        ov_log_error(
-            "SDP session name %s"
-            "- NOT an SDP text",
-            session->name);
+        ov_log_error("SDP session name %s"
+                     "- NOT an SDP text",
+                     session->name);
         goto error;
     }
 
@@ -1753,21 +1914,19 @@ static bool validate_vos(const ov_sdp_session *session) {
             (ov_sdp_connection *)&session->origin.connection))
         goto error;
 
-    if (!ov_sdp_is_username(
-            session->origin.name, strlen(session->origin.name))) {
-        ov_log_error(
-            "SDP origin name %s"
-            "- NOT an SDP username",
-            session->origin.name);
+    if (!ov_sdp_is_username(session->origin.name,
+                            strlen(session->origin.name))) {
+        ov_log_error("SDP origin name %s"
+                     "- NOT an SDP username",
+                     session->origin.name);
         goto error;
     }
 
-    if (!ov_sdp_is_username(
-            session->origin.name, strlen(session->origin.name))) {
-        ov_log_error(
-            "SDP origin name %s"
-            "- NOT an SDP username",
-            session->origin.name);
+    if (!ov_sdp_is_username(session->origin.name,
+                            strlen(session->origin.name))) {
+        ov_log_error("SDP origin name %s"
+                     "- NOT an SDP username",
+                     session->origin.name);
         goto error;
     }
 
@@ -1778,40 +1937,32 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_vos(const ov_sdp_session *session,
-                      char *start,
-                      size_t size,
-                      bool escaped,
-                      char **next) {
+static bool write_vos(const ov_sdp_session *session, char *start, size_t size,
+                      bool escaped, char **next) {
 
     OV_ASSERT(session);
     OV_ASSERT(start);
     OV_ASSERT(next);
 
-    if (!session || !start || !next) goto error;
+    if (!session || !start || !next)
+        goto error;
 
     char *lineend = "\r\n";
-    if (escaped) lineend = "\\r\\n";
+    if (escaped)
+        lineend = "\\r\\n";
 
-    size_t len = snprintf(start,
-                          size,
-                          "v=%i%s"
-                          "o=%s %" PRIu64 " %" PRIu64
-                          " %s %s %s%s"
-                          "s=%s%s",
-                          session->version,
-                          lineend,
-                          session->origin.name,
-                          session->origin.id,
-                          session->origin.version,
-                          session->origin.connection.nettype,
-                          session->origin.connection.addrtype,
-                          session->origin.connection.address,
-                          lineend,
-                          session->name,
-                          lineend);
+    size_t len = snprintf(
+        start, size,
+        "v=%i%s"
+        "o=%s %" PRIu64 " %" PRIu64 " %s %s %s%s"
+        "s=%s%s",
+        session->version, lineend, session->origin.name, session->origin.id,
+        session->origin.version, session->origin.connection.nettype,
+        session->origin.connection.addrtype, session->origin.connection.address,
+        lineend, session->name, lineend);
 
-    if ((len == 0) || (len >= size)) goto error;
+    if ((len == 0) || (len >= size))
+        goto error;
 
     *next = start + len;
     return true;
@@ -1821,17 +1972,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_line(char *start,
-                       size_t size,
-                       bool escaped,
-                       char **next,
-                       char intro,
-                       const char *content) {
+static bool write_line(char *start, size_t size, bool escaped, char **next,
+                       char intro, const char *content) {
 
-    if (!start || size < 5 || !next || !content) goto error;
+    if (!start || size < 5 || !next || !content)
+        goto error;
 
     char *lineend = "\r\n";
-    if (escaped) lineend = "\\r\\n";
+    if (escaped)
+        lineend = "\\r\\n";
 
     char *ptr = start;
 
@@ -1841,7 +1990,8 @@ static bool write_line(char *start,
 
     size_t len = snprintf(ptr, size, "=%s%s", content, lineend);
 
-    if ((len == 0) || (len >= size)) goto error;
+    if ((len == 0) || (len >= size))
+        goto error;
 
     *next = ptr + len;
     return true;
@@ -1851,12 +2001,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_node_lines(char *start,
-                             size_t size,
-                             bool escaped,
-                             char **next,
-                             char intro,
-                             ov_sdp_list *node) {
+static bool write_node_lines(char *start, size_t size, bool escaped,
+                             char **next, char intro, ov_sdp_list *node) {
 
     OV_ASSERT(start);
     OV_ASSERT(next);
@@ -1866,10 +2012,11 @@ static bool write_node_lines(char *start,
 
     while (node) {
 
-        if (!node->value) goto error;
+        if (!node->value)
+            goto error;
 
-        if (!write_line(
-                ptr, size - (ptr - start), escaped, &ptr, intro, node->value))
+        if (!write_line(ptr, size - (ptr - start), escaped, &ptr, intro,
+                        node->value))
             goto error;
 
         node = ov_node_next(node);
@@ -1883,15 +2030,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool validate_pointer_list(ov_sdp_list *node,
-                                  const char *name,
+static bool validate_pointer_list(ov_sdp_list *node, const char *name,
                                   bool (*match)(const char *, uint64_t)) {
 
-    if (!node) goto error;
+    if (!node)
+        goto error;
 
     while (node) {
 
-        if (!node->value) goto error;
+        if (!node->value)
+            goto error;
 
         if (!match(node->value, strlen(node->value))) {
             ov_log_error("SDP %s invalid content %s", name, node->value);
@@ -1908,11 +2056,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_connections(ov_sdp_connection *connection,
-                              char *start,
-                              size_t size,
-                              bool escaped,
-                              char **next) {
+static bool write_connections(ov_sdp_connection *connection, char *start,
+                              size_t size, bool escaped, char **next) {
 
     OV_ASSERT(start);
     OV_ASSERT(next);
@@ -1921,21 +2066,19 @@ static bool write_connections(ov_sdp_connection *connection,
     char *ptr = start;
 
     char *lineend = "\r\n";
-    if (escaped) lineend = "\\r\\n";
+    if (escaped)
+        lineend = "\\r\\n";
 
     size_t len = 0;
 
     while (connection) {
 
-        len = snprintf(ptr,
-                       size - (ptr - start),
-                       "c=%s %s %s%s",
-                       connection->nettype,
-                       connection->addrtype,
-                       connection->address,
-                       lineend);
+        len = snprintf(ptr, size - (ptr - start), "c=%s %s %s%s",
+                       connection->nettype, connection->addrtype,
+                       connection->address, lineend);
 
-        if ((len == 0) || (len >= size)) goto error;
+        if ((len == 0) || (len >= size))
+            goto error;
 
         ptr += len;
         connection = ov_node_next(connection);
@@ -1951,15 +2094,15 @@ error:
 
 static bool validate_bandwith_entry(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     char *string = (char *)key;
 
     if (!ov_sdp_is_token(string, strlen(string))) {
-        ov_log_error(
-            "SDP bandwidth key %s"
-            "- NOT an SDP token",
-            string);
+        ov_log_error("SDP bandwidth key %s"
+                     "- NOT an SDP token",
+                     string);
         return false;
     }
 
@@ -1972,8 +2115,10 @@ static bool validate_bandwith_entry(const void *key, void *value, void *data) {
 
 static bool validate_bandwith(ov_dict *dict) {
 
-    if (!dict) goto error;
-    if (ov_dict_is_empty(dict)) return true;
+    if (!dict)
+        goto error;
+    if (ov_dict_is_empty(dict))
+        return true;
 
     return ov_dict_for_each(dict, NULL, validate_bandwith_entry);
 error:
@@ -1993,8 +2138,10 @@ struct container_bandwidth_write {
 
 static bool write_bandwith_entry(const void *key, void *value, void *data) {
 
-    if (!key) return true;
-    if (!data) return false;
+    if (!key)
+        return true;
+    if (!data)
+        return false;
 
     intptr_t val = (intptr_t)value;
     char *name = (char *)key;
@@ -2002,14 +2149,11 @@ static bool write_bandwith_entry(const void *key, void *value, void *data) {
     struct container_bandwidth_write *container =
         (struct container_bandwidth_write *)data;
 
-    size_t len = snprintf(container->ptr,
-                          container->size,
-                          "b=%s:%" PRIu64 "%s",
-                          name,
-                          (uint64_t)val,
-                          container->lineend);
+    size_t len = snprintf(container->ptr, container->size, "b=%s:%" PRIu64 "%s",
+                          name, (uint64_t)val, container->lineend);
 
-    if ((len == 0) || (len >= container->size)) goto error;
+    if ((len == 0) || (len >= container->size))
+        goto error;
 
     container->ptr += len;
     container->size -= len;
@@ -2020,8 +2164,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_bandwith(
-    ov_dict *bandwidth, char *start, size_t size, bool escaped, char **next) {
+static bool write_bandwith(ov_dict *bandwidth, char *start, size_t size,
+                           bool escaped, char **next) {
 
     OV_ASSERT(start);
     OV_ASSERT(next);
@@ -2033,7 +2177,8 @@ static bool write_bandwith(
     }
 
     char *lineend = "\r\n";
-    if (escaped) lineend = "\\r\\n";
+    if (escaped)
+        lineend = "\\r\\n";
 
     struct container_bandwidth_write container =
         (struct container_bandwidth_write){
@@ -2053,9 +2198,11 @@ error:
 
 static bool validate_time_write(const ov_sdp_session *session) {
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
-    if (!session->time) goto error;
+    if (!session->time)
+        goto error;
 
     ov_sdp_time *time_node = (ov_sdp_time *)session->time;
     ov_sdp_list *node = NULL;
@@ -2064,17 +2211,15 @@ static bool validate_time_write(const ov_sdp_session *session) {
 
         if (0 != time_node->start)
             if (time_node->start < 999999999) {
-                ov_log_error(
-                    "SDP time start NOT 0 "
-                    "but less than 10 digits");
+                ov_log_error("SDP time start NOT 0 "
+                             "but less than 10 digits");
                 goto error;
             }
 
         if (0 != time_node->stop)
             if (time_node->stop < 999999999) {
-                ov_log_error(
-                    "SDP time stop NOT 0 "
-                    "but less than 10 digits");
+                ov_log_error("SDP time stop NOT 0 "
+                             "but less than 10 digits");
                 goto error;
             }
 
@@ -2083,16 +2228,14 @@ static bool validate_time_write(const ov_sdp_session *session) {
         while (node) {
 
             if (!node->key) {
-                ov_log_error(
-                    "SDP time repeat "
-                    "missing key");
+                ov_log_error("SDP time repeat "
+                             "missing key");
                 goto error;
             }
 
             if (!node->value) {
-                ov_log_error(
-                    "SDP time repeat "
-                    "missing value");
+                ov_log_error("SDP time repeat "
+                             "missing value");
                 goto error;
             }
 
@@ -2103,10 +2246,9 @@ static bool validate_time_write(const ov_sdp_session *session) {
             while (space) {
 
                 if (!ov_sdp_is_typed_time(ptr, (space - ptr), false)) {
-                    ov_log_error(
-                        "SDP time repeat %s "
-                        "NOT typed time clean",
-                        node->value);
+                    ov_log_error("SDP time repeat %s "
+                                 "NOT typed time clean",
+                                 node->value);
                     goto error;
                 }
 
@@ -2115,10 +2257,9 @@ static bool validate_time_write(const ov_sdp_session *session) {
             }
 
             if (!ov_sdp_is_typed_time(ptr, len - (ptr - node->value), false)) {
-                ov_log_error(
-                    "SDP time repeat %s "
-                    "NOT typed time clean",
-                    node->value);
+                ov_log_error("SDP time repeat %s "
+                             "NOT typed time clean",
+                             node->value);
                 goto error;
             }
 
@@ -2130,16 +2271,14 @@ static bool validate_time_write(const ov_sdp_session *session) {
         while (node) {
 
             if (!node->key) {
-                ov_log_error(
-                    "SDP time zone "
-                    "missing key");
+                ov_log_error("SDP time zone "
+                             "missing key");
                 goto error;
             }
 
             if (!node->value) {
-                ov_log_error(
-                    "SDP time zone "
-                    "missing value");
+                ov_log_error("SDP time zone "
+                             "missing value");
                 goto error;
             }
 
@@ -2150,10 +2289,9 @@ static bool validate_time_write(const ov_sdp_session *session) {
             while (space) {
 
                 if (!ov_sdp_is_typed_time(ptr, (space - ptr), true)) {
-                    ov_log_error(
-                        "SDP time zone %s "
-                        "NOT typed time clean",
-                        node->value);
+                    ov_log_error("SDP time zone %s "
+                                 "NOT typed time clean",
+                                 node->value);
                     goto error;
                 }
 
@@ -2162,10 +2300,9 @@ static bool validate_time_write(const ov_sdp_session *session) {
             }
 
             if (!ov_sdp_is_typed_time(ptr, len - (ptr - node->value), true)) {
-                ov_log_error(
-                    "SDP time zone %s "
-                    "NOT typed time clean",
-                    node->value);
+                ov_log_error("SDP time zone %s "
+                             "NOT typed time clean",
+                             node->value);
                 goto error;
             }
 
@@ -2182,32 +2319,33 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_time_entries(ov_sdp_list *node,
-                               char *start,
-                               size_t size,
-                               char intro,
-                               char *end,
-                               char **next) {
+static bool write_time_entries(ov_sdp_list *node, char *start, size_t size,
+                               char intro, char *end, char **next) {
 
-    if (!node || !start || !end || !next) goto error;
+    if (!node || !start || !end || !next)
+        goto error;
 
     char *ptr = start;
     size_t len = 0;
 
     while (node) {
 
-        if (size < 5) goto error;
+        if (size < 5)
+            goto error;
 
         OV_ASSERT(node->key);
-        if (!node->key) goto error;
+        if (!node->key)
+            goto error;
 
         OV_ASSERT(node->value);
-        if (!node->value) goto error;
+        if (!node->value)
+            goto error;
 
-        len = snprintf(
-            ptr, size, "%c=%s %s%s", intro, node->key, node->value, end);
+        len = snprintf(ptr, size, "%c=%s %s%s", intro, node->key, node->value,
+                       end);
 
-        if ((len == 0) || (len >= size)) goto error;
+        if ((len == 0) || (len >= size))
+            goto error;
 
         ptr += len;
         size -= len;
@@ -2223,18 +2361,16 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_time(const ov_sdp_session *session,
-                       char *start,
-                       size_t size,
-                       bool escaped,
-                       char **next) {
+static bool write_time(const ov_sdp_session *session, char *start, size_t size,
+                       bool escaped, char **next) {
 
     OV_ASSERT(session);
     OV_ASSERT(start);
     OV_ASSERT(next);
 
     char *lineend = "\r\n";
-    if (escaped) lineend = "\\r\\n";
+    if (escaped)
+        lineend = "\\r\\n";
 
     size_t len = 0;
     char *ptr = start;
@@ -2244,22 +2380,19 @@ static bool write_time(const ov_sdp_session *session,
 
     while (node) {
 
-        len = snprintf(ptr,
-                       size,
-                       "t=%" PRIu64 " %" PRIu64 "%s",
-                       node->start,
-                       node->stop,
-                       lineend);
+        len = snprintf(ptr, size, "t=%" PRIu64 " %" PRIu64 "%s", node->start,
+                       node->stop, lineend);
 
-        if ((len == 0) || (len >= size)) goto error;
+        if ((len == 0) || (len >= size))
+            goto error;
 
         ptr += len;
         size -= len;
 
         if (node->repeat) {
 
-            if (!write_time_entries(
-                    session->time->repeat, ptr, size, 'r', lineend, &ptr))
+            if (!write_time_entries(session->time->repeat, ptr, size, 'r',
+                                    lineend, &ptr))
                 goto error;
 
             size = orig - (ptr - start);
@@ -2267,8 +2400,8 @@ static bool write_time(const ov_sdp_session *session,
 
         if (node->zone) {
 
-            if (!write_time_entries(
-                    session->time->zone, ptr, size, 'z', lineend, &ptr))
+            if (!write_time_entries(session->time->zone, ptr, size, 'z',
+                                    lineend, &ptr))
                 goto error;
 
             size = orig - (ptr - start);
@@ -2287,7 +2420,8 @@ error:
 
 static bool validate_attributes_write(const ov_sdp_list *attributes) {
 
-    if (!attributes) goto error;
+    if (!attributes)
+        goto error;
 
     ov_sdp_list *attr = (ov_sdp_list *)attributes;
 
@@ -2295,18 +2429,16 @@ static bool validate_attributes_write(const ov_sdp_list *attributes) {
 
         if (!attr->key) {
 
-            ov_log_error(
-                "SDP attribute "
-                "missing key");
+            ov_log_error("SDP attribute "
+                         "missing key");
             goto error;
         }
 
         if (!ov_sdp_is_token(attr->key, strlen(attr->key))) {
 
-            ov_log_error(
-                "SDP attribute key %s "
-                "NOT a valid sdp token",
-                attr->key);
+            ov_log_error("SDP attribute key %s "
+                         "NOT a valid sdp token",
+                         attr->key);
             goto error;
         }
 
@@ -2315,12 +2447,10 @@ static bool validate_attributes_write(const ov_sdp_list *attributes) {
             if (0 != strlen(attr->value))
                 if (!ov_sdp_is_byte_string(attr->value, strlen(attr->value))) {
 
-                    ov_log_error(
-                        "SDP attribute key %s "
-                        "value %s NOT a valid "
-                        "byte string",
-                        attr->key,
-                        attr->value);
+                    ov_log_error("SDP attribute key %s "
+                                 "value %s NOT a valid "
+                                 "byte string",
+                                 attr->key, attr->value);
                     goto error;
                 }
         }
@@ -2335,16 +2465,15 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_attributes(const ov_sdp_list *attributes,
-                             char *start,
-                             size_t size,
-                             bool escaped,
-                             char **next) {
+static bool write_attributes(const ov_sdp_list *attributes, char *start,
+                             size_t size, bool escaped, char **next) {
 
-    if (!attributes || !start || !next) goto error;
+    if (!attributes || !start || !next)
+        goto error;
 
     char *lineend = "\r\n";
-    if (escaped) lineend = "\\r\\n";
+    if (escaped)
+        lineend = "\\r\\n";
 
     size_t len = 0;
 
@@ -2356,15 +2485,16 @@ static bool write_attributes(const ov_sdp_list *attributes,
 
         if (attr->value && strlen(attr->value) > 0) {
 
-            len = snprintf(
-                ptr, size, "a=%s:%s%s", attr->key, attr->value, lineend);
+            len = snprintf(ptr, size, "a=%s:%s%s", attr->key, attr->value,
+                           lineend);
 
         } else {
 
             len = snprintf(ptr, size, "a=%s%s", attr->key, lineend);
         }
 
-        if ((len == 0) || (len >= size)) goto error;
+        if ((len == 0) || (len >= size))
+            goto error;
 
         ptr += len;
         size -= len;
@@ -2382,7 +2512,8 @@ error:
 
 static bool validate_description_write(const ov_sdp_description *description) {
 
-    if (!description) goto error;
+    if (!description)
+        goto error;
 
     ov_sdp_description *desc = (ov_sdp_description *)description;
     ov_sdp_list *node = NULL;
@@ -2394,21 +2525,19 @@ static bool validate_description_write(const ov_sdp_description *description) {
 
         if (!ov_sdp_is_token(desc->media.name, strlen(desc->media.name))) {
 
-            ov_log_error(
-                "SDP media description name "
-                "%s NOT a valid SDP token",
-                desc->media.name);
+            ov_log_error("SDP media description name "
+                         "%s NOT a valid SDP token",
+                         desc->media.name);
 
             goto error;
         }
 
-        if (!ov_sdp_is_proto(
-                desc->media.protocol, strlen(desc->media.protocol))) {
+        if (!ov_sdp_is_proto(desc->media.protocol,
+                             strlen(desc->media.protocol))) {
 
-            ov_log_error(
-                "SDP media description protocol "
-                "%s NOT a valid SDP protocol",
-                desc->media.protocol);
+            ov_log_error("SDP media description protocol "
+                         "%s NOT a valid SDP protocol",
+                         desc->media.protocol);
 
             goto error;
         }
@@ -2418,18 +2547,16 @@ static bool validate_description_write(const ov_sdp_description *description) {
 
             if (!node->value) {
 
-                ov_log_error(
-                    "SDP media description "
-                    "format empty");
+                ov_log_error("SDP media description "
+                             "format empty");
                 goto error;
             }
 
             if (!ov_sdp_is_token(node->value, strlen(node->value))) {
 
-                ov_log_error(
-                    "SDP media description "
-                    "format %s NOT a valid SDP token",
-                    node->value);
+                ov_log_error("SDP media description "
+                             "format %s NOT a valid SDP token",
+                             node->value);
 
                 goto error;
             }
@@ -2440,38 +2567,39 @@ static bool validate_description_write(const ov_sdp_description *description) {
         if (desc->info) {
 
             if (!ov_sdp_is_text(desc->info, strlen(desc->info))) {
-                ov_log_error(
-                    "SDP media description "
-                    "info %s - NOT an SDP text",
-                    desc->info);
+                ov_log_error("SDP media description "
+                             "info %s - NOT an SDP text",
+                             desc->info);
                 goto error;
             }
         }
 
         if (desc->connection) {
 
-            if (!validate_connection_pointers(desc->connection)) goto error;
+            if (!validate_connection_pointers(desc->connection))
+                goto error;
         }
 
         if (desc->bandwidth) {
 
-            if (!validate_bandwith(desc->bandwidth)) goto error;
+            if (!validate_bandwith(desc->bandwidth))
+                goto error;
         }
 
         if (desc->key) {
 
             if (!ov_sdp_is_key(desc->key, strlen(desc->key))) {
-                ov_log_error(
-                    "SDP media description "
-                    "key %s - NOT an SDP key",
-                    desc->key);
+                ov_log_error("SDP media description "
+                             "key %s - NOT an SDP key",
+                             desc->key);
                 goto error;
             }
         }
 
         if (desc->attributes) {
 
-            if (!validate_attributes_write(desc->attributes)) goto error;
+            if (!validate_attributes_write(desc->attributes))
+                goto error;
         }
 
         desc = ov_node_next(desc);
@@ -2485,15 +2613,15 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static bool write_description(const ov_sdp_description *description,
-                              char *start,
-                              size_t size,
-                              bool escaped,
+                              char *start, size_t size, bool escaped,
                               char **next) {
 
-    if (!description || !start || !next) goto error;
+    if (!description || !start || !next)
+        goto error;
 
     char *lineend = "\r\n";
-    if (escaped) lineend = "\\r\\n";
+    if (escaped)
+        lineend = "\\r\\n";
 
     size_t len = 0;
 
@@ -2507,25 +2635,18 @@ static bool write_description(const ov_sdp_description *description,
 
         if (0 != desc->media.port2) {
 
-            len = snprintf(ptr,
-                           size,
-                           "m=%s %i/%i %s",
-                           desc->media.name,
-                           desc->media.port,
-                           desc->media.port2,
+            len = snprintf(ptr, size, "m=%s %i/%i %s", desc->media.name,
+                           desc->media.port, desc->media.port2,
                            desc->media.protocol);
 
         } else {
 
-            len = snprintf(ptr,
-                           size,
-                           "m=%s %i %s",
-                           desc->media.name,
-                           desc->media.port,
-                           desc->media.protocol);
+            len = snprintf(ptr, size, "m=%s %i %s", desc->media.name,
+                           desc->media.port, desc->media.protocol);
         }
 
-        if ((len == 0) || (len >= size)) goto error;
+        if ((len == 0) || (len >= size))
+            goto error;
 
         ptr += len;
         size -= len;
@@ -2535,7 +2656,8 @@ static bool write_description(const ov_sdp_description *description,
 
             len = snprintf(ptr, size, " %s", node->value);
 
-            if ((len == 0) || (len >= size)) goto error;
+            if ((len == 0) || (len >= size))
+                goto error;
 
             ptr += len;
             size -= len;
@@ -2545,7 +2667,8 @@ static bool write_description(const ov_sdp_description *description,
 
         len = snprintf(ptr, size, "%s", lineend);
 
-        if ((len == 0) || (len >= size)) goto error;
+        if ((len == 0) || (len >= size))
+            goto error;
 
         ptr += len;
         size -= len;
@@ -2622,13 +2745,16 @@ static ov_json_value *connection_create(const ov_sdp_connection *connection) {
     out = ov_json_object();
 
     val = ov_json_string(connection->nettype);
-    if (!ov_json_object_set(out, OV_KEY_TYPE, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_TYPE, val))
+        goto error;
 
     val = ov_json_string(connection->addrtype);
-    if (!ov_json_object_set(out, OV_KEY_ADDRESS_TYPE, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ADDRESS_TYPE, val))
+        goto error;
 
     val = ov_json_string(connection->address);
-    if (!ov_json_object_set(out, OV_KEY_ADDRESS, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ADDRESS, val))
+        goto error;
 
     return out;
 error:
@@ -2644,22 +2770,28 @@ static ov_json_value *origin_create(const ov_sdp_session *session) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_string(session->origin.name);
-    if (!ov_json_object_set(out, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_NAME, val))
+        goto error;
 
     val = ov_json_number(session->origin.id);
-    if (!ov_json_object_set(out, OV_KEY_ID, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ID, val))
+        goto error;
 
     val = ov_json_number(session->origin.version);
-    if (!ov_json_object_set(out, OV_KEY_VERSION, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_VERSION, val))
+        goto error;
 
     val = connection_create(&session->origin.connection);
-    if (!ov_json_object_set(out, OV_KEY_CONNECTION, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_CONNECTION, val))
+        goto error;
 
     return out;
 error:
@@ -2680,7 +2812,8 @@ static ov_json_value *time_create(ov_sdp_time *node) {
     ov_json_value *zone = NULL;
 
     out = ov_json_array();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     ov_sdp_list *list = NULL;
 
@@ -2690,13 +2823,16 @@ static ov_json_value *time_create(ov_sdp_time *node) {
         zone = NULL;
 
         obj = ov_json_object();
-        if (!ov_json_array_push(out, obj)) goto error;
+        if (!ov_json_array_push(out, obj))
+            goto error;
 
         val = ov_json_number(node->start);
-        if (!ov_json_object_set(obj, OV_KEY_START, val)) goto error;
+        if (!ov_json_object_set(obj, OV_KEY_START, val))
+            goto error;
 
         val = ov_json_number(node->stop);
-        if (!ov_json_object_set(obj, OV_KEY_STOP, val)) goto error;
+        if (!ov_json_object_set(obj, OV_KEY_STOP, val))
+            goto error;
 
         if (node->repeat) {
             repeat = ov_json_array();
@@ -2729,10 +2865,12 @@ static ov_json_value *time_create(ov_sdp_time *node) {
 
             obj = ov_json_object();
             val = ov_json_string(list->value);
-            if (!ov_json_object_set(obj, list->key, val)) goto error;
+            if (!ov_json_object_set(obj, list->key, val))
+                goto error;
 
             val = NULL;
-            if (!ov_json_array_push(repeat, obj)) goto error;
+            if (!ov_json_array_push(repeat, obj))
+                goto error;
 
             list = ov_node_next(list);
         }
@@ -2748,10 +2886,12 @@ static ov_json_value *time_create(ov_sdp_time *node) {
 
             obj = ov_json_object();
             val = ov_json_string(list->value);
-            if (!ov_json_object_set(obj, list->key, val)) goto error;
+            if (!ov_json_object_set(obj, list->key, val))
+                goto error;
 
             val = NULL;
-            if (!ov_json_array_push(zone, obj)) goto error;
+            if (!ov_json_array_push(zone, obj))
+                goto error;
 
             list = ov_node_next(list);
         }
@@ -2774,17 +2914,20 @@ static ov_json_value *list_array_create(const ov_sdp_list *list) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!list) return ov_json_null();
+    if (!list)
+        return ov_json_null();
 
     out = ov_json_array();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     ov_sdp_list *node = (ov_sdp_list *)list;
 
     while (node) {
 
         val = ov_json_string(node->value);
-        if (!ov_json_array_push(out, val)) goto error;
+        if (!ov_json_array_push(out, val))
+            goto error;
 
         node = ov_node_next(node);
     }
@@ -2807,8 +2950,10 @@ struct bwd {
 
 static bool add_bandwidth_item(const void *key, void *item, void *data) {
 
-    if (!key) return true;
-    if (!data) goto error;
+    if (!key)
+        return true;
+    if (!data)
+        goto error;
 
     struct bwd *container = (struct bwd *)data;
 
@@ -2816,9 +2961,11 @@ static bool add_bandwidth_item(const void *key, void *item, void *data) {
     intptr_t nbr = (intptr_t)item;
 
     ov_json_value *val = ov_json_number(nbr);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
-    if (ov_json_object_set(container->object, k, val)) return true;
+    if (ov_json_object_set(container->object, k, val))
+        return true;
 
     val = ov_json_value_free(val);
 error:
@@ -2831,14 +2978,17 @@ static ov_json_value *bandwidth_create(ov_dict *dict) {
 
     ov_json_value *out = NULL;
 
-    if (!dict) return ov_json_null();
+    if (!dict)
+        return ov_json_null();
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     struct bwd container = (struct bwd){.object = out};
 
-    if (!ov_dict_for_each(dict, &container, add_bandwidth_item)) goto error;
+    if (!ov_dict_for_each(dict, &container, add_bandwidth_item))
+        goto error;
 
     return out;
 error:
@@ -2854,10 +3004,12 @@ static ov_json_value *attributes_create(const ov_sdp_list *list) {
     ov_json_value *val = NULL;
     ov_json_value *arr = NULL;
 
-    if (!list) return ov_json_null();
+    if (!list)
+        return ov_json_null();
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     ov_sdp_list *node = (ov_sdp_list *)list;
 
@@ -2875,18 +3027,22 @@ static ov_json_value *attributes_create(const ov_sdp_list *list) {
 
         if (exists) {
 
-            if (!node->value) goto error;
+            if (!node->value)
+                goto error;
 
-            if (ov_json_is_null(exists)) goto error;
+            if (ov_json_is_null(exists))
+                goto error;
 
             if (ov_json_is_array(exists)) {
 
                 val = ov_json_string(node->value);
-                if (!ov_json_array_push(exists, val)) goto error;
+                if (!ov_json_array_push(exists, val))
+                    goto error;
 
             } else {
 
-                if (!ov_json_value_unset_parent(exists)) goto error;
+                if (!ov_json_value_unset_parent(exists))
+                    goto error;
 
                 /*
                  *      unplugged exists
@@ -2904,20 +3060,24 @@ static ov_json_value *attributes_create(const ov_sdp_list *list) {
                 }
 
                 val = ov_json_string(node->value);
-                if (!ov_json_array_push(arr, val)) goto error;
+                if (!ov_json_array_push(arr, val))
+                    goto error;
 
-                if (!ov_json_object_set(out, node->key, arr)) goto error;
+                if (!ov_json_object_set(out, node->key, arr))
+                    goto error;
             }
 
         } else if (node->value) {
 
             val = ov_json_string(node->value);
-            if (!ov_json_object_set(out, node->key, val)) goto error;
+            if (!ov_json_object_set(out, node->key, val))
+                goto error;
 
         } else {
 
             val = ov_json_null();
-            if (!ov_json_object_set(out, node->key, val)) goto error;
+            if (!ov_json_object_set(out, node->key, val))
+                goto error;
         }
 
         node = ov_node_next(node);
@@ -2933,40 +3093,47 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_json_value *description_create(
-    const ov_sdp_description *description) {
+static ov_json_value *
+description_create(const ov_sdp_description *description) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *obj = NULL;
     ov_json_value *arr = NULL;
 
-    if (!description) return ov_json_null();
+    if (!description)
+        return ov_json_null();
 
     ov_sdp_description *desc = (ov_sdp_description *)description;
     ov_sdp_list *node = NULL;
 
     out = ov_json_array();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     while (desc) {
 
         obj = ov_json_object();
-        if (!obj) goto error;
+        if (!obj)
+            goto error;
 
         val = ov_json_string(desc->media.name);
-        if (!ov_json_object_set(obj, OV_KEY_TYPE, val)) goto error;
+        if (!ov_json_object_set(obj, OV_KEY_TYPE, val))
+            goto error;
 
         val = ov_json_string(desc->media.protocol);
-        if (!ov_json_object_set(obj, OV_KEY_PROTOCOL, val)) goto error;
+        if (!ov_json_object_set(obj, OV_KEY_PROTOCOL, val))
+            goto error;
 
         val = ov_json_number(desc->media.port);
-        if (!ov_json_object_set(obj, OV_KEY_PORT, val)) goto error;
+        if (!ov_json_object_set(obj, OV_KEY_PORT, val))
+            goto error;
 
         if (0 != desc->media.port2) {
 
             val = ov_json_number(desc->media.port2);
-            if (!ov_json_object_set(obj, OV_KEY_PORT_RTCP, val)) goto error;
+            if (!ov_json_object_set(obj, OV_KEY_PORT_RTCP, val))
+                goto error;
         }
 
         if (!desc->media.formats) {
@@ -2976,14 +3143,16 @@ static ov_json_value *description_create(
             node = desc->media.formats;
             while (node) {
                 val = ov_json_string(node->value);
-                if (!ov_json_array_push(arr, val)) goto error;
+                if (!ov_json_array_push(arr, val))
+                    goto error;
                 node = ov_node_next(node);
             }
             val = arr;
             arr = NULL;
         }
 
-        if (!ov_json_object_set(obj, OV_KEY_FORMAT, val)) goto error;
+        if (!ov_json_object_set(obj, OV_KEY_FORMAT, val))
+            goto error;
 
         /*
          *      optional items
@@ -2991,30 +3160,35 @@ static ov_json_value *description_create(
         if (desc->info) {
 
             val = ov_json_string(desc->info);
-            if (!ov_json_object_set(obj, OV_KEY_INFO, val)) goto error;
+            if (!ov_json_object_set(obj, OV_KEY_INFO, val))
+                goto error;
         }
 
         if (desc->key) {
 
             val = ov_json_string(desc->key);
-            if (!ov_json_object_set(obj, OV_KEY_KEY, val)) goto error;
+            if (!ov_json_object_set(obj, OV_KEY_KEY, val))
+                goto error;
         }
 
         if (desc->connection) {
 
             arr = ov_json_array();
-            if (!arr) goto error;
+            if (!arr)
+                goto error;
 
             ov_sdp_connection *c = desc->connection;
             while (c) {
 
                 val = connection_create(c);
-                if (!ov_json_array_push(arr, val)) goto error;
+                if (!ov_json_array_push(arr, val))
+                    goto error;
 
                 c = ov_node_next(c);
             }
 
-            if (!ov_json_object_set(obj, OV_KEY_CONNECTION, arr)) goto error;
+            if (!ov_json_object_set(obj, OV_KEY_CONNECTION, arr))
+                goto error;
 
             arr = NULL;
         }
@@ -3022,16 +3196,19 @@ static ov_json_value *description_create(
         if (desc->bandwidth) {
 
             val = bandwidth_create(desc->bandwidth);
-            if (!ov_json_object_set(obj, OV_KEY_BANDWIDTH, val)) goto error;
+            if (!ov_json_object_set(obj, OV_KEY_BANDWIDTH, val))
+                goto error;
         }
 
         if (desc->attributes) {
 
             val = attributes_create(desc->attributes);
-            if (!ov_json_object_set(obj, OV_KEY_ATTRIBUTES, val)) goto error;
+            if (!ov_json_object_set(obj, OV_KEY_ATTRIBUTES, val))
+                goto error;
         }
 
-        if (!ov_json_array_push(out, obj)) goto error;
+        if (!ov_json_array_push(out, obj))
+            goto error;
         desc = ov_node_next(desc);
     }
 
@@ -3067,17 +3244,20 @@ static bool json_parse_object_array_to_ov_sdp_list(void *item, void *data) {
     struct json_parse_list *container = NULL;
     ov_sdp_list *node = NULL;
 
-    if (!item || !ov_json_is_string(item)) return false;
+    if (!item || !ov_json_is_string(item))
+        return false;
 
     container = (struct json_parse_list *)data;
 
     node = ov_sdp_list_create();
-    if (!node) goto error;
+    if (!node)
+        goto error;
 
     node->key = container->key;
     node->value = ov_json_string_get(item);
 
-    if (ov_node_push((void **)&container->head, node)) return true;
+    if (ov_node_push((void **)&container->head, node))
+        return true;
 error:
     node = ov_sdp_list_free(node);
     return false;
@@ -3085,33 +3265,37 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool sdp_parse_object_to_ov_sdp_list(const void *key,
-                                            void *item,
+static bool sdp_parse_object_to_ov_sdp_list(const void *key, void *item,
                                             void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     struct json_parse_list *container = NULL;
     ov_sdp_list *node = NULL;
 
-    if (!data || !item) goto error;
+    if (!data || !item)
+        goto error;
     container = (struct json_parse_list *)data;
 
     if (ov_json_is_array(item)) {
 
-        if (ov_json_array_is_empty(item)) return false;
+        if (ov_json_array_is_empty(item))
+            return false;
 
         container->key = (const char *)key;
 
-        return ov_json_array_for_each(
-            item, container, json_parse_object_array_to_ov_sdp_list);
+        return ov_json_array_for_each(item, container,
+                                      json_parse_object_array_to_ov_sdp_list);
     }
 
     if (!ov_json_is_null(item))
-        if (!ov_json_is_string(item)) goto error;
+        if (!ov_json_is_string(item))
+            goto error;
 
     node = ov_sdp_list_create();
-    if (!node) goto error;
+    if (!node)
+        goto error;
 
     node->key = (char *)key;
 
@@ -3119,14 +3303,16 @@ static bool sdp_parse_object_to_ov_sdp_list(const void *key,
 
     if (ov_json_is_null(value)) {
 
-        if (!ov_node_push((void **)&container->head, node)) goto error;
+        if (!ov_node_push((void **)&container->head, node))
+            goto error;
 
         return true;
     }
 
     if (ov_json_is_string(value)) {
 
-        if (!ov_node_push((void **)&container->head, node)) goto error;
+        if (!ov_node_push((void **)&container->head, node))
+            goto error;
 
         node->value = ov_json_string_get(value);
         return true;
@@ -3142,7 +3328,8 @@ error:
 
 static bool json_parse_time_list(void *item, void *data) {
 
-    if (!ov_json_is_object(item) || !data) goto error;
+    if (!ov_json_is_object(item) || !data)
+        goto error;
 
     return ov_json_object_for_each(item, data, sdp_parse_object_to_ov_sdp_list);
 error:
@@ -3157,7 +3344,8 @@ static bool json_parse_time(void *item, void *data) {
     ov_sdp_list *rlist = NULL;
     ov_sdp_list *zlist = NULL;
 
-    if (!ov_json_is_object(item) || !data) goto error;
+    if (!ov_json_is_object(item) || !data)
+        goto error;
 
     struct json_parse_time_container *container =
         (struct json_parse_time_container *)data;
@@ -3171,10 +3359,12 @@ static bool json_parse_time(void *item, void *data) {
     struct json_parse_list container2 = (struct json_parse_list){.head = NULL};
 
     start = ov_json_object_get(source, OV_KEY_START);
-    if (!ov_json_is_number(start)) goto error;
+    if (!ov_json_is_number(start))
+        goto error;
 
     stop = ov_json_object_get(source, OV_KEY_STOP);
-    if (!ov_json_is_number(stop)) goto error;
+    if (!ov_json_is_number(stop))
+        goto error;
 
     repeat = ov_json_object_get(source, OV_KEY_REPEAT);
     if (repeat) {
@@ -3182,7 +3372,8 @@ static bool json_parse_time(void *item, void *data) {
         container2.head = NULL;
         container2.key = NULL;
 
-        if (!ov_json_is_array(repeat)) goto error;
+        if (!ov_json_is_array(repeat))
+            goto error;
 
         if (!ov_json_array_for_each(repeat, &container2, json_parse_time_list))
             goto error;
@@ -3197,7 +3388,8 @@ static bool json_parse_time(void *item, void *data) {
         container2.head = NULL;
         container2.key = NULL;
 
-        if (!ov_json_is_array(repeat)) goto error;
+        if (!ov_json_is_array(repeat))
+            goto error;
 
         if (!ov_json_array_for_each(zone, &container2, json_parse_time_list))
             goto error;
@@ -3207,20 +3399,25 @@ static bool json_parse_time(void *item, void *data) {
     }
 
     time = ov_sdp_time_create();
-    if (!time) goto error;
+    if (!time)
+        goto error;
 
     time->start = ov_json_number_get(start);
     time->stop = ov_json_number_get(stop);
     time->repeat = rlist;
     time->zone = zlist;
 
-    if (!ov_node_push((void **)&container->head, time)) goto error;
+    if (!ov_node_push((void **)&container->head, time))
+        goto error;
 
     return true;
 error:
-    if (rlist) rlist = ov_data_pointer_free(rlist);
-    if (zlist) zlist = ov_data_pointer_free(zlist);
-    if (time) time = ov_data_pointer_free(time);
+    if (rlist)
+        rlist = ov_data_pointer_free(rlist);
+    if (zlist)
+        zlist = ov_data_pointer_free(zlist);
+    if (time)
+        time = ov_data_pointer_free(time);
     return false;
 }
 
@@ -3229,22 +3426,26 @@ error:
 static bool json_parse_connection(const ov_json_value *obj,
                                   ov_sdp_connection *connection) {
 
-    if (!obj || !connection) goto error;
+    if (!obj || !connection)
+        goto error;
 
     ov_json_value *val = NULL;
 
     val = ov_json_object_get(obj, OV_KEY_TYPE);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     connection->nettype = ov_json_string_get(val);
 
     val = ov_json_object_get(obj, OV_KEY_ADDRESS_TYPE);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     connection->addrtype = ov_json_string_get(val);
 
     val = ov_json_object_get(obj, OV_KEY_ADDRESS);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     connection->address = ov_json_string_get(val);
     return true;
@@ -3257,14 +3458,18 @@ error:
 static bool json_parse_connection_list(void *item, void *data) {
 
     ov_sdp_connection *conn = NULL;
-    if (!ov_json_is_object(item) || !data) return false;
+    if (!ov_json_is_object(item) || !data)
+        return false;
 
     conn = ov_sdp_connection_create();
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
-    if (!json_parse_connection(item, conn)) goto error;
+    if (!json_parse_connection(item, conn))
+        goto error;
 
-    if (!ov_node_push(data, conn)) goto error;
+    if (!ov_node_push(data, conn))
+        goto error;
 
     return true;
 error:
@@ -3277,29 +3482,35 @@ error:
 static bool json_parse_origin(const ov_json_value *obj,
                               ov_sdp_session *session) {
 
-    if (!obj || !session) goto error;
+    if (!obj || !session)
+        goto error;
 
     ov_json_value const *val = NULL;
 
     val = ov_json_get(obj, "/" OV_KEY_ORIGIN "/" OV_KEY_NAME);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     session->origin.name = ov_json_string_get(val);
 
     val = ov_json_get(obj, "/" OV_KEY_ORIGIN "/" OV_KEY_ID);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     session->origin.id = ov_json_number_get(val);
 
     val = ov_json_get(obj, "/" OV_KEY_ORIGIN "/" OV_KEY_VERSION);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     session->origin.version = ov_json_number_get(val);
 
     val = ov_json_get(obj, "/" OV_KEY_ORIGIN "/" OV_KEY_CONNECTION);
-    if (!val || ov_json_is_null(val)) goto error;
+    if (!val || ov_json_is_null(val))
+        goto error;
 
-    if (!json_parse_connection(val, &session->origin.connection)) goto error;
+    if (!json_parse_connection(val, &session->origin.connection))
+        goto error;
 
     return true;
 error:
@@ -3310,19 +3521,23 @@ error:
 
 static bool json_parse_string_list(void *item, void *data) {
 
-    if (!ov_json_is_string(item) || !data) goto error;
+    if (!ov_json_is_string(item) || !data)
+        goto error;
     ov_json_value *val = ov_json_value_cast(item);
 
     const char *string = ov_json_string_get(val);
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     struct json_parse_list *container = (struct json_parse_list *)data;
 
     ov_sdp_list *node = ov_sdp_list_create();
-    if (!node) goto error;
+    if (!node)
+        goto error;
 
     node->value = string;
-    if (ov_node_push((void **)&container->head, node)) return true;
+    if (ov_node_push((void **)&container->head, node))
+        return true;
 
     node->value = NULL;
     node = ov_sdp_list_free(node);
@@ -3334,19 +3549,23 @@ error:
 
 static bool json_parse_bandwidth_item(const void *key, void *item, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_dict *dict = ov_dict_cast(data);
     char *k = strdup((char *)key);
-    if (!k) goto error;
+    if (!k)
+        goto error;
 
     uint64_t nbr = (uint64_t)ov_json_number_get(item);
     intptr_t val = (intptr_t)nbr;
 
-    if (ov_dict_set(dict, k, (void *)val, NULL)) return true;
+    if (ov_dict_set(dict, k, (void *)val, NULL))
+        return true;
 
 error:
-    if (k) free(k);
+    if (k)
+        free(k);
     return false;
 }
 
@@ -3355,13 +3574,15 @@ error:
 static ov_dict *json_parse_bandwidth(ov_json_value const *val) {
 
     ov_dict *dict = NULL;
-    if (!ov_json_is_object(val)) goto error;
+    if (!ov_json_is_object(val))
+        goto error;
 
     dict = ov_sdp_bandwidth_create();
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
-    if (!ov_json_object_for_each(
-            (ov_json_value *)val, dict, json_parse_bandwidth_item))
+    if (!ov_json_object_for_each((ov_json_value *)val, dict,
+                                 json_parse_bandwidth_item))
         goto error;
 
     return dict;
@@ -3377,33 +3598,40 @@ static bool sdp_parse_description_object(void *source, void *data) {
     ov_sdp_description *desc = NULL;
     ov_json_value *val = NULL;
 
-    if (!ov_json_is_object(source) || !data) return false;
+    if (!ov_json_is_object(source) || !data)
+        return false;
 
     struct json_parse_list container1 = (struct json_parse_list){.head = NULL};
 
     desc = ov_sdp_description_create();
-    if (!desc) goto error;
+    if (!desc)
+        goto error;
 
     val = ov_json_object_get(source, OV_KEY_TYPE);
-    if (!ov_json_is_string(val)) goto error;
+    if (!ov_json_is_string(val))
+        goto error;
     desc->media.name = ov_json_string_get(val);
 
     val = ov_json_object_get(source, OV_KEY_PROTOCOL);
-    if (!ov_json_is_string(val)) goto error;
+    if (!ov_json_is_string(val))
+        goto error;
     desc->media.protocol = ov_json_string_get(val);
 
     val = ov_json_object_get(source, OV_KEY_PORT);
-    if (!ov_json_is_number(val)) goto error;
+    if (!ov_json_is_number(val))
+        goto error;
     desc->media.port = ov_json_number_get(val);
 
     val = ov_json_object_get(source, OV_KEY_PORT_RTCP);
     if (val) {
-        if (!ov_json_is_number(val)) goto error;
+        if (!ov_json_is_number(val))
+            goto error;
         desc->media.port2 = ov_json_number_get(val);
     }
 
     val = ov_json_object_get(source, OV_KEY_FORMAT);
-    if (!ov_json_is_array(val) || ov_json_array_is_empty(val)) goto error;
+    if (!ov_json_is_array(val) || ov_json_array_is_empty(val))
+        goto error;
 
     container1.head = NULL;
 
@@ -3419,13 +3647,15 @@ static bool sdp_parse_description_object(void *source, void *data) {
 
     val = ov_json_object_get(source, OV_KEY_INFO);
     if (val) {
-        if (!ov_json_is_string(val)) goto error;
+        if (!ov_json_is_string(val))
+            goto error;
         desc->info = ov_json_string_get(val);
     }
 
     val = ov_json_object_get(source, OV_KEY_KEY);
     if (val) {
-        if (!ov_json_is_string(val)) goto error;
+        if (!ov_json_is_string(val))
+            goto error;
         desc->key = ov_json_string_get(val);
     }
 
@@ -3433,10 +3663,11 @@ static bool sdp_parse_description_object(void *source, void *data) {
 
     if (val) {
 
-        if (!ov_json_is_array(val) || ov_json_array_is_empty(val)) goto error;
+        if (!ov_json_is_array(val) || ov_json_array_is_empty(val))
+            goto error;
 
-        if (!ov_json_array_for_each(
-                val, (void **)&desc->connection, json_parse_connection_list))
+        if (!ov_json_array_for_each(val, (void **)&desc->connection,
+                                    json_parse_connection_list))
             goto error;
     }
 
@@ -3445,7 +3676,8 @@ static bool sdp_parse_description_object(void *source, void *data) {
 
         desc->bandwidth = json_parse_bandwidth(val);
 
-        if (!desc->bandwidth) goto error;
+        if (!desc->bandwidth)
+            goto error;
     }
 
     val = ov_json_object_get(source, OV_KEY_ATTRIBUTES);
@@ -3454,15 +3686,16 @@ static bool sdp_parse_description_object(void *source, void *data) {
         container1.head = NULL;
         container1.key = NULL;
 
-        if (!ov_json_object_for_each(
-                val, &container1, sdp_parse_object_to_ov_sdp_list))
+        if (!ov_json_object_for_each(val, &container1,
+                                     sdp_parse_object_to_ov_sdp_list))
             goto error;
 
         desc->attributes = container1.head;
         container1.head = NULL;
     }
 
-    if (!ov_node_push(data, desc)) goto error;
+    if (!ov_node_push(data, desc))
+        goto error;
 
     return true;
 
@@ -3475,12 +3708,13 @@ error:
 
 static ov_sdp_description *sdp_parse_description(ov_json_value const *val) {
 
-    if (!ov_json_is_array(val)) return NULL;
+    if (!ov_json_is_array(val))
+        return NULL;
 
     ov_sdp_description *desc = NULL;
 
-    if (ov_json_array_for_each(
-            (ov_json_value *)val, &desc, sdp_parse_description_object))
+    if (ov_json_array_for_each((ov_json_value *)val, &desc,
+                               sdp_parse_description_object))
         return desc;
 
     ov_sdp_description_free(desc);
@@ -3489,14 +3723,14 @@ static ov_sdp_description *sdp_parse_description(ov_json_value const *val) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool sdp_parse_session(const char *string,
-                              size_t length,
+static bool sdp_parse_session(const char *string, size_t length,
                               ov_sdp_session *input) {
 
     DefaultSession *session = AS_DEFAULT_SESSION(input);
     OV_ASSERT(session);
 
-    if (!ov_sdp_session_clear(input)) goto error;
+    if (!ov_sdp_session_clear(input))
+        goto error;
 
     session->buffer = ov_sdp_buffer_create();
 
@@ -3507,7 +3741,8 @@ static bool sdp_parse_session(const char *string,
     uint64_t nbr = 0;
     uint64_t size = 0;
 
-    if (!string || length < 11) goto error;
+    if (!string || length < 11)
+        goto error;
 
     /*
      *      We copy the string to the internal buffer and
@@ -3528,15 +3763,17 @@ static bool sdp_parse_session(const char *string,
      *      as actual number.
      */
 
-    if (!parse_content_line(
-            ptr, session->buffer->length, &val, &len, &ptr, 'v', NULL))
+    if (!parse_content_line(ptr, session->buffer->length, &val, &len, &ptr, 'v',
+                            NULL))
         goto error;
 
     ptr[-1] = 0;
     ptr[-2] = 0;
 
-    if (!parse_number(val, len, &nbr)) goto error;
-    if (nbr > 255) goto error;
+    if (!parse_number(val, len, &nbr))
+        goto error;
+    if (nbr > 255)
+        goto error;
 
     session->public.version = nbr;
 
@@ -3545,13 +3782,14 @@ static bool sdp_parse_session(const char *string,
      *      the content buffer.
      */
 
-    if (!validate_line(
-            ptr,
-            session->buffer->length - (ptr - (char *)session->buffer->start),
-            &nxt))
+    if (!validate_line(ptr,
+                       session->buffer->length -
+                           (ptr - (char *)session->buffer->start),
+                       &nxt))
         goto error;
 
-    if (!mask_origin(session, ptr, nxt - ptr)) goto error;
+    if (!mask_origin(session, ptr, nxt - ptr))
+        goto error;
 
     /*
      *      mask the session name
@@ -3561,18 +3799,13 @@ static bool sdp_parse_session(const char *string,
     ptr[-1] = 0;
     ptr[-2] = 0;
 
-    if (!validate_line(
-            ptr,
-            session->buffer->length - (ptr - (char *)session->buffer->start),
-            &nxt))
+    if (!validate_line(ptr,
+                       session->buffer->length -
+                           (ptr - (char *)session->buffer->start),
+                       &nxt))
         goto error;
 
-    if (!parse_content_line(ptr,
-                            session->buffer->length,
-                            &val,
-                            &len,
-                            &ptr,
-                            's',
+    if (!parse_content_line(ptr, session->buffer->length, &val, &len, &ptr, 's',
                             ov_sdp_is_text))
         goto error;
 
@@ -3587,17 +3820,18 @@ static bool sdp_parse_session(const char *string,
      *      optional items
      */
 
-    if (!validate_line(
-            ptr,
-            session->buffer->length - (ptr - (char *)session->buffer->start),
-            &nxt))
+    if (!validate_line(ptr,
+                       session->buffer->length -
+                           (ptr - (char *)session->buffer->start),
+                       &nxt))
         goto error;
 
     // OPTIONAL INFO
 
     if (*ptr == 'i') {
 
-        if (!parse_information(ptr, (nxt - ptr), &val, &len)) goto error;
+        if (!parse_information(ptr, (nxt - ptr), &val, &len))
+            goto error;
 
         session->public.info = val;
         val = (char *)session->public.info + len + 1;
@@ -3618,7 +3852,8 @@ static bool sdp_parse_session(const char *string,
 
     if (*ptr == 'u') {
 
-        if (!parse_uri(ptr, (nxt - ptr), &val, &len)) goto error;
+        if (!parse_uri(ptr, (nxt - ptr), &val, &len))
+            goto error;
 
         session->public.uri = val;
         val = (char *)session->public.uri + len + 1;
@@ -3639,13 +3874,10 @@ static bool sdp_parse_session(const char *string,
 
     if (*ptr == 'e') {
 
-        if (!create_masked_list(&session->public.email,
-                                ptr,
+        if (!create_masked_list(&session->public.email, ptr,
                                 session->buffer->length -
                                     (ptr - (char *)session->buffer->start),
-                                &ptr,
-                                'e',
-                                ov_sdp_is_email))
+                                &ptr, 'e', ov_sdp_is_email))
             goto error;
 
         ptr[-1] = 0;
@@ -3662,13 +3894,10 @@ static bool sdp_parse_session(const char *string,
 
     if (*ptr == 'p') {
 
-        if (!create_masked_list(&session->public.phone,
-                                ptr,
+        if (!create_masked_list(&session->public.phone, ptr,
                                 session->buffer->length -
                                     (ptr - (char *)session->buffer->start),
-                                &ptr,
-                                'p',
-                                ov_sdp_is_phone))
+                                &ptr, 'p', ov_sdp_is_phone))
             goto error;
 
         ptr[-1] = 0;
@@ -3685,8 +3914,8 @@ static bool sdp_parse_session(const char *string,
 
     if (*ptr == 'c') {
 
-        if (!create_masked_connection(
-                &session->public.connection, ptr, (nxt - ptr), true))
+        if (!create_masked_connection(&session->public.connection, ptr,
+                                      (nxt - ptr), true))
             goto error;
 
         ptr = nxt;
@@ -3704,8 +3933,7 @@ static bool sdp_parse_session(const char *string,
 
     if (*ptr == 'b') {
 
-        if (!create_bandwith_dict(&session->public.bandwidth,
-                                  ptr,
+        if (!create_bandwith_dict(&session->public.bandwidth, ptr,
                                   session->buffer->length -
                                       (ptr - (char *)session->buffer->start),
                                   &ptr))
@@ -3723,27 +3951,28 @@ static bool sdp_parse_session(const char *string,
 
     // MANDATORY TIME
 
-    if (!create_masked_time(
-            &session->public.time,
-            ptr,
-            session->buffer->length - (ptr - (char *)session->buffer->start),
-            &ptr))
+    if (!create_masked_time(&session->public.time, ptr,
+                            session->buffer->length -
+                                (ptr - (char *)session->buffer->start),
+                            &ptr))
         goto error;
 
     ptr[-1] = 0;
     ptr[-2] = 0;
 
-    if (!validate_line(ptr, size - (ptr - string), &nxt)) goto done;
+    if (!validate_line(ptr, size - (ptr - string), &nxt))
+        goto done;
 
     // OPTIONAL KEY
 
     if (*ptr == 'k') {
 
-        if (!parse_content_line(
-                ptr, session->buffer->length, &val, &len, &ptr, 'k', NULL))
+        if (!parse_content_line(ptr, session->buffer->length, &val, &len, &ptr,
+                                'k', NULL))
             goto error;
 
-        if (!ov_sdp_is_key(val, len)) goto error;
+        if (!ov_sdp_is_key(val, len))
+            goto error;
 
         session->public.key = val;
         val = (char *)session->public.key + len + 1;
@@ -3758,8 +3987,7 @@ static bool sdp_parse_session(const char *string,
     if (*ptr == 'a') {
 
         if (!create_masked_attributes(
-                &session->public.attributes,
-                ptr,
+                &session->public.attributes, ptr,
                 session->buffer->length -
                     (ptr - (char *)session->buffer->start),
                 &ptr))
@@ -3780,8 +4008,7 @@ static bool sdp_parse_session(const char *string,
     if (*ptr == 'm') {
 
         if (!create_masked_descriptions(
-                &session->public.description,
-                ptr,
+                &session->public.description, ptr,
                 session->buffer->length -
                     (ptr - (char *)session->buffer->start),
                 &ptr))
@@ -3811,7 +4038,8 @@ error:
 
 ov_sdp_session *ov_sdp_session_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == OV_SDP_SESSION_MAGIC_BYTE)
         return (ov_sdp_session *)self;
@@ -3828,14 +4056,17 @@ ov_sdp_session *ov_sdp_session_create() {
     if (ov_sdp_cache.enabled) {
 
         session = ov_cache_get(ov_sdp_cache.session);
-        if (session) OV_ASSERT(AS_DEFAULT_SESSION(session));
+        if (session)
+            OV_ASSERT(AS_DEFAULT_SESSION(session));
 
         ov_sdp_session_clear(session);
     }
 
-    if (!session) session = calloc(1, sizeof(DefaultSession));
+    if (!session)
+        session = calloc(1, sizeof(DefaultSession));
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     /*
      *  Init session
@@ -3860,7 +4091,8 @@ error:
 bool ov_sdp_session_clear(ov_sdp_session *self) {
 
     DefaultSession *session = AS_DEFAULT_SESSION(self);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     /*
      *      unset the internal buffer
@@ -3901,9 +4133,11 @@ error:
 void *ov_sdp_session_free(void *self) {
 
     ov_sdp_session *session = ov_sdp_session_cast(self);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
-    if (!ov_sdp_session_clear(session)) return session;
+    if (!ov_sdp_session_clear(session))
+        return session;
 
     if (ov_sdp_cache.enabled)
         session = ov_cache_put(ov_sdp_cache.session, session);
@@ -3921,10 +4155,12 @@ bool ov_sdp_session_persist(ov_sdp_session *session) {
     bool result = false;
     char *string = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     string = ov_sdp_stringify(session, false);
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     result = sdp_parse_session(string, strlen(string), session);
 
@@ -3940,15 +4176,19 @@ ov_sdp_session *ov_sdp_session_copy(const ov_sdp_session *session) {
     ov_sdp_session *copy = NULL;
     char *string = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     string = ov_sdp_stringify(session, false);
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     copy = ov_sdp_session_create();
-    if (!copy) goto error;
+    if (!copy)
+        goto error;
 
-    if (!sdp_parse_session(string, strlen(string), copy)) goto error;
+    if (!sdp_parse_session(string, strlen(string), copy))
+        goto error;
 
     string = ov_data_pointer_free(string);
     return copy;
@@ -3963,7 +4203,8 @@ error:
 
 bool ov_sdp_validate(const char *start, size_t size) {
 
-    if (!start || size < 32) goto error;
+    if (!start || size < 32)
+        goto error;
 
     char *ptr = (char *)start;
     char *next = NULL;
@@ -3973,38 +4214,49 @@ bool ov_sdp_validate(const char *start, size_t size) {
      *      which MUST start with "v=0\r\n"
      */
 
-    if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
-    if (!validate_version(ptr, (next - ptr))) goto error;
+    if (!validate_line(ptr, size - (ptr - start), &next))
+        goto error;
+    if (!validate_version(ptr, (next - ptr)))
+        goto error;
 
     ptr = next;
-    if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
-    if (!validate_origin(ptr, (next - ptr))) goto error;
+    if (!validate_line(ptr, size - (ptr - start), &next))
+        goto error;
+    if (!validate_origin(ptr, (next - ptr)))
+        goto error;
 
     ptr = next;
-    if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
-    if (!validate_session_name(ptr, (next - ptr))) goto error;
+    if (!validate_line(ptr, size - (ptr - start), &next))
+        goto error;
+    if (!validate_session_name(ptr, (next - ptr)))
+        goto error;
 
     ptr = next;
-    if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
+    if (!validate_line(ptr, size - (ptr - start), &next))
+        goto error;
 
     // OPTIONAL INFO
 
     if (*ptr == 'i') {
 
-        if (!validate_information(ptr, (next - ptr))) goto error;
+        if (!validate_information(ptr, (next - ptr)))
+            goto error;
 
         ptr = next;
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto error;
     }
 
     // OPTIONAL URI
 
     if (*ptr == 'u') {
 
-        if (!validate_uri(ptr, (next - ptr))) goto error;
+        if (!validate_uri(ptr, (next - ptr)))
+            goto error;
 
         ptr = next;
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto error;
     }
 
     // OPTIONAL EMAIL
@@ -4014,7 +4266,8 @@ bool ov_sdp_validate(const char *start, size_t size) {
         if (!validate_content_list(ptr, size, &ptr, 'e', ov_sdp_is_email))
             goto error;
 
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto error;
     }
 
     // OPTIONAL PHONE
@@ -4024,17 +4277,20 @@ bool ov_sdp_validate(const char *start, size_t size) {
         if (!validate_content_list(ptr, size, &ptr, 'p', ov_sdp_is_phone))
             goto error;
 
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto error;
     }
 
     // OPTIONAL CONNECTION
 
     if (*ptr == 'c') {
 
-        if (!validate_connection(ptr, (next - ptr), true, true)) goto error;
+        if (!validate_connection(ptr, (next - ptr), true, true))
+            goto error;
 
         ptr = next;
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto error;
     }
 
     // OPTIONAL BANDWIDTH
@@ -4044,33 +4300,40 @@ bool ov_sdp_validate(const char *start, size_t size) {
         if (!validate_content_list(ptr, size, &ptr, 'b', ov_sdp_is_bandwidth))
             goto error;
 
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto error;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto error;
     }
 
     // MANDATORY TIME
 
-    if (!validate_time(ptr, size, &ptr)) goto error;
+    if (!validate_time(ptr, size, &ptr))
+        goto error;
 
-    if (!validate_line(ptr, size - (ptr - start), &next)) goto done;
+    if (!validate_line(ptr, size - (ptr - start), &next))
+        goto done;
 
     // OPTIONAL KEY
 
     if (*ptr == 'k') {
 
-        if (!validate_key(ptr, (next - ptr))) goto error;
+        if (!validate_key(ptr, (next - ptr)))
+            goto error;
 
         ptr = next;
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto done;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto done;
     }
 
     // OPTIONAL ATTRIBUTES
 
     if (*ptr == 'a') {
 
-        if (!validate_attributes(ptr, size - (start - ptr), &next)) goto error;
+        if (!validate_attributes(ptr, size - (start - ptr), &next))
+            goto error;
 
         ptr = next;
-        if (!validate_line(ptr, size - (ptr - start), &next)) goto done;
+        if (!validate_line(ptr, size - (ptr - start), &next))
+            goto done;
     }
 
     // OPTIONAL MEDIA DESCRIPTIONS
@@ -4098,7 +4361,8 @@ ov_sdp_session *ov_sdp_parse(const char *string, size_t length) {
 
     ov_sdp_session *session = NULL;
 
-    if (!string || length < 11) goto error;
+    if (!string || length < 11)
+        goto error;
 
     session = ov_sdp_session_create();
     DefaultSession *d = AS_DEFAULT_SESSION(session);
@@ -4108,7 +4372,8 @@ ov_sdp_session *ov_sdp_parse(const char *string, size_t length) {
         goto error;
     }
 
-    if (!sdp_parse_session(string, length, session)) goto error;
+    if (!sdp_parse_session(string, length, session))
+        goto error;
 
     return session;
 
@@ -4125,18 +4390,22 @@ char *ov_sdp_stringify(const ov_sdp_session *session, bool escaped) {
     char *string = NULL;
     char *ptr = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     string = calloc(size, sizeof(char));
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     /*
      *      Verify minimum required valid input
      */
 
-    if (!validate_vos(session)) goto error;
+    if (!validate_vos(session))
+        goto error;
 
-    if (!validate_time_write(session)) goto error;
+    if (!validate_time_write(session))
+        goto error;
 
     size_t counter = 0;
 
@@ -4150,18 +4419,13 @@ char *ov_sdp_stringify(const ov_sdp_session *session, bool escaped) {
         if (session->info) {
 
             if (!ov_sdp_is_text(session->info, strlen(session->info))) {
-                ov_log_error(
-                    "SDP session info %s"
-                    "- NOT an SDP text",
-                    session->info);
+                ov_log_error("SDP session info %s"
+                             "- NOT an SDP text",
+                             session->info);
                 goto error;
             }
 
-            if (!write_line(ptr,
-                            size - (ptr - string),
-                            escaped,
-                            &ptr,
-                            'i',
+            if (!write_line(ptr, size - (ptr - string), escaped, &ptr, 'i',
                             session->info))
                 goto reallocate;
         }
@@ -4170,42 +4434,30 @@ char *ov_sdp_stringify(const ov_sdp_session *session, bool escaped) {
 
             // TBD add uri check
 
-            if (!write_line(ptr,
-                            size - (ptr - string),
-                            escaped,
-                            &ptr,
-                            'u',
+            if (!write_line(ptr, size - (ptr - string), escaped, &ptr, 'u',
                             session->uri))
                 goto reallocate;
         }
 
         if (session->email) {
 
-            if (!validate_pointer_list(
-                    session->email, "email", ov_sdp_is_email))
+            if (!validate_pointer_list(session->email, "email",
+                                       ov_sdp_is_email))
                 goto error;
 
-            if (!write_node_lines(ptr,
-                                  size - (ptr - string),
-                                  escaped,
-                                  &ptr,
-                                  'e',
-                                  session->email))
+            if (!write_node_lines(ptr, size - (ptr - string), escaped, &ptr,
+                                  'e', session->email))
                 goto reallocate;
         }
 
         if (session->phone) {
 
-            if (!validate_pointer_list(
-                    session->phone, "phone", ov_sdp_is_phone))
+            if (!validate_pointer_list(session->phone, "phone",
+                                       ov_sdp_is_phone))
                 goto error;
 
-            if (!write_node_lines(ptr,
-                                  size - (ptr - string),
-                                  escaped,
-                                  &ptr,
-                                  'p',
-                                  session->phone))
+            if (!write_node_lines(ptr, size - (ptr - string), escaped, &ptr,
+                                  'p', session->phone))
                 goto reallocate;
         }
 
@@ -4213,31 +4465,26 @@ char *ov_sdp_stringify(const ov_sdp_session *session, bool escaped) {
 
             if (1 != ov_node_count(session->connection)) {
 
-                ov_log_error(
-                    "SDP session connection "
-                    "MUST be one if set");
+                ov_log_error("SDP session connection "
+                             "MUST be one if set");
                 goto error;
             }
 
-            if (!validate_connection_pointers(session->connection)) goto error;
+            if (!validate_connection_pointers(session->connection))
+                goto error;
 
-            if (!write_connections(session->connection,
-                                   ptr,
-                                   size - (ptr - string),
-                                   escaped,
-                                   &ptr))
+            if (!write_connections(session->connection, ptr,
+                                   size - (ptr - string), escaped, &ptr))
                 goto reallocate;
         }
 
         if (session->bandwidth) {
 
-            if (!validate_bandwith(session->bandwidth)) goto error;
+            if (!validate_bandwith(session->bandwidth))
+                goto error;
 
-            if (!write_bandwith(session->bandwidth,
-                                ptr,
-                                size - (ptr - string),
-                                escaped,
-                                &ptr))
+            if (!write_bandwith(session->bandwidth, ptr, size - (ptr - string),
+                                escaped, &ptr))
                 goto reallocate;
         }
 
@@ -4247,55 +4494,48 @@ char *ov_sdp_stringify(const ov_sdp_session *session, bool escaped) {
         if (session->key) {
 
             if (!ov_sdp_is_key(session->key, strlen(session->key))) {
-                ov_log_error(
-                    "SDP session key %s"
-                    "- NOT an SDP key",
-                    session->key);
+                ov_log_error("SDP session key %s"
+                             "- NOT an SDP key",
+                             session->key);
                 goto error;
             }
 
-            if (!write_line(ptr,
-                            size - (ptr - string),
-                            escaped,
-                            &ptr,
-                            'k',
+            if (!write_line(ptr, size - (ptr - string), escaped, &ptr, 'k',
                             session->key))
                 goto reallocate;
         }
 
         if (session->attributes) {
 
-            if (!validate_attributes_write(session->attributes)) goto error;
+            if (!validate_attributes_write(session->attributes))
+                goto error;
 
-            if (!write_attributes(session->attributes,
-                                  ptr,
-                                  size - (ptr - string),
-                                  escaped,
-                                  &ptr))
+            if (!write_attributes(session->attributes, ptr,
+                                  size - (ptr - string), escaped, &ptr))
                 goto reallocate;
         }
 
         if (session->description) {
 
-            if (!validate_description_write(session->description)) goto error;
+            if (!validate_description_write(session->description))
+                goto error;
 
-            if (!write_description(session->description,
-                                   ptr,
-                                   size - (ptr - string),
-                                   escaped,
-                                   &ptr))
+            if (!write_description(session->description, ptr,
+                                   size - (ptr - string), escaped, &ptr))
                 goto reallocate;
         }
 
         break;
     reallocate:
         counter++;
-        if (100 == counter) goto error;
+        if (100 == counter)
+            goto error;
 
         string = ov_data_pointer_free(string);
         size = size + IMPL_DEFAULT_BUFFER_SIZE;
         string = calloc(size, sizeof(char));
-        if (!string) goto error;
+        if (!string)
+            goto error;
     }
 
     return string;
@@ -4311,26 +4551,32 @@ ov_json_value *ov_sdp_to_json(const ov_sdp_session *session) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     /*
      *      set mandatory items, even if null
      */
 
     val = ov_json_number(session->version);
-    if (!ov_json_object_set(out, OV_KEY_VERSION, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_VERSION, val))
+        goto error;
 
     val = ov_json_string(session->name);
-    if (!ov_json_object_set(out, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_NAME, val))
+        goto error;
 
     val = origin_create(session);
-    if (!ov_json_object_set(out, OV_KEY_ORIGIN, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ORIGIN, val))
+        goto error;
 
     val = time_create(session->time);
-    if (!ov_json_object_set(out, OV_KEY_TIME, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_TIME, val))
+        goto error;
 
     /*
      *      optional items
@@ -4339,55 +4585,64 @@ ov_json_value *ov_sdp_to_json(const ov_sdp_session *session) {
     if (session->info) {
 
         val = ov_json_string(session->info);
-        if (!ov_json_object_set(out, OV_KEY_INFO, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_INFO, val))
+            goto error;
     }
 
     if (session->uri) {
 
         val = ov_json_string(session->uri);
-        if (!ov_json_object_set(out, OV_KEY_URI, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_URI, val))
+            goto error;
     }
 
     if (session->key) {
 
         val = ov_json_string(session->key);
-        if (!ov_json_object_set(out, OV_KEY_KEY, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_KEY, val))
+            goto error;
     }
 
     if (session->connection) {
 
         val = connection_create(session->connection);
-        if (!ov_json_object_set(out, OV_KEY_CONNECTION, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_CONNECTION, val))
+            goto error;
     }
 
     if (session->email) {
 
         val = list_array_create(session->email);
-        if (!ov_json_object_set(out, OV_KEY_EMAIL, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_EMAIL, val))
+            goto error;
     }
 
     if (session->phone) {
 
         val = list_array_create(session->phone);
-        if (!ov_json_object_set(out, OV_KEY_PHONE, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_PHONE, val))
+            goto error;
     }
 
     if (session->bandwidth) {
 
         val = bandwidth_create(session->bandwidth);
-        if (!ov_json_object_set(out, OV_KEY_BANDWIDTH, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_BANDWIDTH, val))
+            goto error;
     }
 
     if (session->attributes) {
 
         val = attributes_create(session->attributes);
-        if (!ov_json_object_set(out, OV_KEY_ATTRIBUTES, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_ATTRIBUTES, val))
+            goto error;
     }
 
     if (session->description) {
 
         val = description_create(session->description);
-        if (!ov_json_object_set(out, OV_KEY_DESCRIPTION, val)) goto error;
+        if (!ov_json_object_set(out, OV_KEY_DESCRIPTION, val))
+            goto error;
     }
 
     return out;
@@ -4410,32 +4665,37 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
      *      mandatory items
      */
 
-    if (!ov_json_is_object(obj)) goto error;
+    if (!ov_json_is_object(obj))
+        goto error;
 
     session = ov_sdp_session_create();
 
     ov_json_value const *val = NULL;
 
     val = ov_json_get(obj, "/" OV_KEY_VERSION);
-    if (val) session->version = ov_json_number_get(val);
+    if (val)
+        session->version = ov_json_number_get(val);
 
     val = ov_json_get(obj, "/" OV_KEY_NAME);
-    if (!val) goto error;
+    if (!val)
+        goto error;
 
     session->name = ov_json_string_get(val);
 
-    if (!json_parse_origin(obj, session)) goto error;
+    if (!json_parse_origin(obj, session))
+        goto error;
 
     val = ov_json_get(obj, "/" OV_KEY_TIME);
-    if (!ov_json_is_array(val)) goto error;
+    if (!ov_json_is_array(val))
+        goto error;
 
     struct json_parse_time_container container1 =
         (struct json_parse_time_container){
 
             .value = val, .head = NULL};
 
-    if (!ov_json_array_for_each(
-            (ov_json_value *)val, &container1, json_parse_time))
+    if (!ov_json_array_for_each((ov_json_value *)val, &container1,
+                                json_parse_time))
         goto error;
 
     session->time = container1.head;
@@ -4446,21 +4706,26 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
      */
 
     val = ov_json_get(obj, "/" OV_KEY_INFO);
-    if (val) session->info = ov_json_string_get(val);
+    if (val)
+        session->info = ov_json_string_get(val);
 
     val = ov_json_get(obj, "/" OV_KEY_URI);
-    if (val) session->uri = ov_json_string_get(val);
+    if (val)
+        session->uri = ov_json_string_get(val);
 
     val = ov_json_get(obj, "/" OV_KEY_KEY);
-    if (val) session->key = ov_json_string_get(val);
+    if (val)
+        session->key = ov_json_string_get(val);
 
     val = ov_json_get(obj, "/" OV_KEY_CONNECTION);
     if (val) {
 
         session->connection = ov_sdp_connection_create();
-        if (!session->connection) goto error;
+        if (!session->connection)
+            goto error;
 
-        if (!json_parse_connection(val, session->connection)) goto error;
+        if (!json_parse_connection(val, session->connection))
+            goto error;
     }
 
     val = ov_json_get(obj, "/" OV_KEY_EMAIL);
@@ -4468,8 +4733,8 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
 
         container.head = NULL;
 
-        if (!ov_json_array_for_each(
-                (ov_json_value *)val, &container, json_parse_string_list))
+        if (!ov_json_array_for_each((ov_json_value *)val, &container,
+                                    json_parse_string_list))
             goto error;
 
         session->email = container.head;
@@ -4481,8 +4746,8 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
 
         container.head = NULL;
 
-        if (!ov_json_array_for_each(
-                (ov_json_value *)val, &container, json_parse_string_list))
+        if (!ov_json_array_for_each((ov_json_value *)val, &container,
+                                    json_parse_string_list))
             goto error;
 
         session->phone = container.head;
@@ -4493,7 +4758,8 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
     if (val) {
 
         session->bandwidth = json_parse_bandwidth(val);
-        if (!session->bandwidth) goto error;
+        if (!session->bandwidth)
+            goto error;
     }
 
     val = ov_json_get(obj, "/" OV_KEY_ATTRIBUTES);
@@ -4502,8 +4768,7 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
         container.head = NULL;
         container.key = NULL;
 
-        if (!ov_json_object_for_each((ov_json_value *)val,
-                                     &container,
+        if (!ov_json_object_for_each((ov_json_value *)val, &container,
                                      sdp_parse_object_to_ov_sdp_list))
             goto error;
 
@@ -4515,7 +4780,8 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
     if (val) {
 
         session->description = sdp_parse_description(val);
-        if (!session->description) goto error;
+        if (!session->description)
+            goto error;
     }
 
     /*
@@ -4527,14 +4793,16 @@ ov_sdp_session *ov_sdp_from_json(const ov_json_value *obj) {
      */
 
     valid = ov_sdp_stringify(session, false);
-    if (!valid) goto error;
+    if (!valid)
+        goto error;
 
     size_t valid_length = strlen(valid);
     session = ov_sdp_session_free(session);
     session = ov_sdp_parse(valid, valid_length);
     valid = ov_data_pointer_free(valid);
 
-    if (session) return session;
+    if (session)
+        return session;
 error:
     valid = ov_data_pointer_free(valid);
     session = ov_sdp_session_free(session);
@@ -4605,7 +4873,8 @@ void ov_sdp_disable_caching() {
 ov_buffer *ov_sdp_buffer_create() {
 
     ov_buffer *buffer = ov_cache_get(ov_sdp_cache.buffer);
-    if (!buffer) buffer = ov_buffer_create(IMPL_DEFAULT_BUFFER_SIZE);
+    if (!buffer)
+        buffer = ov_buffer_create(IMPL_DEFAULT_BUFFER_SIZE);
 
     return buffer;
 }
@@ -4615,7 +4884,8 @@ ov_buffer *ov_sdp_buffer_create() {
 ov_sdp_description *ov_sdp_description_create() {
 
     ov_sdp_description *description = ov_cache_get(ov_sdp_cache.description);
-    if (!description) description = calloc(1, sizeof(ov_sdp_description));
+    if (!description)
+        description = calloc(1, sizeof(ov_sdp_description));
 
     description->node.type = OV_SDP_DESCRIPTION_TYPE;
     description->node.prev = NULL;
@@ -4631,7 +4901,8 @@ ov_dict *ov_sdp_bandwidth_create() {
     ov_dict_config config = ov_dict_string_key_config(255);
 
     ov_dict *bandwidth = ov_cache_get(ov_sdp_cache.bandwidth);
-    if (!bandwidth) bandwidth = ov_dict_create(config);
+    if (!bandwidth)
+        bandwidth = ov_dict_create(config);
 
     return bandwidth;
 }
@@ -4641,7 +4912,8 @@ ov_dict *ov_sdp_bandwidth_create() {
 ov_sdp_list *ov_sdp_list_create() {
 
     ov_sdp_list *list = ov_cache_get(ov_sdp_cache.list);
-    if (!list) list = calloc(1, sizeof(ov_sdp_list));
+    if (!list)
+        list = calloc(1, sizeof(ov_sdp_list));
 
     list->node.type = OV_SDP_LIST_TYPE;
     list->node.prev = NULL;
@@ -4655,7 +4927,8 @@ ov_sdp_list *ov_sdp_list_create() {
 ov_sdp_time *ov_sdp_time_create() {
 
     ov_sdp_time *t = ov_cache_get(ov_sdp_cache.time);
-    if (!t) t = calloc(1, sizeof(ov_sdp_time));
+    if (!t)
+        t = calloc(1, sizeof(ov_sdp_time));
 
     t->node.type = OV_SDP_TIME_TYPE;
     t->node.prev = NULL;
@@ -4669,7 +4942,8 @@ ov_sdp_time *ov_sdp_time_create() {
 ov_sdp_connection *ov_sdp_connection_create() {
 
     ov_sdp_connection *c = ov_cache_get(ov_sdp_cache.connection);
-    if (!c) c = calloc(1, sizeof(ov_sdp_connection));
+    if (!c)
+        c = calloc(1, sizeof(ov_sdp_connection));
 
     c->node.type = OV_SDP_CONNECTION_TYPE;
     c->node.prev = NULL;
@@ -4681,7 +4955,8 @@ ov_sdp_connection *ov_sdp_connection_create() {
 
 ov_buffer *ov_sdp_buffer_free(ov_buffer *buffer) {
 
-    if (!buffer) return NULL;
+    if (!buffer)
+        return NULL;
 
     ov_buffer_clear(buffer);
 
@@ -4696,7 +4971,8 @@ ov_buffer *ov_sdp_buffer_free(ov_buffer *buffer) {
 
 ov_sdp_description *ov_sdp_description_free(ov_sdp_description *description) {
 
-    if (!description) return NULL;
+    if (!description)
+        return NULL;
 
     void *head = description;
 
@@ -4731,11 +5007,13 @@ ov_sdp_description *ov_sdp_description_free(ov_sdp_description *description) {
 
 ov_dict *ov_sdp_bandwidth_free(ov_dict *dict) {
 
-    if (!dict) return NULL;
+    if (!dict)
+        return NULL;
 
     ov_dict_clear(dict);
 
-    if (ov_sdp_cache.enabled) dict = ov_cache_put(ov_sdp_cache.bandwidth, dict);
+    if (ov_sdp_cache.enabled)
+        dict = ov_cache_put(ov_sdp_cache.bandwidth, dict);
 
     return ov_dict_free(dict);
 }
@@ -4744,7 +5022,8 @@ ov_dict *ov_sdp_bandwidth_free(ov_dict *dict) {
 
 ov_sdp_list *ov_sdp_list_free(ov_sdp_list *list) {
 
-    if (!list) return NULL;
+    if (!list)
+        return NULL;
 
     void *head = list;
 
@@ -4755,7 +5034,8 @@ ov_sdp_list *ov_sdp_list_free(ov_sdp_list *list) {
         item->key = NULL;
         item->value = NULL;
 
-        if (ov_sdp_cache.enabled) item = ov_cache_put(ov_sdp_cache.list, item);
+        if (ov_sdp_cache.enabled)
+            item = ov_cache_put(ov_sdp_cache.list, item);
 
         item = ov_data_pointer_free(item);
         item = (ov_sdp_list *)ov_node_pop(&head);
@@ -4768,7 +5048,8 @@ ov_sdp_list *ov_sdp_list_free(ov_sdp_list *list) {
 
 ov_sdp_time *ov_sdp_time_free(ov_sdp_time *tme) {
 
-    if (!tme) return NULL;
+    if (!tme)
+        return NULL;
 
     void *head = tme;
 
@@ -4782,7 +5063,8 @@ ov_sdp_time *ov_sdp_time_free(ov_sdp_time *tme) {
         item->repeat = ov_sdp_list_free(item->repeat);
         item->zone = ov_sdp_list_free(item->zone);
 
-        if (ov_sdp_cache.enabled) item = ov_cache_put(ov_sdp_cache.time, item);
+        if (ov_sdp_cache.enabled)
+            item = ov_cache_put(ov_sdp_cache.time, item);
 
         item = ov_data_pointer_free(item);
         item = (ov_sdp_time *)ov_node_pop(&head);
@@ -4795,7 +5077,8 @@ ov_sdp_time *ov_sdp_time_free(ov_sdp_time *tme) {
 
 ov_sdp_connection *ov_sdp_connection_free(ov_sdp_connection *connection) {
 
-    if (!connection) return NULL;
+    if (!connection)
+        return NULL;
 
     void *head = connection;
 
@@ -4826,27 +5109,25 @@ ov_sdp_session *ov_sdp_session_from_json(const ov_json_value *value) {
 
     ov_sdp_session *session = NULL;
 
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     const ov_json_value *src = ov_json_object_get(value, OV_KEY_SDP);
-    if (!src) src = value;
+    if (!src)
+        src = value;
 
     const char *src_string = ov_json_string_get(src);
-    if (!src_string) goto error;
+    if (!src_string)
+        goto error;
 
-    if (!ov_string_replace_all(&sdp_string,
-                               &sdp_string_len,
-                               src_string,
-                               strlen(src_string),
-                               "\\r\\n",
-                               4,
-                               "\r\n",
-                               2,
+    if (!ov_string_replace_all(&sdp_string, &sdp_string_len, src_string,
+                               strlen(src_string), "\\r\\n", 4, "\r\n", 2,
                                true))
         goto error;
 
     session = ov_sdp_parse(sdp_string, sdp_string_len);
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     sdp_string = ov_data_pointer_free(sdp_string);
     return session;
@@ -4863,10 +5144,12 @@ ov_json_value *ov_sdp_session_to_json(const ov_sdp_session *session) {
 
     ov_json_value *out = NULL;
 
-    if (!session) goto error;
+    if (!session)
+        goto error;
 
     char *string = ov_sdp_stringify(session, true);
-    if (!string) goto error;
+    if (!string)
+        goto error;
 
     out = ov_json_string(string);
     string = ov_data_pointer_free(string);

@@ -35,14 +35,18 @@ ov_json_value *ov_mc_mixer_msg_register(const char *uuid, const char *type) {
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
 
-    if (!uuid || !type) goto error;
+    if (!uuid || !type)
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_REGISTER, NULL, 0);
     par = ov_event_api_set_parameter(out);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
-    if (!ov_event_api_set_uuid(par, uuid)) goto error;
-    if (!ov_event_api_set_type(par, type)) goto error;
+    if (!ov_event_api_set_uuid(par, uuid))
+        goto error;
+    if (!ov_event_api_set_type(par, type))
+        goto error;
 
     return out;
 
@@ -62,10 +66,12 @@ ov_json_value *ov_mc_mixer_msg_configure(ov_mc_mixer_core_config config) {
 
     out = ov_event_api_message_create(OV_KEY_CONFIGURE, NULL, 0);
     par = ov_event_api_set_parameter(out);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
     val = ov_json_object();
-    if (!ov_json_object_set(par, OV_KEY_VAD, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_VAD, val))
+        goto error;
 
     ov_json_value *vad = val;
 
@@ -74,47 +80,56 @@ ov_json_value *ov_mc_mixer_msg_configure(ov_mc_mixer_core_config config) {
         goto error;
 
     val = ov_json_number(config.vad.powerlevel_density_threshold_db);
-    if (!ov_json_object_set(vad, OV_KEY_POWERLEVEL_DENSITY_DB, val)) goto error;
+    if (!ov_json_object_set(vad, OV_KEY_POWERLEVEL_DENSITY_DB, val))
+        goto error;
 
     if (config.incoming_vad) {
         val = ov_json_true();
     } else {
         val = ov_json_false();
     }
-    if (!ov_json_object_set(vad, OV_KEY_ENABLED, val)) goto error;
+    if (!ov_json_object_set(vad, OV_KEY_ENABLED, val))
+        goto error;
 
     val = ov_json_number(config.samplerate_hz);
-    if (!ov_json_object_set(par, OV_KEY_SAMPLE_RATE_HERTZ, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_SAMPLE_RATE_HERTZ, val))
+        goto error;
 
     val = ov_json_number(config.comfort_noise_max_amplitude);
-    if (!ov_json_object_set(par, OV_KEY_COMFORT_NOISE, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_COMFORT_NOISE, val))
+        goto error;
 
     val = ov_json_number(config.max_num_frames_to_mix);
-    if (!ov_json_object_set(par, OV_KEY_MAX_NUM_FRAMES, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_MAX_NUM_FRAMES, val))
+        goto error;
 
     val = ov_json_number(config.limit.frame_buffer_max);
-    if (!ov_json_object_set(par, OV_KEY_FRAME_BUFFER, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_FRAME_BUFFER, val))
+        goto error;
 
     if (config.normalize_input) {
         val = ov_json_true();
     } else {
         val = ov_json_false();
     }
-    if (!ov_json_object_set(par, OV_KEY_NORMALIZE_INPUT, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_NORMALIZE_INPUT, val))
+        goto error;
 
     if (config.rtp_keepalive) {
         val = ov_json_true();
     } else {
         val = ov_json_false();
     }
-    if (!ov_json_object_set(par, OV_KEY_RTP_KEEPALIVE, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_RTP_KEEPALIVE, val))
+        goto error;
 
     if (config.normalize_mixing_result_by_square_root) {
         val = ov_json_true();
     } else {
         val = ov_json_false();
     }
-    if (!ov_json_object_set(par, OV_KEY_ROOT_MIX, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_ROOT_MIX, val))
+        goto error;
 
     return out;
 error:
@@ -125,15 +140,17 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_mixer_core_config ov_mc_mixer_msg_configure_from_json(
-    const ov_json_value *json) {
+ov_mc_mixer_core_config
+ov_mc_mixer_msg_configure_from_json(const ov_json_value *json) {
 
     ov_mc_mixer_core_config config = (ov_mc_mixer_core_config){0};
 
-    if (!ov_event_api_event_is(json, OV_KEY_CONFIGURE)) goto error;
+    if (!ov_event_api_event_is(json, OV_KEY_CONFIGURE))
+        goto error;
 
     ov_json_value *par = ov_event_api_get_parameter(json);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
     config.vad.zero_crossings_rate_threshold_hertz = ov_json_number_get(
         ov_json_get(par, "/" OV_KEY_VAD "/" OV_KEY_ZERO_CROSSINGS_RATE_HERTZ));
@@ -192,24 +209,31 @@ ov_json_value *ov_mc_mixer_msg_acquire(const char *username,
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
 
-    if (!username) goto error;
+    if (!username)
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_ACQUIRE, NULL, 0);
     par = ov_event_api_set_parameter(out);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
     val = NULL;
-    if (!ov_socket_configuration_to_json(data.socket, &val)) goto error;
-    if (!ov_json_object_set(par, OV_KEY_SOCKET, val)) goto error;
+    if (!ov_socket_configuration_to_json(data.socket, &val))
+        goto error;
+    if (!ov_json_object_set(par, OV_KEY_SOCKET, val))
+        goto error;
 
     val = ov_json_number(data.ssrc);
-    if (!ov_json_object_set(par, OV_KEY_SSRC, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_SSRC, val))
+        goto error;
 
     val = ov_json_number(data.payload_type);
-    if (!ov_json_object_set(par, OV_KEY_PAYLOAD_TYPE, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_PAYLOAD_TYPE, val))
+        goto error;
 
     val = ov_json_string(username);
-    if (!ov_json_object_set(par, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_NAME, val))
+        goto error;
 
     return out;
 
@@ -228,24 +252,31 @@ ov_json_value *ov_mc_mixer_msg_forward(const char *username,
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
 
-    if (!username) goto error;
+    if (!username)
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_FORWARD, NULL, 0);
     par = ov_event_api_set_parameter(out);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
     val = NULL;
-    if (!ov_socket_configuration_to_json(data.socket, &val)) goto error;
-    if (!ov_json_object_set(par, OV_KEY_SOCKET, val)) goto error;
+    if (!ov_socket_configuration_to_json(data.socket, &val))
+        goto error;
+    if (!ov_json_object_set(par, OV_KEY_SOCKET, val))
+        goto error;
 
     val = ov_json_number(data.ssrc);
-    if (!ov_json_object_set(par, OV_KEY_SSRC, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_SSRC, val))
+        goto error;
 
     val = ov_json_number(data.payload_type);
-    if (!ov_json_object_set(par, OV_KEY_PAYLOAD_TYPE, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_PAYLOAD_TYPE, val))
+        goto error;
 
     val = ov_json_string(username);
-    if (!ov_json_object_set(par, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_NAME, val))
+        goto error;
 
     return out;
 
@@ -257,15 +288,17 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ov_mc_mixer_core_forward msg_forward_from_json(
-    const ov_json_value *msg) {
+static ov_mc_mixer_core_forward
+msg_forward_from_json(const ov_json_value *msg) {
 
     ov_mc_mixer_core_forward out = {0};
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
     const ov_json_value *par = ov_event_api_get_parameter(msg);
-    if (!par) par = msg;
+    if (!par)
+        par = msg;
 
     out.socket = ov_socket_configuration_from_json(
         ov_json_get(par, "/" OV_KEY_SOCKET), (ov_socket_configuration){0});
@@ -281,8 +314,8 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-ov_mc_mixer_core_forward ov_mc_mixer_msg_acquire_get_forward(
-    const ov_json_value *m) {
+ov_mc_mixer_core_forward
+ov_mc_mixer_msg_acquire_get_forward(const ov_json_value *m) {
 
     return msg_forward_from_json(m);
 }
@@ -291,10 +324,12 @@ ov_mc_mixer_core_forward ov_mc_mixer_msg_acquire_get_forward(
 
 const char *ov_mc_mixer_msg_aquire_get_username(const ov_json_value *msg) {
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
     const ov_json_value *par = ov_event_api_get_parameter(msg);
-    if (!par) par = msg;
+    if (!par)
+        par = msg;
 
     const char *loop = ov_json_string_get(ov_json_get(par, "/" OV_KEY_NAME));
     return loop;
@@ -310,14 +345,17 @@ ov_json_value *ov_mc_mixer_msg_release(const char *name) {
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
 
-    if (!name) goto error;
+    if (!name)
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_RELEASE, NULL, 0);
     par = ov_event_api_set_parameter(out);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
     val = ov_json_string(name);
-    if (!ov_json_object_set(par, OV_KEY_NAME, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_NAME, val))
+        goto error;
 
     return out;
 
@@ -334,11 +372,13 @@ ov_json_value *ov_mc_mixer_msg_join(ov_mc_loop_data data) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (0 == data.name[0] || 0 == data.socket.host[0]) goto error;
+    if (0 == data.name[0] || 0 == data.socket.host[0])
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_JOIN, NULL, 0);
     val = ov_mc_loop_data_to_json(data);
-    if (!ov_json_object_set(out, OV_KEY_PARAMETER, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_PARAMETER, val))
+        goto error;
 
     return out;
 error:
@@ -351,10 +391,12 @@ error:
 
 ov_mc_loop_data ov_mc_mixer_msg_join_from_json(const ov_json_value *msg) {
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
     const ov_json_value *par = ov_event_api_get_parameter(msg);
-    if (!par) par = msg;
+    if (!par)
+        par = msg;
 
     return ov_mc_loop_data_from_json(par);
 error:
@@ -369,14 +411,17 @@ ov_json_value *ov_mc_mixer_msg_leave(const char *loopname) {
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
 
-    if (!loopname) goto error;
+    if (!loopname)
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_LEAVE, NULL, 0);
     par = ov_event_api_set_parameter(out);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
     val = ov_json_string(loopname);
-    if (!ov_json_object_set(par, OV_KEY_LOOP, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_LOOP, val))
+        goto error;
 
     return out;
 error:
@@ -389,10 +434,12 @@ error:
 
 const char *ov_mc_mixer_msg_leave_from_json(const ov_json_value *msg) {
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
     const ov_json_value *par = ov_event_api_get_parameter(msg);
-    if (!par) par = msg;
+    if (!par)
+        par = msg;
 
     const char *loop = ov_json_string_get(ov_json_get(par, "/" OV_KEY_LOOP));
     return loop;
@@ -408,17 +455,21 @@ ov_json_value *ov_mc_mixer_msg_volume(const char *loopname, uint8_t vol) {
     ov_json_value *val = NULL;
     ov_json_value *par = NULL;
 
-    if (!loopname) goto error;
+    if (!loopname)
+        goto error;
 
     out = ov_event_api_message_create(OV_KEY_VOLUME, NULL, 0);
     par = ov_event_api_set_parameter(out);
-    if (!par) goto error;
+    if (!par)
+        goto error;
 
     val = ov_json_string(loopname);
-    if (!ov_json_object_set(par, OV_KEY_LOOP, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_LOOP, val))
+        goto error;
 
     val = ov_json_number(vol);
-    if (!ov_json_object_set(par, OV_KEY_VOLUME, val)) goto error;
+    if (!ov_json_object_set(par, OV_KEY_VOLUME, val))
+        goto error;
 
     return out;
 error:
@@ -431,10 +482,12 @@ error:
 
 const char *ov_mc_mixer_msg_volume_get_name(const ov_json_value *msg) {
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
     const ov_json_value *par = ov_event_api_get_parameter(msg);
-    if (!par) par = msg;
+    if (!par)
+        par = msg;
 
     const char *loop = ov_json_string_get(ov_json_get(par, "/" OV_KEY_LOOP));
     return loop;
@@ -446,16 +499,20 @@ error:
 
 uint8_t ov_mc_mixer_msg_volume_get_volume(const ov_json_value *msg) {
 
-    if (!msg) goto error;
+    if (!msg)
+        goto error;
 
     const ov_json_value *par = ov_event_api_get_parameter(msg);
-    if (!par) par = msg;
+    if (!par)
+        par = msg;
 
     double vol = ov_json_number_get(ov_json_get(par, "/" OV_KEY_VOLUME));
 
-    if (vol > 100) vol = 100;
+    if (vol > 100)
+        vol = 100;
 
-    if (vol < 0) vol = 0;
+    if (vol < 0)
+        vol = 0;
 
     return (uint8_t)vol;
 error:

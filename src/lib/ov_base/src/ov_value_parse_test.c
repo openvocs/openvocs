@@ -33,8 +33,7 @@
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_parse(char const *str,
-                        ov_value *ref,
+static bool check_parse(char const *str, ov_value *ref,
                         char const *ref_remainder) {
 
     bool success_p = false;
@@ -62,20 +61,18 @@ static bool check_parse(char const *str,
 
     if ((0 == ref_remainder) && (0 != remainder)) {
 
-        testrun_log_error(
-            "Remainders don't match: Expected null pointer, got "
-            "'%s'",
-            remainder);
+        testrun_log_error("Remainders don't match: Expected null pointer, got "
+                          "'%s'",
+                          remainder);
 
         goto error;
     }
 
     if ((0 != ref_remainder) && (0 == remainder)) {
 
-        testrun_log_error(
-            "Remainders don't match: Expected '%s', got null "
-            "pointer",
-            ref_remainder);
+        testrun_log_error("Remainders don't match: Expected '%s', got null "
+                          "pointer",
+                          ref_remainder);
         goto error;
     }
 
@@ -83,8 +80,7 @@ static bool check_parse(char const *str,
         (0 != strcmp(ref_remainder, remainder))) {
 
         testrun_log_error("Remainders don't match- expected '%s' - got '%s'\n",
-                          ref_remainder,
-                          remainder);
+                          ref_remainder, remainder);
 
         goto error;
     }
@@ -124,7 +120,8 @@ static bool check_dump_parse(ov_value *reference) {
 
     buf = (ov_buffer){0};
 
-    if (0 == value) goto error;
+    if (0 == value)
+        goto error;
 
     matches = ov_value_match(value, reference);
 
@@ -149,12 +146,11 @@ static int test_ov_value_parse() {
 
     testrun(check_parse("\"vali\"", ov_value_string("vali"), ""));
     testrun(check_parse("    \"vali\"", ov_value_string("vali"), ""));
-    testrun(check_parse(
-        "    \"vali\" \"Baldr\"", ov_value_string("vali"), " \"Baldr\""));
+    testrun(check_parse("    \"vali\" \"Baldr\"", ov_value_string("vali"),
+                        " \"Baldr\""));
 
     testrun(check_parse("    \"vali \\\"the avenger\\\"\" \"Baldr\"",
-                        ov_value_string("vali \"the avenger\""),
-                        " \"Baldr\""));
+                        ov_value_string("vali \"the avenger\""), " \"Baldr\""));
 
     /* This test from ov_value_parse_test is NOT a valid JSON string !!!
      * @see ov_value_json_test.c line 143
@@ -225,11 +221,10 @@ static int test_ov_value_parse() {
      */
 
     testrun(check_parse("    \"vali \\\"the avenger \\\\\" Baldr",
-                        ov_value_string("vali \"the avenger \\"),
-                        " Baldr"));
+                        ov_value_string("vali \"the avenger \\"), " Baldr"));
 
-    testrun(check_parse(
-        " \t\r\n\"all whitespaces\"", ov_value_string("all whitespaces"), ""));
+    testrun(check_parse(" \t\r\n\"all whitespaces\"",
+                        ov_value_string("all whitespaces"), ""));
 
     // Unterminated JSON defs
 
@@ -384,8 +379,8 @@ static int test_ov_value_parse() {
     testrun(check_parse("+13.37", ov_value_number(13.37), ""));
     testrun(check_parse("-13.37", ov_value_number(-13.37), ""));
     testrun(check_parse("\t    \t-13.37", ov_value_number(-13.37), ""));
-    testrun(check_parse(
-        " \t-13.37\t\"vali\"", ov_value_number(-13.37), "\t\"vali\""));
+    testrun(check_parse(" \t-13.37\t\"vali\"", ov_value_number(-13.37),
+                        "\t\"vali\""));
 
     // Lists
 
@@ -396,21 +391,19 @@ static int test_ov_value_parse() {
                         ov_value_list(ov_value_number(1916), ov_value_null()),
                         "\n"));
 
-    testrun(
-        check_parse(" \n\n\n   [\"\\\"Naftagn\\\"\", \"Cthulhu\", 12.112] "
-                    ", \"",
-                    ov_value_list(ov_value_string("\"Naftagn\""),
-                                  ov_value_string("Cthulhu"),
-                                  ov_value_number(12.112)),
-                    " , \""));
+    testrun(check_parse(" \n\n\n   [\"\\\"Naftagn\\\"\", \"Cthulhu\", 12.112] "
+                        ", \"",
+                        ov_value_list(ov_value_string("\"Naftagn\""),
+                                      ov_value_string("Cthulhu"),
+                                      ov_value_number(12.112)),
+                        " , \""));
 
-    testrun(check_parse(
-        " \n\n\n   [\"\\\"Naftagn\\\"\", [\"Cthulhu\", "
-        "12.112]] , \"",
-        ov_value_list(
-            ov_value_string("\"Naftagn\""),
-            ov_value_list(ov_value_string("Cthulhu"), ov_value_number(12.112))),
-        " , \""));
+    testrun(check_parse(" \n\n\n   [\"\\\"Naftagn\\\"\", [\"Cthulhu\", "
+                        "12.112]] , \"",
+                        ov_value_list(ov_value_string("\"Naftagn\""),
+                                      ov_value_list(ov_value_string("Cthulhu"),
+                                                    ov_value_number(12.112))),
+                        " , \""));
 
     testrun(check_parse(
         " \n\n\n   [[\"Naftagn\"], [\"Cthulhu\", "
@@ -422,12 +415,11 @@ static int test_ov_value_parse() {
                           ov_value_number(12.112))),
         " , \""));
 
-    testrun(check_parse(
-        "{\"key1\" : [1, 2]}blablablubb",
-        OBJECT(0,
-               PAIR("key1",
-                    ov_value_list(ov_value_number(1), ov_value_number(2)))),
-        "blablablubb"));
+    testrun(
+        check_parse("{\"key1\" : [1, 2]}blablablubb",
+                    OBJECT(0, PAIR("key1", ov_value_list(ov_value_number(1),
+                                                         ov_value_number(2)))),
+                    "blablablubb"));
 
     // Some real errors
 
@@ -472,8 +464,7 @@ static int test_ov_value_parse() {
     testrun(check_dump_parse(ov_value_number(13)));
     testrun(check_dump_parse(ov_value_string("Trece")));
     testrun(check_dump_parse(
-        ov_value_list(ov_value_true(),
-                      ov_value_string("Catorce"),
+        ov_value_list(ov_value_true(), ov_value_string("Catorce"),
                       ov_value_list(ov_value_number(1), ov_value_number(2)),
                       ov_value_null())));
 
@@ -482,8 +473,7 @@ static int test_ov_value_parse() {
     testrun(check_dump_parse(ov_value_string("vali \\ \"the avenger\"")));
 
     testrun(check_dump_parse(OBJECT(
-        0,
-        PAIR("true", ov_value_true()),
+        0, PAIR("true", ov_value_true()),
         PAIR("Catorce", ov_value_string("Catorce")),
         PAIR("a_list", ov_value_list(ov_value_number(1), ov_value_number(2))),
         PAIR("null", ov_value_null()))));
@@ -530,8 +520,7 @@ static void value_checker(ov_value *value, void *v_index) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_parse_stream(char const *in,
-                               char const *expected_remainder,
+static bool check_parse_stream(char const *in, char const *expected_remainder,
                                ...) {
 
     size_t number_of_expected_values = 0;
@@ -559,16 +548,18 @@ static bool check_parse_stream(char const *in,
     char const *remainder = 0;
     size_t num_found_values = 0;
 
-    ov_value_parse_stream(
-        in, 1 + strlen(in), value_checker, &num_found_values, &remainder);
+    ov_value_parse_stream(in, 1 + strlen(in), value_checker, &num_found_values,
+                          &remainder);
 
     for (size_t i = 0; i < number_of_expected_values; ++i) {
         values_expected[i] = ov_value_free(values_expected[i]);
     }
 
-    if (0 == remainder) return false;
+    if (0 == remainder)
+        return false;
 
-    if (num_found_values != number_of_expected_values) goto error;
+    if (num_found_values != number_of_expected_values)
+        goto error;
 
     return values_expected_found;
 
@@ -616,13 +607,13 @@ static int test_ov_value_parse_stream() {
     testrun(&remainder == received_arg);
 
     testrun(check_parse_stream("\"aA", "\"aA", 0));
-    testrun(check_parse_stream(
-        "1 \"aA\"", "", ov_value_number(1), ov_value_string("aA"), 0));
+    testrun(check_parse_stream("1 \"aA\"", "", ov_value_number(1),
+                               ov_value_string("aA"), 0));
 
     // With leading whitespaces
     testrun(check_parse_stream("   \"aA", "   \"aA", 0));
-    testrun(check_parse_stream(
-        "    1 \"aA\"", "", ov_value_number(1), ov_value_string("aA"), 0));
+    testrun(check_parse_stream("    1 \"aA\"", "", ov_value_number(1),
+                               ov_value_string("aA"), 0));
 
     // One 'continuous' run
     values_expected[0] = ov_value_number(1);
@@ -635,10 +626,8 @@ static int test_ov_value_parse_stream() {
     char const *incomplete_string = "1\"Vala\"[1,";
 
     testrun(ov_value_parse_stream(incomplete_string,
-                                  1 + strlen(incomplete_string),
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+                                  1 + strlen(incomplete_string), value_checker,
+                                  &index, &remainder));
 
     testrun(2 == index);
     testrun(values_expected_found);
@@ -664,11 +653,8 @@ static int test_ov_value_parse_stream() {
     index = 0;
     values_expected_found = true;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(0 == index);
@@ -685,11 +671,8 @@ static int test_ov_value_parse_stream() {
     index = 0;
     values_expected_found = true;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(0 == index);
@@ -706,11 +689,8 @@ static int test_ov_value_parse_stream() {
     index = 0;
     values_expected_found = true;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(0 == index);
@@ -719,10 +699,8 @@ static int test_ov_value_parse_stream() {
 
     // List finished
 
-    values_expected[0] = ov_value_list(ov_value_number(1),
-                                       ov_value_number(2),
-                                       ov_value_number(3),
-                                       ov_value_number(4));
+    values_expected[0] = ov_value_list(ov_value_number(1), ov_value_number(2),
+                                       ov_value_number(3), ov_value_number(4));
 
     values_expected[1] = 0;
 
@@ -731,11 +709,8 @@ static int test_ov_value_parse_stream() {
 
     index = 0;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(1 == index);
@@ -765,66 +740,48 @@ static int test_ov_value_parse_stream() {
     values_expected_found = true;
     index = 0;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(remainder == (char *)buffer->start);
 
     buffer->length = 6;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(remainder == (char *)buffer->start);
 
     buffer->length = 10;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(remainder == (char *)buffer->start);
 
     buffer->length = 12;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(remainder == (char *)buffer->start);
 
     buffer->length = 15;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(remainder == (char *)buffer->start);
 
     buffer->length = 17;
 
-    testrun(ov_value_parse_stream((char *)buffer->start,
-                                  buffer->length,
-                                  value_checker,
-                                  &index,
-                                  &remainder));
+    testrun(ov_value_parse_stream((char *)buffer->start, buffer->length,
+                                  value_checker, &index, &remainder));
 
     testrun(values_expected_found);
     testrun(remainder == (char *)(buffer->start + 17));

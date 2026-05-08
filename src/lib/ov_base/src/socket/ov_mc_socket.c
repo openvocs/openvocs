@@ -44,17 +44,22 @@ int ov_mc_socket(ov_socket_configuration config) {
 
     int socket = -1;
 
-    if (!config.host[0]) goto error;
+    if (!config.host[0])
+        goto error;
+
     config.type = UDP;
 
     int loop = 1;
     static struct ip_mreq command = {0};
 
     socket = ov_socket_create(config, false, NULL);
-    if (-1 == socket) goto error;
+    if (-1 == socket)
+        goto error;
 
-    if (!ov_socket_ensure_nonblocking(socket)) goto error;
-    if (!ov_socket_set_reuseaddress(socket)) goto error;
+    if (!ov_socket_ensure_nonblocking(socket))
+        goto error;
+    if (!ov_socket_set_reuseaddress(socket))
+        goto error;
 
     /* allow broadcast on the machine */
 
@@ -68,16 +73,16 @@ int ov_mc_socket(ov_socket_configuration config) {
     command.imr_multiaddr.s_addr = inet_addr(config.host);
     command.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    if (setsockopt(
-            socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &command, sizeof(command)) <
-        0) {
+    if (setsockopt(socket, IPPROTO_IP, IP_ADD_MEMBERSHIP, &command,
+                   sizeof(command)) < 0) {
         goto error;
     }
 
     return socket;
 
 error:
-    if (-1 != socket) close(socket);
+    if (-1 != socket)
+        close(socket);
     return -1;
 }
 
@@ -86,15 +91,15 @@ error:
 bool ov_mc_socket_drop_membership(int socket) {
 
     ov_socket_data data = {0};
-    if (!ov_socket_get_data(socket, &data, NULL)) goto error;
+    if (!ov_socket_get_data(socket, &data, NULL))
+        goto error;
 
     static struct ip_mreq command = {0};
     command.imr_multiaddr.s_addr = inet_addr(data.host);
     command.imr_interface.s_addr = htonl(INADDR_ANY);
 
-    if (setsockopt(
-            socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, &command, sizeof(command)) <
-        0) {
+    if (setsockopt(socket, IPPROTO_IP, IP_DROP_MEMBERSHIP, &command,
+                   sizeof(command)) < 0) {
         goto error;
     }
 

@@ -42,7 +42,9 @@ const EVENT = {
     LDAP_IMPORT: "ldap_import",
     UPDATE_PASSWORD: "update_password",
     SET_KEYSET_LAYOUT: "set_keyset_layout",
-    PERSIST: "save"
+    PERSIST: "save",
+    LDAP_CHECK: "is_ldap_enabled",
+    HIGHEST_MULTICAST_PORT: "get_highest_port"
 }
 
 // retrieve admin domains of single server - specified or lead
@@ -51,7 +53,7 @@ export async function domains(ws) {
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
         try {
             console.log(log_prefix(ws) + "collecting domains with admin rights...");
-            await ws.send_event(ov_Websocket.EVENT.ADMIN_DOMAINS);
+            await ws.send_event(ov_Websocket.EVENT.ADMIN_DOMAINS, { user: ws.user.id });
             console.log(log_prefix(ws) + "received " + ws.user.domains.size +
                 " domains with admin rights: " + ws.user.domains.toString());
             break;
@@ -76,7 +78,7 @@ export async function projects(ws) {
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
         try {
             console.log(log_prefix(ws) + "collecting projects with admin rights...");
-            await ws.send_event(ov_Websocket.EVENT.ADMIN_PROJECTS);
+            await ws.send_event(ov_Websocket.EVENT.ADMIN_PROJECTS, { user: ws.user.id });
             console.log(log_prefix(ws) + "received " + ws.user.projects.size +
                 " projects with admin rights: " + ws.user.projects.toString());
             break;
@@ -120,6 +122,7 @@ export async function get_config(type, id, ws) {
             }
         }
     }
+
     if (type === "domain")
         return result.result;
     return result;
@@ -277,147 +280,7 @@ export async function update_password(id, password, ws) {
     return result;
 }
 
-export async function delete_domain(domain_id, ws) {
-    ws = ws ? ws : ov_Websockets.prime_websocket;
-    let result = false;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "delete domain " + domain_id + "...");
-            let parameter = {
-                type: ov_Websocket.REQUEST_SCOPE.DOMAIN,
-                id: domain_id
-            };
-            result = await ws.send_event(EVENT.DELETE, parameter);
-            console.log(log_prefix(ws) + "deleted domain " + domain_id);
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to delete domain " + domain_id + " again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "delete domain " + domain_id + " failed.", error);
-                return false;
-            }
-        }
-    }
-    return result;
-}
-
-export async function delete_project(domain_id, project_id, ws) {
-    ws = ws ? ws : ov_Websockets.prime_websocket;
-    let result = false;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "delete project " + project_id + "...");
-            let parameter = {
-                type: ov_Websocket.REQUEST_SCOPE.PROJECT,
-                id: project_id
-            };
-            result = await ws.send_event(EVENT.DELETE, parameter);
-            console.log(log_prefix(ws) + "deleted project " + project_id + " in domain " + domain_id);
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to delete project " + project_id + " again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "delete project " + project_id + " failed.", error);
-                return false;
-            }
-        }
-    }
-    return result;
-}
-
-export async function delete_user(user_id, ws) {
-    ws = ws ? ws : ov_Websockets.prime_websocket;
-    let result = false;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "delete user " + user_id + "...");
-            let parameter = {
-                type: ov_Websocket.REQUEST_SCOPE.USER,
-                id: user_id
-            };
-            result = await ws.send_event(EVENT.DELETE, parameter);
-            console.log(log_prefix(ws) + "deleted user " + user_id);
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to delete user " + user_id + " again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "delete user " + user_id + " failed.", error);
-                return false;
-            }
-        }
-    }
-    return result;
-}
-
-export async function delete_role(role_id, ws) {
-    ws = ws ? ws : ov_Websockets.prime_websocket;
-    let result = false;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "delete role " + role_id + "...");
-            let parameter = {
-                type: ov_Websocket.REQUEST_SCOPE.ROLE,
-                id: role_id
-            };
-            result = await ws.send_event(EVENT.DELETE, parameter);
-            console.log(log_prefix(ws) + "deleted role " + role_id);
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to delete role " + role_id + " again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "delete role " + role_id + " failed.", error);
-                return false;
-            }
-        }
-    }
-    return result;
-}
-
-export async function delete_loop(loop_id, ws) {
-    ws = ws ? ws : ov_Websockets.prime_websocket;
-    let result = false;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "delete loop " + loop_id + "...");
-            let parameter = {
-                type: ov_Websocket.REQUEST_SCOPE.LOOP,
-                id: loop_id
-            };
-            result = await ws.send_event(EVENT.DELETE, parameter);
-            console.log(log_prefix(ws) + "deleted loop " + loop_id);
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to delete loop " + loop_id + " again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "delete loop " + loop_id + " failed.", error);
-                return false;
-            }
-        }
-    }
-    return result;
-}
-
-export async function erase(type, id, ws) {
+export async function remove(type, id, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
     let result = false;
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
@@ -468,7 +331,7 @@ export async function user_ldap_import(host, base, domain, user, passwd, ws) {
                 await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
             } else {
                 console.warn(log_prefix(ws) +
-                    "importing users from ldap " +  host + " - " + base + " failed.", error);
+                    "importing users from ldap " + host + " - " + base + " failed.", error);
                 return false;
             }
         }
@@ -476,7 +339,30 @@ export async function user_ldap_import(host, base, domain, user, passwd, ws) {
     return result;
 }
 
-export async function set_keyset_layout(id, domain, layout, ws){
+export async function check_ldap(ws) {
+    ws = ws ? ws : ov_Websockets.prime_websocket;
+    let result = false;
+    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
+        try {
+            console.log(log_prefix(ws) + "check if auth against ldap...");
+            result = await ws.send_event(EVENT.LDAP_CHECK);
+            console.log(log_prefix(ws) + "auth against ldap: ", result.response);
+            break;
+        } catch (error) {
+            if (ws.is_connecting && error.temp_error) {
+                console.log(log_prefix(ws) +
+                    "temp error - try to check if auth against ldap again after timeout");
+                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
+            } else {
+                console.warn(log_prefix(ws) + "check if auth against ldap failed", error);
+                return false;
+            }
+        }
+    }
+    return result.response;
+}
+
+export async function set_keyset_layout(id, domain, layout, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
     let result = false;
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
@@ -497,7 +383,7 @@ export async function set_keyset_layout(id, domain, layout, ws){
                 await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
             } else {
                 console.warn(log_prefix(ws) +
-                    "saving layout " +  id + " in domain " + domain + " failed.", error);
+                    "saving layout " + id + " in domain " + domain + " failed.", error);
                 return false;
             }
         }
@@ -505,7 +391,30 @@ export async function set_keyset_layout(id, domain, layout, ws){
     return result;
 }
 
-export async function persist(ws){
+export async function get_highest_multicast_port(ws) {
+    ws = ws ? ws : ov_Websockets.prime_websocket;
+    let result = false;
+    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
+        try {
+            console.log(log_prefix(ws) + "get highest multicast port...");
+            result = await ws.send_event(EVENT.HIGHEST_MULTICAST_PORT);
+            console.log(log_prefix(ws) + "highest multicast used port:", result.port);
+            break;
+        } catch (error) {
+            if (ws.is_connecting && error.temp_error) {
+                console.log(log_prefix(ws) +
+                    "temp error - try to get hightest multicast port again after timeout");
+                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
+            } else {
+                console.warn(log_prefix(ws) + "getting multicast port failed", error);
+                return false;
+            }
+        }
+    }
+    return parseInt(result.port);
+}
+
+export async function persist(ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
     let result = false;
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {

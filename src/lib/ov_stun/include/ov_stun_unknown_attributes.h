@@ -100,10 +100,8 @@ uint16_t ov_stun_unknown_attributes_decode_pointer(const uint8_t *pointer);
         @param items    amount of items in unknown to set
         @returns true   if content of address is written to buffer
 */
-bool ov_stun_unknown_attributes_encode(uint8_t *buffer,
-                                       size_t length,
-                                       uint8_t **next,
-                                       uint16_t unknown[],
+bool ov_stun_unknown_attributes_encode(uint8_t *buffer, size_t length,
+                                       uint8_t **next, uint16_t unknown[],
                                        size_t items);
 
 #endif /* ov_stun_unknown_attributes_h */

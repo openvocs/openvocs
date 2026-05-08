@@ -243,12 +243,12 @@ int test_ov_sdp_to_json() {
     session->description->connection->address = "0.0.0.0";
     session->description->bandwidth =
         ov_dict_create(ov_dict_string_key_config(255));
-    testrun(ov_dict_set(
-        session->description->bandwidth, strdup("1"), (void *)1, NULL));
-    testrun(ov_dict_set(
-        session->description->bandwidth, strdup("2"), (void *)2, NULL));
-    testrun(ov_dict_set(
-        session->description->bandwidth, strdup("3"), (void *)3, NULL));
+    testrun(ov_dict_set(session->description->bandwidth, strdup("1"), (void *)1,
+                        NULL));
+    testrun(ov_dict_set(session->description->bandwidth, strdup("2"), (void *)2,
+                        NULL));
+    testrun(ov_dict_set(session->description->bandwidth, strdup("3"), (void *)3,
+                        NULL));
     testrun(
         ov_sdp_attribute_add(&session->description->attributes, "1", "one"));
     testrun(ov_sdp_attribute_add(&session->description->attributes, "2", "x"));
@@ -312,11 +312,10 @@ int test_ov_sdp_to_json() {
 
 int test_ov_sdp_validate() {
 
-    char *string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n";
+    char *string = "v=0\r\n"
+                   "o=u 1 2 n a x\r\n"
+                   "s=n\r\n"
+                   "t=0 0\r\n";
 
     size_t len = strlen(string);
 
@@ -328,104 +327,101 @@ int test_ov_sdp_validate() {
     testrun(!ov_sdp_validate(string, len - 1));
 
     // check with attributes
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "a=whatever:1 1\r\n"
-        "a=key:value\r\n"
-        "a=key:some value\r\n"
-        "a=fmtp:1 1\r\n"
-        "a=fmtp:2 2\r\n"
-        "a=fmtp:valid true\r\n"
-        "a=something\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "a=whatever:1 1\r\n"
+             "a=key:value\r\n"
+             "a=key:some value\r\n"
+             "a=fmtp:1 1\r\n"
+             "a=fmtp:2 2\r\n"
+             "a=fmtp:valid true\r\n"
+             "a=something\r\n";
 
     testrun(ov_sdp_validate(string, strlen(string)));
 
     // check with attributes in media descriptions
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "c=1 2 3\r\n"
-        "t=0 0\r\n"
-        "a=whatever:1 1\r\n"
-        "a=key:value\r\n"
-        "a=key:some value\r\n"
-        "a=fmtp:1 1\r\n"
-        "a=fmtp:2 2\r\n"
-        "a=fmtp:valid true\r\n"
-        "a=something\r\n"
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "c=1 2 3\r\n"
+             "t=0 0\r\n"
+             "a=whatever:1 1\r\n"
+             "a=key:value\r\n"
+             "a=key:some value\r\n"
+             "a=fmtp:1 1\r\n"
+             "a=fmtp:2 2\r\n"
+             "a=fmtp:valid true\r\n"
+             "a=something\r\n"
 
-        "m=1 2 3 4 5\r\n"
-        "a=what:1 1\r\n"
-        "a=k:value\r\n"
-        "a=k:some value\r\n"
-        "a=fmtp:x 1\r\n"
-        "a=fmtp:y 2\r\n"
-        "a=fmtp:z 3\r\n"
-        "a=something\r\n"
+             "m=1 2 3 4 5\r\n"
+             "a=what:1 1\r\n"
+             "a=k:value\r\n"
+             "a=k:some value\r\n"
+             "a=fmtp:x 1\r\n"
+             "a=fmtp:y 2\r\n"
+             "a=fmtp:z 3\r\n"
+             "a=something\r\n"
 
-        "m=1 2 3 4 5\r\n"
+             "m=1 2 3 4 5\r\n"
 
-        "m=1 2 3 4 5\r\n"
-        "a=what:1 1\r\n"
-        "a=k:value\r\n"
-        "a=k:some value\r\n"
-        "a=fmtp:1 1\r\n"
-        "a=fmtp:2 2\r\n"
-        "a=fmtp:3 3\r\n"
-        "a=something\r\n";
+             "m=1 2 3 4 5\r\n"
+             "a=what:1 1\r\n"
+             "a=k:value\r\n"
+             "a=k:some value\r\n"
+             "a=fmtp:1 1\r\n"
+             "a=fmtp:2 2\r\n"
+             "a=fmtp:3 3\r\n"
+             "a=something\r\n";
 
     testrun(ov_sdp_validate(string, strlen(string)));
 
     // check all
-    string =
-        "v=0\r\n"
-        "o=user 1 2 n a x\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=s:p\r\n"
-        "e=1@1\r\n"
-        "e=2@2\r\n"
-        "e=3@3\r\n"
-        "p=1234\r\n"
-        "p=1235\r\n"
-        "c=1 2 3\r\n"
-        "b=1:2\r\n"
-        "b=2:2\r\n"
-        "b=3:2\r\n"
-        "t=0 0\r\n"
-        "r=0 0 0\r\n"
-        "r=1h 1d 1m\r\n"
-        "z=1 2\r\n"
-        "t=0 0\r\n"
-        "t=0 0\r\n"
-        "k=clear:text\r\n"
-        "a=key1:value\r\n"
-        "a=key2:value\r\n"
-        "a=key3:value\r\n"
-        "a=key4\r\n"
-        "m=1 2 3 4\r\n"
-        "m=1 1 1/2 1\r\n"
-        "m=audio 1 RTP/AVP 99\r\n"
-        "i=info\r\n"
-        "c=1 2 3\r\n"
-        "m=audio 1 RTP/AVP 99\r\n"
-        "b=2:1\r\n"
-        "m=audio 1 RTP/AVP 99\r\n"
-        "i=info\r\n"
-        "c=1 2 3\r\n"
-        "c=2 2 3\r\n"
-        "c=3 2 3\r\n"
-        "b=1:1\r\n"
-        "b=2:1\r\n"
-        "b=3:1\r\n"
-        "b=4:1\r\n"
-        "k=clear:text\r\n"
-        "a=key1\r\n"
-        "a=key2\r\n";
+    string = "v=0\r\n"
+             "o=user 1 2 n a x\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=s:p\r\n"
+             "e=1@1\r\n"
+             "e=2@2\r\n"
+             "e=3@3\r\n"
+             "p=1234\r\n"
+             "p=1235\r\n"
+             "c=1 2 3\r\n"
+             "b=1:2\r\n"
+             "b=2:2\r\n"
+             "b=3:2\r\n"
+             "t=0 0\r\n"
+             "r=0 0 0\r\n"
+             "r=1h 1d 1m\r\n"
+             "z=1 2\r\n"
+             "t=0 0\r\n"
+             "t=0 0\r\n"
+             "k=clear:text\r\n"
+             "a=key1:value\r\n"
+             "a=key2:value\r\n"
+             "a=key3:value\r\n"
+             "a=key4\r\n"
+             "m=1 2 3 4\r\n"
+             "m=1 1 1/2 1\r\n"
+             "m=audio 1 RTP/AVP 99\r\n"
+             "i=info\r\n"
+             "c=1 2 3\r\n"
+             "m=audio 1 RTP/AVP 99\r\n"
+             "b=2:1\r\n"
+             "m=audio 1 RTP/AVP 99\r\n"
+             "i=info\r\n"
+             "c=1 2 3\r\n"
+             "c=2 2 3\r\n"
+             "c=3 2 3\r\n"
+             "b=1:1\r\n"
+             "b=2:1\r\n"
+             "b=3:1\r\n"
+             "b=4:1\r\n"
+             "k=clear:text\r\n"
+             "a=key1\r\n"
+             "a=key2\r\n";
 
     len = strlen(string);
     testrun(ov_sdp_validate(string, len));
@@ -441,14 +437,13 @@ int check_time() {
     char *next = NULL;
     size_t len = 0;
 
-    string =
-        "t=0 0\r\n"
-        "r=0 0 0\r\n"
-        "r=1h 1d 1m\r\n"
-        "z=1 2\r\n"
-        "t=0 0\r\n"
-        "t=0 0\r\n"
-        "k=clear:text\r\n";
+    string = "t=0 0\r\n"
+             "r=0 0 0\r\n"
+             "r=1h 1d 1m\r\n"
+             "z=1 2\r\n"
+             "t=0 0\r\n"
+             "t=0 0\r\n"
+             "k=clear:text\r\n";
 
     len = strlen(string);
 
@@ -456,22 +451,21 @@ int check_time() {
     testrun(next[0] == 'k');
 
     // check all
-    string =
-        "t=0 0\r\n"
-        "r=1h 1d 1m\r\n"
-        "t=0 0\r\n"
-        "r=0 0 0\r\n"
-        "r=1h 1d 1m\r\n"
-        "z=1 2\r\n"
-        "t=0 0\r\n"
-        "r=0 0 0\r\n"
-        "r=1h 1d 1m\r\n"
-        "t=0 0\r\n"
-        "z=1 2d 3s 4 5h 6 7 8\r\n"
-        "t=0 0\r\n"
-        "t=0 0\r\n"
-        "z=1 2d 3s 4 5h 6 7 8\r\n"
-        "k=clear:text\r\n";
+    string = "t=0 0\r\n"
+             "r=1h 1d 1m\r\n"
+             "t=0 0\r\n"
+             "r=0 0 0\r\n"
+             "r=1h 1d 1m\r\n"
+             "z=1 2\r\n"
+             "t=0 0\r\n"
+             "r=0 0 0\r\n"
+             "r=1h 1d 1m\r\n"
+             "t=0 0\r\n"
+             "z=1 2d 3s 4 5h 6 7 8\r\n"
+             "t=0 0\r\n"
+             "t=0 0\r\n"
+             "z=1 2d 3s 4 5h 6 7 8\r\n"
+             "k=clear:text\r\n";
 
     len = strlen(string);
     testrun(validate_time(string, len, &next));
@@ -622,13 +616,12 @@ int check_media_descriptions() {
     testrun(validate_media_descriptions(string, len, &next));
     testrun(*next == 'x');
 
-    string =
-        "m=1 2/3 4 5 6 7 8 9\r\n"
-        "i=1\r\n"
-        "c=a b c\r\n"
-        "b=0:0\r\n"
-        "k=clear:text\r\n"
-        "a=test\r\na=x:y\r\nx";
+    string = "m=1 2/3 4 5 6 7 8 9\r\n"
+             "i=1\r\n"
+             "c=a b c\r\n"
+             "b=0:0\r\n"
+             "k=clear:text\r\n"
+             "a=test\r\na=x:y\r\nx";
     len = strlen(string);
     testrun(validate_media_descriptions(string, len, &next));
     testrun(*next == 'x');
@@ -773,11 +766,10 @@ int test_ov_sdp_parse() {
 
     ov_sdp_session *session = NULL;
 
-    char *string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n";
+    char *string = "v=0\r\n"
+                   "o=u 1 2 n a x\r\n"
+                   "s=n\r\n"
+                   "t=0 0\r\n";
 
     size_t len = strlen(string);
 
@@ -832,11 +824,10 @@ int test_ov_sdp_parse() {
 
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=1\r\n"
-        "o=user 1234 5678 net type addr\r\n"
-        "s=name\r\n"
-        "t=0 1234567890\r\n";
+    string = "v=1\r\n"
+             "o=user 1234 5678 net type addr\r\n"
+             "s=name\r\n"
+             "t=0 1234567890\r\n";
 
     len = strlen(string);
 
@@ -891,56 +882,50 @@ int test_ov_sdp_parse() {
      *      Check wrong input to min items
      */
 
-    string =
-        "v 1\r\n"
-        "o=user 1234 5678 net type addr\r\n"
-        "s=name\r\n"
-        "t=0 1234567890\r\n";
+    string = "v 1\r\n"
+             "o=user 1234 5678 net type addr\r\n"
+             "s=name\r\n"
+             "t=0 1234567890\r\n";
 
     len = strlen(string);
     testrun(!ov_sdp_parse(string, len));
 
-    string =
-        "v=1\r\n"
-        "s=name\r\n"
-        "o=user 1234 5678 net type addr\r\n"
-        "t=0 1234567890\r\n";
+    string = "v=1\r\n"
+             "s=name\r\n"
+             "o=user 1234 5678 net type addr\r\n"
+             "t=0 1234567890\r\n";
 
     len = strlen(string);
     testrun(!ov_sdp_parse(string, len));
 
-    string =
-        "v=1\r\n"
-        "o=user 5678 net type addr\r\n"
-        "s=name\r\n"
-        "t=0 1234567890\r\n";
+    string = "v=1\r\n"
+             "o=user 5678 net type addr\r\n"
+             "s=name\r\n"
+             "t=0 1234567890\r\n";
 
     len = strlen(string);
     testrun(!ov_sdp_parse(string, len));
 
-    string =
-        "v=1\r\n"
-        "o=user 1234 5678 net type addr\r\n"
-        "s=name\r\n"
-        "t=0 3\r\n";
+    string = "v=1\r\n"
+             "o=user 1234 5678 net type addr\r\n"
+             "s=name\r\n"
+             "t=0 3\r\n";
 
     len = strlen(string);
     testrun(!ov_sdp_parse(string, len));
 
-    string =
-        "v=1\r\n"
-        "o=user 1234 5678 net type addr\r\n"
-        "t=0 1234567890\r\n";
+    string = "v=1\r\n"
+             "o=user 1234 5678 net type addr\r\n"
+             "t=0 1234567890\r\n";
 
     len = strlen(string);
     testrun(!ov_sdp_parse(string, len));
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "i=info\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "i=info\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -948,24 +933,22 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(session->info, "info", 4));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "u=http://info.de\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "u=http://info.de\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
     testrun(0 == strncmp(session->uri, "http://info.de", 14));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "e=e@mail\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "e=e@mail\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -973,13 +956,12 @@ int test_ov_sdp_parse() {
     session = ov_sdp_session_free(session);
 
     ov_sdp_list *node = NULL;
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "e=e@mail\r\n"
-        "e=a@mail\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "e=e@mail\r\n"
+             "e=a@mail\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -989,12 +971,11 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(node->value, "a@mail", 6));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "p=+123\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "p=+123\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1003,13 +984,12 @@ int test_ov_sdp_parse() {
     session = ov_sdp_session_free(session);
 
     node = NULL;
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "p=+123\r\n"
-        "p=+456(safe)\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "p=+123\r\n"
+             "p=+456(safe)\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1019,12 +999,11 @@ int test_ov_sdp_parse() {
     session = ov_sdp_session_free(session);
 
     node = NULL;
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "c=net type addr\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "c=net type addr\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1034,24 +1013,22 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(session->connection->address, "addr", 4));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "c=net type addr\r\n"
-        "c=1 2 3\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "c=net type addr\r\n"
+             "c=1 2 3\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     testrun(!ov_sdp_parse(string, len));
 
     node = NULL;
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "b=one:1\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "b=one:1\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1060,14 +1037,13 @@ int test_ov_sdp_parse() {
     testrun(1 == (intptr_t)ov_dict_get(session->bandwidth, "one"));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "b=one:1\r\n"
-        "b=two:2\r\n"
-        "b=three:3\r\n"
-        "t=0 0\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "b=one:1\r\n"
+             "b=two:2\r\n"
+             "b=three:3\r\n"
+             "t=0 0\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1077,12 +1053,11 @@ int test_ov_sdp_parse() {
     testrun(3 == (intptr_t)ov_dict_get(session->bandwidth, "three"));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "k=prompt\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "k=prompt\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1090,12 +1065,11 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(session->key, "prompt", 6));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "a=prompt\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "a=prompt\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1104,13 +1078,12 @@ int test_ov_sdp_parse() {
     testrun(0 == session->attributes->value);
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "a=prompt\r\n"
-        "a=x:y\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "a=prompt\r\n"
+             "a=x:y\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1121,14 +1094,13 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(node->value, "y", 1));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "a=prompt\r\n"
-        "a=x:y\r\n"
-        "a=x:z\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "a=prompt\r\n"
+             "a=x:y\r\n"
+             "a=x:z\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1142,12 +1114,11 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(node->value, "z", 1));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1161,13 +1132,12 @@ int test_ov_sdp_parse() {
     session = ov_sdp_session_free(session);
 
     ov_sdp_description *desc = NULL;
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=audio 2/3 RTP/AVP 4 5 6 7\r\n"
-        "m=1 2 3 4\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=audio 2/3 RTP/AVP 4 5 6 7\r\n"
+             "m=1 2 3 4\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1194,13 +1164,12 @@ int test_ov_sdp_parse() {
     testrun(0 == desc->media.port2);
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "i=info\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "i=info\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1214,14 +1183,13 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(session->description->info, "info", 4));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "i=info\r\n"
-        "m=5 6 7 8\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "i=info\r\n"
+             "m=5 6 7 8\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1242,13 +1210,12 @@ int test_ov_sdp_parse() {
     testrun(0 == desc->media.port2);
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "c=net type addr\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "c=net type addr\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1266,16 +1233,15 @@ int test_ov_sdp_parse() {
     session = ov_sdp_session_free(session);
 
     ov_sdp_connection *connection = NULL;
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "c=net type addr\r\n"
-        "c=1 2 3\r\n"
-        "c=4 5 6\r\n"
-        "m=5 6 7 8\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "c=net type addr\r\n"
+             "c=1 2 3\r\n"
+             "c=4 5 6\r\n"
+             "m=5 6 7 8\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1309,15 +1275,14 @@ int test_ov_sdp_parse() {
     session = ov_sdp_session_free(session);
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "b=one:1\r\n"
-        "b=two:2\r\n"
-        "b=three:3\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "b=one:1\r\n"
+             "b=two:2\r\n"
+             "b=three:3\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1335,16 +1300,15 @@ int test_ov_sdp_parse() {
             (intptr_t)ov_dict_get(session->description->bandwidth, "three"));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "b=one:1\r\n"
-        "b=two:2\r\n"
-        "b=three:3\r\n"
-        "m=5 6 7 8\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "b=one:1\r\n"
+             "b=two:2\r\n"
+             "b=three:3\r\n"
+             "m=5 6 7 8\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1369,14 +1333,13 @@ int test_ov_sdp_parse() {
     testrun(0 == desc->media.port2);
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "k=prompt\r\n"
-        "m=5 6 7 8\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "k=prompt\r\n"
+             "m=5 6 7 8\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1391,14 +1354,13 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(session->description->key, "prompt", 6));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "k=prompt\r\n"
-        "m=5 6 7 8\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "k=prompt\r\n"
+             "m=5 6 7 8\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1420,13 +1382,12 @@ int test_ov_sdp_parse() {
     testrun(0 == desc->media.port2);
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "a=x:y\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "a=x:y\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1442,14 +1403,13 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(session->description->attributes->value, "y", 1));
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "a=x:y\r\n"
-        "a=z\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "a=x:y\r\n"
+             "a=z\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1468,15 +1428,14 @@ int test_ov_sdp_parse() {
     testrun(0 == node->value);
     session = ov_sdp_session_free(session);
 
-    string =
-        "v=0\r\n"
-        "o=u 1 2 n a x\r\n"
-        "s=n\r\n"
-        "t=0 0\r\n"
-        "m=1 2 3 4\r\n"
-        "a=x:y\r\n"
-        "a=x\r\n"
-        "m=5 6 7 8\r\n";
+    string = "v=0\r\n"
+             "o=u 1 2 n a x\r\n"
+             "s=n\r\n"
+             "t=0 0\r\n"
+             "m=1 2 3 4\r\n"
+             "a=x:y\r\n"
+             "a=x\r\n"
+             "m=5 6 7 8\r\n";
     ;
 
     len = strlen(string);
@@ -1506,31 +1465,30 @@ int test_ov_sdp_parse() {
     /*
      *      Firefox example
      */
-    string =
-        "v=0\r\n"
-        "o=mozilla...THIS_IS_SDPARTA-70.0.1 1391370773220577571 0 IN "
-        "IP4 0.0.0.0\r\n"
-        "s=-\r\n"
-        "t=0 0\r\n"
-        "a=fingerprint:sha-256 "
-        "0B:E9:A9:4F:8B:38:A2:35:AA:B9:41:0F:64:C7:FE:A6:A7:4F:75:E4:"
-        "F2:CC:A4:5B:C9:07:F1:13:36:CC:05:2D\r\n"
-        "a=ice-options:trickle\r\n"
-        "a=msid-semantic:WMS *\r\n"
-        "m=audio 9 UDP/TLS/RTP/SAVP 100\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "a=sendrecv\r\n"
-        "a=fmtp:100 maxplaybackrate=48000;stereo=1;useinbandfec=1\r\n"
-        "a=ice-pwd:eb6f342865269bb691cce2c73f27d836\r\n"
-        "a=ice-ufrag:eb8dd7cb\r\n"
-        "a=mid:0\r\n"
-        "a=msid:{267c6307-3c24-4762-85e8-c8e8e8346fcf} "
-        "{1cc30fae-3974-4671-a210-5788043d2259}\r\n"
-        "a=rtcp-mux\r\n"
-        "a=rtpmap:100 opus/48000/2\r\n"
-        "a=setup:active\r\n"
-        "a=ssrc:3835337359 "
-        "cname:{d5014593-8812-4140-9535-1ca252a3dc10}\r\n";
+    string = "v=0\r\n"
+             "o=mozilla...THIS_IS_SDPARTA-70.0.1 1391370773220577571 0 IN "
+             "IP4 0.0.0.0\r\n"
+             "s=-\r\n"
+             "t=0 0\r\n"
+             "a=fingerprint:sha-256 "
+             "0B:E9:A9:4F:8B:38:A2:35:AA:B9:41:0F:64:C7:FE:A6:A7:4F:75:E4:"
+             "F2:CC:A4:5B:C9:07:F1:13:36:CC:05:2D\r\n"
+             "a=ice-options:trickle\r\n"
+             "a=msid-semantic:WMS *\r\n"
+             "m=audio 9 UDP/TLS/RTP/SAVP 100\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "a=sendrecv\r\n"
+             "a=fmtp:100 maxplaybackrate=48000;stereo=1;useinbandfec=1\r\n"
+             "a=ice-pwd:eb6f342865269bb691cce2c73f27d836\r\n"
+             "a=ice-ufrag:eb8dd7cb\r\n"
+             "a=mid:0\r\n"
+             "a=msid:{267c6307-3c24-4762-85e8-c8e8e8346fcf} "
+             "{1cc30fae-3974-4671-a210-5788043d2259}\r\n"
+             "a=rtcp-mux\r\n"
+             "a=rtpmap:100 opus/48000/2\r\n"
+             "a=setup:active\r\n"
+             "a=ssrc:3835337359 "
+             "cname:{d5014593-8812-4140-9535-1ca252a3dc10}\r\n";
 
     len = strlen(string);
     session = ov_sdp_parse(string, len);
@@ -1576,26 +1534,22 @@ int test_ov_sdp_parse() {
     testrun(0 == strncmp(session->origin.connection.address, str, strlen(str)));
 
     testrun(3 == ov_node_count(session->attributes));
-    str =
-        "sha-256 "
-        "0B:E9:A9:4F:8B:38:A2:35:AA:B9:41:0F:64:C7:FE:A6:A7:4F:75:E4:F2:"
-        "CC:A4:5B:C9:07:F1:13:36:CC:05:2D";
+    str = "sha-256 "
+          "0B:E9:A9:4F:8B:38:A2:35:AA:B9:41:0F:64:C7:FE:A6:A7:4F:75:E4:F2:"
+          "CC:A4:5B:C9:07:F1:13:36:CC:05:2D";
     testrun(0 ==
             strncmp(ov_sdp_attribute_get(session->attributes, "fingerprint"),
-                    str,
-                    strlen(str)));
+                    str, strlen(str)));
 
     str = "trickle";
     testrun(0 ==
             strncmp(ov_sdp_attribute_get(session->attributes, "ice-options"),
-                    str,
-                    strlen(str)));
+                    str, strlen(str)));
 
     str = "WMS *";
     testrun(0 ==
             strncmp(ov_sdp_attribute_get(session->attributes, "msid-semantic"),
-                    str,
-                    strlen(str)));
+                    str, strlen(str)));
 
     testrun(1 == ov_node_count(session->description));
     testrun(10 == ov_node_count(session->description->attributes));
@@ -1606,75 +1560,62 @@ int test_ov_sdp_parse() {
     testrun(0 ==
             strncmp(session->description->media.protocol, str, strlen(str)));
     str = "100";
-    testrun(0 == strncmp(session->description->media.formats->value,
-                         str,
+    testrun(0 == strncmp(session->description->media.formats->value, str,
                          strlen(str)));
     testrun(1 == ov_node_count(session->description->media.formats));
     testrun(9 == session->description->media.port);
     testrun(0 == session->description->media.port2);
     str = "IN";
-    testrun(0 == strncmp(session->description->connection->nettype,
-                         str,
+    testrun(0 == strncmp(session->description->connection->nettype, str,
                          strlen(str)));
     str = "IP4";
-    testrun(0 == strncmp(session->description->connection->addrtype,
-                         str,
+    testrun(0 == strncmp(session->description->connection->addrtype, str,
                          strlen(str)));
     str = "0.0.0.0";
-    testrun(0 == strncmp(session->description->connection->address,
-                         str,
+    testrun(0 == strncmp(session->description->connection->address, str,
                          strlen(str)));
     testrun(ov_sdp_is_sendrecv(session->description));
     str = "maxplaybackrate=48000;stereo=1;useinbandfec=1";
     testrun(0 ==
             strncmp(ov_sdp_get_fmtp(session->description,
                                     session->description->media.formats->value),
-                    str,
-                    strlen(str)));
+                    str, strlen(str)));
     str = "opus/48000/2";
     testrun(0 == strncmp(ov_sdp_get_rtpmap(
                              session->description,
                              session->description->media.formats->value),
-                         str,
-                         strlen(str)));
+                         str, strlen(str)));
 
     str = "eb6f342865269bb691cce2c73f27d836";
-    testrun(0 == strncmp(ov_sdp_attribute_get(
-                             session->description->attributes, "ice-pwd"),
-                         str,
-                         strlen(str)));
+    testrun(0 == strncmp(ov_sdp_attribute_get(session->description->attributes,
+                                              "ice-pwd"),
+                         str, strlen(str)));
 
     str = "eb8dd7cb";
-    testrun(0 == strncmp(ov_sdp_attribute_get(
-                             session->description->attributes, "ice-ufrag"),
-                         str,
-                         strlen(str)));
+    testrun(0 == strncmp(ov_sdp_attribute_get(session->description->attributes,
+                                              "ice-ufrag"),
+                         str, strlen(str)));
 
     str = "0";
-    testrun(0 == strncmp(ov_sdp_attribute_get(
-                             session->description->attributes, "mid"),
-                         str,
-                         strlen(str)));
+    testrun(0 == strncmp(ov_sdp_attribute_get(session->description->attributes,
+                                              "mid"),
+                         str, strlen(str)));
 
-    str =
-        "{267c6307-3c24-4762-85e8-c8e8e8346fcf} "
-        "{1cc30fae-3974-4671-a210-5788043d2259}";
-    testrun(0 == strncmp(ov_sdp_attribute_get(
-                             session->description->attributes, "msid"),
-                         str,
-                         strlen(str)));
+    str = "{267c6307-3c24-4762-85e8-c8e8e8346fcf} "
+          "{1cc30fae-3974-4671-a210-5788043d2259}";
+    testrun(0 == strncmp(ov_sdp_attribute_get(session->description->attributes,
+                                              "msid"),
+                         str, strlen(str)));
 
     str = "active";
-    testrun(0 == strncmp(ov_sdp_attribute_get(
-                             session->description->attributes, "setup"),
-                         str,
-                         strlen(str)));
+    testrun(0 == strncmp(ov_sdp_attribute_get(session->description->attributes,
+                                              "setup"),
+                         str, strlen(str)));
 
     str = "3835337359 cname:{d5014593-8812-4140-9535-1ca252a3dc10}";
-    testrun(0 == strncmp(ov_sdp_attribute_get(
-                             session->description->attributes, "ssrc"),
-                         str,
-                         strlen(str)));
+    testrun(0 == strncmp(ov_sdp_attribute_get(session->description->attributes,
+                                              "ssrc"),
+                         str, strlen(str)));
 
     testrun(
         ov_sdp_attribute_is_set(session->description->attributes, "rtcp-mux"));
@@ -1724,11 +1665,10 @@ int test_ov_sdp_stringify() {
     session->origin.connection.addrtype = "type";
     session->origin.connection.address = "addr";
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1738,12 +1678,11 @@ int test_ov_sdp_stringify() {
     output = ov_data_pointer_free(output);
 
     session->info = "info";
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1753,13 +1692,12 @@ int test_ov_sdp_stringify() {
     output = ov_data_pointer_free(output);
 
     session->uri = "http://openvocs.org";
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1770,14 +1708,13 @@ int test_ov_sdp_stringify() {
 
     session->email = calloc(1, sizeof(ov_sdp_list));
     session->email->value = "someone@mail";
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1789,15 +1726,14 @@ int test_ov_sdp_stringify() {
     node = calloc(1, sizeof(ov_sdp_list));
     node->value = "someoneelse@mail";
     testrun(ov_node_push((void **)&session->email, node));
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1808,16 +1744,15 @@ int test_ov_sdp_stringify() {
 
     session->phone = calloc(1, sizeof(ov_sdp_list));
     session->phone->value = "+1234";
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1829,17 +1764,16 @@ int test_ov_sdp_stringify() {
     node = calloc(1, sizeof(ov_sdp_list));
     node->value = "+5678(name)";
     testrun(ov_node_push((void **)&session->phone, node));
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1853,18 +1787,17 @@ int test_ov_sdp_stringify() {
     session->connection->addrtype = "IP4";
     session->connection->address = "0.0.0.0";
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1875,19 +1808,18 @@ int test_ov_sdp_stringify() {
 
     session->bandwidth = ov_dict_create(ov_dict_string_key_config(255));
     testrun(ov_dict_set(session->bandwidth, strdup("1"), (void *)1, NULL));
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1897,20 +1829,19 @@ int test_ov_sdp_stringify() {
     output = ov_data_pointer_free(output);
 
     testrun(ov_dict_set(session->bandwidth, strdup("2"), (void *)2, NULL));
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1924,21 +1855,20 @@ int test_ov_sdp_stringify() {
     node->value = "1s 1d 1m";
     testrun(ov_node_push((void **)&session->time->repeat, node));
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1952,22 +1882,21 @@ int test_ov_sdp_stringify() {
     node->value = "2s 2d 2m";
     testrun(ov_node_push((void **)&session->time->repeat, node));
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -1981,23 +1910,22 @@ int test_ov_sdp_stringify() {
     node->value = "-25s";
     testrun(ov_node_push((void **)&session->time->zone, node));
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -2007,24 +1935,23 @@ int test_ov_sdp_stringify() {
     output = ov_data_pointer_free(output);
 
     session->key = "clear:text";
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "k=clear:text\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "k=clear:text\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -2034,25 +1961,24 @@ int test_ov_sdp_stringify() {
     output = ov_data_pointer_free(output);
 
     testrun(ov_sdp_attribute_add(&session->attributes, "1", NULL));
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "k=clear:text\r\n"
-        "a=1\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "k=clear:text\r\n"
+             "a=1\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -2064,28 +1990,27 @@ int test_ov_sdp_stringify() {
     testrun(ov_sdp_attribute_add(&session->attributes, "2", "two"));
     testrun(ov_sdp_attribute_add(&session->attributes, "2", "x"));
     testrun(ov_sdp_attribute_add(&session->attributes, "3", "y"));
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "k=clear:text\r\n"
-        "a=1\r\n"
-        "a=2:two\r\n"
-        "a=2:x\r\n"
-        "a=3:y\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "k=clear:text\r\n"
+             "a=1\r\n"
+             "a=2:two\r\n"
+             "a=2:x\r\n"
+             "a=3:y\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -2102,29 +2027,28 @@ int test_ov_sdp_stringify() {
     node->value = "100";
     testrun(ov_node_push((void **)&session->description->media.formats, node));
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "k=clear:text\r\n"
-        "a=1\r\n"
-        "a=2:two\r\n"
-        "a=2:x\r\n"
-        "a=3:y\r\n"
-        "m=audio 12345 RTP/AVP 100\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "k=clear:text\r\n"
+             "a=1\r\n"
+             "a=2:two\r\n"
+             "a=2:x\r\n"
+             "a=3:y\r\n"
+             "m=audio 12345 RTP/AVP 100\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -2135,29 +2059,28 @@ int test_ov_sdp_stringify() {
 
     session->description->media.port2 = 6789;
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "k=clear:text\r\n"
-        "a=1\r\n"
-        "a=2:two\r\n"
-        "a=2:x\r\n"
-        "a=3:y\r\n"
-        "m=audio 12345/6789 RTP/AVP 100\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "k=clear:text\r\n"
+             "a=1\r\n"
+             "a=2:two\r\n"
+             "a=2:x\r\n"
+             "a=3:y\r\n"
+             "m=audio 12345/6789 RTP/AVP 100\r\n";
 
     output = ov_sdp_stringify(session, false);
     testrun(output);
@@ -2174,49 +2097,48 @@ int test_ov_sdp_stringify() {
     session->description->connection->address = "0.0.0.0";
     session->description->bandwidth =
         ov_dict_create(ov_dict_string_key_config(255));
-    testrun(ov_dict_set(
-        session->description->bandwidth, strdup("1"), (void *)1, NULL));
-    testrun(ov_dict_set(
-        session->description->bandwidth, strdup("2"), (void *)2, NULL));
-    testrun(ov_dict_set(
-        session->description->bandwidth, strdup("3"), (void *)3, NULL));
+    testrun(ov_dict_set(session->description->bandwidth, strdup("1"), (void *)1,
+                        NULL));
+    testrun(ov_dict_set(session->description->bandwidth, strdup("2"), (void *)2,
+                        NULL));
+    testrun(ov_dict_set(session->description->bandwidth, strdup("3"), (void *)3,
+                        NULL));
     testrun(
         ov_sdp_attribute_add(&session->description->attributes, "1", "one"));
     testrun(ov_sdp_attribute_add(&session->description->attributes, "2", "x"));
     testrun(ov_sdp_attribute_add(&session->description->attributes, "2", "y"));
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "k=clear:text\r\n"
-        "a=1\r\n"
-        "a=2:two\r\n"
-        "a=2:x\r\n"
-        "a=3:y\r\n"
-        "m=audio 12345/6789 RTP/AVP 100\r\n"
-        "i=info\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=3:3\r\n"
-        "b=2:2\r\n"
-        "k=prompt\r\n"
-        "a=1:one\r\n"
-        "a=2:x\r\n"
-        "a=2:y\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "k=clear:text\r\n"
+             "a=1\r\n"
+             "a=2:two\r\n"
+             "a=2:x\r\n"
+             "a=3:y\r\n"
+             "m=audio 12345/6789 RTP/AVP 100\r\n"
+             "i=info\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=3:3\r\n"
+             "b=2:2\r\n"
+             "k=prompt\r\n"
+             "a=1:one\r\n"
+             "a=2:x\r\n"
+             "a=2:y\r\n";
     output = ov_sdp_stringify(session, false);
     testrun(output);
     // testrun_log("\n------\n%s<- output | expect ->\n%s------\n", output,
@@ -2239,40 +2161,39 @@ int test_ov_sdp_stringify() {
     time->stop = 1234567890;
     testrun(ov_node_push((void **)&session->time, time));
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "t=1234567890 1234567890\r\n"
-        "k=clear:text\r\n"
-        "a=1\r\n"
-        "a=2:two\r\n"
-        "a=2:x\r\n"
-        "a=3:y\r\n"
-        "m=audio 12345/6789 RTP/AVP 100\r\n"
-        "i=info\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=3:3\r\n"
-        "b=2:2\r\n"
-        "k=prompt\r\n"
-        "a=1:one\r\n"
-        "a=2:x\r\n"
-        "a=2:y\r\n"
-        "m=video 1 RTP/AVP 101\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "t=1234567890 1234567890\r\n"
+             "k=clear:text\r\n"
+             "a=1\r\n"
+             "a=2:two\r\n"
+             "a=2:x\r\n"
+             "a=3:y\r\n"
+             "m=audio 12345/6789 RTP/AVP 100\r\n"
+             "i=info\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=3:3\r\n"
+             "b=2:2\r\n"
+             "k=prompt\r\n"
+             "a=1:one\r\n"
+             "a=2:x\r\n"
+             "a=2:y\r\n"
+             "m=video 1 RTP/AVP 101\r\n";
     output = ov_sdp_stringify(session, false);
     testrun(output);
     // testrun_log("\n------\n%s<- output | expect ->\n%s------\n", output,
@@ -2294,42 +2215,41 @@ int test_ov_sdp_stringify() {
     connection->addrtype = "5";
     connection->address = "6";
 
-    expect =
-        "v=0\r\n"
-        "o=- 0 0 net type addr\r\n"
-        "s=name\r\n"
-        "i=info\r\n"
-        "u=http://openvocs.org\r\n"
-        "e=someone@mail\r\n"
-        "e=someoneelse@mail\r\n"
-        "p=+1234\r\n"
-        "p=+5678(name)\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "b=1:1\r\n"
-        "b=2:2\r\n"
-        "t=0 0\r\n"
-        "r=1 1s 1d 1m\r\n"
-        "r=2 2s 2d 2m\r\n"
-        "z=0 -25s\r\n"
-        "t=1234567890 1234567890\r\n"
-        "k=clear:text\r\n"
-        "a=1\r\n"
-        "a=2:two\r\n"
-        "a=2:x\r\n"
-        "a=3:y\r\n"
-        "m=audio 12345/6789 RTP/AVP 100\r\n"
-        "i=info\r\n"
-        "c=IN IP4 0.0.0.0\r\n"
-        "c=1 2 3\r\n"
-        "c=4 5 6\r\n"
-        "b=1:1\r\n"
-        "b=3:3\r\n"
-        "b=2:2\r\n"
-        "k=prompt\r\n"
-        "a=1:one\r\n"
-        "a=2:x\r\n"
-        "a=2:y\r\n"
-        "m=video 1 RTP/AVP 101\r\n";
+    expect = "v=0\r\n"
+             "o=- 0 0 net type addr\r\n"
+             "s=name\r\n"
+             "i=info\r\n"
+             "u=http://openvocs.org\r\n"
+             "e=someone@mail\r\n"
+             "e=someoneelse@mail\r\n"
+             "p=+1234\r\n"
+             "p=+5678(name)\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "b=1:1\r\n"
+             "b=2:2\r\n"
+             "t=0 0\r\n"
+             "r=1 1s 1d 1m\r\n"
+             "r=2 2s 2d 2m\r\n"
+             "z=0 -25s\r\n"
+             "t=1234567890 1234567890\r\n"
+             "k=clear:text\r\n"
+             "a=1\r\n"
+             "a=2:two\r\n"
+             "a=2:x\r\n"
+             "a=3:y\r\n"
+             "m=audio 12345/6789 RTP/AVP 100\r\n"
+             "i=info\r\n"
+             "c=IN IP4 0.0.0.0\r\n"
+             "c=1 2 3\r\n"
+             "c=4 5 6\r\n"
+             "b=1:1\r\n"
+             "b=3:3\r\n"
+             "b=2:2\r\n"
+             "k=prompt\r\n"
+             "a=1:one\r\n"
+             "a=2:x\r\n"
+             "a=2:y\r\n"
+             "m=video 1 RTP/AVP 101\r\n";
     output = ov_sdp_stringify(session, false);
     testrun(output);
     // testrun_log("\n------\n%s<- output | expect ->\n%s------\n", output,
@@ -3170,11 +3090,10 @@ int test_ov_sdp_session_copy() {
 
 int test_ov_sdp_session_from_json() {
 
-    char *string =
-        "v=0\\r\\n"
-        "o=u 1 2 n a x\\r\\n"
-        "s=n\\r\\n"
-        "t=0 0\\r\\n";
+    char *string = "v=0\\r\\n"
+                   "o=u 1 2 n a x\\r\\n"
+                   "s=n\\r\\n"
+                   "t=0 0\\r\\n";
 
     ov_json_value *obj = NULL;
     ov_json_value *val = ov_json_string(string);
@@ -3198,14 +3117,13 @@ int test_ov_sdp_session_from_json() {
     testrun(NULL == ov_sdp_session_from_json(obj));
     obj = ov_json_value_free(obj);
 
-    string =
-        "v=0\\r\\n"
-        "o=- 0 0 IN IP4 0.0.0.0\\r\\n"
-        "s=-\\r\\n"
-        "t=0 0\\r\\n"
-        "m=audio 0 UDP/TLS/RTP/SAVPF 100\\r\\n"
-        "a=rtpmap:100 opus/48000/2\\r\\n"
-        "a=fmtp:100 maxplaybackrate=48000;useinbandfec=1\\r\\n";
+    string = "v=0\\r\\n"
+             "o=- 0 0 IN IP4 0.0.0.0\\r\\n"
+             "s=-\\r\\n"
+             "t=0 0\\r\\n"
+             "m=audio 0 UDP/TLS/RTP/SAVPF 100\\r\\n"
+             "a=rtpmap:100 opus/48000/2\\r\\n"
+             "a=fmtp:100 maxplaybackrate=48000;useinbandfec=1\\r\\n";
 
     val = ov_json_string(string);
     testrun(val);
@@ -3222,11 +3140,10 @@ int test_ov_sdp_session_from_json() {
 
 int test_ov_sdp_session_to_json() {
 
-    char *string =
-        "v=0\\r\\n"
-        "o=u 1 2 n a x\\r\\n"
-        "s=n\\r\\n"
-        "t=0 0\\r\\n";
+    char *string = "v=0\\r\\n"
+                   "o=u 1 2 n a x\\r\\n"
+                   "s=n\\r\\n"
+                   "t=0 0\\r\\n";
 
     ov_json_value *val = ov_json_string(string);
     testrun(val);
@@ -3258,25 +3175,20 @@ int check_create_masked_list() {
     ov_sdp_list *list = NULL;
 
     char *next = NULL;
-    char *string =
-        "e=a@mail\r\n"
-        "e=b@mail\r\n"
-        "e=c@mail\r\n"
-        "e=d@mail\r\n"
-        "e=e@mail\r\n"
-        "e=f@mail\r\n"
-        "x=abc\r\n";
+    char *string = "e=a@mail\r\n"
+                   "e=b@mail\r\n"
+                   "e=c@mail\r\n"
+                   "e=d@mail\r\n"
+                   "e=e@mail\r\n"
+                   "e=f@mail\r\n"
+                   "x=abc\r\n";
 
     ov_buffer *buffer = ov_buffer_from_string(string);
     testrun(buffer);
     testrun(buffer->length == strlen(string));
 
-    testrun(create_masked_list(&list,
-                               (char *)buffer->start,
-                               buffer->length,
-                               &next,
-                               'e',
-                               ov_sdp_is_email));
+    testrun(create_masked_list(&list, (char *)buffer->start, buffer->length,
+                               &next, 'e', ov_sdp_is_email));
 
     testrun(list);
     testrun(6 == ov_node_count(list));

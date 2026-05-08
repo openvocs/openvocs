@@ -60,10 +60,8 @@ struct json_object {
 
     bool (*is_empty)(const json_object *self);
 
-    bool (*for_each)(json_object *self,
-                     void *data,
-                     bool (*function)(const void *key,
-                                      void *value,
+    bool (*for_each)(json_object *self, void *data,
+                     bool (*function)(const void *key, void *value,
                                       void *data));
 
     bool (*remove_child)(json_object *self, ov_json_value *child);
@@ -79,7 +77,8 @@ struct json_object {
 
 bool ov_json_is_object(const ov_json_value *value) {
 
-    if (AS_JSON_OBJECT(value)) return true;
+    if (AS_JSON_OBJECT(value))
+        return true;
 
     return false;
 }
@@ -96,7 +95,8 @@ bool ov_json_is_object(const ov_json_value *value) {
 
 static json_object *set_head(json_object *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     self->head.magic_byte = OV_JSON_VALUE_MAGIC_BYTE;
     self->head.type = OV_JSON_OBJECT;
@@ -110,7 +110,8 @@ static json_object *set_head(json_object *self) {
 bool ov_json_object_clear(void *data) {
 
     json_object *object = AS_JSON_OBJECT(data);
-    if (!object || !object->head.clear) return false;
+    if (!object || !object->head.clear)
+        return false;
 
     return object->head.clear(object);
 }
@@ -120,7 +121,8 @@ bool ov_json_object_clear(void *data) {
 void *ov_json_object_free(void *data) {
 
     json_object *object = AS_JSON_OBJECT(data);
-    if (!object || !object->head.free) return data;
+    if (!object || !object->head.free)
+        return data;
 
     return object->head.free(object);
 }
@@ -129,22 +131,28 @@ void *ov_json_object_free(void *data) {
 
 static bool copy_object_items(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *value = ov_json_value_cast(val);
 
-    if (!value || !data) return false;
+    if (!value || !data)
+        return false;
 
     json_object *target = AS_JSON_OBJECT(data);
     ov_json_value *content = NULL;
 
-    if (!target || !target->set) goto error;
+    if (!target || !target->set)
+        goto error;
 
-    if (!ov_json_value_copy((void **)&content, value)) goto error;
+    if (!ov_json_value_copy((void **)&content, value))
+        goto error;
 
-    if (!content) goto error;
+    if (!content)
+        goto error;
 
-    if (target->set(target, (char *)key, content)) return true;
+    if (target->set(target, (char *)key, content))
+        return true;
 
     content = ov_json_value_free(content);
 
@@ -160,28 +168,34 @@ void *ov_json_object_copy(void **dest, const void *data) {
 
     json_object *copy = NULL;
     json_object *orig = AS_JSON_OBJECT(data);
-    if (!dest || !orig) return NULL;
+    if (!dest || !orig)
+        return NULL;
 
     if (*dest) {
         copy = AS_JSON_OBJECT(*dest);
-        if (!copy) goto error;
+        if (!copy)
+            goto error;
 
     } else {
 
         *dest = ov_json_object();
-        if (!*dest) goto error;
+        if (!*dest)
+            goto error;
 
         created = true;
     }
 
     copy = AS_JSON_OBJECT(*dest);
-    if (!ov_json_object_clear(copy)) goto error;
+    if (!ov_json_object_clear(copy))
+        goto error;
 
-    if (!orig->for_each(orig, copy, copy_object_items)) goto error;
+    if (!orig->for_each(orig, copy, copy_object_items))
+        goto error;
 
     return copy;
 error:
-    if (created) *dest = ov_json_object_free(*dest);
+    if (created)
+        *dest = ov_json_object_free(*dest);
     return false;
 }
 
@@ -189,19 +203,24 @@ error:
 
 static bool dump_object_items(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
     ov_json_value *value = ov_json_value_cast(val);
 
-    if (!value || !data) return false;
+    if (!value || !data)
+        return false;
 
     FILE *stream = (FILE *)data;
 
-    if (!fprintf(stream, " \"%s\" :", (char *)key)) goto error;
+    if (!fprintf(stream, " \"%s\" :", (char *)key))
+        goto error;
 
-    if (!ov_json_value_dump(stream, value)) goto error;
+    if (!ov_json_value_dump(stream, value))
+        goto error;
 
-    if (!fprintf(stream, "\n")) goto error;
+    if (!fprintf(stream, "\n"))
+        goto error;
 
     return true;
 
@@ -214,15 +233,20 @@ error:
 bool ov_json_object_dump(FILE *stream, const void *data) {
 
     json_object *object = AS_JSON_OBJECT(data);
-    if (!stream || !object) return false;
+    if (!stream || !object)
+        return false;
 
-    if (!stream || !object) return false;
+    if (!stream || !object)
+        return false;
 
-    if (!fprintf(stream, "\n{\n")) goto error;
+    if (!fprintf(stream, "\n{\n"))
+        goto error;
 
-    if (!object->for_each(object, stream, dump_object_items)) goto error;
+    if (!object->for_each(object, stream, dump_object_items))
+        goto error;
 
-    if (!fprintf(stream, "}\n")) goto error;
+    if (!fprintf(stream, "}\n"))
+        goto error;
 
     return true;
 error:
@@ -291,8 +315,7 @@ static void *impl_json_object_free(void *self);
 
 /*----------------------------------------------------------------------------*/
 
-static bool impl_json_object_set(json_object *self,
-                                 const char *key,
+static bool impl_json_object_set(json_object *self, const char *key,
                                  ov_json_value *value);
 
 static bool impl_json_object_del(json_object *self, const char *key);
@@ -302,8 +325,7 @@ static ov_json_value *impl_json_object_get(json_object *self, const char *key);
 static ov_json_value *impl_json_object_remove(json_object *self,
                                               const char *key);
 
-static bool impl_json_object_for_each(json_object *self,
-                                      void *data,
+static bool impl_json_object_for_each(json_object *self, void *data,
                                       bool (*function)(const void *key,
                                                        void *value,
                                                        void *data));
@@ -328,13 +350,16 @@ ov_dict_config json_dict_config() {
 
 bool json_dict_init(JsonDict *dict) {
 
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
-    if (!set_head((json_object *)dict)) goto error;
+    if (!set_head((json_object *)dict))
+        goto error;
 
     dict->public.type = OV_JSON_OBJECT_DICT;
 
-    if (dict->data) dict->data = ov_dict_free(dict->data);
+    if (dict->data)
+        dict->data = ov_dict_free(dict->data);
     dict->data = ov_dict_create(json_dict_config());
 
     // set interface functions
@@ -362,9 +387,11 @@ error:
 ov_json_value *ov_json_object() {
 
     JsonDict *dict = calloc(1, sizeof(JsonDict));
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
-    if (json_dict_init(dict)) return (ov_json_value *)dict;
+    if (json_dict_init(dict))
+        return (ov_json_value *)dict;
 
     free(dict);
 error:
@@ -377,7 +404,8 @@ bool impl_json_object_clear(void *self) {
 
     JsonDict *dict = AS_JSON_DICT(self);
 
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
     // clear content
     return ov_dict_clear(dict->data);
@@ -390,10 +418,12 @@ error:
 void *impl_json_object_free(void *self) {
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
     // in case of parent loop over ov_json_value_free
-    if (dict->public.head.parent) return ov_json_value_free(self);
+    if (dict->public.head.parent)
+        return ov_json_value_free(self);
 
     ov_dict_free(dict->data);
     free(dict);
@@ -405,24 +435,28 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool impl_json_object_set(json_object *self,
-                          const char *key,
+bool impl_json_object_set(json_object *self, const char *key,
                           ov_json_value *value) {
 
     char *new_key = NULL;
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict || !key || !value) goto error;
+    if (!dict || !key || !value)
+        goto error;
 
-    if (!ov_json_value_validate(value)) goto error;
+    if (!ov_json_value_validate(value))
+        goto error;
 
-    if (value == (ov_json_value *)self) goto error;
+    if (value == (ov_json_value *)self)
+        goto error;
 
     new_key = strdup(key);
-    if (!new_key) goto error;
+    if (!new_key)
+        goto error;
 
     // SET PARENT WITH CHECKS
-    if (!ov_json_value_set_parent(value, (ov_json_value *)self)) goto error;
+    if (!ov_json_value_set_parent(value, (ov_json_value *)self))
+        goto error;
 
     /* HERE out MUST be used to prevent
      * parent clearance override in case
@@ -443,7 +477,8 @@ bool impl_json_object_set(json_object *self,
     value->parent = NULL;
 
 error:
-    if (new_key) free(new_key);
+    if (new_key)
+        free(new_key);
     return false;
 }
 
@@ -452,7 +487,8 @@ error:
 bool impl_json_object_del(json_object *self, const char *key) {
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict || !key || !dict->data) goto error;
+    if (!dict || !key || !dict->data)
+        goto error;
 
     return ov_dict_del(dict->data, key);
 error:
@@ -464,7 +500,8 @@ error:
 ov_json_value *impl_json_object_get(json_object *self, const char *key) {
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict || !key || !dict->data) goto error;
+    if (!dict || !key || !dict->data)
+        goto error;
 
     return ov_json_value_cast(ov_dict_get(dict->data, key));
 
@@ -477,10 +514,12 @@ error:
 ov_json_value *impl_json_object_remove(json_object *self, const char *key) {
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict || !key || !dict->data) goto error;
+    if (!dict || !key || !dict->data)
+        goto error;
 
     ov_json_value *value = ov_dict_remove(dict->data, key);
-    if (value) value->parent = NULL;
+    if (value)
+        value->parent = NULL;
 
     return value;
 error:
@@ -489,14 +528,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool impl_json_object_for_each(json_object *self,
-                               void *data,
-                               bool (*function)(const void *key,
-                                                void *value,
+bool impl_json_object_for_each(json_object *self, void *data,
+                               bool (*function)(const void *key, void *value,
                                                 void *data)) {
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict || !function || !dict->data) goto error;
+    if (!dict || !function || !dict->data)
+        goto error;
 
     return ov_dict_for_each(dict->data, data, function);
 error:
@@ -508,7 +546,8 @@ error:
 size_t impl_json_object_count(const json_object *self) {
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict || !dict->data) goto error;
+    if (!dict || !dict->data)
+        goto error;
 
     return ov_dict_count(dict->data);
 
@@ -520,29 +559,36 @@ error:
 
 bool impl_json_object_remove_child(json_object *self, ov_json_value *child) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
-    if (!child) return true;
+    if (!child)
+        return true;
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
     if (child->parent)
-        if (child->parent != (ov_json_value *)self) goto error;
+        if (child->parent != (ov_json_value *)self)
+            goto error;
 
     ov_json_value *val = NULL;
 
     ov_list *keys = dict->data->get_keys(dict->data, child);
-    if (!keys) goto error;
+    if (!keys)
+        goto error;
 
-    if (keys->is_empty(keys)) goto done;
+    if (keys->is_empty(keys))
+        goto done;
 
     void *key = keys->pop(keys);
     while (key) {
 
         val = dict->data->remove(dict->data, key);
 
-        if (val) val->parent = NULL;
+        if (val)
+            val->parent = NULL;
 
         key = keys->pop(keys);
     }
@@ -560,7 +606,8 @@ error:
 bool impl_json_object_is_empty(const json_object *self) {
 
     JsonDict *dict = AS_JSON_DICT(self);
-    if (!dict) goto error;
+    if (!dict)
+        goto error;
 
     return ov_dict_is_empty(dict->data);
 error:
@@ -575,12 +622,12 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-bool ov_json_object_set(ov_json_value *object,
-                        const char *key,
+bool ov_json_object_set(ov_json_value *object, const char *key,
                         ov_json_value *value) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->set || !key || !value) return false;
+    if (!obj || !obj->set || !key || !value)
+        return false;
 
     return obj->set(obj, key, value);
 }
@@ -590,7 +637,8 @@ bool ov_json_object_set(ov_json_value *object,
 bool ov_json_object_del(ov_json_value *object, const char *key) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->del || !key) return false;
+    if (!obj || !obj->del || !key)
+        return false;
 
     return obj->del(obj, key);
 }
@@ -601,7 +649,8 @@ ov_json_value *ov_json_object_get(const ov_json_value *object,
                                   const char *key) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->get || !key) return NULL;
+    if (!obj || !obj->get || !key)
+        return NULL;
 
     return obj->get(obj, key);
 }
@@ -611,7 +660,8 @@ ov_json_value *ov_json_object_get(const ov_json_value *object,
 ov_json_value *ov_json_object_remove(ov_json_value *object, const char *key) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->remove || !key) return NULL;
+    if (!obj || !obj->remove || !key)
+        return NULL;
 
     return obj->remove(obj, key);
 }
@@ -621,7 +671,8 @@ ov_json_value *ov_json_object_remove(ov_json_value *object, const char *key) {
 size_t ov_json_object_count(const ov_json_value *object) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->count) return 0;
+    if (!obj || !obj->count)
+        return 0;
 
     return obj->count(obj);
 }
@@ -631,21 +682,21 @@ size_t ov_json_object_count(const ov_json_value *object) {
 bool ov_json_object_is_empty(const ov_json_value *object) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->is_empty) return 0;
+    if (!obj || !obj->is_empty)
+        return 0;
 
     return obj->is_empty(obj);
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_json_object_for_each(ov_json_value *object,
-                             void *data,
-                             bool (*function)(const void *key,
-                                              void *value,
+bool ov_json_object_for_each(ov_json_value *object, void *data,
+                             bool (*function)(const void *key, void *value,
                                               void *data)) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->for_each || !function) return 0;
+    if (!obj || !obj->for_each || !function)
+        return 0;
 
     return obj->for_each(obj, data, function);
 }
@@ -655,7 +706,8 @@ bool ov_json_object_for_each(ov_json_value *object,
 bool ov_json_object_remove_child(ov_json_value *object, ov_json_value *child) {
 
     json_object *obj = AS_JSON_OBJECT(object);
-    if (!obj || !obj->remove_child || !child) return 0;
+    if (!obj || !obj->remove_child || !child)
+        return 0;
 
     return obj->remove_child(obj, child);
 }
@@ -1082,9 +1134,11 @@ int test_impl_json_object_is_empty() {
 
 static bool dummy_run(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    if (!value || !data) return true;
+    if (!value || !data)
+        return true;
 
     return true;
 }
@@ -1093,11 +1147,14 @@ static bool dummy_run(const void *key, void *value, void *data) {
 
 static bool dummy_count_numbers(const void *key, void *value, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
 
-    if (!value || !data) return false;
+    if (!value || !data)
+        return false;
 
-    if (ov_json_is_number(value)) ov_list_push(data, value);
+    if (ov_json_is_number(value))
+        ov_list_push(data, value);
 
     return true;
 }

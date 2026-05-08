@@ -71,9 +71,7 @@ typedef struct ov_format_registry_struct ov_format_registry;
  *
  * @param options format specific option pointer. If in doubt, use 0
  */
-ov_format *ov_format_as(ov_format *f,
-                        char const *format_type,
-                        void *options,
+ov_format *ov_format_as(ov_format *f, char const *format_type, void *options,
                         ov_format_registry *registry);
 
 /*----------------------------------------------------------------------------*/

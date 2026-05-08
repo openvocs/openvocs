@@ -80,7 +80,8 @@ struct ov_dtls {
 
 static bool init_dtls_cookie_keys(size_t quantity, size_t length) {
 
-    if ((0 == quantity) || (0 == length)) return false;
+    if ((0 == quantity) || (0 == length))
+        return false;
 
     if (dtls_keys) {
         ov_list_clear(dtls_keys);
@@ -90,21 +91,24 @@ static bool init_dtls_cookie_keys(size_t quantity, size_t length) {
             (ov_list_config){.item = ov_buffer_data_functions()});
     }
 
-    if (!dtls_keys) goto error;
+    if (!dtls_keys)
+        goto error;
 
     ov_buffer *buffer = NULL;
 
     for (size_t i = 0; i < quantity; i++) {
 
         buffer = ov_buffer_create(length);
-        if (!buffer) goto error;
+        if (!buffer)
+            goto error;
 
         if (!ov_list_push(dtls_keys, buffer)) {
             buffer = ov_buffer_free(buffer);
             goto error;
         }
 
-        if (!ov_random_bytes(buffer->start, buffer->capacity)) goto error;
+        if (!ov_random_bytes(buffer->start, buffer->capacity))
+            goto error;
 
         buffer->length = buffer->capacity;
     }
@@ -119,15 +123,17 @@ error:
 
 static bool renew_dtls_keys(uint32_t id, void *data) {
 
-    if (0 == id) goto error;
+    if (0 == id)
+        goto error;
 
     ov_dtls *ssl = (ov_dtls *)data;
-    if (!ssl) goto error;
+    if (!ssl)
+        goto error;
 
     dtls_keys = ov_list_free(dtls_keys);
 
-    if (!init_dtls_cookie_keys(
-            ssl->config.dtls.keys.quantity, ssl->config.dtls.keys.length)) {
+    if (!init_dtls_cookie_keys(ssl->config.dtls.keys.quantity,
+                               ssl->config.dtls.keys.length)) {
 
         ov_log_error("Failed to reinit DTLS key cookies");
 
@@ -136,8 +142,7 @@ static bool renew_dtls_keys(uint32_t id, void *data) {
 
     if (!ssl->config.loop || !ssl->config.loop->timer.set ||
         !ssl->config.loop->timer.set(ssl->config.loop,
-                                     ssl->config.dtls.keys.lifetime_usec,
-                                     ssl,
+                                     ssl->config.dtls.keys.lifetime_usec, ssl,
                                      renew_dtls_keys)) {
 
         ov_log_error("Failed to reenable DTLS key renew timer");
@@ -152,17 +157,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool write_cookie(unsigned char *cookie,
-                         unsigned int *cookie_len,
+static bool write_cookie(unsigned char *cookie, unsigned int *cookie_len,
                          const ov_buffer *key) {
 
-    if (!cookie || !cookie_len || !key) return false;
+    if (!cookie || !cookie_len || !key)
+        return false;
 
     const char *array[] = {(char *)key->start};
 
     size_t outlen = DTLS1_COOKIE_LENGTH;
 
-    if (!ov_hash(OV_HASH_MD5, array, 1, &cookie, &outlen)) return false;
+    if (!ov_hash(OV_HASH_MD5, array, 1, &cookie, &outlen))
+        return false;
 
     *cookie_len = outlen;
     return true;
@@ -170,11 +176,11 @@ static bool write_cookie(unsigned char *cookie,
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_cookie(const unsigned char *cookie,
-                         unsigned int cookie_len,
+static bool check_cookie(const unsigned char *cookie, unsigned int cookie_len,
                          ov_list *list) {
 
-    if (!cookie || cookie_len < 1 || !list) return false;
+    if (!cookie || cookie_len < 1 || !list)
+        return false;
 
     size_t hlen = OV_MD5_SIZE;
     uint8_t hash[hlen];
@@ -190,16 +196,19 @@ static bool check_cookie(const unsigned char *cookie,
     while (next) {
 
         next = list->next(list, next, (void **)&buffer);
-        if (!buffer) return false;
+        if (!buffer)
+            return false;
 
         array[0] = (char *)buffer->start;
 
         hlen = OV_MD5_SIZE;
         memset(hash, 0, hlen);
 
-        if (!ov_hash(OV_HASH_MD5, array, 1, &ptr, &hlen)) return false;
+        if (!ov_hash(OV_HASH_MD5, array, 1, &ptr, &hlen))
+            return false;
 
-        if (0 == memcmp(hash, cookie, hlen)) return true;
+        if (0 == memcmp(hash, cookie, hlen))
+            return true;
     }
 
     return false;
@@ -207,11 +216,11 @@ static bool check_cookie(const unsigned char *cookie,
 
 /*----------------------------------------------------------------------------*/
 
-static int generate_dtls_cookie(SSL *ssl,
-                                unsigned char *cookie,
+static int generate_dtls_cookie(SSL *ssl, unsigned char *cookie,
                                 unsigned int *cookie_len) {
 
-    if (!ssl || !cookie || !cookie_len) goto error;
+    if (!ssl || !cookie || !cookie_len)
+        goto error;
 
     /*
      *      To create a DTLS cookie, we choose a random
@@ -232,8 +241,8 @@ static int generate_dtls_cookie(SSL *ssl,
 
     if (!dtls_keys) {
 
-        if (!init_dtls_cookie_keys(
-                OV_DTLS_KEYS_QUANTITY_DEFAULT, OV_DTLS_KEYS_LENGTH_DEFAULT))
+        if (!init_dtls_cookie_keys(OV_DTLS_KEYS_QUANTITY_DEFAULT,
+                                   OV_DTLS_KEYS_LENGTH_DEFAULT))
             goto error;
     }
 
@@ -241,12 +250,15 @@ static int generate_dtls_cookie(SSL *ssl,
     long int number = rand();
     number = (number * (ov_list_count(dtls_keys))) / RAND_MAX;
 
-    if (number == 0) number = 1;
+    if (number == 0)
+        number = 1;
 
     ov_buffer *buffer = ov_list_get(dtls_keys, number);
-    if (!buffer) goto error;
+    if (!buffer)
+        goto error;
 
-    if (!write_cookie(cookie, cookie_len, buffer)) goto error;
+    if (!write_cookie(cookie, cookie_len, buffer))
+        goto error;
 
     return 1;
 error:
@@ -255,17 +267,20 @@ error:
 
 /*---------------------------------------------------------------------------*/
 
-static int verify_dtls_cookie(SSL *ssl,
-                              const unsigned char *cookie,
+static int verify_dtls_cookie(SSL *ssl, const unsigned char *cookie,
                               unsigned int cookie_len) {
 
-    if (!ssl || !cookie || !dtls_keys) goto error;
+    if (!ssl || !cookie || !dtls_keys)
+        goto error;
 
-    if (cookie_len < 1) goto error;
+    if (cookie_len < 1)
+        goto error;
 
-    if (!dtls_keys) goto error;
+    if (!dtls_keys)
+        goto error;
 
-    if (!check_cookie(cookie, cookie_len, dtls_keys)) goto error;
+    if (!check_cookie(cookie, cookie_len, dtls_keys))
+        goto error;
 
     return 1;
 error:
@@ -274,52 +289,39 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool load_certificates(SSL_CTX *ctx,
-                              const ov_dtls_config *config,
+static bool load_certificates(SSL_CTX *ctx, const ov_dtls_config *config,
                               const char *type) {
 
-    if (!ctx || !config || !type) goto error;
+    if (!ctx || !config || !type)
+        goto error;
 
     if (SSL_CTX_use_certificate_chain_file(ctx, config->cert) != 1) {
 
-        ov_log_error(
-            "ICE %s config failure load certificate "
-            "from %s | error %d | %s",
-            type,
-            config->cert,
-            errno,
-            strerror(errno));
+        ov_log_error("ICE %s config failure load certificate "
+                     "from %s | error %d | %s",
+                     type, config->cert, errno, strerror(errno));
         goto error;
     }
 
     if (SSL_CTX_use_PrivateKey_file(ctx, config->key, SSL_FILETYPE_PEM) != 1) {
 
-        ov_log_error(
-            "ICE %s config failure load key "
-            "from %s | error %d | %s",
-            type,
-            config->key,
-            errno,
-            strerror(errno));
+        ov_log_error("ICE %s config failure load key "
+                     "from %s | error %d | %s",
+                     type, config->key, errno, strerror(errno));
         goto error;
     }
 
     if (SSL_CTX_check_private_key(ctx) != 1) {
 
-        ov_log_error(
-            "ICE %s config failure private key for\n"
-            "CERT | %s\n"
-            " KEY | %s",
-            type,
-            config->cert,
-            config->key);
+        ov_log_error("ICE %s config failure private key for\n"
+                     "CERT | %s\n"
+                     " KEY | %s",
+                     type, config->cert, config->key);
         goto error;
     }
 
-    ov_log_info("DTLS loaded %s certificate \n file %s\n key %s\n",
-                type,
-                config->cert,
-                config->key);
+    ov_log_info("DTLS loaded %s certificate \n file %s\n key %s\n", type,
+                config->cert, config->key);
 
     return true;
 error:
@@ -332,26 +334,29 @@ static bool configure_dtls(ov_dtls *ssl) {
 
     OV_ASSERT(ssl);
 
-    if (!ssl) goto error;
+    if (!ssl)
+        goto error;
 
     if (!ssl->dtls.ctx) {
         ssl->dtls.ctx = SSL_CTX_new(DTLS_server_method());
     }
 
-    if (!ssl->dtls.ctx) goto error;
+    if (!ssl->dtls.ctx)
+        goto error;
 
     if (OV_TIMER_INVALID != ssl->dtls.timer.key_renew) {
 
-        ssl->config.loop->timer.unset(
-            ssl->config.loop, ssl->dtls.timer.key_renew, NULL);
+        ssl->config.loop->timer.unset(ssl->config.loop,
+                                      ssl->dtls.timer.key_renew, NULL);
     }
 
     ssl->dtls.timer.key_renew = OV_TIMER_INVALID;
 
-    if (!load_certificates(ssl->dtls.ctx, &ssl->config, "DTLS")) goto error;
+    if (!load_certificates(ssl->dtls.ctx, &ssl->config, "DTLS"))
+        goto error;
 
-    if (!init_dtls_cookie_keys(
-            ssl->config.dtls.keys.quantity, ssl->config.dtls.keys.length)) {
+    if (!init_dtls_cookie_keys(ssl->config.dtls.keys.quantity,
+                               ssl->config.dtls.keys.length)) {
         goto error;
     }
 
@@ -361,13 +366,12 @@ static bool configure_dtls(ov_dtls *ssl) {
 
     SSL_CTX_set_cookie_verify_cb(ssl->dtls.ctx, verify_dtls_cookie);
 
-    ssl->dtls.timer.key_renew =
-        ssl->config.loop->timer.set(ssl->config.loop,
-                                    ssl->config.dtls.keys.lifetime_usec,
-                                    ssl,
-                                    renew_dtls_keys);
+    ssl->dtls.timer.key_renew = ssl->config.loop->timer.set(
+        ssl->config.loop, ssl->config.dtls.keys.lifetime_usec, ssl,
+        renew_dtls_keys);
 
-    if (OV_TIMER_INVALID == ssl->dtls.timer.key_renew) goto error;
+    if (OV_TIMER_INVALID == ssl->dtls.timer.key_renew)
+        goto error;
 
     if (0 ==
         SSL_CTX_set_tlsext_use_srtp(ssl->dtls.ctx, ssl->config.srtp.profile)) {
@@ -408,7 +412,8 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
     char *fingerprint = NULL;
 
-    if (!source) return NULL;
+    if (!source)
+        return NULL;
 
     size_t hex_len = 2 * length + 1;
     char hex[hex_len + 1];
@@ -425,13 +430,15 @@ static char *fingerprint_format_RFC8122(const char *source, size_t length) {
 
         fingerprint[(i * 3) + 0] = toupper(hex[(i * 2) + 0]);
         fingerprint[(i * 3) + 1] = toupper(hex[(i * 2) + 1]);
-        if (i < length - 1) fingerprint[(i * 3) + 2] = ':';
+        if (i < length - 1)
+            fingerprint[(i * 3) + 2] = ':';
     }
 
     return fingerprint;
 
 error:
-    if (fingerprint) free(fingerprint);
+    if (fingerprint)
+        free(fingerprint);
     return NULL;
 }
 
@@ -445,7 +452,8 @@ static char *X509_fingerprint_create(const X509 *cert, ov_hash_function type) {
     char *fingerprint = NULL;
 
     const EVP_MD *func = ov_hash_function_to_EVP(type);
-    if (!func || !cert) return NULL;
+    if (!func || !cert)
+        return NULL;
 
     if (0 < X509_digest(cert, func, mdigest, &mdigest_size)) {
         fingerprint = fingerprint_format_RFC8122((char *)mdigest, mdigest_size);
@@ -456,16 +464,17 @@ static char *X509_fingerprint_create(const X509 *cert, ov_hash_function type) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool create_fingerprint_cert(const char *path,
-                                    ov_hash_function hash,
+static bool create_fingerprint_cert(const char *path, ov_hash_function hash,
                                     char *out) {
 
     char *x509_fingerprint = NULL;
 
-    if (!path || !out) goto error;
+    if (!path || !out)
+        goto error;
 
     const char *hash_string = ov_hash_function_to_RFC8122_string(hash);
-    if (!hash_string) goto error;
+    if (!hash_string)
+        goto error;
 
     X509 *x = NULL;
 
@@ -480,18 +489,17 @@ static bool create_fingerprint_cert(const char *path,
     fclose(fp);
     X509_free(x);
 
-    if (!x509_fingerprint) goto error;
+    if (!x509_fingerprint)
+        goto error;
 
     size_t size = strlen(x509_fingerprint) + strlen(hash_string) + 2;
 
-    if (size >= OV_DTLS_FINGERPRINT_MAX) goto error;
+    if (size >= OV_DTLS_FINGERPRINT_MAX)
+        goto error;
 
     memset(out, 0, OV_DTLS_FINGERPRINT_MAX);
 
-    if (!snprintf(out,
-                  OV_DTLS_FINGERPRINT_MAX,
-                  "%s %s",
-                  hash_string,
+    if (!snprintf(out, OV_DTLS_FINGERPRINT_MAX, "%s %s", hash_string,
                   x509_fingerprint))
         goto error;
 
@@ -514,12 +522,14 @@ error:
 ov_dtls_config ov_dtls_config_from_json(const ov_json_value *input) {
 
     ov_dtls_config out = (ov_dtls_config){0};
-    if (!input) goto error;
+    if (!input)
+        goto error;
 
     const ov_json_value *conf = ov_json_get(
         input, "/" OV_KEY_INTERCONNECT "/" OV_KEY_TLS "/" OV_KEY_DTLS);
 
-    if (!conf) conf = input;
+    if (!conf)
+        conf = input;
 
     /*
      *      We perform a read access on the cert and key,
@@ -541,30 +551,28 @@ ov_dtls_config ov_dtls_config_from_json(const ov_json_value *input) {
     const char *error = ov_file_read_check(cert);
 
     if (error) {
-        ov_log_error(
-            "SSL config cannot read certificate "
-            "at %s error %s",
-            cert,
-            error);
+        ov_log_error("SSL config cannot read certificate "
+                     "at %s error %s",
+                     cert, error);
         goto error;
     }
 
     error = ov_file_read_check(key);
 
     if (error) {
-        ov_log_error(
-            "SSL config cannot read key "
-            "at %s error %s",
-            key,
-            error);
+        ov_log_error("SSL config cannot read key "
+                     "at %s error %s",
+                     key, error);
         goto error;
     }
 
     bytes = snprintf(out.cert, PATH_MAX, "%s", cert);
-    if (bytes != strlen(cert)) goto error;
+    if (bytes != strlen(cert))
+        goto error;
 
     bytes = snprintf(out.key, PATH_MAX, "%s", key);
-    if (bytes != strlen(key)) goto error;
+    if (bytes != strlen(key))
+        goto error;
 
     const char *string =
         ov_json_string_get(ov_json_object_get(conf, OV_KEY_CA_FILE));
@@ -574,16 +582,15 @@ ov_dtls_config ov_dtls_config_from_json(const ov_json_value *input) {
         error = ov_file_read_check(string);
 
         if (error) {
-            ov_log_error(
-                "SSL config cannot read CA FILE "
-                "at %s error %s",
-                string,
-                error);
+            ov_log_error("SSL config cannot read CA FILE "
+                         "at %s error %s",
+                         string, error);
             goto error;
         }
 
         bytes = snprintf(out.ca.file, PATH_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
+        if (bytes != strlen(string))
+            goto error;
     }
 
     string = ov_json_string_get(ov_json_object_get(conf, OV_KEY_CA_PATH));
@@ -594,29 +601,27 @@ ov_dtls_config ov_dtls_config_from_json(const ov_json_value *input) {
 
         if (!error) {
 
-            ov_log_error(
-                "SSL config wrong path for CA PATH "
-                "at %s error %s",
-                string,
-                error);
+            ov_log_error("SSL config wrong path for CA PATH "
+                         "at %s error %s",
+                         string, error);
             goto error;
 
         } else if (0 != strcmp(error, OV_FILE_IS_DIR)) {
 
-            ov_log_error(
-                "SSL config wrong path for CA PATH "
-                "at %s error %s",
-                string,
-                error);
+            ov_log_error("SSL config wrong path for CA PATH "
+                         "at %s error %s",
+                         string, error);
             goto error;
         }
 
         bytes = snprintf(out.ca.path, PATH_MAX, "%s", string);
-        if (bytes != strlen(string)) goto error;
+        if (bytes != strlen(string))
+            goto error;
     }
 
     ov_json_value *keys = ov_json_object_get(conf, OV_KEY_KEYS);
-    if (!keys) goto key_defaults;
+    if (!keys)
+        goto key_defaults;
 
     out.dtls.keys.quantity =
         ov_json_number_get(ov_json_object_get(keys, OV_KEY_QUANTITY));
@@ -653,18 +658,22 @@ ov_dtls *ov_dtls_create(ov_dtls_config config) {
 
     ov_dtls *self = NULL;
 
-    if (!config.loop) goto error;
+    if (!config.loop)
+        goto error;
 
-    if (0 == config.cert[0]) goto error;
+    if (0 == config.cert[0])
+        goto error;
 
-    if (0 == config.key[0]) goto error;
+    if (0 == config.key[0])
+        goto error;
 
     self = calloc(1, sizeof(ov_dtls));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (0 == config.srtp.profile[0])
-        snprintf(
-            config.srtp.profile, OV_DTLS_PROFILE_MAX, OV_DTLS_SRTP_PROFILES);
+        snprintf(config.srtp.profile, OV_DTLS_PROFILE_MAX,
+                 OV_DTLS_SRTP_PROFILES);
 
     if (0 == config.dtls.keys.quantity)
         config.dtls.keys.quantity = OV_DTLS_KEYS_QUANTITY_DEFAULT;
@@ -687,10 +696,11 @@ ov_dtls *ov_dtls_create(ov_dtls_config config) {
     SSL_library_init();
     SSL_load_error_strings();
 
-    if (!configure_dtls(self)) goto error;
+    if (!configure_dtls(self))
+        goto error;
 
-    if (!create_fingerprint_cert(
-            self->config.cert, OV_HASH_SHA256, self->fingerprint))
+    if (!create_fingerprint_cert(self->config.cert, OV_HASH_SHA256,
+                                 self->fingerprint))
         goto error;
 
     return self;
@@ -703,7 +713,8 @@ error:
 
 ov_dtls *ov_dtls_free(ov_dtls *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (self->dtls.ctx) {
         SSL_CTX_free(self->dtls.ctx);
@@ -713,8 +724,8 @@ ov_dtls *ov_dtls_free(ov_dtls *self) {
     // free used timers
     if (OV_TIMER_INVALID != self->dtls.timer.key_renew) {
         if (self->config.loop && self->config.loop->timer.unset)
-            self->config.loop->timer.unset(
-                self->config.loop, self->dtls.timer.key_renew, NULL);
+            self->config.loop->timer.unset(self->config.loop,
+                                           self->dtls.timer.key_renew, NULL);
     }
 
     self->dtls.timer.key_renew = OV_TIMER_INVALID;
@@ -741,7 +752,8 @@ error:
 
 const char *ov_dtls_get_fingerprint(const ov_dtls *ssl) {
 
-    if (!ssl) goto error;
+    if (!ssl)
+        goto error;
 
     return ssl->fingerprint;
 
@@ -757,17 +769,17 @@ const char *ov_dtls_type_to_string(ov_dtls_type type) {
 
     switch (type) {
 
-        case OV_DTLS_ACTIVE:
-            out = OV_KEY_ACTIVE;
-            break;
+    case OV_DTLS_ACTIVE:
+        out = OV_KEY_ACTIVE;
+        break;
 
-        case OV_DTLS_PASSIVE:
-            out = OV_KEY_PASSIVE;
-            break;
+    case OV_DTLS_PASSIVE:
+        out = OV_KEY_PASSIVE;
+        break;
 
-        default:
-            out = OV_KEY_UNSET;
-            break;
+    default:
+        out = OV_KEY_UNSET;
+        break;
     }
 
     return out;
@@ -777,7 +789,8 @@ const char *ov_dtls_type_to_string(ov_dtls_type type) {
 
 SSL_CTX *ov_dtls_get_ctx(ov_dtls *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     return self->dtls.ctx;
 }
 
@@ -785,14 +798,16 @@ SSL_CTX *ov_dtls_get_ctx(ov_dtls *self) {
 
 const char *ov_dtls_get_srtp_profile(ov_dtls *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     return self->config.srtp.profile;
 }
 
 /*----------------------------------------------------------------------------*/
 const char *ov_dtls_get_verify_file(ov_dtls *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     return self->config.ca.file;
 }
 
@@ -800,7 +815,8 @@ const char *ov_dtls_get_verify_file(ov_dtls *self) {
 
 const char *ov_dtls_get_verify_path(ov_dtls *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     return self->config.ca.path;
 }
 

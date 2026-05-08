@@ -33,17 +33,17 @@
 */
 #include "../../include/ov_endian.h"
 
-bool ov_endian_write_uint16_be(uint8_t *buffer,
-                               size_t buffer_size,
-                               uint8_t **next,
-                               uint16_t number) {
+bool ov_endian_write_uint16_be(uint8_t *buffer, size_t buffer_size,
+                               uint8_t **next, uint16_t number) {
 
-    if (!buffer || buffer_size < 2) goto error;
+    if (!buffer || buffer_size < 2)
+        goto error;
 
     buffer[1] = number;
     buffer[0] = number >> 8;
 
-    if (next) *next = buffer + 2;
+    if (next)
+        *next = buffer + 2;
 
     return true;
 error:
@@ -52,19 +52,19 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_endian_write_uint32_be(uint8_t *buffer,
-                               size_t buffer_size,
-                               uint8_t **next,
-                               uint32_t number) {
+bool ov_endian_write_uint32_be(uint8_t *buffer, size_t buffer_size,
+                               uint8_t **next, uint32_t number) {
 
-    if (!buffer || buffer_size < 4) goto error;
+    if (!buffer || buffer_size < 4)
+        goto error;
 
     buffer[3] = number;
     buffer[2] = number >> 8;
     buffer[1] = number >> 16;
     buffer[0] = number >> 24;
 
-    if (next) *next = buffer + 4;
+    if (next)
+        *next = buffer + 4;
 
     return true;
 error:
@@ -73,12 +73,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_endian_write_uint64_be(uint8_t *buffer,
-                               size_t buffer_size,
-                               uint8_t **next,
-                               uint64_t number) {
+bool ov_endian_write_uint64_be(uint8_t *buffer, size_t buffer_size,
+                               uint8_t **next, uint64_t number) {
 
-    if (!buffer || buffer_size < 8) goto error;
+    if (!buffer || buffer_size < 8)
+        goto error;
 
     buffer[7] = number;
     buffer[6] = number >> 8;
@@ -89,7 +88,8 @@ bool ov_endian_write_uint64_be(uint8_t *buffer,
     buffer[1] = number >> 48;
     buffer[0] = number >> 56;
 
-    if (next) *next = buffer + 8;
+    if (next)
+        *next = buffer + 8;
 
     return true;
 error:
@@ -98,44 +98,46 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_endian_read_uint16_be(const uint8_t *buffer,
-                              size_t buffer_size,
+bool ov_endian_read_uint16_be(const uint8_t *buffer, size_t buffer_size,
                               uint16_t *number) {
 
-    if (!buffer || !number || buffer_size < 2) goto error;
+    if (!buffer || !number || buffer_size < 2)
+        goto error;
 
     *number = ((uint16_t)buffer[1] << 0) | ((uint16_t)buffer[0] << 8);
 
     return true;
 error:
-    if (number) *number = 0;
+    if (number)
+        *number = 0;
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_endian_read_uint32_be(const uint8_t *buffer,
-                              size_t buffer_size,
+bool ov_endian_read_uint32_be(const uint8_t *buffer, size_t buffer_size,
                               uint32_t *number) {
 
-    if (!buffer || !number || buffer_size < 4) goto error;
+    if (!buffer || !number || buffer_size < 4)
+        goto error;
 
     *number = ((uint32_t)buffer[3] << 0) | ((uint32_t)buffer[2] << 8) |
               ((uint32_t)buffer[1] << 16) | ((uint32_t)buffer[0] << 24);
 
     return true;
 error:
-    if (number) *number = 0;
+    if (number)
+        *number = 0;
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_endian_read_uint64_be(const uint8_t *buffer,
-                              size_t buffer_size,
+bool ov_endian_read_uint64_be(const uint8_t *buffer, size_t buffer_size,
                               uint64_t *number) {
 
-    if (!buffer || !number || buffer_size < 8) goto error;
+    if (!buffer || !number || buffer_size < 8)
+        goto error;
 
     *number = ((uint64_t)buffer[7] << 0) | ((uint64_t)buffer[6] << 8) |
               ((uint64_t)buffer[5] << 16) | ((uint64_t)buffer[4] << 24) |
@@ -144,7 +146,8 @@ bool ov_endian_read_uint64_be(const uint8_t *buffer,
 
     return true;
 error:
-    if (number) *number = 0;
+    if (number)
+        *number = 0;
     return false;
 }
 

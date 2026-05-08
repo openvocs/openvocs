@@ -45,22 +45,8 @@ static char const *buffer_as_string(ov_buffer const *buf) {
 
 static ov_buffer *to_hex(ov_buffer *in) {
 
-    static char hex[16] = {'0',
-                           '1',
-                           '2',
-                           '3',
-                           '4',
-                           '5',
-                           '6',
-                           '7',
-                           '8',
-                           '9',
-                           'a',
-                           'b',
-                           'c',
-                           'd',
-                           'e',
-                           'f'};
+    static char hex[16] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     if (ov_ptr_valid(in, "Invalid buffer - cannot convert to hex string")) {
         size_t target_len = 2 * in->length;
@@ -93,11 +79,9 @@ static ov_buffer *hash_buffer(ov_buffer const *input) {
         hash->start[0] = 0;
         hash->length = bytes_in_md5;
 
-        bool hash_successful = ov_hash_string(OV_HASH_MD5,
-                                              input->start,
-                                              input->length,
-                                              &hash->start,
-                                              &hash->length);
+        bool hash_successful =
+            ov_hash_string(OV_HASH_MD5, input->start, input->length,
+                           &hash->start, &hash->length);
 
         ov_buffer *hex = to_hex(hash);
         hash = ov_buffer_free(hash);
@@ -117,10 +101,8 @@ static ov_buffer *hash_buffer(ov_buffer const *input) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *create_auth_buffer(char const *uri,
-                                     char const *realm,
-                                     char const *user,
-                                     char const *nonce,
+static ov_buffer *create_auth_buffer(char const *uri, char const *realm,
+                                     char const *user, char const *nonce,
                                      char const *hash) {
 
     if (ov_ptr_valid(nonce, "Nonce invalid") &&
@@ -129,17 +111,10 @@ static ov_buffer *create_auth_buffer(char const *uri,
         ov_ptr_valid(user, "User invalid") &&
         ov_ptr_valid(hash, "Hash invalid")) {
 
-        return ov_buffer_from_strlist("Digest realm=\"",
-                                      realm,
-                                      "\", nonce=\"",
-                                      nonce,
-                                      "\", algorithm=MD5, username=\"",
-                                      user,
-                                      "\", uri=\"",
-                                      uri,
-                                      "\", response=\"",
-                                      hash,
-                                      "\"");
+        return ov_buffer_from_strlist("Digest realm=\"", realm, "\", nonce=\"",
+                                      nonce, "\", algorithm=MD5, username=\"",
+                                      user, "\", uri=\"", uri,
+                                      "\", response=\"", hash, "\"");
 
     } else {
         return 0;
@@ -148,12 +123,9 @@ static ov_buffer *create_auth_buffer(char const *uri,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_buffer *auth_hash(char const *uri,
-                            char const *user,
-                            char const *password,
-                            char const *realm,
-                            char const *sip_method,
-                            char const *nonce) {
+static ov_buffer *auth_hash(char const *uri, char const *user,
+                            char const *password, char const *realm,
+                            char const *sip_method, char const *nonce) {
 
     if (ov_ptr_valid(uri, "No URI for SIP auth") &&
         ov_ptr_valid(user, "No user for SIP auth") &&
@@ -180,8 +152,8 @@ static ov_buffer *auth_hash(char const *uri,
         challenge = ov_buffer_free(challenge);
 
         // response=MD5(HA1:nonce:HA2)
-        challenge = ov_buffer_from_strlist(
-            buffer_as_string(hash1), ":", nonce, ":", buffer_as_string(hash2));
+        challenge = ov_buffer_from_strlist(buffer_as_string(hash1), ":", nonce,
+                                           ":", buffer_as_string(hash2));
 
         hash1 = ov_buffer_free(hash1);
         hash2 = ov_buffer_free(hash2);
@@ -198,12 +170,9 @@ static ov_buffer *auth_hash(char const *uri,
 
 /*----------------------------------------------------------------------------*/
 
-ov_buffer *ov_sip_headers_auth(char const *uri,
-                               char const *user,
-                               char const *password,
-                               char const *realm,
-                               char const *method,
-                               char const *nonce) {
+ov_buffer *ov_sip_headers_auth(char const *uri, char const *user,
+                               char const *password, char const *realm,
+                               char const *method, char const *nonce) {
 
     ov_buffer *hash = auth_hash(uri, user, password, realm, method, nonce);
 
@@ -354,8 +323,7 @@ static char const *skip_alias(char const *str) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sip_headers_get_user_and_tag(char const *str,
-                                     ov_buffer **user,
+bool ov_sip_headers_get_user_and_tag(char const *str, ov_buffer **user,
                                      ov_buffer **tag) {
 
     UNUSED(tag);

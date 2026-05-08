@@ -93,8 +93,8 @@ int main(int argc, char **argv) {
     //     "ov_base/ov_value.h"
 
     /* Enable caching for value data structures */
-    ov_value_enable_caching(
-        NUMBERS_TO_CACHE, STRINGS_TO_CACHE, LISTS_TO_CACHE, OBJECTS_TO_CACHE);
+    ov_value_enable_caching(NUMBERS_TO_CACHE, STRINGS_TO_CACHE, LISTS_TO_CACHE,
+                            OBJECTS_TO_CACHE);
 
     /* Build simple Atoms */
 
@@ -115,11 +115,10 @@ int main(int argc, char **argv) {
 
     ov_value *empty_list = ov_value_list(0);
 
-    ov_value *aesir = ov_value_list(ov_value_string("odin"),
-                                    ov_value_string("thor"),
-                                    ov_value_string("loki"),
-                                    ov_value_string("heimdall"),
-                                    ov_value_string("..."));
+    ov_value *aesir =
+        ov_value_list(ov_value_string("odin"), ov_value_string("thor"),
+                      ov_value_string("loki"), ov_value_string("heimdall"),
+                      ov_value_string("..."));
 
     /* lists might contain any other values */
 
@@ -245,13 +244,12 @@ int main(int argc, char **argv) {
 
     /* Parse from a string / buffer */
 
-    char const *gods_str =
-        "[\"aesir\", 4,\n"
-        "[\"odin\", \"thor\", \"loki\", \"heimdall\", "
-        "\"...\"],\n"
-        "\"vanir\", 3,\n"
-        "[\"freyr\", \"freya\", \"njoerdr\"],\n"
-        "\"swartalfar\", 0, null]";
+    char const *gods_str = "[\"aesir\", 4,\n"
+                           "[\"odin\", \"thor\", \"loki\", \"heimdall\", "
+                           "\"...\"],\n"
+                           "\"vanir\", 3,\n"
+                           "[\"freyr\", \"freya\", \"njoerdr\"],\n"
+                           "\"swartalfar\", 0, null]";
 
     ov_buffer to_parse = {
         .start = (uint8_t *)gods_str,
@@ -291,20 +289,19 @@ int main(int argc, char **argv) {
 
     /* Parse objects */
 
-    char const *object_string =
-        "   \n"
-        " {   \"Aesir\":[\"Heimdall\",\"Loki\"  ,     "
-        "\"Vidarr\"] , "
-        "     \"Wanir\"   :   [ \"Njordr\", \"Frey\"   "
-        ",\"Freya\"],  "
-        "     \"reverted\" :{ \n"
-        "  \"Heimdall\" : \"Ass\"  , "
-        " \"Loki\": \"Ass\",  \n"
-        "\"Vidarr\" : \"Ass\","
-        "\"Njordr\" : \"Wanr\","
-        "\"Frey\" : \"Wanr\","
-        "\"Freya\" : \"Wanr\"  }} Non-conclusive List "
-        "of the dwellers of Asgard";
+    char const *object_string = "   \n"
+                                " {   \"Aesir\":[\"Heimdall\",\"Loki\"  ,     "
+                                "\"Vidarr\"] , "
+                                "     \"Wanir\"   :   [ \"Njordr\", \"Frey\"   "
+                                ",\"Freya\"],  "
+                                "     \"reverted\" :{ \n"
+                                "  \"Heimdall\" : \"Ass\"  , "
+                                " \"Loki\": \"Ass\",  \n"
+                                "\"Vidarr\" : \"Ass\","
+                                "\"Njordr\" : \"Wanr\","
+                                "\"Frey\" : \"Wanr\","
+                                "\"Freya\" : \"Wanr\"  }} Non-conclusive List "
+                                "of the dwellers of Asgard";
 
     to_parse = (ov_buffer){
         .start = (uint8_t *)object_string,
@@ -318,9 +315,8 @@ int main(int argc, char **argv) {
 
     // " and \ must be escaped in strings:
 
-    char const *escaped_string =
-        "A '\"' must be escaped like '\\\"', "
-        "a '\\' must be escaped like '\\\\'";
+    char const *escaped_string = "A '\"' must be escaped like '\\\"', "
+                                 "a '\\' must be escaped like '\\\\'";
 
     to_parse = (ov_buffer){
         .start = (uint8_t *)escaped_string,

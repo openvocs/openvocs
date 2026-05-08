@@ -124,19 +124,15 @@ typedef struct ov_ice_proxy_generic_config {
         struct {
 
             void (*drop)(void *userdata, const char *uuid);
-            void (*state)(void *userdata,
-                          const char *uuid,
+            void (*state)(void *userdata, const char *uuid,
                           ov_ice_proxy_generic_state state);
 
         } session;
 
         struct {
 
-            void (*io)(void *userdata,
-                       const char *session_id,
-                       int stream_id,
-                       uint8_t *buffer,
-                       size_t size);
+            void (*io)(void *userdata, const char *session_id, int stream_id,
+                       uint8_t *buffer, size_t size);
 
         } stream;
 
@@ -170,16 +166,14 @@ struct ov_ice_proxy_generic {
 
         bool (*drop)(ov_ice_proxy_generic *self, const char *session_id);
 
-        bool (*update)(ov_ice_proxy_generic *self,
-                       const char *session_id,
+        bool (*update)(ov_ice_proxy_generic *self, const char *session_id,
                        const ov_sdp_session *sdp);
 
     } session;
 
     struct {
 
-        bool (*candidate_in)(ov_ice_proxy_generic *self,
-                             const char *session_id,
+        bool (*candidate_in)(ov_ice_proxy_generic *self, const char *session_id,
                              uint32_t stream_id,
                              const ov_ice_candidate *candidate);
 
@@ -187,15 +181,11 @@ struct ov_ice_proxy_generic {
                                      const char *session_id,
                                      uint32_t stream_id);
 
-        uint32_t (*get_ssrc)(ov_ice_proxy_generic *self,
-                             const char *session_id,
+        uint32_t (*get_ssrc)(ov_ice_proxy_generic *self, const char *session_id,
                              uint32_t stream_id);
 
-        ssize_t (*send)(ov_ice_proxy_generic *self,
-                        const char *session_id,
-                        uint32_t stream_id,
-                        uint8_t *buffer,
-                        size_t size);
+        ssize_t (*send)(ov_ice_proxy_generic *self, const char *session_id,
+                        uint32_t stream_id, uint8_t *buffer, size_t size);
 
     } stream;
 };
@@ -208,8 +198,8 @@ struct ov_ice_proxy_generic {
  *      ------------------------------------------------------------------------
  */
 
-ov_ice_proxy_generic_config ov_ice_proxy_generic_config_from_json(
-    const ov_json_value *input);
+ov_ice_proxy_generic_config
+ov_ice_proxy_generic_config_from_json(const ov_json_value *input);
 
 /*----------------------------------------------------------------------------*/
 
@@ -238,9 +228,7 @@ bool ov_ice_proxy_generic_update_session(ov_ice_proxy_generic *self,
 /*----------------------------------------------------------------------------*/
 
 bool ov_ice_proxy_generic_stream_candidate_in(
-    ov_ice_proxy_generic *self,
-    const char *session_id,
-    uint32_t stream_id,
+    ov_ice_proxy_generic *self, const char *session_id, uint32_t stream_id,
     const ov_ice_candidate *candidate);
 
 /*----------------------------------------------------------------------------*/
@@ -258,8 +246,7 @@ uint32_t ov_ice_proxy_generic_stream_get_ssrc(ov_ice_proxy_generic *self,
 
 ssize_t ov_ice_proxy_generic_stream_send(ov_ice_proxy_generic *self,
                                          const char *session_id,
-                                         uint32_t stream_id,
-                                         uint8_t *buffer,
+                                         uint32_t stream_id, uint8_t *buffer,
                                          size_t size);
 
 #endif /* ov_ice_proxy_generic_h */

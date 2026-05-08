@@ -97,10 +97,8 @@ uint16_t ov_stun_error_code_decode_code(const uint8_t *buffer, size_t length);
         @param phrase   pointer to encoded phrase
         @param size     pointer for size of the phrase
 */
-bool ov_stun_error_code_decode_phrase(const uint8_t *buffer,
-                                      size_t length,
-                                      uint8_t **phrase,
-                                      size_t *size);
+bool ov_stun_error_code_decode_phrase(const uint8_t *buffer, size_t length,
+                                      uint8_t **phrase, size_t *size);
 
 /*----------------------------------------------------------------------------*/
 
@@ -115,11 +113,8 @@ bool ov_stun_error_code_decode_phrase(const uint8_t *buffer,
         @param plength  length of the phrase to encode
         @returns true   if code and phrase are written as attribute
 */
-bool ov_stun_error_code_encode(uint8_t *buffer,
-                               size_t length,
-                               uint8_t **next,
-                               uint16_t code,
-                               const uint8_t *phrase,
+bool ov_stun_error_code_encode(uint8_t *buffer, size_t length, uint8_t **next,
+                               uint16_t code, const uint8_t *phrase,
                                size_t plength);
 
 /*----------------------------------------------------------------------------*/
@@ -131,8 +126,7 @@ bool ov_stun_error_code_encode(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_try_alternate(uint8_t *buffer,
-                                          size_t length,
+bool ov_stun_error_code_set_try_alternate(uint8_t *buffer, size_t length,
                                           uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -144,8 +138,7 @@ bool ov_stun_error_code_set_try_alternate(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_bad_request(uint8_t *buffer,
-                                        size_t length,
+bool ov_stun_error_code_set_bad_request(uint8_t *buffer, size_t length,
                                         uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -157,8 +150,7 @@ bool ov_stun_error_code_set_bad_request(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_unauthorized(uint8_t *buffer,
-                                         size_t length,
+bool ov_stun_error_code_set_unauthorized(uint8_t *buffer, size_t length,
                                          uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -170,8 +162,7 @@ bool ov_stun_error_code_set_unauthorized(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_unknown_attribute(uint8_t *buffer,
-                                              size_t length,
+bool ov_stun_error_code_set_unknown_attribute(uint8_t *buffer, size_t length,
                                               uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -183,8 +174,7 @@ bool ov_stun_error_code_set_unknown_attribute(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_stale_nonce(uint8_t *buffer,
-                                        size_t length,
+bool ov_stun_error_code_set_stale_nonce(uint8_t *buffer, size_t length,
                                         uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -196,8 +186,7 @@ bool ov_stun_error_code_set_stale_nonce(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_server_error(uint8_t *buffer,
-                                         size_t length,
+bool ov_stun_error_code_set_server_error(uint8_t *buffer, size_t length,
                                          uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -209,8 +198,7 @@ bool ov_stun_error_code_set_server_error(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_allocation_mismatch(uint8_t *buffer,
-                                                size_t length,
+bool ov_stun_error_code_set_allocation_mismatch(uint8_t *buffer, size_t length,
                                                 uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -222,8 +210,7 @@ bool ov_stun_error_code_set_allocation_mismatch(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_family_mismatch(uint8_t *buffer,
-                                            size_t length,
+bool ov_stun_error_code_set_family_mismatch(uint8_t *buffer, size_t length,
                                             uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -261,8 +248,7 @@ bool ov_stun_error_code_set_address_family_not_supported(uint8_t *buffer,
         @param length   length of the buffer
         @param next     pointer to next after write
 */
-bool ov_stun_error_code_set_forbidden(uint8_t *buffer,
-                                      size_t length,
+bool ov_stun_error_code_set_forbidden(uint8_t *buffer, size_t length,
                                       uint8_t **next);
 
 /*----------------------------------------------------------------------------*/
@@ -280,12 +266,9 @@ bool ov_stun_error_code_set_forbidden(uint8_t *buffer,
         @param function         function to add an error code attribute frame.
 */
 size_t ov_stun_error_code_generate_response(
-    const uint8_t *frame,
-    size_t frame_size,
-    uint8_t *response,
+    const uint8_t *frame, size_t frame_size, uint8_t *response,
     size_t response_size,
-    bool (*function)(uint8_t *attribute_frame,
-                     size_t max_size,
+    bool (*function)(uint8_t *attribute_frame, size_t max_size,
                      uint8_t **next));
 
 #endif /* ov_stun_error_code_h */

@@ -227,8 +227,7 @@ int test_ov_turn_attr_xor_peer_address_encode() {
     sock6 = (struct sockaddr_in6 *)&sa;
     sock6->sin6_family = AF_INET6;
     sock6->sin6_port = htons(0xff01);
-    testrun(1 == inet_pton(AF_INET6,
-                           "face:aaaa:bbbb:cccc:dddd:eeee:f1f1:1234",
+    testrun(1 == inet_pton(AF_INET6, "face:aaaa:bbbb:cccc:dddd:eeee:f1f1:1234",
                            &sock6->sin6_addr));
     testrun(
         !ov_turn_attr_xor_peer_address_encode(buffer, 12, head, &next, &sa));

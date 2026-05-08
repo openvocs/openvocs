@@ -44,7 +44,8 @@
 bool ov_byteorder_swap_bytes_16_bit(int16_t *array,
                                     size_t number_16_bit_words) {
 
-    if (0 == array) goto error;
+    if (0 == array)
+        goto error;
 
     for (size_t i = 0; i < number_16_bit_words; i++) {
 
@@ -63,7 +64,8 @@ error:
 bool ov_byteorder_swap_bytes_64_bit(int64_t *array,
                                     size_t number_64_bit_words) {
 
-    if (0 == array) goto error;
+    if (0 == array)
+        goto error;
 
     for (size_t i = 0; i < number_64_bit_words; i++) {
 

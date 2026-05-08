@@ -64,11 +64,11 @@ int test_ov_dump_binary_as_hex(void) {
     testrun(!ov_dump_binary_as_hex(NULL, NULL, 0), "NULL");
     testrun(!ov_dump_binary_as_hex(fp, (uint8_t *)buffer, 0), "NULL");
     testrun(!ov_dump_binary_as_hex(fp, 0, strlen(buffer)), "NULL");
-    testrun(
-        !ov_dump_binary_as_hex(0, (uint8_t *)buffer, strlen(buffer)), "NULL");
+    testrun(!ov_dump_binary_as_hex(0, (uint8_t *)buffer, strlen(buffer)),
+            "NULL");
 
-    testrun(
-        ov_dump_binary_as_hex(fp, (uint8_t *)buffer, strlen(buffer)), "dump");
+    testrun(ov_dump_binary_as_hex(fp, (uint8_t *)buffer, strlen(buffer)),
+            "dump");
     testrun(fclose(fp) == 0, "File closed");
 
     fp = fopen(path, "r");

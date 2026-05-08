@@ -42,14 +42,17 @@
 
 static void clear_test_data(ov_parser_data *data) {
 
-    if (!data) return;
+    if (!data)
+        return;
 
-    if (data->out.free) data->out.free(data->out.data);
+    if (data->out.free)
+        data->out.free(data->out.data);
 
     data->out.data = NULL;
     data->out.free = NULL;
 
-    if (data->in.free) data->in.free(data->in.data);
+    if (data->in.free)
+        data->in.free(data->in.data);
 
     data->in.data = NULL;
     data->out.free = NULL;
@@ -94,8 +97,7 @@ int test_ov_parser_json_create() {
     testrun(false == jp->config.buffering);
     testrun(NULL == jp->config.custom);
 
-    testrun(0 == strncmp(parser->name,
-                         OV_PARSER_JSON_NAME,
+    testrun(0 == strncmp(parser->name, OV_PARSER_JSON_NAME,
                          strlen(OV_PARSER_JSON_NAME)));
 
     testrun(NULL == ov_parser_free(parser));
@@ -154,16 +156,14 @@ int test_ov_parser_json_create_default() {
     testrun(parser->buffer.has_data == impl_parser_json_buffer_has_data);
     testrun(parser->buffer.empty_out == impl_parser_json_buffer_empty_out);
 
-    testrun(0 == memcmp(&jp->stringify,
-                        &stringify,
+    testrun(0 == memcmp(&jp->stringify, &stringify,
                         sizeof(ov_json_stringify_config)));
 
     // check config
     testrun(false == jp->config.buffering);
     testrun(NULL == jp->config.custom);
 
-    testrun(0 == strncmp(parser->name,
-                         OV_PARSER_JSON_NAME,
+    testrun(0 == strncmp(parser->name, OV_PARSER_JSON_NAME,
                          strlen(OV_PARSER_JSON_NAME)));
 
     testrun(NULL == ov_parser_free(parser));
@@ -413,9 +413,8 @@ int check_json_parser_encode_default() {
     memset(&data, 0, sizeof(data));
 
     // FULL IO cycle
-    expect =
-        "{\n\t\"key\":\n\t[\n\t\t\"value\",\n\t\t1,\n\t\t[],\n\t\t{}"
-        "\n\t]\n}";
+    expect = "{\n\t\"key\":\n\t[\n\t\t\"value\",\n\t\t1,\n\t\t[],\n\t\t{}"
+             "\n\t]\n}";
     value = ov_json_read(expect, strlen(expect));
     testrun(ov_json_is_object(value));
     data.in.data = value;
@@ -432,9 +431,8 @@ int check_json_parser_encode_default() {
     parser = ov_parser_json_create(config, stringify);
     testrun(parser);
 
-    expect =
-        "{\n\t\"key\":\n\t[\n\t\t\"value\",\n\t\t1,\n\t\t[],\n\t\t{}"
-        "\n\t]\n}";
+    expect = "{\n\t\"key\":\n\t[\n\t\t\"value\",\n\t\t1,\n\t\t[],\n\t\t{}"
+             "\n\t]\n}";
     value = ov_json_read(expect, strlen(expect));
     testrun(ov_json_is_object(value));
     data.in.data = value;
@@ -540,9 +538,8 @@ int test_impl_parser_json_decode() {
     testrun(NULL != data.in.free);
 
     // check valid input
-    string =
-        "{\"key\":\"value\", \"1\": { \"x\": [1,2,null, false]}, "
-        "\"2\":2}";
+    string = "{\"key\":\"value\", \"1\": { \"x\": [1,2,null, false]}, "
+             "\"2\":2}";
     testrun(ov_buffer_set(buffer, string, strlen(string)));
     data.in.data = buffer;
     data.in.free = NULL;
@@ -603,9 +600,8 @@ int test_impl_parser_json_decode() {
     testrun(true == parser->buffer.is_enabled(parser));
 
     // check valid input (same as non buffering)
-    string =
-        "{\"key\":\"value\", \"1\": { \"x\": [1,2,null, false]}, "
-        "\"2\":2}";
+    string = "{\"key\":\"value\", \"1\": { \"x\": [1,2,null, false]}, "
+             "\"2\":2}";
     testrun(ov_buffer_set(buffer, string, strlen(string)));
     memset(&data, 0, sizeof(data));
     data.in.data = buffer;
@@ -890,7 +886,8 @@ int test_impl_parser_json_decode() {
 
 static bool decoder_fill_input(bool valid, ov_parser_data *const data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
 
     data->out.data = NULL;
     data->out.free = NULL;
@@ -909,7 +906,8 @@ static bool decoder_fill_input(bool valid, ov_parser_data *const data) {
         string = "{\"invalid JSON string\"}";
     }
 
-    if (ov_buffer_set(data->in.data, string, strlen(string))) return true;
+    if (ov_buffer_set(data->in.data, string, strlen(string)))
+        return true;
 
     ov_buffer_free(data->in.data);
     return false;
@@ -919,7 +917,8 @@ static bool decoder_fill_input(bool valid, ov_parser_data *const data) {
 
 static bool decoder_fill_third(int number, ov_parser_data *const data) {
 
-    if (!data) return false;
+    if (!data)
+        return false;
 
     data->out.data = NULL;
     data->out.free = NULL;
@@ -931,18 +930,19 @@ static bool decoder_fill_third(int number, ov_parser_data *const data) {
 
     switch (number) {
 
-        case 1:
-            string = "{\"1\":1,";
-            break;
-        case 2:
-            string = "\"2\":2,";
-            break;
-        case 3:
-            string = "\"3\":3}";
-            break;
+    case 1:
+        string = "{\"1\":1,";
+        break;
+    case 2:
+        string = "\"2\":2,";
+        break;
+    case 3:
+        string = "\"3\":3}";
+        break;
     }
 
-    if (ov_buffer_set(data->in.data, string, strlen(string))) return true;
+    if (ov_buffer_set(data->in.data, string, strlen(string)))
+        return true;
 
     ov_buffer_free(data->in.data);
     return false;
@@ -1051,7 +1051,8 @@ int test_impl_parser_json_buffer_empty_out() {
     testrun(decoder_fill_input(false, &data));
     testrun(data.in.data);
     state = ov_parser_decode(parser, &data);
-    if (OV_PARSER_MISMATCH != state) testrun(state == OV_PARSER_ERROR);
+    if (OV_PARSER_MISMATCH != state)
+        testrun(state == OV_PARSER_ERROR);
 
     if (NULL != data.out.data) {
 
@@ -1059,7 +1060,8 @@ int test_impl_parser_json_buffer_empty_out() {
         testrun(parser->buffer.empty_out(parser, &raw, &free_raw));
         testrun(!parser->buffer.has_data(parser));
         testrun(NULL != raw);
-        if (free_raw) free_raw(raw);
+        if (free_raw)
+            free_raw(raw);
     }
 
     // clear test data
@@ -1068,7 +1070,8 @@ int test_impl_parser_json_buffer_empty_out() {
     free_raw = NULL;
 
     testrun(parser->buffer.empty_out(parser, &raw, &free_raw));
-    if (free_raw) raw = free_raw(raw);
+    if (free_raw)
+        raw = free_raw(raw);
 
     testrun(decoder_fill_third(1, &data));
     testrun(data.in.data);
@@ -1087,7 +1090,8 @@ int test_impl_parser_json_buffer_empty_out() {
     testrun(parser->buffer.empty_out(parser, &raw, &free_raw));
     testrun(!parser->buffer.has_data(parser));
     testrun(NULL != raw);
-    if (free_raw) free_raw(raw);
+    if (free_raw)
+        free_raw(raw);
     // clear test data
     clear_test_data(&data);
     raw = NULL;
@@ -1104,12 +1108,14 @@ int test_impl_parser_json_buffer_empty_out() {
     testrun(decoder_fill_input(false, &data));
     testrun(data.in.data);
     state = ov_parser_decode(parser, &data);
-    if (OV_PARSER_MISMATCH != state) testrun(state == OV_PARSER_ERROR);
+    if (OV_PARSER_MISMATCH != state)
+        testrun(state == OV_PARSER_ERROR);
     testrun(parser->buffer.has_data(parser));
     testrun(parser->buffer.empty_out(parser, &raw, &free_raw));
     testrun(!parser->buffer.has_data(parser));
     testrun(NULL != raw);
-    if (free_raw) free_raw(raw);
+    if (free_raw)
+        free_raw(raw);
     // clear test data
     clear_test_data(&data);
     raw = NULL;

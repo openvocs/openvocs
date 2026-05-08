@@ -99,7 +99,8 @@ static void event_loop_stop_sighandler(int signum) {
 
     UNUSED(signum);
 
-    if (0 == g_event_loop) return;
+    if (0 == g_event_loop)
+        return;
 
     g_event_loop->stop(g_event_loop);
 }
@@ -132,10 +133,12 @@ bool ov_event_loop_stop(ov_event_loop *self) {
 
 ov_event_loop *ov_event_loop_cast(const void *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     const ov_event_loop *loop = self;
-    if (loop->magic_byte != OV_EVENT_LOOP_MAGIC_BYTE) return NULL;
+    if (loop->magic_byte != OV_EVENT_LOOP_MAGIC_BYTE)
+        return NULL;
 
     return (ov_event_loop *)loop;
 }
@@ -169,7 +172,8 @@ bool ov_event_loop_setup_signals(ov_event_loop *loop) {
 
 bool ov_event_loop_set_type(ov_event_loop *self, uint16_t type) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     self->magic_byte = OV_EVENT_LOOP_MAGIC_BYTE;
     self->type = type;
@@ -211,8 +215,7 @@ void *ov_event_loop_free(void *eventloop) {
 
 /*----------------------------------------------------------------------------*/
 
-uint32_t ov_event_loop_timer_set(ov_event_loop *self,
-                                 uint64_t relative_usec,
+uint32_t ov_event_loop_timer_set(ov_event_loop *self, uint64_t relative_usec,
                                  void *data,
                                  bool (*callback)(uint32_t id, void *data)) {
 
@@ -225,8 +228,7 @@ uint32_t ov_event_loop_timer_set(ov_event_loop *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_loop_timer_unset(ov_event_loop *self,
-                               uint32_t id,
+bool ov_event_loop_timer_unset(ov_event_loop *self, uint32_t id,
                                void **userdata) {
 
     if (0 == self) {
@@ -238,16 +240,13 @@ bool ov_event_loop_timer_unset(ov_event_loop *self,
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_loop_set(ov_event_loop *self,
-                       int sfd,
-                       uint8_t events,
+bool ov_event_loop_set(ov_event_loop *self, int sfd, uint8_t events,
                        void *userdata,
-                       bool (*callback)(int socket_fd,
-                                        uint8_t events,
+                       bool (*callback)(int socket_fd, uint8_t events,
                                         void *userdata)) {
 
-    if (ov_cond_valid(
-            -1 < sfd, "Cannot set callback on socket fd: Invalid fd") &&
+    if (ov_cond_valid(-1 < sfd,
+                      "Cannot set callback on socket fd: Invalid fd") &&
         ov_ptr_valid(self, "Cannot set callback on event loop: Invalid loop")) {
 
         return self->callback.set(self, sfd, events, userdata, callback);
@@ -262,8 +261,8 @@ bool ov_event_loop_set(ov_event_loop *self,
 
 bool ov_event_loop_unset(ov_event_loop *self, int socket, void **userdata) {
 
-    if (ov_ptr_valid(
-            self, "Cannot remove callback on event loop: Invalid loop")) {
+    if (ov_ptr_valid(self,
+                     "Cannot remove callback on event loop: Invalid loop")) {
 
         return self->callback.unset(self, socket, userdata);
 
@@ -282,34 +281,33 @@ ov_event_loop *ov_event_loop_default(ov_event_loop_config config) {
 
 /*---------------------------------------------------------------------------*/
 
-ov_event_loop_config ov_event_loop_config_adapt_to_runtime(
-    ov_event_loop_config config) {
+ov_event_loop_config
+ov_event_loop_config_adapt_to_runtime(ov_event_loop_config config) {
 
     // Extend the config to DEFAULT in case of 0 to MIN
-    if (config.max.sockets == 0) config.max.sockets = OV_EVENT_LOOP_SOCKETS_MIN;
+    if (config.max.sockets == 0)
+        config.max.sockets = OV_EVENT_LOOP_SOCKETS_MIN;
 
-    if (config.max.timers == 0) config.max.timers = OV_EVENT_LOOP_TIMERS_MIN;
+    if (config.max.timers == 0)
+        config.max.timers = OV_EVENT_LOOP_TIMERS_MIN;
 
     struct rlimit limit = {0};
 
     // Limit config to system MAX
 
     if (0 != getrlimit(RLIMIT_NOFILE, &limit)) {
-        ov_log_error(
-            "Failed to get system limit"
-            " of open files errno %i|%s",
-            errno,
-            strerror(errno));
+        ov_log_error("Failed to get system limit"
+                     " of open files errno %i|%s",
+                     errno, strerror(errno));
     }
 
     if (limit.rlim_cur != RLIM_INFINITY) {
 
         if (config.max.sockets > limit.rlim_cur) {
             config.max.sockets = limit.rlim_cur;
-            ov_log_notice(
-                "Limited max sockets to system limit "
-                "of files open %" PRIu32,
-                config.max.sockets);
+            ov_log_notice("Limited max sockets to system limit "
+                          "of files open %" PRIu32,
+                          config.max.sockets);
         }
     }
 
@@ -317,10 +315,9 @@ ov_event_loop_config ov_event_loop_config_adapt_to_runtime(
 
         if (config.max.timers > limit.rlim_cur) {
             config.max.timers = limit.rlim_cur;
-            ov_log_notice(
-                "Limited max timers to system limit "
-                "of signals pending %" PRIu32,
-                config.max.timers);
+            ov_log_notice("Limited max timers to system limit "
+                          "of signals pending %" PRIu32,
+                          config.max.timers);
         }
     }
 
@@ -353,7 +350,8 @@ struct accept_container {
 
 static void *accept_container_free(void *data) {
 
-    if (data) free(data);
+    if (data)
+        free(data);
     return NULL;
 }
 
@@ -366,9 +364,11 @@ static bool accept_callback(int socket_fd, uint8_t events, void *data) {
     struct accept_container *container = (struct accept_container *)data;
     ov_event_loop *loop = container->loop;
 
-    if (!loop) goto error;
+    if (!loop)
+        goto error;
 
-    if (socket_fd < 1) goto error;
+    if (socket_fd < 1)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
 
@@ -385,7 +385,8 @@ static bool accept_callback(int socket_fd, uint8_t events, void *data) {
     }
 
     // accept MUST have some incoming IO
-    if (!(events & OV_EVENT_IO_IN)) goto error;
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
 
     struct sockaddr_storage remote_sa = {0};
     struct sockaddr_storage local_sa = {0};
@@ -408,38 +409,37 @@ static bool accept_callback(int socket_fd, uint8_t events, void *data) {
     // parse debug logging data
     switch (local_sa.ss_family) {
 
-        case AF_INET:
-        case AF_INET6:
+    case AF_INET:
+    case AF_INET6:
 
-            if (!ov_socket_parse_sockaddr_storage(
-                    &local_sa, local_ip, OV_HOST_NAME_MAX, &local_port)) {
-                ov_log_error(
-                    "Failed to parse data "
-                    "from socket fd %i",
-                    socket_fd);
-                goto error;
-            }
-
-            if (nfd < 0) break;
-
-            if (!ov_socket_parse_sockaddr_storage(
-                    &remote_sa, remote_ip, OV_HOST_NAME_MAX, &remote_port)) {
-                ov_log_error(
-                    "Failed to parse data "
-                    "from socket fd %i",
-                    nfd);
-                goto error;
-            }
-
-            break;
-
-        case AF_UNIX:
-
-            break;
-
-        default:
-            ov_log_error("Family %i not supported", local_sa.ss_family);
+        if (!ov_socket_parse_sockaddr_storage(&local_sa, local_ip,
+                                              OV_HOST_NAME_MAX, &local_port)) {
+            ov_log_error("Failed to parse data "
+                         "from socket fd %i",
+                         socket_fd);
             goto error;
+        }
+
+        if (nfd < 0)
+            break;
+
+        if (!ov_socket_parse_sockaddr_storage(&remote_sa, remote_ip,
+                                              OV_HOST_NAME_MAX, &remote_port)) {
+            ov_log_error("Failed to parse data "
+                         "from socket fd %i",
+                         nfd);
+            goto error;
+        }
+
+        break;
+
+    case AF_UNIX:
+
+        break;
+
+    default:
+        ov_log_error("Family %i not supported", local_sa.ss_family);
+        goto error;
     }
 
     if (nfd < 0) {
@@ -448,55 +448,47 @@ static bool accept_callback(int socket_fd, uint8_t events, void *data) {
         goto error;
     }
 
-    if (!ov_socket_ensure_nonblocking(nfd)) goto error;
+    if (!ov_socket_ensure_nonblocking(nfd))
+        goto error;
 
     if (local_ip[0] != 0) {
 
-        ov_log_debug(
-            "accepted at socket fd %i | "
-            "LOCAL %s:%i REMOTE %s:%i | "
-            "new connection fd %i",
-            socket_fd,
-            local_ip,
-            local_port,
-            remote_ip,
-            remote_port,
-            nfd);
+        ov_log_debug("accepted at socket fd %i | "
+                     "LOCAL %s:%i REMOTE %s:%i | "
+                     "new connection fd %i",
+                     socket_fd, local_ip, local_port, remote_ip, remote_port,
+                     nfd);
 
     } else {
 
-        ov_log_debug(
-            "accepted at socket fd %i | "
-            "new connection fd %i",
-            socket_fd,
-            nfd);
+        ov_log_debug("accepted at socket fd %i | "
+                     "new connection fd %i",
+                     socket_fd, nfd);
     }
 
-    if (!loop->callback.set(
-            loop, nfd, container->events, container->data, container->callback))
+    if (!loop->callback.set(loop, nfd, container->events, container->data,
+                            container->callback))
         goto error;
 
     return true;
 
 error:
-    if (nfd > -1) close(nfd);
+    if (nfd > -1)
+        close(nfd);
     return false;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool ov_event_add_default_connection_accept(
-    ov_event_loop *loop,
-    int socket,
-    uint8_t events,
-    void *data,
-    bool (*callback)(int connection_socket,
-                     uint8_t connection_events,
+    ov_event_loop *loop, int socket, uint8_t events, void *data,
+    bool (*callback)(int connection_socket, uint8_t connection_events,
                      void *data)) {
 
     struct accept_container *container = NULL;
 
-    if (!loop || !callback || (events == 0)) goto error;
+    if (!loop || !callback || (events == 0))
+        goto error;
 
     int so_opt;
     socklen_t so_len = sizeof(so_opt);
@@ -522,16 +514,14 @@ bool ov_event_add_default_connection_accept(
     container->callback = callback;
 
     if (!loop->callback.set(
-            loop,
-            socket,
-            OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE | OV_EVENT_IO_ERR,
-            container,
-            accept_callback))
+            loop, socket, OV_EVENT_IO_IN | OV_EVENT_IO_CLOSE | OV_EVENT_IO_ERR,
+            container, accept_callback))
         goto error;
 
     return true;
 error:
-    if (container) free(container);
+    if (container)
+        free(container);
 
     return false;
 }
@@ -540,27 +530,31 @@ error:
 
 bool ov_event_remove_default_connection_accept(ov_event_loop *self, int s) {
 
-    if (!self) return false;
+    if (!self)
+        return false;
 
     void *userdata = NULL;
 
     bool result = self->callback.unset(self, s, &userdata);
 
-    if (userdata) accept_container_free(userdata);
+    if (userdata)
+        accept_container_free(userdata);
     return result;
 }
 
 /*---------------------------------------------------------------------------*/
 
-ov_event_loop_config ov_event_loop_config_from_json(
-    const ov_json_value *value) {
+ov_event_loop_config
+ov_event_loop_config_from_json(const ov_json_value *value) {
 
     ov_event_loop_config config = {0};
 
-    if (!value) goto error;
+    if (!value)
+        goto error;
 
     const ov_json_value *obj = ov_json_object_get(value, OV_EVENT_LOOP_KEY);
-    if (!obj) obj = value;
+    if (!obj)
+        obj = value;
 
     double sockets = ov_json_number_get(
         ov_json_object_get(obj, OV_EVENT_LOOP_KEY_MAX_SOCKETS));
@@ -568,9 +562,11 @@ ov_event_loop_config ov_event_loop_config_from_json(
     double timers = ov_json_number_get(
         ov_json_object_get(obj, OV_EVENT_LOOP_KEY_MAX_TIMERS));
 
-    if (sockets > UINT32_MAX) goto error;
+    if (sockets > UINT32_MAX)
+        goto error;
 
-    if (timers > UINT32_MAX) goto error;
+    if (timers > UINT32_MAX)
+        goto error;
 
     config.max.sockets = (uint32_t)sockets;
     config.max.timers = (uint32_t)timers;
@@ -586,10 +582,12 @@ ov_json_value *ov_event_loop_config_to_json(ov_event_loop_config config) {
 
     ov_json_value *val = NULL;
     ov_json_value *out = ov_json_object();
-    if (!out) goto error;
+    if (!out)
+        goto error;
 
     val = ov_json_number(config.max.timers);
-    if (!ov_json_object_set(out, OV_EVENT_LOOP_KEY_MAX_TIMERS, val)) goto error;
+    if (!ov_json_object_set(out, OV_EVENT_LOOP_KEY_MAX_TIMERS, val))
+        goto error;
 
     val = ov_json_number(config.max.sockets);
     if (!ov_json_object_set(out, OV_EVENT_LOOP_KEY_MAX_SOCKETS, val))

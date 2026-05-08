@@ -56,8 +56,7 @@ struct ov_sip_app {
 
     ov_hashtable *method_handlers;
 
-    void (*response_handler)(ov_sip_message const *msg,
-                             int fd,
+    void (*response_handler)(ov_sip_message const *msg, int fd,
                              void *additional);
 
     void *additional;
@@ -94,8 +93,8 @@ static ov_sip_app *as_sip_app(void *ptr) {
 
 static ov_serde_app *get_serde_app(ov_sip_app *self) {
 
-    if (ov_ptr_valid(
-            as_sip_app(self), "Cannot get serde app - not a sip app")) {
+    if (ov_ptr_valid(as_sip_app(self),
+                     "Cannot get serde app - not a sip app")) {
 
         return self->serde_app;
 
@@ -140,10 +139,8 @@ static void cb_accepted_wrapper(int sckt, void *additional) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_app *create_serde_app(ov_sip_app *app,
-                                      ov_serde *serde,
-                                      char const *name,
-                                      ov_event_loop *loop,
+static ov_serde_app *create_serde_app(ov_sip_app *app, ov_serde *serde,
+                                      char const *name, ov_event_loop *loop,
                                       ov_sip_app_configuration cfg) {
 
     ov_serde_app_configuration scfg = {
@@ -194,8 +191,9 @@ static bool initialize_sip_app_with_serde_app(ov_sip_app *app,
 
 /*----------------------------------------------------------------------------*/
 
-static void (*get_handler(ov_sip_app *app, char const *method))(
-    ov_sip_message const *, int, void *) {
+static void (*get_handler(ov_sip_app *app,
+                          char const *method))(ov_sip_message const *, int,
+                                               void *) {
 
     if (ov_ptr_valid(app, "No app given")) {
         return ov_hashtable_get(app->method_handlers, method);
@@ -207,8 +205,7 @@ static void (*get_handler(ov_sip_app *app, char const *method))(
 /*----------------------------------------------------------------------------*/
 
 static void (*get_response_handler(ov_sip_app *app))(ov_sip_message const *,
-                                                     int,
-                                                     void *) {
+                                                     int, void *) {
 
     if (ov_ptr_valid(app, "No app given")) {
         return app->response_handler;
@@ -230,8 +227,7 @@ static void *get_additional(ov_sip_app *app) {
 
 /*----------------------------------------------------------------------------*/
 
-static void treat_sip_response(ov_sip_message const *msg,
-                               int fh,
+static void treat_sip_response(ov_sip_message const *msg, int fh,
                                ov_sip_app *app) {
 
     ov_log_debug("Got a SIP response");
@@ -250,8 +246,7 @@ static void treat_sip_response(ov_sip_message const *msg,
 
 /*----------------------------------------------------------------------------*/
 
-static void treat_sip_request(ov_sip_message const *msg,
-                              int fh,
+static void treat_sip_request(ov_sip_message const *msg, int fh,
                               ov_sip_app *app) {
 
     ov_log_debug("Got another SIP request");
@@ -280,17 +275,17 @@ void cb_sip_message_handler(void *data, int fh, void *additional) {
 
     switch (ov_sip_message_type_get(msg)) {
 
-        case OV_SIP_REQUEST:
-            treat_sip_request(msg, fh, app);
-            break;
+    case OV_SIP_REQUEST:
+        treat_sip_request(msg, fh, app);
+        break;
 
-        case OV_SIP_RESPONSE:
-            treat_sip_response(msg, fh, app);
-            break;
+    case OV_SIP_RESPONSE:
+        treat_sip_response(msg, fh, app);
+        break;
 
-        case OV_SIP_INVALID:
-            ov_log_error("Invalid SIP message received");
-            break;
+    case OV_SIP_INVALID:
+        ov_log_error("Invalid SIP message received");
+        break;
     };
 
     ov_sip_message_free(msg);
@@ -300,14 +295,13 @@ void cb_sip_message_handler(void *data, int fh, void *additional) {
 
 static bool register_sip_handler(ov_serde_app *sapp) {
 
-    return ov_serde_app_register_handler(
-        sapp, OV_SIP_SERDE_TYPE, cb_sip_message_handler);
+    return ov_serde_app_register_handler(sapp, OV_SIP_SERDE_TYPE,
+                                         cb_sip_message_handler);
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool initialize_sip_app(ov_sip_app *app,
-                               char const *name,
+static bool initialize_sip_app(ov_sip_app *app, char const *name,
                                ov_event_loop *loop,
                                ov_sip_app_configuration cfg) {
 
@@ -330,8 +324,7 @@ static bool initialize_sip_app(ov_sip_app *app,
 
 /*----------------------------------------------------------------------------*/
 
-ov_sip_app *ov_sip_app_create(char const *name,
-                              ov_event_loop *loop,
+ov_sip_app *ov_sip_app_create(char const *name, ov_event_loop *loop,
                               ov_sip_app_configuration cfg) {
 
     ov_sip_app *app = calloc(1, sizeof(ov_sip_app));
@@ -367,28 +360,48 @@ ov_sip_app *ov_sip_app_free(ov_sip_app *app) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_sip_app_register_handler(ov_sip_app *self,
-                                 char const *method,
-                                 void (*handler)(ov_sip_message const *message,
-                                                 int fh,
-                                                 void *additional)) {
+bool ov_sip_app_enable_logging(ov_sip_app *self, char const *path) {
+    self = as_sip_app(self);
 
+    if (!ov_ptr_valid(self,
+                      "Cannot enable logging for SIP app - invalid app")) {
+        return false;
+    } else {
+        return ov_serde_app_enable_logging(self->serde_app, path);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_sip_app_disable_logging(ov_sip_app *self) {
+    self = as_sip_app(self);
+
+    if (!ov_ptr_valid(self,
+                      "Cannot enable logging for SIP app - invalid app")) {
+        return false;
+    } else {
+        return ov_serde_app_disable_logging(self->serde_app);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_sip_app_register_handler(ov_sip_app *self, char const *method,
+                                 void (*handler)(ov_sip_message const *message,
+                                                 int fh, void *additional)) {
     self = as_sip_app(self);
 
     if ((!ov_ptr_valid(self, "No SIP app given")) ||
         (!ov_ptr_valid(method, "No method")) ||
         (!ov_ptr_valid(handler, "No handler"))) {
-
         return false;
 
     } else if (0 != ov_hashtable_set(self->method_handlers, method, handler)) {
-
-        ov_log_warning(
-            "Overwriting old handler for %s", ov_string_sanitize(method));
+        ov_log_warning("Overwriting old handler for %s",
+                       ov_string_sanitize(method));
         return true;
 
     } else {
-
         return true;
     }
 }
@@ -396,22 +409,17 @@ bool ov_sip_app_register_handler(ov_sip_app *self,
 /*----------------------------------------------------------------------------*/
 
 bool ov_sip_app_register_response_handler(
-    ov_sip_app *self,
-    void (*handler)(ov_sip_message const *message,
-                    int socket,
-                    void *additional)) {
-
+    ov_sip_app *self, void (*handler)(ov_sip_message const *message, int socket,
+                                      void *additional)) {
     self = as_sip_app(self);
 
     if ((!ov_ptr_valid(self, "No SIP app given")) ||
         (!ov_ptr_valid(handler, "No handler"))) {
-
         return false;
 
     } else {
-
-        warn_if_not_null(
-            self->response_handler, "Overwriting response handler");
+        warn_if_not_null(self->response_handler,
+                         "Overwriting response handler");
         ov_log_warning("Overwriting old response handler");
         self->response_handler = handler;
         return true;
@@ -421,7 +429,6 @@ bool ov_sip_app_register_response_handler(
 /*----------------------------------------------------------------------------*/
 
 bool ov_sip_app_connect(ov_sip_app *self, ov_socket_configuration config) {
-
     return ov_serde_app_connect(get_serde_app(self), config);
 }
 
@@ -429,24 +436,23 @@ bool ov_sip_app_connect(ov_sip_app *self, ov_socket_configuration config) {
 
 bool ov_sip_app_open_server_socket(ov_sip_app *self,
                                    ov_socket_configuration config) {
-
     return ov_serde_app_open_server_socket(get_serde_app(self), config);
 }
 
 /*----------------------------------------------------------------------------*/
 
 int ov_sip_app_close(ov_sip_app *self, int fd) {
-
     return ov_serde_app_close(get_serde_app(self), fd);
 }
 
 /*----------------------------------------------------------------------------*/
 
 bool ov_sip_app_send(ov_sip_app *self, int fd, ov_sip_message *msg) {
-
     self = as_sip_app(self);
-    if (fd < 1) return false;
-    if (!msg || !self) return false;
+    if (fd < 1)
+        return false;
+    if (!msg || !self)
+        return false;
 
     ov_serde_data data = {
         .data = msg,

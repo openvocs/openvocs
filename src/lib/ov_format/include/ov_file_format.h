@@ -200,9 +200,7 @@ ov_file_format_registry *ov_file_format_registry_cast(void *data);
     This is @see ov_format_as using ov_file_format_registry instead of
     ov_file_registry.
  */
-ov_format *ov_file_format_as(ov_format *f,
-                             char const *file_type,
-                             void *options,
+ov_format *ov_file_format_as(ov_format *f, char const *file_type, void *options,
                              ov_file_format_registry *registry);
 
 /*----------------------------------------------------------------------------*/
@@ -254,8 +252,9 @@ bool ov_file_encoding_is_utf8(const char *restrict path);
     @returns desc for format
     @returns -1 == format.desc.bytes on error
 */
-ov_file_format_desc ov_file_format_get_desc(
-    const ov_file_format_registry *registry, const char *restrict path);
+ov_file_format_desc
+ov_file_format_get_desc(const ov_file_format_registry *registry,
+                        const char *restrict path);
 
 /*
  *      ------------------------------------------------------------------------
@@ -274,8 +273,8 @@ ov_file_format_desc ov_file_format_get_desc(
     @returns            ov_file_format_parameter for the name
     @returns            NULL on error
 */
-const ov_file_format_parameter *ov_file_format_get(
-    const ov_file_format_registry *registry, const char *name);
+const ov_file_format_parameter *
+ov_file_format_get(const ov_file_format_registry *registry, const char *name);
 
 /*----------------------------------------------------------------------------*/
 
@@ -288,8 +287,9 @@ const ov_file_format_parameter *ov_file_format_get(
     @returns            ov_file_format_parameter for the name
     @returns            NULL on error
 */
-const ov_file_format_parameter *ov_file_format_get_ext(
-    const ov_file_format_registry *registry, const char *extension);
+const ov_file_format_parameter *
+ov_file_format_get_ext(const ov_file_format_registry *registry,
+                       const char *extension);
 
 /*----------------------------------------------------------------------------*/
 
@@ -308,8 +308,7 @@ const ov_file_format_parameter *ov_file_format_get_ext(
 */
 bool ov_file_format_register(ov_file_format_registry **registry,
                              ov_file_format_parameter parameter,
-                             size_t ext_size,
-                             char const *ext_array[]);
+                             size_t ext_size, char const *ext_array[]);
 
 /*----------------------------------------------------------------------------*/
 
@@ -354,8 +353,7 @@ bool ov_file_format_free_registry(ov_file_format_registry **registry);
                         files for the mime registry.
 */
 bool ov_file_format_register_from_json_from_path(
-    ov_file_format_registry **registry,
-    const char *restrict path,
+    ov_file_format_registry **registry, const char *restrict path,
     const char *ext);
 
 /*----------------------------------------------------------------------------*/
@@ -407,11 +405,8 @@ bool ov_file_format_register_from_json_from_path(
     NOTE this function requires "mime" to be set within the JSON object!
 */
 bool ov_file_format_register_values_from_json(
-    const ov_json_value *input,
-    const char *name,
-    ov_file_format_parameter *paramter,
-    size_t *size,
-    char *array[]);
+    const ov_json_value *input, const char *name,
+    ov_file_format_parameter *paramter, size_t *size, char *array[]);
 
 /*----------------------------------------------------------------------------*/
 
@@ -433,7 +428,8 @@ bool ov_file_format_register_values_from_json(
 
     NOTE this function allows "mime" to NOT be set within the JSON object!
 */
-ov_json_value *ov_file_format_register_values_to_json(
-    ov_file_format_parameter param, size_t size, char const *array[]);
+ov_json_value *
+ov_file_format_register_values_to_json(ov_file_format_parameter param,
+                                       size_t size, char const *array[]);
 
 #endif /* ov_file_format_h */

@@ -48,23 +48,19 @@ int test_ov_hash_function_to_string() {
     char *expect = NULL;
 
     expect = "sha1";
-    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_SHA1),
-                         expect,
+    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_SHA1), expect,
                          strlen(expect)));
 
     expect = "sha256";
-    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_SHA256),
-                         expect,
+    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_SHA256), expect,
                          strlen(expect)));
 
     expect = "sha512";
-    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_SHA512),
-                         expect,
+    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_SHA512), expect,
                          strlen(expect)));
 
     expect = "md5";
-    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_MD5),
-                         expect,
+    testrun(0 == strncmp(ov_hash_function_to_string(OV_HASH_MD5), expect,
                          strlen(expect)));
 
     expect = "unspec";
@@ -82,23 +78,19 @@ int test_ov_hash_function_to_RFC8122_string() {
 
     expect = "sha-1";
     testrun(0 == strncmp(ov_hash_function_to_RFC8122_string(OV_HASH_SHA1),
-                         expect,
-                         strlen(expect)));
+                         expect, strlen(expect)));
 
     expect = "sha-256";
     testrun(0 == strncmp(ov_hash_function_to_RFC8122_string(OV_HASH_SHA256),
-                         expect,
-                         strlen(expect)));
+                         expect, strlen(expect)));
 
     expect = "sha-512";
     testrun(0 == strncmp(ov_hash_function_to_RFC8122_string(OV_HASH_SHA512),
-                         expect,
-                         strlen(expect)));
+                         expect, strlen(expect)));
 
     expect = "md5";
     testrun(0 == strncmp(ov_hash_function_to_RFC8122_string(OV_HASH_MD5),
-                         expect,
-                         strlen(expect)));
+                         expect, strlen(expect)));
 
     testrun(NULL == ov_hash_function_to_RFC8122_string(0));
 
@@ -426,9 +418,7 @@ int test_ov_hash_string() {
 
 int test_ov_hash() {
 
-    const char *src[] = {"some test data set to check",
-                         "string2",
-                         "string3",
+    const char *src[] = {"some test data set to check", "string2", "string3",
                          "some other string\r\n",
                          "any \t\n\r other\n string content"};
 

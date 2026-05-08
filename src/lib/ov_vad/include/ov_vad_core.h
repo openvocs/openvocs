@@ -79,8 +79,9 @@ ov_vad_core *ov_vad_core_cast(const void *data);
 
 ov_vad_core_config ov_vad_core_config_from_json(const ov_json_value *in);
 
-bool ov_vad_core_add_loop(ov_vad_core *self,
-                          const char *loop,
+bool ov_vad_core_add_loop(ov_vad_core *self, const char *loop,
                           ov_socket_configuration socket);
+
+bool ov_vad_core_set_vad(ov_vad_core *self, ov_vad_config config);
 
 #endif /* ov_vad_core_h */

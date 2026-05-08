@@ -54,18 +54,19 @@ typedef struct {
 
 static ipv4_data *as_ipv4_data(void *data) {
 
-    if (0 == data) return 0;
+    if (0 == data)
+        return 0;
 
     ipv4_data *ipv4_data = data;
 
-    if (IPV4_MAGIC_BYTES != ipv4_data->magic_bytes) return 0;
+    if (IPV4_MAGIC_BYTES != ipv4_data->magic_bytes)
+        return 0;
 
     return ipv4_data;
 }
 
 /*----------------------------------------------------------------------------*/
-static bool get_ipv4_header_unsafe(ov_format_ipv4_header *out,
-                                   uint8_t **rd_ptr,
+static bool get_ipv4_header_unsafe(ov_format_ipv4_header *out, uint8_t **rd_ptr,
                                    size_t *length) {
 
     OV_ASSERT(0 != out);
@@ -93,8 +94,8 @@ static bool get_ipv4_header_unsafe(ov_format_ipv4_header *out,
     /* Right shift portable because we deal with unsigned type here */
     if ((byte >> 4) != 4) {
 
-        ov_log_error(
-            "Wrong version in IPv4 header. Expected 4, got %" PRIu8, byte >> 4);
+        ov_log_error("Wrong version in IPv4 header. Expected 4, got %" PRIu8,
+                     byte >> 4);
         goto error;
     }
 
@@ -102,10 +103,9 @@ static bool get_ipv4_header_unsafe(ov_format_ipv4_header *out,
 
     if (5 > ihl) {
 
-        ov_log_error(
-            "IHL of IPv4 header too small, must be at least 5, but "
-            "found only to be %" PRIu8,
-            ihl);
+        ov_log_error("IHL of IPv4 header too small, must be at least 5, but "
+                     "found only to be %" PRIu8,
+                     ihl);
         goto error;
     }
 
@@ -119,12 +119,10 @@ static bool get_ipv4_header_unsafe(ov_format_ipv4_header *out,
 
     if (hdr.header_length_octets > hdr.total_length_octets) {
 
-        ov_log_error(
-            "Total length of IP packet too small, must be at least "
-            "%zu "
-            "bytes, but found only to be %" PRIu8,
-            hdr.header_length_octets,
-            hdr.total_length_octets);
+        ov_log_error("Total length of IP packet too small, must be at least "
+                     "%zu "
+                     "bytes, but found only to be %" PRIu8,
+                     hdr.header_length_octets, hdr.total_length_octets);
 
         goto error;
     }
@@ -177,8 +175,7 @@ error:
                                    Interface
  ****************************************************************************/
 
-static ov_buffer impl_next_chunk(ov_format *f,
-                                 size_t requested_bytes,
+static ov_buffer impl_next_chunk(ov_format *f, size_t requested_bytes,
                                  void *data) {
 
     UNUSED(requested_bytes);
@@ -208,12 +205,10 @@ static ov_buffer impl_next_chunk(ov_format *f,
     if (buf.length != rdata->header.total_length_octets -
                           rdata->header.header_length_octets) {
 
-        ov_log_error(
-            "IPv4 paket corrupt - header length(%zu) + payload length "
-            "(%zu) do not match packet length (%" PRIu16,
-            rdata->header.header_length_octets,
-            buf.length,
-            rdata->header.total_length_octets);
+        ov_log_error("IPv4 paket corrupt - header length(%zu) + payload length "
+                     "(%zu) do not match packet length (%" PRIu16,
+                     rdata->header.header_length_octets, buf.length,
+                     rdata->header.total_length_octets);
 
         goto error;
     }
@@ -227,8 +222,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static ssize_t impl_write_chunk(ov_format *f,
-                                ov_buffer const *chunk,
+static ssize_t impl_write_chunk(ov_format *f, ov_buffer const *chunk,
                                 void *data) {
 
     UNUSED(f);
@@ -261,9 +255,8 @@ static void *impl_free_data(void *data) {
 
     if (0 == as_ipv4_data(data)) {
 
-        ov_log_error(
-            "Internal error: Expected to be called with format "
-            "ipv4");
+        ov_log_error("Internal error: Expected to be called with format "
+                     "ipv4");
         goto error;
     }
 
@@ -288,8 +281,8 @@ bool ov_format_ipv4_install(ov_format_registry *registry) {
         .free_data = impl_free_data,
     };
 
-    return ov_format_registry_register_type(
-        OV_FORMAT_IPV4_TYPE_STRING, handler, registry);
+    return ov_format_registry_register_type(OV_FORMAT_IPV4_TYPE_STRING, handler,
+                                            registry);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -321,13 +314,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-char *ov_format_ipv4_ip_to_string(uint8_t *ip,
-                                  char *out_buf,
+char *ov_format_ipv4_ip_to_string(uint8_t *ip, char *out_buf,
                                   size_t out_buf_len) {
 
     static char ip_string[4 * 3 + 4] = {0};
 
-    if (0 == ip) goto error;
+    if (0 == ip)
+        goto error;
 
     if (0 == out_buf) {
 
@@ -335,13 +328,8 @@ char *ov_format_ipv4_ip_to_string(uint8_t *ip,
         out_buf_len = sizeof(ip_string);
     }
 
-    snprintf(out_buf,
-             out_buf_len,
-             "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8,
-             ip[0],
-             ip[1],
-             ip[2],
-             ip[3]);
+    snprintf(out_buf, out_buf_len, "%" PRIu8 ".%" PRIu8 ".%" PRIu8 ".%" PRIu8,
+             ip[0], ip[1], ip[2], ip[3]);
 
     return out_buf;
 

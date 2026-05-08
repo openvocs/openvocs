@@ -266,8 +266,8 @@ static int test_ov_string_to_uint16(void) {
 
     snprintf(value_string, 254, "%" PRIu32, (uint32_t)(UINT16_MAX) + 1);
     ok = true;
-    testrun(
-        (0 == ov_string_to_uint16(value_string, &ok)) && !ok, "Value overflow");
+    testrun((0 == ov_string_to_uint16(value_string, &ok)) && !ok,
+            "Value overflow");
 
     return testrun_log_success();
 }
@@ -310,8 +310,8 @@ static int test_ov_string_to_uint32(void) {
 
     ok = true;
 
-    testrun(
-        (0 == ov_string_to_uint32(value_string, &ok)) && !ok, "Value overflow");
+    testrun((0 == ov_string_to_uint32(value_string, &ok)) && !ok,
+            "Value overflow");
 
     return testrun_log_success();
 }
@@ -464,8 +464,7 @@ int test_ov_string_to_double(void) {
                                       TRIM
  ****************************************************************************/
 
-static bool check_ltrimmed_equals(char const *in,
-                                  char const *chars,
+static bool check_ltrimmed_equals(char const *in, char const *chars,
                                   char const *ref) {
 
     char *in_dup = strdup(in);
@@ -496,8 +495,7 @@ int test_ov_string_ltrim() {
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_rtrimmed_equals(char const *in,
-                                  char const *chars,
+static bool check_rtrimmed_equals(char const *in, char const *chars,
                                   char const *ref) {
 
     char *in_dup = strdup(in);
@@ -590,8 +588,8 @@ int test_ov_string_value_for_key() {
     value = ov_buffer_free(value);
 
     // Case encountered in the wild
-    value = ov_string_value_for_key(
-        "<sip:7247@127.0.0.1>;tag=csbCJl~dW", "tag", '=', ";");
+    value = ov_string_value_for_key("<sip:7247@127.0.0.1>;tag=csbCJl~dW", "tag",
+                                    '=', ";");
     testrun(ov_buffer_equals(value, "csbCJl~dW"));
     value = ov_buffer_free(value);
 
@@ -737,11 +735,9 @@ int test_ov_string_pointer() {
     list = ov_string_pointer(source, size, delim, strlen(delim));
     testrun(list);
     testrun(list->count(list) == 4);
-    testrun(strncmp(list->get(list, 1),
-                    "abc123defg123hijkl123xyz",
+    testrun(strncmp(list->get(list, 1), "abc123defg123hijkl123xyz",
                     strlen("abc123defg123hijkl123xyz")) == 0);
-    testrun(strncmp(list->get(list, 2),
-                    "defg123hijkl123xyz",
+    testrun(strncmp(list->get(list, 2), "defg123hijkl123xyz",
                     strlen("defg123hijkl123xyz")) == 0);
 
     testrun(strncmp(list->get(list, 3), "hijkl123xyz", strlen("hijkl123xyz")) ==
@@ -760,8 +756,7 @@ int test_ov_string_pointer() {
     list = ov_string_pointer(source, size, delim, strlen(delim));
     testrun(list);
     testrun(list->count(list) == 1);
-    testrun(strncmp(list->get(list, 1),
-                    "abc\ndefg\nhijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 1), "abc\ndefg\nhijkl\nxyz\n",
                     strlen("abc\ndefg\nhijkl\nxyz\n")) == 0);
     list = (ov_list *)list->free(list);
 
@@ -778,14 +773,11 @@ int test_ov_string_pointer() {
     // ov_list_dump(stdout, list);
 
     testrun(list->count(list) == 4);
-    testrun(strncmp(list->get(list, 1),
-                    "abc\ndefg\nhijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 1), "abc\ndefg\nhijkl\nxyz\n",
                     strlen("abc\ndefg\nhijkl\nxyz\n")) == 0);
-    testrun(strncmp(list->get(list, 2),
-                    "defg\nhijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 2), "defg\nhijkl\nxyz\n",
                     strlen("defg\nhijkl\nxyz\n")) == 0);
-    testrun(strncmp(list->get(list, 3),
-                    "hijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 3), "hijkl\nxyz\n",
                     strlen("hijkl\nxyz\n")) == 0);
     testrun(strncmp(list->get(list, 4), "xyz\n", strlen("xyz\n")) == 0);
     list = (ov_list *)list->free(list);
@@ -803,17 +795,13 @@ int test_ov_string_pointer() {
     // ov_list_dump(stdout, list);
 
     testrun(list->count(list) == 5);
-    testrun(strncmp(list->get(list, 1),
-                    "\nabc\ndefg\nhijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 1), "\nabc\ndefg\nhijkl\nxyz\n",
                     strlen("\nabc\ndefg\nhijkl\nxyz\n")) == 0);
-    testrun(strncmp(list->get(list, 2),
-                    "abc\ndefg\nhijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 2), "abc\ndefg\nhijkl\nxyz\n",
                     strlen("abc\ndefg\nhijkl\nxyz\n")) == 0);
-    testrun(strncmp(list->get(list, 3),
-                    "defg\nhijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 3), "defg\nhijkl\nxyz\n",
                     strlen("defg\nhijkl\nxyz\n")) == 0);
-    testrun(strncmp(list->get(list, 4),
-                    "hijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 4), "hijkl\nxyz\n",
                     strlen("hijkl\nxyz\n")) == 0);
     testrun(strncmp(list->get(list, 5), "xyz\n", strlen("xyz\n")) == 0);
     list = (ov_list *)list->free(list);
@@ -831,8 +819,7 @@ int test_ov_string_pointer() {
     // ov_list_dump(stdout, list);
 
     testrun(list->count(list) == 3);
-    testrun(strncmp(list->get(list, 1),
-                    "a123b123c12d",
+    testrun(strncmp(list->get(list, 1), "a123b123c12d",
                     strlen("a123b123c12d")) == 0);
     testrun(strncmp(list->get(list, 2), "b123c12d", strlen("b123c12d")) == 0);
     testrun(strncmp(list->get(list, 3), "c12d", strlen("c12d")) == 0);
@@ -870,14 +857,11 @@ int test_ov_string_pointer() {
     // ov_list_dump(stdout, list);
 
     testrun(list->count(list) == 5);
-    testrun(strncmp(list->get(list, 1),
-                    "\nabc\ndefg\n\nxyz\n",
+    testrun(strncmp(list->get(list, 1), "\nabc\ndefg\n\nxyz\n",
                     strlen("\nabc\ndefg\n\nxyz\n")) == 0);
-    testrun(strncmp(list->get(list, 2),
-                    "abc\ndefg\n\nxyz\n",
+    testrun(strncmp(list->get(list, 2), "abc\ndefg\n\nxyz\n",
                     strlen("abc\ndefg\n\nxyz\n")) == 0);
-    testrun(strncmp(list->get(list, 3),
-                    "defg\n\nxyz\n",
+    testrun(strncmp(list->get(list, 3), "defg\n\nxyz\n",
                     strlen("defg\n\nxyz\n")) == 0);
     testrun(strncmp(list->get(list, 4), "\nxyz\n", strlen("\nxyz\n")) == 0);
     testrun(strncmp(list->get(list, 5), "xyz\n", strlen("xyz\n")) == 0);
@@ -898,11 +882,9 @@ int test_ov_string_pointer() {
     // ov_list_dump(stdout, list);
 
     testrun(list->count(list) == 8);
-    testrun(strncmp(list->get(list, 1),
-                    "P/R/O/T/O/1/2/3",
+    testrun(strncmp(list->get(list, 1), "P/R/O/T/O/1/2/3",
                     strlen("P/R/O/T/O/1/2/3")) == 0);
-    testrun(strncmp(list->get(list, 2),
-                    "R/O/T/O/1/2/3",
+    testrun(strncmp(list->get(list, 2), "R/O/T/O/1/2/3",
                     strlen("R/O/T/O/1/2/3")) == 0);
     testrun(strncmp(list->get(list, 3), "O/T/O/1/2/3", strlen("O/T/O/1/2/3")) ==
             0);
@@ -984,8 +966,7 @@ int test_ov_string_split() {
     list = ov_string_split(source, size, delim, strlen(delim), false);
     testrun(list);
     testrun(list->count(list) == 1);
-    testrun(strncmp(list->get(list, 1),
-                    "abc\ndefg\nhijkl\nxyz\n",
+    testrun(strncmp(list->get(list, 1), "abc\ndefg\nhijkl\nxyz\n",
                     strlen("abc\ndefg\nhijkl\nxyz\n")) == 0);
     list = (ov_list *)list->free(list);
 
@@ -1317,72 +1298,38 @@ int test_ov_string_replace_all() {
     char *delim2 = ":";
     char *expect = "1:2:3:4";
 
-    testrun(false == ov_string_replace_all(
-                         NULL, NULL, NULL, 0, NULL, 0, NULL, 0, false));
+    testrun(false == ov_string_replace_all(NULL, NULL, NULL, 0, NULL, 0, NULL,
+                                           0, false));
 
-    testrun(false == ov_string_replace_all(NULL,
-                                           &size,
-                                           source,
-                                           strlen(source),
-                                           delim1,
-                                           strlen(delim1),
-                                           NULL,
-                                           0,
+    testrun(false == ov_string_replace_all(NULL, &size, source, strlen(source),
+                                           delim1, strlen(delim1), NULL, 0,
                                            false));
 
-    testrun(false == ov_string_replace_all(&ptr,
-                                           NULL,
-                                           source,
-                                           strlen(source),
-                                           delim1,
-                                           strlen(delim1),
-                                           NULL,
-                                           0,
+    testrun(false == ov_string_replace_all(&ptr, NULL, source, strlen(source),
+                                           delim1, strlen(delim1), NULL, 0,
                                            false));
 
-    testrun(false == ov_string_replace_all(&ptr,
-                                           &size,
-                                           NULL,
-                                           strlen(source),
-                                           delim1,
-                                           strlen(delim1),
-                                           NULL,
-                                           0,
+    testrun(false == ov_string_replace_all(&ptr, &size, NULL, strlen(source),
+                                           delim1, strlen(delim1), NULL, 0,
                                            false));
 
-    testrun(false == ov_string_replace_all(&ptr,
-                                           &size,
-                                           source,
-                                           strlen(source),
-                                           NULL,
-                                           strlen(delim1),
-                                           NULL,
-                                           0,
+    testrun(false == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                           NULL, strlen(delim1), NULL, 0,
                                            false));
 
-    testrun(
-        false ==
-        ov_string_replace_all(
-            &ptr, &size, source, 0, delim1, strlen(delim1), NULL, 0, false));
+    testrun(false == ov_string_replace_all(&ptr, &size, source, 0, delim1,
+                                           strlen(delim1), NULL, 0, false));
 
-    testrun(
-        false ==
-        ov_string_replace_all(
-            &ptr, &size, source, strlen(source), delim1, 0, NULL, 0, false));
+    testrun(false == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                           delim1, 0, NULL, 0, false));
 
     // -------------------------------------------------------------
     // exchange with NULL (unset all delimiters)
     // -------------------------------------------------------------
 
     expect = "1234";
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          NULL,
-                                          0,
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), NULL, 0,
                                           false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
@@ -1392,14 +1339,8 @@ int test_ov_string_replace_all() {
     free(ptr);
     ptr = NULL;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          NULL,
-                                          0,
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), NULL, 0,
                                           true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
@@ -1418,15 +1359,9 @@ int test_ov_string_replace_all() {
     delim2 = ":";
     expect = "1:2:3:4";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1437,15 +1372,9 @@ int test_ov_string_replace_all() {
 
     expect = "1:2:3:4:";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1463,15 +1392,9 @@ int test_ov_string_replace_all() {
     delim2 = ":::";
     expect = "1:::2:::3:::4";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1482,15 +1405,9 @@ int test_ov_string_replace_all() {
 
     expect = "1:::2:::3:::4:::";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1508,15 +1425,9 @@ int test_ov_string_replace_all() {
     delim2 = " ";
     expect = "1 2 3 4";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1527,15 +1438,9 @@ int test_ov_string_replace_all() {
 
     expect = "1 2 3 4 ";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1553,15 +1458,9 @@ int test_ov_string_replace_all() {
     delim2 = "\r\n";
     expect = source;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1570,15 +1469,9 @@ int test_ov_string_replace_all() {
     free(ptr);
     ptr = NULL;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1596,15 +1489,9 @@ int test_ov_string_replace_all() {
     delim2 = " ";
     expect = source;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1613,15 +1500,9 @@ int test_ov_string_replace_all() {
     free(ptr);
     ptr = NULL;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1639,15 +1520,9 @@ int test_ov_string_replace_all() {
     delim2 = "x";
     expect = "x1x2x3x4";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1658,15 +1533,9 @@ int test_ov_string_replace_all() {
 
     expect = "x1x2x3x4x";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1684,15 +1553,9 @@ int test_ov_string_replace_all() {
     delim2 = "x";
     expect = "1x2x3x4";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1703,15 +1566,9 @@ int test_ov_string_replace_all() {
 
     expect = "1x2x3x4x";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1729,15 +1586,9 @@ int test_ov_string_replace_all() {
     delim2 = "en";
     expect = "Whenever";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1746,15 +1597,9 @@ int test_ov_string_replace_all() {
     free(ptr);
     ptr = NULL;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1768,15 +1613,9 @@ int test_ov_string_replace_all() {
     delim2 = "xx";
     expect = "CaxxCaxx";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1787,15 +1626,9 @@ int test_ov_string_replace_all() {
 
     expect = "CaxxCa";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1813,15 +1646,9 @@ int test_ov_string_replace_all() {
     delim2 = "0123456789";
     expect = "abc0123456789def";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1830,15 +1657,9 @@ int test_ov_string_replace_all() {
     free(ptr);
     ptr = NULL;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1856,15 +1677,9 @@ int test_ov_string_replace_all() {
     delim2 = "xx";
     expect = "abcxxdef";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1873,15 +1688,9 @@ int test_ov_string_replace_all() {
     free(ptr);
     ptr = NULL;
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1903,15 +1712,9 @@ int test_ov_string_replace_all() {
     delim2 = "_at_";
     expect = "wh_at_ever_wh_at_ever";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          false));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), false));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -1922,15 +1725,9 @@ int test_ov_string_replace_all() {
 
     expect = "wh_at_ever_wh_at_ever_at_";
 
-    testrun(true == ov_string_replace_all(&ptr,
-                                          &size,
-                                          source,
-                                          strlen(source),
-                                          delim1,
-                                          strlen(delim1),
-                                          delim2,
-                                          strlen(delim2),
-                                          true));
+    testrun(true == ov_string_replace_all(&ptr, &size, source, strlen(source),
+                                          delim1, strlen(delim1), delim2,
+                                          strlen(delim2), true));
 
     testrun(strncmp(expect, ptr, strlen(expect)) == 0);
     testrun(size == OV_STRING_DEFAULT_SIZE);
@@ -2079,36 +1876,24 @@ int test_ov_string_parse_hex_digits() {
  *      ------------------------------------------------------------------------
  */
 
-OV_TEST_RUN("ov_string",
-            test_ov_free,
-            test_ov_string_len,
-            test_ov_string_copy,
-            test_ov_string_dup,
-            test_ov_string_compare,
-            test_ov_string_equal,
-            test_ov_string_equal_nocase,
-            test_ov_string_startswith,
+OV_TEST_RUN("ov_string", test_ov_free, test_ov_string_len, test_ov_string_copy,
+            test_ov_string_dup, test_ov_string_compare, test_ov_string_equal,
+            test_ov_string_equal_nocase, test_ov_string_startswith,
             test_ov_string_sanitize,
 
-            test_ov_string_to_uint16,
-            test_ov_string_to_uint32,
-            test_ov_string_to_uint64,
-            test_ov_string_to_int64,
+            test_ov_string_to_uint16, test_ov_string_to_uint32,
+            test_ov_string_to_uint64, test_ov_string_to_int64,
             test_ov_string_to_double,
 
-            test_ov_string_ltrim,
-            test_ov_string_rtrim,
+            test_ov_string_ltrim, test_ov_string_rtrim,
 
             test_ov_string_value_for_key,
 
-            test_ov_string_data_functions,
-            test_ov_string_data_clear,
-            test_ov_string_data_free,
-            test_ov_string_data_copy,
+            test_ov_string_data_functions, test_ov_string_data_clear,
+            test_ov_string_data_free, test_ov_string_data_copy,
             test_ov_string_data_dump,
 
-            test_ov_string_pointer,
-            test_ov_string_split,
+            test_ov_string_pointer, test_ov_string_split,
 
             test_ov_string_append,
 

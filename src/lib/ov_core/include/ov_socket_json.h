@@ -75,8 +75,7 @@ ov_json_value *ov_socket_json_get(ov_socket_json *self, int socket);
  *  Set value at slot position of socket. Will override any existing data at
  *  socket. Do not use value anymore after set.
  */
-bool ov_socket_json_set(ov_socket_json *self,
-                        int socket,
+bool ov_socket_json_set(ov_socket_json *self, int socket,
                         ov_json_value **value);
 
 /*----------------------------------------------------------------------------*/
@@ -89,5 +88,11 @@ bool ov_socket_json_drop(ov_socket_json *self, int socket);
 /*----------------------------------------------------------------------------*/
 
 bool ov_socket_json_for_each_set_data(ov_socket_json *self, ov_json_value *out);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_socket_json_for_each(ov_socket_json *self, void *data,
+                             bool (*function)(const void *key, void *val,
+                                              void *data));
 
 #endif /* ov_socket_json_h */

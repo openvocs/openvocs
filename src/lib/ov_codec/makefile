@@ -44,11 +44,11 @@ OV_FLAGS      += `pkg-config --cflags opus`
 
 OV_LIBS        = -L$(OV_LIBDIR)
 
-OV_LIBS       += -l ov_log2
-OV_LIBS       += -l ov_test2
-OV_LIBS       += -l ov_base2
-OV_LIBS       += -l ov_arch2
-OV_LIBS       += -l ov_pcm16s2
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_test$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_arch$(OV_EDITION)
+OV_LIBS       += -l ov_pcm16s$(OV_EDITION)
 
 OV_LIBS       += `pkg-config --libs opus`
 

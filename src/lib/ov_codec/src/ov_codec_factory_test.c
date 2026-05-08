@@ -110,10 +110,8 @@ static ov_codec *mockup_free(ov_codec *codec) {
 
 /*----------------------------------------------------------------------------*/
 
-static int32_t mockup_encode(ov_codec *codec,
-                             const uint8_t *input,
-                             size_t length,
-                             uint8_t *output,
+static int32_t mockup_encode(ov_codec *codec, const uint8_t *input,
+                             size_t length, uint8_t *output,
                              size_t max_out_length) {
 
     TEST_ASSERT(0 != codec);
@@ -129,12 +127,9 @@ static int32_t mockup_encode(ov_codec *codec,
 
 /*----------------------------------------------------------------------------*/
 
-static int32_t mockup_decode(ov_codec *codec,
-                             uint64_t seq_number,
-                             const uint8_t *input,
-                             size_t length,
-                             uint8_t *output,
-                             size_t max_out_length) {
+static int32_t mockup_decode(ov_codec *codec, uint64_t seq_number,
+                             const uint8_t *input, size_t length,
+                             uint8_t *output, size_t max_out_length) {
 
     UNUSED(seq_number);
 
@@ -184,7 +179,8 @@ ov_codec *mockup_codec_create(uint32_t ssid, const ov_json_value *parameters) {
 
     UNUSED(ssid);
 
-    if (0 == parameters) return 0;
+    if (0 == parameters)
+        return 0;
 
     struct mockup_codec *mc = calloc(1, sizeof(struct mockup_codec));
 
@@ -219,7 +215,8 @@ static char const *mockup_2_type_id() { return "mockup_2"; }
 ov_codec *mockup_2_codec_create(uint32_t ssid,
                                 const ov_json_value *parameters) {
 
-    if (0 == parameters) return 0;
+    if (0 == parameters)
+        return 0;
 
     ov_codec *c = mockup_codec_create(ssid, parameters);
     TEST_ASSERT(0 != c);
@@ -243,7 +240,8 @@ static char const *mockup_3_type_id() { return "mockup_3"; }
 ov_codec *mockup_3_codec_create(uint32_t ssid,
                                 const ov_json_value *parameters) {
 
-    if (0 == parameters) return 0;
+    if (0 == parameters)
+        return 0;
 
     ov_codec *c = mockup_codec_create(ssid, parameters);
     TEST_ASSERT(0 != c);
@@ -278,11 +276,13 @@ ov_json_value *json_test_codec_get_parameters(const ov_codec *codec) {
 
 ov_codec *json_test_codec_free(ov_codec *codec) {
 
-    if (0 == codec) return 0;
+    if (0 == codec)
+        return 0;
 
     struct json_test_codec *jtc = (struct json_test_codec *)codec;
 
-    if (jtc->json) jtc->json = jtc->json->free(jtc->json);
+    if (jtc->json)
+        jtc->json = jtc->json->free(jtc->json);
 
     free(codec);
 
@@ -487,8 +487,8 @@ int test_ov_codec_factory_install_codec() {
 
     /* Test with dedicated factory */
 
-    testrun(0 == ov_codec_factory_install_codec(
-                     factory, STRING, mockup_codec_create));
+    testrun(0 == ov_codec_factory_install_codec(factory, STRING,
+                                                mockup_codec_create));
 
     testrun(0 == find_entry(factory, STRING_2));
     testrun(0 == find_entry(factory, STRING_3));
@@ -509,8 +509,8 @@ int test_ov_codec_factory_install_codec() {
 
     /* install 2nd codec generator */
 
-    testrun(0 == ov_codec_factory_install_codec(
-                     factory, STRING_2, mockup_2_codec_create));
+    testrun(0 == ov_codec_factory_install_codec(factory, STRING_2,
+                                                mockup_2_codec_create));
 
     entry = find_entry(factory, STRING);
     testrun(entry);
@@ -541,8 +541,8 @@ int test_ov_codec_factory_install_codec() {
 
     /* Add a third codec generator */
 
-    testrun(0 == ov_codec_factory_install_codec(
-                     factory, STRING_3, mockup_3_codec_create));
+    testrun(0 == ov_codec_factory_install_codec(factory, STRING_3,
+                                                mockup_3_codec_create));
 
     entry = find_entry(factory, STRING);
     testrun(entry);
@@ -594,8 +594,8 @@ int test_ov_codec_factory_get_codec() {
     testrun(0 == ov_codec_factory_get_codec(factory, CODEC_NAME_1, 0, 0));
     testrun(0 == ov_codec_factory_get_codec(factory, CODEC_NAME_1, 12, 0));
 
-    testrun(0 == ov_codec_factory_install_codec(
-                     factory, CODEC_NAME_1, mockup_codec_create));
+    testrun(0 == ov_codec_factory_install_codec(factory, CODEC_NAME_1,
+                                                mockup_codec_create));
 
     testrun(0 == ov_codec_factory_get_codec(factory, 0, 0, 0));
     testrun(0 == ov_codec_factory_get_codec(factory, CODEC_NAME_1, 0, 0));
@@ -623,8 +623,8 @@ int test_ov_codec_factory_get_codec() {
     testrun(0 == ov_codec_factory_get_codec(factory, CODEC_NAME_2, 12, 0));
     testrun(0 == ov_codec_factory_get_codec(factory, CODEC_NAME_3, 12, 0));
 
-    testrun(0 == ov_codec_factory_install_codec(
-                     factory, CODEC_NAME_3, mockup_3_codec_create));
+    testrun(0 == ov_codec_factory_install_codec(factory, CODEC_NAME_3,
+                                                mockup_3_codec_create));
 
     cparams = ov_json_object();
     TEST_ASSERT(0 != cparams);
@@ -689,8 +689,8 @@ int test_ov_codec_factory_get_codec() {
 
     testrun(0 == ov_codec_factory_get_codec(0, CODEC_NAME_1, 12, cparams));
 
-    testrun(0 == ov_codec_factory_install_codec(
-                     0, CODEC_NAME_1, mockup_codec_create));
+    testrun(0 == ov_codec_factory_install_codec(0, CODEC_NAME_1,
+                                                mockup_codec_create));
 
     c = ov_codec_factory_get_codec(0, CODEC_NAME_1, 12, cparams);
     cparams = ov_json_value_free(cparams);
@@ -715,8 +715,8 @@ int test_ov_codec_factory_get_codec_from_json() {
 
     ov_codec_factory *factory = ov_codec_factory_create();
 
-    testrun(0 == ov_codec_factory_install_codec(
-                     factory, CODEC_NAME, mockup_codec_create_json));
+    testrun(0 == ov_codec_factory_install_codec(factory, CODEC_NAME,
+                                                mockup_codec_create_json));
 
     ov_json_value *json = ov_json_object();
 
@@ -958,12 +958,9 @@ int test_ov_codec_factory_install_codec_from_so_dir() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_codec_factory",
-            test_ov_codec_factory_create,
-            test_ov_codec_factory_create_standard,
-            test_ov_codec_factory_free,
-            test_find_entry,
-            test_ov_codec_factory_install_codec,
+OV_TEST_RUN("ov_codec_factory", test_ov_codec_factory_create,
+            test_ov_codec_factory_create_standard, test_ov_codec_factory_free,
+            test_find_entry, test_ov_codec_factory_install_codec,
             test_ov_codec_factory_get_codec,
             test_ov_codec_factory_get_codec_from_json,
             test_ov_codec_factory_install_codec_from_so,

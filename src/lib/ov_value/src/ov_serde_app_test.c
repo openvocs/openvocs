@@ -76,21 +76,19 @@ static bool serde_state_equals(ov_serde *serde, size_t state) {
     if (0 == ts) {
         return false;
     } else if (state == ts->state) {
-        testrun_log(
-            "Serde state %zu fits expected state %zu", ts->state, state);
+        testrun_log("Serde state %zu fits expected state %zu", ts->state,
+                    state);
         return true;
     } else {
         testrun_log("Serde state %zu does not fit expected state %zu",
-                    ts->state,
-                    state);
+                    ts->state, state);
         return false;
     }
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state serde_inc(TestSerde *serde,
-                                char const *msg,
+static ov_serde_state serde_inc(TestSerde *serde, char const *msg,
                                 ov_result *res) {
 
     if ((0 == serde) || (0 != ov_string_compare(msg, "inc"))) {
@@ -107,8 +105,7 @@ static ov_serde_state serde_inc(TestSerde *serde,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state serde_end(TestSerde *serde,
-                                char const *msg,
+static ov_serde_state serde_end(TestSerde *serde, char const *msg,
                                 ov_result *res) {
 
     UNUSED(serde);
@@ -123,8 +120,7 @@ static ov_serde_state serde_end(TestSerde *serde,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state serde_reset(TestSerde *serde,
-                                  char const *msg,
+static ov_serde_state serde_reset(TestSerde *serde, char const *msg,
                                   ov_result *res) {
 
     UNUSED(serde);
@@ -141,8 +137,7 @@ static ov_serde_state serde_reset(TestSerde *serde,
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state serde_error(TestSerde *serde,
-                                  char const *msg,
+static ov_serde_state serde_error(TestSerde *serde, char const *msg,
                                   ov_result *res) {
 
     UNUSED(serde);
@@ -192,33 +187,31 @@ static bool get_next_token(ov_buffer *buf, char *dest) {
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state execute_token(TestSerde *serde,
-                                    char const *token,
+static ov_serde_state execute_token(TestSerde *serde, char const *token,
                                     ov_result *res) {
 
     switch (token[2]) {
-        case 'c':
-            return serde_inc(serde, token, res);
+    case 'c':
+        return serde_inc(serde, token, res);
 
-        case 'd':
-            return serde_end(serde, token, res);
+    case 'd':
+        return serde_end(serde, token, res);
 
-        case 't':
-            return serde_reset(serde, token, res);
+    case 't':
+        return serde_reset(serde, token, res);
 
-        case 'r':
-            return serde_error(serde, token, res);
+    case 'r':
+        return serde_error(serde, token, res);
 
-        default:
+    default:
 
-            return OV_SERDE_PROGRESS;
+        return OV_SERDE_PROGRESS;
     };
 }
 
 /*----------------------------------------------------------------------------*/
 
-static ov_serde_state serde_parse_data(TestSerde *serde,
-                                       ov_buffer const *msg,
+static ov_serde_state serde_parse_data(TestSerde *serde, ov_buffer const *msg,
                                        ov_result *res) {
 
     if (0 == serde) {
@@ -237,12 +230,12 @@ static ov_serde_state serde_parse_data(TestSerde *serde,
 
                 switch (execute_token(serde, token, res)) {
 
-                    case OV_SERDE_PROGRESS:
-                        break;
-                    case OV_SERDE_END:
-                        return OV_SERDE_END;
-                    case OV_SERDE_ERROR:
-                        return OV_SERDE_ERROR;
+                case OV_SERDE_PROGRESS:
+                    break;
+                case OV_SERDE_END:
+                    return OV_SERDE_END;
+                case OV_SERDE_ERROR:
+                    return OV_SERDE_ERROR;
                 }
             }
         }
@@ -258,8 +251,7 @@ static ov_serde_state serde_parse_data(TestSerde *serde,
 // rst => reset max-state to 0
 // err => Trigger error
 // anything else: ignore
-ov_serde_state serde_add_raw(ov_serde *self,
-                             ov_buffer const *raw,
+ov_serde_state serde_add_raw(ov_serde *self, ov_buffer const *raw,
                              ov_result *res) {
 
     TestSerde *serde = as_test_serde(self);
@@ -287,14 +279,12 @@ ov_serde_data serde_pop_datum(ov_serde *self, ov_result *res) {
         error_result(res, "invalid serde");
         return OV_SERDE_DATA_NO_MORE;
     } else if (serde->max_state <= serde->state) {
-        testrun_log("max_state reached: %zu    current: %zu",
-                    serde->max_state,
+        testrun_log("max_state reached: %zu    current: %zu", serde->max_state,
                     serde->state);
         return OV_SERDE_DATA_NO_MORE;
     } else {
         testrun_log("Increasing current state: max_state: %zu    current: %zu",
-                    serde->max_state,
-                    serde->state);
+                    serde->max_state, serde->state);
         ++serde->state;
         return (ov_serde_data){
             .data_type = self->magic_bytes,
@@ -362,9 +352,7 @@ static bool datum_to_fh(int fh, size_t *datum, ov_result *res) {
 
 /*----------------------------------------------------------------------------*/
 
-static bool serde_serialize(ov_serde *self,
-                            int fh,
-                            ov_serde_data data,
+static bool serde_serialize(ov_serde *self, int fh, ov_serde_data data,
                             ov_result *res) {
 
     UNUSED(self);
@@ -466,10 +454,7 @@ static void accepted_handler(int sckt, void *additional) {
 
 static void dump_handler_data(char const *kind, struct handler_data *hd) {
 
-    fprintf(stderr,
-            "%s_data socket: %i   additional: %p\n",
-            kind,
-            hd->sckt,
+    fprintf(stderr, "%s_data socket: %i   additional: %p\n", kind, hd->sckt,
             hd->additional);
 }
 
@@ -508,8 +493,7 @@ typedef struct {
 
 /*----------------------------------------------------------------------------*/
 
-static SerdeAppResources get_resources(char const *name,
-                                       void *additional,
+static SerdeAppResources get_resources(char const *name, void *additional,
                                        uint64_t reconnect_interval_secs) {
 
     SerdeAppResources res = {
@@ -644,10 +628,8 @@ static void handler1(void *data, int socket, void *additional) {
 
 static void dump_handler1_data() {
 
-    fprintf(stderr,
-            "handler1 was %scalled: %zu\n",
-            handler1_called ? "" : "not",
-            counter);
+    fprintf(stderr, "handler1 was %scalled: %zu\n",
+            handler1_called ? "" : "not", counter);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -961,12 +943,8 @@ static int test_ov_serde_app_send() {
 
 /*----------------------------------------------------------------------------*/
 
-OV_TEST_RUN("ov_serde_app",
-            test_ov_serde_app_create,
-            test_ov_serde_app_free,
-            test_ov_serde_app_register_handler,
-            test_ov_serde_app_connect,
-            test_ov_serde_app_open_server_socket,
-            test_ov_serde_app_send);
+OV_TEST_RUN("ov_serde_app", test_ov_serde_app_create, test_ov_serde_app_free,
+            test_ov_serde_app_register_handler, test_ov_serde_app_connect,
+            test_ov_serde_app_open_server_socket, test_ov_serde_app_send);
 
 /*----------------------------------------------------------------------------*/

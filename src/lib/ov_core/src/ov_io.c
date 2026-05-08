@@ -31,9 +31,10 @@
 #include "../include/ov_domain.h"
 
 #include <ov_base/ov_dict.h>
-#include <ov_base/ov_linked_list.h>
+#include <ov_base/ov_list.h>
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_thread_lock.h>
+#include <ov_base/ov_thread_loop.h>
 #include <ov_base/ov_time.h>
 
 #include <openssl/conf.h>
@@ -79,6 +80,19 @@ typedef struct Connection {
 
     } tls;
 
+    struct {
+
+        bool (*callback)(int, uint8_t, void *);
+
+        struct {
+
+            ov_buffer *buffer;
+            ov_list *queue;
+
+        } out;
+
+    } io_data;
+
     uint32_t timer_id;
 
 } Connection;
@@ -89,6 +103,8 @@ struct ov_io {
 
     uint16_t magic_bytes;
     ov_io_config config;
+
+    ov_thread_loop *tloop;
 
     struct {
 
@@ -105,7 +121,13 @@ struct ov_io {
 
     } timer;
 
-    ov_list *reconnects;
+    struct {
+
+        ov_thread_lock lock;
+        ov_list *list;
+
+    } reconnects;
+
     ov_dict *connections;
 };
 
@@ -113,7 +135,8 @@ struct ov_io {
 
 static void *connection_free(void *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
     Connection *conn = (Connection *)self;
 
     if (conn->timer_id != OV_TIMER_INVALID) {
@@ -123,8 +146,8 @@ static void *connection_free(void *self) {
 
     if (conn->config.callbacks.close) {
 
-        conn->config.callbacks.close(
-            conn->config.callbacks.userdata, conn->socket);
+        conn->config.callbacks.close(conn->config.callbacks.userdata,
+                                     conn->socket);
     }
 
     if (conn->tls.ssl) {
@@ -150,17 +173,75 @@ static void *connection_free(void *self) {
 
     if (conn->config.auto_reconnect) {
 
-        ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+        if (ov_thread_lock_try_lock(&conn->io->reconnects.lock)) {
 
-        *conf = conn->config;
-        if (!ov_list_queue_push(conn->io->reconnects, conf)) {
+            ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
 
-            conf = ov_data_pointer_free(conf);
-            ov_log_error("failed to enable auto reconnect");
+            *conf = conn->config;
+            if (!ov_list_queue_push(conn->io->reconnects.list, conf)) {
+    
+                conf = ov_data_pointer_free(conf);
+                ov_log_error("failed to enable auto reconnect");
+            }
+
+            ov_thread_lock_unlock(&conn->io->reconnects.lock);
+
         }
     }
 
+    conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
+
     conn = ov_data_pointer_free(conn);
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+typedef struct ThreadMsg {
+
+    ov_thread_message public;
+    ov_list *list;
+
+} ThreadMsg;
+
+/*----------------------------------------------------------------------------*/
+
+static ov_thread_message *thread_message_free(ov_thread_message *msg){
+
+    if (!msg) goto error;
+    if (msg->type != 123) goto error;
+
+    ThreadMsg *in = (ThreadMsg*)msg;
+    in->list = ov_list_free(in->list);
+
+    in = ov_data_pointer_free(in);
+    return NULL;
+
+error:
+    return msg;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_thread_message *thread_message_reconnect(ov_io *self) {
+
+    struct ThreadMsg *msg = calloc(1, sizeof(struct ThreadMsg));
+    if (!msg) goto error;
+
+    if (!ov_thread_lock_try_lock(&self->reconnects.lock)) goto error;
+
+    msg->public.magic_bytes = OV_THREAD_MESSAGE_MAGIC_BYTES;
+    msg->public.type = 123;
+    msg->list = self->reconnects.list;
+    msg->public.free = thread_message_free;
+
+    self->reconnects.list = ov_list_create(
+        (ov_list_config){.item.free = ov_data_pointer_free});
+
+    ov_thread_lock_unlock(&self->reconnects.lock);
+
+    return (ov_thread_message*) msg;
+error:
     return NULL;
 }
 
@@ -180,7 +261,8 @@ static int tls_client_hello_callback(SSL *ssl, int *al, void *arg) {
      * the handshake will be stopped. */
 
     ov_io *base = ov_io_cast(arg);
-    if (!base) goto error;
+    if (!base)
+        goto error;
 
     /*
             Example from dump of browser request to https://openvocs.test:12345
@@ -221,8 +303,8 @@ static int tls_client_hello_callback(SSL *ssl, int *al, void *arg) {
 
     ov_domain *domain = NULL;
 
-    if (0 == SSL_client_hello_get0_ext(
-                 ssl, TLSEXT_NAMETYPE_host_name, &str, &str_len)) {
+    if (0 == SSL_client_hello_get0_ext(ssl, TLSEXT_NAMETYPE_host_name, &str,
+                                       &str_len)) {
 
         /* In case the header extension for host name is NOT set,
          * the default certificate of the configured domains will be used.
@@ -245,14 +327,17 @@ static int tls_client_hello_callback(SSL *ssl, int *al, void *arg) {
         OV_ASSERT(0 < str_len);
 
         /* min valid length without chars for hostname content */
-        if (4 >= str_len) goto error;
+        if (4 >= str_len)
+            goto error;
 
         /* check if the first entry is host name */
-        if (0 != str[3]) goto error;
+        if (0 != str[3])
+            goto error;
 
         size_t hostname_length = str[4];
 
-        if (str_len < hostname_length + 5) goto error;
+        if (str_len < hostname_length + 5)
+            goto error;
 
         uint8_t *hostname = (uint8_t *)str + 5;
 
@@ -261,8 +346,7 @@ static int tls_client_hello_callback(SSL *ssl, int *al, void *arg) {
             if (base->domain.array[i].config.name.length != hostname_length)
                 continue;
 
-            if (0 == memcmp(hostname,
-                            base->domain.array[i].config.name.start,
+            if (0 == memcmp(hostname, base->domain.array[i].config.name.start,
                             hostname_length)) {
                 domain = &base->domain.array[i];
                 break;
@@ -272,17 +356,20 @@ static int tls_client_hello_callback(SSL *ssl, int *al, void *arg) {
         /*  If some SNI is present and the domain is not enabled.
          *  the handshake will be stopped. */
 
-        if (!domain) goto error;
+        if (!domain)
+            goto error;
     }
 
     OV_ASSERT(domain);
 
-    if (!SSL_set_SSL_CTX(ssl, domain->context.tls)) goto error;
+    if (!SSL_set_SSL_CTX(ssl, domain->context.tls))
+        goto error;
 
     return SSL_CLIENT_HELLO_SUCCESS;
 
 error:
-    if (al) *al = SSL_TLSEXT_ERR_ALERT_FATAL;
+    if (al)
+        *al = SSL_TLSEXT_ERR_ALERT_FATAL;
     return SSL_CLIENT_HELLO_ERROR;
 }
 
@@ -290,15 +377,16 @@ error:
 
 static bool tls_init_context(ov_io *base, ov_domain *domain) {
 
-    if (!base || !domain) goto error;
+    if (!base || !domain)
+        goto error;
 
     if (!domain->context.tls) {
         ov_log_error("TLS context for |%s| not set", domain->config.name);
         goto error;
     }
 
-    SSL_CTX_set_client_hello_cb(
-        domain->context.tls, tls_client_hello_callback, base);
+    SSL_CTX_set_client_hello_cb(domain->context.tls, tls_client_hello_callback,
+                                base);
 
     return true;
 error:
@@ -312,11 +400,10 @@ static bool load_domains(ov_io *self) {
     OV_ASSERT(self);
 
     /* Load domains */
-    if (!ov_domain_load(self->config.domain.path,
-                        &self->domain.size,
+    if (!ov_domain_load(self->config.domain.path, &self->domain.size,
                         &self->domain.array)) {
-        ov_log_error(
-            "failed to load domains from %s", self->config.domain.path);
+        ov_log_error("failed to load domains from %s",
+                     self->config.domain.path);
         goto error;
     }
 
@@ -325,7 +412,8 @@ static bool load_domains(ov_io *self) {
     /* Init additional (specific) SSL functions in domain context */
     for (size_t i = 0; i < self->domain.size; i++) {
 
-        if (!tls_init_context(self, &self->domain.array[i])) goto error;
+        if (!tls_init_context(self, &self->domain.array[i]))
+            goto error;
 
         if (self->domain.array[i].config.is_default) {
 
@@ -356,7 +444,8 @@ struct container1 {
 
 static bool check_connection_timeout(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     Connection *conn = (Connection *)val;
     struct container1 *container = (struct container1 *)data;
     UNUSED(conn);
@@ -389,14 +478,12 @@ static bool run_timeout_check(uint32_t timer, void *data) {
 
     uint64_t now = ov_time_get_current_time_usecs();
 
-    self->timer.timeouts =
-        ov_event_loop_timer_set(self->config.loop,
-                                self->config.limits.timeout_usec,
-                                self,
-                                run_timeout_check);
+    self->timer.timeouts = ov_event_loop_timer_set(
+        self->config.loop, self->config.limits.timeout_usec, self,
+        run_timeout_check);
 
     struct container1 container = (struct container1){
-        .now = now, .list = ov_linked_list_create((ov_list_config){0})};
+        .now = now, .list = ov_list_create((ov_list_config){0})};
 
     ov_dict_for_each(self->connections, &container, check_connection_timeout);
 
@@ -415,32 +502,13 @@ static bool run_reconnect(uint32_t timer, void *data) {
     OV_ASSERT(timer == self->timer.reconnects);
     self->timer.reconnects = OV_TIMER_INVALID;
 
-    ov_list *reconnects = self->reconnects;
-    self->reconnects = ov_linked_list_create(
-        (ov_list_config){.item.free = ov_data_pointer_free});
+    ov_thread_message *msg = thread_message_reconnect(self);
 
-    ov_io_socket_config *config = ov_list_queue_pop(reconnects);
+    ov_thread_loop_send_message(self->tloop, msg, OV_RECEIVER_THREAD);
 
-    int socket = -1;
-    while (config) {
-
-        socket = ov_io_open_connection(self, *config);
-        if (socket < 0)
-            ov_log_error("reconnect attempt to %s:%i failed",
-                         config->socket.host,
-                         config->socket.port);
-
-        config = ov_data_pointer_free(config);
-        config = ov_list_queue_pop(reconnects);
-    }
-
-    reconnects = ov_list_free(reconnects);
-
-    self->timer.reconnects =
-        ov_event_loop_timer_set(self->config.loop,
-                                self->config.limits.reconnect_interval_usec,
-                                self,
-                                run_reconnect);
+    self->timer.reconnects = ov_event_loop_timer_set(
+        self->config.loop, self->config.limits.reconnect_interval_usec, self,
+        run_reconnect);
 
     return true;
 }
@@ -449,12 +517,14 @@ static bool run_reconnect(uint32_t timer, void *data) {
 
 static bool init_config(ov_io_config *config) {
 
-    if (!config || !config->loop) goto error;
+    if (!config || !config->loop)
+        goto error;
 
     if (0 == config->limits.reconnect_interval_usec)
         config->limits.reconnect_interval_usec = 3000000;
 
-    if (0 == config->limits.timeout_usec) config->limits.timeout_usec = 3000000;
+    if (0 == config->limits.timeout_usec)
+        config->limits.timeout_usec = 3000000;
 
     return true;
 error:
@@ -463,22 +533,101 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static int open_connection(ov_io *self, ov_io_socket_config config);
+
+/*----------------------------------------------------------------------------*/
+
+static bool handle_in_thread(ov_thread_loop *self, ov_thread_message *msg) {
+
+    if (!self || !msg)
+        goto error;
+
+    if (msg->type != 123)
+        goto error;
+
+    ThreadMsg *in = (ThreadMsg*) msg;
+
+    ov_io *io = ov_thread_loop_get_data(self);
+    if (!io)
+        goto error;
+
+    ov_list *reconnects = in->list;
+    if (!reconnects) goto error;
+
+    ov_io_socket_config *config = ov_list_pop(reconnects);
+
+    int socket = -1;
+    while (config) {
+
+        socket = open_connection(io, *config);
+        
+        if (socket < 0) {
+            ov_log_error("reconnect attempt to %s:%i failed",
+                         config->socket.host, config->socket.port);
+        } else {
+            ov_log_debug("reconnected to %s:%i", config->socket.host,
+                         config->socket.port);
+        }
+
+        config = ov_data_pointer_free(config);
+
+        sleep(1);
+
+        config = ov_list_pop(reconnects);
+        
+    }
+
+error:
+    msg = ov_thread_message_free(msg);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool handle_in_loop(ov_thread_loop *self, ov_thread_message *msg) {
+
+    if (!self || !msg)
+        goto error;
+
+error:
+    msg = ov_thread_message_free(msg);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_thread_loop *start_connect_thread(ov_event_loop *loop,
+                                            ov_io *manager) {
+    return ov_thread_loop_create(
+        loop,
+        (ov_thread_loop_callbacks){
+            .handle_message_in_thread = handle_in_thread,
+            .handle_message_in_loop = handle_in_loop,
+        },
+        manager);
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_io *ov_io_create(ov_io_config config) {
 
     ov_io *self = NULL;
-    if (!init_config(&config)) goto error;
+    if (!init_config(&config))
+        goto error;
 
     size_t size = sizeof(ov_io);
 
     self = calloc(1, size);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_bytes = OV_IO_MAGIC_BYTES;
     self->config = config;
 
     if (0 != self->config.domain.path[0]) {
 
-        if (!load_domains(self)) goto error;
+        if (!load_domains(self))
+            goto error;
     }
 
     ov_dict_config d_config = ov_dict_intptr_key_config(255);
@@ -486,20 +635,25 @@ ov_io *ov_io_create(ov_io_config config) {
 
     self->connections = ov_dict_create(d_config);
 
-    self->reconnects = ov_linked_list_create(
+    self->reconnects.list = ov_list_create(
         (ov_list_config){.item.free = ov_data_pointer_free});
 
-    self->timer.reconnects =
-        ov_event_loop_timer_set(self->config.loop,
-                                self->config.limits.reconnect_interval_usec,
-                                self,
-                                run_reconnect);
+    self->timer.reconnects = ov_event_loop_timer_set(
+        self->config.loop, self->config.limits.reconnect_interval_usec, self,
+        run_reconnect);
 
-    self->timer.timeouts =
-        ov_event_loop_timer_set(self->config.loop,
-                                self->config.limits.timeout_usec,
-                                self,
-                                run_timeout_check);
+    self->timer.timeouts = ov_event_loop_timer_set(
+        self->config.loop, self->config.limits.timeout_usec, self,
+        run_timeout_check);
+
+    self->tloop = start_connect_thread(config.loop, self);
+    if ((0 == self->tloop) || (!ov_thread_loop_start_threads(self->tloop))) {
+        ov_log_error("Could not start connect thread");
+        goto error;
+    }
+
+    if (!ov_thread_lock_init(&self->reconnects.lock, 100000))
+        goto error;
 
     /* Initialize OpenSSL */
     SSL_load_error_strings();
@@ -515,17 +669,21 @@ error:
 
 ov_io *ov_io_free(ov_io *self) {
 
-    if (!ov_io_cast(self)) return self;
+    if (!ov_io_cast(self))
+        return self;
+
+    ov_thread_lock_clear(&self->reconnects.lock);
+    self->tloop = ov_thread_loop_free(self->tloop);
 
     if (OV_TIMER_INVALID != self->timer.reconnects) {
-        ov_event_loop_timer_unset(
-            self->config.loop, self->timer.reconnects, NULL);
+        ov_event_loop_timer_unset(self->config.loop, self->timer.reconnects,
+                                  NULL);
         self->timer.reconnects = OV_TIMER_INVALID;
     }
 
     if (OV_TIMER_INVALID != self->timer.timeouts) {
-        ov_event_loop_timer_unset(
-            self->config.loop, self->timer.timeouts, NULL);
+        ov_event_loop_timer_unset(self->config.loop, self->timer.timeouts,
+                                  NULL);
         self->timer.timeouts = OV_TIMER_INVALID;
     }
 
@@ -534,7 +692,7 @@ ov_io *ov_io_free(ov_io *self) {
     self->domain.array =
         ov_domain_array_free(self->domain.size, self->domain.array);
 
-    self->reconnects = ov_list_free(self->reconnects);
+    self->reconnects.list = ov_list_free(self->reconnects.list);
 
     self = ov_data_pointer_free(self);
     return NULL;
@@ -544,9 +702,11 @@ ov_io *ov_io_free(ov_io *self) {
 
 ov_io *ov_io_cast(const void *data) {
 
-    if (!data) return NULL;
+    if (!data)
+        return NULL;
 
-    if (*(uint16_t *)data != OV_IO_MAGIC_BYTES) return NULL;
+    if (*(uint16_t *)data != OV_IO_MAGIC_BYTES)
+        return NULL;
 
     return (ov_io *)data;
 }
@@ -555,7 +715,8 @@ ov_io *ov_io_cast(const void *data) {
 
 static bool search_listener(const void *key, void *val, void *data) {
 
-    if (!key) return true;
+    if (!key)
+        return true;
     Connection *conn = (Connection *)val;
     struct container1 *container = (struct container1 *)data;
 
@@ -569,12 +730,13 @@ static bool search_listener(const void *key, void *val, void *data) {
 
 static bool close_listener(ov_io *self, int socket) {
 
-    if (!self || !socket) goto error;
+    if (!self || !socket)
+        goto error;
 
     struct container1 container =
         (struct container1){.now = 0,
                             .listener = socket,
-                            .list = ov_linked_list_create((ov_list_config){0})};
+                            .list = ov_list_create((ov_list_config){0})};
 
     ov_dict_for_each(self->connections, &container, search_listener);
 
@@ -604,6 +766,36 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
     if (0 == bytes) {
 
+        if (conn->type == OV_IO_CLIENT_CONNECTION) {
+
+            if (conn->config.auto_reconnect) {
+
+                if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
+
+                    ov_io_socket_config *conf =
+                        calloc(1, sizeof(ov_io_socket_config));
+
+                    *conf = conn->config;
+
+                    if (!ov_list_queue_push(self->reconnects.list, conf)) {
+
+                        conf = ov_data_pointer_free(conf);
+                        ov_log_error("failed to enable auto reconnect");
+                    }
+
+                    ov_thread_lock_unlock(&self->reconnects.lock);
+
+                    ov_log_debug("enabled reconnect to %s:%i",
+                                 conf->socket.host, conf->socket.port);
+                } else {
+
+                    ov_log_debug("failed to enable reconnect to %s:%i",
+                                 conn->config.socket.host,
+                                 conn->config.socket.port);
+                }
+            }
+        }
+
         ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
         return false;
 
@@ -625,9 +817,7 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
         if (conn->config.callbacks.io) {
 
             return conn->config.callbacks.io(
-                conn->config.callbacks.userdata,
-                conn->socket,
-                NULL,
+                conn->config.callbacks.userdata, conn->socket, NULL,
                 (ov_memory_pointer){.start = buffer, .length = bytes});
         }
     }
@@ -637,20 +827,109 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
 /*----------------------------------------------------------------------------*/
 
+static bool stream_send(ov_io *self, Connection *conn) {
+
+    if (!self || !conn)
+        goto error;
+
+    ssize_t bytes = 0;
+
+    if (conn->io_data.out.buffer) {
+
+        bytes = send(conn->socket, conn->io_data.out.buffer->start,
+                     conn->io_data.out.buffer->length, 0);
+        if (bytes < 1) {
+            goto done;
+        } else {
+            conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+            goto done;
+        }
+
+    } else {
+
+        ov_buffer *buffer = ov_list_queue_pop(conn->io_data.out.queue);
+
+        if (!buffer) {
+
+            ov_event_loop *loop = self->config.loop;
+
+            if (!loop->callback.set(loop, conn->socket,
+                                    OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                        OV_EVENT_IO_CLOSE,
+                                    self, conn->io_data.callback))
+                goto error;
+
+        } else {
+
+            bytes = send(conn->socket, buffer->start, buffer->length, 0);
+            if (bytes > 1) {
+                buffer = ov_buffer_free(buffer);
+                goto done;
+            } else {
+                conn->io_data.out.buffer = buffer;
+                goto done;
+            }
+        }
+    }
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool io_stream(int socket, uint8_t events, void *data) {
 
     ov_io *self = ov_io_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     Connection *conn =
         (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+
+        if (conn->type == OV_IO_CLIENT_CONNECTION) {
+
+            if (conn->config.auto_reconnect) {
+
+                if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
+
+                    ov_io_socket_config *conf =
+                        calloc(1, sizeof(ov_io_socket_config));
+
+                    *conf = conn->config;
+
+                    if (!ov_list_queue_push(self->reconnects.list, conf)) {
+
+                        conf = ov_data_pointer_free(conf);
+                        ov_log_error("failed to enable auto reconnect");
+                    }
+
+                    ov_thread_lock_unlock(&self->reconnects.lock);
+
+                    ov_log_debug("enabled reconnect to %s:%i",
+                                 conf->socket.host, conf->socket.port);
+                } else {
+
+                    ov_log_debug("failed to enable reconnect to %s:%i",
+                                 conn->config.socket.host,
+                                 conn->config.socket.port);
+                }
+            }
+        }
+
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto done;
     }
 
-    if (!(events & OV_EVENT_IO_IN)) goto error;
+    if (events & OV_EVENT_IO_OUT)
+        return stream_send(self, conn);
+
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
 
     return stream_recv_unbuffered(self, conn);
 
@@ -714,53 +993,54 @@ static bool tls_perform_handshake(ov_io *self, Connection *conn) {
 
         switch (n) {
 
-            case SSL_ERROR_NONE:
-                /* no error */
-                break;
-            case SSL_ERROR_WANT_READ:
-                /* return to loop to reread */
-                break;
-            case SSL_ERROR_WANT_WRITE:
-                /* return to loop to rewrite */
-                break;
-            case SSL_ERROR_WANT_CONNECT:
-                /* return to loop to reconnect */
-                break;
-            case SSL_ERROR_WANT_ACCEPT:
-                /* return to loop to reaccept */
-                break;
-            case SSL_ERROR_WANT_X509_LOOKUP:
-                /* return to loop for loopup */
+        case SSL_ERROR_NONE:
+            /* no error */
+            break;
+        case SSL_ERROR_WANT_READ:
+            /* return to loop to reread */
+            break;
+        case SSL_ERROR_WANT_WRITE:
+            /* return to loop to rewrite */
+            break;
+        case SSL_ERROR_WANT_CONNECT:
+            /* return to loop to reconnect */
+            break;
+        case SSL_ERROR_WANT_ACCEPT:
+            /* return to loop to reaccept */
+            break;
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            /* return to loop for loopup */
+            break;
+
+        case SSL_ERROR_ZERO_RETURN:
+            // connection close
+            goto error;
+            break;
+
+        case SSL_ERROR_SYSCALL:
+
+            if (r == 0)
                 break;
 
-            case SSL_ERROR_ZERO_RETURN:
-                // connection close
-                goto error;
-                break;
+            goto error;
+            break;
 
-            case SSL_ERROR_SYSCALL:
+        case SSL_ERROR_SSL:
 
-                if (r == 0) break;
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
 
-                goto error;
-                break;
+            ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
+                         conn->socket);
 
-            case SSL_ERROR_SSL:
+            /* in case of some SSL_ERROR we cannot send the shutdown */
+            goto send_no_shutdown;
+            break;
 
-                errorcode = ERR_get_error();
-                ERR_error_string_n(
-                    errorcode, errorstring, OV_SSL_ERROR_STRING_BUFFER_SIZE);
-
-                ov_log_error(
-                    "SSL_ERROR_SSL %s at socket %i", errorstring, conn->socket);
-
-                /* in case of some SSL_ERROR we cannot send the shutdown */
-                goto send_no_shutdown;
-                break;
-
-            default:
-                goto error;
-                break;
+        default:
+            goto error;
+            break;
         }
     }
 
@@ -782,6 +1062,61 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
+
+    if (!self || !conn)
+        goto error;
+    if (!conn->tls.ssl)
+        goto error;
+
+    ssize_t bytes = 0;
+
+    if (conn->io_data.out.buffer) {
+
+        bytes = SSL_write(conn->tls.ssl, conn->io_data.out.buffer->start,
+                          conn->io_data.out.buffer->length);
+        if (bytes < 1) {
+            goto done;
+        } else {
+            conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+            goto done;
+        }
+
+    } else {
+
+        ov_buffer *buffer = ov_list_queue_pop(conn->io_data.out.queue);
+
+        if (!buffer) {
+
+            ov_event_loop *loop = self->config.loop;
+
+            if (!loop->callback.set(loop, conn->socket,
+                                    OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                        OV_EVENT_IO_CLOSE,
+                                    self, conn->io_data.callback))
+                goto error;
+
+        } else {
+
+            bytes = SSL_write(conn->tls.ssl, buffer->start, buffer->length);
+            if (bytes > 0) {
+                buffer = ov_buffer_free(buffer);
+                goto done;
+            } else {
+                conn->io_data.out.buffer = buffer;
+                goto done;
+            }
+        }
+    }
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
     char errorstring[OV_SSL_ERROR_STRING_BUFFER_SIZE] = {0};
@@ -791,11 +1126,13 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
     uint8_t buffer[OV_SSL_MAX_BUFFER] = {0};
 
     ov_io *self = ov_io_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     conn =
         (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
@@ -804,9 +1141,14 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
         goto done;
     }
 
-    if (!(events & OV_EVENT_IO_IN)) goto error;
+    if (!conn->tls.handshaked)
+        return tls_perform_handshake(self, conn);
 
-    if (!conn->tls.handshaked) return tls_perform_handshake(self, conn);
+    if (events & OV_EVENT_IO_OUT)
+        return io_stream_ssl_send(self, conn);
+
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
 
     ssize_t bytes = SSL_read(conn->tls.ssl, buffer, OV_SSL_MAX_BUFFER);
 
@@ -815,9 +1157,7 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
         if (conn->config.callbacks.io) {
 
             return conn->config.callbacks.io(
-                conn->config.callbacks.userdata,
-                conn->socket,
-                conn->domain,
+                conn->config.callbacks.userdata, conn->socket, conn->domain,
                 (ov_memory_pointer){.start = buffer, .length = bytes});
         }
 
@@ -830,43 +1170,41 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
         n = SSL_get_error(conn->tls.ssl, bytes);
 
         switch (n) {
-            case SSL_ERROR_NONE:
-            case SSL_ERROR_WANT_READ:
-            case SSL_ERROR_WANT_WRITE:
-            case SSL_ERROR_WANT_CONNECT:
-            case SSL_ERROR_WANT_ACCEPT:
-            case SSL_ERROR_WANT_X509_LOOKUP:
-                break;
+        case SSL_ERROR_NONE:
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_WRITE:
+        case SSL_ERROR_WANT_CONNECT:
+        case SSL_ERROR_WANT_ACCEPT:
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            break;
 
-            case SSL_ERROR_ZERO_RETURN:
-                // connection close
-                goto error;
-                break;
+        case SSL_ERROR_ZERO_RETURN:
+            // connection close
+            goto error;
+            break;
 
-            case SSL_ERROR_SYSCALL:
+        case SSL_ERROR_SYSCALL:
 
-                ov_log_error(
-                    "SSL_ERROR_SYSCALL"
-                    "%d | %s",
-                    errno,
-                    strerror(errno));
+            ov_log_error("SSL_ERROR_SYSCALL"
+                         "%d | %s",
+                         errno, strerror(errno));
 
-                goto error;
-                break;
+            goto error;
+            break;
 
-            case SSL_ERROR_SSL:
+        case SSL_ERROR_SSL:
 
-                errorcode = ERR_get_error();
-                ERR_error_string_n(
-                    errorcode, errorstring, OV_SSL_ERROR_STRING_BUFFER_SIZE);
-                ov_log_error(
-                    "SSL_ERROR_SSL %s at socket %i", errorstring, conn->socket);
-                goto send_no_shutdown;
-                break;
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
+            ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
+                         conn->socket);
+            goto send_no_shutdown;
+            break;
 
-            default:
-                goto error;
-                break;
+        default:
+            goto error;
+            break;
         }
     }
 
@@ -883,19 +1221,17 @@ send_no_shutdown:
 
 error:
 
-    if (self) ov_dict_del(self->connections, (void *)(intptr_t)socket);
+    if (self)
+        ov_dict_del(self->connections, (void *)(intptr_t)socket);
 
     return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static Connection *accept_stream_base(ov_io *self,
-                                      Connection *listener,
-                                      int socket,
-                                      bool (*callback)(int socket,
-                                                       uint8_t events,
-                                                       void *userdata)) {
+static Connection *accept_stream_base(
+    ov_io *self, Connection *listener, int socket,
+    bool (*callback)(int socket, uint8_t events, void *userdata)) {
 
     OV_ASSERT(self);
     OV_ASSERT(listener);
@@ -907,7 +1243,8 @@ static Connection *accept_stream_base(ov_io *self,
     socklen_t sa_len = sizeof(sa);
 
     nfd = accept(socket, (struct sockaddr *)&sa, &sa_len);
-    if (!ov_socket_ensure_nonblocking(nfd)) goto error;
+    if (!ov_socket_ensure_nonblocking(nfd))
+        goto error;
 
     if (NULL != listener->config.callbacks.accept) {
 
@@ -917,7 +1254,8 @@ static Connection *accept_stream_base(ov_io *self,
     }
 
     Connection *conn = calloc(1, sizeof(Connection));
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
     if (!ov_dict_set(self->connections, (void *)(intptr_t)nfd, conn, NULL)) {
         conn = ov_data_pointer_free(conn);
@@ -931,12 +1269,14 @@ static Connection *accept_stream_base(ov_io *self,
     conn->io = self;
     conn->created_usec = ov_time_get_current_time_usecs();
     conn->last_update_usec = 0;
+    conn->io_data.callback = callback;
+    conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
+    conn->io_data.out.queue =
+        ov_list_create((ov_list_config){.item.free = ov_buffer_free});
 
-    if (!ov_event_loop_set(self->config.loop,
-                           nfd,
+    if (!ov_event_loop_set(self->config.loop, nfd,
                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-                           self,
-                           callback)) {
+                           self, callback)) {
 
         ov_dict_del(self->connections, (void *)(intptr_t)nfd);
         goto error;
@@ -953,24 +1293,28 @@ error:
 static bool accept_stream(int socket, uint8_t events, void *data) {
 
     ov_io *self = ov_io_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     Connection *listener_conn =
         (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
-    if (!listener_conn) goto error;
+    if (!listener_conn)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
         close_listener(self, socket);
         goto done;
     }
 
-    if (!(events & OV_EVENT_IO_IN)) goto error;
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
 
     Connection *conn =
         accept_stream_base(self, listener_conn, socket, io_stream);
 
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
 done:
     return true;
@@ -985,23 +1329,27 @@ static bool accept_tls(int socket, uint8_t events, void *data) {
     SSL *ssl = NULL;
 
     ov_io *self = ov_io_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     Connection *listener_conn =
         (Connection *)ov_dict_get(self->connections, (void *)(intptr_t)socket);
 
-    if (!listener_conn) goto error;
+    if (!listener_conn)
+        goto error;
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
         close_listener(self, socket);
         goto done;
     }
 
-    if (!(events & OV_EVENT_IO_IN)) goto error;
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
 
     Connection *conn =
         accept_stream_base(self, listener_conn, socket, io_stream_ssl);
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
     if (listener_conn->tls.ctx) {
 
@@ -1010,14 +1358,17 @@ static bool accept_tls(int socket, uint8_t events, void *data) {
     } else {
 
         int id = 0;
-        if (-1 != self->domain.default_domain) id = self->domain.default_domain;
+        if (-1 != self->domain.default_domain)
+            id = self->domain.default_domain;
 
         ssl = SSL_new(self->domain.array[id].context.tls);
     }
 
-    if (!ssl) goto unroll;
+    if (!ssl)
+        goto unroll;
 
-    if (1 != SSL_set_fd(ssl, conn->socket)) goto unroll;
+    if (1 != SSL_set_fd(ssl, conn->socket))
+        goto unroll;
 
     SSL_set_accept_state(ssl);
 
@@ -1031,7 +1382,8 @@ unroll:
     ov_dict_del(self->connections, (void *)(intptr_t)socket);
 
 error:
-    if (ssl) SSL_free(ssl);
+    if (ssl)
+        SSL_free(ssl);
     return false;
 }
 
@@ -1039,46 +1391,38 @@ error:
 
 static bool load_certificate(SSL_CTX *ctx, ov_io_ssl_config *config) {
 
-    if (!ctx || !config) goto error;
+    if (!ctx || !config)
+        goto error;
 
     if (SSL_CTX_use_certificate_chain_file(ctx, config->certificate.cert) !=
         1) {
-        ov_log_error(
-            "%s failed to load certificate "
-            "from %s | error %d | %s",
-            config->domain,
-            config->certificate.cert,
-            errno,
-            strerror(errno));
+        ov_log_error("%s failed to load certificate "
+                     "from %s | error %d | %s",
+                     config->domain, config->certificate.cert, errno,
+                     strerror(errno));
         goto error;
     }
 
-    if (SSL_CTX_use_PrivateKey_file(
-            ctx, config->certificate.key, SSL_FILETYPE_PEM) != 1) {
-        ov_log_error(
-            "%s failed to load key "
-            "from %s | error %d | %s",
-            config->domain,
-            config->certificate.key,
-            errno,
-            strerror(errno));
+    if (SSL_CTX_use_PrivateKey_file(ctx, config->certificate.key,
+                                    SSL_FILETYPE_PEM) != 1) {
+        ov_log_error("%s failed to load key "
+                     "from %s | error %d | %s",
+                     config->domain, config->certificate.key, errno,
+                     strerror(errno));
         goto error;
     }
 
     if (SSL_CTX_check_private_key(ctx) != 1) {
-        ov_log_error(
-            "%s failure private key for\n"
-            "CERT | %s\n"
-            " KEY | %s",
-            config->domain,
-            config->certificate.cert,
-            config->certificate.key);
+        ov_log_error("%s failure private key for\n"
+                     "CERT | %s\n"
+                     " KEY | %s",
+                     config->domain, config->certificate.cert,
+                     config->certificate.key);
         goto error;
     }
 
     ov_log_debug("loaded SSL certificate \n file %s\n key %s\n",
-                 config->certificate.cert,
-                 config->certificate.key);
+                 config->certificate.cert, config->certificate.key);
 
     return true;
 error:
@@ -1093,16 +1437,20 @@ static bool load_verify_locations(SSL_CTX *ctx, ov_io_ssl_config *config) {
     int errorcode = -1;
     int r = 0;
 
-    if (!ctx || !config) goto error;
+    if (!ctx || !config)
+        goto error;
 
-    if (0 == config->verify_depth) config->verify_depth = 1;
+    if (0 == config->verify_depth)
+        config->verify_depth = 1;
 
     const char *file = NULL;
     const char *path = NULL;
     const char *client_ca = NULL;
 
-    if (0 != config->ca.file[0]) file = config->ca.file;
-    if (0 != config->ca.path[0]) path = config->ca.path;
+    if (0 != config->ca.file[0])
+        file = config->ca.file;
+    if (0 != config->ca.path[0])
+        path = config->ca.path;
 
     if (file || path) {
 
@@ -1112,11 +1460,11 @@ static bool load_verify_locations(SSL_CTX *ctx, ov_io_ssl_config *config) {
 
             errorcode = ERR_get_error();
 
-            ERR_error_string_n(
-                errorcode, errorstring, OV_SSL_ERROR_STRING_BUFFER_SIZE);
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
 
-            ov_log_error(
-                "SSL_CTX_load_verify_locations failed | %s", errorstring);
+            ov_log_error("SSL_CTX_load_verify_locations failed | %s",
+                         errorstring);
 
             goto error;
         }
@@ -1157,8 +1505,8 @@ static int tls_client_hello_callback_no_sni(SSL *ssl, int *al, void *arg) {
     const unsigned char *str = NULL;
     size_t str_len = 0;
 
-    if (0 == SSL_client_hello_get0_ext(
-                 ssl, TLSEXT_NAMETYPE_host_name, &str, &str_len)) {
+    if (0 == SSL_client_hello_get0_ext(ssl, TLSEXT_NAMETYPE_host_name, &str,
+                                       &str_len)) {
 
         /* In case the header extension for host name is NOT set,
          * the default certificate of the configured will be used.*/
@@ -1171,14 +1519,17 @@ static int tls_client_hello_callback_no_sni(SSL *ssl, int *al, void *arg) {
         OV_ASSERT(0 < str_len);
 
         /* min valid length without chars for hostname content */
-        if (4 >= str_len) goto error;
+        if (4 >= str_len)
+            goto error;
 
         /* check if the first entry is host name */
-        if (0 != str[3]) goto error;
+        if (0 != str[3])
+            goto error;
 
         size_t hostname_length = str[4];
 
-        if (str_len < hostname_length + 5) goto error;
+        if (str_len < hostname_length + 5)
+            goto error;
 
         uint8_t *hostname = (uint8_t *)str + 5;
 
@@ -1190,7 +1541,8 @@ static int tls_client_hello_callback_no_sni(SSL *ssl, int *al, void *arg) {
     return SSL_CLIENT_HELLO_SUCCESS;
 
 error:
-    if (al) *al = SSL_TLSEXT_ERR_ALERT_FATAL;
+    if (al)
+        *al = SSL_TLSEXT_ERR_ALERT_FATAL;
     return SSL_CLIENT_HELLO_ERROR;
 }
 
@@ -1203,23 +1555,28 @@ static bool open_listener_ctx(ov_io *self, Connection *conn) {
 
     SSL_CTX *ctx = NULL;
 
-    if (TLS != conn->config.socket.type) return true;
-    if (0 == conn->config.ssl.certificate.cert[0]) return true;
+    if (TLS != conn->config.socket.type)
+        return true;
+    if (0 == conn->config.ssl.certificate.cert[0])
+        return true;
 
     // dedicated ctx required
 
     ctx = SSL_CTX_new(TLS_server_method());
     SSL_CTX_set_min_proto_version(ctx, TLS1_2_VERSION);
 
-    if (!load_certificate(ctx, &conn->config.ssl)) goto error;
-    if (!load_verify_locations(ctx, &conn->config.ssl)) goto error;
+    if (!load_certificate(ctx, &conn->config.ssl))
+        goto error;
+    if (!load_verify_locations(ctx, &conn->config.ssl))
+        goto error;
 
     SSL_CTX_set_client_hello_cb(ctx, tls_client_hello_callback_no_sni, conn);
 
     conn->tls.ctx = ctx;
     return true;
 error:
-    if (ctx) SSL_CTX_free(ctx);
+    if (ctx)
+        SSL_CTX_free(ctx);
     return false;
 }
 
@@ -1227,36 +1584,41 @@ error:
 
 int ov_io_open_listener(ov_io *self, ov_io_socket_config config) {
 
-    if (!self) goto error;
-    if (!config.callbacks.io) goto error;
-    if (0 == config.socket.host[0]) goto error;
+    if (!self)
+        goto error;
+    if (!config.callbacks.io)
+        goto error;
+    if (0 == config.socket.host[0])
+        goto error;
 
     bool (*accept_handler)(int socket, uint8_t events, void *data) = NULL;
 
     switch (config.socket.type) {
 
-        case TCP:
-            accept_handler = accept_stream;
-            break;
-        case LOCAL:
-            accept_handler = accept_stream;
-            break;
-        case TLS:
-            accept_handler = accept_tls;
-            break;
-        default:
-            ov_log_error("Socket type unsupported");
-            goto error;
+    case TCP:
+        accept_handler = accept_stream;
+        break;
+    case LOCAL:
+        accept_handler = accept_stream;
+        break;
+    case TLS:
+        accept_handler = accept_tls;
+        break;
+    default:
+        ov_log_error("Socket type unsupported");
+        goto error;
     }
 
     int listener = ov_socket_create(config.socket, false, NULL);
-    if (!ov_socket_ensure_nonblocking(listener)) goto error;
+    if (!ov_socket_ensure_nonblocking(listener))
+        goto error;
 
     Connection *conn = calloc(1, sizeof(Connection));
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
-    if (!ov_dict_set(
-            self->connections, (void *)(intptr_t)listener, conn, NULL)) {
+    if (!ov_dict_set(self->connections, (void *)(intptr_t)listener, conn,
+                     NULL)) {
         conn = ov_data_pointer_free(conn);
         goto error;
     }
@@ -1267,17 +1629,16 @@ int ov_io_open_listener(ov_io *self, ov_io_socket_config config) {
     conn->io = self;
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
-    if (!open_listener_ctx(self, conn)) goto error;
-
-    if (!ov_event_loop_set(self->config.loop,
-                           listener,
-                           OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-                           self,
-                           accept_handler))
+    if (!open_listener_ctx(self, conn))
         goto error;
 
-    ov_log_debug(
-        "created listener %s:%i", config.socket.host, config.socket.port);
+    if (!ov_event_loop_set(self->config.loop, listener,
+                           OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
+                           self, accept_handler))
+        goto error;
+
+    ov_log_debug("created listener %s:%i", config.socket.host,
+                 config.socket.port);
 
     return listener;
 
@@ -1289,11 +1650,12 @@ error:
 
 static void callback_connection_success(Connection *conn) {
 
-    if (!conn) return;
+    if (!conn)
+        return;
 
     if (conn->config.callbacks.connected)
-        conn->config.callbacks.connected(
-            conn->config.callbacks.userdata, conn->socket);
+        conn->config.callbacks.connected(conn->config.callbacks.userdata,
+                                         conn->socket);
 
     return;
 }
@@ -1308,7 +1670,8 @@ static int tls_client_hello_cb(SSL *s, int *al, void *arg) {
      *      so we add some dummy callback, to resume
      *      standard SSL operation.
      */
-    if (!s) return SSL_CLIENT_HELLO_ERROR;
+    if (!s)
+        return SSL_CLIENT_HELLO_ERROR;
 
     if (al || arg) { /* ignored */
     };
@@ -1341,11 +1704,13 @@ static bool tls_perform_client_handshake(Connection *conn) {
 
     OV_ASSERT(conn);
 
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
-    if (-1 == conn->socket) goto error;
+    if (-1 == conn->socket)
+        goto error;
 
     OV_ASSERT(conn->tls.ssl);
 
@@ -1364,89 +1729,88 @@ static bool tls_perform_client_handshake(Connection *conn) {
 
     switch (r) {
 
-        case 1:
-            goto success;
+    case 1:
+        goto success;
+        break;
+
+    default:
+
+        /* The TLS/SSL handshake was not successful
+         * but was shut down controlled and by the
+         * specifications of the TLS/SSL protocol.
+         *
+         * Call SSL_get_error() with the return value ret
+         * to find out the reason.
+         */
+
+        n = SSL_get_error(conn->tls.ssl, r);
+        switch (n) {
+
+        case SSL_ERROR_NONE:
+            /* SHOULD not ne returned in 0 */
             break;
 
-        default:
-
-            /* The TLS/SSL handshake was not successful
-             * but was shut down controlled and by the
-             * specifications of the TLS/SSL protocol.
-             *
-             * Call SSL_get_error() with the return value ret
-             * to find out the reason.
-             */
-
-            n = SSL_get_error(conn->tls.ssl, r);
-            switch (n) {
-
-                case SSL_ERROR_NONE:
-                    /* SHOULD not ne returned in 0 */
-                    break;
-
-                case SSL_ERROR_ZERO_RETURN:
-                    /* close */
-                    goto error;
-                    break;
-
-                case SSL_ERROR_WANT_READ:
-                    /* try read again */
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_WANT_WRITE:
-                    /* try write again */
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_WANT_CONNECT:
-                    /* try connect again */
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_WANT_X509_LOOKUP:
-                    /* try lookup again */
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_WANT_ASYNC:
-                    /* try async again */
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_WANT_ASYNC_JOB:
-                    /* try async job again */
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_WANT_CLIENT_HELLO_CB:
-                    /* try client hello again */
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_SYSCALL:
-                    /* nonrecoverable IO error */
-                    goto error;
-                    break;
-
-                case SSL_ERROR_SSL:
-                    /* nonrecoverable SSL error */
-                    errorcode = ERR_get_error();
-                    ERR_error_string_n(errorcode,
-                                       errorstring,
-                                       OV_SSL_ERROR_STRING_BUFFER_SIZE);
-
-                    SSL_free(conn->tls.ssl);
-                    conn->tls.ssl = NULL;
-                    goto error;
-                    break;
-
-                case SSL_ERROR_WANT_ACCEPT:
-                    /* falltrough to accept */
-                    break;
-            }
+        case SSL_ERROR_ZERO_RETURN:
+            /* close */
+            goto error;
             break;
+
+        case SSL_ERROR_WANT_READ:
+            /* try read again */
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_WANT_WRITE:
+            /* try write again */
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_WANT_CONNECT:
+            /* try connect again */
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            /* try lookup again */
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_WANT_ASYNC:
+            /* try async again */
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_WANT_ASYNC_JOB:
+            /* try async job again */
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_WANT_CLIENT_HELLO_CB:
+            /* try client hello again */
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_SYSCALL:
+            /* nonrecoverable IO error */
+            goto error;
+            break;
+
+        case SSL_ERROR_SSL:
+            /* nonrecoverable SSL error */
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
+
+            SSL_free(conn->tls.ssl);
+            conn->tls.ssl = NULL;
+            goto error;
+            break;
+
+        case SSL_ERROR_WANT_ACCEPT:
+            /* falltrough to accept */
+            break;
+        }
+        break;
     }
 
     /*
@@ -1455,75 +1819,75 @@ static bool tls_perform_client_handshake(Connection *conn) {
      *      This stage SHOULD be reached only with SSL_ERROR_WANT_ACCEPT
      */
 
-    if (n != SSL_ERROR_WANT_ACCEPT) goto error;
+    if (n != SSL_ERROR_WANT_ACCEPT)
+        goto error;
 
     // accept
     r = SSL_accept(conn->tls.ssl);
 
     switch (r) {
 
-        case 1:
-            /* The TLS/SSL handshake was successfully
-             * completed, a TLS/SSL connection has been
-             * established.
-             */
-            goto success;
+    case 1:
+        /* The TLS/SSL handshake was successfully
+         * completed, a TLS/SSL connection has been
+         * established.
+         */
+        goto success;
+        break;
+
+    default:
+
+        /* The TLS/SSL handshake was not successful
+         * but was shut down controlled and by the
+         * specifications of the TLS/SSL protocol.
+         *
+         * Call SSL_get_error() with the return value ret
+         * to find out the reason.
+         */
+
+        n = SSL_get_error(conn->tls.ssl, r);
+        switch (n) {
+
+        case SSL_ERROR_NONE:
+            /* SHOULD not ne returned in 0 */
+            break;
+
+        case SSL_ERROR_ZERO_RETURN:
+            /* close */
+            goto error;
+            break;
+
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_WRITE:
+        case SSL_ERROR_WANT_CONNECT:
+        case SSL_ERROR_WANT_X509_LOOKUP:
+        case SSL_ERROR_WANT_ASYNC:
+        case SSL_ERROR_WANT_ASYNC_JOB:
+        case SSL_ERROR_WANT_CLIENT_HELLO_CB:
+        case SSL_ERROR_WANT_ACCEPT:
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_SYSCALL:
+            /* nonrecoverable IO error */
+            goto error;
+            break;
+
+        case SSL_ERROR_SSL:
+            /* nonrecoverable SSL error */
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
+
+            SSL_free(conn->tls.ssl);
+            conn->tls.ssl = NULL;
+            goto error;
             break;
 
         default:
-
-            /* The TLS/SSL handshake was not successful
-             * but was shut down controlled and by the
-             * specifications of the TLS/SSL protocol.
-             *
-             * Call SSL_get_error() with the return value ret
-             * to find out the reason.
-             */
-
-            n = SSL_get_error(conn->tls.ssl, r);
-            switch (n) {
-
-                case SSL_ERROR_NONE:
-                    /* SHOULD not ne returned in 0 */
-                    break;
-
-                case SSL_ERROR_ZERO_RETURN:
-                    /* close */
-                    goto error;
-                    break;
-
-                case SSL_ERROR_WANT_READ:
-                case SSL_ERROR_WANT_WRITE:
-                case SSL_ERROR_WANT_CONNECT:
-                case SSL_ERROR_WANT_X509_LOOKUP:
-                case SSL_ERROR_WANT_ASYNC:
-                case SSL_ERROR_WANT_ASYNC_JOB:
-                case SSL_ERROR_WANT_CLIENT_HELLO_CB:
-                case SSL_ERROR_WANT_ACCEPT:
-                    goto call_again_later;
-                    break;
-
-                case SSL_ERROR_SYSCALL:
-                    /* nonrecoverable IO error */
-                    goto error;
-                    break;
-
-                case SSL_ERROR_SSL:
-                    /* nonrecoverable SSL error */
-                    errorcode = ERR_get_error();
-                    ERR_error_string_n(errorcode,
-                                       errorstring,
-                                       OV_SSL_ERROR_STRING_BUFFER_SIZE);
-
-                    SSL_free(conn->tls.ssl);
-                    conn->tls.ssl = NULL;
-                    goto error;
-                    break;
-
-                default:
-                    goto error;
-            }
-            break;
+            goto error;
+        }
+        break;
     }
 
     OV_ASSERT(1 == 0);
@@ -1540,9 +1904,8 @@ call_again_later:
         loop->timer.set(loop, 50000, conn, perform_client_handshake_triggered);
 
     if (OV_TIMER_INVALID == conn->timer_id) {
-        ov_log_error(
-            "Failed to reenable trigger "
-            "for SSL client handshake");
+        ov_log_error("Failed to reenable trigger "
+                     "for SSL client handshake");
         goto error;
     }
 
@@ -1551,7 +1914,8 @@ call_again_later:
 success:
 
     if (conn->config.ssl.certificate.cert[0]) {
-        if (SSL_get_verify_result(conn->tls.ssl) != X509_V_OK) goto error;
+        if (SSL_get_verify_result(conn->tls.ssl) != X509_V_OK)
+            goto error;
     }
     conn->tls.handshaked = true;
     callback_connection_success(conn);
@@ -1565,110 +1929,6 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool init_ssl_client(ov_io *self, Connection *conn) {
-
-    OV_ASSERT(self);
-    OV_ASSERT(conn);
-
-    char errorstring[OV_SSL_ERROR_STRING_BUFFER_SIZE];
-    int errorcode = -1;
-
-    int r = 0;
-
-    conn->tls.ctx = SSL_CTX_new(TLS_client_method());
-    if (!conn->tls.ctx) goto error;
-
-    if (conn->config.ssl.verify_depth == 0) conn->config.ssl.verify_depth = 1;
-
-    const char *file = NULL;
-    const char *path = NULL;
-
-    if (0 != conn->config.ssl.ca.file[0]) file = conn->config.ssl.ca.file;
-    if (0 != conn->config.ssl.ca.path[0]) path = conn->config.ssl.ca.path;
-
-    if (file || path) {
-
-        r = SSL_CTX_load_verify_locations(conn->tls.ctx, file, path);
-
-        if (r != 1) {
-
-            errorcode = ERR_get_error();
-            ERR_error_string_n(
-                errorcode, errorstring, OV_SSL_ERROR_STRING_BUFFER_SIZE);
-            ov_log_error(
-                "SSL_CTX_load_verify_locations failed "
-                "at socket %i | %s",
-                conn->socket,
-                errorstring);
-            goto error;
-        }
-
-    } else {
-
-        ov_log_error(
-            "SSL client %i without verify "
-            "- cannot verify any incoming certs - abort",
-            conn->socket);
-
-        goto error;
-    }
-
-    if (0 != conn->config.ssl.certificate.cert[0]) {
-
-        if (1 != SSL_CTX_use_certificate_file(conn->tls.ctx,
-                                              conn->config.ssl.certificate.cert,
-                                              SSL_FILETYPE_PEM))
-            goto error;
-
-        if (1 != SSL_CTX_use_PrivateKey_file(conn->tls.ctx,
-                                             conn->config.ssl.certificate.key,
-                                             SSL_FILETYPE_PEM))
-            goto error;
-
-        if (1 != SSL_CTX_check_private_key(conn->tls.ctx)) goto error;
-    }
-
-    SSL_CTX_set_mode(conn->tls.ctx, SSL_MODE_AUTO_RETRY);
-    SSL_CTX_set_verify(conn->tls.ctx, SSL_VERIFY_PEER, NULL);
-    SSL_CTX_set_verify_depth(conn->tls.ctx, conn->config.ssl.verify_depth);
-    SSL_CTX_set_client_hello_cb(conn->tls.ctx, tls_client_hello_cb, NULL);
-
-    /* init ssl */
-
-    conn->tls.ssl = SSL_new(conn->tls.ctx);
-    if (!conn->tls.ssl) goto error;
-
-    /* create read bio */
-
-    if (1 != SSL_set_fd(conn->tls.ssl, conn->socket)) {
-        ov_log_error(
-            "SSL_set_fd failed "
-            "at socket %i | %s",
-            conn->socket,
-            errorstring);
-        goto error;
-    }
-
-    SSL_set_connect_state(conn->tls.ssl);
-
-    if (0 != conn->config.ssl.domain[0]) {
-
-        if (1 != SSL_set_tlsext_host_name(
-                     conn->tls.ssl, (char *)conn->config.ssl.domain)) {
-
-            goto error;
-        }
-    }
-
-    tls_perform_client_handshake(conn);
-
-    return true;
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static bool io_ssl_client(int socket, uint8_t events, void *data) {
 
     size_t size = OV_SSL_MAX_BUFFER;
@@ -1676,23 +1936,48 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     memset(buffer, 0, size);
 
     ov_io *self = ov_io_cast(data);
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
     OV_ASSERT(self);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+
+        if (conn->type == OV_IO_CLIENT_CONNECTION) {
+
+            if (conn->config.auto_reconnect) {
+
+                ov_io_socket_config *conf =
+                    calloc(1, sizeof(ov_io_socket_config));
+
+                *conf = conn->config;
+                if (!ov_list_queue_push(self->reconnects.list, conf)) {
+
+                    conf = ov_data_pointer_free(conf);
+                    ov_log_error("failed to enable auto reconnect");
+                    goto error;
+                }
+            }
+        }
+
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
     }
 
-    if (!conn->tls.handshaked) return tls_perform_client_handshake(conn);
+    if (!conn->tls.handshaked)
+        return tls_perform_client_handshake(conn);
 
-    if (!(events & OV_EVENT_IO_IN)) goto error;
+    if ((events & OV_EVENT_IO_OUT))
+        return io_stream_ssl_send(self, conn);
+
+    if (!(events & OV_EVENT_IO_IN))
+        goto error;
 
     ssize_t bytes = SSL_read(conn->tls.ssl, buffer, size);
 
@@ -1717,9 +2002,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
         if (conn->config.callbacks.io) {
 
             return conn->config.callbacks.io(
-                conn->config.callbacks.userdata,
-                conn->socket,
-                NULL,
+                conn->config.callbacks.userdata, conn->socket, NULL,
                 (ov_memory_pointer){.start = buffer, .length = bytes});
         }
     }
@@ -1731,50 +2014,160 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
+static bool init_ssl_client(ov_io *self, Connection *conn) {
 
-    if (!self) goto error;
-    if (!config.callbacks.io) goto error;
+    OV_ASSERT(self);
+    OV_ASSERT(conn);
+
+    char errorstring[OV_SSL_ERROR_STRING_BUFFER_SIZE];
+    int errorcode = -1;
+
+    int r = 0;
+
+    conn->tls.ctx = SSL_CTX_new(TLS_client_method());
+    if (!conn->tls.ctx)
+        goto error;
+
+    if (conn->config.ssl.verify_depth == 0)
+        conn->config.ssl.verify_depth = 1;
+
+    const char *file = NULL;
+    const char *path = NULL;
+
+    if (0 != conn->config.ssl.ca.file[0])
+        file = conn->config.ssl.ca.file;
+    if (0 != conn->config.ssl.ca.path[0])
+        path = conn->config.ssl.ca.path;
+
+    if (file || path) {
+
+        r = SSL_CTX_load_verify_locations(conn->tls.ctx, file, path);
+
+        if (r != 1) {
+
+            errorcode = ERR_get_error();
+            ERR_error_string_n(errorcode, errorstring,
+                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
+            ov_log_error("SSL_CTX_load_verify_locations failed "
+                         "at socket %i | %s",
+                         conn->socket, errorstring);
+            goto error;
+        }
+
+    } else {
+
+        ov_log_error("SSL client %i without verify "
+                     "- cannot verify any incoming certs - abort",
+                     conn->socket);
+
+        goto error;
+    }
+
+    if (0 != conn->config.ssl.certificate.cert[0]) {
+
+        if (1 != SSL_CTX_use_certificate_file(conn->tls.ctx,
+                                              conn->config.ssl.certificate.cert,
+                                              SSL_FILETYPE_PEM))
+            goto error;
+
+        if (1 != SSL_CTX_use_PrivateKey_file(conn->tls.ctx,
+                                             conn->config.ssl.certificate.key,
+                                             SSL_FILETYPE_PEM))
+            goto error;
+
+        if (1 != SSL_CTX_check_private_key(conn->tls.ctx))
+            goto error;
+    }
+
+    SSL_CTX_set_mode(conn->tls.ctx, SSL_MODE_AUTO_RETRY);
+    SSL_CTX_set_verify(conn->tls.ctx, SSL_VERIFY_PEER, NULL);
+    SSL_CTX_set_verify_depth(conn->tls.ctx, conn->config.ssl.verify_depth);
+    SSL_CTX_set_client_hello_cb(conn->tls.ctx, tls_client_hello_cb, NULL);
+
+    /* init ssl */
+
+    conn->tls.ssl = SSL_new(conn->tls.ctx);
+    if (!conn->tls.ssl)
+        goto error;
+    conn->io_data.callback = io_ssl_client;
+
+    /* create read bio */
+
+    if (1 != SSL_set_fd(conn->tls.ssl, conn->socket)) {
+        ov_log_error("SSL_set_fd failed "
+                     "at socket %i | %s",
+                     conn->socket, errorstring);
+        goto error;
+    }
+
+    SSL_set_connect_state(conn->tls.ssl);
+
+    if (0 != conn->config.ssl.domain[0]) {
+
+        if (1 != SSL_set_tlsext_host_name(conn->tls.ssl,
+                                          (char *)conn->config.ssl.domain)) {
+
+            goto error;
+        }
+    }
+
+    tls_perform_client_handshake(conn);
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static int open_connection(ov_io *self, ov_io_socket_config config) {
+
+    if (!self)
+        goto error;
+
+    if (!config.callbacks.io)
+        goto error;
 
     bool (*io)(int socket, uint8_t events, void *data) = NULL;
 
     switch (config.socket.type) {
 
-        case TCP:
-        case LOCAL:
-            io = io_stream;
-            break;
-        case TLS:
-            io = io_ssl_client;
-            break;
-        default:
-            ov_log_error("Socket type unsupported.");
-            goto error;
+    case TCP:
+    case LOCAL:
+        io = io_stream;
+        break;
+    case TLS:
+        io = io_ssl_client;
+        break;
+    default:
+        ov_log_error("Socket type unsupported.");
+        goto error;
     }
 
     int socket = ov_socket_create(config.socket, true, NULL);
+
     if (-1 == socket) {
 
         if (config.auto_reconnect) {
 
+            if (!ov_thread_lock_try_lock(&self->reconnects.lock)) goto error;
+
             ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
 
             *conf = config;
-            if (!ov_list_queue_push(self->reconnects, conf)) {
+            if (!ov_list_queue_push(self->reconnects.list, conf)) {
 
                 conf = ov_data_pointer_free(conf);
                 ov_log_error("failed to enable auto reconnect");
-                goto error;
+
             }
 
-            goto error;
+            ov_thread_lock_unlock(&self->reconnects.lock);
 
         } else {
 
             ov_log_error("failed to create socket %s:%i %i|%s",
-                         config.socket.host,
-                         config.socket.port,
-                         errno,
+                         config.socket.host, config.socket.port, errno,
                          strerror(errno));
         }
 
@@ -1787,7 +2180,8 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
     }
 
     Connection *conn = calloc(1, sizeof(Connection));
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
     if (!ov_dict_set(self->connections, (void *)(intptr_t)socket, conn, NULL)) {
         conn = ov_data_pointer_free(conn);
@@ -1799,6 +2193,11 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
     conn->type = OV_IO_CLIENT_CONNECTION;
     conn->config = config;
     conn->io = self;
+    conn->io_data.callback = io;
+    conn->io_data.out.buffer = NULL;
+    conn->io_data.out.queue = ov_list_free(conn->io_data.out.queue);
+    conn->io_data.out.queue =
+        ov_list_create((ov_list_config){.item.free = ov_buffer_free});
 
     if (TLS == config.socket.type) {
 
@@ -1808,11 +2207,9 @@ int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
         }
     }
 
-    if (!ov_event_loop_set(self->config.loop,
-                           socket,
+    if (!ov_event_loop_set(self->config.loop, socket,
                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE,
-                           self,
-                           io)) {
+                           self, conn->io_data.callback)) {
 
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto error;
@@ -1829,17 +2226,53 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+int ov_io_open_connection(ov_io *self, ov_io_socket_config config) {
+
+    if (!self)
+        goto error;
+    if (!config.callbacks.io)
+        goto error;
+
+    if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
+
+        ov_io_socket_config *conf = calloc(1, sizeof(ov_io_socket_config));
+        *conf = config;
+
+        if (!ov_list_queue_push(self->reconnects.list, conf)) {
+
+            conf = ov_data_pointer_free(conf);
+            ov_log_error("failed to enable auto reconnect");
+        }
+
+        ov_thread_lock_unlock(&self->reconnects.lock);
+
+        ov_log_debug("enabled reconnect to %s:%i", config.socket.host,
+                     config.socket.port);
+    } else {
+
+        ov_log_debug("failed to enable reconnect to %s:%i", config.socket.host,
+                     config.socket.port);
+    }
+
+error:
+    return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_io_config ov_io_config_from_json(const ov_json_value *input) {
 
     ov_io_config config = {0};
 
     const ov_json_value *conf = ov_json_object_get(input, OV_KEY_IO);
-    if (!conf) conf = input;
+    if (!conf)
+        conf = input;
 
     const char *string = ov_json_string_get(
         ov_json_get(conf, "/" OV_KEY_DOMAIN "/" OV_KEY_PATH));
 
-    if (string) strncpy(config.domain.path, string, PATH_MAX);
+    if (string)
+        strncpy(config.domain.path, string, PATH_MAX);
 
     config.limits.reconnect_interval_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_LIMITS "/" OV_KEY_RECONNECT_USEC));
@@ -1854,7 +2287,8 @@ ov_io_config ov_io_config_from_json(const ov_json_value *input) {
 
 bool ov_io_close(ov_io *self, int socket) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
     return ov_dict_del(self->connections, (void *)(intptr_t)socket);
 
 error:
@@ -1865,22 +2299,84 @@ error:
 
 bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
-    if (!conn) goto error;
+    if (!conn)
+        goto error;
 
-    SSL *ssl = conn->tls.ssl;
+    ov_event_loop *loop = self->config.loop;
 
-    ssize_t bytes = 0;
+    /* Ensure outgoing readiness listening */
 
-    if (ssl) {
-        bytes = SSL_write(ssl, buffer.start, buffer.length);
-    } else {
-        bytes = send(socket, buffer.start, buffer.length, 0);
+    if (!loop->callback.set(loop, socket,
+                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                OV_EVENT_IO_CLOSE | OV_EVENT_IO_OUT,
+                            self, conn->io_data.callback))
+        goto error;
+
+    size_t max = ov_socket_get_send_buffer_size(socket);
+    if (max < buffer.length) {
+
+        ov_buffer *temp = NULL;
+        ssize_t open = buffer.length;
+        uint8_t *ptr = (uint8_t *)buffer.start;
+        size_t len = 0;
+
+        while (open > 0) {
+
+            temp = ov_buffer_create(max);
+            if (!temp)
+                goto error;
+
+            if (open > (ssize_t)max) {
+                len = max;
+            } else {
+                len = (size_t)open;
+            }
+
+            if (!ov_buffer_set(temp, ptr, len)) {
+                temp = ov_buffer_free(temp);
+                goto error;
+            }
+
+            if (!ov_list_queue_push(conn->io_data.out.queue, temp)) {
+                temp = ov_buffer_free(temp);
+                goto error;
+            }
+
+            temp = NULL;
+            open = open - max;
+
+            if (open > 0)
+                ptr = ptr + max;
+        }
+
+        /* Return here to not increase io counters, and let processing be done
+         * in next eventloop run */
+        return true;
     }
 
-    if (bytes < 1) goto error;
+    // Push to queue
+
+    ov_buffer *buf = ov_buffer_create(buffer.length);
+    if (!buf)
+        goto error;
+
+    if (!ov_buffer_push(buf, (void *)buffer.start, buffer.length))
+        goto error;
+
+    if (!ov_list_queue_push(conn->io_data.out.queue, buf)) {
+        buf = ov_buffer_free(buf);
+        goto error;
+    }
+
+    if (conn->tls.ssl) {
+        io_stream_ssl_send(self, conn);
+    } else {
+        stream_send(self, conn);
+    }
 
     return true;
 
@@ -1900,7 +2396,8 @@ ov_domain *ov_io_get_domain(ov_io *self, const char *name) {
 
     for (size_t i = 0; i < self->domain.size; i++) {
 
-        if (self->domain.array[i].config.name.length != len) continue;
+        if (self->domain.array[i].config.name.length != len)
+            continue;
 
         if (0 == memcmp(self->domain.array[i].config.name.start, name, len)) {
             domain = &self->domain.array[i];

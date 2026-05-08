@@ -76,8 +76,8 @@ static void receive_from(int fd) {
 
         } else if (EAGAIN != errno) {
 
-            fprintf(
-                stderr, "Could not read from socket: %s\n", strerror(errno));
+            fprintf(stderr, "Could not read from socket: %s\n",
+                    strerror(errno));
         }
     }
 }
@@ -105,9 +105,7 @@ static void send_to(int fd, const struct sockaddr *dest, socklen_t destlen) {
 
 /*----------------------------------------------------------------------------*/
 
-static void loopback(int read_fd,
-                     int fd,
-                     const struct sockaddr *dest,
+static void loopback(int read_fd, int fd, const struct sockaddr *dest,
                      socklen_t destlen) {
 
     char buf[1001] = {0};
@@ -133,8 +131,8 @@ static void loopback(int read_fd,
 
         } else if (errno != EAGAIN) {
 
-            fprintf(
-                stderr, "Could not read from socket: %s\n", strerror(errno));
+            fprintf(stderr, "Could not read from socket: %s\n",
+                    strerror(errno));
         }
     }
 }

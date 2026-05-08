@@ -90,8 +90,7 @@ static FILE *try_open_log_file(char const *fname) {
         char buf[255] = {0};
 
         int logfd = open(make_log_file_name(buf, sizeof(buf)),
-                         O_WRONLY | O_CLOEXEC | O_CREAT | O_TRUNC,
-                         S_IRWXU);
+                         O_WRONLY | O_CLOEXEC | O_CREAT | O_TRUNC, S_IRWXU);
 
         if (0 > logfd) {
 
@@ -383,14 +382,14 @@ static bool setsockettimeouts(int fd) {
         ERR("invalid fd");
         return false;
 
-    } else if (0 > setsockopt(
-                       fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof timeout)) {
+    } else if (0 > setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
+                              sizeof timeout)) {
 
         ERR("Could not set Read timeout");
         return false;
 
-    } else if (0 > setsockopt(
-                       fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof timeout)) {
+    } else if (0 > setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &timeout,
+                              sizeof timeout)) {
 
         ERR("Could not set Send timeout");
         return false;
@@ -477,17 +476,17 @@ static int port_from_addr(struct sockaddr *sa) {
 
     switch (sa->sa_family) {
 
-        case AF_INET:
-            port = ((struct sockaddr_in *)sa)->sin_port;
-            break;
+    case AF_INET:
+        port = ((struct sockaddr_in *)sa)->sin_port;
+        break;
 
-        case AF_INET6:
-            port = ((struct sockaddr_in6 *)sa)->sin6_port;
-            break;
+    case AF_INET6:
+        port = ((struct sockaddr_in6 *)sa)->sin6_port;
+        break;
 
-        default:
+    default:
 
-            assert(!"UNSUPPORTED INTERNET FAMILY");
+        assert(!"UNSUPPORTED INTERNET FAMILY");
     }
 
     return ntohs(port);
@@ -518,7 +517,8 @@ static void sighandler_close_listen_fd(int signum) {
 
 static void handle_client_connection(int fd) {
 
-    if (fd <= 0) return;
+    if (fd <= 0)
+        return;
 
     ov_test_tcp_disable_nagls_alg(fd);
     cb_serve_client(fd, cb_client_fd_userdata);
@@ -556,7 +556,8 @@ static void serve_to_kill(int fd) {
 
         handle_client_connection(client_fd);
 
-        if (-1 != client_fd) close(client_fd);
+        if (-1 != client_fd)
+            close(client_fd);
 
         OUT("Connection done - next round...");
     }
@@ -567,8 +568,7 @@ static void serve_to_kill(int fd) {
 enum cb_loopback_state { WAITING, Q, U, I, T };
 
 static enum cb_loopback_state propagate_state(enum cb_loopback_state state,
-                                              char *buf,
-                                              size_t nbytes) {
+                                              char *buf, size_t nbytes) {
 
     assert(0 != buf);
 
@@ -578,45 +578,45 @@ static enum cb_loopback_state propagate_state(enum cb_loopback_state state,
 
         switch (state) {
 
-            case WAITING:
+        case WAITING:
 
-                if ('q' == c) {
-                    state = Q;
-                } else {
-                    state = WAITING;
-                }
+            if ('q' == c) {
+                state = Q;
+            } else {
+                state = WAITING;
+            }
 
-                break;
+            break;
 
-            case Q:
+        case Q:
 
-                if ('u' == c) {
-                    state = U;
-                } else {
-                    state = WAITING;
-                }
-                break;
+            if ('u' == c) {
+                state = U;
+            } else {
+                state = WAITING;
+            }
+            break;
 
-            case U:
+        case U:
 
-                if ('i' == c) {
-                    state = I;
-                } else {
-                    state = WAITING;
-                }
-                break;
+            if ('i' == c) {
+                state = I;
+            } else {
+                state = WAITING;
+            }
+            break;
 
-            case I:
+        case I:
 
-                if ('t' == c) {
-                    state = T;
-                } else {
-                    state = WAITING;
-                }
-                break;
+            if ('t' == c) {
+                state = T;
+            } else {
+                state = WAITING;
+            }
+            break;
 
-            case T:
-                break;
+        case T:
+            break;
         }
 
         if (T == state) {
@@ -762,8 +762,7 @@ static ServerSocket open_server_socket(int port) {
     struct addrinfo *result;
 
     if (0 != getaddrinfo("127.0.0.1",
-                         port_to_str(port_str, sizeof(port_str), port),
-                         &hints,
+                         port_to_str(port_str, sizeof(port_str), port), &hints,
                          &result)) {
         close(fd);
         return sock;
@@ -798,8 +797,8 @@ static ServerSocket open_server_socket(int port) {
 
     int server_port = port_from_addr(sa);
 
-    fprintf(
-        stderr, "Opened server port on %i, expected %i\n", server_port, port);
+    fprintf(stderr, "Opened server port on %i, expected %i\n", server_port,
+            port);
 
     freeaddrinfo(result);
 
@@ -820,8 +819,7 @@ static void ensure_we_die_with_parent() {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_test_tcp_server(pid_t *server_pid,
-                        int *server_port,
+bool ov_test_tcp_server(pid_t *server_pid, int *server_port,
                         ov_test_tcp_server_config cfg) {
 
     assert(0 != server_port);

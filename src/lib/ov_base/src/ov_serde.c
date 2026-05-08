@@ -43,8 +43,7 @@ static bool is_valid(ov_serde *self) {
 
 /*----------------------------------------------------------------------------*/
 
-ov_serde_state ov_serde_add_raw(ov_serde *self,
-                                ov_buffer const *raw,
+ov_serde_state ov_serde_add_raw(ov_serde *self, ov_buffer const *raw,
                                 ov_result *res) {
 
     if (!is_valid(self)) {
@@ -99,9 +98,7 @@ static bool is_fh_valid(int fh) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_serde_serialize(ov_serde *self,
-                        int fh,
-                        ov_serde_data data,
+bool ov_serde_serialize(ov_serde *self, int fh, ov_serde_data data,
                         ov_result *res) {
 
     if ((!is_valid(self)) || (!is_fh_valid(fh))) {
@@ -226,10 +223,8 @@ static int fh_from_stream(FILE *out) {
 
 /*----------------------------------------------------------------------------*/
 
-static char *to_string_via_tmpfile(ov_serde *self,
-                                   FILE *out,
-                                   ov_serde_data data,
-                                   ov_result *res) {
+static char *to_string_via_tmpfile(ov_serde *self, FILE *out,
+                                   ov_serde_data data, ov_result *res) {
     int fh = fh_from_stream(out);
 
     if (0 > fh) {

@@ -58,7 +58,8 @@ struct ov_vocs_loop {
 void *participant_free(void *self) {
 
     Participant *p = (Participant *)self;
-    if (!p) return NULL;
+    if (!p)
+        return NULL;
 
     p->client = ov_data_pointer_free(p->client);
     p->user = ov_data_pointer_free(p->user);
@@ -72,10 +73,12 @@ void *participant_free(void *self) {
 ov_vocs_loop *ov_vocs_loop_create(const char *name) {
 
     ov_vocs_loop *self = NULL;
-    if (!name) goto error;
+    if (!name)
+        goto error;
 
     self = calloc(1, sizeof(ov_vocs_loop));
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     self->magic_bytes = OV_VOCS_LOOP_MAGIC_BYTES;
 
@@ -94,7 +97,8 @@ error:
 
 ov_vocs_loop *ov_vocs_loop_free(ov_vocs_loop *self) {
 
-    if (!self) return NULL;
+    if (!self)
+        return NULL;
 
     self->participants = ov_dict_free(self->participants);
     self->name = ov_data_pointer_free(self->name);
@@ -106,7 +110,8 @@ ov_vocs_loop *ov_vocs_loop_free(ov_vocs_loop *self) {
 
 ov_vocs_loop *ov_vocs_loop_cast(const void *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     if (*(uint16_t *)self == OV_VOCS_LOOP_MAGIC_BYTES)
         return (ov_vocs_loop *)self;
@@ -126,7 +131,8 @@ void *ov_vocs_loop_free_void(void *self) {
 
 int64_t ov_vocs_loop_get_participants_count(ov_vocs_loop *self) {
 
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     return ov_dict_count(self->participants);
 error:
@@ -140,19 +146,24 @@ static bool add_participant(const void *key, void *value, void *data) {
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
-    if (!key) return true;
+    if (!key)
+        return true;
     ov_json_value *store = ov_json_value_cast(data);
     Participant *p = (Participant *)value;
 
     out = ov_json_object();
     val = ov_json_string(p->client);
-    if (!ov_json_object_set(out, OV_KEY_CLIENT, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_CLIENT, val))
+        goto error;
     val = ov_json_string(p->user);
-    if (!ov_json_object_set(out, OV_KEY_USER, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_USER, val))
+        goto error;
     val = ov_json_string(p->role);
-    if (!ov_json_object_set(out, OV_KEY_ROLE, val)) goto error;
+    if (!ov_json_object_set(out, OV_KEY_ROLE, val))
+        goto error;
 
-    if (!ov_json_array_push(store, out)) goto error;
+    if (!ov_json_array_push(store, out))
+        goto error;
     return true;
 
 error:
@@ -166,11 +177,13 @@ error:
 ov_json_value *ov_vocs_loop_get_participants(ov_vocs_loop *self) {
 
     ov_json_value *out = NULL;
-    if (!self) goto error;
+    if (!self)
+        goto error;
 
     out = ov_json_array();
 
-    if (!ov_dict_for_each(self->participants, out, add_participant)) goto error;
+    if (!ov_dict_for_each(self->participants, out, add_participant))
+        goto error;
 
     return out;
 error:
@@ -180,26 +193,30 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_loop_add_participant(ov_vocs_loop *self,
-                                  int socket,
-                                  const char *client,
-                                  const char *user,
+bool ov_vocs_loop_add_participant(ov_vocs_loop *self, int socket,
+                                  const char *client, const char *user,
                                   const char *role) {
 
     Participant *p = NULL;
 
-    if (0 >= socket || !self || !user || !role) goto error;
+    if (0 >= socket || !self || !user || !role)
+        goto error;
 
     p = calloc(1, sizeof(Participant));
-    if (!p) goto error;
+    if (!p)
+        goto error;
 
-    if (client) p->client = ov_string_dup(client);
-    if (user) p->user = ov_string_dup(user);
-    if (role) p->role = ov_string_dup(role);
+    if (client)
+        p->client = ov_string_dup(client);
+    if (user)
+        p->user = ov_string_dup(user);
+    if (role)
+        p->role = ov_string_dup(role);
 
     intptr_t key = socket;
 
-    if (!ov_dict_set(self->participants, (void *)key, p, NULL)) goto error;
+    if (!ov_dict_set(self->participants, (void *)key, p, NULL))
+        goto error;
 
     return true;
 error:
@@ -211,7 +228,8 @@ error:
 
 bool ov_vocs_loop_drop_participant(ov_vocs_loop *self, int socket) {
 
-    if (!self || !self->participants) goto error;
+    if (!self || !self->participants)
+        goto error;
 
     intptr_t key = socket;
 
