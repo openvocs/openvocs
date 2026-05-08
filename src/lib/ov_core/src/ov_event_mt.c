@@ -47,6 +47,8 @@ struct ov_event_mt {
     uint16_t magic_bytes;
     ov_event_mt_config config;
 
+    bool debug;
+
     ov_json_io_buffer *json_io_buffer;
 
     ov_thread_loop *tloop;
@@ -287,7 +289,13 @@ bool ov_event_mt_push(ov_event_mt *self, int socket, ov_json_value *input){
 
     if (!self || !input) goto error;
 
-    msg = ov_thread_message_standard_create(0, input);
+    if (self->debug){
+        char *str = ov_json_value_to_string(input);
+        ov_log_debug("PUSHING TO THREADS %s", str);
+        str = ov_data_pointer_free(str);
+    }
+
+    msg = ov_thread_message_standard_create(1, input);
     if (!msg) goto error;
     msg->socket = socket;
 
@@ -370,4 +378,13 @@ int ov_event_mt_open_listener(ov_event_mt *self,
     return ov_io_open_listener(self->config.io, config);
 error:
     return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_event_mt_debug(ov_event_mt *self, bool on){
+
+    if (!self) return false;
+    self->debug = on;
+    return true;
 }

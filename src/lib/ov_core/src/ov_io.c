@@ -3705,6 +3705,8 @@ bool ov_io_enable_websocket_events(ov_io *self,
     cb->callback = callback;
     cb->userdata = userdata;
 
+    ov_log_debug("websocket enabled at %s%s", domain, uri);
+
     return true;
 error:
     key = ov_data_pointer_free(key);

@@ -62,6 +62,8 @@ ov_event_mt *ov_event_mt_create(ov_event_mt_config config);
 ov_event_mt *ov_event_mt_free(ov_event_mt *self);
 ov_event_mt *ov_event_mt_cast(const void *data);
 
+bool ov_event_mt_debug(ov_event_mt *self, bool on);
+
 /*
  *      ------------------------------------------------------------------------
  *
