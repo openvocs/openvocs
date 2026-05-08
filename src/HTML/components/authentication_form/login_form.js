@@ -80,15 +80,21 @@ export default class ov_Login_Form extends HTMLElement {
                 layout: {
                     'default': [
                         '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
-                        '€ q w e r t y u i o p [ ] \\',
-                        '@ a s d f g h j k l ; \' {enter}',
+                        'q w e r t y u i o p [ ] \\',
+                        '@ a s d f g h j k l ; \' {spacebar}',
                         '{shift} z x c v b n m , . / {shift}'
                     ],
                     'shift': [
                         '~ ! # $ % ^ & * ( ) _ + {bksp}',
-                        '€ Q W E R T Y U I O P { } |',
-                        '@ A S D F G H J K L : " {enter}',
+                        'Q W E R T Y U I O P { } |',
+                        '€ A S D F G H J K L : " {spacebar}',
                         '{shift} Z X C V B N M < > ? {shift}'
+                    ],
+                    'shift_upper': [
+                        '~ ! # $ % ^ & * ( ) _ + {bksp}',
+                        'Q W E R T Y U I O P { } |',
+                        '€ A S D F G H J K L : " {spacebar}',
+                        '{shift_upper} Z X C V B N M < > ? {shift_upper}'
                     ]
                 },
                 display: {
@@ -153,42 +159,45 @@ export default class ov_Login_Form extends HTMLElement {
         this.#current_input.dispatchEvent(new CustomEvent("value_changed"));
     }
 
+    #last_press_time = 0;
+    #double_press_delay = 300; // Time in milliseconds
+
     #on_key_press(button) {
         if (button === "{shift}") {
+            const current_time = new Date().getTime();
             let currentLayout = this.#login_keyboard.options.layoutName;
             let shiftToggle;
-            if (currentLayout === "default") {
-                shiftToggle = "shift";
-                this.#login_keyboard.addButtonTheme("{shift}", "active_button");
-            } else {
+            if (current_time - this.#last_press_time <= this.#double_press_delay) {
+                if (currentLayout !== "shift_upper") {
+                    shiftToggle = "shift_upper";
+                    this.#login_keyboard.addButtonTheme("{shift_upper}", "active_button");
+                }
+            } else if (currentLayout !== "default") {
                 shiftToggle = "default";
                 this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
+            } else {
+                shiftToggle = "shift";
+                this.#login_keyboard.addButtonTheme("{shift}", "active_button");
             }
-
+            this.#last_press_time = current_time;
             this.#login_keyboard.setOptions({
                 layoutName: shiftToggle
             });
-        } else if (button === "{enter}") {
-            this.#login_keyboard.addButtonTheme("{enter}", "active_button");
-            if (this.#dom.login_button.disabled) {
-                if (this.#current_input === this.#dom.password_field)
-                    this.#dom.user_field.click();
-                else
-                    this.#dom.password_field.click();
-            }
-            else
-                this.#dom.login_button.click();
+        } else if (button === "{shift_upper}") {
+            this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
+            this.#login_keyboard.setOptions({
+                layoutName: "default"
+            });
         }
     }
 
     #on_key_released(button) {
-        if (button !== "{shift}" && button !== "{enter}" && button !== "{bksp}" && this.#login_keyboard.options.layoutName === "shift") {
+        if (button !== "{shift}" && button !== "{shift_upper}" && button !== "{bksp}" && this.#login_keyboard.options.layoutName === "shift") {
             this.#login_keyboard.setOptions({
                 layoutName: "default"
             });
             this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
         }
-        this.#login_keyboard.removeButtonTheme("{enter}", "active_button");
     }
 
     #check_form() {
