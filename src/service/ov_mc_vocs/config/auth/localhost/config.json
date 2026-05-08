@@ -19,6 +19,15 @@
 			"layout":"auto_grid",
 			"name_scaling":1.5,
 			"site_scaling":1
+		},
+		"1015x1792":
+		{
+			"font_scaling":1,
+			"grid_columns":2,
+			"grid_rows":2,
+			"layout":"auto_grid",
+			"name_scaling":1.5,
+			"site_scaling":1
 		}
 	},
 	"loops":
@@ -45,7 +54,6 @@
 		"admin":
 		{
 			"id":"admin",
-			"layout":{},
 			"name":null,
 			"users":
 			{
