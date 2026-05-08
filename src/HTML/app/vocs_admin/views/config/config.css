@@ -8,7 +8,7 @@
 .offline #config_name::after {
     content: "OFFLINE";
     color: var(--red);
-    font-size: 1.2rem;
+    /* font-size: 1.2rem; */
     border: solid 0.1rem var(--red);
     margin-left: 0.5rem;
     padding: 0 0.2rem;

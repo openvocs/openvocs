@@ -66,7 +66,7 @@
     display: grid;
     grid-template-rows: minmax(0, auto) 10.5rem 14rem;
     height: calc(100% - 3rem);
-    font-size: 1.1rem;
+    /* font-size: 1.1rem; */
 }
 
 #menu_slider .icon {
@@ -179,7 +179,7 @@
     width: calc(100vw - var(--default_slider_width));
     min-width: 30rem;
     bottom: var(--menu_bar_height);
-    font-size: 1.1rem;
+    /* font-size: 1.1rem; */
 }
 
 /* #settings_slider div[slot=dialog-content] {
@@ -443,7 +443,7 @@ div:has(> #keyset_name:empty) {
 }
 
 #R {
-    font-size: 1rem;
+    /* font-size: 1rem; */
     vertical-align: super;
 }
 
