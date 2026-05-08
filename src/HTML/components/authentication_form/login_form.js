@@ -97,11 +97,19 @@ export default class ov_Login_Form extends HTMLElement {
                         '{shift_upper} Z X C V B N M < > ? {shift_upper}'
                     ]
                 },
+                buttonTheme: [
+                    {
+                        class: "fluentui_icon",
+                        buttons: "{bksp} {shift} {shift_upper}"
+                    }
+                ],
                 display: {
-                    '{enter}': '<img src="/images/fluent-ui-system-icons/arrow-enter-left.svg">',
-                    "{shift}": '<img src="/images/fluent-ui-system-icons/keyboard-shift.svg">',
-                    "{bksp}": '<img src="/images/fluent-ui-system-icons/backspace.svg">'
-                }
+                    '{spacebar}': 'space',
+                    "{shift}": '&#xea87',
+                    "{shift_upper}": '&#xea89',
+                    "{bksp}": "&#xe1c9"
+                },
+                disableButtonHold: true
             });
         }
 
