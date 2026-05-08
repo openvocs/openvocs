@@ -291,6 +291,15 @@ function add_sip_to_config(config) {
     }
 }
 
+function add_recorder_to_config(config){
+    let recorder = Config_Recorder.collect();
+    for (let loop_id of Object.keys(recorder)) {
+        let loop = config.loops[loop_id];
+        if (loop)
+            loop.recorded = true;
+    }
+}
+
 function collect_config(settings) {
     let collect_new_nodes = false;
     if (!settings) {
@@ -309,6 +318,8 @@ function collect_config(settings) {
     }
     if (SIP)
         add_sip_to_config(config);
+    if(RECORDER)
+        add_recorder_to_config(config);
     return config;
 }
 

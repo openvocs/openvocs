@@ -149,3 +149,15 @@ export function select_loop(loop) {
     DOM.playback_search.click();
     DOM.loading_screen.hide();
 }
+
+export function collect() {
+    let result = {};
+
+    let loops = document.querySelectorAll("ov-recorder-config-loop");
+    for (let loop of loops) {
+        if (loop.active)
+            result[loop.id] = { "recorded": true };
+    }
+
+    return result;
+}
