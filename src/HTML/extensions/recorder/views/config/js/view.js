@@ -56,7 +56,7 @@ export function init(view_id) {
                     if (await ov_Recorder.stop_record(loop.id, ws)) {
                         loop.active = false;
                         DOM.start_recording.classList.toggle("recording", false);
-                        DOM.message.innerText = "Recording was stopped";
+                        DOM.message.innerText = "Recording was stopped. Please remember to save project.";
                         DOM.message.className = "success";
                         setTimeout(() => {
                             DOM.message.innerText = "";
@@ -75,7 +75,7 @@ export function init(view_id) {
                     if (await ov_Recorder.start_record(loop.id, ws)) {
                         loop.active = true;
                         DOM.start_recording.classList.toggle("recording", true);
-                        DOM.message.innerText = "Recording was started";
+                        DOM.message.innerText = "Recording was started. Please remember to save project.";
                         DOM.message.className = "success";
                         setTimeout(() => {
                             DOM.message.innerText = "";
@@ -148,4 +148,16 @@ export function select_loop(loop) {
     // DOM.stop_recording.disabled = !loop.active;
     DOM.playback_search.click();
     DOM.loading_screen.hide();
+}
+
+export function collect() {
+    let result = {};
+
+    let loops = document.querySelectorAll("ov-recorder-config-loop");
+    for (let loop of loops) {
+        if (loop.active)
+            result[loop.id] = { "recorded": true };
+    }
+
+    return result;
 }
