@@ -23,6 +23,51 @@ error:
     return false;
 }
 
+/*----------------------------------------------------------------------------*/
+
+static void async_timedout_sip(void *userdata, ov_event_async_data data) {
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self)
+        goto error;
+
+    ov_json_value *out = ov_event_api_create_error_response(
+        data.value, OV_ERROR_TIMEOUT, OV_ERROR_DESC_TIMEOUT);
+    env_send(self, data.socket, out);
+    out = ov_json_value_free(out);
+
+error:
+    ov_event_async_data_clear(&data);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool set_async_sip(ov_vocs *vocs, const char *uuid, int socket, const ov_json_value *msg){
+
+    ov_json_value *out = NULL;
+
+    if (!vocs || !uuid || !msg) goto error;
+
+    if (!ov_json_value_copy((void**)&out, (void*)msg)) goto error;
+
+    if (!ov_event_async_set(
+        vocs->async,
+        uuid,
+        (ov_event_async_data){.socket = socket,
+                              .value = out,
+                              .timedout.userdata = vocs,
+                              .timedout.callback = async_timedout_sip},
+            vocs->config.timeout.response_usec)) {
+            goto error;
+    }
+
+    return true;
+error:
+    ov_json_value_free(out);
+    return false;
+}
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -2261,24 +2306,6 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void async_timedout_sip(void *userdata, ov_event_async_data data) {
-
-    ov_vocs *self = ov_vocs_cast(userdata);
-    if (!self)
-        goto error;
-
-    ov_json_value *out = ov_event_api_create_error_response(
-        data.value, OV_ERROR_TIMEOUT, OV_ERROR_DESC_TIMEOUT);
-    env_send(self, data.socket, out);
-    out = ov_json_value_free(out);
-
-error:
-    ov_event_async_data_clear(&data);
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static bool client_call_function(ov_vocs *vocs,
                                  int socket,
                                  const ov_json_value *input,
@@ -2303,19 +2330,7 @@ static bool client_call_function(ov_vocs *vocs,
         goto error;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout_sip},
-            vocs->config.timeout.response_usec)) {
-
-        goto error;
-    }
-
-    input = NULL;
+    set_async_sip(vocs, uuid, socket, input);
 
     if (!function(vocs->sip, uuid)) {
 
@@ -2332,8 +2347,10 @@ static bool client_call_function(ov_vocs *vocs,
         goto error;
     }
 
+    return true;
+
 error:
-    return;
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -2344,10 +2361,10 @@ static void client_list_calls(void *userdata, const char *name,
     UNUSED(name);
     ov_vocs *vocs = ov_vocs_cast(userdata);
 
-    
-
-    return client_call_function(
+    client_call_function(
         vocs, socket, input, ov_mc_backend_sip_list_calls);
+
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -2358,8 +2375,10 @@ static void client_list_call_permissions(void *userdata, const char *name,
     UNUSED(name);
     ov_vocs *vocs = ov_vocs_cast(userdata);
 
-    return client_call_function(
+    client_call_function(
         vocs, socket, input, ov_mc_backend_sip_list_permissions);
+
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -2370,8 +2389,10 @@ static void client_list_sip_status(void *userdata, const char *name,
     UNUSED(name);
     ov_vocs *vocs = ov_vocs_cast(userdata);
 
-    return client_call_function(
+    client_call_function(
         vocs, socket, input, ov_mc_backend_sip_get_status);
+
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
