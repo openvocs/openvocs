@@ -449,6 +449,7 @@ static void cb_event_register(void *userdata, const char *name, int socket,
     }
 
     ov_id_set(proxy->uuid, uuid);
+    proxy->socket = socket;
 
     ov_dict_set(self->proxy.data, (void *)(intptr_t)socket, proxy, NULL);
     ov_thread_lock_unlock(&self->proxy.lock);
@@ -459,6 +460,10 @@ static void cb_event_register(void *userdata, const char *name, int socket,
 
     if (self->config.callback.connected)
         self->config.callback.connected(self->config.callback.userdata, true);
+
+    ov_json_value *out = ov_event_api_create_success_response(input);
+    ov_event_app_send(self->app, socket, out);
+    out = ov_json_value_free(out);
 
 error:
     ov_json_value_free(input);
@@ -1694,6 +1699,7 @@ static bool send_proxy_message(const void *key, void *val, void *data) {
     struct container *container = (struct container *)data;
 
     ov_event_app_send(container->self->app, proxy->socket, container->out);
+
     return true;
 }
 

@@ -45,10 +45,12 @@ const uint8_t OP_WAIT = 0x02;
 const uint8_t OP_WAIT_INV = 0x12;
 const uint8_t OP_NEXT_2 = 0x03;
 const uint8_t OP_NEXT_2_INV = 0x13;
+const uint8_t OP_NEXT_3 = 0x04;
+const uint8_t OP_NEXT_3_INV = 0x14;
 
-const uint8_t OP_NEXT_NO_INV = 0x04;
-const uint8_t OP_ABORT = 0x05;
-const uint8_t OP_NEXT_INV_ABORTS = 0x06;
+const uint8_t OP_NEXT_NO_INV = 0x05;
+const uint8_t OP_ABORT = 0x06;
+const uint8_t OP_NEXT_INV_ABORTS = 0x07;
 
 typedef struct {
 
@@ -66,9 +68,14 @@ static bool opcode_equals(handler_state self, int16_t opcode) {
 
     if (0 > opcode) {
         return true;
-    } else {
-        return opcode == (int16_t)self.instr.opcode;
+    } else if(opcode != (int16_t)self.instr.opcode) {
+        fprintf(stderr,
+                "Opcodes do not match: Real: %" PRIu8 ", expected: %" PRIi16
+                "\n",
+                self.instr.opcode, opcode);
+        return false;
     }
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -79,9 +86,14 @@ static bool arg_equals(handler_state self, size_t arg_index, int16_t ref) {
 
     if (0 > ref) {
         return true;
-    } else {
-        return ref == (int16_t)self.instr.args[arg_index];
+    } else if(ref != (int16_t)self.instr.args[arg_index]) {
+        fprintf(stderr,
+                "Argument does not match: Real: %" PRIu8 " Expected: %" PRIi16
+                "\n",
+                self.instr.args[arg_index], ref);
+        return false;
     }
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -92,9 +104,11 @@ static bool id_equals(handler_state self, char const *ref) {
         return true;
     } else if (0 == self.id) {
         return false;
-    } else {
-        return 0 == strcmp(self.id, ref);
+    } else if(0 != strcmp(self.id, ref)) {
+        fprintf(stderr, "Ids do not match: Real: %s   Expected: %s\n",
+                self.id, ref);
     }
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -103,9 +117,11 @@ static bool data_equals(handler_state self, void *ref) {
 
     if (0 == ref) {
         return true;
-    } else {
-        return self.data == ref;
+    } else if(self.data != ref) {
+        fprintf(stderr, "Data does not match: Real: %p   Expected: %p\n",
+                self.data, ref);
     }
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -125,10 +141,17 @@ static bool handler_state_equals(handler_state self, size_t times_called,
                                  int16_t opcode, int16_t arg0, int16_t arg1,
                                  int16_t arg2, char const *id, void *data) {
 
-    return (self.times_called == times_called) && opcode_equals(self, opcode) &&
-           arg_equals(self, 0, arg0) && arg_equals(self, 1, arg1) &&
-           arg_equals(self, 2, arg2) && id_equals(self, id) &&
-           data_equals(self, data);
+    if (self.times_called != times_called) {
+
+        fprintf(stderr,
+                "number times called does not match: Real: %zu Expected: %zu\n",
+                self.times_called, times_called);
+        return false;
+    }
+
+    return opcode_equals(self, opcode) && arg_equals(self, 0, arg0) &&
+           arg_equals(self, 1, arg1) && arg_equals(self, 2, arg2) &&
+           id_equals(self, id) && data_equals(self, data);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -197,6 +220,38 @@ static ov_vm_retval next_2_inv_handler(ov_vm *vm, ov_vm_prog *prog) {
 
 /*----------------------------------------------------------------------------*/
 
+static handler_state next_3_state = {0};
+
+static ov_vm_retval next_3_handler(ov_vm *vm, ov_vm_prog *prog) {
+    UNUSED(vm);
+
+    ++next_3_state.times_called;
+
+    next_3_state.instr = ov_vm_prog_current_instr(prog);
+    next_3_state.id = ov_vm_prog_id(prog);
+    next_3_state.data = ov_vm_prog_data(prog);
+
+    return OC_NEXT;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static handler_state next_3_inv_state = {0};
+
+static ov_vm_retval next_3_inv_handler(ov_vm *vm, ov_vm_prog *prog) {
+    UNUSED(vm);
+
+    ++next_3_inv_state.times_called;
+
+    next_3_inv_state.instr = ov_vm_prog_current_instr(prog);
+    next_3_inv_state.id = ov_vm_prog_id(prog);
+    next_3_inv_state.data = ov_vm_prog_data(prog);
+
+    return OC_NEXT;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static handler_state wait_state = {0};
 
 static ov_vm_retval wait_handler(ov_vm *vm, ov_vm_prog *prog) {
@@ -249,9 +304,11 @@ static void reset_handler_states() {
 
     reset_handler_state(&next_state);
     reset_handler_state(&next_2_state);
+    reset_handler_state(&next_3_state);
     reset_handler_state(&wait_state);
     reset_handler_state(&next_inv_state);
     reset_handler_state(&next_2_inv_state);
+    reset_handler_state(&next_3_inv_state);
     reset_handler_state(&abort_state);
     reset_handler_state(&wait_inv_state);
 }
@@ -268,8 +325,20 @@ typedef struct {
 static bool notify_state_equals(notify_state state, size_t times_called,
                                 char const *prog) {
 
-    return (state.times_called == times_called) &&
-           (0 == ov_string_compare(prog, state.prog));
+    if (state.times_called != times_called) {
+        fprintf(stderr,
+                "notify handlder number of times calles does match: Real %zu   "
+                "Expected: %zu\n",
+                state.times_called, times_called);
+        return false;
+    } else if ((0 != prog) && (0 != ov_string_compare(prog, state.prog))) {
+
+        fprintf(stderr,
+                "notify handlder ids do not match: Real %s   Expected: %s\n",
+                state.prog, prog);
+        return false;
+    }
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -378,6 +447,8 @@ static bool register_opcodes(ov_vm *vm) {
                           next_inv_handler) &&
            ov_vm_register(vm, OP_NEXT_2, "NEXT_2", next_2_handler,
                           next_2_inv_handler) &&
+           ov_vm_register(vm, OP_NEXT_3, "NEXT_3", next_3_handler,
+                          next_3_inv_handler) &&
            ov_vm_register(vm, OP_WAIT, "WAIT", wait_handler,
                           wait_inv_handler) &&
            ov_vm_register(vm, OP_ABORT, "ABORT", abort_handler, 0) &&
@@ -911,6 +982,171 @@ static int test_ov_vm_abort() {
 
 /*----------------------------------------------------------------------------*/
 
+static int test_ov_vm_abort_all() {
+
+    testrun(!ov_vm_abort_all(0));
+
+    resources res = create_resources_with_custom_opcodes(0, 0);
+
+    testrun(ov_vm_abort_all(res.vm));
+
+    // Now trigger real program
+
+    char const *prog_id = "husavik";
+
+    ov_vm_instr instr[] = {{OP_NEXT, 11, 12, 13}, {OP_NEXT_2, 21, 22, 23},
+                           {OP_NEXT, 14, 15, 16}, {OP_NEXT_NO_INV, 41, 42, 43},
+                           {OP_WAIT, 31, 32, 33}, {OP_NEXT, 17, 15, 16},
+                           {OP_END, 0, 0, 0}};
+
+    reset_handler_states();
+
+    testrun(OV_EXEC_WAIT == ov_vm_trigger(res.vm, instr, prog_id, 0));
+
+    testrun(handler_state_equals(next_state, 3, OP_NEXT_NO_INV, 41, 42, 43,
+                                 prog_id, 0));
+
+    testrun(handler_state_equals(next_2_state, 1, OP_NEXT_2, 21, 22, 23,
+                                 prog_id, 0));
+
+    testrun(handler_state_equals(next_3_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+    testrun(
+        handler_state_equals(wait_state, 1, OP_WAIT, 31, 32, 33, prog_id, 0));
+
+    testrun(handler_state_equals(next_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(handler_state_equals(next_2_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(handler_state_equals(wait_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(notify_state_equals(failed_state, 0, 0));
+    testrun(notify_state_equals(aborted_state, 0, 0));
+    testrun(notify_state_equals(done_state, 0, 0));
+
+    reset_handler_states();
+
+    testrun(ov_vm_abort_all(res.vm));
+
+    testrun(handler_state_equals(next_state, 0, IGNORE, IGNORE, IGNORE, IGNORE,
+                                 0, 0));
+
+    testrun(handler_state_equals(next_2_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(handler_state_equals(next_3_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(handler_state_equals(wait_state, 0, IGNORE, IGNORE, IGNORE, IGNORE,
+                                 0, 0));
+
+    testrun(handler_state_equals(next_inv_state, 2, OP_NEXT, 11, 12, 13,
+                                 prog_id, 0));
+
+    testrun(handler_state_equals(next_2_inv_state, 1, OP_NEXT_2, 21, 22, 23,
+                                 prog_id, 0));
+
+    testrun(handler_state_equals(next_3_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    // The current instruction must not be reverted!
+    testrun(handler_state_equals(wait_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(notify_state_equals(failed_state, 0, 0));
+    testrun(notify_state_equals(aborted_state, 0, 0));
+    testrun(notify_state_equals(done_state, 0, 0));
+
+    testrun(OV_EXEC_ERROR == ov_vm_continue(res.vm, "akureiri"));
+    testrun(OV_EXEC_ERROR == ov_vm_continue(res.vm, prog_id));
+
+    free_resources(res);
+
+    // Same again, but with several programs
+
+    char const *prog_id_2 = "husavik2";
+
+    ov_vm_instr instr_2[] = {{OP_NEXT_2, 11, 12, 13},
+                             {OP_WAIT, 31, 32, 33},
+                             {OP_NEXT, 17, 15, 16},
+                             {OP_END, 0, 0, 0}};
+
+    char const *prog_id_3 = "husavik3";
+
+    ov_vm_instr instr_3[] = {{OP_NEXT_3, 11, 12, 13},
+                             {OP_WAIT, 31, 32, 33},
+                             {OP_NEXT, 17, 15, 16},
+                             {OP_END, 0, 0, 0}};
+
+    char const *prog_id_4 = "husavik4";
+
+    ov_vm_instr instr_4[] = {{OP_NEXT, 11, 12, 13},
+                             {OP_WAIT, 31, 32, 33},
+                             {OP_NEXT, 17, 15, 16},
+                             {OP_END, 0, 0, 0}};
+
+    reset_handler_states();
+
+    res = create_resources_w_opcodes_notify_handlers(0, 0);
+
+    testrun(OV_EXEC_WAIT == ov_vm_trigger(res.vm, instr_2, prog_id_2, 0));
+    testrun(OV_EXEC_WAIT == ov_vm_trigger(res.vm, instr_3, prog_id_3, 0));
+    testrun(OV_EXEC_WAIT == ov_vm_trigger(res.vm, instr_4, prog_id_4, 0));
+
+    testrun(
+        handler_state_equals(next_state, 1, OP_NEXT, 11, 12, 13, prog_id_4, 0));
+
+    testrun(handler_state_equals(next_2_state, 1, OP_NEXT_2, 11, 12, 13,
+                                 prog_id_2, 0));
+
+    testrun(handler_state_equals(next_3_state, 1, OP_NEXT_3, 11, 12, 13,
+                                 prog_id_3, 0));
+
+    testrun(handler_state_equals(next_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+    testrun(handler_state_equals(next_2_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+    testrun(handler_state_equals(next_3_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(ov_vm_abort_all(res.vm));
+
+    testrun(handler_state_equals(next_inv_state, 1, OP_NEXT, 11, 12, 13,
+                                 prog_id_4, 0));
+
+    testrun(handler_state_equals(next_2_inv_state, 1, OP_NEXT_2, 11, 12, 13,
+                                 prog_id_2, 0));
+
+    testrun(handler_state_equals(next_3_inv_state, 1, OP_NEXT_3, 11, 12, 13,
+                                 prog_id_3, 0));
+
+    testrun(handler_state_equals(wait_inv_state, 0, IGNORE, IGNORE, IGNORE,
+                                 IGNORE, 0, 0));
+
+    testrun(notify_state_equals(failed_state, 0, 0));
+    testrun(aborted_state.times_called == 3);
+    testrun(notify_state_equals(aborted_state, 3, 0));
+
+    testrun(notify_state_equals(done_state, 0, 0));
+
+    testrun(OV_EXEC_ERROR == ov_vm_continue(res.vm, prog_id_2));
+    testrun(OV_EXEC_ERROR == ov_vm_continue(res.vm, prog_id_3));
+    testrun(OV_EXEC_ERROR == ov_vm_continue(res.vm, prog_id_4));
+
+    free_resources(res);
+
+    reset_handler_states();
+    reset_notify_states();
+    reset_release_state();
+
+    return testrun_log_success();
+}
+
+/*----------------------------------------------------------------------------*/
+
 static int test_ov_vm_data_for() {
 
     testrun(0 == ov_vm_data_for(0, 0));
@@ -953,6 +1189,6 @@ static int test_ov_vm_data_for() {
 
 OV_TEST_RUN("ov_vm", test_ov_vm_create, test_ov_vm_free, test_ov_vm_register,
             test_ov_vm_trigger, test_ov_vm_continue, test_ov_vm_abort,
-            test_ov_vm_data_for);
+            test_ov_vm_abort_all, test_ov_vm_data_for);
 
 /*----------------------------------------------------------------------------*/

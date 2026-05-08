@@ -2261,7 +2261,25 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void client_call_function(ov_vocs *vocs,
+static void async_timedout_sip(void *userdata, ov_event_async_data data) {
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self)
+        goto error;
+
+    ov_json_value *out = ov_event_api_create_error_response(
+        data.value, OV_ERROR_TIMEOUT, OV_ERROR_DESC_TIMEOUT);
+    env_send(self, data.socket, out);
+    out = ov_json_value_free(out);
+
+error:
+    ov_event_async_data_clear(&data);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool client_call_function(ov_vocs *vocs,
                                  int socket,
                                  const ov_json_value *input,
                                  bool (*function)(ov_mc_backend_sip *sip,
@@ -2285,7 +2303,19 @@ static void client_call_function(ov_vocs *vocs,
         goto error;
     }
 
-    if (!set_async(vocs, uuid, socket, input)) goto error;
+    if (!ov_event_async_set(
+            vocs->async,
+            uuid,
+            (ov_event_async_data){.socket = socket,
+                                  .value = input,
+                                  .timedout.userdata = vocs,
+                                  .timedout.callback = async_timedout_sip},
+            vocs->config.timeout.response_usec)) {
+
+        goto error;
+    }
+
+    input = NULL;
 
     if (!function(vocs->sip, uuid)) {
 
@@ -2313,6 +2343,8 @@ static void client_list_calls(void *userdata, const char *name,
 
     UNUSED(name);
     ov_vocs *vocs = ov_vocs_cast(userdata);
+
+    
 
     return client_call_function(
         vocs, socket, input, ov_mc_backend_sip_list_calls);

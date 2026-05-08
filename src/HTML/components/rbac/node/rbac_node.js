@@ -388,11 +388,14 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#dom.edit_pass.value = this.node_password ? this.node_password : null;
         this.#dom.edit_multicast_ip.value = this.node_multicast_ip ? this.node_multicast_ip :
             ((DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") ? DEFAULT_MULTICAST_ADDRESS : null);
-        this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port :  await (async () => {
+        this.#dom.edit_multicast_port.value = this.node_multicast_port ? this.node_multicast_port : await (async () => {
             let port = null;
-            if (DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "")
-                port = await ov_DB.get_highest_multicast_port() + 1;
-            if (port > 65535){
+            if (DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") {
+                port = await ov_DB.get_highest_multicast_port();
+                port = MIN_MULTICAST_PORT > port ? MIN_MULTICAST_PORT + 1 : port + 1;
+                MIN_MULTICAST_PORT = port;
+            }
+            if (port > 65535) {
                 port = null;
                 let error_msg = "The highest possible multicast port (65535) is already in use. Please find a smaller unused port.";
                 this.#dom.error_msg.innerText = error_msg;
