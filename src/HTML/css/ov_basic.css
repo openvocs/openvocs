@@ -189,6 +189,10 @@
     font-size: 1.2rem;
 }
 
+.small_print, .small_print * {
+    font-size: 1rem;
+}
+
 html {
     font-family: Abel, sans-serif;
     height: 100vh;
@@ -278,7 +282,7 @@ h3 {
 }
 
 code {
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 svg {
@@ -389,7 +393,6 @@ input[type=password],
 input[type=number],
 select {
     width: 100%;
-    font-size: 1rem;
     margin-left: auto;
     margin-right: auto;
     padding: 0 0.25rem;
