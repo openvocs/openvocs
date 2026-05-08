@@ -28,16 +28,14 @@
     height: 2rem;
 }
 
-#show_password svg {
-    fill: var(--black);
+#show_password::after {
+    content: "\e86d";
+    color: var(--base_color);
+    font-size: 2rem;
 }
 
-#show_password.close #eye {
-    display: none;
-}
-
-#show_password:not(.close) #eye_close {
-    display: none;
+#show_password.hide::after {
+    content: "\e873";
 }
 
 .active_button {

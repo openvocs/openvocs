@@ -53,6 +53,7 @@ export default class ov_Login_Form extends HTMLElement {
         this.#dom.login_form = document.getElementById("login_form");
         this.#dom.user_field = document.getElementById("username");
         this.#dom.password_field = document.getElementById("password");
+        this.#dom.show_password = document.getElementById("show_password");
         this.#dom.login_button = document.getElementById("login_button");
 
         this.#check_form();
@@ -129,21 +130,19 @@ export default class ov_Login_Form extends HTMLElement {
         });
         this.focus_user_input();
 
-        this.#dom.show_password = document.getElementById("show_password");
-        this.#dom.show_password.addEventListener("touchstart", () => {
+        this.#dom.show_password.addEventListener("pointerdown", () => {
             this.#dom.password_field.type = "text";
+            this.#dom.show_password.classList.add("hide");
         });
 
-        this.#dom.show_password.addEventListener("touchend", () => {
+        this.#dom.show_password.addEventListener("pointerup", () => {
             this.#dom.password_field.type = "password";
+            this.#dom.show_password.classList.remove("hide");
         });
 
-        this.#dom.show_password.addEventListener("mousedown", () => {
-            this.#dom.password_field.type = "text";
-        });
-
-        this.#dom.show_password.addEventListener("mouseup", () => {
+        this.#dom.show_password.addEventListener("pointerleave", () => {
             this.#dom.password_field.type = "password";
+            this.#dom.show_password.classList.remove("hide");
         });
     }
 
