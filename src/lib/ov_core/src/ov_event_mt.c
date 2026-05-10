@@ -226,6 +226,7 @@ ov_event_mt *ov_event_mt_free(ov_event_mt *self){
     self->tloop = ov_thread_loop_free(self->tloop);
     self->data.events = ov_dict_free(self->data.events);
     ov_thread_lock_clear(&self->data.lock);
+    self->json_io_buffer = ov_json_io_buffer_free(self->json_io_buffer);
 
     self = ov_data_pointer_free(self);
     return NULL;
