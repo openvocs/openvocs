@@ -97,7 +97,14 @@ static bool handle_in_thread(ov_thread_loop *tloop, ov_thread_message *msg){
     Event *ev = ov_dict_get(self->data.events, name);
     
     if (ev){
+        
         event = *ev;
+    
+    } else {
+
+        ev = ov_dict_get(self->data.events, "*");
+        if (ev) event = *ev;
+
     }
 
     ov_thread_lock_unlock(&self->data.lock);
