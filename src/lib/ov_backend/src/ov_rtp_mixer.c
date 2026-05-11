@@ -409,7 +409,7 @@ static bool process_frames(ov_rtp_mixer *self, ov_list *frames,
     bool ok = false;
 
     if (ov_ptr_valid(self, "Cannot mix frames - invalid mixer pointer") &&
-        ov_ptr_valid_warn(frames, "Cannot mix frames - no frame list")) {
+        ov_ptr_valid_debug(frames, "Cannot mix frames - no frame list")) {
         ov_buffer *mixed_payload = mix_frames(
             self, frames, self->settings.decoded_frame_length_samples);
 
