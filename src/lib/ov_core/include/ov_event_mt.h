@@ -99,4 +99,7 @@ bool ov_event_mt_enable_websocket_events(ov_event_mt *self,
 int ov_event_mt_open_listener(ov_event_mt *self, 
     ov_io_socket_config config);
 
+int ov_event_mt_open_connection(ov_event_mt *self, 
+    ov_io_socket_config config);
+
 #endif /* ov_event_mt_h */

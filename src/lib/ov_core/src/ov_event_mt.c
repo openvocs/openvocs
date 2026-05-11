@@ -390,6 +390,22 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+int ov_event_mt_open_connection(ov_event_mt *self, 
+    ov_io_socket_config config){
+
+    if (!self) goto error;
+
+    config.callbacks.userdata = self,
+    config.callbacks.accept = NULL;
+    config.callbacks.io = io_socket;
+
+    return ov_io_open_connection(self->config.io, config);
+error:
+    return -1;
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_event_mt_debug(ov_event_mt *self, bool on){
 
     if (!self) return false;
