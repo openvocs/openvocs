@@ -40,6 +40,8 @@ typedef struct ov_event_mt_config {
     ov_event_loop *loop;
     ov_io *io;
 
+    void *userdata;
+
     struct {
 
         uint64_t threadlock_timeout_usec;
@@ -64,6 +66,8 @@ ov_event_mt *ov_event_mt_cast(const void *data);
 
 bool ov_event_mt_debug(ov_event_mt *self, bool on);
 
+void *ov_event_mt_get_userdata(const ov_event_mt *self);
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -73,6 +77,10 @@ bool ov_event_mt_debug(ov_event_mt *self, bool on);
  */
 
 bool ov_event_mt_push(ov_event_mt *self, int socket, ov_json_value *msg);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_event_mt_send(ov_event_mt *self, int socket, ov_json_value *msg);
 
 /*----------------------------------------------------------------------------*/
 

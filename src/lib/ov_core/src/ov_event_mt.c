@@ -412,3 +412,28 @@ bool ov_event_mt_debug(ov_event_mt *self, bool on){
     self->debug = on;
     return true;
 }
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_event_mt_send(ov_event_mt *self, int socket, ov_json_value *msg){
+
+    if (!self || !msg) return false;
+
+    char *str = ov_json_value_to_string(msg);
+    bool result = ov_io_send(self->config.io,
+        socket,
+        (ov_memory_pointer){
+            .start = (uint8_t*) str,
+            .length = strlen(str)
+        });
+    str = ov_data_pointer_free(str);
+    return result;
+}
+
+/*----------------------------------------------------------------------------*/
+
+void *ov_event_mt_get_userdata(const ov_event_mt *self){
+
+    if (!self) return NULL;
+    return self->config.userdata;
+}
