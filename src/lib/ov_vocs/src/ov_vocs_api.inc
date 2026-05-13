@@ -678,7 +678,7 @@ static bool enable_api_admin(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_get_recorded_loops",
+        "recording_get_recorded_loops",
         vocs,
         admin_get_recorded_loops)) goto error;
 

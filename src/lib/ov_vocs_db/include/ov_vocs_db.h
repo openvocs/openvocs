@@ -105,7 +105,7 @@
 #define OV_VOCS_DB_DELETE_KEY "db_delete_key"
 #define OV_VOCS_DB_ADD_DOMAIN_ADMIN "db_add_domain_admin"
 #define OV_VOCS_DB_ADD_PROJECT_ADMIN "db_add_project_admin"
-#define OV_VOCS_DB_LDAP_IMPORT "client_ldap_import"
+#define OV_VOCS_DB_LDAP_IMPORT "db_ldap_import"
 
 #define OV_VOCS_DB_SET_KEYSET_LAYOUT "db_set_keyset_layout"
 #define OV_VOCS_DB_GET_KEYSET_LAYOUT "db_get_keyset_layout"
