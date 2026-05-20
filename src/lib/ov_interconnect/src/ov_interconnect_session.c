@@ -195,9 +195,6 @@ static bool send_stun_binding_request(ov_interconnect_session *session) {
     if (out > 0)
         session->keepalive.open += 1;
 
-    if (session->keepalive.open == 5)
-        reset_session(session);
-
     return true;
 error:
     return false;
@@ -212,13 +209,16 @@ static bool send_keepalive(uint32_t timer, void *data) {
     if (!self)
         goto error;
 
-    send_stun_binding_request(self);
-
     ov_log_debug("sending STUN keepalive for %s", self->id);
+
+    send_stun_binding_request(self);
 
     self->timer.keepalive = ov_event_loop_timer_set(
         self->config.loop, self->config.keepalive_trigger_usec, self,
         send_keepalive);
+
+    if (self->keepalive.open >= 5)
+        reset_session(self);
 
     return true;
 error:
@@ -291,6 +291,8 @@ void *ov_interconnect_session_free(void *data) {
         return NULL;
 
     ov_interconnect_session *self = (ov_interconnect_session *)data;
+
+    ov_log_debug("dropping session %s", self->id);
 
     if (OV_TIMER_INVALID != self->timer.handshake) {
         ov_event_loop_timer_unset(self->config.loop, self->timer.handshake,
@@ -1599,5 +1601,13 @@ bool ov_interconnect_session_set_keepalive_response(ov_interconnect_session *sel
     if (!self) return false;
 
     self->keepalive.open = 0;
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_interconnect_session_set_keepalive_error(ov_interconnect_session *self, int counter){
+
+    self->keepalive.open = counter;
     return true;
 }

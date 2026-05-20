@@ -766,36 +766,6 @@ static bool stream_recv_unbuffered(ov_io *self, Connection *conn) {
 
     if (0 == bytes) {
 
-        if (conn->type == OV_IO_CLIENT_CONNECTION) {
-
-            if (conn->config.auto_reconnect) {
-
-                if (ov_thread_lock_try_lock(&self->reconnects.lock)) {
-
-                    ov_io_socket_config *conf =
-                        calloc(1, sizeof(ov_io_socket_config));
-
-                    *conf = conn->config;
-
-                    if (!ov_list_queue_push(self->reconnects.list, conf)) {
-
-                        conf = ov_data_pointer_free(conf);
-                        ov_log_error("failed to enable auto reconnect");
-                    }
-
-                    ov_thread_lock_unlock(&self->reconnects.lock);
-
-                    ov_log_debug("enabled reconnect to %s:%i",
-                                 conf->socket.host, conf->socket.port);
-                } else {
-
-                    ov_log_debug("failed to enable reconnect to %s:%i",
-                                 conn->config.socket.host,
-                                 conn->config.socket.port);
-                }
-            }
-        }
-
         ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
         return false;
 
@@ -1647,7 +1617,7 @@ error:
 }
 
 /*----------------------------------------------------------------------------*/
-
+/*
 static void callback_connection_success(Connection *conn) {
 
     if (!conn)
@@ -1659,6 +1629,7 @@ static void callback_connection_success(Connection *conn) {
 
     return;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -1918,7 +1889,7 @@ success:
             goto error;
     }
     conn->tls.handshaked = true;
-    callback_connection_success(conn);
+    //callback_connection_success(conn);
     return true;
 
 error:
@@ -1948,24 +1919,6 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     OV_ASSERT(self);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
-
-        if (conn->type == OV_IO_CLIENT_CONNECTION) {
-
-            if (conn->config.auto_reconnect) {
-
-                ov_io_socket_config *conf =
-                    calloc(1, sizeof(ov_io_socket_config));
-
-                *conf = conn->config;
-                if (!ov_list_queue_push(self->reconnects.list, conf)) {
-
-                    conf = ov_data_pointer_free(conf);
-                    ov_log_error("failed to enable auto reconnect");
-                    goto error;
-                }
-            }
-        }
-
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
     }
@@ -2289,6 +2242,7 @@ bool ov_io_close(ov_io *self, int socket) {
 
     if (!self)
         goto error;
+
     return ov_dict_del(self->connections, (void *)(intptr_t)socket);
 
 error:

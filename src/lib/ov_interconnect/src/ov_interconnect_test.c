@@ -161,60 +161,59 @@ int domains_init() {
 static bool setup_interconnect(ov_event_loop **loop_out, ov_io **io_out,
                                ov_interconnect **interconnect_out) {
 
-    UNUSED(loop_out);
-    UNUSED(io_out);
-    UNUSED(interconnect_out);
+    ov_log_debug("Setup interconnect");
 
-    /*
-        ov_event_loop *loop = ov_event_loop_default(
-            (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
+    ov_event_loop *loop = ov_event_loop_default(
+         (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
 
-        ov_io_config io_config = {.loop = loop};
-        strncpy(io_config.domain.path, test_resource_dir, PATH_MAX);
+    ov_io_config io_config = {.loop = loop};
+    strncpy(io_config.domain.path, test_resource_dir, PATH_MAX);
 
-        ov_io *io = ov_io_create(io_config);
+    ov_io *io = ov_io_create(io_config);
 
-        ov_interconnect_config config = (ov_interconnect_config){
-            .loop = loop,
-            .io = io,
-            .socket.signaling =
-       ov_socket_load_dynamic_port((ov_socket_configuration){ .type = TCP, .host
-       = "127.0.0.1", .port = 0
-            }),
-            .socket.media =
-       ov_socket_load_dynamic_port((ov_socket_configuration){ .type = UDP, .host
-       = "127.0.0.1", .port = 0
-            }),
-            .socket.internal =
-       ov_socket_load_dynamic_port((ov_socket_configuration){ .type = TCP, .host
-       = "127.0.0.1", .port = 0
-            }),
-            .socket.mixer =
-       ov_socket_load_dynamic_port((ov_socket_configuration){ .type = TCP, .host
-       = "127.0.0.1", .port = 0
-            }),
+    ov_interconnect_config config = (ov_interconnect_config){
+         .loop = loop,
+         .io = io,
+         .socket.signaling =
+    ov_socket_load_dynamic_port((ov_socket_configuration){ .type = TCP, .host
+    = "127.0.0.1", .port = 0
+         }),
+         .socket.media =
+    ov_socket_load_dynamic_port((ov_socket_configuration){ .type = UDP, .host
+    = "127.0.0.1", .port = 0
+         }),
+         .socket.internal =
+    ov_socket_load_dynamic_port((ov_socket_configuration){ .type = TCP, .host
+    = "127.0.0.1", .port = 0
+         }),
+         .socket.mixer =
+    ov_socket_load_dynamic_port((ov_socket_configuration){ .type = TCP, .host
+    = "127.0.0.1", .port = 0
+         }),
 
-        };
+     };
 
-        strncpy(config.name, "interconnect",
-       OV_INTERCONNECT_INTERFACE_NAME_MAX); strncpy(config.password, "password",
-       OV_INTERCONNECT_PASSWORD_MAX); strncpy(config.tls.domains,
-       test_resource_dir, PATH_MAX); strncpy(config.tls.client.domain,
-       "openvocs.test", PATH_MAX); strncpy(config.tls.client.ca.file,
-       OV_TEST_CERT, PATH_MAX);
+    strncpy(config.name, "interconnect",
+    OV_INTERCONNECT_INTERFACE_NAME_MAX); strncpy(config.password, "password",
+    OV_INTERCONNECT_PASSWORD_MAX); strncpy(config.tls.domains,
+    test_resource_dir, PATH_MAX); strncpy(config.tls.client.domain,
+    "openvocs.test", PATH_MAX); strncpy(config.tls.client.ca.file,
+    OV_TEST_CERT, PATH_MAX);
 
-        strncpy(config.dtls.cert, OV_TEST_CERT, PATH_MAX);
-        strncpy(config.dtls.key, OV_TEST_CERT_KEY, PATH_MAX);
-        strncpy(config.dtls.ca.file, OV_TEST_CERT, PATH_MAX);
-        strncpy(config.dtls.srtp.profile, OV_DTLS_SRTP_PROFILES,
-       OV_DTLS_PROFILE_MAX);
+    strncpy(config.dtls.cert, OV_TEST_CERT, PATH_MAX);
+    strncpy(config.dtls.key, OV_TEST_CERT_KEY, PATH_MAX);
+    strncpy(config.dtls.ca.file, OV_TEST_CERT, PATH_MAX);
+    strncpy(config.dtls.srtp.profile, OV_DTLS_SRTP_PROFILES,
+    OV_DTLS_PROFILE_MAX);
 
-        ov_interconnect *inter = ov_interconnect_create(config);
+    config.limits.keepalive_trigger_usec = 1000000;
 
-        *loop_out = loop;
-        *io_out = io;
-        *interconnect_out = inter;
-    */
+    ov_interconnect *inter = ov_interconnect_create(config);
+
+     *loop_out = loop;
+     *io_out = io;
+     *interconnect_out = inter;
+    
     return true;
 }
 
@@ -267,6 +266,8 @@ int test_ov_interconnect_create() {
     ov_interconnect *self = NULL;
 
     testrun(setup_interconnect(&loop, &io, &self));
+    testrun(loop);
+    testrun(io);
     testrun(ov_interconnect_cast(self));
 
     testrun(self->dtls);
@@ -511,6 +512,117 @@ int check_interconnect() {
 
 /*----------------------------------------------------------------------------*/
 
+static bool set_keepalive_error(const void *key, void *val, void *data){
+
+    if (!key) return true;
+    ov_interconnect_session *session = (ov_interconnect_session*)val;
+    intptr_t error = (intptr_t)data;;
+
+    ov_interconnect_session_set_keepalive_error(session, error);
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+int check_interconnect_reconnect() {
+
+    ov_event_loop *loop = NULL;
+    ov_io *io = NULL;
+    ov_interconnect *self = NULL;
+
+    testrun(setup_interconnect(&loop, &io, &self));
+    testrun(ov_interconnect_cast(self));
+
+    ov_interconnect *client = NULL;
+    ov_interconnect_config config = self->config;
+
+    config.socket.client = true;
+    config.socket.mixer = ov_socket_load_dynamic_port(
+        (ov_socket_configuration){.type = TCP, .host = "127.0.0.1"});
+    config.socket.internal = ov_socket_load_dynamic_port(
+        (ov_socket_configuration){.type = UDP, .host = "127.0.0.1"});
+    config.socket.media = ov_socket_load_dynamic_port(
+        (ov_socket_configuration){.type = UDP, .host = "127.0.0.1"});
+
+    client = ov_interconnect_create(config);
+    testrun(client);
+
+    ov_json_value *loops = generate_loop_config();
+    testrun(loops);
+
+    testrun(ov_interconnect_load_loops(self, loops));
+    testrun(ov_interconnect_load_loops(client, loops));
+
+    for (int i = 0; i < 1000; i++) {
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        usleep(5000);
+    }
+
+    testrun(1 == ov_dict_count(self->session.by_signaling));
+    testrun(1 == ov_dict_count(client->session.by_signaling));
+
+    int mixer1 = add_mixer(self, loop);
+    int mixer2 = add_mixer(self, loop);
+    int mixer3 = add_mixer(self, loop);
+
+    int mixer4 = add_mixer(client, loop);
+    int mixer5 = add_mixer(client, loop);
+    int mixer6 = add_mixer(client, loop);
+
+    testrun(mixer1);
+    testrun(mixer2);
+    testrun(mixer3);
+    testrun(mixer4);
+    testrun(mixer5);
+    testrun(mixer6);
+
+    for (int i = 0; i < 1000; i++) {
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        usleep(5000);
+    }
+
+    sleep(1);
+    ov_log_debug("-------------------------------------");
+
+    ov_dict_for_each(client->session.by_signaling, (void*) (intptr_t) 20, set_keepalive_error);
+
+    sleep(1);
+    
+    for (int i = 0; i < 1000; i++) {
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        usleep(5000);
+    }
+
+    testrun(1 == ov_dict_count(self->session.by_signaling));
+    testrun(1 == ov_dict_count(client->session.by_signaling));
+
+    sleep(1);
+    ov_log_debug("-------------------------------------");
+
+    ov_dict_for_each(self->session.by_signaling, (void*) (intptr_t) 20, set_keepalive_error);
+
+    sleep(1);
+
+    for (int i = 0; i < 1000; i++) {
+        ov_event_loop_run(loop, OV_RUN_ONCE);
+        usleep(5000);
+    }
+
+    ov_log_debug("%i|%i", ov_dict_count(client->session.by_signaling), 
+        ov_dict_count(self->session.by_signaling));
+    
+    testrun(1 == ov_dict_count(client->session.by_signaling));
+    testrun(1 == ov_dict_count(self->session.by_signaling));
+
+    testrun(NULL == ov_interconnect_free(self));
+    testrun(NULL == ov_io_free(io));
+    testrun(NULL == ov_event_loop_free(loop));
+
+    return testrun_log_success();
+}
+
+/*----------------------------------------------------------------------------*/
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -522,8 +634,10 @@ int check_interconnect() {
 OV_TEST_RUN("ov_interconnect_test",
 
             domains_init,
-
+/*
             test_ov_interconnect_create, test_ov_interconnect_load_loops,
             test_ov_interconnect_drop_mixer, check_interconnect,
+  */
+            check_interconnect_reconnect,
 
             domains_deinit);

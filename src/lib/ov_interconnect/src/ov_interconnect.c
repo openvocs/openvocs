@@ -147,6 +147,8 @@ static bool drop_session_by_signaling_socket(ov_interconnect *self,
     
     session = ov_interconnect_session_free(session);
 
+    ov_io_close(self->config.io, socket);
+
     return true;
 error:
     return false;
@@ -1189,9 +1191,6 @@ static bool open_sockets(ov_interconnect *self) {
         self->socket.signaling =
             ov_event_app_open_connection(self->app.signaling, sig);
 
-        if (-1 != self->socket.signaling)
-            cb_signaling_connected(self, self->socket.signaling);
-
     } else {
 
         sig.auto_reconnect = false;
@@ -1881,7 +1880,6 @@ bool ov_interconnect_reset_session(ov_interconnect *self, const char *id, int so
     ov_log_info("RESET session %s", id);
 
     drop_session_by_signaling_socket(self, socket);
-    ov_io_close(self->config.io, socket);
     // let autoreconnect work to reinit the whole session
 
     return true;
