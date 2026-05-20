@@ -130,7 +130,23 @@ struct ov_interconnect_session {
         uint32_t keepalive;
 
     } timer;
+
+    struct {
+
+        uint64_t open;
+
+    } keepalive;
 };
+
+/*----------------------------------------------------------------------------*/
+
+static bool reset_session(ov_interconnect_session *self){
+
+    if (!self) return false;
+
+    return ov_interconnect_reset_session(self->config.base, self->id, 
+        ov_interconnect_session_get_signaling_socket(self));
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -176,7 +192,12 @@ static bool send_stun_binding_request(ov_interconnect_session *session) {
     ssize_t out =
         sendto(socket, ptr, nxt - ptr, 0, (struct sockaddr *)&dest, len);
 
-    UNUSED(out);
+    if (out > 0)
+        session->keepalive.open += 1;
+
+    if (session->keepalive.open == 5)
+        reset_session(session);
+
     return true;
 error:
     return false;
@@ -1295,30 +1316,54 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     self->srtp.remote.policy.key = self->srtp.remote.key;
     self->srtp.remote.policy.next = NULL;
 
-    int r = srtp_add_stream(srtp_session, &self->srtp.local.policy);
+    int count = 0;
+    int r = 0;
 
+    while(count < 10){
+
+        r = srtp_err_status_ok;
+
+        count++;
+
+        r = srtp_add_stream(srtp_session, &self->srtp.local.policy);
+        if (r == srtp_err_status_ok) break;
+
+    }
+    
     switch (r) {
 
-    case srtp_err_status_ok:
-        // ov_log_debug("add srtp_stream local policy %s", loop_name);
-        break;
+        case srtp_err_status_ok:
+            //ov_log_debug("add srtp_stream local policy %s", loop_name);
+            break;
 
-    default:
-        ov_log_error("Failed to add srtp_stream local policy %s", loop_name);
-        break;
+        default:
+            ov_log_error("Failed to add srtp_stream local policy %s", loop_name);
+            break;
     }
 
-    r = srtp_add_stream(srtp_session, &self->srtp.remote.policy);
+    count = 0;
+    r = 0;
+    
+    while(count < 10){
 
+        r = srtp_err_status_ok;
+
+        count++;
+
+        r = srtp_add_stream(srtp_session, &self->srtp.remote.policy);
+        if (r == srtp_err_status_ok) break;
+
+    }
+    
     switch (r) {
 
-    case srtp_err_status_ok:
-        // ov_log_debug("add srtp_stream remote policy %s", loop_name);
-        break;
+        case srtp_err_status_ok:
+            //ov_log_debug("add srtp_stream remote policy %s", loop_name);
+            break;
 
-    default:
-        ov_log_error("Failed to add srtp_stream remote policy %s", loop_name);
-        break;
+        default:
+            ov_log_error("Failed to add srtp_stream remote policy %s", loop_name);
+            break;
     }
 
 done:
@@ -1539,8 +1584,20 @@ bool ov_interconnect_session_added_loops(ov_interconnect_session *self) {
     return true;
 }
 
+/*----------------------------------------------------------------------------*/
+
 ov_socket_data ov_interconnect_session_get_media_remote(ov_interconnect_session *self){
 
     if (!self) return (ov_socket_data){0};
     return self->config.remote.media;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_interconnect_session_set_keepalive_response(ov_interconnect_session *self){
+
+    if (!self) return false;
+
+    self->keepalive.open = 0;
+    return true;
 }
