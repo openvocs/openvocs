@@ -31,7 +31,6 @@ OV_SERVICE_DIRS   += ov_mc_ice_proxy
 OV_SERVICE_DIRS   += ov_mc_vocs
 OV_SERVICE_DIRS   += ov_mc_interconnect
 OV_SERVICE_DIRS   += ov_mc_vad
-OV_SERVICE_DIRS   += ov_api_echo_success
 
 ifeq ($(OV_UNAME), Linux)
 	OV_SERVICE_DIRS   += ov_alsa_gateway
