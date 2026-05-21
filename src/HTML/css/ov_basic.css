@@ -17,18 +17,6 @@
         url("/fonts/fluentui-system-icons/FluentSystemIcons-Resizable.ttf?c71a351f725ec08f174e1f32006567dd") format("truetype");
 }
 
-.fluentui_icon, .fluentui_icon::before, .fluentui_icon * {
-    font-family: FluentSystemIcons-Resizable !important;
-    font-size: 1.5rem;
-    font-style: normal;
-    font-weight: normal !important;
-    font-variant: normal;
-    text-transform: none;
-    line-height: 1;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
 :root,
 ::backdrop {
     --base_font_size: 16px;
@@ -80,6 +68,12 @@
 @media (min-width:481px) {
     :root {
         --base_font_size: 11.2px;
+    }
+}
+
+@media (min-width:1024px) {
+    :root {
+        --base_font_size: 12.4px;
     }
 }
 
@@ -183,8 +177,9 @@
 }
 
 *,
-*:before,
-*:after {
+*::before,
+*::after {
+    font-family: Abel, sans-serif;
     box-sizing: inherit;
     font-size: 1.2rem;
 }
@@ -193,8 +188,22 @@
     font-size: 1rem;
 }
 
+.fluentui_icon, 
+.fluentui_icon::before, 
+.fluentui_icon::after, 
+.fluentui_icon * {
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
 html {
-    font-family: Abel, sans-serif;
     height: 100vh;
     margin: 0;
     box-sizing: border-box;
@@ -213,7 +222,6 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: Abel, san-serif;
     line-height: 1.5rem;
     text-size-adjust: none;
     -webkit-touch-callout: none;
