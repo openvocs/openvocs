@@ -162,7 +162,7 @@ static bool setup_interconnect(ov_event_loop **loop_out, ov_io **io_out,
                                ov_interconnect **interconnect_out) {
 
     ov_log_debug("Setup interconnect");
-
+/*
     ov_event_loop *loop = ov_event_loop_default(
          (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
 
@@ -174,6 +174,7 @@ static bool setup_interconnect(ov_event_loop **loop_out, ov_io **io_out,
     ov_interconnect_config config = (ov_interconnect_config){
          .loop = loop,
          .io = io,
+         .socket.client = false,
          .socket.signaling =
     ov_socket_load_dynamic_port((ov_socket_configuration){ .type = TCP, .host
     = "127.0.0.1", .port = 0
@@ -213,7 +214,7 @@ static bool setup_interconnect(ov_event_loop **loop_out, ov_io **io_out,
      *loop_out = loop;
      *io_out = io;
      *interconnect_out = inter;
-    
+*/  
     return true;
 }
 
