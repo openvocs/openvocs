@@ -82,32 +82,32 @@ export default class ov_Login_Form extends HTMLElement {
                     'default': [
                         '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
                         'q w e r t y u i o p [ ] \\',
-                        '@ a s d f g h j k l ; \' {spacebar}',
+                        '@ a s d f g h j k l ; \' {space}',
                         '{shift} z x c v b n m , . / {shift}'
                     ],
                     'shift': [
                         '~ ! # $ % ^ & * ( ) _ + {bksp}',
                         'Q W E R T Y U I O P { } |',
-                        '€ A S D F G H J K L : " {spacebar}',
+                        '€ A S D F G H J K L : " {space}',
                         '{shift} Z X C V B N M < > ? {shift}'
                     ],
-                    'shift_upper': [
+                    'hold': [
                         '~ ! # $ % ^ & * ( ) _ + {bksp}',
                         'Q W E R T Y U I O P { } |',
-                        '€ A S D F G H J K L : " {spacebar}',
-                        '{shift_upper} Z X C V B N M < > ? {shift_upper}'
+                        '€ A S D F G H J K L : " {space}',
+                        '{hold} Z X C V B N M < > ? {hold}'
                     ]
                 },
                 buttonTheme: [
                     {
                         class: "fluentui_icon",
-                        buttons: "{bksp} {shift} {shift_upper}"
+                        buttons: "{bksp} {shift} {hold}"
                     }
                 ],
                 display: {
-                    '{spacebar}': 'space',
+                    '{space}': 'space',
                     "{shift}": '&#xea87',
-                    "{shift_upper}": '&#xea89',
+                    "{hold}": '&#xea89',
                     "{bksp}": "&#xe1c9"
                 },
                 disableButtonHold: true
@@ -175,9 +175,9 @@ export default class ov_Login_Form extends HTMLElement {
             let currentLayout = this.#login_keyboard.options.layoutName;
             let shiftToggle;
             if (current_time - this.#last_press_time <= this.#double_press_delay) {
-                if (currentLayout !== "shift_upper") {
-                    shiftToggle = "shift_upper";
-                    this.#login_keyboard.addButtonTheme("{shift_upper}", "active_button");
+                if (currentLayout !== "hold") {
+                    shiftToggle = "hold";
+                    this.#login_keyboard.addButtonTheme("{hold}", "active_button");
                 }
             } else if (currentLayout !== "default") {
                 shiftToggle = "default";
@@ -190,16 +190,18 @@ export default class ov_Login_Form extends HTMLElement {
             this.#login_keyboard.setOptions({
                 layoutName: shiftToggle
             });
-        } else if (button === "{shift_upper}") {
+        } else if (button === "{hold}") {
             this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
             this.#login_keyboard.setOptions({
                 layoutName: "default"
             });
+        } else if (button === "{space}"){
+            
         }
     }
 
     #on_key_released(button) {
-        if (button !== "{shift}" && button !== "{shift_upper}" && button !== "{bksp}" && this.#login_keyboard.options.layoutName === "shift") {
+        if (button !== "{shift}" && button !== "{hold}" && button !== "{bksp}" && this.#login_keyboard.options.layoutName === "shift") {
             this.#login_keyboard.setOptions({
                 layoutName: "default"
             });
