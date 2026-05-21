@@ -351,8 +351,6 @@ static void io_cluster(void *userdata, ov_json_value *msg){
 		str = ov_data_pointer_free(str);
 	} 
 
-
-
 error:
 	msg = ov_json_value_free(msg);
 	return;

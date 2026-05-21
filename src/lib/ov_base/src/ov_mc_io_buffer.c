@@ -122,9 +122,7 @@ bool ov_mc_io_buffer_push(ov_mc_io_buffer *self, ov_socket_data remote,
     if (!self || !self->dict || !input.start || (input.length == 0))
         goto error;
 
-    
-
-    ov_buffer *buffer = ov_buffer_cast(ov_dict_get(self->dict, (void *)&key));
+    ov_buffer *buffer = ov_buffer_cast(ov_dict_get(self->dict, (void *)key));
 
     if (!buffer) {
 

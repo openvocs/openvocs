@@ -37,6 +37,7 @@ OV_TOOL_DIRS   += ov_password
 OV_TOOL_DIRS   += ov_ldap_test
 OV_TOOL_DIRS   += ov_ldap_test_auth
 OV_TOOL_DIRS   += ov_ldap_user_import
+OV_TOOL_DIRS   += ov_ldap_role_import
 OV_TOOL_DIRS   += ov_bin_to_csv
 OV_TOOL_DIRS   += ov_resample
 OV_TOOL_DIRS   += ov_ssl_membio_testing
