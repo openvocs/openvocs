@@ -162,6 +162,11 @@ static bool setup_interconnect(ov_event_loop **loop_out, ov_io **io_out,
                                ov_interconnect **interconnect_out) {
 
     ov_log_debug("Setup interconnect");
+
+    UNUSED(loop_out);
+    UNUSED(io_out);
+    UNUSED(interconnect_out);
+    
 /*
     ov_event_loop *loop = ov_event_loop_default(
          (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
