@@ -1,6 +1,6 @@
 <template id="loop_template">
     <button id="join_loop">
-        <div id="loop_permission">
+        <div id="loop_permission" class="small_print">
             <div class="icon">
                 <svg>
                     <use xlink:href="/images/ov_icons.svg#ov_headphone"></use>
@@ -12,7 +12,7 @@
                 </svg>
             </div>
         </div>
-        <div id="loop_participants">
+        <div id="loop_participants" class="small_print">
             <div class="icon">
                 <svg>
                     <use xlink:href="/images/ov_icons.svg#ov_user"></use>
@@ -21,9 +21,9 @@
             <span id="loop_participants_indicator_value"></span>
         </div>
         <div id="loop_name"></div>
-        <div id="loop_activity"></div>
+        <div id="loop_activity" class="small_print"></div>
     </button>
-    <div id="loop_volume" class="button">
+    <div id="loop_volume" class="button small_print">
         <div class="icon">
             <svg>
                 <use xlink:href="/images/ov_icons.svg#ov_speaker_loud"></use>
@@ -34,7 +34,7 @@
             <input min="0" max="100" step="10" id="loop_volume_input" type="range">
         </div>
     </div>
-    <button id="loop_sip">
+    <button id="loop_sip" class="small_print">
         <div class="icon sip-phone-icon">
             <svg>
                 <use xlink:href="/images/ov_icons.svg#ov_phone"></use>
@@ -61,7 +61,7 @@
             </svg>
         </div>
     </button>
-    <button id="leave_loop"><span>OFF</span></button>
+    <button id="leave_loop" class="small_print"><span>OFF</span></button>
     <dialog id="sip_number_pad" class="sip_dialog">
         <ov-sip-number-pad></ov-sip-number-pad>
     </dialog>
