@@ -30,8 +30,8 @@
 
 #show_password::after {
     content: "\e86d";
-    color: var(--base_color);
-    font-size: 2rem;
+    color: var(--black);
+    font-size: 1.8rem;
 }
 
 #show_password.hide::after {

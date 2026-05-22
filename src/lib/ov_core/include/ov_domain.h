@@ -36,8 +36,8 @@
 #include <ov_base/ov_dict.h>
 #include <ov_base/ov_json.h>
 
-#include <openssl/conf.h>
 #include <openssl/ssl.h>
+#include <openssl/conf.h>
 
 #include "ov_websocket_message.h"
 

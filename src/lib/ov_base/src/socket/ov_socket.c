@@ -582,10 +582,15 @@ bool ov_socket_disable_delayed_ack(int fh) {
         return false;
 
     } else {
+
+#if defined __linux__
         int opt = 1;
         return (setsockopt(fh, IPPROTO_TCP, TCP_QUICKACK, &opt, sizeof(opt)) ==
                 0);
+
+#endif
     }
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/
