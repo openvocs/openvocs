@@ -9,5 +9,5 @@
 	},
 
 	"path" : "/tmp/ov_ldap_role_config",
-	"domain" : "openvocs.gsoc"
+	"domain" : "localhost"
 }

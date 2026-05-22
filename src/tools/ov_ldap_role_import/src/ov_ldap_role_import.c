@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <ov_base/ov_string.h>
 #include <ov_base/ov_config.h>
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_json.h>
@@ -330,7 +331,7 @@ static bool add_new_role(const void *key, void *val, void *data) {
         return true;
 
     char *role_id = (char *)key;
-    UNUSED(val);
+    ov_json_value *role = ov_json_value_cast(val);
 
     struct roles_search *u = (struct roles_search *)data;
 
@@ -338,10 +339,58 @@ static bool add_new_role(const void *key, void *val, void *data) {
 
     if (ov_json_object_get(active_roles, role_id)) {
         return true;
-    } else {
-        return ov_list_push(u->outdated, role_id);
+    } 
+
+    ov_json_value *out = NULL;
+
+    if (!ov_json_value_copy((void **)&out, role))
+        goto error;
+
+    ov_json_value *ldap = ov_json_true();
+    ov_json_object_set(out, OV_KEY_LDAP, ldap);
+
+    if (!ov_json_object_set(active_roles, role_id, out)) {
+        out = ov_json_value_free(out);
+        goto error;
     }
+
+    ov_log_debug("add new role %s", role_id);
+
+    return true;
+error:
+    return false;
 }
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_outdated_role(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+
+    char *id = (char *)key;
+    UNUSED(val);
+
+    if (0 == ov_string_compare(id, "admin")) return true;
+
+    struct roles_search *u = (struct roles_search *)data;
+
+    ov_json_value *active_roles = ov_json_value_cast(u->active_roles);
+
+    if (ov_json_object_get(active_roles, id)) {
+        
+        return true;
+
+    } else {
+
+        ov_log_debug("dropping outdated role %s", id);
+
+        return ov_list_push(u->outdated, id);
+    }
+
+    return false;
+}
+
 
 /*----------------------------------------------------------------------------*/
 
@@ -371,6 +420,7 @@ static bool write_roles_object(const ov_json_value *roles, const char *domain,
 
     const char *domain_id =
         ov_json_string_get(ov_json_get(current, "/" OV_KEY_ID));
+
     if (!domain_id) {
 
         ov_log_error("Update for domain %s, "
@@ -409,6 +459,14 @@ static bool write_roles_object(const ov_json_value *roles, const char *domain,
         if (!ov_json_object_for_each((ov_json_value *)roles, &container,
                                      add_new_role))
             goto error;
+
+        container.active_roles = roles;
+
+        if (!ov_json_object_for_each((ov_json_value *)active_roles, &container,
+                                     drop_outdated_role))
+            goto error;
+
+
 
         if (!ov_list_for_each(list, (void *)active_roles, drop_outdated))
             goto error;
