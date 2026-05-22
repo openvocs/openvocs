@@ -84,6 +84,7 @@ typedef struct ov_ldap_config {
     char role_dn_tree[OV_LDAP_USER_DN_TREE];
     char user[1024];
     char pass[1024];
+    char domain[1024];
     bool roles;
 
     struct {

@@ -528,6 +528,10 @@ ov_ldap_config ov_ldap_config_from_json(const ov_json_value *val) {
     if (str)
         strncpy(config.user, str, 1024);
 
+    str = ov_json_string_get(ov_json_get(conf, "/domain"));
+    if (str)
+        strncpy(config.domain, str, 1024);
+
     str = ov_json_string_get(ov_json_get(conf, "/password"));
     if (str)
         strncpy(config.pass, str, 1024);

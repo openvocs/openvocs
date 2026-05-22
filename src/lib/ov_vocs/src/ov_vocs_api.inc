@@ -4718,7 +4718,7 @@ static bool cb_event_ldap_import(ov_vocs *vocs,
 
     input = NULL;
 
-    if (!ov_vocs_db_persistance_ldap_import(vocs->config.persistance,
+    if (!ov_vocs_db_persistance_ldap_user_import(vocs->config.persistance,
                                             host,
                                             base,
                                             ldap_user,

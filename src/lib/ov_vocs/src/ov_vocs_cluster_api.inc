@@ -277,7 +277,7 @@ static void cluster_ldap_import(ov_vocs *self, const ov_json_value *msg){
     const char *ldap_pass = ov_json_string_get(
         ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
 
-  	if (!ov_vocs_db_persistance_ldap_import(self->config.persistance,
+  	if (!ov_vocs_db_persistance_ldap_user_import(self->config.persistance,
                                             host,
                                             base,
                                             ldap_user,
