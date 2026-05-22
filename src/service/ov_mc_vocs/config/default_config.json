@@ -169,9 +169,13 @@
 	"ldap" : {
 
 		"enabled" : false,
+		"roles" : false,
 		"threads" : 4,
 		"host": "localhost",
 		"user_dn_tree" : "ou=people,dc=openvocs,dc=org",
+		"role_dn_tree" : "ou=Roles,dc=openvocs,dc=org",
+		"user" : "admin",
+		"password" : "password",
 		"timeout":
 		{
 			"network" : 3000000
