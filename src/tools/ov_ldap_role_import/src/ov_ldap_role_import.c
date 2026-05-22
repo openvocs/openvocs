@@ -202,6 +202,7 @@ ov_json_value *ldap_get_roles(const char *host, const char *base,
         BerElement *ber = NULL;
 
         ov_json_value *role = NULL;
+        ov_json_value *users = NULL;
 
         char *attribute = ldap_first_attribute(ld, entry, &ber);
         while ((attribute)) {
@@ -212,6 +213,10 @@ ov_json_value *ldap_get_roles(const char *host, const char *base,
 
                 role = ov_json_object();
                 ov_json_object_set(out, vals[0]->bv_val, role);
+                users = ov_json_object();
+                ov_json_object_set(role, "users", users);
+                ov_json_object_set(role, "id", ov_json_string(vals[0]->bv_val));
+
             }
 
             attribute = ldap_next_attribute(ld, entry, ber);
@@ -241,7 +246,7 @@ ov_json_value *ldap_get_roles(const char *host, const char *base,
                         if (end){
                             memset(name, 0, PATH_MAX);
                             snprintf(name, PATH_MAX, "%.*s", (int) (end - start), start);
-                            ov_json_object_set(role, name, ov_json_true());
+                            ov_json_object_set(users, name, ov_json_null());
                         }
                     }
                 }
@@ -269,6 +274,161 @@ error:
     if (ld)
         ldap_unbind_ext_s(ld, NULL, NULL);
     return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool write_new_config(const ov_json_value *roles, const char *domain,
+                             const char *path) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    if (!roles || !domain || !path)
+        goto error;
+
+    val = NULL;
+    if (!ov_json_value_copy((void **)&val, roles))
+        goto error;
+
+    out = ov_json_object();
+    if (!ov_json_object_set(out, OV_KEY_ROLES, val))
+        goto error;
+
+    val = ov_json_string(domain);
+    if (!ov_json_object_set(out, OV_KEY_ID, val))
+        goto error;
+
+    if (!ov_json_write_file(path, out))
+        goto error;
+
+    out = ov_json_value_free(out);
+
+    ov_log_debug("Created config of roles for domain %s at path %s", domain,
+                 path);
+
+    return true;
+error:
+    ov_json_value_free(val);
+    ov_json_value_free(out);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+struct roles_search {
+
+    ov_json_value const *active_roles;
+    ov_list *outdated;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool add_new_role(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+
+    char *role_id = (char *)key;
+    UNUSED(val);
+
+    struct roles_search *u = (struct roles_search *)data;
+
+    ov_json_value *active_roles = ov_json_value_cast(u->active_roles);
+
+    if (ov_json_object_get(active_roles, role_id)) {
+        return true;
+    } else {
+        return ov_list_push(u->outdated, role_id);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_outdated(void *item, void *data) {
+
+    char *key = (char *)item;
+    ov_json_value *roles = ov_json_value_cast(data);
+    return ov_json_object_del(roles, key);
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool write_roles_object(const ov_json_value *roles, const char *domain,
+                               const char *path) {
+
+    ov_list *list = NULL;
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    if (!roles || !domain || !path)
+        goto error;
+
+    ov_json_value *current = ov_json_read_file(path);
+    if (!current)
+        return write_new_config(roles, domain, path);
+
+    const char *domain_id =
+        ov_json_string_get(ov_json_get(current, "/" OV_KEY_ID));
+    if (!domain_id) {
+
+        ov_log_error("Update for domain %s, "
+                     "but no domain included in file at path %s",
+                     domain, path);
+
+        goto error;
+    }
+
+    if (0 != strcmp(domain_id, domain)) {
+
+        ov_log_error("Update for domain %s, "
+                     "but config of domain %s at path %s",
+                     domain, domain_id, path);
+
+        goto error;
+    }
+
+    ov_json_value const *active_roles = ov_json_get(current, "/"OV_KEY_ROLES);
+    if (!active_roles) {
+
+        out = NULL;
+        if (!ov_json_value_copy((void **)&out, roles))
+            goto error;
+
+        if (!ov_json_object_set(current, OV_KEY_ROLES, out))
+            goto error;
+
+    } else {
+
+        list = ov_list_create((ov_list_config){0});
+
+        struct roles_search container = (struct roles_search){
+            .active_roles = active_roles, .outdated = list};
+
+        if (!ov_json_object_for_each((ov_json_value *)roles, &container,
+                                     add_new_role))
+            goto error;
+
+        if (!ov_list_for_each(list, (void *)active_roles, drop_outdated))
+            goto error;
+
+        list = ov_list_free(list);
+    }
+
+    if (!ov_json_write_file(path, current))
+        goto error;
+
+    ov_log_debug("Update of roles for domain %s at path %s - done", domain,
+                 path);
+
+    return true;
+
+error:
+    ov_json_value_free(val);
+    ov_json_value_free(out);
+    ov_list_free(list);
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -301,6 +461,9 @@ int main(int argc, char **argv) {
     const char *pass = ov_json_string_get(
         ov_json_get(config, "/" OV_KEY_LDAP "/" OV_KEY_PASSWORD));
 
+    const char *domain =
+        ov_json_string_get(ov_json_get(config, "/" OV_KEY_DOMAIN));
+
     const char *target_path =
         ov_json_string_get(ov_json_get(config, "/" OV_KEY_PATH));
 
@@ -319,9 +482,8 @@ int main(int argc, char **argv) {
         goto error;
     }
 
-    char *str = ov_json_value_to_string(roles);
-    ov_log_debug("%s", str);
-    str = ov_data_pointer_free(str);
+    if (!write_roles_object(roles, domain, target_path))
+        goto error;
 
     ov_json_value_free(roles);
     ov_json_value_free(config);
