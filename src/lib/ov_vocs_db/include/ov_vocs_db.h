@@ -164,6 +164,7 @@ typedef struct ov_vocs_db_config {
     struct {
 
         uint64_t thread_lock_usec;
+        uint64_t ldap_request_usec;
 
     } timeout;
 
@@ -693,5 +694,15 @@ bool ov_vocs_db_send_vocs_trigger(ov_vocs_db *self, const ov_json_value *msg);
 /*----------------------------------------------------------------------------*/
 
 uint32_t ov_vocs_db_get_highest_port(ov_vocs_db *self);
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      LDAP FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+bool ov_vocs_db_ldap_import(ov_vocs_db *self, ov_ldap_config config);
 
 #endif /* ov_vocs_db_h */

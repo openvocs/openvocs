@@ -1800,6 +1800,8 @@ static bool handle_ldap_update(ov_vocs_db_persistance *self, ov_thread_message *
 
     }
 
+    if (!m->config.roles) goto callback;
+
     roles = ldap_get_roles(m->config.host, 
                            m->config.role_dn_tree, 
                            m->config.user, 
@@ -1818,6 +1820,8 @@ static bool handle_ldap_update(ov_vocs_db_persistance *self, ov_thread_message *
             ov_log_error("Failed to write roles.");
 
     }
+
+callback:
 
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, m->id);
 

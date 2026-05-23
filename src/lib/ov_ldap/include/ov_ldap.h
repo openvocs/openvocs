@@ -79,6 +79,8 @@ typedef struct ov_ldap_config {
 
     ov_event_loop *loop;
 
+    char time[25];
+
     char host[OV_HOST_NAME_MAX];
     char user_dn_tree[OV_LDAP_USER_DN_TREE];
     char role_dn_tree[OV_LDAP_USER_DN_TREE];

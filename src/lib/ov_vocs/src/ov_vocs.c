@@ -34,6 +34,7 @@
 #include <ov_base/ov_utils.h>
 
 #include <ov_base/ov_dict.h>
+#include <ov_base/ov_timed.h>
 #include <ov_base/ov_event_keys.h>
 #include <ov_base/ov_json_value.h>
 
@@ -81,6 +82,8 @@ struct ov_vocs {
 
     ov_socket_json *connections;
     ov_cluster *cluster;
+
+    ov_timed *timed;
 };
 
 /*
@@ -2944,6 +2947,68 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static bool set_timed_ldap_callback(ov_vocs *self);
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_ldap_update_trigger(void *userdata, const char *uuid){
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    UNUSED(uuid);
+
+    if (!ov_vocs_db_ldap_import(self->config.db, self->config.ldap.config)){
+        ov_log_error("LDAP update failed.");
+    } else {
+        ov_log_info("LDAP update success.");
+    }
+
+    set_timed_ldap_callback(self);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool set_timed_ldap_callback(ov_vocs *self){
+
+    if (!self) goto error;
+
+    if (0 == self->config.ldap.config.time[0]) goto done;
+
+    char *ptr = self->config.ldap.config.time;
+    size_t len = strlen(ptr);
+
+    char *colon1 = memchr(ptr, ':', len);
+    char *colon2 = memchr(colon1 + 1, ':', len - ((colon1 + 1) - ptr));
+
+    if (!colon1 || !colon2) {
+        ov_log_debug("invalid update_time for LDAP - disabling update");
+        goto done;
+    }
+
+    char *end = NULL;
+
+    ov_time time = {0};
+    time.hour = strtol(ptr, &end, 10);
+    OV_ASSERT(end[0] == ':');
+    time.minute = strtol(colon1 + 1, &end, 10);
+    OV_ASSERT(end[0] == ':');
+    time.second = strtol(colon2 + 1, &end, 10);
+
+    ov_id id = {0};
+    ov_id_fill_with_uuid(id);
+
+    ov_timed_add(self->timed, time, id, self, cb_ldap_update_trigger);
+
+    ov_log_debug("set LDAP update for %s", ptr);
+
+done:
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_vocs *ov_vocs_create(ov_vocs_config config) {
 
     ov_vocs *vocs = NULL;
@@ -3076,6 +3141,15 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
         ov_log_error("Failed to load cluster.");
     }
 
+    vocs->timed = ov_timed_create((ov_timed_config){
+        .loop = config.loop
+    });
+
+    if (!vocs->timed) goto error;
+
+    if (vocs->ldap)
+        set_timed_ldap_callback(vocs);
+
     return vocs;
 error:
     ov_vocs_free(vocs);
@@ -3102,6 +3176,8 @@ void *ov_vocs_free(void *self) {
     ov_vocs *vocs = ov_vocs_cast(self);
     if (!vocs)
         return self;
+
+    vocs->timed = ov_timed_free(vocs->timed);
 
     vocs->backend = ov_mc_backend_free(vocs->backend);
     vocs->frontend = ov_mc_frontend_free(vocs->frontend);
