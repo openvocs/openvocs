@@ -5585,6 +5585,9 @@ static bool update_role_from_ldap(const void *key, void *val, void *data){
 
     } else {
 
+        if (0 == ov_string_compare((char*)key, "admin"))
+            return true;
+        
         ov_list_push(container->del, (void*) key);
     }
 
