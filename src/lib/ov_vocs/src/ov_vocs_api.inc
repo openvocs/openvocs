@@ -4332,14 +4332,14 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_ldap_import(ov_vocs *vocs,
+static void cb_event_ldap_import(void *userdata,const char *name,
                        int socket,
-                       ov_json_value *input) {
+                       const ov_json_value *input) {
 
 
     ov_json_value *out = NULL;
     ov_json_value *data = NULL;
-    
+
     UNUSED(name);
     ov_vocs *vocs = ov_vocs_cast(userdata);
 
@@ -4347,6 +4347,8 @@ static bool cb_event_ldap_import(ov_vocs *vocs,
 
     data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
+
+    const char *domain = ov_json_string_get(ov_json_get(input, "/parameter/domain"));
 
     if (!conn_user) {
 
