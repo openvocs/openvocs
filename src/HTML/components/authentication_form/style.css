@@ -28,16 +28,14 @@
     height: 2rem;
 }
 
-#show_password svg {
-    fill: var(--black);
+#show_password::after {
+    content: "\e86d";
+    color: var(--black);
+    font-size: 1.8rem;
 }
 
-#show_password.close #eye {
-    display: none;
-}
-
-#show_password:not(.close) #eye_close {
-    display: none;
+#show_password.hide::after {
+    content: "\e873";
 }
 
 .active_button {
@@ -55,6 +53,7 @@
     position: fixed;
     left: 0;
     bottom: 0;
+    font-family: Abel, san-serif;
 }
 
 .simple-keyboard.ov_dark_keyboard {
@@ -80,4 +79,12 @@
 
 #root .simple-keyboard.ov_dark_keyboard+.simple-keyboard-preview {
     background: var(--white);
+}
+
+.simple-keyboard.ov_dark_keyboard .hg-button.hg-standardBtn[data-skbtn="@"] {
+    max-width: none;
+}
+
+.simple-keyboard.ov_dark_keyboard .hg-button.hg-standardBtn[data-skbtn="{space}"] {
+    flex-grow: 2;
 }

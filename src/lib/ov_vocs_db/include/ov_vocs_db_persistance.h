@@ -35,6 +35,7 @@
 #include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_result.h>
 #include <ov_core/ov_io.h>
+#include <ov_ldap/ov_ldap.h>
 
 /*----------------------------------------------------------------------------*/
 
@@ -84,10 +85,18 @@ bool ov_vocs_db_persistance_save(ov_vocs_db_persistance *self);
 ov_vocs_db_persistance_config
 ov_vocs_db_persistance_config_from_json(const ov_json_value *val);
 
-bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
+bool ov_vocs_db_persistance_ldap_user_import(ov_vocs_db_persistance *self,
                                         const char *host, const char *base,
                                         const char *user, const char *pass,
                                         const char *domain,
+                                        const char *uuid,
+                                        void *userdata,
+                                        void (*callback)(void *userdata, 
+                                                        const char *uuid,
+                                                        ov_result result));
+
+bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
+                                        ov_ldap_config config,
                                         const char *uuid,
                                         void *userdata,
                                         void (*callback)(void *userdata, 

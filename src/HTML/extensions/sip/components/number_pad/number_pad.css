@@ -8,7 +8,7 @@
 #sip-dial-pad {
     min-width: 20rem;
     width: 20rem;
-    font-size: 1.5rem;
+    /* font-size: 1.5rem; */
     padding: 0.5rem;
     color: var(--base_text_color);
     margin: 0 auto;
@@ -34,7 +34,7 @@
 
 #sip-phone-number-field {
     border-radius: 0;
-    font-size: 1.5rem;
+    /* font-size: 1.5rem; */
     padding: 2rem 0.5rem 2rem 3.5rem;
 }
 

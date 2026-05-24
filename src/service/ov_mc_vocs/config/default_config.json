@@ -159,7 +159,7 @@
 
 		"timeout" :
 		{
-			"ldap" : 5000000,
+			"ldap_request_usec" : 5000000,
 			"threadlock timeout (usec)": 1000000,
 			"state snapshot (sec)" : 60,
 			"auth snapshot (sec)" : 300
@@ -173,9 +173,15 @@
 	"ldap" : {
 
 		"enabled" : false,
+		"roles" : false,
 		"threads" : 4,
 		"host": "localhost",
 		"user_dn_tree" : "ou=people,dc=openvocs,dc=org",
+		"role_dn_tree" : "ou=Roles,dc=openvocs,dc=org",
+		"domain" : "localhost",
+		"user" : "admin",
+		"password" : "password",
+		"update_time" : "00:00:00",
 		"timeout":
 		{
 			"network" : 3000000

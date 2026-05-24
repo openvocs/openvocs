@@ -4332,40 +4332,12 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_ldap_import(void *userdata, const char *uuid, ov_result result){
+static bool cb_event_ldap_import(ov_vocs *vocs,
+                       int socket,
+                       ov_json_value *input) {
+
 
     ov_json_value *out = NULL;
-
-    ov_vocs *self = ov_vocs_cast(userdata);
-    if (!self || !uuid) goto error;
-
-    ov_event_async_data async = ov_event_async_unset(self->async, uuid);
-
-    if (OV_ERROR_NO_ERROR == result.error_code){
-
-        out = ov_event_api_create_success_response(async.value);
-    
-    } else {
-
-        out = ov_event_api_create_error_response(async.value,
-            result.error_code, result.message);
-
-    }
-
-    env_send(self, async.socket, out);
-    out = ov_json_value_free(out);
-    ov_event_async_data_clear(&async);
-error:
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void cb_event_ldap_import(void *userdata, const char *name,
-        int socket, const ov_json_value *input) {
-
-    ov_json_value *out = NULL;
-    ov_json_value *val = NULL;
     ov_json_value *data = NULL;
     
     UNUSED(name);
@@ -4385,31 +4357,6 @@ static void cb_event_ldap_import(void *userdata, const char *name,
         goto response;
     }
 
-    const char *uuid = ov_event_api_get_uuid(input);
-
-    const char *host = ov_json_string_get(
-        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_HOST));
-
-    const char *base = ov_json_string_get(
-        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_BASE));
-
-    const char *domain = ov_json_string_get(
-        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_DOMAIN));
-
-    const char *ldap_user = ov_json_string_get(
-        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_USER));
-
-    const char *ldap_pass = ov_json_string_get(
-        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
-
-    if (!host || !base || !domain || !ldap_user || !ldap_pass) {
-
-        out = ov_event_api_create_error_response(input,
-                                                 OV_ERROR_CODE_PARAMETER_ERROR,
-                                                 OV_ERROR_DESC_PARAMETER_ERROR);
-
-        goto response;
-    }
 
     /* MUST be an admin of the domain */
     if (!ov_vocs_db_authorize_domain_admin(vocs->config.db, conn_user, domain)) {
@@ -4420,17 +4367,9 @@ static void cb_event_ldap_import(void *userdata, const char *name,
         goto response;
     }
 
-    if (!set_async(vocs, uuid, socket, input)) goto error;
 
-    if (!ov_vocs_db_persistance_ldap_import(vocs->config.persistance,
-                                            host,
-                                            base,
-                                            ldap_user,
-                                            ldap_pass,
-                                            domain,
-                                            uuid,
-                                            vocs,
-                                            cb_ldap_import)){
+    if (!ov_vocs_db_ldap_import(vocs->config.db,
+                                vocs->config.ldap.config)){
 
         out =
             ov_event_api_create_error_response(input,
@@ -4442,6 +4381,7 @@ static void cb_event_ldap_import(void *userdata, const char *name,
 
 
     ov_cluster_send(vocs->cluster, input);
+    out = ov_event_api_create_success_response(input);
 
 response:
 
@@ -4449,7 +4389,6 @@ response:
     out = ov_json_value_free(out);
     return;
 error:
-    val = ov_json_value_free(val);
     out = ov_json_value_free(out);
     return;
 }

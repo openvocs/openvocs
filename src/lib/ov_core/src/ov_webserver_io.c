@@ -1200,8 +1200,6 @@ bool ov_webserver_io_send_json(ov_webserver_io *self, int socket,
 
     // send in chunks
 
-    size_t counter = 0;
-
     uint8_t *ptr = (uint8_t *)string;
     ssize_t open = length;
 
@@ -1215,7 +1213,6 @@ bool ov_webserver_io_send_json(ov_webserver_io *self, int socket,
                                         .length = frame->buffer->length}))
         goto error;
 
-    counter++;
     open -= chunk;
     ptr += chunk;
 
@@ -1233,8 +1230,6 @@ bool ov_webserver_io_send_json(ov_webserver_io *self, int socket,
 
         open -= chunk;
         ptr += chunk;
-
-        counter++;
     }
 
     frame->buffer->start[0] = 0x80;

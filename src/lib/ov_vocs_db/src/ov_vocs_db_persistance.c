@@ -44,6 +44,8 @@
 
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_dir.h>
+#include <ov_base/ov_string.h>
+#include <ov_base/ov_id.h>
 #include <ov_base/ov_error_codes.h>
 #include <ov_base/ov_file.h>
 #include <ov_base/ov_json.h>
@@ -84,6 +86,44 @@ struct ov_vocs_db_persistance {
 
     ov_broadcast_registry *broadcasts;
 };
+
+struct thread_message_ldap {
+
+    ov_thread_message public;
+    ov_ldap_config config;
+    ov_id id;
+};
+
+/*----------------------------------------------------------------------------*/
+
+ov_thread_message *thread_message_ldap_free(ov_thread_message *msg){
+
+    if (msg->type != 42) return msg;
+
+    struct thread_message_ldap *m = (struct thread_message_ldap*)msg;
+    m->public.json_message = ov_json_value_free(m->public.json_message);
+    m = ov_data_pointer_free(m);
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_thread_message *thread_message_ldap_update(
+    ov_ldap_config config, const ov_id id){
+
+    struct thread_message_ldap *msg = calloc(1, sizeof(struct thread_message_ldap));
+    if (!msg) goto error;
+
+    msg->public.magic_bytes = OV_THREAD_MESSAGE_MAGIC_BYTES;
+    msg->public.type = 42;
+    msg->public.free = thread_message_ldap_free;
+
+    ov_id_set(msg->id,id);
+    msg->config = config;
+    return ov_thread_message_cast(msg);
+error:
+    return NULL;
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -1372,6 +1412,442 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+ov_json_value *ldap_get_roles(const char *host, const char *base,
+                              const char *user, const char *pass,
+                              uint64_t timeout_usec) {
+
+    char name[PATH_MAX] = {0};
+
+    ov_json_value *out = NULL;
+    ov_json_value *username = NULL;
+    ov_json_value *userid = NULL;
+    ov_json_value *val = NULL;
+
+    LDAP *ld = NULL;
+    LDAPMessage *res = NULL;
+
+    if (!base || !user || !host || !pass)
+        goto error;
+
+    char *filter = "(&(objectClass=*))";
+
+    char *attrs[3] = {0};
+    attrs[0] = "member";
+    attrs[1] = "cn";
+    attrs[2] = NULL;
+
+    ld = ldap_bind(host, user, pass);
+    if (!ld)
+        goto error;
+
+    int err = 0;
+
+    struct timeval timeout = {.tv_sec = timeout_usec / 1000000,
+                              .tv_usec = timeout_usec % 1000000};
+
+    err = ldap_search_ext_s(ld,                 // LDAP            * ld
+                            base,               // char            * base
+                            LDAP_SCOPE_SUBTREE, // int               scope
+                            filter,             // char            * filter
+                            attrs,              // char            * attrs[]
+                            0,                  // int               attrsonly
+                            NULL,               // LDAPControl    ** serverctrls
+                            NULL,               // LDAPControl    ** clientctrls
+                            &timeout,           // struct timeval  * timeout
+                            0,                  // int               sizelimit
+                            &res                // LDAPMessage    ** res
+    );
+
+    if (err != LDAP_SUCCESS) {
+        fprintf(stderr, "ldap_search_ext_s(): %s\n", ldap_err2string(err));
+        goto error;
+    };
+
+    if (!(ldap_count_entries(ld, res))) {
+        printf("0 entries found.\n");
+        goto error;
+    };
+
+    out = ov_json_object();
+
+    // loops through entries, attributes, and values
+    LDAPMessage *entry = ldap_first_entry(ld, res);
+    while ((entry)) {
+        
+        BerElement *ber = NULL;
+
+        ov_json_value *role = NULL;
+        ov_json_value *users = NULL;
+
+        char *attribute = ldap_first_attribute(ld, entry, &ber);
+        while ((attribute)) {
+
+            struct berval **vals = ldap_get_values_len(ld, entry, attribute);
+
+            if (0 == strcmp(attribute, "cn")){
+
+                role = ov_json_object();
+                ov_json_object_set(out, vals[0]->bv_val, role);
+                users = ov_json_object();
+                ov_json_object_set(role, "users", users);
+                ov_json_object_set(role, "id", ov_json_string(vals[0]->bv_val));
+
+            }
+
+            attribute = ldap_next_attribute(ld, entry, ber);
+            ldap_value_free_len(vals);
+        };
+
+        ber_free(ber, 0);
+
+        attribute = ldap_first_attribute(ld, entry, &ber);
+        while ((attribute)) {
+
+            struct berval **vals = ldap_get_values_len(ld, entry, attribute);
+
+            for (int pos = 0; pos < ldap_count_values_len(vals); pos++) {
+                
+                if (0 == strcmp(attribute, "member")){
+
+                    size_t len = strlen(vals[pos]->bv_val);
+
+                    char *ptr1 = vals[pos]->bv_val;
+                    char *start = memchr(ptr1, '=', len) + 1;
+                    char *end = NULL;
+
+                    if (start){
+
+                        end = memchr(start, ',', len - (start - ptr1));
+                        if (end){
+                            memset(name, 0, PATH_MAX);
+                            snprintf(name, PATH_MAX, "%.*s", (int) (end - start), start);
+                            ov_json_object_set(users, name, ov_json_null());
+                        }
+                    }
+                }
+            }
+
+            attribute = ldap_next_attribute(ld, entry, ber);
+            ldap_value_free_len(vals);
+        };
+
+        ber_free(ber, 0);
+
+        LDAPMessage *new_entry = ldap_next_entry(ld, entry);
+        ldap_memfree(entry);
+        entry = new_entry;
+    };
+
+    ldap_unbind_ext_s(ld, NULL, NULL);
+
+    return out;
+error:
+    ov_json_value_free(username);
+    ov_json_value_free(userid);
+    ov_json_value_free(val);
+    ov_json_value_free(out);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool write_new_role_config(const ov_json_value *roles, const char *domain,
+                             const char *path) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    if (!roles || !domain || !path)
+        goto error;
+
+    val = NULL;
+    if (!ov_json_value_copy((void **)&val, roles))
+        goto error;
+
+    out = ov_json_object();
+    if (!ov_json_object_set(out, OV_KEY_ROLES, val))
+        goto error;
+
+    val = ov_json_string(domain);
+    if (!ov_json_object_set(out, OV_KEY_ID, val))
+        goto error;
+
+    if (!ov_json_write_file(path, out))
+        goto error;
+
+    out = ov_json_value_free(out);
+
+    ov_log_debug("Created config of roles for domain %s at path %s", domain,
+                 path);
+
+    return true;
+error:
+    ov_json_value_free(val);
+    ov_json_value_free(out);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+struct roles_search {
+
+    ov_json_value const *active_roles;
+    ov_list *outdated;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static bool add_new_role(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+
+    char *role_id = (char *)key;
+    ov_json_value *role = ov_json_value_cast(val);
+
+    struct roles_search *u = (struct roles_search *)data;
+
+    ov_json_value *active_roles = ov_json_value_cast(u->active_roles);
+
+    if (ov_json_object_get(active_roles, role_id)) {
+        return true;
+    } 
+
+    ov_json_value *out = NULL;
+
+    if (!ov_json_value_copy((void **)&out, role))
+        goto error;
+
+    ov_json_value *ldap = ov_json_true();
+    ov_json_object_set(out, OV_KEY_LDAP, ldap);
+
+    if (!ov_json_object_set(active_roles, role_id, out)) {
+        out = ov_json_value_free(out);
+        goto error;
+    }
+
+    ov_log_debug("add new role %s", role_id);
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_outdated_role(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+
+    char *id = (char *)key;
+    UNUSED(val);
+
+    if (0 == ov_string_compare(id, "admin")) return true;
+
+    struct roles_search *u = (struct roles_search *)data;
+
+    ov_json_value *active_roles = ov_json_value_cast(u->active_roles);
+
+    if (ov_json_object_get(active_roles, id)) {
+        
+        return true;
+
+    } else {
+
+        ov_log_debug("dropping outdated role %s", id);
+
+        return ov_list_push(u->outdated, id);
+    }
+
+    return false;
+}
+
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_outdated_roles(void *item, void *data) {
+
+    char *key = (char *)item;
+    ov_json_value *roles = ov_json_value_cast(data);
+    return ov_json_object_del(roles, key);
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool write_roles_object(const ov_json_value *roles, const char *domain,
+                               const char *path) {
+
+    ov_list *list = NULL;
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+
+    if (!roles || !domain || !path)
+        goto error;
+
+    ov_json_value *current = ov_json_read_file(path);
+    if (!current)
+        return write_new_role_config(roles, domain, path);
+
+    const char *domain_id =
+        ov_json_string_get(ov_json_get(current, "/" OV_KEY_ID));
+
+    if (!domain_id) {
+
+        ov_log_error("Update for domain %s, "
+                     "but no domain included in file at path %s",
+                     domain, path);
+
+        goto error;
+    }
+
+    if (0 != strcmp(domain_id, domain)) {
+
+        ov_log_error("Update for domain %s, "
+                     "but config of domain %s at path %s",
+                     domain, domain_id, path);
+
+        goto error;
+    }
+
+    ov_json_value const *active_roles = ov_json_get(current, "/"OV_KEY_ROLES);
+    if (!active_roles) {
+
+        out = NULL;
+        if (!ov_json_value_copy((void **)&out, roles))
+            goto error;
+
+        if (!ov_json_object_set(current, OV_KEY_ROLES, out))
+            goto error;
+
+    } else {
+
+        list = ov_list_create((ov_list_config){0});
+
+        struct roles_search container = (struct roles_search){
+            .active_roles = active_roles, .outdated = list};
+
+        if (!ov_json_object_for_each((ov_json_value *)roles, &container,
+                                     add_new_role))
+            goto error;
+
+        container.active_roles = roles;
+
+        if (!ov_json_object_for_each((ov_json_value *)active_roles, &container,
+                                     drop_outdated_role))
+            goto error;
+
+
+
+        if (!ov_list_for_each(list, (void *)active_roles, drop_outdated_roles))
+            goto error;
+
+        list = ov_list_free(list);
+    }
+
+    if (!ov_json_write_file(path, current))
+        goto error;
+
+    ov_log_debug("Update of roles for domain %s at path %s - done", domain,
+                 path);
+
+    return true;
+
+error:
+    ov_json_value_free(val);
+    ov_json_value_free(out);
+    ov_list_free(list);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool handle_ldap_update(ov_vocs_db_persistance *self, ov_thread_message *msg){
+
+    ov_json_value *users = NULL;
+    ov_json_value *roles = NULL;
+
+    uint64_t error_code = 0;
+    char *message = NULL;
+
+    if (!self || !msg) goto error;
+
+    if (msg->type != 42) goto error;
+
+    struct thread_message_ldap *m = (struct thread_message_ldap *)msg;
+
+    users = ldap_get_users(m->config.host, 
+                           m->config.user_dn_tree, 
+                           m->config.user, 
+                           m->config.pass,
+                           self->config.timeout.ldap_request_usec);
+
+    if (!users) {
+
+        ov_log_error("Failed to import LDAP users from %s", m->config.host);
+        error_code = OV_ERROR_CODE_PROCESSING_ERROR;
+        message = "failed to update users.";
+        
+    } else {
+
+        ov_json_value *changes =
+            write_users_object(users, m->config.domain, self->config.path);
+
+        changes = ov_json_value_free(changes);
+
+    }
+
+    if (!m->config.roles) goto callback;
+
+    roles = ldap_get_roles(m->config.host, 
+                           m->config.role_dn_tree, 
+                           m->config.user, 
+                           m->config.pass,
+                           self->config.timeout.ldap_request_usec);
+
+    if (!roles) {
+
+        ov_log_error("Failed to import LDAP roles from %s", m->config.host);
+        error_code = OV_ERROR_CODE_PROCESSING_ERROR;
+        message = "failed to update roles.";
+        
+    } else {
+
+        if (!write_roles_object(roles, m->config.domain, self->config.path))
+            ov_log_error("Failed to write roles.");
+
+    }
+
+callback:
+
+    ov_callback cb = ov_callback_registry_unregister(self->callbacks, m->id);
+
+    if (cb.function){
+
+        void (*function)(void *userdata, const char *uuid, ov_result) = cb.function;
+        function(cb.userdata, m->id, (ov_result){
+            .error_code = error_code,
+            .message = message
+        });
+
+    }
+
+    ov_thread_message_free(msg);
+    ov_json_value_free(users);
+    ov_json_value_free(roles);
+    return true;
+error:
+    ov_thread_message_free(msg);
+    ov_json_value_free(users);
+    ov_json_value_free(roles);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
 
     ov_json_value *users = NULL;
@@ -1381,6 +1857,8 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
         goto error;
 
     self = ov_thread_loop_get_data(loop);
+
+    if (msg->type == 42) return handle_ldap_update(self, msg);
 
     OV_ASSERT(msg->json_message);
 
@@ -1469,7 +1947,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
+bool ov_vocs_db_persistance_ldap_user_import(ov_vocs_db_persistance *self,
                                         const char *host, const char *base,
                                         const char *user, const char *pass,
                                         const char *domain,
@@ -1531,6 +2009,44 @@ bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
 error:
     ov_json_value_free(out);
     ov_json_value_free(val);
+    ov_thread_message_free(msg);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_db_persistance_ldap_import(ov_vocs_db_persistance *self,
+                                        ov_ldap_config config,
+                                        const char *uuid,
+                                        void *userdata,
+                                        void (*callback)(void *userdata, 
+                                                        const char *uuid,
+                                                        ov_result result)){
+
+    ov_thread_message *msg = NULL;
+
+    if (!self) goto error;
+
+    if (uuid && userdata && callback){
+
+        ov_callback cb = (ov_callback){
+               .userdata = userdata,
+               .function = callback
+        };
+        
+        if (!ov_callback_registry_register(self->callbacks, uuid, cb, 5000000))
+            goto error;
+    }
+
+    msg = thread_message_ldap_update(config, uuid);
+    if (!msg) goto error;
+
+    if (!ov_thread_loop_send_message(self->thread_loop, msg,
+                                     OV_RECEIVER_THREAD))
+        goto error;
+
+    return true;
+error:
     ov_thread_message_free(msg);
     return false;
 }

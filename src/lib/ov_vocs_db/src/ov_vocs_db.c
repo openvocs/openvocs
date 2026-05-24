@@ -32,6 +32,9 @@
 
 #include <limits.h>
 
+#include <lber.h>
+#include <ldap.h>
+
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_dict.h>
 #include <ov_base/ov_json.h>
@@ -166,6 +169,9 @@ ov_vocs_db *ov_vocs_db_create(ov_vocs_db_config config) {
 
     if (0 == config.timeout.thread_lock_usec)
         config.timeout.thread_lock_usec = IMPL_DEFAULT_LOCK_USEC;
+
+    if (0 == config.timeout.ldap_request_usec)
+        config.timeout.ldap_request_usec = 5000000;
 
     if (0 == config.password.length)
         config.password.length = IMPL_DEFAULT_PASSWORD_LENGTH;
@@ -303,6 +309,9 @@ ov_vocs_db_config ov_vocs_db_config_from_json(const ov_json_value *value) {
 
     config.timeout.thread_lock_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_TIMEOUT "/" OV_KEY_THREAD_LOCK_TIMEOUT));
+
+    config.timeout.ldap_request_usec = ov_json_number_get(
+        ov_json_get(conf, "/" OV_KEY_TIMEOUT "/ldap_request_usec"));
 
     config.password.length = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_PASSWORD "/" OV_KEY_LENGTH));
@@ -5129,4 +5138,596 @@ uint32_t ov_vocs_db_get_highest_port(ov_vocs_db *self) {
 
 error:
     return 0;
+}
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      LDAP FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+/*----------------------------------------------------------------------------*/
+
+static LDAP *ldap_bind(const char *host, const char *user, const char *pass) {
+
+    int version = LDAP_VERSION3;
+    LDAP *ld = NULL;
+    LDAPMessage *res = NULL;
+    int msgid = 0;
+    int err = 0;
+
+    char *dn = NULL;
+
+    if (!host || !user || !pass)
+        goto error;
+
+    char server[OV_HOST_NAME_MAX] = {0};
+    snprintf(server, OV_HOST_NAME_MAX, "ldap://%s", host);
+
+    struct berval cred =
+        (struct berval){.bv_len = strlen(pass), .bv_val = (char *)pass};
+
+    /* initialize the server */
+
+    err = ldap_initialize(&ld, server);
+
+    if (err != LDAP_SUCCESS) {
+
+        fprintf(stderr, "ldap_initialize(): %s\n", ldap_err2string(err));
+        goto error;
+    }
+
+    err = ldap_set_option(ld, LDAP_OPT_PROTOCOL_VERSION, &version);
+
+    if (err != LDAP_SUCCESS) {
+
+        fprintf(stderr, "ldap_set_option(PROTOCOL_VERSION): %s\n",
+                ldap_err2string(err));
+        goto error;
+    };
+
+    struct timeval timeout = {.tv_sec = 3};
+
+    err = ldap_set_option(ld, LDAP_OPT_NETWORK_TIMEOUT, &timeout);
+    if (err != LDAP_SUCCESS) {
+
+        fprintf(stderr, "ldap_set_option(SIZELIMIT): %s\n",
+                ldap_err2string(err));
+        goto error;
+    };
+
+    printf("binding to server %s:%d as %s\n", host, LDAP_PORT, user);
+
+    if (ldap_sasl_bind(ld, user, LDAP_SASL_SIMPLE, &cred, NULL, NULL, &msgid) !=
+        LDAP_SUCCESS) {
+
+        perror("ldap_sasl_bind");
+    }
+
+    err = ldap_result(ld, msgid, 0, &timeout, &res);
+
+    switch (err) {
+    case -1:
+
+        ldap_get_option(ld, LDAP_OPT_RESULT_CODE, &err);
+        fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
+        goto error;
+
+    case 0:
+
+        fprintf(stderr, "ldap_result(): timeout expired\n");
+        ldap_abandon_ext(ld, msgid, NULL, NULL);
+        goto error;
+
+    default:
+        break;
+    };
+
+    ldap_parse_result(ld, res, &err, &dn, NULL, NULL, NULL, 0);
+    if (err != LDAP_SUCCESS) {
+
+        fprintf(stderr, "ldap_result(): %s\n", ldap_err2string(err));
+        goto error;
+    };
+
+    fprintf(stdout, "authentication success\n");
+
+    return ld;
+error:
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_json_value *ldap_get_users(const char *host, const char *base,
+                              const char *user, const char *pass,
+                              uint64_t timeout_usec) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *username = NULL;
+    ov_json_value *userid = NULL;
+    ov_json_value *val = NULL;
+
+    char *surname = NULL;
+    char *forename = NULL;
+    char *uid = NULL;
+
+    LDAP *ld = NULL;
+    LDAPMessage *res = NULL;
+
+    if (!base || !user || !host || !pass)
+        goto error;
+
+    char *filter = "(&(objectClass=posixAccount))";
+
+    char *attrs[4] = {0};
+    attrs[0] = "cn";
+    attrs[1] = "sn";
+    attrs[2] = "uid";
+    attrs[3] = NULL;
+
+    ld = ldap_bind(host, user, pass);
+    if (!ld)
+        goto error;
+
+    int err = 0;
+
+    struct timeval timeout = {.tv_sec = timeout_usec / 1000000,
+                              .tv_usec = timeout_usec % 1000000};
+
+    err = ldap_search_ext_s(ld,                 // LDAP            * ld
+                            base,               // char            * base
+                            LDAP_SCOPE_SUBTREE, // int               scope
+                            filter,             // char            * filter
+                            attrs,              // char            * attrs[]
+                            0,                  // int               attrsonly
+                            NULL,               // LDAPControl    ** serverctrls
+                            NULL,               // LDAPControl    ** clientctrls
+                            &timeout,           // struct timeval  * timeout
+                            0,                  // int               sizelimit
+                            &res                // LDAPMessage    ** res
+    );
+
+    if (err != LDAP_SUCCESS) {
+        fprintf(stderr, "ldap_search_ext_s(): %s\n", ldap_err2string(err));
+        goto error;
+    };
+
+    if (!(ldap_count_entries(ld, res))) {
+        printf("0 entries found.\n");
+        goto error;
+    };
+
+    out = ov_json_object();
+    // char name[1000] = {0};
+
+    // loops through entries, attributes, and values
+    LDAPMessage *entry = ldap_first_entry(ld, res);
+    while ((entry)) {
+        BerElement *ber = NULL;
+
+        char *attribute = ldap_first_attribute(ld, entry, &ber);
+        while ((attribute)) {
+
+            struct berval **vals = ldap_get_values_len(ld, entry, attribute);
+            for (int pos = 0; pos < ldap_count_values_len(vals); pos++) {
+                // printf("%i %s: %s\n", pos, attribute, vals[pos]->bv_val);
+            }
+
+            if (0 == strcmp(attribute, "sn"))
+                surname = strdup(vals[0]->bv_val);
+
+            if (0 == strcmp(attribute, "cn"))
+                forename = strdup(vals[0]->bv_val);
+
+            if (0 == strcmp(attribute, "uid"))
+                uid = strdup(vals[0]->bv_val);
+
+            attribute = ldap_next_attribute(ld, entry, ber);
+            ldap_value_free_len(vals);
+        };
+
+        ber_free(ber, 0);
+
+        LDAPMessage *new_entry = ldap_next_entry(ld, entry);
+        ldap_memfree(entry);
+        entry = new_entry;
+
+        if (uid) {
+
+            userid = ov_json_string(uid);
+            val = ov_json_object();
+
+            if (!ov_json_object_set(val, OV_KEY_ID, userid))
+                goto error;
+
+            userid = NULL;
+
+            if (forename) {
+
+                // snprintf(name, 1000, "%s %s", forename, surname);
+                username = ov_json_string(forename);
+
+                if (!ov_json_object_set(val, OV_KEY_NAME, username))
+                    goto error;
+
+                username = NULL;
+            }
+
+            char *str = ov_json_value_to_string(val);
+            if (!str) {
+
+                val = ov_json_value_free(val);
+
+                ov_log_error("MISSED UID %s %s\n\n", uid, forename);
+
+            } else {
+
+                if (!ov_json_object_set(out, uid, val))
+                    goto error;
+
+                val = NULL;
+            }
+
+            str = ov_data_pointer_free(str);
+        }
+
+        surname = ov_data_pointer_free(surname);
+        forename = ov_data_pointer_free(forename);
+        uid = ov_data_pointer_free(uid);
+    };
+
+    ldap_unbind_ext_s(ld, NULL, NULL);
+
+    return out;
+error:
+    ov_data_pointer_free(surname);
+    ov_data_pointer_free(forename);
+    ov_data_pointer_free(uid);
+    ov_json_value_free(username);
+    ov_json_value_free(userid);
+    ov_json_value_free(val);
+    ov_json_value_free(out);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static ov_json_value *ldap_get_roles(const char *host, const char *base,
+                              const char *user, const char *pass,
+                              uint64_t timeout_usec) {
+
+    char name[PATH_MAX] = {0};
+
+    ov_json_value *out = NULL;
+    ov_json_value *username = NULL;
+    ov_json_value *userid = NULL;
+    ov_json_value *val = NULL;
+
+    LDAP *ld = NULL;
+    LDAPMessage *res = NULL;
+
+    if (!base || !user || !host || !pass)
+        goto error;
+
+    char *filter = "(&(objectClass=*))";
+
+    char *attrs[3] = {0};
+    attrs[0] = "member";
+    attrs[1] = "cn";
+    attrs[2] = NULL;
+
+    ld = ldap_bind(host, user, pass);
+    if (!ld)
+        goto error;
+
+    int err = 0;
+
+    struct timeval timeout = {.tv_sec = timeout_usec / 1000000,
+                              .tv_usec = timeout_usec % 1000000};
+
+    err = ldap_search_ext_s(ld,                 // LDAP            * ld
+                            base,               // char            * base
+                            LDAP_SCOPE_SUBTREE, // int               scope
+                            filter,             // char            * filter
+                            attrs,              // char            * attrs[]
+                            0,                  // int               attrsonly
+                            NULL,               // LDAPControl    ** serverctrls
+                            NULL,               // LDAPControl    ** clientctrls
+                            &timeout,           // struct timeval  * timeout
+                            0,                  // int               sizelimit
+                            &res                // LDAPMessage    ** res
+    );
+
+    if (err != LDAP_SUCCESS) {
+        fprintf(stderr, "ldap_search_ext_s(): %s\n", ldap_err2string(err));
+        goto error;
+    };
+
+    if (!(ldap_count_entries(ld, res))) {
+        printf("0 entries found.\n");
+        goto error;
+    };
+
+    out = ov_json_object();
+
+    // loops through entries, attributes, and values
+    LDAPMessage *entry = ldap_first_entry(ld, res);
+    while ((entry)) {
+        
+        BerElement *ber = NULL;
+
+        ov_json_value *role = NULL;
+        ov_json_value *users = NULL;
+
+        char *attribute = ldap_first_attribute(ld, entry, &ber);
+        while ((attribute)) {
+
+            struct berval **vals = ldap_get_values_len(ld, entry, attribute);
+
+            if (0 == strcmp(attribute, "cn")){
+
+                role = ov_json_object();
+                ov_json_object_set(out, vals[0]->bv_val, role);
+                users = ov_json_object();
+                ov_json_object_set(role, "users", users);
+                ov_json_object_set(role, "id", ov_json_string(vals[0]->bv_val));
+
+            }
+
+            attribute = ldap_next_attribute(ld, entry, ber);
+            ldap_value_free_len(vals);
+        };
+
+        ber_free(ber, 0);
+
+        attribute = ldap_first_attribute(ld, entry, &ber);
+        while ((attribute)) {
+
+            struct berval **vals = ldap_get_values_len(ld, entry, attribute);
+
+            for (int pos = 0; pos < ldap_count_values_len(vals); pos++) {
+                
+                if (0 == strcmp(attribute, "member")){
+
+                    size_t len = strlen(vals[pos]->bv_val);
+
+                    char *ptr1 = vals[pos]->bv_val;
+                    char *start = memchr(ptr1, '=', len) + 1;
+                    char *end = NULL;
+
+                    if (start){
+
+                        end = memchr(start, ',', len - (start - ptr1));
+                        if (end){
+                            memset(name, 0, PATH_MAX);
+                            snprintf(name, PATH_MAX, "%.*s", (int) (end - start), start);
+                            ov_json_object_set(users, name, ov_json_null());
+                        }
+                    }
+                }
+            }
+
+            attribute = ldap_next_attribute(ld, entry, ber);
+            ldap_value_free_len(vals);
+        };
+
+        ber_free(ber, 0);
+
+        LDAPMessage *new_entry = ldap_next_entry(ld, entry);
+        ldap_memfree(entry);
+        entry = new_entry;
+    };
+
+    ldap_unbind_ext_s(ld, NULL, NULL);
+
+    return out;
+error:
+    ov_json_value_free(username);
+    ov_json_value_free(userid);
+    ov_json_value_free(val);
+    ov_json_value_free(out);
+    if (ld)
+        ldap_unbind_ext_s(ld, NULL, NULL);
+    return NULL;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool update_ldap_users(ov_vocs_db *self, 
+    const char *domain, const ov_json_value *users){
+
+    if (!self || !users) goto error;
+
+    ov_json_value *d = ov_json_object_get(self->data.domains, domain);
+    if (!d) goto error;
+
+    return update_users(self, d, users);
+
+error:
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+struct update {
+
+    ov_vocs_db *self;
+    ov_list *del;
+    ov_list *add;
+    const ov_json_value *roles;
+    ov_json_value *domain;
+};
+
+/*---------------------------------------------------------------------------*/
+
+static bool update_role_from_ldap(const void *key, void *val, void *data){
+
+    if (!key) return true;
+    struct update *container = (struct update*) data;
+    ov_json_value *value = ov_json_value_cast(val);
+
+    if (ov_json_object_get(container->roles, key)){
+
+        // role found in update, updating role
+
+        ov_json_value *users = ov_json_object_get(container->roles, "users");
+        ov_json_value *copy = NULL;
+        ov_json_value_copy((void**)&copy, users);
+        ov_json_object_set(value, "users", users);
+        ov_json_object_set(value, "ldap", ov_json_true());
+
+    } else {
+
+        if (0 == ov_string_compare((char*)key, "admin"))
+            return true;
+        
+        ov_list_push(container->del, (void*) key);
+    }
+
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool search_roles_to_add(const void *key, void *val, void *data){
+
+    if (!key) return true;
+    struct update *container = (struct update*) data;
+    UNUSED(val);
+
+    if (!ov_dict_get(container->self->index.roles, key))
+        ov_list_push(container->add, (void*)key);
+
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool add_new_role_from_ldap(void *key, void *data){
+
+    struct update *container = (struct update*) data;
+
+    ov_json_value *copy = NULL;
+    ov_json_value *role = ov_json_object_get(container->roles, key);
+    if (!role) goto error;
+    ov_json_value_copy((void**)&copy, role);
+
+    ov_json_value *roles = ov_json_object_get(container->domain, "roles");
+    if (!roles){
+        roles = ov_json_object();
+        ov_json_object_set(container->domain, "roles", roles);
+    }
+
+    ov_json_object_set(roles, "key", copy);
+    return true;
+error:
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool drop_role_not_in_ldap(void *key, void *data){
+
+    struct update *container = (struct update*) data;
+
+    ov_json_value *role = ov_dict_get(container->self->index.roles, key);
+    ov_json_value *parent = role->parent;
+    if (parent) ov_json_object_del(parent, key);
+
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool update_ldap_roles(ov_vocs_db *self, 
+    const char *domain, 
+    const ov_json_value *roles){
+
+    if (!self || !roles) goto error;
+
+    struct update container = (struct update){
+        .self = self,
+        .del = ov_linked_list_create((ov_list_config){0}),
+        .add = ov_linked_list_create((ov_list_config){0}),
+        .roles = roles,
+        .domain = ov_json_object_get(self->data.domains, domain)
+    };
+
+    ov_dict_for_each(self->index.roles, &container, update_role_from_ldap);
+    ov_json_object_for_each((ov_json_value*)roles, &container, search_roles_to_add);
+
+    ov_list_for_each(container.add, &container, add_new_role_from_ldap);
+    ov_list_for_each(container.del, &container, drop_role_not_in_ldap);
+
+    container.add = ov_list_free(container.add);
+    container.del = ov_list_free(container.del);
+    return true;
+
+error:
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool ov_vocs_db_ldap_import(ov_vocs_db *self, ov_ldap_config config){
+
+    ov_json_value *users = NULL;
+    ov_json_value *roles = NULL;
+
+    if (!self) goto error;
+
+    users = ldap_get_users(config.host, 
+                           config.user_dn_tree, 
+                           config.user, 
+                           config.pass,
+                           self->config.timeout.ldap_request_usec);
+
+    if (!users){
+
+        ov_log_error("failed to import users - abort");
+        goto error;
+
+    }
+
+    if (config.roles) {
+
+        roles = ldap_get_roles(config.host, 
+                           config.role_dn_tree, 
+                           config.user, 
+                           config.pass,
+                           self->config.timeout.ldap_request_usec);
+
+        if (!roles){
+    
+            ov_log_error("failed to import roles - abort");
+            goto error;
+    
+        }
+
+    }
+
+    if (!ov_thread_lock_try_lock(&self->lock))
+        goto error;
+
+    bool result = update_ldap_users(self, config.domain, users);
+    result &= update_ldap_roles(self, config.domain, roles);
+
+    if (result) reindex_auth(self);
+
+    ov_thread_lock_unlock(&self->lock);
+    ov_json_value_free(users);
+    ov_json_value_free(roles);
+    return result;
+
+error:
+    ov_json_value_free(users);
+    ov_json_value_free(roles);
+    return false;
 }

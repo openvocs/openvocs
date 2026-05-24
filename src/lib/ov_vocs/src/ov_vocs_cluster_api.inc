@@ -239,59 +239,17 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_cluster_ldap_import(void *userdata, const char *uuid, ov_result result){
-
-    ov_vocs *self = ov_vocs_cast(userdata);
-    if (!self || !uuid) goto error;
-
-    if (0 == result.error_code){
-
-    	ov_log_info("LDAP import success.");
-    } else {
-
-    	ov_log_error("LDAP import failed.");
-    }
-
-error:
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static void cluster_ldap_import(ov_vocs *self, const ov_json_value *msg){
 
-    const char *uuid = ov_event_api_get_uuid(msg);
+    UNUSED(msg);
 
-    const char *host = ov_json_string_get(
-        ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_HOST));
-
-    const char *base = ov_json_string_get(
-        ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_BASE));
-
-    const char *domain = ov_json_string_get(
-        ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_DOMAIN));
-
-    const char *ldap_user = ov_json_string_get(
-        ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_USER));
-
-    const char *ldap_pass = ov_json_string_get(
-        ov_json_get(msg, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
-
-  	if (!ov_vocs_db_persistance_ldap_import(self->config.persistance,
-                                            host,
-                                            base,
-                                            ldap_user,
-                                            ldap_pass,
-                                            domain,
-                                            uuid,
-                                            self,
-                                            cb_cluster_ldap_import)){
+  	if (!ov_vocs_db_ldap_import(self->config.db, self->config.ldap.config)){
 
         ov_log_error("failed to trigger LDAP import");
         goto error;
     }
 
-   	ov_log_info("triggered LDAP import");
+   	ov_log_info("LDAP import success");
 
 error:
 	return;
@@ -350,8 +308,6 @@ static void io_cluster(void *userdata, ov_json_value *msg){
 		ov_log_error("Unknown cluster message %s", str);
 		str = ov_data_pointer_free(str);
 	} 
-
-
 
 error:
 	msg = ov_json_value_free(msg);

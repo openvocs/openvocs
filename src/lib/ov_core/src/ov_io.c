@@ -1702,7 +1702,7 @@ error:
 }
 
 /*----------------------------------------------------------------------------*/
-
+/*
 static void callback_connection_success(Connection *conn) {
 
     if (!conn)
@@ -1714,6 +1714,7 @@ static void callback_connection_success(Connection *conn) {
 
     return;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -1973,7 +1974,7 @@ success:
             goto error;
     }
     conn->tls.handshaked = true;
-    callback_connection_success(conn);
+    //callback_connection_success(conn);
     return true;
 
 error:
@@ -2003,7 +2004,6 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     OV_ASSERT(self);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
-
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
     }
@@ -2345,6 +2345,7 @@ bool ov_io_close(ov_io *self, int socket) {
 
     if (!self)
         goto error;
+
     return ov_dict_del(self->connections, (void *)(intptr_t)socket);
 
 error:

@@ -144,8 +144,10 @@ static bool drop_session_by_signaling_socket(ov_interconnect *self,
 
     ov_socket_data media = ov_interconnect_session_get_media_remote(session);
     drop_session_by_media_remote(self, &media);
-
+    
     session = ov_interconnect_session_free(session);
+
+    ov_io_close(self->config.io, socket);
 
     return true;
 error:
@@ -924,8 +926,15 @@ static bool io_stun(ov_interconnect *self, int socket, uint8_t *buffer,
     if (!ov_stun_frame_has_magic_cookie(buffer, bytes))
         goto ignore;
     if (ov_stun_frame_class_is_success_response(buffer, bytes)) {
+
         ov_log_debug("Received STUN response from %s:%i", remote->host,
                      remote->port);
+
+        ov_interconnect_session *session = get_session_by_media_remote(self, remote);
+        if (!session) goto ignore;
+
+        ov_interconnect_session_set_keepalive_response(session);
+        
         goto ignore;
     }
     if (!ov_stun_frame_class_is_request(buffer, bytes))
@@ -1181,9 +1190,6 @@ static bool open_sockets(ov_interconnect *self) {
 
         self->socket.signaling =
             ov_event_app_open_connection(self->app.signaling, sig);
-
-        if (-1 != self->socket.signaling)
-            cb_signaling_connected(self, self->socket.signaling);
 
     } else {
 
@@ -1863,4 +1869,20 @@ bool ov_interconnect_is_encrypted(const ov_interconnect *self) {
     if (!self)
         return false;
     return self->config.encryption;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_interconnect_reset_session(ov_interconnect *self, const char *id, int socket){
+
+    if (!self || !id) goto error;
+
+    ov_log_info("RESET session %s", id);
+
+    drop_session_by_signaling_socket(self, socket);
+    // let autoreconnect work to reinit the whole session
+
+    return true;
+error:
+    return false;
 }

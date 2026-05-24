@@ -10,6 +10,13 @@
     src: url('/fonts/abel/Abel-Regular.ttf');
 }
 
+@font-face {
+    font-family: "FluentSystemIcons-Resizable";
+    src: url("/fonts/fluentui-system-icons/FluentSystemIcons-Resizable.woff2?c71a351f725ec08f174e1f32006567dd") format("woff2"),
+        url("/fonts/fluentui-system-icons/FluentSystemIcons-Resizable.woff?c71a351f725ec08f174e1f32006567dd") format("woff"),
+        url("/fonts/fluentui-system-icons/FluentSystemIcons-Resizable.ttf?c71a351f725ec08f174e1f32006567dd") format("truetype");
+}
+
 :root,
 ::backdrop {
     --base_font_size: 16px;
@@ -64,19 +71,25 @@
     }
 }
 
-@media (min-width:1280px){
+@media (min-width:1024px) {
+    :root {
+        --base_font_size: 12.4px;
+    }
+}
+
+@media (min-width:1280px) {
     :root {
         --base_font_size: 12.8px;
     }
 }
 
-@media (min-width:1536px){
+@media (min-width:1536px) {
     :root {
         --base_font_size: 14.4px;
     }
 }
 
-@media (min-width:1920px){
+@media (min-width:1920px) {
     :root {
         --base_font_size: 16px;
     }
@@ -163,8 +176,34 @@
     --icon_color: var(--black_transparent_36);
 }
 
-html {
+*,
+*::before,
+*::after {
     font-family: Abel, sans-serif;
+    box-sizing: inherit;
+    font-size: 1.2rem;
+}
+
+.small_print, .small_print * {
+    font-size: 1rem;
+}
+
+.fluentui_icon, 
+.fluentui_icon::before, 
+.fluentui_icon::after, 
+.fluentui_icon * {
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1.5rem;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
     height: 100vh;
     margin: 0;
     box-sizing: border-box;
@@ -175,12 +214,6 @@ html {
     overflow: hidden;
 }
 
-*,
-*:before,
-*:after {
-    box-sizing: inherit;
-}
-
 details * {
     box-sizing: border-box;
 }
@@ -189,7 +222,6 @@ body {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: Abel, san-serif;
     line-height: 1.5rem;
     text-size-adjust: none;
     -webkit-touch-callout: none;
@@ -258,7 +290,7 @@ h3 {
 }
 
 code {
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 svg {
@@ -369,7 +401,6 @@ input[type=password],
 input[type=number],
 select {
     width: 100%;
-    font-size: 1rem;
     margin-left: auto;
     margin-right: auto;
     padding: 0 0.25rem;

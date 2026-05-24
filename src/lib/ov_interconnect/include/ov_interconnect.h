@@ -184,4 +184,6 @@ uint64_t ov_interconnect_get_volume(const ov_interconnect *self);
 
 bool ov_interconnect_is_encrypted(const ov_interconnect *self);
 
+bool ov_interconnect_reset_session(ov_interconnect *self, const char *id, int socket);
+
 #endif /* ov_interconnect_h */

@@ -130,4 +130,8 @@ bool ov_interconnect_session_added_loops(ov_interconnect_session *self);
 
 ov_socket_data ov_interconnect_session_get_media_remote(ov_interconnect_session *self);
 
+bool ov_interconnect_session_set_keepalive_response(ov_interconnect_session *self);
+bool ov_interconnect_session_set_keepalive_error(ov_interconnect_session *self, int counter);
+
+
 #endif /* ov_interconnect_session_h */

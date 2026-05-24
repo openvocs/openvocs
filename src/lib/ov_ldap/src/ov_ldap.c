@@ -520,8 +520,31 @@ ov_ldap_config ov_ldap_config_from_json(const ov_json_value *val) {
     if (str)
         strncpy(config.user_dn_tree, str, OV_LDAP_USER_DN_TREE);
 
+    str = ov_json_string_get(ov_json_get(conf, "/update_time"));
+    if (str)
+        strncpy(config.time, str, 25);
+
+    str = ov_json_string_get(ov_json_get(conf, "/" OV_KEY_ROLE_DN_TREE));
+    if (str)
+        strncpy(config.user_dn_tree, str, OV_LDAP_USER_DN_TREE);
+
+    str = ov_json_string_get(ov_json_get(conf, "/user"));
+    if (str)
+        strncpy(config.user, str, 1024);
+
+    str = ov_json_string_get(ov_json_get(conf, "/domain"));
+    if (str)
+        strncpy(config.domain, str, 1024);
+
+    str = ov_json_string_get(ov_json_get(conf, "/password"));
+    if (str)
+        strncpy(config.pass, str, 1024);
+
     config.timeout.network_timeout_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_TIMEOUT "/" OV_KEY_NETWORK));
+
+    if (ov_json_is_true(ov_json_get(conf, "/roles")))
+        config.roles = true;
 
     return config;
 

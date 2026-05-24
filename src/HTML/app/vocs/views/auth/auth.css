@@ -50,12 +50,7 @@
 #reload_page {
     position: absolute;
     left: 0.5rem;
-}
-
-#reload_page .icon {
-    width: 2rem;
-    height: 2rem;
-    margin: 0 auto;
+    font-size: 2.5rem;
 }
 
 p {

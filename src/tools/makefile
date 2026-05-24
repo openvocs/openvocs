@@ -37,6 +37,7 @@ OV_TOOL_DIRS   += ov_password
 OV_TOOL_DIRS   += ov_ldap_test
 OV_TOOL_DIRS   += ov_ldap_test_auth
 OV_TOOL_DIRS   += ov_ldap_user_import
+OV_TOOL_DIRS   += ov_ldap_role_import
 OV_TOOL_DIRS   += ov_bin_to_csv
 OV_TOOL_DIRS   += ov_resample
 OV_TOOL_DIRS   += ov_ssl_membio_testing
@@ -50,6 +51,7 @@ OV_TOOL_DIRS   += ov_test_coredump
 OV_TOOL_DIRS   += ov_mc_socket_debug
 OV_TOOL_DIRS   += ov_json_test
 OV_TOOL_DIRS   += ov_sip_replay
+OV_TOOL_DIRS   += ov_timestamp
 OV_TOOL_DIRS   += ov_event_broker_functions
 
 ifeq ($(OV_UNAME), Linux)

@@ -26,36 +26,28 @@
 
 include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
-#-----------------------------------------------------------------------------
-
-L_TEST_SOURCES       = $(wildcard src/*_test.c)
-L_HEADERS            = $(wildcard **/**/*.h **/*.h *.h)
-L_SOURCES_C          = $(wildcard **/**/*.c **/*.c *.c)
-L_SOURCES            = $(filter-out $(L_TEST_SOURCES), $(L_SOURCES_C))
-
-OV_HDR               = $(L_HEADERS)
-OV_SRC               = $(L_SOURCES)
 OV_EXECUTABLE        = $(OV_BINDIR)/$(OV_DIRNAME)
 OV_TARGET            = $(OV_EXECUTABLE)
 
 #-----------------------------------------------------------------------------
 
-##-----------------------------------------------------------------------------
-
-OV_STATIC_LIBS   =
-
-
-OV_LIBS        = $(OV_STATIC_LIBS)
-
-OV_LIBS       += -pthread
-
-OV_LIBS       += -L$(OV_LIBDIR)
-
-OV_LIBS       += -l ov_log$(OV_EDITION)
-OV_LIBS       += -l ov_base$(OV_EDITION)
-OV_LIBS       += -l ov_core$(OV_EDITION)
-OV_LIBS       += -l ov_os$(OV_EDITION)
+OV_FLAGS       += `pkg-config --cflags ldap`
 
 #-----------------------------------------------------------------------------
 
+OV_LIBS        = -L$(OV_LIBDIR)
+OV_LIBS       += -l ov_arch$(OV_EDITION)
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+
+OV_LIBS       += `pkg-config --libs ldap`
+
+ifeq ($(OV_UNAME), Linux)
+	OV_LIBS       +=-lldap
+	OV_LIBS       +=-llber
+endif
+
+
+
+#-----------------------------------------------------------------------------
 include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk

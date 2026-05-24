@@ -114,8 +114,14 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
                     default: ["1 2 3", "4 5 6", "7 8 9", "+ 0 {bksp}"]
                 },
                 theme: "hg-theme-default ov_sip_keyboard numeric-theme",
+                buttonTheme: [
+                    {
+                        class: "fluentui_icon",
+                        buttons: "{bksp}"
+                    }
+                ],
                 display: {
-                    "{bksp}": '<img src="/images/fluent-ui-system-icons/backspace.svg">'
+                    "{bksp}": "&#xe1c9"
                 },
                 preventMouseDownDefault: false
             });

@@ -53,6 +53,7 @@ export default class ov_Login_Form extends HTMLElement {
         this.#dom.login_form = document.getElementById("login_form");
         this.#dom.user_field = document.getElementById("username");
         this.#dom.password_field = document.getElementById("password");
+        this.#dom.show_password = document.getElementById("show_password");
         this.#dom.login_button = document.getElementById("login_button");
 
         this.#check_form();
@@ -80,57 +81,77 @@ export default class ov_Login_Form extends HTMLElement {
                 layout: {
                     'default': [
                         '` 1 2 3 4 5 6 7 8 9 0 - = {bksp}',
-                        '€ q w e r t y u i o p [ ] \\',
-                        '@ a s d f g h j k l ; \' {enter}',
+                        'q w e r t y u i o p [ ] \\',
+                        '@ a s d f g h j k l ; \' {space}',
                         '{shift} z x c v b n m , . / {shift}'
                     ],
                     'shift': [
                         '~ ! # $ % ^ & * ( ) _ + {bksp}',
-                        '€ Q W E R T Y U I O P { } |',
-                        '@ A S D F G H J K L : " {enter}',
+                        'Q W E R T Y U I O P { } |',
+                        '€ A S D F G H J K L : " {space}',
                         '{shift} Z X C V B N M < > ? {shift}'
+                    ],
+                    'hold': [
+                        '~ ! # $ % ^ & * ( ) _ + {bksp}',
+                        'Q W E R T Y U I O P { } |',
+                        '€ A S D F G H J K L : " {space}',
+                        '{hold} Z X C V B N M < > ? {hold}'
                     ]
                 },
+                buttonTheme: [
+                    {
+                        class: "fluentui_icon",
+                        buttons: "{bksp} {shift} {hold}"
+                    }
+                ],
                 display: {
-                    '{enter}': '<img src="/images/fluent-ui-system-icons/arrow-enter-left.svg">',
-                    "{shift}": '<img src="/images/fluent-ui-system-icons/keyboard-shift.svg">',
-                    "{bksp}": '<img src="/images/fluent-ui-system-icons/backspace.svg">'
-                }
+                    '{space}': 'space',
+                    "{shift}": '&#xea87',
+                    "{hold}": '&#xea89',
+                    "{bksp}": "&#xe1c9"
+                },
+                disableButtonHold: true
             });
         }
 
-        this.#dom.user_field.addEventListener("click", () => {
+        this.#dom.user_field.addEventListener("focus", () => {
             this.#current_input = this.#dom.user_field;
             if (this.#login_keyboard)
                 this.#login_keyboard.setOptions({
                     inputName: this.#current_input.id
                 });
         });
-        this.#dom.password_field.addEventListener("click", () => {
+        this.#dom.password_field.addEventListener("focus", () => {
             this.#current_input = this.#dom.password_field;
             if (this.#login_keyboard)
                 this.#login_keyboard.setOptions({
                     inputName: this.#current_input.id
                 });
         });
-        this.#dom.user_field.click();
+        this.focus_user_input();
 
-        this.#dom.show_password = document.getElementById("show_password");
-        this.#dom.show_password.addEventListener("touchstart", () => {
+        this.#dom.show_password.addEventListener("pointerdown", () => {
             this.#dom.password_field.type = "text";
+            this.#dom.show_password.classList.add("hide");
         });
 
-        this.#dom.show_password.addEventListener("touchend", () => {
+        this.#dom.show_password.addEventListener("pointerup", () => {
             this.#dom.password_field.type = "password";
+            this.#dom.show_password.classList.remove("hide");
         });
 
-        this.#dom.show_password.addEventListener("mousedown", () => {
-            this.#dom.password_field.type = "text";
-        });
-
-        this.#dom.show_password.addEventListener("mouseup", () => {
+        this.#dom.show_password.addEventListener("pointerleave", () => {
             this.#dom.password_field.type = "password";
+            this.#dom.show_password.classList.remove("hide");
         });
+    }
+
+    focus_user_input() {
+        this.#dom.user_field.focus();
+    }
+
+    focus_password_input() {
+        this.#dom.password_field.focus();
     }
 
     async #process_login() {
@@ -145,42 +166,47 @@ export default class ov_Login_Form extends HTMLElement {
         this.#current_input.dispatchEvent(new CustomEvent("value_changed"));
     }
 
+    #last_press_time = 0;
+    #double_press_delay = 300; // Time in milliseconds
+
     #on_key_press(button) {
         if (button === "{shift}") {
+            const current_time = new Date().getTime();
             let currentLayout = this.#login_keyboard.options.layoutName;
             let shiftToggle;
-            if (currentLayout === "default") {
-                shiftToggle = "shift";
-                this.#login_keyboard.addButtonTheme("{shift}", "active_button");
-            } else {
+            if (current_time - this.#last_press_time <= this.#double_press_delay) {
+                if (currentLayout !== "hold") {
+                    shiftToggle = "hold";
+                    this.#login_keyboard.addButtonTheme("{hold}", "active_button");
+                }
+            } else if (currentLayout !== "default") {
                 shiftToggle = "default";
                 this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
+            } else {
+                shiftToggle = "shift";
+                this.#login_keyboard.addButtonTheme("{shift}", "active_button");
             }
-
+            this.#last_press_time = current_time;
             this.#login_keyboard.setOptions({
                 layoutName: shiftToggle
             });
-        } else if (button === "{enter}") {
-            this.#login_keyboard.addButtonTheme("{enter}", "active_button");
-            if (this.#dom.login_button.disabled) {
-                if (this.#current_input === this.#dom.password_field)
-                    this.#dom.user_field.click();
-                else
-                    this.#dom.password_field.click();
-            }
-            else
-                this.#dom.login_button.click();
+        } else if (button === "{hold}") {
+            this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
+            this.#login_keyboard.setOptions({
+                layoutName: "default"
+            });
+        } else if (button === "{space}"){
+            
         }
     }
 
     #on_key_released(button) {
-        if (button !== "{shift}" && button !== "{enter}" && button !== "{bksp}" && this.#login_keyboard.options.layoutName === "shift") {
+        if (button !== "{shift}" && button !== "{hold}" && button !== "{bksp}" && this.#login_keyboard.options.layoutName === "shift") {
             this.#login_keyboard.setOptions({
                 layoutName: "default"
             });
             this.#login_keyboard.removeButtonTheme("{shift}", "active_button");
         }
-        this.#login_keyboard.removeButtonTheme("{enter}", "active_button");
     }
 
     #check_form() {

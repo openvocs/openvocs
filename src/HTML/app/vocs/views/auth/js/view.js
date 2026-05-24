@@ -119,6 +119,8 @@ export async function init(view_id) {
     const keyset = urlParams.get('keysetname')
     document.getElementById("keyset").innerText = keyset;
     document.getElementById("version").innerText = VERSION_NUMBER;
+
+    DOM.login_form.focus_user_input();
 }
 
 export function display_disconnect_notice(error) {

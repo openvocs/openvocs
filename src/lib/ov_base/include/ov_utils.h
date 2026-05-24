@@ -236,6 +236,12 @@ void *ov_free(void *vptr);
 #define ov_ptr_valid_warn(ptr, msg)                                            \
     ov_ptr_valid_internal(__FILE__, OV_LOG_WARNING, __FUNCTION__, __LINE__, 0, \
                           ptr, 0, msg)
+/**
+ * If ptr is null, prints appropriate debug message
+ */
+#define ov_ptr_valid_debug(ptr, msg)                                           \
+    ov_ptr_valid_internal(__FILE__, OV_LOG_DEBUG, __FUNCTION__, __LINE__, 0,   \
+                          ptr, 0, msg)
 
 /*----------------------------------------------------------------------------*/
 
@@ -377,7 +383,7 @@ bool ov_ptr_valid_internal(char const *file, ov_log_level loglevel,
 
 #else
 
-#error("Unsupported compiler")
+#error ("Unsupported compiler")
 
 #endif /* defined(__clang__) */
 
@@ -419,7 +425,7 @@ bool ov_ptr_valid_internal(char const *file, ov_log_level loglevel,
 
 #ifndef TEST_MISSING_INTERNAL
 
-#error("Not defined")
+#error ("Not defined")
 
 #endif
 
