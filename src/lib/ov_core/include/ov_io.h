@@ -197,6 +197,7 @@ struct ov_io_https_config {
 
         bool (*callback)(
             void *userdata,
+            int socket,
             const char *domain,
             const char *path,
             const ov_http_message *msg);
