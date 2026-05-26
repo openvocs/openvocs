@@ -432,8 +432,12 @@ static bool register_fd_with_epoll(
 
     if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) {
 
-        ov_log_error("Could not add new fd to epoll: %i", fd);
-        goto error;
+        if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1){
+
+            ov_log_error("Could not add new fd to epoll: %i", fd);
+            goto error;
+        }
+        
     }
 
     return true;
