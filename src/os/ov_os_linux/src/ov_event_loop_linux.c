@@ -430,7 +430,11 @@ static bool register_fd_with_epoll(
 
     callback_has_been_set = true;
 
+    errno = 0;
+
     if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) {
+
+        ov_log_error("ERRNO %i|%s", errno, strerror(errno));
 
         if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1){
 
