@@ -149,6 +149,12 @@ struct ov_io {
 
     struct {
 
+        bool websocket;
+
+    } debug;
+
+    struct {
+
         uint32_t reconnects;
         uint32_t timeouts;
 
@@ -2448,6 +2454,8 @@ static bool send_websocket_frames(ov_io *self, Connection *conn, ov_memory_point
 
     ov_websocket_frame *frame = NULL;
 
+    size_t counter = 0;
+
     frame = ov_websocket_frame_create(self->config.frame);
     if (!frame)
         goto error;
@@ -2468,12 +2476,11 @@ static bool send_websocket_frames(ov_io *self, Connection *conn, ov_memory_point
                                             .length = frame->buffer->length}))
             goto error;
 
+        counter++;
         goto done;
     }
 
     // send in chunks
-
-    size_t counter = 0;
 
     uint8_t *ptr = (uint8_t *)buffer.start;
     size_t open = buffer.length;
@@ -2520,7 +2527,12 @@ static bool send_websocket_frames(ov_io *self, Connection *conn, ov_memory_point
                                         .length = frame->buffer->length}))
         goto error;
 
+
 done:
+
+    if (self->debug.websocket)
+        ov_log_debug("Send %i websocket frames at %i", counter, conn->socket);
+
     ov_websocket_frame_free(frame);
     return true;
 error:
@@ -3158,6 +3170,9 @@ static bool defragmented_callback(Connection *conn) {
         frame = ov_list_queue_pop(conn->websocket.queue);
     }
 
+    if (conn->io->debug.websocket)
+        ov_log_debug("IO websocket push to JSON at %i", conn->socket);
+
     // we expect only JSON websocket frames
     if (!ov_json_io_buffer_push(conn->io->json_io_buffer, conn->socket,
                                 (ov_memory_pointer){.start = buffer->start,
@@ -3179,6 +3194,9 @@ static bool process_non_fragmented_frame(Connection *conn,
 
     OV_ASSERT(conn);
     OV_ASSERT(frame);
+
+    if (conn->io->debug.websocket)
+        ov_log_debug("IO websocket push to JSON at %i", conn->socket);
 
     // we expect only JSON websocket frames
     if (!ov_json_io_buffer_push(
@@ -3312,6 +3330,9 @@ static bool process_websocket(Connection *conn, ov_websocket_frame *frame) {
 
     bool result = false;
     bool text = false;
+
+    if (conn->io->debug.websocket)
+        ov_log_debug("IO websocket at %i", conn->socket);
 
     if (frame->opcode >= 0x08) {
 
@@ -3716,3 +3737,12 @@ error:
     return false;
 }
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_io_debug_websocket(ov_io *self, bool on){
+
+    if (!self) return false;
+
+    self->debug.websocket = on;
+    return true;
+}
