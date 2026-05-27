@@ -28,6 +28,7 @@
     ---------------------------------------------------------------------------
 */
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 const DOM = {};
 
@@ -45,6 +46,9 @@ export function init(view_id) {
     DOM.ldap_password = document.getElementById("ldap_password");
     DOM.ldap_button = document.getElementById("ldap_import_button");
     DOM.ldap_notice = document.getElementById("ldap_notice");
+    DOM.error_report = document.getElementById("error_report");
+    DOM.error_dialog = document.getElementById("error_dialog");
+    DOM.error_dialog_title = DOM.error_dialog.querySelector("h3");
 
     DOM.delete_button.addEventListener("click", () => {
         if (window.confirm("Do you really want to delete this domain?"))
@@ -53,25 +57,24 @@ export function init(view_id) {
             }));
     });
 
-    DOM.ldap_button.addEventListener("click", () => {
-        DOM.ldap_button.dispatchEvent(new CustomEvent("import_ldap_user", {
-            detail: {
-                host: DOM.ldap_host.value,
-                base: DOM.ldap_base.value,
-                user: DOM.ldap_user.value,
-                password: DOM.ldap_password.value
-            }, bubbles: true
-        }));
-        DOM.ldap_password.value = "";
+    DOM.ldap_button.addEventListener("click", async () => {
         DOM.ldap_notice.innerText = "Importing...";
-    });
-
-    ov_Websockets.addEventListener("ldap_update", (event) => {
-        DOM.ldap_notice.innerText = "Users were updated."
-        console.log("Imported information from LDAP:", event);
-        // view_container.dispatchEvent(new CustomEvent("switch_view", {
-        //     detail: { origin: VIEW_ID, target: VIEW_ID, type: "domain", domain: ov_Websockets.user().domain }
-        // }));
+        let ldap_import = await ov_DB.user_ldap_import(DOM.ldap_host.value, DOM.ldap_base.value,
+            DOM.id.value, DOM.ldap_user.value, DOM.ldap_password.value);
+        if (ldap_import.error) {
+            DOM.error_dialog_title.innerText = "Importing users from LDAP failed";
+            DOM.error_report.innerText = ldap_import.error.description;
+            DOM.error_dialog.showModal();
+            DOM.ldap_notice.innerText = "";
+        } else {
+            DOM.ldap_notice.innerText = "Imported users";
+            let domain_config = await ov_DB.get_config('domain', DOM.id.value);
+            DOM.ldap_button.dispatchEvent(new CustomEvent("ui_update_domain_users", {
+                detail: domain_config.users,
+                bubbles: true
+            }));
+        }
+        DOM.ldap_password.value = "";
     });
 
     DOM.name.addEventListener("change", changed_name);
@@ -108,6 +111,10 @@ function changed_name() {
 function check_ldap_form() {
     DOM.ldap_button.disabled = !(DOM.ldap_host.value && DOM.ldap_base.value &&
         DOM.ldap_user.value && DOM.ldap_password.value);
+}
+
+function ldap_info(msg) {
+    DOM.ldap_notice.innerText = msg;
 }
 
 export function render(domain, id) {

@@ -160,6 +160,13 @@ export async function init(view_id, container, type) {
         FileIO.save_as_json_file(JSON.stringify(config), name);
     };
 
+    DOM.sub_view.addEventListener("ui_update_domain_users", (event) => {
+        // let proj_config = collect_config();
+        // let dom_config = collect_config({ id: proj_config.domain });
+        // dom_config.users = event.detail;
+        // Config_RBAC.render(dom_config, proj_config); -> Graph.clear() does not work properly
+    });
+
     await Config_Settings.init(document.getElementById("settings_page"));
     let auth_ldap = await ov_DB.check_ldap();
     await Config_RBAC.init(document.getElementById("rbac_page"), auth_ldap);
@@ -238,31 +245,6 @@ export async function init(view_id, container, type) {
 
     DOM.sub_view.addEventListener("changed_name", (event) => {
         DOM.config_name.innerText = event.detail;
-    });
-
-    DOM.sub_view.addEventListener("import_ldap_user", async (event) => {
-        DOM.loading_screen.show("Importing users from LDAP...");
-        let settings = Config_Settings.collect();
-        let errors = [];
-        for (let websocket of ov_Websockets.list) {
-            if (!await ov_DB.user_ldap_import(event.detail.host, event.detail.base,
-                settings.id, event.detail.user, event.detail.password, websocket)) {
-                errors.push(websocket);
-            }
-        }
-
-        DOM.loading_screen.hide();
-
-        if (errors.length > 0) {
-            DOM.error_dialog_title.innerText = "Importing LDAP users failed on following server(s):";
-            DOM.error_report.innerText = "";
-            for (let error of errors) {
-                console.log(error);
-                DOM.error_report.innerText += error.server_name + "\n\n"
-            }
-            DOM.error_dialog.showModal();
-            //todo disconnect ?
-        }
     });
 
     DOM.error_dialog.onclick = (e) => {
@@ -413,7 +395,7 @@ export async function render_project(project, domain, id, domain_id, page) {
             let proj_config = collect_config();
             let dom_config = collect_config({ id: proj_config.domain });
             let roles = { ...proj_config.roles, ...dom_config.roles };
-            for (let loop_id of Object.keys(dom_config.loops)){
+            for (let loop_id of Object.keys(dom_config.loops)) {
                 if (ov_Websockets.user().admin === "project")
                     dom_config.loops[loop_id].frozen = true;
                 dom_config.loops[loop_id].global = true;
