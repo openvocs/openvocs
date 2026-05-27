@@ -19,16 +19,13 @@
 
         ------------------------------------------------------------------------
 *//**
-        @file           ov_os.h
-        @author         Markus Töpfer
-
-        @date           2020-05-22
+    @author Michael Beer
 
 
         ------------------------------------------------------------------------
 */
-#ifndef ov_os_h
-#define ov_os_h
+#ifndef ov_os_linux_h
+#define ov_os_linux_h
 
 /*
  *      ------------------------------------------------------------------------
@@ -42,6 +39,7 @@
  * Try to spawn a new procname
  * @return PID on success, negative value in case of error
  */
-int ov_os_spawn(char const *working_dir, char const *procname, char const *cmdline);
+int ov_os_linux_spawn(char const *working_dir, char const *procname,
+                      char const *cmdline);
 
 #endif /* ov_os_h */
