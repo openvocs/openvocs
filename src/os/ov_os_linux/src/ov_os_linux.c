@@ -34,7 +34,11 @@
 #include <string.h>
 #include <unistd.h>
 
+/******************************************************************************/
+
 bool executable(char const *path) { return (0 == access(path, F_OK || X_OK)); }
+
+/******************************************************************************/
 
 bool detach(char const *working_dir) {
 
@@ -57,6 +61,8 @@ bool detach(char const *working_dir) {
     return true;
 }
 
+/******************************************************************************/
+
 char const **prepend(char const *const *array, const char *str) {
 
     size_t array_size = 0;
@@ -77,6 +83,8 @@ char const **prepend(char const *const *array, const char *str) {
     return new_array;
 }
 
+/******************************************************************************/
+
 _Noreturn void spawn(char const *binary, char const *const *arguments) {
 
     if ((0 == binary) || (0 == arguments)) {
@@ -88,6 +96,8 @@ _Noreturn void spawn(char const *binary, char const *const *arguments) {
 
     exit(1);
 }
+
+/******************************************************************************/
 
 int ov_os_linux_spawn(char const *workdir, char const *binary,
                       char const *const *arguments) {
@@ -116,3 +126,5 @@ int ov_os_linux_spawn(char const *workdir, char const *binary,
 
     return proc_pid;
 }
+
+/******************************************************************************/
