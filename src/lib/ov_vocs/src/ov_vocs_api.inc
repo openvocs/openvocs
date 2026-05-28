@@ -2795,43 +2795,43 @@ static bool enable_api_client(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_call",
+        "sip_call",
         vocs,
         client_calling)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_hangup",
+        "sip_hangup",
         vocs,
         client_hangup)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_permit_call",
+        "sip_permit_call",
         vocs,
         client_permit_call)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_revoke_call",
+        "sip_revoke_call",
         vocs,
         client_revoke_call)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_list_calls",
+        "sip_get_calls",
         vocs,
         client_list_calls)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_list_call_permissions",
+        "sip_get_call_permissions",
         vocs,
         client_list_call_permissions)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "client_list_sip_status",
+        "sip_get_status",
         vocs,
         client_list_sip_status)) goto error;
 
@@ -2867,7 +2867,7 @@ static bool enable_api_client(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "is_sip_enabled",
+        "sip_is_enabled",
         vocs,
         client_event_sip_status)) goto error;
 
