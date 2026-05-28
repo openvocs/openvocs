@@ -3,7 +3,7 @@
 #include <ov_arch/ov_arch.h>
 #if OV_ARCH == OV_LINUX
 
-#include <ov_os_linux/ov_os_linux.c>
+#include <ov_os_linux/ov_os_linux.h>
 
 int ov_os_spawn(char const *workdir, char const *binary,
                 char const *const *arguments) {

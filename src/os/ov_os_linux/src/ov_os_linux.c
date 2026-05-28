@@ -25,60 +25,94 @@
         ------------------------------------------------------------------------
 */
 #include "../include/ov_os_linux.h"
+#include <ov_base/ov_error_codes.h>
 
-#include <unistd.h>
+#include <libgen.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+bool executable(char const *path) { return (0 == access(path, F_OK || X_OK)); }
 
 bool detach(char const *working_dir) {
 
-  if(0 == working_dir) {
+    if (0 == working_dir) {
+    }
+    if (setsid() < 0) {
+        fprintf(stderr, "Could not detach new process");
+        exit(1);
+    }
 
-  }
-  if(setsid() < 0) {
-    fprintf(stderr, "Could not detach new process");
-    exit(1);
-  }
+    if (0 != chdir(working_dir)) {
+        fprintf(stderr, "Could not change to working dir %s", working_dir);
+        exit(1);
+    }
 
-  if(0 != chdir(working_dir)) {
-    fprintf(stderr, "Could not change to working dir %s", working_dir);
-    exit(1);
-  }
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
 
-  close(STDIN_FILENO);
-  close(STDOUT_FILENO);
-  close(STDERR_FILENO);
-
+    return true;
 }
 
-_Noreturn void spawn(char const *binary, char const * const * arguments) {
+char const **prepend(char const *const *array, const char *str) {
 
+    size_t array_size = 0;
 
-  if((0 == procname) || (0 == binary) || (0 == arguments)) {
+    char const *const *ptr = array;
+
+    while (ptr[++array_size] != 0) {
+    };
+
+    char const **new_array = calloc(array_size + 1, sizeof(char const *));
+
+    new_array[0] = str;
+
+    for (size_t i = 0; array[i] != 0; ++i) {
+        new_array[i + 1] = array[i];
+    }
+
+    return new_array;
+}
+
+_Noreturn void spawn(char const *binary, char const *const *arguments) {
+
+    if ((0 == binary) || (0 == arguments)) {
+        exit(1);
+    }
+
+    // Linux expects the first arg to be the binary name
+    execv(binary, (char **)prepend(arguments, basename(strdup(binary))));
+
     exit(1);
-  }
-
-  execv(binary,  arguments);
-
-  exit(1);
-
 }
 
-int ov_os_linux_spawn(char const *workdir, char const *binary, char const * const * arguments) {
+int ov_os_linux_spawn(char const *workdir, char const *binary,
+                      char const *const *arguments) {
 
-  if((0 == workdir) || (0 == binary) || (0 == arguments)) {
-    return -1;
-  }
+    if ((0 == workdir) || (0 == binary) || (0 == arguments)) {
+        fprintf(stderr, "ov_os_linux_spawn: Invalid argument\n");
+        return -OV_ERROR_BAD_ARG;
+    }
 
-  int proc_pid = fork();
+    if (!executable(binary)) {
+        fprintf(stderr, "ov_os_linux_spawn: %s not found\n", binary);
+        return -OV_ERROR_CODE_NOT_FOUND_ERROR;
+    }
 
-  if(0 == proc_pid) {
+    int proc_pid = fork();
 
-    detach(workdir);
-    spawn(binary, arguments);
+    if (0 == proc_pid) {
 
-  }
+        detach(workdir);
+        spawn(binary, arguments);
+    }
 
-  return proc_pid;
+    if (0 > proc_pid) {
+        return -OV_ERROR_CODE_UNKNOWN;
+    }
 
+    return proc_pid;
 }
-
