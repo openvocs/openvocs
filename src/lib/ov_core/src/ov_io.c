@@ -1164,6 +1164,13 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
             case SSL_ERROR_SYSCALL:
 
                 conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+                
+                if (!loop->callback.set(loop, conn->socket,
+                                    OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                        OV_EVENT_IO_CLOSE,
+                                    self, conn->io_data.callback))
+                    goto error;
+
                 break;
 
             case SSL_ERROR_SSL:
@@ -1207,61 +1214,6 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
     }
 
 done:
-    if (self->debug.ssl){
-
-        if (bytes < 0){
-
-            n = SSL_get_error(conn->tls.ssl, bytes);
-
-            switch (n) {
-            case SSL_ERROR_NONE:
-                ov_log_debug("SSL_ERROR_NONE");
-                break;
-            case SSL_ERROR_WANT_READ:
-                ov_log_debug("SSL_ERROR_WANT_READ");
-                break;
-            case SSL_ERROR_WANT_WRITE:
-                ov_log_debug("SSL_ERROR_WANT_WRITE");
-                break;
-            case SSL_ERROR_WANT_CONNECT:
-                ov_log_debug("SSL_ERROR_WANT_CONNECT");
-                break;
-            case SSL_ERROR_WANT_ACCEPT:
-                ov_log_debug("SSL_ERROR_WANT_ACCEPT");
-                break;
-            case SSL_ERROR_WANT_X509_LOOKUP:
-                ov_log_debug("SSL_ERROR_WANT_X509_LOOKUP");
-                break;
-
-            case SSL_ERROR_ZERO_RETURN:
-                // connection close
-                goto error;
-                break;
-
-            case SSL_ERROR_SYSCALL:
-
-                ov_log_error("SSL_ERROR_SYSCALL"
-                             "%d | %s",
-                             errno, strerror(errno));
-
-                goto done;
-                break;
-
-            case SSL_ERROR_SSL:
-
-                errorcode = ERR_get_error();
-                ERR_error_string_n(errorcode, errorstring,
-                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
-                ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
-                             conn->socket);
-                break;
-
-            default:
-                goto error;
-                break;
-            }
-        }
-    }
     return true;
 error:
     return false;
