@@ -792,6 +792,7 @@ ov_io *ov_io_free(ov_io *self) {
     if (!ov_io_cast(self))
         return self;
 
+    ov_thread_lock_clear(&self->lock);
     ov_thread_lock_clear(&self->reconnects.lock);
     self->tloop = ov_thread_loop_free(self->tloop);
 
@@ -1183,6 +1184,8 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
                                    OV_SSL_ERROR_STRING_BUFFER_SIZE);
                 ov_log_error("SSL_ERROR_SYSCALL %s at socket %i", errorstring,
                              conn->socket);
+
+                ov_log_error("errno %i %s", errno, strerror(errno));
 
                 if( 0 == errorcode) {
 
