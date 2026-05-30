@@ -1307,7 +1307,7 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
             default:
 
-                ov_log_debug("SSL closed %s", conn->socket);
+                ov_log_debug("SSL closed %i", conn->socket);
                 goto error;
         }
 
