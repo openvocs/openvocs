@@ -1246,7 +1246,7 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
-    if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+    if (events & OV_EVENT_IO_CLOSE) {
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto done;
     }
