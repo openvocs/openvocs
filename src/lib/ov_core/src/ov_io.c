@@ -1185,17 +1185,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
             case SSL_ERROR_SYSCALL:
 
-                errorcode = ERR_get_error();
-                ERR_error_string_n(errorcode, errorstring,
-                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
-                ov_log_error("SSL_ERROR_SYSCALL %s at socket %i", errorstring,
-                             conn->socket);
-
-                ov_log_error("errno %i %s", errno, strerror(errno));
-
-                if( (0 == errorcode) && (0 == errno)) {
-
-                    ov_log_error("actually NOT an error.");
+                if( 0 == errno) {
 
                     conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
                     ov_event_loop *loop = self->config.loop;
@@ -1254,15 +1244,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
             case SSL_ERROR_SYSCALL:
 
-                errorcode = ERR_get_error();
-                ERR_error_string_n(errorcode, errorstring,
-                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
-                ov_log_error("SSL_ERROR_SYSCALL %s at socket %i", errorstring,
-                             conn->socket);
-
-                ov_log_error("errno %i %s", errno, strerror(errno));
-
-                if( 0 == errorcode) {
+                if (0 == errno) {
 
                     conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
                     ov_event_loop *loop = self->config.loop;
@@ -1369,8 +1351,22 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
         }
 
     } else if (bytes == 0) {
-        ov_log_debug("SSL closed %s", conn->socket);
-        goto error;
+
+        n = SSL_get_error(conn->tls.ssl, bytes);
+
+        switch (n) {
+
+            case SSL_ERROR_NONE:
+            case SSL_ERROR_SYSCALL:
+
+                if( 0 == errno)
+                    break;
+
+            default:
+
+                ov_log_debug("SSL closed %s", conn->socket);
+                goto error;
+        }
 
     } else {
 
@@ -1395,6 +1391,9 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
             ov_log_error("SSL_ERROR_SYSCALL"
                          "%d | %s",
                          errno, strerror(errno));
+
+            if(0 == errno)
+                goto done;
 
             goto error;
             break;
