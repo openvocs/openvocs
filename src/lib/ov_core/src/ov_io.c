@@ -1149,9 +1149,82 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
         if (0 == bytes){
 
-            ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
-            goto done;
+            n = SSL_get_error(conn->tls.ssl, bytes);
 
+            switch (n) {
+
+            case SSL_ERROR_NONE:
+
+                conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+                ov_event_loop *loop = self->config.loop;
+
+                if (!loop->callback.set(loop, conn->socket,
+                                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                                OV_EVENT_IO_CLOSE,
+                                            self, conn->io_data.callback))
+                    goto error;
+
+                break;
+
+            case SSL_ERROR_WANT_READ:
+                break;
+            case SSL_ERROR_WANT_WRITE:
+                break;
+            case SSL_ERROR_WANT_CONNECT:
+                break;
+            case SSL_ERROR_WANT_ACCEPT:
+                break;
+            case SSL_ERROR_WANT_X509_LOOKUP:
+                break;
+
+            case SSL_ERROR_ZERO_RETURN:
+                // connection close
+                ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
+                goto error;
+                break;
+
+            case SSL_ERROR_SYSCALL:
+
+                errorcode = ERR_get_error();
+                ERR_error_string_n(errorcode, errorstring,
+                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
+                ov_log_error("SSL_ERROR_SYSCALL %s at socket %i", errorstring,
+                             conn->socket);
+
+                ov_log_error("errno %i %s", errno, strerror(errno));
+
+                if( 0 == errorcode) {
+
+                    conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+                    ov_event_loop *loop = self->config.loop;
+
+                    if (!loop->callback.set(loop, conn->socket,
+                                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                                OV_EVENT_IO_CLOSE,
+                                            self, conn->io_data.callback))
+                        goto error;
+                }
+
+                break;
+
+            case SSL_ERROR_SSL:
+
+                errorcode = ERR_get_error();
+                ERR_error_string_n(errorcode, errorstring,
+                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
+                ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
+                             conn->socket);
+
+                ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
+                goto error;
+                break;
+
+            default:
+                goto error;
+                break;
+            }
+
+            goto done;
         }
 
         if (bytes < 0) {
