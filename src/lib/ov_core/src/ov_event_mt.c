@@ -297,12 +297,6 @@ bool ov_event_mt_push(ov_event_mt *self, int socket, ov_json_value *input){
 
     if (!self || !input) goto error;
 
-    //if (self->debug){
-        char *str = ov_json_value_to_string(input);
-        ov_log_debug("PUSHING TO THREADS %s", str);
-        str = ov_data_pointer_free(str);
-    //}
-
     msg = ov_thread_message_standard_create(1, input);
     if (!msg) goto error;
     msg->socket = socket;
