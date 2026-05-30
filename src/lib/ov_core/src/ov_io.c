@@ -1359,8 +1359,11 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
             case SSL_ERROR_NONE:
             case SSL_ERROR_SYSCALL:
 
-                if( 0 == errno)
+                if(0 == errno)
                     break;
+                
+                goto error;
+                break;
 
             default:
 
