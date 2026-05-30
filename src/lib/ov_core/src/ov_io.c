@@ -1160,15 +1160,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
                 goto error;
 
         } else {
-
-            bytes = SSL_write(conn->tls.ssl, buffer->start, buffer->length);
-            if (bytes > 0) {
-                buffer = ov_buffer_free(buffer);
-                goto done;
-            } else {
-                conn->io_data.out.buffer = buffer;
-                goto done;
-            }
+            conn->io_data.out.buffer = buffer;
         }
     }
 
