@@ -1521,6 +1521,7 @@ static bool accept_tls(int socket, uint8_t events, void *data) {
         goto unroll;
 
     SSL_set_accept_state(ssl);
+    SSL_set_mode(ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
     conn->tls.handshaked = false;
     conn->tls.ssl = ssl;
