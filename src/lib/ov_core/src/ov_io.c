@@ -1147,138 +1147,75 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
         bytes = SSL_write(conn->tls.ssl, conn->io_data.out.buffer->start,
                           conn->io_data.out.buffer->length);
 
-        if (0 == bytes){
+        if (bytes > 0) {
 
-            n = SSL_get_error(conn->tls.ssl, bytes);
+            conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
 
-            switch (n) {
+            ov_buffer *buffer = ov_list_queue_pop(conn->io_data.out.queue);
 
-            case SSL_ERROR_NONE:
+            if (!buffer) {
 
-                conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
                 ov_event_loop *loop = self->config.loop;
 
                 if (!loop->callback.set(loop, conn->socket,
-                                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
-                                                OV_EVENT_IO_CLOSE,
-                                            self, conn->io_data.callback))
+                                    OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                        OV_EVENT_IO_CLOSE,
+                                    self, conn->io_data.callback))
                     goto error;
 
-                break;
+            } else {
 
-            case SSL_ERROR_WANT_READ:
-                break;
-            case SSL_ERROR_WANT_WRITE:
-                break;
-            case SSL_ERROR_WANT_CONNECT:
-                break;
-            case SSL_ERROR_WANT_ACCEPT:
-                break;
-            case SSL_ERROR_WANT_X509_LOOKUP:
-                break;
+                conn->io_data.out.buffer = buffer;
 
-            case SSL_ERROR_ZERO_RETURN:
-                // connection close
-                ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
-                goto error;
-                break;
-
-            case SSL_ERROR_SYSCALL:
-
-                if( 0 == errno) {
-
-                    conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
-                    ov_event_loop *loop = self->config.loop;
-
-                    if (!loop->callback.set(loop, conn->socket,
-                                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
-                                                OV_EVENT_IO_CLOSE,
-                                            self, conn->io_data.callback))
-                        goto error;
-                }
-
-                break;
-
-            case SSL_ERROR_SSL:
-
-                errorcode = ERR_get_error();
-                ERR_error_string_n(errorcode, errorstring,
-                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
-                ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
-                             conn->socket);
-
-                ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
-                goto error;
-                break;
-
-            default:
-                goto error;
-                break;
             }
 
-            goto done;
-        }
-
-        if (bytes < 0) {
+        } else {
 
             n = SSL_get_error(conn->tls.ssl, bytes);
 
             switch (n) {
-            case SSL_ERROR_NONE:
-                break;
-            case SSL_ERROR_WANT_READ:
-                break;
-            case SSL_ERROR_WANT_WRITE:
-                break;
-            case SSL_ERROR_WANT_CONNECT:
-                break;
-            case SSL_ERROR_WANT_ACCEPT:
-                break;
-            case SSL_ERROR_WANT_X509_LOOKUP:
-                break;
 
-            case SSL_ERROR_ZERO_RETURN:
-                // connection close
-                goto error;
-                break;
-
-            case SSL_ERROR_SYSCALL:
-
-                if (0 == errno) {
-
-                    conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
-                    ov_event_loop *loop = self->config.loop;
-
-                    if (!loop->callback.set(loop, conn->socket,
-                                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
-                                                OV_EVENT_IO_CLOSE,
-                                            self, conn->io_data.callback))
-                        goto error;
-                }
-
-                break;
-
-            case SSL_ERROR_SSL:
-
-                errorcode = ERR_get_error();
-                ERR_error_string_n(errorcode, errorstring,
-                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
-                ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
-                             conn->socket);
-                break;
-
-            default:
-                goto error;
-                break;
+                case SSL_ERROR_NONE:
+                    break;
+    
+                case SSL_ERROR_WANT_READ:
+                    break;
+                case SSL_ERROR_WANT_WRITE:
+                    break;
+                case SSL_ERROR_WANT_CONNECT:
+                    break;
+                case SSL_ERROR_WANT_ACCEPT:
+                    break;
+                case SSL_ERROR_WANT_X509_LOOKUP:
+                    break;
+    
+                case SSL_ERROR_ZERO_RETURN:
+                    // connection close
+                    goto error;
+                    break;
+    
+                case SSL_ERROR_SYSCALL:
+                    break;
+    
+                case SSL_ERROR_SSL:
+    
+                    errorcode = ERR_get_error();
+                    ERR_error_string_n(errorcode, errorstring,
+                                       OV_SSL_ERROR_STRING_BUFFER_SIZE);
+    
+                    ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
+                                 conn->socket);
+    
+                    
+                    goto error;
+                    break;
+    
+                default:
+                    goto error;
+                    break;
             }
-
-            goto done;
-
-        } else {
-            conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
-            goto done;
         }
-
+    
     } else {
 
         ov_buffer *buffer = ov_list_queue_pop(conn->io_data.out.queue);
@@ -1296,11 +1233,13 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
         } else {
             conn->io_data.out.buffer = buffer;
         }
+
     }
 
-done:
     return true;
 error:
+    if (self && conn)
+        ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
     return false;
 }
 
@@ -1325,7 +1264,8 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
-    if (events & OV_EVENT_IO_CLOSE) {
+    if ( (events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)){
+        ov_log_debug("Closing socket %s", socket);
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto done;
     }
