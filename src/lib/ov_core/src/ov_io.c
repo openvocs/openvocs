@@ -1163,6 +1163,12 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
             case SSL_ERROR_SYSCALL:
 
+                errorcode = ERR_get_error();
+                ERR_error_string_n(errorcode, errorstring,
+                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
+                ov_log_error("SSL_ERROR_SYSCALL %s at socket %i", errorstring,
+                             conn->socket);
+
                 conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
                 ov_event_loop *loop = self->config.loop;
 
