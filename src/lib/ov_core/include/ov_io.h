@@ -63,6 +63,7 @@ typedef struct ov_io_config {
 
         uint64_t reconnect_interval_usec;
         uint64_t timeout_usec;
+        uint64_t threadlock_timeout_usec;
 
     } limits;
 

@@ -168,6 +168,7 @@ struct ov_io {
 
     } reconnects;
 
+    ov_thread_lock lock;
     ov_dict *connections;
 
     ov_json_io_buffer *json_io_buffer;
@@ -581,6 +582,9 @@ static bool init_config(ov_io_config *config) {
     if (0 == config->limits.timeout_usec)
         config->limits.timeout_usec = 3000000;
 
+    if (0 == config->limits.threadlock_timeout_usec)
+        config->limits.threadlock_timeout_usec = 300000;
+
     if (0 == config->name[0])
         strncat(config->name, "io", PATH_MAX);
 
@@ -771,6 +775,9 @@ ov_io *ov_io_create(ov_io_config config) {
     /* Initialize OpenSSL */
     SSL_load_error_strings();
     OpenSSL_add_ssl_algorithms();
+
+    if (!ov_thread_lock_init(&self->lock, self->config.limits.threadlock_timeout_usec))
+        goto error;
 
     return self;
 error:
@@ -1177,7 +1184,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
                 ov_log_error("SSL_ERROR_SYSCALL %s at socket %i", errorstring,
                              conn->socket);
 
-                if( (0 == bytes) && (0==errorcode)) {
+                if( 0 == errorcode) {
 
                     conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
                     ov_event_loop *loop = self->config.loop;
@@ -2386,6 +2393,9 @@ ov_io_config ov_io_config_from_json(const ov_json_value *input) {
     config.limits.reconnect_interval_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_LIMITS "/" OV_KEY_RECONNECT_USEC));
 
+    config.limits.threadlock_timeout_usec = ov_json_number_get(
+        ov_json_get(conf, "/" OV_KEY_LIMITS "/threadlock_timeout_usec"));
+
     config.limits.timeout_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_LIMITS "/" OV_KEY_TIMEOUT_USEC));
 
@@ -2613,17 +2623,27 @@ error:
 
 bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer) {
 
+    bool result = false;
+
     if (!self)
         goto error;
 
+    if (!ov_thread_lock_try_lock(&self->lock)) goto error;
+
     Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
-    if (!conn)
+    if (!conn){
+        ov_thread_lock_unlock(&self->lock);
         goto error;
+    }
 
-    if (OV_IO_WEBSOCKET_CONNECTION == conn->type)
-        return send_websocket_frames(self, conn, buffer);
+    if (OV_IO_WEBSOCKET_CONNECTION == conn->type){
+        result = send_websocket_frames(self, conn, buffer);
+    } else {
+        result = io_send(self, conn, buffer);
+    }
 
-    return io_send(self, conn, buffer);
+    ov_thread_lock_unlock(&self->lock);
+    return result;
 error:
     return false;
 }
