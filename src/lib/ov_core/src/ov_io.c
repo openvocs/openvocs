@@ -2084,6 +2084,9 @@ error:
 
 static bool io_ssl_client(int socket, uint8_t events, void *data) {
 
+    char errorstring[OV_SSL_ERROR_STRING_BUFFER_SIZE] = {0};
+    int errorcode = -1, n = 0;
+
     size_t size = OV_SSL_MAX_BUFFER;
     uint8_t buffer[size];
     memset(buffer, 0, size);
@@ -2101,7 +2104,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     OV_ASSERT(self);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
-        ov_log_error("OV_EVENT_IO_CLOSE")
+        ov_log_error("OV_EVENT_IO_CLOSE");
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
     }
