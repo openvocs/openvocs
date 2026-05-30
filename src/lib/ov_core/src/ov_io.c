@@ -1138,7 +1138,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
         bytes = SSL_write(conn->tls.ssl, conn->io_data.out.buffer->start,
                           conn->io_data.out.buffer->length);
-        if (bytes < 0) {
+        if (bytes < 1) {
 
             n = SSL_get_error(conn->tls.ssl, bytes);
 
