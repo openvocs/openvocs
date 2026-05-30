@@ -434,8 +434,6 @@ static bool register_fd_with_epoll(
 
     if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, fd, &ev) == -1) {
 
-        ov_log_error("ERRNO %i|%s", errno, strerror(errno));
-
         if (errno == 17){
 
             if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_MOD, fd, &ev) == -1){

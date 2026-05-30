@@ -2371,8 +2371,11 @@ static bool io_send(ov_io *self, Connection *conn, ov_memory_pointer buffer){
     if (!loop->callback.set(loop, conn->socket,
                             OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
                                 OV_EVENT_IO_CLOSE | OV_EVENT_IO_OUT,
-                            self, conn->io_data.callback))
+                            self, conn->io_data.callback)){
+
+        ov_log_error("Failed to set SEND in IO");
         goto error;
+    }
 
     size_t max = ov_socket_get_send_buffer_size(conn->socket);
     if (max < buffer.length) {
