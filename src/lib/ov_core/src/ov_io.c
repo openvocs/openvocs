@@ -1256,6 +1256,9 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
     if (events & OV_EVENT_IO_OUT)
         return io_stream_ssl_send(self, conn);
+    
+    if (!events & OV_EVENT_IO_IN)
+        goto done;
 
     ssize_t bytes = SSL_read(conn->tls.ssl, buffer, OV_SSL_MAX_BUFFER);
 
@@ -1269,7 +1272,7 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
         }
 
     } else if (bytes == 0) {
-
+        ov_log_debug("SSL closed %s", conn->socket);
         goto error;
 
     } else {
