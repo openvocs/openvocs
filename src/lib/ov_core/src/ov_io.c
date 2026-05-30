@@ -1193,7 +1193,9 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
                 ov_log_error("errno %i %s", errno, strerror(errno));
 
-                if( 0 == errorcode) {
+                if( (0 == errorcode) && (0 == errno)) {
+
+                    ov_log_error("actually NOT an error.");
 
                     conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
                     ov_event_loop *loop = self->config.loop;
