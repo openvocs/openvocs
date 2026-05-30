@@ -1203,6 +1203,9 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
     if (!conn->tls.handshaked)
         return tls_perform_handshake(self, conn);
 
+    if (events & OV_EVENT_IO_OUT)
+        return io_stream_ssl_send(self, conn);
+
     ssize_t bytes = SSL_read(conn->tls.ssl, buffer, OV_SSL_MAX_BUFFER);
 
     if (bytes > 0) {
@@ -1263,10 +1266,6 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
     /* Try to read again */
 done:
-    
-    if (events & OV_EVENT_IO_OUT)
-        return io_stream_ssl_send(self, conn);
-
     return true;
 
 send_no_shutdown:
