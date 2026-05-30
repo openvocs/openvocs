@@ -1198,7 +1198,8 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
                     break;
     
                 case SSL_ERROR_SSL:
-    
+                    
+
                     errorcode = ERR_get_error();
                     ERR_error_string_n(errorcode, errorstring,
                                        OV_SSL_ERROR_STRING_BUFFER_SIZE);
@@ -1207,7 +1208,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
                                  conn->socket);
     
                     
-                    goto error;
+                    //goto error;
                     break;
     
                 default:
@@ -2158,7 +2159,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
                                  conn->socket);
     
                     
-                    goto error;
+                    //goto error;
                     break;
     
                 default:
