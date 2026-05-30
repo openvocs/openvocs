@@ -1301,7 +1301,7 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
                 if(0 == errno)
                     break;
-                
+
                 goto error;
                 break;
 
@@ -2101,6 +2101,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     OV_ASSERT(self);
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+        ov_log_error("OV_EVENT_IO_CLOSE")
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
     }
@@ -2116,21 +2117,52 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
 
     ssize_t bytes = SSL_read(conn->tls.ssl, buffer, size);
 
-    if (0 == bytes) {
+    if (bytes < 1) {
 
-        ov_dict_del(self->connections, (void *)(intptr_t)socket);
-        return false;
+        n = SSL_get_error(conn->tls.ssl, bytes);
 
-    } else if (-1 == bytes) {
+            switch (n) {
 
-        if (errno != EAGAIN) {
-            ov_dict_del(self->connections, (void *)(intptr_t)socket);
-            return false;
+                case SSL_ERROR_NONE:
+                    break;
+    
+                case SSL_ERROR_WANT_READ:
+                    break;
+                case SSL_ERROR_WANT_WRITE:
+                    break;
+                case SSL_ERROR_WANT_CONNECT:
+                    break;
+                case SSL_ERROR_WANT_ACCEPT:
+                    break;
+                case SSL_ERROR_WANT_X509_LOOKUP:
+                    break;
+    
+                case SSL_ERROR_ZERO_RETURN:
+                    // connection close
+                    goto error;
+                    break;
+    
+                case SSL_ERROR_SYSCALL:
+                    break;
+    
+                case SSL_ERROR_SSL:
+    
+                    errorcode = ERR_get_error();
+                    ERR_error_string_n(errorcode, errorstring,
+                                       OV_SSL_ERROR_STRING_BUFFER_SIZE);
+    
+                    ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
+                                 conn->socket);
+    
+                    
+                    goto error;
+                    break;
+    
+                default:
+                    goto error;
+                    break;
+            }
 
-        } else {
-
-            return true;
-        }
 
     } else {
 
@@ -2144,6 +2176,8 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
 
     return true;
 error:
+    if (self && conn)
+        ov_dict_del(self->connections, (void *)(intptr_t)socket);
     return false;
 }
 
