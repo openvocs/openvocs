@@ -1206,9 +1206,8 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
     
                     ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
                                  conn->socket);
-    
                     
-                    //goto error;
+                    goto error;
                     break;
     
                 default:
@@ -2157,9 +2156,8 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     
                     ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
                                  conn->socket);
-    
                     
-                    //goto error;
+                    goto error;
                     break;
     
                 default:
