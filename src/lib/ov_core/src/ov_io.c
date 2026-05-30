@@ -1146,7 +1146,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
         }
 
-        if (bytes < 1) {
+        if (bytes < 0) {
 
             n = SSL_get_error(conn->tls.ssl, bytes);
 
@@ -1176,6 +1176,18 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
                                    OV_SSL_ERROR_STRING_BUFFER_SIZE);
                 ov_log_error("SSL_ERROR_SYSCALL %s at socket %i", errorstring,
                              conn->socket);
+
+                if( (0 == bytes) && (0==errorcode)) {
+
+                    conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
+                    ov_event_loop *loop = self->config.loop;
+
+                    if (!loop->callback.set(loop, conn->socket,
+                                            OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
+                                                OV_EVENT_IO_CLOSE,
+                                            self, conn->io_data.callback))
+                        goto error;
+                }
 
                 break;
 
