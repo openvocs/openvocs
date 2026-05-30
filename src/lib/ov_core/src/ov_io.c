@@ -150,6 +150,7 @@ struct ov_io {
     struct {
 
         bool websocket;
+        bool ssl;
 
     } debug;
 
@@ -1121,6 +1122,9 @@ error:
 
 static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
+    char errorstring[OV_SSL_ERROR_STRING_BUFFER_SIZE] = {0};
+    int errorcode = -1, n = 0;
+
     if (!self || !conn)
         goto error;
     if (!conn->tls.ssl)
@@ -1169,6 +1173,61 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
     }
 
 done:
+    if (self->debug.ssl){
+
+        if (bytes < 0){
+
+            n = SSL_get_error(conn->tls.ssl, bytes);
+
+            switch (n) {
+            case SSL_ERROR_NONE:
+                ov_log_debug("SSL_ERROR_NONE");
+                break;
+            case SSL_ERROR_WANT_READ:
+                ov_log_debug("SSL_ERROR_WANT_READ");
+                break;
+            case SSL_ERROR_WANT_WRITE:
+                ov_log_debug("SSL_ERROR_WANT_WRITE");
+                break;
+            case SSL_ERROR_WANT_CONNECT:
+                ov_log_debug("SSL_ERROR_WANT_CONNECT");
+                break;
+            case SSL_ERROR_WANT_ACCEPT:
+                ov_log_debug("SSL_ERROR_WANT_ACCEPT");
+                break;
+            case SSL_ERROR_WANT_X509_LOOKUP:
+                ov_log_debug("SSL_ERROR_WANT_X509_LOOKUP");
+                break;
+
+            case SSL_ERROR_ZERO_RETURN:
+                // connection close
+                goto error;
+                break;
+
+            case SSL_ERROR_SYSCALL:
+
+                ov_log_error("SSL_ERROR_SYSCALL"
+                             "%d | %s",
+                             errno, strerror(errno));
+
+                goto error;
+                break;
+
+            case SSL_ERROR_SSL:
+
+                errorcode = ERR_get_error();
+                ERR_error_string_n(errorcode, errorstring,
+                                   OV_SSL_ERROR_STRING_BUFFER_SIZE);
+                ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
+                             conn->socket);
+                break;
+
+            default:
+                goto error;
+                break;
+            }
+        }
+    }
     return true;
 error:
     return false;
@@ -2414,8 +2473,11 @@ static bool io_send(ov_io *self, Connection *conn, ov_memory_pointer buffer){
                 ptr = ptr + max;
         }
 
-        /* Return here to not increase io counters, and let processing be done
-         * in next eventloop run */
+        if (conn->tls.ssl) {
+            io_stream_ssl_send(self, conn);
+        } else {
+            stream_send(self, conn);
+        }
         return true;
     }
 
@@ -3744,5 +3806,15 @@ bool ov_io_debug_websocket(ov_io *self, bool on){
     if (!self) return false;
 
     self->debug.websocket = on;
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_io_debug_ssl(ov_io *self, bool on){
+
+    if (!self) return false;
+
+    self->debug.ssl = on;
     return true;
 }

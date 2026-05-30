@@ -236,6 +236,6 @@ bool ov_io_enable_websocket_events(ov_io *self,
                                             ov_json_value *msg));
 
 bool ov_io_debug_websocket(ov_io *self, bool on);
-
+bool ov_io_debug_ssl(ov_io *self, bool on);
 
 #endif /* ov_io_h */
