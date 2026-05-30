@@ -1164,7 +1164,8 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
             case SSL_ERROR_SYSCALL:
 
                 conn->io_data.out.buffer = ov_buffer_free(conn->io_data.out.buffer);
-                
+                ov_event_loop *loop = self->config.loop;
+
                 if (!loop->callback.set(loop, conn->socket,
                                     OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
                                         OV_EVENT_IO_CLOSE,
