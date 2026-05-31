@@ -1173,6 +1173,7 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
             ov_log_error("SSL_ERROR_SYSCALL %s at socket %i errno %i",
                 errorstring, conn->socket, errno);
 
+            goto error;
             break;
     
         case SSL_ERROR_SSL:
@@ -1226,6 +1227,7 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
             ov_log_error("SSL_ERROR_SYSCALL %s at socket %i errno %i",
                 errorstring, conn->socket, errno);
 
+            goto error;
             break;
     
         case SSL_ERROR_SSL:
