@@ -42,7 +42,6 @@
 typedef struct ov_io ov_io;
 typedef struct ov_io_callback ov_io_callback;
 typedef struct ov_io_ssl_config ov_io_ssl_config;
-typedef struct ov_io_https_config ov_io_https_config;
 typedef struct ov_io_socket_config ov_io_socket_config;
 
 /*----------------------------------------------------------------------------*/
@@ -50,8 +49,6 @@ typedef struct ov_io_socket_config ov_io_socket_config;
 typedef struct ov_io_config {
 
     ov_event_loop *loop;
-
-    char name[PATH_MAX];
 
     struct {
 
@@ -63,12 +60,8 @@ typedef struct ov_io_config {
 
         uint64_t reconnect_interval_usec;
         uint64_t timeout_usec;
-        uint64_t threadlock_timeout_usec;
 
     } limits;
-
-    ov_http_message_config http_message;
-    ov_websocket_frame_config frame;
 
 } ov_io_config;
 
@@ -177,66 +170,5 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer);
 /*----------------------------------------------------------------------------*/
 
 ov_domain *ov_io_get_domain(ov_io *self, const char *name);
-
-/*
- *      ------------------------------------------------------------------------
- *
- *      HTTPS FUNCTIONS
- *
- *      ------------------------------------------------------------------------
- */
-
-struct ov_io_https_config {
-
-    ov_socket_configuration socket;
-
-    struct {
-
-        // NOTE if this callback is not set the server will serve GET and HEAD
-
-        void *userdata;
-
-        bool (*callback)(
-            void *userdata,
-            int socket,
-            const char *domain,
-            const char *path,
-            const ov_http_message *msg);
-
-        void (*close)(
-            void *userdata,
-            int socket);
-
-    } callbacks;
-
-};
-
-/*----------------------------------------------------------------------------*/
-
-int ov_io_open_https(ov_io *self, ov_io_https_config config);
-
-/*----------------------------------------------------------------------------*/
-
-ov_io_https_config ov_io_https_config_from_json(const ov_json_value *input);
-
-/*
- *      ------------------------------------------------------------------------
- *
- *      URI FUNCTIONS
- *
- *      ------------------------------------------------------------------------
- */
-
-bool ov_io_enable_websocket_events(ov_io *self,
-                                       const char *domain,
-                                       const char *uri,
-                                       void *userdata,
-                                       void(*callback)(
-                                            void *userdata,
-                                            int socket,
-                                            ov_json_value *msg));
-
-bool ov_io_debug_websocket(ov_io *self, bool on);
-bool ov_io_debug_ssl(ov_io *self, bool on);
 
 #endif /* ov_io_h */
