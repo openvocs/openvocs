@@ -1143,61 +1143,7 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
 
     if (bytes == 0) {
 
-        n = SSL_get_error(conn->tls.ssl, bytes);
-
-        switch (n) {
-
-        case SSL_ERROR_NONE:
-            break;
-    
-        case SSL_ERROR_WANT_READ:
-            break;
-        case SSL_ERROR_WANT_WRITE:
-            break;
-        case SSL_ERROR_WANT_CONNECT:
-            break;
-        case SSL_ERROR_WANT_ACCEPT:
-            break;
-        case SSL_ERROR_WANT_X509_LOOKUP:
-            break;
-    
-        case SSL_ERROR_ZERO_RETURN:
-            // connection close
-            ov_log_debug("SSL_ERROR_ZERO_RETURN - connection close");
-            goto error;
-            break;
-    
-        case SSL_ERROR_SYSCALL:
-
-            if (0 == errno)
-                return true;
-
-            errorcode = ERR_get_error();
-            ERR_error_string_n(errorcode, errorstring,
-                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
-    
-            ov_log_error("SSL_ERROR_SYSCALL %s at socket %i errno %i",
-                errorstring, conn->socket, errno);
-
-            goto error;
-            break;
-    
-        case SSL_ERROR_SSL:
-            
-            errorcode = ERR_get_error();
-            ERR_error_string_n(errorcode, errorstring,
-                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
-    
-            ov_log_error("SSL_ERROR_SSL %s at socket %i errno %i",
-                errorstring, conn->socket, errno);
-            
-            goto error;
-            break;
-    
-        default:
-            goto error;
-            break;
-        }
+        goto error;
 
     } else {
 
@@ -1206,55 +1152,45 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
         switch (n) {
 
         case SSL_ERROR_NONE:
-            break;
-    
         case SSL_ERROR_WANT_READ:
-            break;
         case SSL_ERROR_WANT_WRITE:
+            /* retry */
             break;
+
         case SSL_ERROR_WANT_CONNECT:
-            break;
         case SSL_ERROR_WANT_ACCEPT:
-            break;
         case SSL_ERROR_WANT_X509_LOOKUP:
-            break;
-    
-        case SSL_ERROR_ZERO_RETURN:
-            // connection close
-            ov_log_debug("SSL_ERROR_ZERO_RETURN - connection close");
+        case SSL_ERROR_WANT_ASYNC:
+        case SSL_ERROR_WANT_ASYNC_JOB:
+        case SSL_ERROR_WANT_CLIENT_HELLO_CB:
+            ov_log_error("SSL return %i? Should never happen here", n);
+            OV_ASSERT(1 == 0);
             goto error;
             break;
-    
+
         case SSL_ERROR_SYSCALL:
 
-            if (0 == errno)
-                return true;
+            /* close here again ? */
+            if (bytes == 0)
+                break;
 
-            errorcode = ERR_get_error();
-            ERR_error_string_n(errorcode, errorstring,
-                               OV_SSL_ERROR_STRING_BUFFER_SIZE);
-    
-            ov_log_error("SSL_ERROR_SYSCALL %s at socket %i errno %i",
-                errorstring, conn->socket, errno);
+            if (errno == EAGAIN)
+                break;
+
+            ov_log_error("SSL_ERROR_SYSCALL"
+                         "%d | %s",
+                         errno, strerror(errno));
 
             goto error;
-            break;
-    
+
         case SSL_ERROR_SSL:
-            
+
             errorcode = ERR_get_error();
             ERR_error_string_n(errorcode, errorstring,
                                OV_SSL_ERROR_STRING_BUFFER_SIZE);
-    
-            ov_log_error("SSL_ERROR_SSL %s at socket %i errno %i",
-                errorstring, conn->socket, errno);
-            
+
+            ov_log_error("SSL_ERROR_SSL %s at socket %i",errorstring, conn->socket);
             goto error;
-            break;
-    
-        default:
-            goto error;
-            break;
         }
     }
 
