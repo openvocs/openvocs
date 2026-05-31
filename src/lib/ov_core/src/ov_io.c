@@ -2182,7 +2182,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
         return io_stream_ssl_send(self, conn);
 
     if (!(events & OV_EVENT_IO_IN))
-        goto error;
+        goto done;
 
     ssize_t bytes = SSL_read(conn->tls.ssl, buffer, size);
 
@@ -2208,6 +2208,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
     
                 case SSL_ERROR_ZERO_RETURN:
                     // connection close
+                    ov_log_debug("SSL_ERROR_ZERO_RETURN");
                     goto error;
                     break;
     
@@ -2241,9 +2242,11 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
                 (ov_memory_pointer){.start = buffer, .length = bytes});
         }
     }
-
+    
+done:
     return true;
 error:
+    ov_log_debug("SSL_READ error");
     if (self && conn)
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
     return false;
