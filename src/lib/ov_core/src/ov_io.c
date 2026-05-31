@@ -3696,7 +3696,7 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
                                    OV_SSL_ERROR_STRING_BUFFER_SIZE);
                 ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
                              conn->socket);
-                goto error;
+                // goto error;
                 break;
 
             default:
