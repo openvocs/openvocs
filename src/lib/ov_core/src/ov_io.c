@@ -2682,7 +2682,7 @@ static bool send_websocket_frames(ov_io *self, Connection *conn, ov_memory_point
 
     ov_websocket_frame_clear(frame);
 
-    size_t chunk = 500;
+    size_t chunk = 1000;
 
     if (buffer.length < chunk) {
 
@@ -3763,8 +3763,8 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
 
             default:
 
-                ov_log_debug("SSL closed %i", conn->socket);
-                goto error;
+                ov_log_debug("SSL default %i", n);
+                goto done;
         }
 
     } else {
