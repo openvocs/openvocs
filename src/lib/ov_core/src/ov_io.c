@@ -1163,6 +1163,7 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
     
         case SSL_ERROR_ZERO_RETURN:
             // connection close
+            ov_log_debug("SSL_ERROR_ZERO_RETURN - connection close");
             goto error;
             break;
     
@@ -1220,6 +1221,7 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
     
         case SSL_ERROR_ZERO_RETURN:
             // connection close
+            ov_log_debug("SSL_ERROR_ZERO_RETURN - connection close");
             goto error;
             break;
     
@@ -1259,6 +1261,7 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
     return true;
 
 error:
+    ov_log_debug("SSL send error");
     return false;
 
 }
