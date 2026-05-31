@@ -1360,14 +1360,14 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
     /* Try to read again */
 done:
     return true;
-
+/*
 send_no_shutdown:
 
     if (conn->tls.ssl) {
         SSL_free(conn->tls.ssl);
         conn->tls.ssl = NULL;
     }
-
+*/
 error:
 
     if (self)
