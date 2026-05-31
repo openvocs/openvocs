@@ -1348,7 +1348,7 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
                                OV_SSL_ERROR_STRING_BUFFER_SIZE);
             ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
                          conn->socket);
-            goto send_no_shutdown;
+            goto error;
             break;
 
         default:
