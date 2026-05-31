@@ -1225,6 +1225,9 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
     
         case SSL_ERROR_SYSCALL:
 
+            if (0 == errno)
+                return true;
+
             errorcode = ERR_get_error();
             ERR_error_string_n(errorcode, errorstring,
                                OV_SSL_ERROR_STRING_BUFFER_SIZE);
