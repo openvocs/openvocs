@@ -1440,7 +1440,7 @@ send_no_shutdown:
     }
 */
 error:
-
+    ov_log_debug("here");
     if (self)
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
 
@@ -3674,6 +3674,7 @@ static bool process_https_io(ov_io *self, Connection *conn,
     return result;
 
 error:
+    ov_log_debug("process_https_io failed");
     if (self && conn)
         ov_dict_del(self->connections, (void*)(intptr_t)conn->socket);
     return false;
