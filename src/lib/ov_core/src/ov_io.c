@@ -1367,7 +1367,6 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
 
         switch (n) {
 
-            case SSL_ERROR_NONE:
             case SSL_ERROR_WANT_READ:
             case SSL_ERROR_WANT_WRITE:
             case SSL_ERROR_WANT_CONNECT:
@@ -3736,7 +3735,6 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
 
         switch (n) {
 
-            case SSL_ERROR_NONE:
             case SSL_ERROR_WANT_READ:
             case SSL_ERROR_WANT_WRITE:
             case SSL_ERROR_WANT_CONNECT:
