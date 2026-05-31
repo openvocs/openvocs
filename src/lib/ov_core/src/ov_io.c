@@ -3740,7 +3740,12 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
             case SSL_ERROR_WANT_CONNECT:
             case SSL_ERROR_WANT_ACCEPT:
             case SSL_ERROR_WANT_X509_LOOKUP:
+            case SSL_ERROR_WANT_ASYNC:
+            case SSL_ERROR_WANT_ASYNC_JOB:
                 break;
+
+            case SSL_ERROR_ZERO_RETURN:
+                goto error;
 
             case SSL_ERROR_NONE:
             case SSL_ERROR_SYSCALL:
