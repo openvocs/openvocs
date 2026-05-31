@@ -1368,6 +1368,14 @@ static bool io_stream_ssl(int socket, uint8_t events, void *data) {
         switch (n) {
 
             case SSL_ERROR_NONE:
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+            case SSL_ERROR_WANT_CONNECT:
+            case SSL_ERROR_WANT_ACCEPT:
+            case SSL_ERROR_WANT_X509_LOOKUP:
+                break;
+
+            case SSL_ERROR_NONE:
             case SSL_ERROR_SYSCALL:
 
                 if(0 == errno)
@@ -3727,6 +3735,14 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
         n = SSL_get_error(conn->tls.ssl, bytes);
 
         switch (n) {
+
+            case SSL_ERROR_NONE:
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+            case SSL_ERROR_WANT_CONNECT:
+            case SSL_ERROR_WANT_ACCEPT:
+            case SSL_ERROR_WANT_X509_LOOKUP:
+                break;
 
             case SSL_ERROR_NONE:
             case SSL_ERROR_SYSCALL:
