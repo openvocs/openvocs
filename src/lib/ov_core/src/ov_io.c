@@ -1166,8 +1166,13 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
             } else {
 
                 conn->io_data.out.buffer = buffer;
+                return io_stream_ssl_send(self, conn);
 
             }
+
+        } else if (bytes == 0) {
+
+            goto error;
 
         } else {
 
@@ -1199,7 +1204,6 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
     
                 case SSL_ERROR_SSL:
                     
-
                     errorcode = ERR_get_error();
                     ERR_error_string_n(errorcode, errorstring,
                                        OV_SSL_ERROR_STRING_BUFFER_SIZE);
@@ -1232,6 +1236,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
         } else {
             conn->io_data.out.buffer = buffer;
+            return io_stream_ssl_send(self, conn);
         }
 
     }
