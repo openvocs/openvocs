@@ -1177,6 +1177,9 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
             if (errno == EAGAIN)
                 break;
 
+            if (errno == SUCCESS)
+                break;
+
             ov_log_error("SSL_ERROR_SYSCALL"
                          "%d | %s",
                          errno, strerror(errno));
