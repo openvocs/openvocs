@@ -3827,6 +3827,9 @@ static bool accept_https(int socket, uint8_t events, void *data) {
     if (!ssl)
         goto unroll;
 
+    if (1 != SSL_set_ciphersuites(ssl, "TLS_AES_256_GCM_SHA384"))
+        goto unroll;
+
     if (1 != SSL_set_fd(ssl, conn->socket))
         goto unroll;
 
