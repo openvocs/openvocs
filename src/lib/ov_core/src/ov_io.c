@@ -182,6 +182,8 @@ static void *connection_free(void *self) {
         return NULL;
     Connection *conn = (Connection *)self;
 
+    ov_log_debug("FREE connection %i", conn->socket);
+
     if (conn->timer_id != OV_TIMER_INVALID) {
 
         ov_event_loop_timer_unset(conn->io->config.loop, conn->timer_id, NULL);
@@ -1166,18 +1168,17 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
     
         case SSL_ERROR_SYSCALL:
 
-            if (SSL_ERROR_ZERO_RETURN == n)
-                goto error;
-
             errorcode = ERR_get_error();
+
+            if ( (SSL_ERROR_ZERO_RETURN == errorcode) &&
+                 (0 == errno))
+                return true;
+
             ERR_error_string_n(errorcode, errorstring,
                                OV_SSL_ERROR_STRING_BUFFER_SIZE);
     
             ov_log_error("SSL_ERROR_SYSCALL %s at socket %i errno %i",
                 errorstring, conn->socket, errno);
-
-            if (0 == errno)
-                return true;
 
             goto error;
             break;
