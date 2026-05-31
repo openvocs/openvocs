@@ -1793,6 +1793,7 @@ static bool open_listener_ctx(ov_io *self, Connection *conn) {
 
     ctx = SSL_CTX_new(TLS_server_method());
     SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
+    SSL_CTX_set_max_proto_version(ctx, TLS1_3_VERSION);
 
     if (!load_certificate(ctx, &conn->config.ssl))
         goto error;
