@@ -1141,15 +1141,9 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
 
     if (bytes > 0) return true;
 
-    if (bytes == 0) {
+    n = SSL_get_error(conn->tls.ssl, bytes);
 
-        goto error;
-
-    } else {
-
-        n = SSL_get_error(conn->tls.ssl, bytes);
-
-        switch (n) {
+    switch (n) {
 
         case SSL_ERROR_NONE:
         case SSL_ERROR_WANT_READ:
@@ -1194,7 +1188,6 @@ static bool io_send_ssl(ov_io *self, Connection *conn, const ov_buffer *buffer){
 
             ov_log_error("SSL_ERROR_SSL %s at socket %i",errorstring, conn->socket);
             goto error;
-        }
     }
 
     return true;
