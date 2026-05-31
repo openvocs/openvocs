@@ -1582,7 +1582,7 @@ static bool accept_tls(int socket, uint8_t events, void *data) {
         goto unroll;
 
     SSL_set_accept_state(ssl);
-    SSL_set_mode(ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+    //SSL_set_mode(ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
     conn->tls.handshaked = false;
     conn->tls.ssl = ssl;
@@ -2333,7 +2333,7 @@ static bool init_ssl_client(ov_io *self, Connection *conn) {
     }
 
     SSL_set_connect_state(conn->tls.ssl);
-    SSL_set_mode(conn->tls.ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
+    //SSL_set_mode(conn->tls.ssl, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 
     if (0 != conn->config.ssl.domain[0]) {
 
