@@ -3702,6 +3702,7 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
     conn->last_update_usec = ov_time_get_current_time_usecs();
 
     if ((events & OV_EVENT_IO_CLOSE) || (events & OV_EVENT_IO_ERR)) {
+        ov_log_debug("Closing socket %i", socket);
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         goto done;
     }
@@ -3723,7 +3724,24 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
 
     } else if (bytes == 0) {
 
-        goto error;
+        n = SSL_get_error(conn->tls.ssl, bytes);
+
+        switch (n) {
+
+            case SSL_ERROR_NONE:
+            case SSL_ERROR_SYSCALL:
+
+                if(0 == errno)
+                    break;
+
+                goto error;
+                break;
+
+            default:
+
+                ov_log_debug("SSL closed %i", conn->socket);
+                goto error;
+        }
 
     } else {
 
@@ -3749,6 +3767,9 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
                          "%d | %s",
                          errno, strerror(errno));
 
+            if(0 == errno)
+                goto done;
+
             goto error;
             break;
 
@@ -3759,7 +3780,7 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
                                OV_SSL_ERROR_STRING_BUFFER_SIZE);
             ov_log_error("SSL_ERROR_SSL %s at socket %i", errorstring,
                          conn->socket);
-            goto send_no_shutdown;
+            goto error;
             break;
 
         default:
@@ -3771,16 +3792,16 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
     /* Try to read again */
 done:
     return true;
-
+/*
 send_no_shutdown:
 
     if (conn->tls.ssl) {
         SSL_free(conn->tls.ssl);
         conn->tls.ssl = NULL;
     }
-
+*/
 error:
-
+    ov_log_debug("Closing socket");
     if (self)
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
 
