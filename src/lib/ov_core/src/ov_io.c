@@ -2682,7 +2682,7 @@ static bool send_websocket_frames(ov_io *self, Connection *conn, ov_memory_point
 
     ov_websocket_frame_clear(frame);
 
-    size_t chunk = 1000;
+    size_t chunk = 500;
 
     if (buffer.length < chunk) {
 
