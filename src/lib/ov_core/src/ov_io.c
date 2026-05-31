@@ -1295,8 +1295,12 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
         if (!loop->callback.set(loop, conn->socket,
                                     OV_EVENT_IO_IN | OV_EVENT_IO_ERR |
                                         OV_EVENT_IO_CLOSE,
-                                    self, conn->io_data.callback))
+                                    self, conn->io_data.callback)){
+
+            ov_log_debug("failed to reset eventloop");
             goto error;
+        }
+            
 
     } else {
         conn->io_data.out.buffer = buffer;
@@ -1304,6 +1308,7 @@ static bool io_stream_ssl_send(ov_io *self, Connection *conn) {
 
     return true;
 error:
+    ov_log_debug("io_stream_ssl_send");
     if (self && conn)
         ov_dict_del(self->connections, (void *)(intptr_t)conn->socket);
     return false;
@@ -2242,7 +2247,7 @@ static bool io_ssl_client(int socket, uint8_t events, void *data) {
                 (ov_memory_pointer){.start = buffer, .length = bytes});
         }
     }
-    
+
 done:
     return true;
 error:
