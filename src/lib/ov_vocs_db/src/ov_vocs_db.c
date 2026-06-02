@@ -5732,10 +5732,6 @@ bool ov_vocs_db_ldap_import(ov_vocs_db *self, ov_ldap_config config){
 
     }
 
-char *str = ov_json_value_to_string(roles);
-ov_log_debug("%s", str);
-str = ov_data_pointer_free(str);
-
     if (!ov_thread_lock_try_lock(&self->lock))
         goto error;
 
