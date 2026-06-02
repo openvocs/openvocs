@@ -1773,6 +1773,8 @@ static bool handle_ldap_update(ov_vocs_db_persistance *self, ov_thread_message *
     uint64_t error_code = 0;
     char *message = NULL;
 
+    ov_callback cb = {0};
+
     if (!self || !msg) goto error;
 
     if (msg->type != 42) goto error;
@@ -1823,7 +1825,7 @@ static bool handle_ldap_update(ov_vocs_db_persistance *self, ov_thread_message *
 
 callback:
 
-    ov_callback cb = ov_callback_registry_unregister(self->callbacks, m->id);
+    cb = ov_callback_registry_unregister(self->callbacks, m->id);
 
     if (cb.function){
 
@@ -1845,6 +1847,7 @@ error:
     ov_json_value_free(roles);
     return false;
 }
+
 
 /*----------------------------------------------------------------------------*/
 
