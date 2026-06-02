@@ -1373,7 +1373,7 @@ struct container_parent {
 };
 
 /*----------------------------------------------------------------------------*/
-
+/*
 static bool user_already_set(const void *key, void *val, void *data) {
 
     if (!key)
@@ -1381,7 +1381,7 @@ static bool user_already_set(const void *key, void *val, void *data) {
     UNUSED(val);
 
     struct container_parent *c = (struct container_parent *)data;
-
+*/
     /*
         Check if the user id is registered in db.
 
@@ -1389,7 +1389,7 @@ static bool user_already_set(const void *key, void *val, void *data) {
         but not part of the parent,
         some other project or domain is using the same id.
     */
-
+/*
     if (ov_dict_is_set(c->db->index.users, key)) {
 
         if (!ov_json_object_get(c->parent, key))
@@ -1400,6 +1400,7 @@ static bool user_already_set(const void *key, void *val, void *data) {
 error:
     return false;
 }
+*/
 
 /*----------------------------------------------------------------------------*/
 
@@ -1480,12 +1481,14 @@ static bool update_users(ov_vocs_db *self, ov_json_value *parent,
         data = ov_json_object();
         ov_json_object_set(parent, OV_KEY_USERS, data);
     }
-
+/*
     struct container_parent c =
         (struct container_parent){.db = self, .parent = data};
-
+*/
+    /*
     if (!ov_json_object_for_each((ov_json_value *)users, &c, user_already_set))
         goto error;
+    */
 
     if (data && !ov_json_object_for_each(data, self, unindex_users))
         goto error;
@@ -5262,6 +5265,8 @@ static ov_json_value *ldap_get_users(const char *host, const char *base,
     if (!base || !user || !host || !pass)
         goto error;
 
+    ov_log_debug("searching users at %s %s", host, base);
+
     char *filter = "(&(objectClass=posixAccount))";
 
     char *attrs[4] = {0};
@@ -5416,6 +5421,8 @@ static ov_json_value *ldap_get_roles(const char *host, const char *base,
     if (!base || !user || !host || !pass)
         goto error;
 
+    ov_log_debug("searching roles at %s %s", host, base);
+
     char *filter = "(&(objectClass=*))";
 
     char *attrs[3] = {0};
@@ -5545,8 +5552,13 @@ static bool update_ldap_users(ov_vocs_db *self,
 
     if (!self || !users) goto error;
 
+    ov_log_debug("Updating users for domain %s", domain);
+
     ov_json_value *d = ov_json_object_get(self->data.domains, domain);
-    if (!d) goto error;
+    if (!d) {
+        ov_log_error("domain not in update object.");
+        goto error;
+    }
 
     return update_users(self, d, users);
 
@@ -5625,7 +5637,7 @@ static bool add_new_role_from_ldap(void *key, void *data){
         ov_json_object_set(container->domain, "roles", roles);
     }
 
-    ov_json_object_set(roles, "key", copy);
+    ov_json_object_set(roles, (char *)key, copy);
     return true;
 error:
     return false;
@@ -5638,8 +5650,13 @@ static bool drop_role_not_in_ldap(void *key, void *data){
     struct update *container = (struct update*) data;
 
     ov_json_value *role = ov_dict_get(container->self->index.roles, key);
+    if (!role) return true;
+
     ov_json_value *parent = role->parent;
-    if (parent) ov_json_object_del(parent, key);
+    if (parent) {
+        ov_json_object_del(parent, key);
+        ov_log_debug("deleting role %s", (char*) key);
+    }
 
     return true;
 }
@@ -5651,6 +5668,8 @@ static bool update_ldap_roles(ov_vocs_db *self,
     const ov_json_value *roles){
 
     if (!self || !roles) goto error;
+
+    ov_log_debug("Updating roles for domain %s", domain);
 
     struct update container = (struct update){
         .self = self,
@@ -5713,6 +5732,10 @@ bool ov_vocs_db_ldap_import(ov_vocs_db *self, ov_ldap_config config){
 
     }
 
+char *str = ov_json_value_to_string(roles);
+ov_log_debug("%s", str);
+str = ov_data_pointer_free(str);
+
     if (!ov_thread_lock_try_lock(&self->lock))
         goto error;
 
@@ -5724,6 +5747,8 @@ bool ov_vocs_db_ldap_import(ov_vocs_db *self, ov_ldap_config config){
     ov_thread_lock_unlock(&self->lock);
     ov_json_value_free(users);
     ov_json_value_free(roles);
+
+    ov_vocs_db_persistance_save(self->persistance);
     return result;
 
 error:
