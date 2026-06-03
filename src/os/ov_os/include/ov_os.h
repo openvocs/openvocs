@@ -30,6 +30,8 @@ This file is part of the openvocs project. https://openvocs.org
 #ifndef ov_os_h
 #define ov_os_h
 
+#include <stdbool.h>
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -40,6 +42,7 @@ This file is part of the openvocs project. https://openvocs.org
 
 /**
  * Try to spawn a new procname
+ * @param detach if true, the child processes will run in daemon mode (won't terminate on parent's death). Otherwise the spawned process will be terminated if the parent dies.
  * @return PID on success, negative value in case of error
  *
  * Error values include
@@ -49,6 +52,6 @@ This file is part of the openvocs project. https://openvocs.org
  * - OV_ERROR_CODE_UNKNOWN_ERROR : Unknown error occured
  */
 int ov_os_spawn(char const *working_dir, char const *procname,
-                char const *const *cmdline);
+                char const *const *cmdline, bool detach);
 
 #endif /* ov_os_h */

@@ -27,6 +27,8 @@
 #ifndef ov_os_linux_h
 #define ov_os_linux_h
 
+#include <stdbool.h>
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -44,6 +46,6 @@
  * - OV_ERROR_CODE_UNKNOWN_ERROR : Unknown error occured
  */
 int ov_os_linux_spawn(char const *working_dir, char const *procname,
-                      char const *const *args);
+                      char const *const *args, bool detach);
 
 #endif /* ov_os_linux_h */
