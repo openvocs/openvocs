@@ -526,7 +526,7 @@ ov_ldap_config ov_ldap_config_from_json(const ov_json_value *val) {
 
     str = ov_json_string_get(ov_json_get(conf, "/" OV_KEY_ROLE_DN_TREE));
     if (str)
-        strncpy(config.user_dn_tree, str, OV_LDAP_USER_DN_TREE);
+        strncpy(config.role_dn_tree, str, OV_LDAP_USER_DN_TREE);
 
     str = ov_json_string_get(ov_json_get(conf, "/user"));
     if (str)

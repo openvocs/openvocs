@@ -148,6 +148,13 @@ bool ov_timed_add(
     uint64_t epoch_now = ov_time_to_epoch(now);
     uint64_t epoch_new = ov_time_to_epoch(time);
 
+    if (epoch_new < epoch_now){
+        epoch_new += 86400;
+    }
+
+    if (epoch_new < epoch_now)
+        goto error;
+
     uint64_t rel_timeout_usecs = epoch_new - epoch_now;
 
     Callback *cb = calloc(1, sizeof(Callback));

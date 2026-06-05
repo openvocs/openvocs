@@ -66,6 +66,7 @@ rm -rf $RPM_BUILD_ROOT
 /usr/bin/ov_ldap_test
 /usr/bin/ov_ldap_test_auth
 /usr/bin/ov_ldap_user_import
+/usr/bin/ov_ldap_role_import
 /usr/bin/ov_mc_ice_proxy
 /usr/bin/ov_mc_interconnect
 /usr/bin/ov_mc_mixer
