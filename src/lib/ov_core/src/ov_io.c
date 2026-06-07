@@ -3125,6 +3125,8 @@ static bool process_https_message(Connection *conn, const ov_http_message *msg) 
             conn->domain,
             domain->config.path,
             msg)) goto error;
+
+        return true;
     
     } else {
 
