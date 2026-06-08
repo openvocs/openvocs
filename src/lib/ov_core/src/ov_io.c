@@ -2599,6 +2599,13 @@ static bool io_send(ov_io *self, Connection *conn, ov_memory_pointer buffer){
         goto error;
     }
 
+    if (conn->tls.ssl){
+        io_stream_ssl(conn->socket, OV_EVENT_IO_OUT, self);
+    } else {
+        io_stream(conn->socket, OV_EVENT_IO_OUT, self);
+    }
+
+
     return true;
 
 error:
