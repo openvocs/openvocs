@@ -30,13 +30,25 @@
 import ov_Parse_Exception from "/lib/ov_exception/ov_parse_exception.js";
 import create_uuid from "/lib/ov_utils/ov_uuid.js";
 
+export function has_layout(role) {
+    if (!role || !role.layout || typeof role.layout !== "object")
+        return false;
+
+    return Object.values(role.layout).some((positions) => {
+        return Array.isArray(positions) && positions.some((position) => {
+            return position && position.page !== undefined && position.page !== null && position.page !== "";
+        });
+    });
+}
+
 export default class ov_Role {
-    constructor(id, name, abbreviation, color, project, domain) {
+    constructor(id, name, abbreviation, color, project, domain, layout) {
         this.id = id;
         this.name = name;
         this.color = color;
         this.project = project;
         this.domain = domain;
+        this.layout = layout;
 
         // dom id has to start with a letter, uuid may start with a number
         this._dom_id = "role_" + create_uuid();
@@ -82,6 +94,14 @@ export default class ov_Role {
         return this._domain;
     }
 
+    set layout(layout) {
+        this._layout = layout;
+    }
+
+    get layout() {
+        return this._layout;
+    }
+
     set users(array) {
         this._users = array;
     }
@@ -105,6 +125,6 @@ export default class ov_Role {
         /*if (!json.hasOwnProperty("color")) // optional
             json.color = "#909090"; // grey*/
 
-        return new this(id, name, json.abbreviation, json.color, json.project, json.domain);
+        return new this(id, name, json.abbreviation, json.color, json.project, json.domain, json.layout);
     }
 }

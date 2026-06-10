@@ -32,6 +32,7 @@ import * as Loop_View from "./loop_view.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_WebRTCs from "/lib/ov_media/ov_webrtc_list.js";
 import * as ov_Auth from "/lib/ov_auth.js";
+import { has_layout } from "/lib/ov_object_model/ov_role_model.js";
 
 import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
 
@@ -134,14 +135,13 @@ export function redraw_user() {
 export async function redraw_roles() {
     DOM.role_select.clear();
     if (ov_Websockets.user()) {
-        for (let role of ov_Websockets.user().roles.values) {
-            if (role.id !== "admin") {
-                let name = role.name;
-                if (!name)
-                    name = role.id;
-                // await DOM.role_select.add_item(role.id, name + "\n (" + role.project + ")", role.id);
-                await DOM.role_select.add_item(role.id, name, role.id);
-            }
+        let roles = ov_Websockets.user().roles.values.filter((role) => role.id !== "admin" && has_layout(role));
+        for (let role of roles) {
+            let name = role.name;
+            if (!name)
+                name = role.id;
+            // await DOM.role_select.add_item(role.id, name + "\n (" + role.project + ")", role.id);
+            await DOM.role_select.add_item(role.id, name, role.id);
         }
         DOM.role_select.value = ov_Websockets.user().role;
     }

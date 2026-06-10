@@ -30,6 +30,7 @@
 import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as CSS from "/css/css.js";
+import { has_layout } from "/lib/ov_object_model/ov_role_model.js";
 
 // import custom HTML elements
 import ov_Nav from "/components/nav/nav.js";
@@ -149,19 +150,20 @@ export function set_server_id(server_url, server_name) {
 
 function populate_role_list() {
     let user = ov_Websockets.user();
-    if (user.roles.length === 0) {
+    user.roles.sort();
+
+    let roles = user.roles.values.filter((role) => role.id !== "admin" && has_layout(role));
+
+    if (roles.length === 0) {
         set_message("You have no roles. " +
             "To gain access to roles please contact the project or domain admin.");
     } else {
-        user.roles.sort();
-        for (let role of user.roles.values) {
-            if (role.id !== "admin") {
-                let name = role.name;
-                if (!name)
-                    name = role.id;
-                // DOM.role_list.add_item(role.dom_id, name + " (" + role.project + ")", role.id);
-                DOM.role_list.add_item(role.dom_id, name, role.id);
-            }
+        for (let role of roles) {
+            let name = role.name;
+            if (!name)
+                name = role.id;
+            // DOM.role_list.add_item(role.dom_id, name + " (" + role.project + ")", role.id);
+            DOM.role_list.add_item(role.dom_id, name, role.id);
         }
     }
     activate_stepper(DOM.authorization_step);
