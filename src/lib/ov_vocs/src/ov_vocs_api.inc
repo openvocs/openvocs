@@ -636,13 +636,13 @@ static bool enable_api_admin(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "recording_start",
+        "recorder_start",
         vocs,
         admin_start_recording)) goto error;
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "recording_stop",
+        "recorder_stop",
         vocs,
         admin_stop_recording)) goto error;
 
@@ -678,7 +678,7 @@ static bool enable_api_admin(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "recording_get_recorded_loops",
+        "recorder_get_recorded_loops",
         vocs,
         admin_get_recorded_loops)) goto error;
 
@@ -2861,7 +2861,7 @@ static bool enable_api_client(ov_vocs *vocs){
 
     if (!ov_event_broker_register(
         vocs->broker,
-        "recording_get_recordings",
+        "recorder_get_recordings",
         vocs,
         client_event_get_recording)) goto error;
 

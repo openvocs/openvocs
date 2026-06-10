@@ -2186,7 +2186,7 @@ static void cb_sip_new(void *userdata, const char *loopname,
     if (!self || !loopname || !call_id || !peer)
         goto error;
 
-    out = ov_event_api_message_create("sip_call_new", NULL, 0);
+    out = ov_event_api_message_create("sip_call", NULL, 0);
 
     if (!ov_event_api_set_type(out, OV_BROADCAST_KEY_LOOP_BROADCAST))
         goto error;
@@ -2235,7 +2235,7 @@ static void cb_sip_terminated(void *userdata, const char *call_id,
     if (!self || !loopname || !call_id)
         goto error;
 
-    out = ov_event_api_message_create("sip_call_hangup", NULL, 0);
+    out = ov_event_api_message_create("sip_hangup", NULL, 0);
 
     if (!ov_event_api_set_type(out, OV_BROADCAST_KEY_LOOP_BROADCAST))
         goto error;
@@ -2282,7 +2282,7 @@ static void cb_sip_permit(void *userdata, const ov_sip_permission permission,
     if (NULL == permission.loop)
         goto error;
 
-    out = ov_event_api_message_create("sip_call_permit", NULL, 0);
+    out = ov_event_api_message_create("sip_permit_call", NULL, 0);
 
     if (!ov_event_api_set_type(out, OV_BROADCAST_KEY_LOOP_BROADCAST))
         goto error;
@@ -2338,7 +2338,7 @@ static void cb_sip_revoke(void *userdata, const ov_sip_permission permission,
     if (NULL == permission.loop)
         goto error;
 
-    out = ov_event_api_message_create("sip_call_revoke", NULL, 0);
+    out = ov_event_api_message_create("sip_revoke_call", NULL, 0);
 
     if (!ov_event_api_set_type(out, OV_BROADCAST_KEY_LOOP_BROADCAST))
         goto error;

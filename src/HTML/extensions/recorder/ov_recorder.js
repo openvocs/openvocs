@@ -32,35 +32,35 @@
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 
 export const EVENT = {
-    START_RECORD: "recording_start",
-    STOP_RECORD: "recording_stop",
-    RECORDED_LOOPS: "recording_get_recorded_loops",
-    RECORDINGS: "recording_get_recordings"
+    START_RECORD: "recorder_start",
+    STOP_RECORD: "recorder_stop",
+    RECORDED_LOOPS: "recorder_get_recorded_loops",
+    RECORDINGS: "recorder_get_recordings"
 };
 
 // admin --------------------------------------------------------------------
-export async function start_record(loop_id, websocket) {
+export async function start_recording(loop_id, websocket) {
     if (websocket)
         return await ws_start_record(loop_id, websocket);
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
         if (ws.authenticated && ws.record === true) {
-            let promise = ws_start_record(loop_id, ws);
+            let promise = ws_start_recording(loop_id, ws);
             if (ws === ov_Websockets.prime_websocket)
                 lead_promise = promise;
         }
     }
     return await lead_promise;
 }
-export async function stop_record(loop_id, websocket) {
+export async function stop_recording(loop_id, websocket) {
     if (websocket)
-        return await ws_stop_record(loop_id, websocket);
+        return await ws_stop_recording(loop_id, websocket);
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
         if (ws.authenticated && ws.record === true) {
-            let promise = ws_stop_record(loop_id, ws);
+            let promise = ws_stop_recording(loop_id, ws);
             if (ws === ov_Websockets.prime_websocket)
                 lead_promise = promise;
         }
@@ -99,7 +99,7 @@ export async function get_recordings(loop_id, from, to, ws) {
     }
 }
 
-async function ws_start_record(loop_id, websocket) {
+async function ws_start_recording(loop_id, websocket) {
     let parameter = { loop: loop_id };
     try {
         console.log(log_prefix(websocket) + "requesting to start recorder for loop " + loop_id + "...");
@@ -112,7 +112,7 @@ async function ws_start_record(loop_id, websocket) {
     }
 }
 
-async function ws_stop_record(loop_id, websocket) {
+async function ws_stop_recording(loop_id, websocket) {
     let parameter = { loop: loop_id };
     try {
         console.log(log_prefix(websocket) + "requesting to stop recorder for loop " + loop_id + "...");

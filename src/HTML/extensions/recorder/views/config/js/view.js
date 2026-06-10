@@ -49,7 +49,7 @@ export function init(view_id) {
     DOM.start_recording.addEventListener("click", async () => {
         if (DOM.start_recording.classList.contains("recording")) {
             let loop = get_current_loop();
-            let recording = await ov_Recorder.stop_record(loop.id);
+            let recording = await ov_Recorder.stop_recording(loop.id);
             if (!recording.error) {
                 loop.active = false;
                 DOM.start_recording.classList.toggle("recording", false);
@@ -65,7 +65,7 @@ export function init(view_id) {
             }
         } else {
             let loop = get_current_loop();
-            let recording = await ov_Recorder.start_record(loop.id);
+            let recording = await ov_Recorder.start_recording(loop.id);
             if (!recording.error) {
                 loop.active = true;
                 DOM.start_recording.classList.toggle("recording", true);
