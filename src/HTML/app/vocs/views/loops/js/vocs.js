@@ -30,6 +30,7 @@
 
 import * as View from "./ui/view.js";
 
+import ov_Websocket from "/lib/ov_websocket.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_WebRTCs from "/lib/ov_media/ov_webrtc_list.js";
 import * as ov_Auth from "/lib/ov_auth.js";
@@ -56,7 +57,7 @@ export async function render(container) {
     window.addEventListener("beforeunload", function () {
         // at this point the event loop (async content) is no longer available
         // console output is displayed on reloaded page
-        if (ov_Websockets.current_lead_websocket.is_ready && ov_WebRTCs.get_lead().is_ready) {
+        if (ov_Websockets.current_lead_websocket.connected && ov_WebRTCs.get_lead().connected) {
             View.talk(false);
             console.log("(vc) unload voice client");
         }
@@ -100,29 +101,24 @@ export async function render(container) {
         console.log("webpage update", event);
     });
 
-    ov_Websockets.on_disconnect(async (websocket) => {
+    ov_Websockets.on_disconnect(async (websocket, error) => {
         console.error(log_prefix(websocket) + "disconnected from signaling server");
 
         let media = ov_WebRTCs.get(websocket);
         if (media && media.is_connected)
             media.disconnect();
 
-        if (View.logout_triggered) {
-            ov_Websockets.reload_page();
-            return;
-        }
-
         // if disconnect from current prio server -> switch server
         if (websocket === ov_Websockets.current_lead_websocket) {
             let message;
-            if (!websocket.server_error)
+            if (!error)
                 message = "Server closed connection. Trying to reconnect..."
             else {
                 message = "Client disconnected! Trying to repair connection...\n"
-                if (websocket.server_error.description)
-                    message = message + " ERROR: " + websocket.server_error.description;
-                if (websocket.server_error.code)
-                    message = message + " CODE: " + websocket.server_error.code;
+                if (error.description)
+                    message = message + " ERROR: " + error.description;
+                if (error.code)
+                    message = message + " CODE: " + error.code;
             }
             View.indicate_loading(true, message);
 
@@ -136,99 +132,66 @@ export async function render(container) {
         for (let ws of ov_Websockets.list)
             if (ws.authorized || ov_Auth.has_valid_session(ws))
                 all_off = false;
-
         if (all_off)
             ov_Websockets.reload_page();
 
         console.log(log_prefix(websocket) + "attempt relogin after time out");
-        if (!websocket.server_error || websocket.server_error.code !== 5000)
+        if (!error || error.code !== 5000)
             await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
 
         console.log(log_prefix(websocket) + "reconnect");
         await ov_Auth.connect(websocket);
 
-        if (!websocket.is_ready)
-            websocket.disconnect();
+        if (websocket.connected) {
+            let session = websocket.session;
+            if (session && session.role) { //auto login with session
+                await ov_Auth.login(session.user, session.session, websocket);
+                if (websocket.authenticated)
+                    await ov_Auth.authorize_role(session.role, websocket);
+                if (websocket.authorized)
+                    return;
+            }
 
-        else if (await establish_connection(websocket)) {
+            if (session) {
+                console.error("Incomplete or invalid session information. Clear session.");
+                ov_Auth.clear_session(websocket);
+            }
+
+            await View.ask_for_relogin();
+            if (!websocket.authorized)
+                websocket.disconnect();
+        }
+    });
+
+    for (let ws of ov_Websockets.list) {
+        ws.addEventListener(ov_Websocket.EVENT.AUTHORIZE_ROLE, authorization_event_handler);
+        establish_media_connection(ws);
+    }
+}
+
+const authorization_event_handler = (event) => establish_media_connection(event.target.websocket);
+
+async function establish_media_connection(websocket) {
+    console.log(websocket)
+    if (websocket.authorized) {
+        let media = ov_WebRTCs.get(websocket);
+        if (!media.is_connected)
+            await media.init_media_connection();
+        if (media.is_connected) {
             if (websocket === ov_Websockets.current_lead_websocket) {
                 console.log(log_prefix(websocket) + "reconnected to server - redraw frontend");
                 let media = ov_WebRTCs.get_lead();
                 media.start_playback();
                 View.draw_loops(); //otherwise the var references will be faulty
                 View.indicate_loading(false);
+                return;
             } else {
                 View.sync_loops(websocket);
+                return;
             }
-            return;
         }
-
-        console.warn(log_prefix(websocket) + "Pers error. Disconnect and try again.");
-        websocket.disconnect();
-        if (websocket === ov_Websockets.current_lead_websocket)
-            View.indicate_loading(true, "Automatic login reconnect failed. Triggered disconnect from server to try again after timeout. ");
-
-    });
-
-    let promise = establish_connection(ov_Websockets.current_lead_websocket);
-    for (let ws of ov_Websockets.list) {
-        if (ws !== ov_Websockets.current_lead_websocket) {
-            if (ws.is_ready)
-                establish_connection(ws).then((value) => {
-                    if (!value)
-                        ws.disconnect();
-                });
-            else if (!ws.is_connecting)
-                ov_Auth.connect(ws).then((value) => {
-                    if (value)
-                        establish_connection(ws).then((value2) => {
-                            if (!value2)
-                                ws.disconnect();
-                        });
-                });
-            else
-                ws.disconnect();
-        }
-    }
-
-    if (await promise) {
-        let media = ov_WebRTCs.get_lead();
-        media.start_playback();
-        View.draw_loops();
-        View.indicate_loading(false);
-    } else {
-        View.indicate_loading(true, "Establishing connection to server failed. Page will reload in 5 seconds...");
-        await ov_Websockets.sleep(PERS_ERROR_TIMEOUT);
-        ov_Websockets.reload_page();
-    }
-}
-
-async function establish_connection(websocket) {
-    console.log(log_prefix(websocket) + "analyzing connection");
-    let result = true;
-    if (!websocket.authenticated || !websocket.authorized) {
-        result = await ov_Auth.relogin(websocket);
-        if (result && (!websocket.authenticated || !websocket.authorized)) {
-            console.error("Incomplete session information. Clear incomplete session.");
-            ov_Auth.clear_session(websocket);
-            result = false;
-        }
-
-        if (!result && websocket.is_ready && !ov_Auth.has_valid_session(websocket) && websocket !== ov_Websockets.current_lead_websocket) {
-            result = await View.ask_for_relogin();
-        }
-    }
-    if (result && !ov_Websockets.user().roles)
-        result = await ov_DB.collect_roles(websocket);
-    if (result && websocket.is_ready && websocket.authorized) {
-        let media = ov_WebRTCs.get(websocket);
-        if (!media.is_connected)
-            await media.init_media_connection();
-        if (media.is_connected)
-            return true;
     }
     websocket.disconnect();
-    return false;
 }
 
 async function loadHtml() {
@@ -247,6 +210,8 @@ async function loadCSS() {
 export function remove() {
     console.log("(vc) unload");
     ov_Websockets.removeEventListeners();
+    for (let ws of ov_Websockets.list)
+        ws.removeEventListener(ov_Websocket.EVENT.AUTHORIZE_ROLE, authorization_event_handler);
     if (view_container)
         view_container.replaceChildren();
 }

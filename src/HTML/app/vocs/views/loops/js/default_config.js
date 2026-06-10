@@ -72,5 +72,4 @@ DEBUG_USE_MEDIA_STREAM_FROM_FILE = false;
 DEBUG_MEDIA_STREAM_FILE = "./resources/sounds/Apollo13-wehaveaproblem.ogg";
 
 // developer vars -------------------------------------------------------------
-RETRIES_ON_TEMP_ERROR = 5;
 DEFAULT_LOOP_VOLUME = "50";

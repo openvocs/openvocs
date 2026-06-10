@@ -34,8 +34,6 @@ import ov_SIP_Role from "/extensions/sip/components/config/role/sip_role.js";
 
 var DOM = {};
 
-export var logout_triggered;
-
 export function init(view_id) {
 
     DOM.loops = document.getElementById("sip_loops");

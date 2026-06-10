@@ -44,7 +44,6 @@ SIGNALING_SERVERS = [
 
 //time to wait before resending a signaling request
 SIGNALING_REQUEST_TIMEOUT = 10000;
-TEMP_ERROR_TIMEOUT = 4000;
 
 DEBUG_LOG_INCOMING_EVENTS = true;
 DEBUG_LOG_OUTGOING_EVENTS = true;

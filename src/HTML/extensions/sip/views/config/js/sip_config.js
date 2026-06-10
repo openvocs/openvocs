@@ -61,21 +61,10 @@ export function render(loops, roles) {
 
     if (first_loop)
         View.select_loop(first_loop);
-
-    /*if (!await ov_DB.domains() || !await ov_DB.projects()){
-        ov_Websockets.prime_websocket.disconnect();
-    }
-
-    View.draw(ov_Websockets.user());
-
-    console.log("(overview) View rendered");
-
-    ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);*/
 }
 
 export function remove() {
     console.log("(overview) unload");
-    ov_Websockets.prime_websocket.removeEventListener("disconnected", on_disconnect);
     if (view_container)
         view_container.replaceChildren();
 }
@@ -91,15 +80,4 @@ async function loadCSS() {
     const style = document.createElement('style');
     style.textContent = await response.text();
     return style;
-}
-
-async function on_disconnect() {
-    /*if (View.logout_triggered) {
-        ov_Websockets.reload_page();
-        return;
-    }
-    console.warn("Disconnected from prime server. Trying to reconnect...");
-    View.display_loading_screen(true, "Disconnected from prime server. Trying to reconnect...");
-    if (await ov_Auth.relogin(ov_Websockets.prime_websocket))
-        View.display_loading_screen(false);*/
 }

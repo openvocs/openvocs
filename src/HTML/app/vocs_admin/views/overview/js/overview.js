@@ -79,15 +79,16 @@ async function loadCSS() {
     return style;
 }
 
-async function on_disconnect(ws) {
-    if (View.logout_triggered) {
-        ov_Websockets.reload_page();
-        return;
-    }
+async function on_disconnect(websocket, error) {
     console.warn("Disconnected from one or several servers. Trying to reconnect...");
     View.display_loading_screen(true, "Disconnected from one or several servers. Trying to reconnect...");
-    await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, ws);
-    if (await ov_Auth.relogin(ws) && ov_Websockets.disconnected_websockets.size === 0)
-        if (await ov_DB.domains() && await ov_DB.projects())
-            View.display_loading_screen(false);
+    await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
+    await ov_Auth.connect(websocket);
+    let session = websocket.session;
+    if (session) { //auto login with session
+        await ov_Auth.login(session.user, session.session, websocket);
+        if (websocket.authenticated && ov_Websockets.disconnected_websockets.size === 0)
+            if (await ov_DB.domains() && await ov_DB.projects())
+                View.display_loading_screen(false);
+    }
 }

@@ -33,7 +33,6 @@ import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
 export var list;
 export var prime_websocket;
 export var current_lead_websocket;
-export var auto_login = false;
 
 var disconnect_callback;
 export var disconnected_websockets = new Map();
@@ -43,30 +42,28 @@ var websocket_events = [];
 export function setup_connections(ov_Websocket) {
     // parse server url(s) and check for autologin
     let servers = [];
-    let temp_auto_login = false;
+    let auto_login = false;
     for (let server of SIGNALING_SERVERS) {
         let websocket_address = server.WEBSOCKET_URL ? server.WEBSOCKET_URL + "/api" :
             "wss://" + window.location.hostname + "/api";
 
         let active_session = ov_Web_Storage.get_session(APP, websocket_address);
-        let client_id = active_session ? active_session.client : undefined;
-        if (client_id !== undefined)
-            temp_auto_login = true;
+        if (active_session && active_session.client !== undefined)
+            auto_login = true;
         let record = server.RECORD;
         if (server.PRIME)
-            servers.unshift({ "name": server.NAME, "address": websocket_address, "client_id": client_id, "record": record });
+            servers.unshift({ name: server.NAME, address: websocket_address, session: active_session, record: record });
         else
-            servers.push({ "name": server.NAME, "address": websocket_address, "client_id": client_id, "record": record });
+            servers.push({ name: server.NAME, address: websocket_address, session: active_session, record: record });
     }
-    auto_login = temp_auto_login;
 
     // setup server(s)
     list = [];
     for (let server of servers) {
         console.log("add server '" + server.name + "' -> " + server.address);
-        let client_id = auto_login ? server.client_id : undefined;
+        let session = auto_login ? server.session : undefined;
 
-        let websocket = new ov_Websocket(server.name, server.address, client_id, server.record);
+        let websocket = new ov_Websocket(server.name, server.address, session, server.record);
         websocket.log_incoming_events = DEBUG_LOG_INCOMING_EVENTS;
         websocket.log_outgoing_events = DEBUG_LOG_OUTGOING_EVENTS;
         websocket.resend_events_after_timeout = false;
@@ -81,7 +78,7 @@ export function setup_connections(ov_Websocket) {
         websocket.addEventListener("disconnected", () => {
             disconnected_websockets.set(websocket.client_id, websocket);
             if (disconnect_callback)
-                disconnect_callback(websocket);
+                disconnect_callback(websocket, { description: "Server closed connection." });
         });
 
         websocket.addEventListener("connected", () => {
@@ -186,37 +183,25 @@ export async function find_new_connected_server() {
     return await find_new_server(false);
 }
 
-var finding_new_server = false;
 async function find_new_server(already_authorized) {
-    if (!finding_new_server) {
-        console.log("look for server");
-        finding_new_server = true;
-        while (finding_new_server) {
-            for (let ws of list) {
-                if (already_authorized) {
-                    if (ws.authorized) {
-                        finding_new_server = false;
-                        return ws;
-                    }
-                } else {
-                    if (ws.is_ready) {
-                        finding_new_server = false;
-                        return ws;
-                    }
-                }
+    console.log("look for server");
+    for (let ws of list) {
+        if (already_authorized) {
+            if (ws.authorized) {
+                return ws;
             }
-
-            if (finding_new_server) {
-                console.log("no server reachable, try again to find server after timeout");
-                await sleep(PERS_ERROR_TIMEOUT);
+        } else {
+            if (ws.connected) {
+                return ws;
             }
         }
     }
+    console.log("no server reachable...");
     return undefined;
 }
 
 export async function sleep(time, ws) {
-    return new Promise(resolve => {
+    return await new Promise(resolve => {
         if (ws)
             console.warn("(" + ws.server_name + ") Sleep for " + time + "ms.");
         else

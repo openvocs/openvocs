@@ -35,8 +35,6 @@ import ov_Player_List from '/extensions/recorder/components/player_list/recorder
 
 var DOM = {};
 
-export var logout_triggered;
-
 export function init(view_id) {
 
     DOM.loading_screen = document.getElementById("loading_screen");
@@ -50,42 +48,36 @@ export function init(view_id) {
 
     DOM.start_recording.addEventListener("click", async () => {
         if (DOM.start_recording.classList.contains("recording")) {
-            for (let ws of ov_Websockets.list) {
-                if (ws.record === true) {
-                    let loop = get_current_loop();
-                    if (await ov_Recorder.stop_record(loop.id, ws)) {
-                        loop.active = false;
-                        DOM.start_recording.classList.toggle("recording", false);
-                        DOM.message.innerText = "Recording was stopped. Please remember to save project.";
-                        DOM.message.className = "success";
-                        setTimeout(() => {
-                            DOM.message.innerText = "";
-                            DOM.message.className = "";
-                        }, 30000);
-                    } else {
-                        DOM.message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
-                        DOM.message.className = "error";
-                    }
-                }
+            let loop = get_current_loop();
+            let recording = await ov_Recorder.stop_record(loop.id);
+            if (!recording.error) {
+                loop.active = false;
+                DOM.start_recording.classList.toggle("recording", false);
+                DOM.message.innerText = "Recording was stopped. Please remember to save project.";
+                DOM.message.className = "success";
+                setTimeout(() => {
+                    DOM.message.innerText = "";
+                    DOM.message.className = "";
+                }, 30000);
+            } else {
+                DOM.message.innerText = "Error " + recording.error.code + ": " + recording.error.description;
+                DOM.message.className = "error";
             }
         } else {
-            for (let ws of ov_Websockets.list) {
-                if (ws.record === true) {
-                    let loop = get_current_loop();
-                    if (await ov_Recorder.start_record(loop.id, ws)) {
-                        loop.active = true;
-                        DOM.start_recording.classList.toggle("recording", true);
-                        DOM.message.innerText = "Recording was started. Please remember to save project.";
-                        DOM.message.className = "success";
-                        setTimeout(() => {
-                            DOM.message.innerText = "";
-                            DOM.message.className = "";
-                        }, 30000);
-                    } else {
-                        DOM.message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
-                        DOM.message.className = "error";
-                    }
-                }
+            let loop = get_current_loop();
+            let recording = await ov_Recorder.start_record(loop.id);
+            if (!recording.error) {
+                loop.active = true;
+                DOM.start_recording.classList.toggle("recording", true);
+                DOM.message.innerText = "Recording was started. Please remember to save project.";
+                DOM.message.className = "success";
+                setTimeout(() => {
+                    DOM.message.innerText = "";
+                    DOM.message.className = "";
+                }, 30000);
+            } else {
+                DOM.message.innerText = "Error " + recording.error.code + ": " + recording.error.description;
+                DOM.message.className = "error";
             }
         }
     });

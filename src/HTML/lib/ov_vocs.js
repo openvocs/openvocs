@@ -33,8 +33,6 @@ import ov_Loop from "/components/loops/loop/loop.js";
 import * as ov_Websockets from "./ov_websocket_list.js";
 import * as ov_DB from "./ov_db.js";
 
-var RETRIES_ON_TEMP_ERROR = 5;
-
 export var EVENT = {
     MEDIA: "media",
     CANDIDATE: "candidate",
@@ -59,7 +57,7 @@ export async function update_user_role_settings(role_settings, websocket) {
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
+        if (ws.authenticated) {
             let promise = ov_DB.update_user_settings(parameter, ws);
             if (ws === ov_Websockets.current_lead_websocket)
                 lead_promise = promise;
@@ -74,7 +72,7 @@ export async function switch_loop_state(loop_id, old_state, new_state, audio_act
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
+        if (ws.authenticated) {
             let promise = ws_switch_loop_state(loop_id, old_state, new_state, audio_activity, ws);
             if (ws === ov_Websockets.current_lead_websocket)
                 lead_promise = promise;
@@ -89,7 +87,7 @@ export async function switch_loop_volume(loop_id, volume, websocket) {
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
+        if (ws.authenticated) {
             let promise = ws_switch_loop_volume(loop_id, volume, ws);
             if (ws === ov_Websockets.current_lead_websocket)
                 lead_promise = promise;
@@ -104,7 +102,7 @@ export async function talk_in_loop(loop_id, ptt, websocket) {
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
+        if (ws.authenticated) {
             let promise = ws_talk_in_loop(loop_id, ptt, ws);
             if (ws === ov_Websockets.current_lead_websocket)
                 lead_promise = promise;
@@ -114,95 +112,57 @@ export async function talk_in_loop(loop_id, ptt, websocket) {
 }
 
 export async function request_media_connection(websocket) {
-    let media_string;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "requesting media connection...");
-            media_string = await websocket.send_event(EVENT.MEDIA, { type: "request" });
-            console.log(log_prefix(websocket) + "received media string");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to requesting media connection again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "requesting media connection failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(websocket) + "requesting media connection...");
+        let media_string = await websocket.send_event(EVENT.MEDIA, { type: "request" });
+        console.log(log_prefix(websocket) + "received media string");
+        return media_string;
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "requesting media connection failed.", error.error);
+        return false;
     }
-    return media_string;
 }
 
 export async function send_media_answer(sdp, websocket) {
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "send media answer...");
-            await websocket.send_event(EVENT.MEDIA, { type: "answer", sdp: sdp });
-            console.log(log_prefix(websocket) + "media answer send");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to send media answer again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "sending media answer failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(websocket) + "send media answer...");
+        await websocket.send_event(EVENT.MEDIA, { type: "answer", sdp: sdp });
+        console.log(log_prefix(websocket) + "media answer send");
+        return true;
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "sending media answer failed.", error.error);
+        return false;
     }
-    return true;
 }
 
 export async function send_ice_candidate(candidate, sdpMid, sdpMLineIndex, ufrag, websocket) {
-    let parameter = {
-        candidate: candidate,
-        sdpMid: sdpMid,
-        sdpMLineIndex: sdpMLineIndex,
-        ufrag: ufrag
-    };
-
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "send ice candidate...");
-            await websocket.send_event(EVENT.CANDIDATE, parameter);
-            console.log(log_prefix(websocket) + "ice candidate send");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to send ice candidate again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "sending ice candidate failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(websocket) + "send ice candidate...");
+        let parameter = {
+            candidate: candidate,
+            sdpMid: sdpMid,
+            sdpMLineIndex: sdpMLineIndex,
+            ufrag: ufrag
+        };
+        await websocket.send_event(EVENT.CANDIDATE, parameter);
+        console.log(log_prefix(websocket) + "ice candidate send");
+        return true;
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "sending ice candidate failed.", error.error);
+        return false;
     }
-    return true;
 }
 
 export async function send_end_of_ice_candidates(websocket) {
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "send end of ice candidates...");
-            await websocket.send_event(EVENT.END_OF_CANDIDATES);
-            console.log(log_prefix(websocket) + "end of ice candidates send");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to send end of ice candidates again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "sending end of ice candidates failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(websocket) + "send end of ice candidates...");
+        await websocket.send_event(EVENT.END_OF_CANDIDATES);
+        console.log(log_prefix(websocket) + "end of ice candidates send");
+        return true;
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "sending end of ice candidates failed.", error.error);
+        return false;
     }
-    return true;
 }
 
 async function ws_switch_loop_state(loop_id, old_state, new_state, audio_activity, websocket) {
@@ -212,25 +172,15 @@ async function ws_switch_loop_state(loop_id, old_state, new_state, audio_activit
     if (audio_activity && old_state === ov_Loop.STATE.TALK)
         activity = await ws_talk_in_loop(loop_id, false, websocket);
 
-    let parameter = { loop: loop_id, state: new_state };
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "switch loop state...");
-            response = await websocket.send_event(EVENT.SWITCH_LOOP_STATE, parameter);
-            console.log(log_prefix(websocket) + "switched state of loop " + response.loop + " to " + response.state);
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to switch loop state again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "switch loop state failed.", error);
-                response = error.response;
-                response_error = true;
-                disconnect(websocket);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(websocket) + "switch loop state...");
+        let parameter = { loop: loop_id, state: new_state };
+        response = await websocket.send_event(EVENT.SWITCH_LOOP_STATE, parameter);
+        console.log(log_prefix(websocket) + "switched state of loop " + response.loop + " to " + response.state);
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "switch loop state failed.", error.error);
+        response = error.response;
+        response_error = true;
     }
 
     if (audio_activity && response.state === ov_Loop.STATE.TALK)
@@ -242,56 +192,28 @@ async function ws_switch_loop_state(loop_id, old_state, new_state, audio_activit
 }
 
 async function ws_switch_loop_volume(loop_id, volume, websocket) {
-    let parameter = { loop: loop_id, volume: volume };
-
-    let response;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "switching loop volume...");
-            response = await websocket.send_event(EVENT.SWITCH_LOOP_VOLUME, parameter);
-            console.log(log_prefix(websocket) + "switched volume of loop " + response.loop + " to " + response.volume);
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to switch loop volume again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "switch loop volume failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(websocket) + "switching loop volume...");
+        let parameter = { loop: loop_id, volume: volume };
+        let response = await websocket.send_event(EVENT.SWITCH_LOOP_VOLUME, parameter);
+        console.log(log_prefix(websocket) + "switched volume of loop " + response.loop + " to " + response.volume);
+        return response;
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "switch loop volume failed.", error.error);
+        return false;
     }
-    return response;
 }
 
 async function ws_talk_in_loop(loop_id, ptt, websocket) {
-    let parameter = { loop: loop_id, state: ptt };
-    let response;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "signal talking in loop...");
-            response = await websocket.send_event(EVENT.TALKING, parameter);
-            console.log(log_prefix(websocket) + "signaled talking in loop " + response.loop);
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to signal talking in loop again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "signaling talking in loop failed.", error);
-                disconnect(websocket);
-                return false;
-            }
-        }
-    }
-    return response;
-}
-
-function disconnect(websocket) {
-    if (websocket.is_connecting) {
-        console.warn(log_prefix(websocket) + "Pers error. Disconnect and try again.");
-        websocket.disconnect();
+    try {
+        console.log(log_prefix(websocket) + "signal talking in loop...");
+        let parameter = { loop: loop_id, state: ptt };
+        let response = await websocket.send_event(EVENT.TALKING, parameter);
+        console.log(log_prefix(websocket) + "signaled talking in loop " + response.loop);
+        return response;
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "signaling talking in loop failed.", error.error);
+        return false;
     }
 }
 

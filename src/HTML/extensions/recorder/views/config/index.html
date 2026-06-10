@@ -42,8 +42,9 @@
             let loading_screen = document.getElementById("loading_screen");
 
             await ov_Websockets.setup_connections(ov_Websocket);
-            if (ov_Websockets.auto_login)
-                await ov_Auth.relogin(ov_Websockets.prime_websocket);
+            let session = ov_Websockets.prime_websocket.session;
+            if (session)
+                await ov_Auth.login(session.user, session.session);
             else
                 await ov_Auth.login("admin", "admin");
 
@@ -68,7 +69,7 @@
                     domain_config.loops[loop_id].global = true;
 
             // get project  
-            let project_config;       
+            let project_config;
             if (user.project && domain_config.projects) {
                 project_config = domain_config.projects[user.project];
                 project_config.domain = user.domain;

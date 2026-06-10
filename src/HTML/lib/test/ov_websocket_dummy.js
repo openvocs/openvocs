@@ -178,7 +178,7 @@ export default class ov_Websocket {
     // websocket
     //-----------------------------------------------------------------------------
     connect() {
-        if (!this.is_connecting) {
+        if (!this.connecting) {
             console.log("(" + this.#name + " gateway) connected");
             this.#ws_state = ov_Websocket.WEBSOCKET_STATE.CONNECTED;
             this.#event_target.dispatchEvent(new CustomEvent("connected"));
@@ -192,11 +192,11 @@ export default class ov_Websocket {
         this.#event_target.dispatchEvent(new CustomEvent("disconnected"));
     }
 
-    get is_connecting() {
+    get connecting() {
         return !ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
     }
 
-    get is_ready() {
+    get connected() {
         return !ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
     }
 

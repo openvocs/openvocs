@@ -75,16 +75,26 @@
                 }
             });
 
-            await ov_Websockets.setup_connections(ov_Websocket);
-            if (ov_Websockets.auto_login) {
-                let prime_login = ov_Auth.relogin(ov_Websockets.prime_websocket);
-                for (let websocket of ov_Websockets.list) {
-                    if (websocket !== ov_Websockets.prime_websocket)
-                        ov_Auth.relogin(websocket);
-                }
+            //initial disconnect handler gets overwritten
+            ov_Websockets.on_disconnect(async (websocket, error) => {
+                if (error && error.code !== 5000)
+                    await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
+                authenticate(websocket);
+            });
 
-                if (await prime_login) {
-                    let session = ov_Web_Storage.get_session(APP, ov_Websockets.prime_websocket.websocket_url);
+            await ov_Websockets.setup_connections(ov_Websocket);
+
+            for (let websocket of ov_Websockets.list)
+                authenticate(websocket);
+        });
+
+        async function authenticate(websocket) {
+            await ov_Auth.connect(websocket);
+
+            let session = websocket.session;
+            if (session) { //auto login with session
+                await ov_Auth.login(session.user, session.session, websocket);
+                if (websocket.authenticated && ov_Websockets.prime_websocket === websocket) {
                     if (session.domain) {
                         ov_Websockets.user().domain = session.domain;
                         ov_Websockets.user().project = session.project;
@@ -95,21 +105,22 @@
                             console.log("switch to project view", session.project, session.domain);
                             await Config_View.render_project(view_container, ov_Websockets.user(), session.page);
                             loading_screen.hide();
+                            return;
                         } else {
                             console.log("switch to domain view", session.section_domain);
                             await Config_View.render_domain(view_container, ov_Websockets.user(), session.page);
+                            loading_screen.hide();
+                            return;
                         }
-                    } else
+                    } else {
                         await Overview.render(view_container);
-
-                    return;
+                        loading_screen.hide();
+                        return;
+                    }
                 }
             }
-
-            await Auth_View.render(view_container);
-
-        });
-
-
+            if (ov_Websockets.prime_websocket === websocket)
+                await Auth_View.render(view_container);
+        }
     </script>
 </body>

@@ -55,8 +55,6 @@ var VIEW_ID;
 var view_container;
 var Config_Settings;
 
-export var logout_triggered;
-
 export async function init(view_id, container, type) {
     if (SIP)
         Config_SIP = await import("/extensions/sip/views/config/js/sip_config.js");
@@ -126,9 +124,9 @@ export async function init(view_id, container, type) {
         DOM.menu_slider.toggle();
     });
 
-    DOM.logout_button.addEventListener("click", () => {
-        logout_triggered = true;
-        ov_Auth.logout();
+    DOM.logout_button.addEventListener("click", async () => {
+        await ov_Auth.logout();
+        ov_Websockets.reload_page();
     });
 
     DOM.back_button.addEventListener("click", () => {
@@ -328,14 +326,14 @@ async function save(new_config, type, persist) {
 
             for (let user_id of Object.keys(new_config.users)) {
                 let user = Config_RBAC.users().get(user_id);
-                if (result && user.node_password)
+                if (result.updated && user.node_password)
                     result = await ov_DB.update_password(user.node_id, user.node_password);
             }
 
-            if (!result && websocket.server_error) {
+            if (!result.updated) {
                 errors.push({
                     server_name: websocket.server_name,
-                    description: websocket.server_error.description + "\n\n"
+                    description: result.error.description + "\n\n"
                 });
             }
             if (persist)

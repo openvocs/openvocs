@@ -43,8 +43,7 @@ export async function render_project(container, user, page) {
     await View.init(VIEW_ID, view_container, PROJECT);
 
     ov_Websockets.on_disconnect(on_disconnect);
-    reconnect();
-    
+
     let domain_config;
     let project_config = {
         domain: user.domain
@@ -98,7 +97,6 @@ export async function render_domain(container, user, page) {
     await View.init(VIEW_ID, view_container, DOMAIN);
 
     ov_Websockets.on_disconnect(on_disconnect);
-    reconnect();
 
     let domain_config = {};
 
@@ -118,24 +116,18 @@ async function render(container) {
     view_container.appendChild(await loadHtml());
 }
 
-async function on_disconnect(ws) {
-    if (View.logout_triggered) {
-        ov_Websockets.reload_page();
-        return;
-    }
+async function on_disconnect(websocket, error) {
     console.warn("Disconnected from one or several servers. Trying to reconnect...");
     View.offline_mode(true);
-    View.display_loading_screen(true, "Disconnected from one or several servers. Trying to reconnect...");
-    if (await ov_Auth.relogin(ws) && ov_Websockets.disconnected_websockets.size === 0) {
-        View.display_loading_screen(false);
-        View.offline_mode(false);
+    await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
+    await ov_Auth.connect(websocket);
+    let session = websocket.session;
+    if (session) { //auto login with session
+        await ov_Auth.login(session.user, session.session, websocket);
+        if (websocket.authenticated && ov_Websockets.disconnected_websockets.size === 0) {
+            View.offline_mode(false);
+        }
     }
-}
-
-async function reconnect() {
-    if (ov_Websockets.disconnected_websockets.size !== 0) 
-        for (let websocket of ov_Websockets.disconnected_websockets.values()) 
-            on_disconnect(websocket);
 }
 
 export function remove() {
@@ -145,8 +137,6 @@ export function remove() {
 }
 
 window.onbeforeunload = function () {
-    //logout_triggered = true;
-    //ov_Auth.logout();
     remove();
 }
 

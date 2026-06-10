@@ -59,7 +59,6 @@ var current_talk_loop;
 var loop_settings;
 
 export async function init() {
-    SIP = await ov_DB.check_sip(ov_Websockets.current_lead_websocket);
     if (SIP)
         ov_SIP = await import("/extensions/sip/ov_sip.js");
     DOM.loops = document.getElementById("loops");

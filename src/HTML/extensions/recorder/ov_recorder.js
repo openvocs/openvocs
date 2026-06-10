@@ -38,8 +38,6 @@ export const EVENT = {
     RECORDINGS: "recording_get_recordings"
 };
 
-var RETRIES_ON_TEMP_ERROR = 5;
-
 // admin --------------------------------------------------------------------
 export async function start_record(loop_id, websocket) {
     if (websocket)
@@ -47,7 +45,7 @@ export async function start_record(loop_id, websocket) {
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
+        if (ws.authenticated && ws.record === true) {
             let promise = ws_start_record(loop_id, ws);
             if (ws === ov_Websockets.prime_websocket)
                 lead_promise = promise;
@@ -61,7 +59,7 @@ export async function stop_record(loop_id, websocket) {
 
     let lead_promise;
     for (let ws of ov_Websockets.list) {
-        if (ws.is_ready && ws.authenticated) {
+        if (ws.authenticated && ws.record === true) {
             let promise = ws_stop_record(loop_id, ws);
             if (ws === ov_Websockets.prime_websocket)
                 lead_promise = promise;
@@ -72,107 +70,58 @@ export async function stop_record(loop_id, websocket) {
 
 export async function get_recorded_loops(ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
-    let result;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "get recorded loops...");
-            result = await ws.send_event(EVENT.RECORDED_LOOPS);
-            console.log(log_prefix(ws) + "get recorded loops successful");
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to get recorded loops again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "get recorded loops failed.", error);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(ws) + "get recorded loops...");
+        let result = await ws.send_event(EVENT.RECORDED_LOOPS);
+        console.log(log_prefix(ws) + "get recorded loops successful");
+        return result.result;
+    } catch (error) {
+        console.warn(log_prefix(ws) + "get recorded loops failed.", error);
+        return false;
     }
-    return result.result;
 }
 
 export async function get_recordings(loop_id, from, to, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
-    let parameter = {
-        "loop": loop_id,
-        "from": from,
-        "to": to
-    }
-    let result;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "get recordings...");
-            result = await ws.send_event(EVENT.RECORDINGS, parameter);
-            console.log(log_prefix(ws) + "get recordings successful");
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to get recordings again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "get recordings failed.", error);
-                return false;
-            }
+    try {
+        console.log(log_prefix(ws) + "get recordings...");
+        let parameter = {
+            "loop": loop_id,
+            "from": from,
+            "to": to
         }
+        let result = await ws.send_event(EVENT.RECORDINGS, parameter);
+        console.log(log_prefix(ws) + "get recordings successful");
+        return result;
+    } catch (error) {
+        console.warn(log_prefix(ws) + "get recordings failed.", error);
+        return false;
     }
-    return result;
 }
 
 async function ws_start_record(loop_id, websocket) {
-    let result;
     let parameter = { loop: loop_id };
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "requesting to start recorder for loop " + loop_id + "...");
-            result = await websocket.send_event(EVENT.START_RECORD, parameter);
-            console.log(log_prefix(websocket) + "recorder for loop " + loop_id + " started");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to start recorder for " + loop_id + " again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "requesting to start recorder for loop " + loop_id + " failed.", error.error);
-                disconnect(websocket);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(websocket) + "requesting to start recorder for loop " + loop_id + "...");
+        let result = await websocket.send_event(EVENT.START_RECORD, parameter);
+        console.log(log_prefix(websocket) + "recorder for loop " + loop_id + " started");
+        return { started: result };
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "requesting to start recorder for loop " + loop_id + " failed.", error.error);
+        return { error: error };
     }
-    return result;
 }
 
 async function ws_stop_record(loop_id, websocket) {
-    let result;
     let parameter = { loop: loop_id };
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(websocket) + "requesting to stop recorder for loop " + loop_id + "...");
-            result = await websocket.send_event(EVENT.STOP_RECORD, parameter);
-            console.log(log_prefix(websocket) + "recorder for loop " + loop_id + " stopped");
-            break;
-        } catch (error) {
-            if (websocket.is_connecting && error.temp_error) {
-                console.log(log_prefix(websocket) + "temp error - try to stop recorder for " + loop_id + " again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, websocket);
-            } else {
-                console.warn(log_prefix(websocket) + "requesting to stop recorder for loop " + loop_id + " failed.", error.error);
-                disconnect(websocket);
-                return false;
-            }
-        }
-    }
-    return result;
-}
-
-function disconnect(websocket) {
-    if (websocket.is_connecting) {
-        console.warn(log_prefix(websocket) + "Pers error. Disconnect and try again.");
-        websocket.disconnect();
+    try {
+        console.log(log_prefix(websocket) + "requesting to stop recorder for loop " + loop_id + "...");
+        let result = await websocket.send_event(EVENT.STOP_RECORD, parameter);
+        console.log(log_prefix(websocket) + "recorder for loop " + loop_id + " stopped");
+        return result;
+    } catch (error) {
+        console.warn(log_prefix(websocket) + "requesting to stop recorder for loop " + loop_id + " failed.", error.error);
+        return false;
     }
 }
 

@@ -51,8 +51,6 @@ var VIEW_ID;
 
 var selected_server;
 
-export var logout_triggered;
-
 export async function init(view_id) {
     document.documentElement.className = "light";
 
@@ -91,9 +89,9 @@ export async function init(view_id) {
         DOM.menu_slider.toggle();
     });
 
-    DOM.logout_button.addEventListener("click", () => {
-        logout_triggered = true;
-        ov_Auth.logout();
+    DOM.logout_button.addEventListener("click", async () => {
+        await ov_Auth.logout();
+        ov_Websockets.reload_page();
     });
 
     DOM.reload_broadcast.addEventListener("click", () => {
@@ -117,7 +115,7 @@ export async function init(view_id) {
 
         DOM.switch_server_id.appendChild(option);
         setInterval(() => {
-            option.classList.toggle("off", !server.is_ready);
+            option.classList.toggle("off", !server.connected);
         }, 500);
     }
 
@@ -126,7 +124,7 @@ export async function init(view_id) {
         if (DOM.switch_server_broadcast.disabled === true) {
             DOM.switch_server_broadcast.disabled = false;
             setInterval(() => {
-                DOM.switch_server_id.classList.toggle("off", !selected_server.is_ready);
+                DOM.switch_server_id.classList.toggle("off", !selected_server.connected);
             }, 500);
         }
     });
