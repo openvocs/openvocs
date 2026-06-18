@@ -39,10 +39,6 @@ export function init(view_id) {
     DOM.name = document.getElementById("edit_name");
     DOM.delete = document.getElementById("delete_domain");
     DOM.delete_button = document.getElementById("delete_button");
-    DOM.ldap_host = document.getElementById("ldap_host");
-    DOM.ldap_base = document.getElementById("ldap_base");
-    DOM.ldap_user = document.getElementById("ldap_user");
-    DOM.ldap_password = document.getElementById("ldap_password");
     DOM.ldap_button = document.getElementById("ldap_import_button");
     DOM.ldap_notice = document.getElementById("ldap_notice");
 
@@ -54,15 +50,7 @@ export function init(view_id) {
     });
 
     DOM.ldap_button.addEventListener("click", () => {
-        DOM.ldap_button.dispatchEvent(new CustomEvent("import_ldap_user", {
-            detail: {
-                host: DOM.ldap_host.value,
-                base: DOM.ldap_base.value,
-                user: DOM.ldap_user.value,
-                password: DOM.ldap_password.value
-            }, bubbles: true
-        }));
-        DOM.ldap_password.value = "";
+        DOM.ldap_button.dispatchEvent(new CustomEvent("import_from_ldap", { bubbles: true }));
         DOM.ldap_notice.innerText = "Importing...";
     });
 
@@ -77,17 +65,6 @@ export function init(view_id) {
     DOM.name.addEventListener("change", changed_name);
 
     DOM.id.addEventListener("change", changed_name);
-
-    check_ldap_form();
-
-    DOM.ldap_host.onkeyup = () => check_ldap_form();
-    DOM.ldap_host.onchange = () => check_ldap_form();
-    DOM.ldap_base.onkeyup = () => check_ldap_form();
-    DOM.ldap_base.onchange = () => check_ldap_form();
-    DOM.ldap_user.onkeyup = () => check_ldap_form();
-    DOM.ldap_user.onchange = () => check_ldap_form();
-    DOM.ldap_password.onkeyup = () => check_ldap_form();
-    DOM.ldap_password.onchange = () => check_ldap_form();
 }
 
 function changed_name() {
@@ -103,11 +80,6 @@ function changed_name() {
         DOM.id.dispatchEvent(new CustomEvent("changed_name", {
             detail: "[Domain]", bubbles: true
         }));
-}
-
-function check_ldap_form() {
-    DOM.ldap_button.disabled = !(DOM.ldap_host.value && DOM.ldap_base.value &&
-        DOM.ldap_user.value && DOM.ldap_password.value);
 }
 
 export function render(domain, id) {

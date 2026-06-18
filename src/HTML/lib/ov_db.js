@@ -308,21 +308,17 @@ export async function remove(type, id, ws) {
     return result;
 }
 
-export async function user_ldap_import(host, base, domain, user, passwd, ws) {
+export async function ldap_import(domain, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
     let result = false;
     for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
         try {
-            console.log(log_prefix(ws) + "import users from ldap " + host + " - " + base + "...");
+            console.log(log_prefix(ws) + "import users and/or roles from ldap...");
             let parameter = {
-                host: host,
-                base: base,
-                domain: domain,
-                user: user,
-                password: passwd
+                domain: domain
             };
             result = await ws.send_event(EVENT.LDAP_IMPORT, parameter);
-            console.log(log_prefix(ws) + "imported users from ldap " + host + " - " + base);
+            console.log(log_prefix(ws) + "imported users and/or roles from ldap");
             break;
         } catch (error) {
             if (ws.is_connecting && error.temp_error) {
@@ -331,7 +327,7 @@ export async function user_ldap_import(host, base, domain, user, passwd, ws) {
                 await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
             } else {
                 console.warn(log_prefix(ws) +
-                    "importing users from ldap " + host + " - " + base + " failed.", error);
+                    "importing users and/or roles from ldap failed.", error);
                 return false;
             }
         }

@@ -240,13 +240,12 @@ export async function init(view_id, container, type) {
         DOM.config_name.innerText = event.detail;
     });
 
-    DOM.sub_view.addEventListener("import_ldap_user", async (event) => {
-        DOM.loading_screen.show("Importing users from LDAP...");
+    DOM.sub_view.addEventListener("import_from_ldap", async (event) => {
+        DOM.loading_screen.show("Importing users and/or roles from LDAP...");
         let settings = Config_Settings.collect();
         let errors = [];
         for (let websocket of ov_Websockets.list) {
-            if (!await ov_DB.user_ldap_import(event.detail.host, event.detail.base,
-                settings.id, event.detail.user, event.detail.password, websocket)) {
+            if (!await ov_DB.ldap_import(settings.id, websocket)) {
                 errors.push(websocket);
             }
         }
@@ -254,7 +253,7 @@ export async function init(view_id, container, type) {
         DOM.loading_screen.hide();
 
         if (errors.length > 0) {
-            DOM.error_dialog_title.innerText = "Importing LDAP users failed on following server(s):";
+            DOM.error_dialog_title.innerText = "Importing LDAP users and/or roles failed on following server(s):";
             DOM.error_report.innerText = "";
             for (let error of errors) {
                 console.log(error);
@@ -291,7 +290,7 @@ function add_sip_to_config(config) {
     }
 }
 
-function add_recorder_to_config(config){
+function add_recorder_to_config(config) {
     let recorder = Config_Recorder.collect();
     for (let loop_id of Object.keys(recorder)) {
         let loop = config.loops[loop_id];
@@ -318,7 +317,7 @@ function collect_config(settings) {
     }
     if (SIP)
         add_sip_to_config(config);
-    if(RECORDER)
+    if (RECORDER)
         add_recorder_to_config(config);
     return config;
 }
@@ -406,14 +405,15 @@ export async function render_project(project, domain, id, domain_id, page) {
             if (!first_load) {
                 let proj_config = collect_config();
                 let dom_config = collect_config({ id: proj_config.domain });
+                let roles = { ...proj_config.roles, ...dom_config.roles }
                 let loops = { ...proj_config.loops, ...dom_config.loops };
-                Config_Layout.render(proj_config.roles, loops);
+                Config_Layout.render(roles, loops);
             }
         } else if (DOM.sub_view_nav.value === "sip" && SIP) {
             let proj_config = collect_config();
             let dom_config = collect_config({ id: proj_config.domain });
             let roles = { ...proj_config.roles, ...dom_config.roles };
-            for (let loop_id of Object.keys(dom_config.loops)){
+            for (let loop_id of Object.keys(dom_config.loops)) {
                 if (ov_Websockets.user().admin === "project")
                     dom_config.loops[loop_id].frozen = true;
                 dom_config.loops[loop_id].global = true;
