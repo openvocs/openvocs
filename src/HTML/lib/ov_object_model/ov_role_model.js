@@ -31,69 +31,84 @@ import ov_Parse_Exception from "/lib/ov_exception/ov_parse_exception.js";
 import create_uuid from "/lib/ov_utils/ov_uuid.js";
 
 export default class ov_Role {
-    constructor(id, name, abbreviation, color, project, domain) {
+    #id;
+    #name;
+    #color;
+    #project;
+    #domain;
+    #users;
+    #layout;
+
+    #dom_id;
+
+    constructor(id, name, layout, color, project, domain) {
         this.id = id;
         this.name = name;
         this.color = color;
         this.project = project;
         this.domain = domain;
+        this.#layout = layout;
 
         // dom id has to start with a letter, uuid may start with a number
-        this._dom_id = "role_" + create_uuid();
+        this.#dom_id = "role_" + create_uuid();
     }
 
     set id(id) {
-        this._id = id;
+        this.#id = id;
     }
 
     get id() {
-        return this._id;
+        return this.#id;
     }
 
     set name(name) {
-        this._name = name;
+        this.#name = name;
     }
 
     get name() {
-        return this._name;
+        return this.#name;
     }
 
     set color(color) {
-        this._color = color;
+        this.#color = color;
     }
 
     get color() {
-        return this._color;
+        return this.#color;
     }
 
     set project(project) {
-        this._project = project;
+        this.#project = project;
     }
 
     get project() {
-        return this._project;
+        return this.#project;
     }
 
     set domain(domain) {
-        this._domain = domain;
+        this.#domain = domain;
     }
 
     get domain() {
-        return this._domain;
+        return this.#domain;
     }
 
     set users(array) {
-        this._users = array;
+        this.#users = array;
     }
 
     get users() {
-        if (!this._users)
+        if (!this.#users)
             console.warn("(ov) RoleModel: Array of Users is not set.");
-        return this._users;
+        return this.#users;
+    }
+
+    get has_layout() {
+        return !!this.#layout;
     }
 
     get dom_id() {
-        return this._dom_id;
+        return this.#dom_id;
     }
 
     static parse(id, json) {
@@ -105,6 +120,6 @@ export default class ov_Role {
         /*if (!json.hasOwnProperty("color")) // optional
             json.color = "#909090"; // grey*/
 
-        return new this(id, name, json.abbreviation, json.color, json.project, json.domain);
+        return new this(id, name, json.layout, json.color, json.project, json.domain);
     }
 }

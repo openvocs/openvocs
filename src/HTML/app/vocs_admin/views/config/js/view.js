@@ -271,7 +271,7 @@ function add_sip_to_config(config) {
     }
 }
 
-function add_recorder_to_config(config){
+function add_recorder_to_config(config) {
     let recorder = Config_Recorder.collect();
     for (let loop_id of Object.keys(recorder)) {
         let loop = config.loops[loop_id];
@@ -298,7 +298,7 @@ function collect_config(settings) {
     }
     if (SIP)
         add_sip_to_config(config);
-    if(RECORDER)
+    if (RECORDER)
         add_recorder_to_config(config);
     return config;
 }
@@ -386,8 +386,9 @@ export async function render_project(project, domain, id, domain_id, page) {
             if (!first_load) {
                 let proj_config = collect_config();
                 let dom_config = collect_config({ id: proj_config.domain });
+                let roles = { ...proj_config.roles, ...dom_config.roles }
                 let loops = { ...proj_config.loops, ...dom_config.loops };
-                Config_Layout.render(proj_config.roles, loops);
+                Config_Layout.render(roles, loops);
             }
         } else if (DOM.sub_view_nav.value === "sip" && SIP) {
             let proj_config = collect_config();

@@ -124,23 +124,19 @@ export async function create(type, id, scope, scope_id, ws) {
     }
 }
 
-export async function user_ldap_import(host, base, domain, user, passwd, ws) {
+export async function ldap_import(domain, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
     let result = false;
     try {
-        console.log(log_prefix(ws) + "import users from ldap " + host + " - " + base + "...");
+        console.log(log_prefix(ws) + "import from ldap...");
         let parameter = {
-            host: host,
-            base: base,
-            domain: domain,
-            user: user,
-            password: passwd
+            domain: domain
         };
         result = await ws.send_event(ov_Websocket.EVENT.LDAP_IMPORT, parameter);
-        console.log(log_prefix(ws) + "imported users from ldap " + host + " - " + base);
+        console.log(log_prefix(ws) + "imported from ldap");
     } catch (error) {
         console.warn(log_prefix(ws) +
-            "importing users from ldap " + host + " - " + base + " failed.", error.error);
+            "importing from ldap failed.", error.error);
         result = error.error;
     }
     return result;
@@ -155,7 +151,7 @@ export async function update(type, config, ws) {
             id: config.id,
             data: config
         };
-        let result = await ws.send_event(ov_Websocket.EVENT.UPDATE, parameter);
+        await ws.send_event(ov_Websocket.EVENT.UPDATE, parameter);
         console.log(log_prefix(ws) + "updated " + type + " " + config.id);
         return { updated: true };
     } catch (error) {

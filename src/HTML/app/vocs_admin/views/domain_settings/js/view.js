@@ -40,10 +40,6 @@ export function init(view_id) {
     DOM.name = document.getElementById("edit_name");
     DOM.delete = document.getElementById("delete_domain");
     DOM.delete_button = document.getElementById("delete_button");
-    DOM.ldap_host = document.getElementById("ldap_host");
-    DOM.ldap_base = document.getElementById("ldap_base");
-    DOM.ldap_user = document.getElementById("ldap_user");
-    DOM.ldap_password = document.getElementById("ldap_password");
     DOM.ldap_button = document.getElementById("ldap_import_button");
     DOM.ldap_notice = document.getElementById("ldap_notice");
     DOM.error_report = document.getElementById("error_report");
@@ -62,12 +58,12 @@ export function init(view_id) {
         let ldap_import = await ov_DB.user_ldap_import(DOM.ldap_host.value, DOM.ldap_base.value,
             DOM.id.value, DOM.ldap_user.value, DOM.ldap_password.value);
         if (ldap_import.error) {
-            DOM.error_dialog_title.innerText = "Importing users from LDAP failed";
+            DOM.error_dialog_title.innerText = "LDAP import failed";
             DOM.error_report.innerText = ldap_import.error.description;
             DOM.error_dialog.showModal();
             DOM.ldap_notice.innerText = "";
         } else {
-            DOM.ldap_notice.innerText = "Imported users";
+            DOM.ldap_notice.innerText = "Imported from LDAP";
             let domain_config = await ov_DB.get_config('domain', DOM.id.value);
             DOM.ldap_button.dispatchEvent(new CustomEvent("ui_update_domain_users", {
                 detail: domain_config.users,
@@ -80,17 +76,6 @@ export function init(view_id) {
     DOM.name.addEventListener("change", changed_name);
 
     DOM.id.addEventListener("change", changed_name);
-
-    check_ldap_form();
-
-    DOM.ldap_host.onkeyup = () => check_ldap_form();
-    DOM.ldap_host.onchange = () => check_ldap_form();
-    DOM.ldap_base.onkeyup = () => check_ldap_form();
-    DOM.ldap_base.onchange = () => check_ldap_form();
-    DOM.ldap_user.onkeyup = () => check_ldap_form();
-    DOM.ldap_user.onchange = () => check_ldap_form();
-    DOM.ldap_password.onkeyup = () => check_ldap_form();
-    DOM.ldap_password.onchange = () => check_ldap_form();
 }
 
 function changed_name() {
@@ -106,15 +91,6 @@ function changed_name() {
         DOM.id.dispatchEvent(new CustomEvent("changed_name", {
             detail: "[Domain]", bubbles: true
         }));
-}
-
-function check_ldap_form() {
-    DOM.ldap_button.disabled = !(DOM.ldap_host.value && DOM.ldap_base.value &&
-        DOM.ldap_user.value && DOM.ldap_password.value);
-}
-
-function ldap_info(msg) {
-    DOM.ldap_notice.innerText = msg;
 }
 
 export function render(domain, id) {
