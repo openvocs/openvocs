@@ -5405,10 +5405,12 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static ov_json_value *ldap_get_roles(const char *host, const char *base,
+                              const char *filter_input,
                               const char *user, const char *pass,
                               uint64_t timeout_usec) {
 
     char name[PATH_MAX] = {0};
+    char filter[1024] = {0};
 
     ov_json_value *out = NULL;
     ov_json_value *username = NULL;
@@ -5421,9 +5423,15 @@ static ov_json_value *ldap_get_roles(const char *host, const char *base,
     if (!base || !user || !host || !pass)
         goto error;
 
+    if (NULL == filter_input)
+        filter_input = "*";
+
+    if (filter_input[0] == 0)
+        filter_input = "*";
+
     ov_log_debug("searching roles at %s %s", host, base);
 
-    char *filter = "(&(objectClass=*))";
+    snprintf(filter, 1024, "(&(objectClass=%s))", filter_input);
 
     char *attrs[3] = {0};
     attrs[0] = "member";
@@ -5719,6 +5727,7 @@ bool ov_vocs_db_ldap_import(ov_vocs_db *self, ov_ldap_config config){
 
         roles = ldap_get_roles(config.host, 
                            config.role_dn_tree, 
+                           config.filter,
                            config.user, 
                            config.pass,
                            self->config.timeout.ldap_request_usec);
