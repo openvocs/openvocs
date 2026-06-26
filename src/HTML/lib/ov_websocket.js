@@ -307,13 +307,10 @@ export default class ov_Websocket {
     //-----------------------------------------------------------------------------
     // response handling
     //-----------------------------------------------------------------------------
-    #handle_websocket_event(event) {
+    async #handle_websocket_event(event) {
         if (this.#log_incoming_events) {
-            // if (event.event === ov_Websocket.EVENT.LOGIN)
-            //     console.log(this.#log_prefix() + "incoming event: LOGIN (content hidden)");
-            // else if (event.event === "ldap_import")
-            //     console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
-            // else
+            if (event.event === ov_Websocket.EVENT.LOGIN)
+                event.request.parameter.password = "***";
             console.log(this.#log_prefix() + "incoming event", JSON.stringify(event));
         }
 
@@ -355,7 +352,7 @@ export default class ov_Websocket {
             return;
         }
 
-        let message = this.#process_incoming_event(event, error);
+        let message = await this.#process_incoming_event(event, error);
         if (error)
             this.#event_target.dispatchEvent(new CustomEvent(event.event, { detail: { message: message, sender: sender, error: error } }));
         else
@@ -370,11 +367,8 @@ export default class ov_Websocket {
             let message = JSON.stringify(event);
             if (this.#log_outgoing_events) {
                 if (event.event === ov_Websocket.EVENT.LOGIN)
-                    console.log(this.#log_prefix() + "outgoing event: LOGIN (content hidden)");
-                else if (event.event === "ldap_import")
-                    console.log(this.#log_prefix() + "outgoing event: LDAP IMPORT (content hidden)");
-                else
-                    console.log(this.#log_prefix() + "outgoing event", message);
+                    event.parameter.password = "***";
+                console.log(this.#log_prefix() + "outgoing event", JSON.stringify(event));
             }
             if (event.event === ov_Websocket.EVENT.LOGIN)
                 this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHENTICATING;
@@ -472,7 +466,7 @@ export default class ov_Websocket {
                         } else {
                             try {
                                 console.log("(" + this.server_name + ") extend session...");
-                                let result = await this.send_event(ov_Websocket.EVENT.EXTEND_SESSION, { session: session.session, user: this.#user.id });
+                                let result = await this.send_event(ov_Websocket.EVENT.EXTEND_SESSION, { session: this.#session.session, user: this.#user.id });
                                 this.#session = ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, result.session);
                                 console.log("(" + this.server_name + ") extended session");
                             } catch (error) {
