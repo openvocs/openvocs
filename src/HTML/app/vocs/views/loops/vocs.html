@@ -79,6 +79,13 @@
 
     <ov-dialog id="settings_slider" position="right">
         <div slot="dialog-content">
+            <div id="imprint">
+                <div>Keyset: <span id="keyset_name"></span> </div>
+                <div class="logo logo_openvocs"></div>
+                <span>OPENVOCS<span id="R">®</span> <span id="version_number"></span></span>
+                <span>by<span id="R"></span></span>
+                <div class="logo logo_dlr"></div>
+            </div>
             <details open id="audio_options" class="fieldset main_fieldset">
                 <summary>audio</summary>
                 <label for="speaker_test">Speaker</label>
@@ -129,13 +136,6 @@
                     </div>
                 </div>
             </details>
-
-            <div id="imprint">
-                <div>Keyset: <span id="keyset_name"></span> </div>
-                <div class="logo logo_openvocs"></div>
-                <span>OPENVOCS<span id="R">®</span> <span id="version_number"></span></span><br />
-                <div class="logo logo_dlr"></div>
-            </div>
         </div>
     </ov-dialog>
 

@@ -175,14 +175,15 @@
     /* font-size: 1.1rem; */
 }
 
-/* #settings_slider div[slot=dialog-content] {
-    display: grid;
-    padding: 1rem 0.5rem;
+#settings_slider #audio_options, #settings_slider #ptt_options {
+    flex: 1 1;
+}
+
+#settings_slider div[slot=dialog-content] {
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
-    align-items: baseline;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: min-content min-content min-content;
-} */
+}
 
 #settings_slider input[type="text"],
 #settings_slider input[type="number"],
@@ -202,6 +203,10 @@
 
 #settings_slider details[open] {
     align-self: stretch;
+}
+
+#settings_slider details summary {
+    line-height: 3rem;
 }
 
 #settings_slider details[open] summary {
@@ -262,6 +267,7 @@
     width: 100%;
     height: 4.5rem;
     background-color: var(--input_background_color);
+    max-width: 20rem;
 }
 
 #microphone_test canvas {
@@ -296,9 +302,10 @@
 #imprint {
     /* grid-column: 1 / span 2; */
     display: flex;
-    flex-direction: column;
     align-items: center;
     margin: 1rem;
+    gap: 1rem;
+    flex: 1 1 100%;
 }
 
 #settings_slider .logo_openvocs {
