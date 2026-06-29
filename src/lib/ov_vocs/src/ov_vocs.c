@@ -3160,7 +3160,7 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
         char port[1024] = {0};
         snprintf(port, 1024, "-p %i", vocs->config.module.backend.socket.manager.port);
     
-        char const *args[] = {"-h" , host, "-p", port, NULL};
+        char const *args[] = {host, port, NULL}; 
     
         const char *working_dir = "/tmp";
         const char *procname = "/usr/bin/ov_mc_mixer";
@@ -3168,9 +3168,7 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
         for (size_t i = 0; i < config.mixer; i++){
     
             int r = ov_os_spawn(working_dir, procname, args, false);
-            if (r > 0){
-                ov_log_debug("started a mixer process.");
-            } else {
+            if (r <= 0){{
                 ov_log_error("failed to start a mixer process.");
             }
     
