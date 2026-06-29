@@ -74,11 +74,6 @@ bool set_die_on_parents_death() {
     if (prctl(PR_SET_PDEATHSIG, SIGKILL) == -1)
         _exit(1);
 
-    /*
-     * Race Condition:
-     * Der Parent könnte zwischen fork() und
-     * PR_SET_PDEATHSIG gestorben sein.
-     */
     if (getppid() == 1)
         _exit(1);
 
