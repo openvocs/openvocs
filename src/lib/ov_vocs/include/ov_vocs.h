@@ -98,6 +98,8 @@ typedef struct {
 
     } socket;
 
+    uint16_t mixer;
+
     struct {
 
         uint64_t response_usec;
