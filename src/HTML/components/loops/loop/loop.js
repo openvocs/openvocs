@@ -79,7 +79,7 @@ export default class ov_Loop extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["layout", "state", "name", "permission", "color"];
+        return ["state", "name", "permission", "color", "volume"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -102,6 +102,10 @@ export default class ov_Loop extends HTMLElement {
 
         if (name === "color") {
             this.#highlight_color = newValue;
+        }
+
+        if (name === "volume") {
+            this.#volume = newValue;
         }
     }
 
@@ -162,12 +166,10 @@ export default class ov_Loop extends HTMLElement {
     }
 
     set volume(volume) {
-        this.#volume = volume;
-        let vol_indicator = this.shadowRoot.querySelector("#loop_volume_indicator_value");
-        if (vol_indicator) {
-            vol_indicator.textContent = this.#volume;
-            this.shadowRoot.querySelector("#loop_volume_input").value = this.#volume;
-        }
+        this.setAttribute("volume", volume);
+        let vol_slider = this.shadowRoot.querySelector("#loop_volume_input");
+        if (vol_slider) 
+            vol_slider.value = this.#volume;
     }
 
     get volume() {
@@ -381,8 +383,6 @@ export default class ov_Loop extends HTMLElement {
             json.permission = ov_Loop.STATE.MONITOR;
 
         if (!json.hasOwnProperty("volume"))
-            json.volume = DEFAULT_LOOP_VOLUME;
-        else if (json.volume === 0 && DEFAULT_LOOP_VOLUME)
             json.volume = DEFAULT_LOOP_VOLUME;
 
         if (!position)

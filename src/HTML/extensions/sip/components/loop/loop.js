@@ -175,13 +175,13 @@ export default class ov_SIP_Loop extends ov_Loop {
         });
 
         let volume = this.shadowRoot.querySelector("#loop_volume");
+        let volume_input = this.shadowRoot.querySelector("#loop_volume_input_container");
         volume.onclick = () => {
             if (window.matchMedia("(width > 480px)").matches && !volume.classList.contains("disabled")) {
-                let input = this.shadowRoot.querySelector("#loop_volume_input_container");
-                if (getComputedStyle(input).display === "none")
-                    input.style.display = "inherit";
+                if (!volume_input.open)
+                    volume_input.show();
                 else
-                    input.style.display = "none";
+                    volume_input.close();
             }
         }
 
@@ -196,9 +196,9 @@ export default class ov_SIP_Loop extends ov_Loop {
         if (sip) {
             if ((this.state === ov_Loop.STATE.MONITOR || this.state === ov_Loop.STATE.TALK) && this.sip_permission !== undefined)
                 this.shadowRoot.querySelector("#loop_sip").disabled = false;
-            else{
+            else {
                 this.shadowRoot.querySelector("#loop_sip").disabled = true;
-                this.shadowRoot.querySelector("#loop_volume_input_container").style.display = "none";
+                this.shadowRoot.querySelector("#loop_volume_input_container").close();
             }
         }
     }
