@@ -122,10 +122,6 @@ export async function draw() {
                         loop.add_call(call, calls[call]);
                 }
             }
-        } else {
-            for (let page of pages)
-                for (let loop of page.values)
-                    loop.sip_offline = true;
         }
     }
 
@@ -196,9 +192,9 @@ function handle_talk_in_loop(event) {
             if (loop) {
                 if (event.detail.message.user || event.detail.message.role) {
                     if (event.detail.message.state)
-                        loop.add_active_participant(event.detail.message.client, event.detail.message);
+                        loop.add_active_speaker(event.detail.message.client, event.detail.message);
                     else
-                        loop.remove_active_participant(event.detail.message.client);
+                        loop.remove_active_speaker(event.detail.message.client);
                 }
             }
         }
@@ -272,9 +268,9 @@ export async function update_loop_state(loop, new_state, websocket) {
 
         loop.participants = response.response.participants.length;
         if (response.response.activity.state)
-            loop.add_active_participant(response.response.activity.client, response.response.activity);
+            loop.add_active_speaker(response.response.activity.client, response.response.activity);
         else
-            loop.remove_active_participant(response.response.activity.client);
+            loop.remove_active_speaker(response.response.activity.client);
         result = response.response;
     } else
         result = !response.error;
@@ -302,9 +298,9 @@ async function update_activity(loop, unmute) {
     let response = await ov_Vocs.talk_in_loop(loop.loop_id, !!unmute);
     if (response) {
         if (response.state)
-            loop.add_active_participant(response.client, response);
+            loop.add_active_speaker(response.client, response);
         else
-            loop.remove_active_participant(response.client);
+            loop.remove_active_speaker(response.client);
         DOM.loading_screen.hide();
         return true;
     }
