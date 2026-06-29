@@ -64,14 +64,15 @@
 
 #menu_slider div[slot="dialog-content"] {
     display: grid;
-    grid-template-rows: minmax(0, auto) 10.5rem 14rem;
+    grid-template-rows: minmax(0, auto) 8.5rem 14rem;
     height: calc(100% - 3rem);
-    /* font-size: 1.1rem; */
+    padding-top: 0.5rem;
 }
 
-#menu_slider .icon {
-    width: 1.5rem;
-    height: 1.5rem;
+#menu_slider .fluentui_icon {
+    /* width: 1.5rem;
+    height: 1.5rem; */
+    font-size: 2.5rem;
 }
 
 #menu_slider .button:not(label),
@@ -90,16 +91,13 @@
     color: var(--white) !important;
 }
 
-#user_data>label {
-    position: sticky;
-    top: 0rem;
-    width: calc(100% + 0.2rem);
+#user_data>label,
+#server_label {
+    position: absolute;
     background-color: var(--secondary_background_color);
-    padding: 0.7rem 0 0 0;
-}
-
-#menu_slider #logout_button {
-    width: 13.2rem;
+    margin-top: -0.9rem;
+    inset-inline-start: 1rem;
+    line-height: 1rem;
 }
 
 #user_data {
@@ -121,11 +119,6 @@
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 2rem;
     overflow: hidden;
-}
-
-#server_label {
-    grid-column: 1 / span 2;
-    margin: 0.7rem;
 }
 
 #server_list .server_button {
