@@ -125,7 +125,7 @@ export async function init() {
             DOM.mute_browser_options.classList.remove("removed");
             PTT_Bar.enable_mouse_middle_click(DOM.mute_mousewheel_checkbox.checked);
             PTT_Bar.enable_key_press(DOM.mute_key_checkbox.checked);
-            PTT_Bar.enable_PTT_button(DOM.ptt_checkbox.checked);
+            PTT_Bar.enable_PTT_button(!DOM.ptt_checkbox.checked);
             PTT_Bar.enable_FPTT_Button(DOM.fptt_checkbox.checked);
         }
     });
@@ -135,9 +135,9 @@ export async function init() {
         PTT_Bar.enable_FPTT_Button(DOM.fptt_checkbox.checked);
     });
 
-    DOM.ptt_checkbox.checked = PTT;
+    DOM.ptt_checkbox.checked = !PTT;
     DOM.ptt_checkbox.addEventListener("change", function () {
-        PTT_Bar.enable_PTT_button(DOM.ptt_checkbox.checked);
+        PTT_Bar.enable_PTT_button(!DOM.ptt_checkbox.checked);
     });
 
     DOM.mute_mousewheel_checkbox.checked = MUTE_ON_MOUSE_MIDDLE_CLICK;
