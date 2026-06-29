@@ -219,13 +219,21 @@
 }
 
 #speaker_test {
-    font-size: 3rem;
-    line-height: 2rem;
     display: block;
     margin: 0;
 }
 
-#speaker_list, #microphone_list {
+#speaker_test::before {
+    content: "\ee48";
+    font-size: 2rem;
+}
+
+#speaker_test.play::before {
+    content: "\ed18";
+}
+
+#speaker_list,
+#microphone_list {
     display: flex;
     margin: 0.5rem 0;
     gap: 0.5rem;

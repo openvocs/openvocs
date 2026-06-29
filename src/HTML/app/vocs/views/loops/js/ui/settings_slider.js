@@ -91,10 +91,13 @@ export async function init() {
     });
 
     DOM.toggle_audio_test.addEventListener("click", function () {
-        if (DOM.test_audio.paused)
-            DOM.test_audio.play();
-        else
+        if (DOM.test_audio.paused){
+            DOM.test_audio.play(); 
+            DOM.toggle_audio_test.classList.add("play");
+        } else {
             DOM.test_audio.pause();
+            DOM.toggle_audio_test.classList.remove("play");
+        }
     });
 
     // navigator.mediaDevices.ondevicechange = async (event) => {
