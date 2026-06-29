@@ -60,11 +60,13 @@ static bool read_user_input(int argc, char **argv, char *host, uint32_t *port, c
                We distinguish them by their indices. */
             {"port", required_argument, 0, 'p'},
             {"host", required_argument, 0, 'h'},
+            {"version", optional_argument, 0, 'v'},
+            {"config", optional_argument, 0, 'c'},
             {0, 0, 0, 0}};
 
         /* getopt_long stores the option index here. */
 
-        c = getopt_long(argc, argv, "p:h:v?:c", long_options, &option_index);
+        c = getopt_long(argc, argv, "p:h:v?:c?", long_options, &option_index);
 
         /* Detect the end of the options. */
         if (c == -1)
@@ -113,7 +115,7 @@ const char *default_config = "{"
     "\"log\" : {"
         "\"systemd\" : false,"
         "\"file\" : \"stdout\","
-        "\"level\" : \"debug\""
+        "\"level\" : \"error\""
     "},"
     "\"app\" :"
     "{"
@@ -146,9 +148,6 @@ int main(int argc, char **argv) {
     uint32_t port = 0;
 
     if (!read_user_input(argc, argv, host, &port, &path))
-        goto error;
-
-    if (path == VERSION_REQUEST_ONLY)
         goto error;
 
     if (path){

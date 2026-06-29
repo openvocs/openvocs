@@ -51,6 +51,7 @@ OV_LIBS       += -l ov_core$(OV_EDITION)
 OV_LIBS       += -l ov_stun$(OV_EDITION)
 OV_LIBS       += -l ov_encryption$(OV_EDITION)
 OV_LIBS 	  += -l ov_ice$(OV_EDITION)
+OV_LIBS       += -l ov_os$(OV_EDITION)
 
 OV_LIBS       += -l m
 OV_LIBS       += -pthread
