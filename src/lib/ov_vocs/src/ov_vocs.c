@@ -3160,7 +3160,7 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
         char port[1024] = {0};
         snprintf(port, 1024, "-p %i", vocs->config.module.backend.socket.manager.port);
     
-        char const *args[] = {host, port, NULL}; 
+        char const *args[] = {"-h" , host, "-p", port, NULL};
     
         const char *working_dir = "/tmp";
         const char *procname = "/usr/bin/ov_mc_mixer";

@@ -1650,7 +1650,7 @@ bool ov_interconnect_load_loops(ov_interconnect *self,
     char port[1024] = {0};
     snprintf(port, 1024, "-p %i", self->config.socket.mixer.port);
 
-    char const *args[] = {host, port, NULL}; 
+    char const *args[] = {"-h" , host, "-p", port, NULL};
 
     const char *working_dir = "/tmp";
     const char *procname = "/usr/bin/ov_mc_mixer";
