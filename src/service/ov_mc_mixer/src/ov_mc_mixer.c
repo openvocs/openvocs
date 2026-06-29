@@ -30,15 +30,101 @@
 
 #include <ov_base/ov_config.h>
 #include <ov_base/ov_config_log.h>
+#include <ov_base/ov_convert.h>
 #include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_json.h>
 #include <ov_os/ov_os_event_loop.h>
+
+#include <getopt.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 #include <ov_vocs/ov_mc_mixer_app.h>
 
 #define CONFIG_PATH                                                            \
     OPENVOCS_ROOT                                                              \
     "/src/service/ov_mc_mixer/config/default_config.json"
+
+/*---------------------------------------------------------------------------*/
+
+static bool read_user_input(int argc, char **argv, char *host, uint32_t *port, char **path){
+
+    int c;
+    int option_index = 0;
+
+    while (1) {
+
+        static struct option long_options[] = {
+
+            /* These options don’t set a flag.
+               We distinguish them by their indices. */
+            {"port", required_argument, 0, 'p'},
+            {"host", required_argument, 0, 'h'},
+            {0, 0, 0, 0}};
+
+        /* getopt_long stores the option index here. */
+
+        c = getopt_long(argc, argv, "p:h:v?:c", long_options, &option_index);
+
+        /* Detect the end of the options. */
+        if (c == -1)
+            break;
+
+        switch (c) {
+
+        case 0:
+            *path = optarg;
+            break;
+
+        case 'h':
+            snprintf(host, OV_HOST_NAME_MAX, "%s", optarg);
+            break;
+
+        case 'v':
+            OV_VERSION_PRINT(stderr);
+            goto error;
+            break;
+
+        case 'c':
+            *path = optarg;
+            break;
+
+        case 'p':
+            ov_convert_string_to_uint32(optarg, strlen(optarg), port);
+            break;
+
+        default:
+            goto error;
+        }
+    }
+
+    if (optind < argc) {
+        *path = argv[optind++];
+    }
+
+    return true;
+error:  
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+const char *default_config = "{"
+    "\"log\" : {"
+        "\"systemd\" : false,"
+        "\"file\" : \"stdout\","
+        "\"level\" : \"debug\""
+    "},"
+    "\"app\" :"
+    "{"
+        "\"resource_manager\":"
+        "{"
+            "\"host\" : \"127.0.0.1\","
+            "\"port\" : 12346,"
+            "\"type\" : \"TCP\""
+        "}"
+    "}"
+"}";
 
 /*---------------------------------------------------------------------------*/
 
@@ -55,20 +141,39 @@ int main(int argc, char **argv) {
         .max.sockets = ov_socket_get_max_supported_runtime_sockets(0),
         .max.timers = ov_socket_get_max_supported_runtime_sockets(0)};
 
-    const char *path = ov_config_path_from_command_line(argc, argv);
-    if (!path)
-        path = CONFIG_PATH;
+    char *path = NULL;
+    char host[OV_HOST_NAME_MAX] = {0};
+    uint32_t port = 0;
+
+    if (!read_user_input(argc, argv, host, &port, &path))
+        goto error;
 
     if (path == VERSION_REQUEST_ONLY)
         goto error;
 
-    json_config = ov_config_load(path);
-    if (!json_config) {
-        ov_log_error("Failed to load config from %s", path);
-        goto error;
+    if (path){
+
+        json_config = ov_config_load(path);
+
+        if (!json_config) {
+            ov_log_error("Failed to load config from %s", path);
+            goto error;
+        } else {
+            ov_log_debug("Config load from PATH %s", path);
+        }
+
     } else {
-        ov_log_debug("Config load from PATH %s", path);
+
+        json_config = ov_json_decode(default_config);
+        ov_json_value *res_mgr = (ov_json_value*) ov_json_get(json_config, "/app/resource_manager");
+        ov_json_object_set(res_mgr, "host", ov_json_string(host));
+        ov_json_object_set(res_mgr, "port", ov_json_number(port));
+
     }
+
+    char *str = ov_json_value_to_string(json_config);
+    ov_log_debug("%s", str);
+    str = ov_data_pointer_free(str);
 
     if (!ov_config_log_from_json(json_config))
         goto error;
