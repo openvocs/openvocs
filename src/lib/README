@@ -1,8 +1,4 @@
-openvocs library
-
-The openvocs library is split in some dependent library parts.
-
-Anything platform specific, SHALL be encapsulated in specified library components e.g. @see ov_encryption
+openvocs os dependent code library
 
 Default structure:
 
@@ -11,28 +7,22 @@ Default structure:
 .
 ├── README.MD
 │
-├── ov_base             // only allowed dependency POSIX and ov_log
+├── ov_os             	// generic functions using ov_arch
 │   └── ...
 │
-├── ov_core             // core lib using ov_* lib interfaces
+├── ov_os_linux			// linux specific implementations
 │   └── ...
 │
-├── ov_codec            // codec lib using external dependencies
+├── ov_os_macOS			// macOS specific implementations
 │   └── ...
 │
-├── ov_ice              // core network lib using ov_* lib interfaces
+├──
 │   └── ...
 │
-├── ov_encryption       // encryption functions (incl external dependencies)
+├──
 │   └── ...
 │
-├── ov_linux            // linux specific implementations (e.g. systemd)
-│   └── ...
-│
-├── ov_test             // test specific implementations (generic test helper functions)
-│   └── ...
-│
-├── ov_log              // logging interface abstraction
+├──
 │   └── ...
 │
 .

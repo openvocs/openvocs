@@ -41,6 +41,8 @@
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_event_app.h>
 
+#include <ov_os/ov_os.h>
+
 #include <ov_stun/ov_stun_binding.h>
 #include <ov_stun/ov_stun_frame.h>
 
@@ -1639,6 +1641,25 @@ bool ov_interconnect_load_loops(ov_interconnect *self,
 
     if (!loops)
         goto done;
+
+    uint64_t count = ov_json_object_count(loops);
+
+    char port[1024] = {0};
+    snprintf(port, 1024, "%i", self->config.socket.mixer.port);
+
+    char const *args[] = {"-h", self->config.socket.mixer.host, "-p", port, NULL}; 
+
+    const char *working_dir = "/tmp";
+    const char *procname = "/usr/bin/ov_mc_mixer";
+
+    for (size_t i = 0; i < count; i++){
+
+        int r = ov_os_spawn(working_dir, procname, args, false);
+        if (r <= 0){
+            ov_log_error("failed to start a mixer process.");
+        }
+
+    }
 
     if (!ov_json_object_for_each((ov_json_value *)loops, self, load_loop))
         goto error;

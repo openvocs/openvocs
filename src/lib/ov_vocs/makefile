@@ -59,6 +59,7 @@ OV_LIBS 	  += -l ov_pcm16s$(OV_EDITION)
 OV_LIBS 	  += -l ov_pcm_gen$(OV_EDITION)
 OV_LIBS 	  += -l ov_vocs_db$(OV_EDITION)
 OV_LIBS 	  += -l ov_database$(OV_EDITION)
+OV_LIBS 	  += -l ov_os$(OV_EDITION)
 
 OV_LIBS       += -l m
 OV_LIBS       += -pthread

@@ -99,6 +99,15 @@ typedef struct {
 
     } socket;
 
+    uint16_t mixer;
+
+    struct {
+
+        uint16_t amount;
+        char config[PATH_MAX];
+
+    } recorder;
+
     struct {
 
         uint64_t response_usec;
