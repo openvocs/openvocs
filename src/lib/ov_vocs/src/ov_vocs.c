@@ -2826,10 +2826,11 @@ static void process_trigger(void *userdata, ov_json_value *input) {
         goto error;
 
     if (0 == ov_string_compare(event, "update_db")) {
-
+/*
         ov_json_value *proc = (ov_json_value *)ov_json_get(
             input, "/" OV_KEY_PARAMETER "/" OV_KEY_PROCESSING);
         ov_json_object_for_each(proc, vocs, update_sip_backend);
+*/  
     }
 
     if (0 == ov_string_compare(event, OV_VOCS_DB_KEY_LDAP_UPDATE)) {

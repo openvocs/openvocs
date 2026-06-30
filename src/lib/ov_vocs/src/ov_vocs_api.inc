@@ -894,6 +894,17 @@ static void client_login(void *userdata, const char *name,
         goto error;
     }
 
+    if (!ov_vocs_db_check_id_exists(self->config.db, user)){
+
+        send_error_response(vocs,
+                            input,
+                            socket,
+                            OV_ERROR_CODE_AUTH,
+                            OV_ERROR_DESC_AUTH);
+
+        goto error;
+    }
+
     if (vocs->config.ldap.enable) {
 
         ov_log_debug("Requesting LDAP authentication for user %s", user);
