@@ -38,9 +38,8 @@
 #include <ov_base/ov_json.h>
 
 #include <ov_core/ov_event_api.h>
-#include <ov_core/ov_event_engine.h>
+#include <ov_core/ov_event_app.h>
 #include <ov_core/ov_event_io.h>
-#include <ov_core/ov_event_socket.h>
 #include <ov_core/ov_mc_loop_data.h>
 #include <ov_core/ov_media_definitions.h>
 
@@ -63,8 +62,7 @@ struct ov_ice_proxy_vocs_app {
     ov_socket_data local;
     ov_socket_data remote;
 
-    ov_event_socket *event_socket;
-    ov_event_engine *engine;
+    ov_event_app *app;
 };
 
 /*
@@ -75,9 +73,11 @@ struct ov_ice_proxy_vocs_app {
  *      ------------------------------------------------------------------------
  */
 
-static bool cb_event_ice_session_create(void *userdata, const int socket,
-                                        const ov_event_parameter *params,
+static void cb_event_ice_session_create(void *userdata, const char *name, 
+                                        const int socket,
                                         ov_json_value *input) {
+
+    UNUSED(name);
 
     ov_ice_proxy_vocs_session_data session;
 
@@ -89,7 +89,7 @@ static bool cb_event_ice_session_create(void *userdata, const int socket,
     ov_json_value *res = NULL;
 
     ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !socket || !params || !input)
+    if (!self || !socket || !input)
         goto error;
 
     ov_json_value *parameter = ov_event_api_get_parameter(input);
@@ -133,32 +133,34 @@ static bool cb_event_ice_session_create(void *userdata, const int socket,
     code = OV_ERROR_CODE_COMMS_ERROR;
     desc = OV_ERROR_DESC_COMMS_ERROR;
 
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
     ov_json_value_free(input);
 
     session = ov_ice_proxy_vocs_session_data_clear(&session);
-    return true;
+    return;
 
 error_response:
 
     out = ov_json_value_free(out);
     out = ov_event_api_create_error_response(input, code, desc);
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
 error:
     out = ov_json_value_free(out);
     session = ov_ice_proxy_vocs_session_data_clear(&session);
     ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_ice_session_drop(void *userdata, const int socket,
-                                      const ov_event_parameter *params,
-                                      ov_json_value *input) {
+static void cb_event_ice_session_drop(void *userdata, const char *name, 
+                                        const int socket,
+                                        ov_json_value *input){
+
+    UNUSED(name);
 
     uint64_t code = OV_ERROR_CODE;
     const char *desc = OV_ERROR_DESC;
@@ -168,7 +170,7 @@ static bool cb_event_ice_session_drop(void *userdata, const int socket,
     ov_json_value *res = NULL;
 
     ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !socket || !params || !input)
+    if (!self || !socket || !input)
         goto error;
 
     code = OV_ERROR_CODE_INPUT_ERROR;
@@ -195,19 +197,21 @@ static bool cb_event_ice_session_drop(void *userdata, const int socket,
             goto error;
     }
 
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
 
 error:
     ov_json_value_free(out);
     ov_json_value_free(input);
-    return true;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_ice_session_update(void *userdata, const int socket,
-                                        const ov_event_parameter *params,
+static void cb_event_ice_session_update(void *userdata, const char *name, 
+                                        const int socket,
                                         ov_json_value *input) {
+
+    UNUSED(name);
 
     uint64_t code = OV_ERROR_CODE;
     const char *desc = OV_ERROR_DESC;
@@ -221,7 +225,7 @@ static bool cb_event_ice_session_update(void *userdata, const int socket,
     ov_media_type type = OV_MEDIA_OFFER;
 
     ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !socket || !params || !input)
+    if (!self || !socket || !input)
         goto error;
 
     code = OV_ERROR_CODE_INPUT_ERROR;
@@ -279,90 +283,48 @@ static bool cb_event_ice_session_update(void *userdata, const int socket,
     if (!ov_json_object_set(res, OV_KEY_SESSION, val))
         goto error;
 
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
     ov_json_value_free(input);
     sdp = ov_sdp_session_free(sdp);
-    return true;
+    return;
 
 error_response:
 
     out = ov_json_value_free(out);
     out = ov_event_api_create_error_response(input, code, desc);
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
 error:
     ov_json_value_free(input);
-    return false;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_ice_session_state(void *userdata, const int socket,
-                                       const ov_event_parameter *params,
-                                       ov_json_value *input) {
+static void cb_event_ice_session_state(void *userdata, const char *name, 
+                                        const int socket,
+                                        ov_json_value *input) {
+
+    UNUSED(name);
 
     ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !socket || !params || !input)
+    if (!self || !socket || !input)
         goto error;
 
-/*
-    uint64_t code = OV_ERROR_CODE;
-    const char *desc = OV_ERROR_DESC;
-
-    ov_json_value *out = NULL;
-    ov_json_value *val = NULL;
-    ov_json_value *res = NULL;
-
-    ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !params || socket < 0 || !input) goto error;
-
-    code = OV_ERROR_CODE_INPUT_ERROR;
-    desc = OV_ERROR_DESC_INPUT_ERROR;
-
-    ov_json_value *parameter = ov_event_api_get_parameter(input);
-    if (!parameter) goto error_response;
-
-    const char *session_id =
-        ov_json_string_get(ov_json_get(parameter, "/" OV_KEY_SESSION));
-
-    if (!session_id) goto error_response;
-
-    code = OV_ERROR_CODE_PROCESSING_ERROR;
-    desc = OV_ERROR_DESC_PROCESSING_ERROR;
-
-    val = ov_ice_proxy_vocs_get_session_state(self->proxy, session_id);
-
-    out = ov_event_api_create_success_response(input);
-    res = ov_event_api_get_response(out);
-    if (!ov_json_object_set(res, OV_KEY_RESULT, val)) goto error;
-
-    val = ov_json_string(session_id);
-    if (!ov_json_object_set(res, OV_KEY_SESSION, val)) goto error;
-
-    ov_event_io_send(params, socket, out);
-    out = ov_json_value_free(out);
-    ov_json_value_free(input);
-    return true;
-
-error_response:
-
-    out = ov_json_value_free(out);
-    out = ov_event_api_create_error_response(input, code, desc);
-    ov_event_io_send(params, socket, out);
-    out = ov_json_value_free(out);
-*/
 error:
     ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_ice_candidate(void *userdata, const int socket,
-                                   const ov_event_parameter *params,
-                                   ov_json_value *input) {
+static void cb_event_ice_candidate(void *userdata, const char *name, 
+                                        const int socket,
+                                        ov_json_value *input) {
+
+    UNUSED(name);
 
     uint64_t code = OV_ERROR_CODE;
     const char *desc = OV_ERROR_DESC;
@@ -374,7 +336,7 @@ static bool cb_event_ice_candidate(void *userdata, const int socket,
     ov_ice_candidate *candidate = NULL;
 
     ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !socket || !params || !input)
+    if (!self || !socket || !input)
         goto error;
 
     code = OV_ERROR_CODE_INPUT_ERROR;
@@ -416,28 +378,30 @@ static bool cb_event_ice_candidate(void *userdata, const int socket,
         goto error;
     val = NULL;
 
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
-    return true;
+    return;
 
 error_response:
 
     out = ov_json_value_free(out);
     out = ov_event_api_create_error_response(input, code, desc);
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
 error:
     ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_ice_end_of_candidates(void *userdata, const int socket,
-                                           const ov_event_parameter *params,
-                                           ov_json_value *input) {
+static void cb_event_ice_end_of_candidates(void *userdata, const char *name, 
+                                        const int socket,
+                                        ov_json_value *input) {
+
+    UNUSED(name);
 
     uint64_t code = OV_ERROR_CODE;
     const char *desc = OV_ERROR_DESC;
@@ -447,7 +411,7 @@ static bool cb_event_ice_end_of_candidates(void *userdata, const int socket,
     ov_json_value *res = NULL;
 
     ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !params || socket < 0 || !input)
+    if (!self || socket < 0 || !input)
         goto error;
 
     code = OV_ERROR_CODE_INPUT_ERROR;
@@ -476,28 +440,30 @@ static bool cb_event_ice_end_of_candidates(void *userdata, const int socket,
         goto error;
     val = NULL;
 
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
-    return true;
+    return;
 
 error_response:
 
     out = ov_json_value_free(out);
     out = ov_event_api_create_error_response(input, code, desc);
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
 error:
     ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_talk(void *userdata, const int socket,
-                          const ov_event_parameter *params,
-                          ov_json_value *input) {
+static void cb_event_talk(void *userdata, const char *name, 
+                                        const int socket,
+                                        ov_json_value *input) {
+
+    UNUSED(name);
 
     uint64_t code = OV_ERROR_CODE;
     const char *desc = OV_ERROR_DESC;
@@ -509,7 +475,7 @@ static bool cb_event_talk(void *userdata, const int socket,
     ov_json_value *res = NULL;
 
     ov_ice_proxy_vocs_app *self = ov_ice_proxy_vocs_app_cast(userdata);
-    if (!self || !params || socket < 0 || !input)
+    if (!self || socket < 0 || !input)
         goto error;
 
     code = OV_ERROR_CODE_INPUT_ERROR;
@@ -557,21 +523,21 @@ static bool cb_event_talk(void *userdata, const int socket,
         goto error;
     val = NULL;
 
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
     input = ov_json_value_free(input);
-    return true;
+    return;
 
 error_response:
 
     out = ov_json_value_free(out);
     out = ov_event_api_create_error_response(input, code, desc);
-    ov_event_io_send(params, socket, out);
+    ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
 error:
     ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -582,31 +548,31 @@ static bool register_event_callbacks(ov_ice_proxy_vocs_app *app) {
     if (!app)
         goto error;
 
-    if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_CREATE, app,
+    if (!ov_event_app_register(app->app, OV_KEY_ICE_SESSION_CREATE, app,
                                   cb_event_ice_session_create))
         goto error;
 
-    if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_DROP, app,
+    if (!ov_event_app_register(app->app, OV_KEY_ICE_SESSION_DROP, app,
                                   cb_event_ice_session_drop))
         goto error;
 
-    if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_UPDATE, app,
+    if (!ov_event_app_register(app->app, OV_KEY_ICE_SESSION_UPDATE, app,
                                   cb_event_ice_session_update))
         goto error;
 
-    if (!ov_event_engine_register(app->engine, OV_KEY_ICE_SESSION_STATE, app,
+    if (!ov_event_app_register(app->app, OV_KEY_ICE_SESSION_STATE, app,
                                   cb_event_ice_session_state))
         goto error;
 
-    if (!ov_event_engine_register(app->engine, OV_ICE_STRING_CANDIDATE, app,
+    if (!ov_event_app_register(app->app, OV_ICE_STRING_CANDIDATE, app,
                                   cb_event_ice_candidate))
         goto error;
 
-    if (!ov_event_engine_register(app->engine, OV_ICE_STRING_END_OF_CANDIDATES,
+    if (!ov_event_app_register(app->app, OV_ICE_STRING_END_OF_CANDIDATES,
                                   app, cb_event_ice_end_of_candidates))
         goto error;
 
-    if (!ov_event_engine_register(app->engine, OV_KEY_TALK, app, cb_event_talk))
+    if (!ov_event_app_register(app->app, OV_KEY_TALK, app, cb_event_talk))
         goto error;
 
     return true;
@@ -633,27 +599,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_connected(void *userdata, int socket, bool result) {
+static void cb_connected(void *userdata, int socket) {
 
     ov_ice_proxy_vocs_app *app = ov_ice_proxy_vocs_app_cast(userdata);
 
-    if (result) {
-
-        app->socket = socket;
-        ov_socket_get_data(socket, &app->local, &app->remote);
-
-        ov_log_info("Proxy connected at %i from %s:%i to %s:%i", socket,
-                    app->local.host, app->local.port, app->remote.host,
-                    app->remote.port);
-
-        ov_json_value *out = ov_ice_proxy_vocs_msg_register(app->uuid);
-        ov_event_socket_send(app->event_socket, socket, out);
-        out = ov_json_value_free(out);
-
-    } else {
-
-        ov_log_debug("Proxy reconnect attempt failed.");
-    }
+    app->socket = socket;
+    ov_socket_get_data(socket, &app->local, &app->remote);
+    ov_log_info("Proxy connected at %i from %s:%i to %s:%i", socket,
+                app->local.host, app->local.port, app->remote.host,
+                app->remote.port);
+    ov_json_value *out = ov_ice_proxy_vocs_msg_register(app->uuid);
+    ov_event_app_send(app->app, socket, out);
+    out = ov_json_value_free(out);
 
     return;
 }
@@ -666,7 +623,7 @@ static bool send_candidate(void *userdata, ov_json_value *out) {
     if (!app || !out)
         goto error;
 
-    ov_event_socket_send(app->event_socket, app->socket, out);
+    ov_event_app_send(app->app, app->socket, out);
     out = ov_json_value_free(out);
 
 error:
@@ -686,7 +643,7 @@ static bool send_end_of_candidates(void *userdata, const char *session_id) {
 
     out = ov_ice_proxy_vocs_msg_end_of_candidates(session_id);
 
-    ov_event_socket_send(app->event_socket, app->socket, out);
+    ov_event_app_send(app->app, app->socket, out);
     out = ov_json_value_free(out);
 
 error:
@@ -715,7 +672,7 @@ static bool session_completed(void *userdata, const char *uuid,
     }
 
     out = ov_ice_proxy_vocs_msg_session_completed(uuid, state);
-    if (!ov_event_socket_send(app->event_socket, app->socket, out))
+    if (!ov_event_app_send(app->app, app->socket, out))
         ov_log_error("Failed to forward session state");
     out = ov_json_value_free(out);
 
@@ -741,6 +698,9 @@ ov_ice_proxy_vocs_app_create(ov_ice_proxy_vocs_app_config config) {
     if (!config.loop)
         goto error;
 
+    if (!config.io)
+        goto error;
+
     config.proxy.loop = config.loop;
 
     app = calloc(1, sizeof(ov_ice_proxy_vocs_app));
@@ -756,40 +716,23 @@ ov_ice_proxy_vocs_app_create(ov_ice_proxy_vocs_app_config config) {
     config.proxy.callback.session_completed = session_completed;
 
     app->proxy = ov_ice_proxy_vocs_create(config.proxy);
-    app->engine = ov_event_engine_create();
-    if (!ov_ptr_valid(app->proxy, "Could not create proxy object") ||
-        !ov_ptr_valid(app->engine, "Could not create engine object"))
-        goto error;
 
-    ov_event_socket_config ev_config = (ov_event_socket_config){
-
-        .loop = config.loop,
-        .engine = app->engine,
-        .timer.io_timeout_usec = config.timer.io_timeout_usec,
-        .timer.accept_to_io_timeout_usec =
-            config.timer.accept_to_io_timeout_usec,
-        .timer.reconnect_interval_usec = config.timer.reconnect_interval_usec,
-        .callback.userdata = app,
-        .callback.close = cb_close,
-        .callback.connected = cb_connected
-
+    ov_event_app_config app_config = (ov_event_app_config){
+        .io = config.io,
+        .callbacks.userdata = app,
+        .callbacks.close = cb_close,
+        .callbacks.connected = cb_connected
     };
 
-    app->event_socket = ov_event_socket_create(ev_config);
-    if (!app->event_socket)
-        goto error;
+    app->app = ov_event_app_create(app_config);
+    if (!app->app) goto error;
 
-    ov_event_socket_set_debug(app->event_socket, true);
-
-    ov_event_socket_client_config manager = (ov_event_socket_client_config){
-
-        .socket = config.manager,
-        .client_connect_trigger_usec = config.timer.client_connect_sec * 1000,
-        .auto_reconnect = true
-
+    ov_io_socket_config socket_config = (ov_io_socket_config){
+        .auto_reconnect = true,
+        .socket = config.manager
     };
 
-    app->socket = ov_event_socket_create_connection(app->event_socket, manager);
+    app->socket = ov_event_app_open_connection(app->app, socket_config);
 
     if (!register_event_callbacks(app))
         goto error;
@@ -809,8 +752,7 @@ ov_ice_proxy_vocs_app *ov_ice_proxy_vocs_app_free(ov_ice_proxy_vocs_app *self) {
 
     self->proxy = ov_ice_proxy_vocs_free(self->proxy);
 
-    self->event_socket = ov_event_socket_free(self->event_socket);
-    self->engine = ov_event_engine_free(self->engine);
+    self->app = ov_event_app_free(self->app);
 
     self = ov_data_pointer_free(self);
 
@@ -861,7 +803,7 @@ static bool cb_client_process(void *userdata, const int socket,
     if (!self || socket < 0 || !params || !input)
         goto error;
 
-    ov_event_engine_push(self->engine, socket, *params, input);
+    ov_event_app_push(self->app, socket, input);
     return true;
 
 error:

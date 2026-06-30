@@ -34,6 +34,7 @@
 
 #include <ov_base/ov_event_loop.h>
 #include <ov_core/ov_event_io.h>
+#include <ov_core/ov_io.h>
 
 #include "ov_ice_proxy_vocs.h"
 
@@ -46,6 +47,7 @@ typedef struct ov_ice_proxy_vocs_app ov_ice_proxy_vocs_app;
 typedef struct ov_ice_proxy_vocs_app_config {
 
     ov_event_loop *loop;
+    ov_io *io;
 
     ov_ice_proxy_vocs_config proxy;
 

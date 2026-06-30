@@ -41,7 +41,6 @@
 #include <ov_core/ov_broadcast_registry.h>
 #include <ov_core/ov_event_api.h>
 #include <ov_core/ov_event_async.h>
-#include <ov_core/ov_event_engine.h>
 #include <ov_core/ov_event_session.h>
 #include <ov_core/ov_socket_json.h>
 #include <ov_core/ov_cluster.h>
