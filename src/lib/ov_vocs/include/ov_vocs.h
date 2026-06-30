@@ -102,6 +102,13 @@ typedef struct {
 
     struct {
 
+        uint16_t amount;
+        char config[PATH_MAX];
+
+    } recorder;
+
+    struct {
+
         uint64_t response_usec;
         uint64_t reconnect_interval_usec;
 

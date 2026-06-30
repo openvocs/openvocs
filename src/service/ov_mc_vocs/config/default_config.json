@@ -104,6 +104,9 @@
 
 		"recorder" : {
 
+			"amount" : 10,
+			"config" : "/etc/openvocs/ov_mc_recorder/config.json",
+
 			"socket" : {
 				"manager" :
 				{

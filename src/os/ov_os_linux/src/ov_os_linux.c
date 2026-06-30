@@ -99,7 +99,7 @@ char const **prepend(char const *const *array, const char *str) {
         new_array[i + 1] = array[i];
     }
 
-    new_array[array_size] = 0;
+    new_array[array_size + 1] = 0;
 
     return new_array;
 }

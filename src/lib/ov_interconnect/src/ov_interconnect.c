@@ -1644,13 +1644,10 @@ bool ov_interconnect_load_loops(ov_interconnect *self,
 
     uint64_t count = ov_json_object_count(loops);
 
-    char host[1024] = {0};
-    snprintf(host, 1024, "-h %s", self->config.socket.mixer.host);
-
     char port[1024] = {0};
-    snprintf(port, 1024, "-p %i", self->config.socket.mixer.port);
+    snprintf(port, 1024, "%i", self->config.socket.mixer.port);
 
-    char const *args[] = {host, port, NULL}; 
+    char const *args[] = {"-h", self->config.socket.mixer.host, "-p", port, NULL}; 
 
     const char *working_dir = "/tmp";
     const char *procname = "/usr/bin/ov_mc_mixer";
@@ -1658,7 +1655,7 @@ bool ov_interconnect_load_loops(ov_interconnect *self,
     for (size_t i = 0; i < count; i++){
 
         int r = ov_os_spawn(working_dir, procname, args, false);
-        if (r <= 0){{
+        if (r <= 0){
             ov_log_error("failed to start a mixer process.");
         }
 
