@@ -44,7 +44,6 @@ OV_TOOL_DIRS   += ov_ssl_membio_testing
 OV_TOOL_DIRS   += ov_test_mc
 OV_TOOL_DIRS   += ov_mc_cli
 OV_TOOL_DIRS   += ov_wav_to_pcm
-OV_TOOL_DIRS   += ov_event_listener_cmdline
 OV_TOOL_DIRS   += ov_ogg
 OV_TOOL_DIRS   += ov_jitter
 OV_TOOL_DIRS   += ov_test_coredump

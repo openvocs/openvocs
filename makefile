@@ -43,7 +43,6 @@
 OV_DIRECTORIES   = src/lib
 OV_DIRECTORIES  += src/service
 OV_DIRECTORIES  += src/tools
-OV_DIRECTORIES  += src/samples
 
 ifeq ($(OV_PLUGINS_PRESENT), 1)
     OV_DIRECTORIES  += $(OV_PLUGINS_DIR)

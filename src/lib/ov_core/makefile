@@ -47,6 +47,9 @@ OV_LIBS       += -l ov_test$(OV_EDITION)
 OV_LIBS       += -l ov_format$(OV_EDITION)
 OV_LIBS       += -l ov_encryption$(OV_EDITION)
 OV_LIBS       += -l ov_stun$(OV_EDITION)
+OV_LIBS       += -l ov_pcm16s$(OV_EDITION)
+OV_LIBS       += -l ov_codec$(OV_EDITION)
+OV_LIBS       += -l ov_pcm_gen$(OV_EDITION)
 
 OV_LIBS       += -l m
 OV_LIBS       += -pthread

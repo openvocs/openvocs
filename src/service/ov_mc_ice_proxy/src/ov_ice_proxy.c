@@ -33,6 +33,7 @@
 #include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_json.h>
 #include <ov_os/ov_os_event_loop.h>
+#include <ov_core/ov_io.h>
 
 #include <ov_ice_proxy/ov_ice_proxy_vocs_app.h>
 
@@ -49,6 +50,7 @@ int main(int argc, char **argv) {
     ov_ice_proxy_vocs_app *app = NULL;
     ov_event_loop *loop = NULL;
     ov_json_value *json_config = NULL;
+    ov_io *io = NULL;
 
     ov_event_loop_config loop_config = (ov_event_loop_config){
         .max.sockets = ov_socket_get_max_supported_runtime_sockets(0),
@@ -82,10 +84,19 @@ int main(int argc, char **argv) {
     if (!ov_event_loop_setup_signals(loop))
         goto error;
 
+    ov_io_config io_config = ov_io_config_from_json(json_config);
+    io_config.loop = loop;
+
+    io = ov_io_create(io_config);
+
+    if (!io)
+        goto error;
+
     ov_ice_proxy_vocs_app_config app_config =
         ov_ice_proxy_vocs_app_config_from_json(json_config);
 
     app_config.loop = loop;
+    app_config.io = io;
 
     app = ov_ice_proxy_vocs_app_create(app_config);
     if (!app) {
@@ -100,6 +111,7 @@ int main(int argc, char **argv) {
 
 error:
 
+    io = ov_io_free(io);
     json_config = ov_json_value_free(json_config);
     app = ov_ice_proxy_vocs_app_free(app);
     loop = ov_event_loop_free(loop);

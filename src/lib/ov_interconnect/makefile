@@ -47,11 +47,14 @@ OV_LIBS       += -l ov_arch$(OV_EDITION)
 OV_LIBS       += -l ov_test$(OV_EDITION)
 OV_LIBS       += -l ov_log$(OV_EDITION)
 OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_codec$(OV_EDITION)
+OV_LIBS       += -l ov_pcm_gen$(OV_EDITION)
 OV_LIBS       += -l ov_core$(OV_EDITION)
 OV_LIBS       += -l ov_stun$(OV_EDITION)
 OV_LIBS       += -l ov_encryption$(OV_EDITION)
 OV_LIBS 	  += -l ov_ice$(OV_EDITION)
 OV_LIBS       += -l ov_os$(OV_EDITION)
+
 
 OV_LIBS       += -l m
 OV_LIBS       += -pthread

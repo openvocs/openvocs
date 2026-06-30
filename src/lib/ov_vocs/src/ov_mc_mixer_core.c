@@ -41,8 +41,8 @@
 #include <ov_base/ov_rtcp.h>
 #include <ov_base/ov_string.h>
 
-#include <ov_backend/ov_frame_data.h>
-#include <ov_backend/ov_frame_data_list.h>
+#include <ov_core/ov_frame_data.h>
+#include <ov_core/ov_frame_data_list.h>
 #include <ov_base/ov_rtp_frame_buffer.h>
 
 #include <ov_codec/ov_codec.h>
