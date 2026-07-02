@@ -84,6 +84,28 @@ export default class ov_Nav extends HTMLElement {
             this.value = value;
     }
 
+    update_item(value, new_name, new_value) {
+        let element = this.querySelector("input[value='" + value + "']");
+        if (new_value)
+            element.value = new_value;
+        if (new_name) {
+            let label = this.querySelector("label[for=" + element.id + "]");
+            label.querySelector("span").innerText = new_name;
+        }
+    }
+
+    remove_item(value) {
+        let selected = this.value === value;
+        let element = this.querySelector("input[value='" + value + "']");
+        if (element) {
+            let label = this.querySelector("label[for=" + element.id + "]");
+            this.removeChild(element);
+            this.removeChild(label);
+            if (selected)
+                this.value = this.querySelector("input").value;
+        }
+    }
+
     clear() {
         let style = this.querySelector("style");
         this.replaceChildren();

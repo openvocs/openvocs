@@ -19,17 +19,14 @@
 
     ---------------------------------------------------------------------------
 *//**
-    @file           overview.js
+    @file           sip_config.js
 
-    @ingroup        vocs_admin/views/overview
+    @ingroup        extensions/sip
 
-    @brief          init and load overview view
+    @brief          init and load sip view
     	
     ---------------------------------------------------------------------------
 */
-import * as ov_Websockets from "/lib/ov_websocket_list.js";
-import * as ov_Auth from "/lib/ov_auth.js";
-import * as ov_DB from "/lib/ov_db.js";
 import * as View from "./view.js";
 
 export const VIEW_ID = "vocs_admin_sip";
@@ -43,17 +40,28 @@ export async function init(container) {
     View.init(VIEW_ID);
 }
 
-export function render(loops, roles) {
+export function render(domain_data, project_id, view_domain_only) {
     let first_loop;
 
     View.clear_loops();
 
-    if (loops)
-        for (let id of Object.keys(loops)) {
-            let loop = View.add_loop(id, loops[id], roles);
-            if(loops[id].global)
-                loop.global = true;
-            if (loops[id].frozen)
+    let proj = domain_data.projects[project_id];
+
+    let roles = proj && proj.roles && domain_data.roles ? { ...proj.roles, ...domain_data.roles } :
+        proj && proj.roles ? proj.roles : domain_data.roles ? domain_data.roles : {};
+
+    if (proj.loops)
+        for (let id of Object.keys(proj.loops)) {
+            let loop = View.add_loop(id, proj.loops[id], roles);
+            if (!first_loop)
+                first_loop = loop;
+        }
+
+    if (domain_data.loops)
+        for (let id of Object.keys(domain_data.loops)) {
+            let loop = View.add_loop(id, domain_data.loops[id], roles);
+            loop.global = true;
+            if (view_domain_only)
                 loop.disabled = true;
             if (!first_loop)
                 first_loop = loop;
@@ -64,7 +72,7 @@ export function render(loops, roles) {
 }
 
 export function remove() {
-    console.log("(overview) unload");
+    console.log("(sip) unload");
     if (view_container)
         view_container.replaceChildren();
 }

@@ -68,19 +68,21 @@ export function init(view_id, ldap_auth) {
     VIEW_ID = view_id;
 
     DOM.graph.allow_highlighted_loops = ALLOW_HIGHLIGHTED_LOOPS;
-    DOM.graph.no_new_users = ldap_auth;
+    DOM.graph.managed_users = ldap_auth;
+    DOM.graph.managed_roles = ldap_auth;
 }
 
-export function render(domain_data, project_data) {
+export function render(domain_data, project_id, view_domain_only) {
+    let project_data = domain_data.projects[project_id];
     DOM.graph.clear();
     if (project_data) {
-        DOM.graph.add_node_subset(project_data, project_data.id);
+        DOM.graph.add_node_subset(project_data, project_data.id, project_data.name, false, false);
     } else {
         document.querySelector("#hide_roles + label").style.display = "none";
         document.querySelector("#hide_loops + label").style.display = "none";
     }
     if (domain_data) {
-        DOM.graph.add_node_subset(domain_data, domain_data.id);
+        DOM.graph.add_node_subset(domain_data, domain_data.id, domain_data.name, true, !!view_domain_only);
         domain_id = domain_data.id;
     }
     DOM.graph.fill_out_links();
@@ -96,8 +98,8 @@ export function refresh() {
     DOM.graph.render_edges();
 }
 
-export function collect(id, include_unspecified) {
-    return DOM.graph.collect_node_subset(id, include_unspecified);
+export function collect() {
+    return DOM.graph.collect();
 }
 
 export function users() {

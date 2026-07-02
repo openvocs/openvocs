@@ -21,9 +21,9 @@
 *//**
     @file           view.js
 
-    @ingroup        vocs_admin/views/overview
+    @ingroup        extensions/sip
 
-    @brief          manage DOM objects for overview view
+    @brief          manage DOM objects for sip view
     	
     ---------------------------------------------------------------------------
 */
@@ -87,9 +87,10 @@ export function add_loop(id, data, roles_data) {
             loop.add_whitelist_entry(entry.caller, entry.callee);
 
     for (let role_id of Object.keys(data.roles)) {
-        if (roles_data[role_id])
-            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, roles_data[role_id].name);
-        else
+        if (roles_data[role_id]){
+            let name = roles_data[role_id].name ? roles_data[role_id].name : roles_data[role_id].id;
+            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, name);
+        } else
             loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, role_id, true);
     }
 

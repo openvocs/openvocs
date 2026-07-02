@@ -28,6 +28,13 @@
     /* font-size: 1rem; */
 }
 
+:host([domain=true]) #loop_name::after {
+    content: "\e968";
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1rem;
+    margin-left: 0.1rem;
+}
+
 #loop:disabled {
   cursor: default;
   color: var(--white) !important;

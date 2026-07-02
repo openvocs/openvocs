@@ -53,7 +53,9 @@ const DOM = {
 var VIEW_ID;
 var view_container;
 
-export async function init(view_id, container, type) {
+var domain;
+
+export async function init(view_id, container) {
     if (SIP)
         Config_SIP = await import("/extensions/sip/views/config/js/sip_config.js");
     if (RECORDER)
@@ -158,80 +160,137 @@ export async function init(view_id, container, type) {
         await Config_Recorder.init(document.getElementById("recorder_page"));
 
     DOM.save_button.addEventListener("click", async () => {
-        let config;
-        if (type === "project") {
-            let settings = Config_Settings.collect();
-            config = collect_config({ id: settings.domain });
-            if (Object.keys(config.users).length || Object.keys(config.roles).length || Object.keys(config.loops).length)
-                await save(config, "domain");
-        }
-        config = collect_config();
-        await save(config, type, true);
+        // await save(collect_config());
+        await save();
+    });
+
+    let user = ov_Websockets.user();
+
+    DOM.sub_view.addEventListener("new_project", (event) => {
+        domain.projects[event.detail] = {};
+    });
+
+    DOM.sub_view.addEventListener("changed_project", (event) => {
+        user.project = event.detail;
+        for (let ws of ov_Websockets.list)
+            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
+        let project = domain.projects[event.detail];
+        update_project_name_display(project.name, project.id);
     });
 
     DOM.sub_view.addEventListener("delete_project", async (event) => {
-        DOM.loading_screen.show("Deleting project on server(s)...");
-        let errors = [];
-        for (let websocket of ov_Websockets.list) {
-            let project = Project_Settings.collect();
-            if (!await ov_DB.remove("project", project.id, websocket)) {
-                errors.push(websocket);
-            }
-        }
+        delete domain.projects[event.detail];
+    });
 
-        DOM.loading_screen.hide();
+    DOM.sub_view.addEventListener("changed_domain_name", (event) => {
+        domain.name = event.detail;
+        DOM.config_domain_name.innerText = event.detail;
+    });
 
-        if (errors.length === 0)
-            view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: VIEW_ID, target: VIEW.OVERVIEW }
-            }));
-        else {
-            //todo disconnect ?
-            DOM.error_dialog_title.innerText = "Deleting project failed on following server(s):";
-            DOM.error_report.innerText = "";
-            for (let error of errors) {
-                console.log(error)
-                DOM.error_report.innerText += error.server_name + "\n\n"
+    DOM.sub_view.addEventListener("changed_project_id", (event) => {
+        let project = domain.projects[event.detail.old_id];
+        delete domain.projects[event.detail.old_id];
+        project.id = event.detail.new_id;
+        domain.projects[event.detail.new_id] = project;
+        user.project = project.id;
+        for (let ws of ov_Websockets.list)
+            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
+        update_project_name_display(project.name, project.id);
+    });
+
+    DOM.sub_view.addEventListener("changed_project_name", (event) => {
+        domain.projects[event.detail.id].name = event.detail.name;
+        update_project_name_display(event.detail.name, event.detail.id);
+    });
+
+    DOM.sub_view.addEventListener("save_node", (event) => {
+        if (event.detail.update) { // update node
+            let type = event.detail.node.type + "s";
+            let new_data = event.detail.node.data;
+            if (event.detail.node.node_password)
+                new_data.password = event.detail.node.node_password;
+            let node;
+            if (!event.detail.node.subset) {
+                node = domain[type] && domain[type][event.detail.node.node_id] ? domain[type][event.detail.node.node_id] :
+                    domain.projects[user.project][type][event.detail.node.node_id];
+            } else if (event.detail.node.subset === domain.id) {
+                if (!domain[type] || !domain[type][event.detail.node.node_id]) {
+                    if (!domain[type])
+                        domain[type] = {};
+                    domain[type][event.detail.node.node_id] = domain.projects[user.project][type][event.detail.node.node_id];
+                    delete domain.projects[user.project][type][event.detail.node.node_id];
+                }
+                node = domain[type][event.detail.node.node_id];
+            } else {
+                if (!domain.projects[user.project][type] || !domain.projects[user.project][type][event.detail.node.node_id]) {
+                    if (!domain.projects[user.project][type])
+                        domain.projects[user.project][type] = {};
+                    domain.projects[user.project][type][event.detail.node.node_id] = domain[type][event.detail.node.node_id];
+                    delete domain[type][event.detail.node.node_id];
+                }
+                node = domain.projects[user.project][type][event.detail.node.node_id];
             }
-            DOM.error_dialog.showModal();
+            for (let field of Object.keys(new_data))
+                node[field] = new_data[field];
+        } else { // new node
+            let type = event.detail.node.type + "s";
+            let data = event.detail.node.data;
+            data.password = event.detail.node.node_password;
+            if (event.detail.node.subset === domain.id) {
+                if (!domain[type])
+                    domain[type] = {};
+                domain[type][event.detail.node.node_id] = data;
+            } else {
+                if (!domain.projects[user.project][type])
+                    domain.projects[user.project][type] = {};
+                domain.projects[user.project][type][event.detail.node.node_id] = data;
+            }
         }
     });
 
-    DOM.sub_view.addEventListener("delete_domain", async () => {
-        DOM.loading_screen.show("Deleting domain on server(s)...");
-        let errors = [];
-        for (let websocket of ov_Websockets.list) {
-            let domain = Domain_Settings.collect();
-            if (!await ov_DB.remove("domain", domain.id, websocket)) {
-                errors.push(websocket);
-            }
-        }
-
-        DOM.loading_screen.hide();
-        if (errors.length === 0)
-            view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: VIEW_ID, target: VIEW.OVERVIEW }
-            }));
-        else {
-            //todo disconnect ?
-            DOM.error_dialog_title.innerText = "Deleting domain failed on following server(s):";
-            DOM.error_report.innerText = "";
-            for (let error of errors) {
-                console.log(error)
-                DOM.error_report.innerText += error.server_name + "\n\n"
-            }
-            DOM.error_dialog.showModal();
+    DOM.sub_view.addEventListener("delete_node", (event) => {
+        let type = event.detail.node.type + "s";
+        if (event.detail.node.subset === domain.id && domain[type]) {
+            delete domain[type][event.detail.node.node_id];
+        } else if (event.detail.node.subset === user.project && domain.projects[user.project][type]) {
+            delete domain.projects[user.project][type][event.detail.node.node_id];
         }
     });
 
-    DOM.sub_view.addEventListener("changed_name", (event) => {
-        DOM.config_name.innerText = event.detail;
+    var source;
+    DOM.sub_view.addEventListener("edit_edges", (event) => {
+        source = event.detail.value ? event.detail.node : undefined;
+    });
+
+    DOM.sub_view.addEventListener("add_edge", (event) => {
+        update_edge(source, event.detail.target, user.project);
+    });
+
+    DOM.sub_view.addEventListener("delete_edge", (event) => {
+        update_edge(source, event.detail.target, user.project);
+    });
+
+    DOM.sub_view.addEventListener("change_grid", (event) => {
+        domain.layout[user.project] = event.detail;
+    });
+
+    DOM.sub_view_nav.addEventListener("change", () => {
+        for (let ws of ov_Websockets.list)
+            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
+        DOM.sub_view.className = DOM.sub_view_nav.value;
+        if (DOM.sub_view_nav.value === "rbac")
+            Config_RBAC.render(domain, user.project, !user.domains.has(user.domain));
+        else if (DOM.sub_view_nav.value === "layout")
+            Config_Layout.render(domain, user.project, !user.domains.has(user.domain));
+        else if (DOM.sub_view_nav.value === "sip" && SIP)
+            Config_SIP.render(domain, user.project, !user.domains.has(user.domain));
+        else if (DOM.sub_view_nav.value === "recorder" && RECORDER)
+            Config_Recorder.render(domain, user.project, !user.domains.has(user.domain));
     });
 
     DOM.error_dialog.onclick = (e) => {
-        if (e.target === DOM.error_dialog) {
+        if (e.target === DOM.error_dialog)
             DOM.error_dialog.close();
-        }
     }
 
     DOM.error_dialog.querySelector(".close_button").onclick = () => {
@@ -239,234 +298,230 @@ export async function init(view_id, container, type) {
     };
 }
 
-async function request_settings(layout_name) {
-    return await ov_DB.collect_keyset_layout(layout_name, ov_Websockets.current_lead_websocket);
+function update_project_name_display(name, id) {
+    name = name ? name : id ? id : "[New Project]";
+    DOM.config_project_name.innerText = name;
 }
 
-function add_sip_to_config(config) {
-    let sip = Config_SIP.collect();
-    for (let loop_id of Object.keys(sip)) {
-        let loop = config.loops[loop_id];
-        if (loop)
-            loop.sip = sip[loop_id];
-        // else
-        // console.error("cannot find loop to save SIP config", config.loops, loop_id);
+function update_edge(source, target, project) {
+    let node;
+    if (target.type === "loop") {
+        if (target.subset === domain.id)
+            node = domain.loops[target.node_id];
+        else
+            node = domain.projects[project].loops[target.node_id];
+        let new_data = target.data;
+        for (let field of Object.keys(new_data))
+            node[field] = new_data[field];
+    } else if (source.type === "loop") {
+        if (source.subset === domain.id)
+            node = domain.loops[source.node_id];
+        else
+            node = domain.projects[project].loops[source.node_id];
+        let new_data = source.data;
+        for (let field of Object.keys(new_data))
+            node[field] = new_data[field];
+    } else if (target.type === "user") {
+        if (source.subset === domain.id)
+            node = domain.roles[source.node_id];
+        else
+            node = domain.projects[project].roles[source.node_id];
+        let new_data = source.data;
+        for (let field of Object.keys(new_data))
+            node[field] = new_data[field];
+    } else if (source.type === "user") {
+        if (target.subset === domain.id)
+            node = domain.roles[target.node_id];
+        else
+            node = domain.projects[project].roles[target.node_id];
+        let new_data = target.data;
+        for (let field of Object.keys(new_data))
+            node[field] = new_data[field];
     }
 }
 
-function add_recorder_to_config(config) {
-    let recorder = Config_Recorder.collect();
-    for (let loop_id of Object.keys(recorder)) {
-        let loop = config.loops[loop_id];
-        if (loop)
-            loop.recorded = true;
-    }
-}
+async function save() {
+    let errors = [];
+    let user = ov_Websockets.user();
+    if (user.admin === "domain") {
+        if (domain.id) {
+            DOM.loading_screen.show("Saving domain " + domain.id + " on server(s)...");
+            let orig_domain = await ov_DB.get_config("domain", user.domain);
+            await delete_from_server("user", orig_domain, domain);
+            await delete_from_server("role", orig_domain, domain);
+            await delete_from_server("loop", orig_domain, domain)
+            for (let project_id of Object.keys(orig_domain.projects)) {
+                let project = domain.projects[project_id];
+                if (!project) {
+                    await ov_DB.remove("project", project_id);
+                    continue;
+                }
+                let orig_project = orig_domain.projects[project_id];
+                await delete_from_server("user", orig_project, project);
+                await delete_from_server("role", orig_project, project);
+                await delete_from_server("loop", orig_project, project);
+            }
+            // update domain name
+            await update_on_server("user", orig_domain, domain, "domain");
+            await update_on_server("role", orig_domain, domain, "domain");
+            await update_on_server("loop", orig_domain, domain, "domain");
 
-function collect_config(settings) {
-    let collect_new_nodes = false;
-    if (!settings) {
-        settings = Config_Settings.collect();
-        collect_new_nodes = true;
+            for (let project_id of Object.keys(domain.projects)) {
+                let project = domain.projects[project_id];
+                if (project.id) {
+                    DOM.loading_screen.show("Saving project " + project.id + " on server(s)...");
+                    let orig_project = orig_domain.projects[project_id];
+                    if (!orig_project) {
+                        await ov_DB.create("project", project.id, "domain", domain.id);
+                        await ov_DB.update("project", project);
+                    } else {
+                        //update project name
+                        await update_on_server("user", orig_project, project, "project");
+                        await update_on_server("role", orig_project, project, "project");
+                        await update_on_server("loop", orig_project, project, "project");
+                    }
+                } else
+                    errors.push("Project ID is missing\n\n");
+            }
+
+            // let result = { updated: true };
+            // if (Object.keys(domain.users).length || Object.keys(domain.roles).length || Object.keys(domain.loops).length) {
+            //     let tmp_domain_data = {
+            //         id: domain.id,
+            //         name: domain.name,
+            //         users: domain.users,
+            //         roles: domain.roles,
+            //         loops: domain.loops,
+            //         layout: domain.layout
+            //     };
+            //     result = await ov_DB.update("domain", tmp_domain_data);
+            // }
+
+            // if (domain.users)
+            //     for (let user_id of Object.keys(domain.users))
+            //         if (result.updated && domain.users[user_id].password)
+            //             result = await ov_DB.update_password(user_id, domain.users[user_id].password);
+
+            // for (let project_id of Object.keys(domain.projects)) {
+            //     let project = domain.projects[project_id];
+            //     if (project.id) {
+            //         DOM.loading_screen.show("Saving project " + project.id + " on server(s)...");
+            //         if (result.updated && !await ov_DB.check_id(project.id, "project"))
+            //             result = await ov_DB.create("project", project.id, "domain", domain.id);
+            //         if (result.updated)
+            //             result = await ov_DB.update("project", project);
+
+            //         if (project.users)
+            //             for (let user_id of Object.keys(project.users))
+            //                 if (result.updated && project.users[user_id].password)
+            //                     result = await ov_DB.update_password(user_id, project.users[user_id].password);
+            //     } else
+            //         errors.push("Project ID is missing\n\n");
+            // }
+
+            // if (!result.updated)
+            //     errors.push(result.error.description + "\n\n");
+        } else
+            errors.push("Domain ID is missing\n\n");
     }
-    let config = { ...settings, ...Config_RBAC.collect(settings.id, collect_new_nodes) };
-    let role_config = Config_Layout.collect_role_layout();
-    for (let role_id of Object.keys(role_config)) {
-        if (config.roles[role_id]) {
-            if (role_config[role_id])
-                config.roles[role_id].layout = role_config[role_id];
-            else
-                delete config.roles[role_id].layout;
+
+    await ov_DB.persist();
+
+    DOM.loading_screen.delayed_hide();
+
+    if (errors.length > 0) {
+        DOM.error_dialog_title.innerText = "Saving failed:";
+        DOM.error_report.innerText = "";
+        for (let error of errors) {
+            console.error(error);
+            DOM.error_report.innerText += error + "\n\n"
         }
-    }
-    if (SIP)
-        add_sip_to_config(config);
-    if (RECORDER)
-        add_recorder_to_config(config);
-    return config;
-}
-
-async function save(new_config, type, persist) {
-    if (new_config.id) {
-        DOM.loading_screen.show("Saving " + type + " " + new_config.id + " on server(s)...");
-        let errors = [];
-        for (let websocket of ov_Websockets.list) {
-            if (websocket.server_name !== ov_Websockets.prime_websocket.server_name)
-                continue;
-
-            //save layout
-            if (type === "project")
-                await ov_DB.set_keyset_layout(new_config.id, new_config.domain, Config_Layout.collect_page_layout(), websocket);
-
-            //save project or domain data
-            let result = true;
-            if (type === "project" && !await ov_DB.check_id(new_config.id, type, websocket))
-                result = await ov_DB.create(type, new_config.id, "domain", new_config.domain, websocket);
-
-            if (result) {
-                result = await ov_DB.update(type, new_config, websocket);
-            }
-
-            for (let user_id of Object.keys(new_config.users)) {
-                let user = Config_RBAC.users().get(user_id);
-                if (result.updated && user.node_password)
-                    result = await ov_DB.update_password(user.node_id, user.node_password);
-            }
-
-            if (!result.updated) {
-                errors.push({
-                    server_name: websocket.server_name,
-                    description: result.error.description + "\n\n"
-                });
-            }
-            if (persist)
-                await ov_DB.persist(websocket);
-        }
-
-        DOM.loading_screen.delayed_hide();
-
-        if (errors.length > 0) {
-            DOM.error_dialog_title.innerText = "Saving " + type + " failed on following server(s):";
-            DOM.error_report.innerText = "";
-            for (let error of errors) {
-                console.error(error);
-                DOM.error_report.innerText += error.server_name + ": " + error.description + "\n\n"
-            }
-            DOM.error_dialog.showModal();
-            //todo disconnect ?
-        }
-
-    } else {
-        DOM.error_dialog_title.innerText = "Can't save " + type + ":"
-        DOM.error_report.innerText = "ID is missing."
         DOM.error_dialog.showModal();
     }
+}
+
+function deep_equal(a, b) {
+    if (a === b)
+        return true;
+    if (a === null || b === null)
+        return false;
+    const a_type = typeof a, b_type = typeof b;
+    if (a_type !== b_type)
+        return false;
+    // Arrays  
+    if (Array.isArray(a) || Array.isArray(b)) {
+        if (!Array.isArray(a) || !Array.isArray(b))
+            return false;
+        if (a.length !== b.length)
+            return false;
+        for (let i = 0; i < a.length; i++) {
+            if (!deep_equal(a[i], b[i]))
+                return false;
+        }
+        return true;
+    }
+    // Plain objects  
+    if (a_type === "object") {
+        const a_keys = Object.keys(a);
+        const b_keys = Object.keys(b);
+        if (a_keys.length !== b_keys.length)
+            return false;
+        for (const k of a_keys) {
+            if (!Object.prototype.hasOwnProperty.call(b, k))
+                return false;
+            if (!deep_equal(a[k], b[k]))
+                return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+async function delete_from_server(type, orig, update) {
+    let collection = type + "s";
+    if (orig[collection])
+        for (let id of Object.keys(orig[collection])) {
+            if (!update[collection][id])
+                await ov_DB.remove(type, id);
+        }
+}
+
+async function update_on_server(type, orig, update, scope) {
+    let collection = type + "s";
+    if (update[collection])
+        for (let id of Object.keys(update[collection])) {
+            let password;
+            if (!(orig[collection] && orig[collection][id])) {
+                await ov_DB.create(type, id, scope, orig.id);
+                if (update[collection][id].password) {
+                    password = update[collection][id].password;
+                    delete update[collection][id].password;
+                }
+                await ov_DB.update(type, update[collection][id]);
+            } else if (!deep_equal(orig[collection][id], update[collection][id]))
+                await ov_DB.update(type, update[collection][id]);
+            if (password)
+                await ov_DB.update_password(id, password);
+        }
 }
 
 export function render_user(user) {
     DOM.menu_slider.value = user.name;
 }
 
-export async function render_project(project, domain, id, domain_id, page) {
-    id = id ? id : project.id;
-    domain_id = domain_id ? domain_id : project.domain;
-    let name = project.name ? project.name : id;
-    if (name)
-        DOM.config_name.innerText = name;
-    else
-        DOM.config_name.innerText = "[New Project]";
+export function render(domain_data, page) {
+    domain = domain_data;
+    let user = ov_Websockets.user();
+    let domain_name = domain.name ? domain.name : user.domain;
+    if (domain_name)
+        DOM.config_domain_name.innerText = domain_name;
 
-    let first_load = true;
-
-    DOM.sub_view_nav.addEventListener("change", () => {
-        for (let ws of ov_Websockets.list) {
-            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, domain_id, id, DOM.sub_view_nav.value);
-        }
-        DOM.sub_view.className = DOM.sub_view_nav.value;
-        if (DOM.sub_view_nav.value === "rbac")
-            Config_RBAC.refresh();
-        else if (DOM.sub_view_nav.value === "layout") {
-            if (!first_load) {
-                let proj_config = collect_config();
-                let dom_config = collect_config({ id: proj_config.domain });
-                let roles = { ...proj_config.roles, ...dom_config.roles }
-                let loops = { ...proj_config.loops, ...dom_config.loops };
-                Config_Layout.render(roles, loops);
-            }
-        } else if (DOM.sub_view_nav.value === "sip" && SIP) {
-            let proj_config = collect_config();
-            let dom_config = collect_config({ id: proj_config.domain });
-            let roles = { ...proj_config.roles, ...dom_config.roles };
-            for (let loop_id of Object.keys(dom_config.loops)) {
-                if (ov_Websockets.user().admin === "project")
-                    dom_config.loops[loop_id].frozen = true;
-                dom_config.loops[loop_id].global = true;
-            }
-            let loops = { ...proj_config.loops, ...dom_config.loops };
-            Config_SIP.render(loops, roles);
-        } else if (DOM.sub_view_nav.value === "recorder" && RECORDER) {
-            let proj_config = collect_config();
-            Config_Recorder.render(proj_config.loops);
-        }
-    });
-
-    Project_Settings.render(project, id, domain_id);
-    Config_RBAC.render(domain, project);
-    let loops = { ...project.loops, ...domain.loops };
-    Config_Layout.render(project.roles, loops, await request_settings(id));
-    Config_Layout.disable_settings(false);
-    let roles = { ...project.roles, ...domain.roles };
-    if (SIP)
-        Config_SIP.render(loops, roles);
-    if (RECORDER)
-        Config_Recorder.render(project.loops);
+    Settings.render(domain, user.project);
 
     if (page)
         DOM.sub_view_nav.value = page;
     else
         DOM.sub_view_nav.value = "settings";
-
-    first_load = false;
-
-}
-
-export async function render_domain(domain, id, page) {
-    id = id ? id : domain.id;
-    let name = domain.name ? domain.name : id;
-    if (name)
-        DOM.config_name.innerText = name;
-    else
-        DOM.config_name.innerText = "[New Domain]";
-    DOM.sub_view_nav.addEventListener("change", () => {
-        DOM.sub_view.className = DOM.sub_view_nav.value;
-        for (let ws of ov_Websockets.list) {
-            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, id, undefined, DOM.sub_view_nav.value);
-        }
-        if (DOM.sub_view_nav.value === "rbac")
-            Config_RBAC.refresh();
-        else if (DOM.sub_view_nav.value === "layout") {
-            let config = collect_config();
-            let loops = config.loops;
-            for (let project_id of Object.keys(domain.projects)) {
-                if (domain.projects[project_id].loops)
-                    loops = { ...loops, ...domain.projects[project_id].loops };
-            }
-            // Config_Layout.render(config.roles, loops);
-        } else if (DOM.sub_view_nav.value === "sip" && SIP) {
-            let config = collect_config();
-            let roles = config.roles;
-            for (let project_id of Object.keys(domain.projects)) {
-                if (domain.projects[project_id].roles)
-                    roles = { ...roles, ...domain.projects[project_id].roles };
-            }
-            Config_SIP.render(config.loops, roles);
-        } else if (DOM.sub_view_nav.value === "recorder" && RECORDER) {
-            let config = collect_config();
-            Config_Recorder.render(config.loops);
-        }
-    });
-    if (page)
-        DOM.sub_view_nav.value = page;
-    else
-        DOM.sub_view_nav.value = "settings";
-
-    Domain_Settings.render(domain, id);
-    Config_RBAC.render(domain);
-    let loops = domain.loops;
-    for (let project_id of Object.keys(domain.projects)) {
-        if (domain.projects[project_id].loops)
-            loops = { ...loops, ...domain.projects[project_id].loops };
-    }
-    if (SIP) {
-        let roles = domain.roles;
-        for (let project_id of Object.keys(domain.projects)) {
-            if (domain.projects[project_id].roles)
-                roles = { ...roles, ...domain.projects[project_id].roles };
-        }
-        Config_SIP.render(domain.loops, roles);
-    }
-    if (RECORDER)
-        Config_Recorder.render(domain.loops);
 }
 
 export function offline_mode(value) {

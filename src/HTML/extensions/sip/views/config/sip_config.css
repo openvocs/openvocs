@@ -20,7 +20,7 @@ ov-sip-whitelist {
 
 ov-sip-config-role:nth-child(2n + 1),
 ov-sip-whitelist:nth-child(2n + 1) {
-    background-color: var(--element_hover_background_color);
+    background-color: var(--secondary_background_color);
 }
 
 #add_whitelist_entry .icon {

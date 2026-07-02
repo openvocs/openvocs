@@ -68,8 +68,18 @@ export function init(view_id) {
         setup_pages();
     });
 
-    DOM.grid_columns.addEventListener("change", change_setting);
-    DOM.grid_rows.addEventListener("change", change_setting);
+    DOM.grid_columns.addEventListener("change", () => {
+        change_setting();
+        DOM.grid_columns.dispatchEvent(new CustomEvent("change_grid", {
+            detail: collect_page_layout(), bubbles: true, composed: true
+        }));
+    });
+    DOM.grid_rows.addEventListener("change", () => {
+        change_setting();
+        DOM.grid_rows.dispatchEvent(new CustomEvent("change_grid", {
+            detail: collect_page_layout(), bubbles: true, composed: true
+        }));
+    });
 
     DOM.loops.addEventListener("loop_selected", (event) => {
         if (event.detail.loop.id)
@@ -77,15 +87,26 @@ export function init(view_id) {
         else
             DOM.select_loop.value = "";
 
-        DOM.select_loop.onchange = () => {
+        DOM.select_loop.onchange = async () => {
             DOM.loops.remove_loop(event.detail.loop);
             if (DOM.select_loop.value) {
                 if (DOM.loops.has_loop(DOM.select_loop.value))
                     DOM.loops.remove_loop_with_id(DOM.select_loop.value);
-                DOM.loops.add_loop(DOM.select_loop.value, event.detail.column, event.detail.row);
+                await DOM.loops.add_loop(DOM.select_loop.value, event.detail.column, event.detail.row);
+                let node = {
+                    node_id: current_role,
+                    type: "role",
+                    data: {
+                        layout: collect_layout()
+                    }
+                }
+                DOM.loops.dispatchEvent(new CustomEvent("save_node", {
+                    detail: { node: node, update: true }, bubbles: true, composed: true
+                }));
             }
             DOM.select_loop_dialog.close();
             event.detail.loop.style.removeProperty("border");
+
             show_page();
         }
 
@@ -102,19 +123,26 @@ export function init(view_id) {
     });
 }
 
-export async function render(roles, loops, settings) {
-    if (!settings)
-        settings = collect_page_layout();
+export async function render(domain_data, project_id, view_domain_only) {
+    let settings = domain_data.layout[project_id] ? domain_data.layout[project_id] : collect_page_layout();
 
-    loops_data = loops;
-    roles_data = roles;
+    let project = domain_data.projects[project_id];
+    loops_data = domain_data.loops && project && project.loops ? { ...project.loops, ...domain_data.loops } :
+        domain_data.loops ? domain_data.loops : project && project.loops ? project.loops : {};
+    roles_data = domain_data.roles && project && project.roles ? { ...project.roles, ...domain_data.roles } :
+        domain_data.roles ? domain_data.roles : project && project.roles ? project.roles : {};
+    // roles_data = !view_domain_only && domain_data.roles && project ? { ...project.roles, ...domain_data.roles } :
+    //     view_domain_only && project ? project : !view_domain_only && domain_data.roles ? domain_data.roles : {};
+
     DOM.role_selector.replaceChildren();
-    if (roles)
-        for (let role_id of Object.keys(roles)) {
-            let role_option = document.createElement("option");
-            role_option.value = role_id;
-            role_option.innerText = roles[role_id].name ? roles[role_id].name : role_id;
-            DOM.role_selector.appendChild(role_option);
+    if (roles_data)
+        for (let role_id of Object.keys(roles_data)) {
+            if (role_id !== "admin") {
+                let role_option = document.createElement("option");
+                role_option.value = role_id;
+                role_option.innerText = roles_data[role_id].name ? roles_data[role_id].name : role_id;
+                DOM.role_selector.appendChild(role_option);
+            }
         }
 
     if (settings) {
@@ -184,8 +212,17 @@ async function show_page() {
 }
 
 function save_role() {
-    if (DOM.loops.pages && current_role) {
-        let layout = {};
+    let layout = collect_layout();
+    if (current_role) {
+        let role = roles_data[current_role];
+        if (role)
+            role.layout = layout;
+    }
+}
+
+function collect_layout() {
+    let layout = {};
+    if (DOM.loops.pages) {
         for (let page of DOM.loops.pages) {
             for (let loop of page.values) {
                 if (!layout[loop.loop_id])
@@ -193,10 +230,8 @@ function save_role() {
                 layout[loop.loop_id].push(loop.layout_pos)
             }
         }
-        let role = roles_data[current_role];
-        if (role)
-            role.layout = layout;
     }
+    return layout;
 }
 
 var default_option = document.createElement("option");
@@ -204,11 +239,8 @@ default_option.value = "";
 default_option.selected = true;
 
 async function render_loops(loops) {
-
     await DOM.loops.draw(loops, collect_page_layout());
-
     change_setting();
-
     DOM.select_loop.replaceChildren(default_option);
 
     let options = [];

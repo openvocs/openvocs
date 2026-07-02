@@ -9,3 +9,10 @@ label {
 :host([hidden=true]) {
     display: none !important;
 }
+
+:host([global=true]) #name::after {
+    content: "\e968";
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1rem;
+    margin-left: 0.1rem;
+}

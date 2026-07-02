@@ -42,7 +42,7 @@ export async function init(container) {
     View.init(VIEW_ID);
 }
 
-export async function render(loops) {
+export async function render(domain_data, project_id, view_domain_only) {
     let websocket;
     for (let ws of ov_Websockets.list) {
         if (ws.record === true) {
@@ -59,10 +59,24 @@ export async function render(loops) {
         let first_loop;
 
         View.clear_loops();
-        if (loops)
-            for (let id of Object.keys(loops)) {
-                let active = recorded_loops.includes(id)
-                let loop = View.add_loop(id, loops[id], active);
+
+        let proj = domain_data.projects[project_id];
+
+        if (proj.loops)
+            for (let id of Object.keys(proj.loops)) {
+                let active = recorded_loops.includes(id);
+                let loop = View.add_loop(id, proj.loops[id], active);
+                if (!first_loop)
+                    first_loop = loop;
+            }
+
+        if (domain_data.loops)
+            for (let id of Object.keys(domain_data.loops)) {
+                let active = recorded_loops.includes(id);
+                let loop = View.add_loop(id, domain_data.loops[id], active);
+                loop.domain = true;
+                if (view_domain_only)
+                    loop.disabled = true;
                 if (!first_loop)
                     first_loop = loop;
             }

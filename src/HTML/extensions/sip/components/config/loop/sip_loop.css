@@ -23,8 +23,11 @@
     /* font-size: 1rem; */
 }
 
+
 :host([global=true]) #loop_name::after {
-    content: "\29BF";
+    content: "\e968";
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1rem;
     margin-left: 0.1rem;
 }
 
