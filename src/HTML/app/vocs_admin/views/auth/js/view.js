@@ -61,7 +61,7 @@ export async function init(view_id) {
 
         if (result.authenticated) {
             DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: view_id, target: VIEW.OVERVIEW }
+                detail: { origin: view_id, target: VIEW.CONFIG }
             }));
         } else 
             display_disconnect_notice(result.error);

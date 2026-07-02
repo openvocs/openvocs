@@ -62,6 +62,5 @@ ALLOW_HIGHLIGHTED_LOOPS = false;
 
 VIEW = {
     AUTH: "authentication",
-    OVERVIEW: "overview",
     CONFIG: "config"
 }

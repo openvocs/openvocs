@@ -78,7 +78,6 @@ export async function init(view_id, container, type) {
     DOM.menu_slider = document.getElementById("menu_slider");
     DOM.menu_button = document.getElementById("menu_button");
     DOM.logout_button = document.getElementById("logout_button");
-    DOM.back_button = document.getElementById("back_button");
     DOM.save_button = document.getElementById("save_button");
     DOM.error_report = document.getElementById("error_report");
     DOM.error_dialog = document.getElementById("error_dialog");
@@ -118,34 +117,29 @@ export async function init(view_id, container, type) {
         ov_Websockets.reload_page();
     });
 
-    DOM.back_button.addEventListener("click", () => {
-        view_container.dispatchEvent(new CustomEvent("switch_view", {
-            detail: { origin: VIEW_ID, target: VIEW.OVERVIEW }
-        }));
-    });
+    // todo: rewrite import/export
+    // DOM.import_button.onclick = function () {
+    //     DOM.open_file_dialog.click();
+    // };
 
-    DOM.import_button.onclick = function () {
-        DOM.open_file_dialog.click();
-    };
+    // DOM.open_file_dialog.onchange = function (event) {
+    //     let settings = Settings.collect();
+    //     let domain = Config_RBAC.collect(settings.id);
+    //     let local_path = event.target.files[0];
+    //     FileIO.open_local_file(local_path, function (config) {
+    //         let current_config = Settings.collect();
+    //         if (current_config)
+    //             render_project(config, domain, current_config.id, current_config.domain);
+    //         else
+    //             render_project(config, domain);
+    //     });
+    // };
 
-    DOM.open_file_dialog.onchange = function (event) {
-        let settings = Config_Settings.collect();
-        let domain = Config_RBAC.collect(settings.domain);
-        let local_path = event.target.files[0];
-        FileIO.open_local_file(local_path, function (config) {
-            let current_config = Config_Settings.collect();
-            if (current_config)
-                render_project(config, domain, current_config.id, current_config.domain);
-            else
-                render_project(config, domain);
-        });
-    };
-
-    DOM.export_button.onclick = function () {
-        let config = collect_config();
-        let name = config.name ? config.name : config.id;
-        FileIO.save_as_json_file(JSON.stringify(config), name);
-    };
+    // DOM.export_button.onclick = function () {
+    //     let config = collect_config();
+    //     let name = config.name ? config.name : config.id;
+    //     FileIO.save_as_json_file(JSON.stringify(config), name);
+    // };
 
     DOM.sub_view.addEventListener("ui_update_domain_users", (event) => {
         // let proj_config = collect_config();

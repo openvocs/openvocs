@@ -33,7 +33,6 @@
         import * as ov_DB from "/lib/ov_db.js";
 
         import * as Auth_View from "./views/auth/js/auth.js";
-        import * as Overview from "./views/overview/js/overview.js";
         import * as Config_View from "./views/config/js/config.js";
 
         import ov_Loading from "/components/loading/loading_screen.js";
@@ -47,31 +46,11 @@
                         Auth_View.remove();
                     else if (event.detail.origin === Config_View.VIEW_ID)
                         Config_View.remove();
-                    else if (event.detail.origin === Overview.VIEW_ID)
-                        Overview.remove();
 
-                if (event.detail.target === Overview.VIEW_ID) {
-                    await Overview.render(view_container);
-                } else if (event.detail.target === Config_View.VIEW_ID) {
-                    ov_Websockets.user().domain = event.detail.domain;
-                    ov_Websockets.user().project = event.detail.project;
-                    if (event.detail.type === "project") {
-                        loading_screen.show("Loading project...");
-                        if (!event.detail.project)
-                            console.log("switch to project view and create new project");
-                        else
-                            console.log("switch to project view", event.detail.project, event.detail.domain);
-                        await Config_View.render_project(view_container, ov_Websockets.user());
-                        loading_screen.hide();
-                    } else {
-                        loading_screen.show("Loading domain...");
-                        if (!event.detail.domain)
-                            console.log("switch to domain view and create new domain");
-                        else
-                            console.log("switch to domain view", event.detail.domain);
-                        await Config_View.render_domain(view_container, ov_Websockets.user());
-                        loading_screen.hide();
-                    }
+                if (event.detail.target === Config_View.VIEW_ID) {
+                    loading_screen.show("Loading data from server...");
+                    await Config_View.render(view_container);
+                    loading_screen.hide();
                 }
             });
 
@@ -79,16 +58,16 @@
             ov_Websockets.on_disconnect(async (websocket, error) => {
                 if (error && error.code !== 5000)
                     await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
-                authenticate(websocket);
+                authenticate(websocket, loading_screen);
             });
 
             await ov_Websockets.setup_connections(ov_Websocket);
 
             for (let websocket of ov_Websockets.list)
-                authenticate(websocket);
+                authenticate(websocket, loading_screen);
         });
 
-        async function authenticate(websocket) {
+        async function authenticate(websocket, loading_screen) {
             await ov_Auth.connect(websocket);
 
             let session = websocket.session;
@@ -98,22 +77,11 @@
                     if (session.domain) {
                         ov_Websockets.user().domain = session.domain;
                         ov_Websockets.user().project = session.project;
-                        if (session.project) {
-                            loading_screen.show("Loading project...")
-                            await ov_DB.domains();
-                            await ov_DB.projects();
-                            console.log("switch to project view", session.project, session.domain);
-                            await Config_View.render_project(view_container, ov_Websockets.user(), session.page);
-                            loading_screen.hide();
-                            return;
-                        } else {
-                            console.log("switch to domain view", session.section_domain);
-                            await Config_View.render_domain(view_container, ov_Websockets.user(), session.page);
-                            loading_screen.hide();
-                            return;
-                        }
-                    } else {
-                        await Overview.render(view_container);
+                        loading_screen.show("Loading data from server...")
+                        await ov_DB.domains();
+                        await ov_DB.projects();
+                        console.log("switch to view", session.domain, session.project);
+                        await Config_View.render(view_container, session.page);
                         loading_screen.hide();
                         return;
                     }
