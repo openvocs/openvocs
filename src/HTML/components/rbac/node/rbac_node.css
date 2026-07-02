@@ -43,13 +43,23 @@
     align-self: center;
 }
 
-:host([frozen]) #node_name::before {
-    content: "\2744";
+:host([global]) #node_name::before {
+    content: "\e968";
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1rem;
+    margin-right: 0.2rem;
 }
 
-:host([global]) #node_name::before {
-    content: "\29BF";
-    margin-right: 0.1rem;
+
+:host([view_only]) #node_name::before {
+    content: "\eb6e";
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1rem;
+    margin-right: 0.2rem;
+}
+
+:host([view_only][global]) #node_name::before {
+    content: "\e97c";
 }
 
 :host(.highlight) #node_name,
@@ -175,7 +185,8 @@ dialog select {
     display: none;
 }
 
-dialog input, dialog select {
+dialog input,
+dialog select {
     margin-bottom: 0.5rem;
 }
 
@@ -188,6 +199,8 @@ dialog input, dialog select {
 }
 
 #delete_element,
+#edit_subset,
+label[for=edit_subset],
 :host([type=user]) #user_name_label,
 :host([type=role]) #id_label,
 :host([type=loop]) #id_label,

@@ -34,7 +34,9 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     #dom = {};
     #allow_highlighted_loops;
-    #no_new_users;
+    #managed_users;
+    #managed_roles;
+    #subsets = [];
 
     constructor() {
         super();
@@ -43,14 +45,16 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["no_new_users"]
+        return ["managed_users", "managed_roles"]
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue)
             return;
-        if (name === "no_new_users")
-            this.#no_new_users = newValue;
+        if (name === "managed_users")
+            this.#managed_users = newValue;
+        if (name === "managed_roles")
+            this.#managed_roles = newValue;
     }
 
     // -----------------------------------------------------------------
@@ -162,6 +166,14 @@ export default class ov_RBAC_Graph extends HTMLElement {
             }
         });
 
+        this.#dom.graph.addEventListener("change_subset", (event) => {
+            let node = event.detail.node;
+            let subset = this.#subsets.find(subset => subset.id === event.detail.value);
+            node.subset = subset.id;
+            node.global = subset.domain;
+            node.view_only = subset.view_only || (node.type === "role" && this.#managed_roles) || (node.type === "user" && this.#managed_users);
+        });
+
         this.#dom.add_user.addEventListener("click", () => {
             this.#render_node(undefined, "user");
         });
@@ -206,15 +218,26 @@ export default class ov_RBAC_Graph extends HTMLElement {
         return this.#allow_highlighted_loops;
     }
 
-    set no_new_users(value) {
+    set managed_users(value) {
         if (value)
-            this.setAttribute("no_new_users", "");
+            this.setAttribute("managed_users", "");
         else
-            this.removeAttribute("no_new_users");
+            this.removeAttribute("managed_users");
     }
 
-    get no_new_users() {
-        return this.#no_new_users;
+    get managed_users() {
+        return this.#managed_users;
+    }
+
+    set managed_roles(value) {
+        if (value)
+            this.setAttribute("managed_roles", "");
+        else
+            this.removeAttribute("managed_roles");
+    }
+
+    get managed_roles() {
+        return this.#managed_roles;
     }
 
     filter_unused_users(value) {
@@ -271,8 +294,20 @@ export default class ov_RBAC_Graph extends HTMLElement {
         this.render_edges();
     }
 
-    add_node_subset(data, id) {
+    add_node_subset(data, id, name, domain, view_only) {
+        id = id ? id : "all";
+        name = name ? name : id;
+        this.#subsets.push({ id: id, name: name, domain: !!domain, view_only: !!view_only });
         if (data.users || data.roles || data.loops) {
+            for (let user of Graph.nodes.users.values()) {
+                user.populate_subset_options(this.#subsets);
+            }
+            for (let role of Graph.nodes.roles.values()) {
+                role.populate_subset_options(this.#subsets);
+            }
+            for (let loop of Graph.nodes.loops.values()) {
+                loop.populate_subset_options(this.#subsets);
+            }
             // order is important! first users than roles than loops
             if (data.users) {
                 let sorted_nodes = Object.values(data.users).sort((a, b) => {
@@ -305,8 +340,6 @@ export default class ov_RBAC_Graph extends HTMLElement {
                 for (let node of sorted_nodes)
                     this.#render_node(node, "loop", id);
             }
-
-
             this.#dom.add_user.scrollIntoView({ behavior: "smooth", block: "start" });
         }
     }
@@ -316,25 +349,36 @@ export default class ov_RBAC_Graph extends HTMLElement {
         Graph.group_nodes(this.shadowRoot, Graph.nodes);
     }
 
-    collect_node_subset(id, include_unspecified) {
-        let data = {
+    collect() {
+        let domain = { users: {}, roles: {}, loops: {} }, project = { users: {}, roles: {}, loops: {} };
+        for (let subset of this.#subsets) {
+            if (subset.domain)
+                domain = this.collect_node_subset(subset.id, domain);
+            else
+                project = this.collect_node_subset(subset.id, project);
+        }
+        let config = {
+            domain: domain,
+            project: project
+        }
+        return config;
+    }
+
+    collect_node_subset(id, data) {
+        data = data ? data : {
             users: {},
             roles: {},
             loops: {}
         };
 
-        for (let user of Graph.nodes.users.values()) {
-            if (!id || user.subset === id || (include_unspecified && user.subset === undefined))
+        for (let user of Graph.nodes.users.values())
+            if (!id || user.subset === id)
                 data.users[user.node_id] = user.data;
-        }
         for (let role of Graph.nodes.roles.values())
-            if (!id || role.subset === id || (include_unspecified && role.subset === undefined)) {
-                let role_data = role.data;
-                data.roles[role_data.id] = role_data;
-            }
-
+            if (!id || role.subset === id)
+                data.roles[role_data.id] = role.data;
         for (let loop of Graph.nodes.loops.values())
-            if (!id || loop.subset === id || (include_unspecified && loop.subset === undefined))
+            if (!id || loop.subset === id)
                 data.loops[loop.node_id] = loop.data;
 
         return data;
@@ -347,6 +391,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     clear() {
         Graph.clear();
+        this.#subsets = [];
         this.#dom.edge_layer_1.replaceChildren();
         this.#dom.edge_layer_2.replaceChildren();
         this.#dom.node_layer_1.replaceChildren();
@@ -357,22 +402,32 @@ export default class ov_RBAC_Graph extends HTMLElement {
     #render_node(node, type, subset_id, prepend) {
         let element = Graph.create_node(type, node, subset_id);
         element.allow_highlighting = this.#allow_highlighted_loops;
+
+        let subset = this.#subsets.find(subset => subset.id === subset_id);
+        if (!subset)
+            subset = this.#subsets[0];
+        if (subset.view_only)
+            element.view_only = true;
+        if (subset.domain)
+            element.global = true;
+        element.populate_subset_options(this.#subsets);
+
         let container;
-        if (type === "user")
+        if (type === "user") {
             container = this.#dom.node_layer_1;
-        else if (type === "role")
+            if (this.#managed_users)
+                element.view_only = true;
+        } else if (type === "role") {
             container = this.#dom.node_layer_2;
-        else if (type === "loop")
+            if (this.#managed_roles)
+                element.view_only = true;
+        } else if (type === "loop")
             container = this.#dom.node_layer_3;
         if (!prepend)
             container.appendChild(element);
         else
             container.insertBefore(element, container.firstChild);
 
-        if (node && (node.ldap || node.frozen))
-            element.frozen = true;
-        if (node && node.global)
-            element.global = true;
         this.#adjust_grid_size();
         element.scrollIntoView({ behavior: "smooth", block: "start" });
     }
