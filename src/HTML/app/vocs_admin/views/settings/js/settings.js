@@ -20,16 +20,16 @@
     ---------------------------------------------------------------------------
 *//**
     @file           settings.js
-    
-    @ingroup        vocs_admin/views/domain_settings
 
-    @brief          init and load admin domain settings view
+    @ingroup        vocs_admin/views/settings
+
+    @brief          init and load admin project settings view
     	
     ---------------------------------------------------------------------------
 */
 import * as View from "./view.js";
 
-export const VIEW_ID = "vocs_admin_domain_settings";
+export const VIEW_ID = "vocs_admin_settings";
 var view_container;
 
 export async function init(container) {
@@ -38,15 +38,15 @@ export async function init(container) {
     View.init(VIEW_ID);
 }
 
-export function render(domain, id) {
-    View.render(domain, id);
-    console.log("(domain settings) View rendered");
+export function render(domain, project_id) {
+    View.render(domain, project_id);
+    console.log("(settings) View rendered");
 }
 
 export { collect, offline_mode } from "./view.js";
 
 export function remove() {
-    console.log("(domain settings) unload");
+    console.log("(settings) unload");
     view_container.replaceChildren();
 }
 
@@ -55,13 +55,13 @@ window.onbeforeunload = function () {
 }
 
 async function loadHtml() {
-    const response = await fetch('/app/vocs_admin/views/domain_settings/settings.html');
+    const response = await fetch('/app/vocs_admin/views/settings/settings.html');
     const dom = new DOMParser().parseFromString(await response.text(), 'text/html');
     return dom.querySelector('.view');
 }
 
 async function loadCSS() {
-    const response = await fetch('/app/vocs_admin/views/domain_settings/settings.css');
+    const response = await fetch('/app/vocs_admin/views/settings/settings.css');
     const style = document.createElement('style');
     style.textContent = await response.text();
     return style;

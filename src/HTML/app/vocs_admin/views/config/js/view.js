@@ -29,8 +29,7 @@
 */
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Web_Storage from "/lib/ov_utils/ov_web_storage.js";
-import * as Project_Settings from "../../project_settings/js/settings.js";
-import * as Domain_Settings from "../../domain_settings/js/settings.js";
+import * as Settings from "../../settings/js/settings.js";
 import * as Config_RBAC from "../../config_rbac/js/rbac.js";
 import * as Config_Layout from "../../layout/js/layout.js";
 
@@ -53,7 +52,6 @@ const DOM = {
 
 var VIEW_ID;
 var view_container;
-var Config_Settings;
 
 export async function init(view_id, container, type) {
     if (SIP)
@@ -71,16 +69,12 @@ export async function init(view_id, container, type) {
     if (!document.adoptedStyleSheets.includes(await CSS.loading_id_style_sheet))
         document.adoptedStyleSheets = [...document.adoptedStyleSheets, await CSS.loading_id_style_sheet];
 
-    if (type === "project")
-        Config_Settings = Project_Settings;
-    else
-        Config_Settings = Domain_Settings;
-
     DOM.loading_screen = document.getElementById("loading_screen");
 
     DOM.sub_view_nav = document.getElementById("select_subview");
     DOM.sub_view = document.getElementById("config_administration");
-    DOM.config_name = document.getElementById("config_name");
+    DOM.config_project_name = document.getElementById("config_project_name");
+    DOM.config_domain_name = document.getElementById("config_domain_name");
     DOM.menu_slider = document.getElementById("menu_slider");
     DOM.menu_button = document.getElementById("menu_button");
     DOM.logout_button = document.getElementById("logout_button");
@@ -109,11 +103,6 @@ export async function init(view_id, container, type) {
     if (!ALLOW_IMPORT_EXPORT) {
         DOM.import_button.style.display = "none";
         DOM.export_button.style.display = "none";
-    }
-
-    if (type === "domain") {
-        document.getElementById("layout_page_button").style.display = "none";
-        document.querySelector("#layout_page_button + label").style.display = "none";
     }
 
     DOM.loading_screen.addEventListener("loading_button_clicked", () => {
@@ -165,8 +154,8 @@ export async function init(view_id, container, type) {
         // Config_RBAC.render(dom_config, proj_config); -> Graph.clear() does not work properly
     });
 
-    await Config_Settings.init(document.getElementById("settings_page"));
     let auth_ldap = await ov_DB.check_ldap();
+    await Settings.init(document.getElementById("settings_page"), auth_ldap);
     await Config_RBAC.init(document.getElementById("rbac_page"), auth_ldap);
     await Config_Layout.init(document.getElementById("layout_page"));
     if (SIP)
@@ -489,7 +478,7 @@ export async function render_domain(domain, id, page) {
 export function offline_mode(value) {
     view_container.classList.toggle("offline", value);
     DOM.save_button.disabled = value;
-    Config_Settings.offline_mode(value);
+    Settings.offline_mode(value);
 }
 
 export function display_loading_screen(value, message) {

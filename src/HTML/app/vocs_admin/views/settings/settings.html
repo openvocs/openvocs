@@ -1,0 +1,52 @@
+<div id="settings" class="view">
+    <!--div id="edit_error_message"></div-->
+    <details id="client_settings" class="fieldset">
+        <summary>Client broadcasts</summary>
+        <div id="broadcasts">
+            <button id="reload_broadcast">Force all Clients to Reload</button>
+            <div class="divider"></div>
+            <div id="switch_server">
+                <select id="switch_server_id">
+                    <option hidden disabled selected value> -- select an option -- </option>
+                </select>
+                <button id="switch_server_broadcast">Force all Clients to switch server</button>
+            </div>
+        </div>
+    </details>
+
+    <div id="domain_settings" class="fieldset">
+        <h3>Domain</h3>
+        <select id="domains"></select>
+
+        <label for="edit_domain_name">Display Name</label>
+        <input id="edit_domain_name" name="name" type="text">
+
+        <button id="ldap_import_button">LDAP Import</button>
+        <div id="ldap_notice"></div>
+
+        <h3>Projects</h3>
+        <div id="project" class="fieldset">
+            <div id="project_list">
+                <ov-nav direction="column" name="project_list" class="projects"></ov-nav>
+                <button id="new_project" class="fluentui_icon">
+                    &#xe00d;
+                </button>
+            </div>
+            <div class="divider"></div>
+            <div id="project_settings">
+                <label for="edit_project_id">Project ID</label>
+                <input id="edit_project_id" name="id" type="text">
+
+                <label for="edit_project_name">Display Name</label>
+                <input id="edit_project_name" name="name" type="text">
+
+                <details id="delete_project">
+                    <summary>
+                        Delete
+                    </summary>
+                    <button id="delete_button" class="button red_button">Delete</button>
+                </details>
+            </div>
+        </div>
+    </div>
+</div>
