@@ -32,8 +32,8 @@
 
 #include <ov_base/ov_json.h>
 #include <ov_base/ov_socket.h>
-#include <ov_sip/ov_sip_permission.h>
 
+#include <ov_core/ov_sip_permission.h>
 #include <ov_core/ov_response_state.h>
 
 #include "ov_mc_mixer_core.h"

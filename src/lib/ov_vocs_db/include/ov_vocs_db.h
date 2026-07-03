@@ -80,7 +80,7 @@
 #include <ov_base/ov_socket.h>
 #include <ov_core/ov_event_trigger.h>
 #include <ov_core/ov_password.h>
-#include <ov_sip/ov_sip_permission.h>
+#include <ov_core/ov_sip_permission.h>
 
 #include "ov_vocs_json.h"
 #include "ov_vocs_permission.h"

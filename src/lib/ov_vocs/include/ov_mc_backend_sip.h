@@ -34,7 +34,7 @@
 #include <ov_base/ov_event_loop.h>
 #include <ov_base/ov_socket.h>
 #include <ov_core/ov_io.h>
-#include <ov_sip/ov_sip_permission.h>
+#include <ov_core/ov_sip_permission.h>
 #include <ov_vocs_db/ov_vocs_db.h>
 
 #define OV_MC_BACKEND_SIP_DEFAULT_TIMEOUT 10000000 // 10 sec

@@ -45,7 +45,6 @@ OV_LIB_DIRS      += ov_pcm_gen
 OV_LIB_DIRS      += ov_format
 OV_LIB_DIRS      += ov_stun
 OV_LIB_DIRS      += ov_core
-OV_LIB_DIRS      += ov_sip
 OV_LIB_DIRS      += ov_ice
 OV_LIB_DIRS      += ov_ice_proxy
 OV_LIB_DIRS      += ov_ldap

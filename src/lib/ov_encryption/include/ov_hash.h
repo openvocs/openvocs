@@ -116,7 +116,7 @@ bool ov_hash(ov_hash_function func, const char *array[], size_t items,
         @param func     MUST be a known (enabled) ov_hash_function
         @param source   pointer to source buffer
         @param src_len  size of the source buffer to use
-        @param result   pointer to reusult buffer
+        @param result   pointer to result buffer
         @param length   length of result buffer (will be set to used length)
 
 */

@@ -245,7 +245,9 @@ bool ov_hash_string(ov_hash_function func, const uint8_t *source,
     if (!memcpy(string, source, source_length))
         return false;
 
-    const char *array[1] = {0};
+    // fprintf(stdout, "|%s|", string);
+
+    const char *array[2] = {0};
     array[0] = string;
 
     return ov_hash(func, array, 1, result, result_length);
