@@ -2754,67 +2754,6 @@ struct container_updata_sip {
 
 /*----------------------------------------------------------------------------*/
 
-static bool revoke_sip_call(void *item, void *data) {
-
-    struct container_updata_sip *container =
-        (struct container_updata_sip *)data;
-
-    ov_sip_permission permission = (ov_sip_permission){
-        .caller = ov_json_string_get(ov_json_object_get(item, OV_KEY_CALLER)),
-        .callee = ov_json_string_get(ov_json_object_get(item, OV_KEY_CALLEE)),
-        .loop = container->loop,
-        .from_epoch =
-            ov_json_number_get(ov_json_object_get(item, OV_KEY_VALID_FROM)),
-        .until_epoch =
-            ov_json_number_get(ov_json_object_get(item, OV_KEY_VALID_UNTIL))};
-
-    return ov_mc_backend_sip_terminate_permission(container->vocs->sip,
-                                                  permission);
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool permit_sip_call(void *item, void *data) {
-
-    struct container_updata_sip *container =
-        (struct container_updata_sip *)data;
-
-    ov_sip_permission permission = (ov_sip_permission){
-        .caller = ov_json_string_get(ov_json_object_get(item, OV_KEY_CALLER)),
-        .callee = ov_json_string_get(ov_json_object_get(item, OV_KEY_CALLEE)),
-        .loop = container->loop,
-        .from_epoch =
-            ov_json_number_get(ov_json_object_get(item, OV_KEY_VALID_FROM)),
-        .until_epoch =
-            ov_json_number_get(ov_json_object_get(item, OV_KEY_VALID_UNTIL))};
-
-    return ov_mc_backend_sip_create_permission(container->vocs->sip,
-                                               permission);
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool update_sip_backend(const void *key, void *val, void *data) {
-
-    if (!key)
-        return true;
-
-    const char *loop = (const char *)key;
-
-    ov_json_value *revoke = ov_json_object_get(val, OV_KEY_REVOKE);
-    ov_json_value *permit = ov_json_object_get(val, OV_KEY_PERMIT);
-
-    struct container_updata_sip container =
-        (struct container_updata_sip){.loop = loop, .vocs = ov_vocs_cast(data)};
-
-    ov_json_array_for_each(revoke, &container, revoke_sip_call);
-    ov_json_array_for_each(permit, &container, permit_sip_call);
-
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static void process_trigger(void *userdata, ov_json_value *input) {
 
     ov_vocs *vocs = ov_vocs_cast(userdata);

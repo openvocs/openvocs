@@ -88,7 +88,7 @@
 #define OV_EVENT_API_LOGIN "login"
 #define OV_EVENT_API_AUTHENTICATE "authenticate" // alternative to login
 
-#define OV_EVENT_API_UPDATE_LOGIN "db_update_login"
+#define OV_EVENT_API_UPDATE_LOGIN "extend_login_session"
 
 #define OV_EVENT_API_AUTHORISE "authorise"
 #define OV_EVENT_API_AUTHORIZE "authorize" // alternative to authorise

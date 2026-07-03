@@ -894,7 +894,7 @@ static void client_login(void *userdata, const char *name,
         goto error;
     }
 
-    if (!ov_vocs_db_check_id_exists(self->config.db, user)){
+    if (!ov_vocs_db_check_id_exists(vocs->config.db, user)){
 
         send_error_response(vocs,
                             input,
