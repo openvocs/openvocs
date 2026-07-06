@@ -74,5 +74,18 @@ typedef struct {
 
 bool ov_format_aes_install(ov_format_registry *registry);
 
+typedef enum {
+    OV_AES_DATA_VALID,
+    OV_AES_DATA_INVALID,
+    OV_AES_NO_DATA
+} ov_aes_validity;
+
+/**
+ * Check whether decrypted data could be verified successfully.
+ * BEWARE: Will only be able to verify data AFTER
+ * EOF was reached.
+ * Thus, read until no more data is available before calling this function.
+ */
+ov_aes_validity ov_format_aes_decrypted_valid(ov_format *self);
 /*----------------------------------------------------------------------------*/
 #endif

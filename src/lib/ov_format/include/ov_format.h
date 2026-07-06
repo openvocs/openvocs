@@ -142,7 +142,7 @@ typedef struct {
     /**
      * Some formats are not streamable - like wav, which requires the entire
      * length written into its headers.
-     * This function will be called whenever wants to receive the written
+     * This function will be called whenever one wants to receive the written
      * result, in order to be able to 'ready' it, in the case of wave, by
      * updating the length in the headers appropriately...
      * Called on ov_format_close or ov_format_get_memory e.g.
@@ -153,7 +153,8 @@ typedef struct {
 
     /**
      * Just there to free potentially present custom data - don't do
-     * anything else in here, for reading the written result, use 'ready_format'
+     * anything else in here, for readying the written result, use
+     * 'ready_format'
      */
     void *(*free_data)(void *);
 
