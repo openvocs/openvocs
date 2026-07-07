@@ -36,6 +36,8 @@ static void async_timedout_sip(void *userdata, ov_event_async_data data) {
     env_send(self, data.socket, out);
     out = ov_json_value_free(out);
 
+    drop_connection(self, data.socket, true, true);
+
 error:
     ov_event_async_data_clear(&data);
     return;
@@ -2131,7 +2133,7 @@ static void client_calling(void *userdata, const char *name,
         goto error;
     }
 
-    if (!set_async(vocs, uuid, socket, input)) goto error;
+    if (!set_async(vocs, uuid_request, socket, input)) goto error;
 
 error:
     uuid_request = ov_data_pointer_free(uuid_request);
