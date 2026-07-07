@@ -1884,6 +1884,16 @@ ov_sip_message *ov_sip_message_register(const char *uri){
 
 /*----------------------------------------------------------------------------*/
 
+ov_sip_message *ov_sip_message_options(const char *uri){
+
+    char msg[1024] = {0};
+    snprintf(msg, 1024, "OPTIONS sip:%s SIP/2.0\r\n", uri);
+
+    return sip_message(msg);
+}
+
+/*----------------------------------------------------------------------------*/
+
 ov_sip_message *ov_sip_message_response(uint64_t code, const char *phrase){
 
     char msg[1024] = {0};

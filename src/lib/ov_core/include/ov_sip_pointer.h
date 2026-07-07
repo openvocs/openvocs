@@ -243,7 +243,8 @@ bool ov_sip_message_add_content_type(ov_sip_message *msg, const char *mime,
 /*----------------------------------------------------------------------------*/
 
 ov_sip_message *ov_sip_message_register(const char *uri);
+ov_sip_message *ov_sip_message_options(const char *uri);
 
-
+ov_sip_message *ov_sip_message_response(uint64_t code, const char *phrase);
 
 #endif /* ov_sip_pointer_h */
