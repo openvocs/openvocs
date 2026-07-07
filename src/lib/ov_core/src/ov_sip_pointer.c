@@ -1901,3 +1901,16 @@ ov_sip_message *ov_sip_message_response(uint64_t code, const char *phrase){
 
     return sip_message(msg);
 }
+
+/*----------------------------------------------------------------------------*/
+
+ov_sip_message *ov_sip_message_copy(const ov_sip_message *in){
+
+    ov_sip_message *out = NULL;
+    uint8_t *next = NULL;
+
+    ov_sip_parse_message_buffer(in->buffer->start, in->buffer->length, &next, &out);
+    
+    UNUSED(next);
+    return out;
+}

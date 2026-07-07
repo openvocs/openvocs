@@ -247,4 +247,6 @@ ov_sip_message *ov_sip_message_options(const char *uri);
 
 ov_sip_message *ov_sip_message_response(uint64_t code, const char *phrase);
 
+ov_sip_message *ov_sip_message_copy(const ov_sip_message *in);
+
 #endif /* ov_sip_pointer_h */
