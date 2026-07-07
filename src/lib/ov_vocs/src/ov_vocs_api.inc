@@ -996,10 +996,18 @@ static bool check_ldap_enabled(ov_vocs *vocs,
 
     if (!vocs || !input || socket < 0) goto error;
 
+    val = ov_json_object();
+
     if (vocs->config.ldap.enable) {
-        val = ov_json_true();
+        ov_json_object_set(val, "users", ov_json_true());
     } else {
-        val = ov_json_false();
+        ov_json_object_set(val, "users", ov_json_false());
+    }
+
+    if (vocs->config.ldap.config.roles) {
+        ov_json_object_set(val, "roles", ov_json_true());
+    } else {
+        ov_json_object_set(val, "roles", ov_json_false());
     }
 
     result = send_success_response(vocs, input, socket, &val);

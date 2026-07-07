@@ -1419,6 +1419,9 @@ static bool add_user_to_drop(const void *key, void *val, void *data) {
     UNUSED(val);
     struct container_users *container = (struct container_users *)data;
 
+    if (0 == ov_string_compare(key, "admin"))
+        return true;
+
     if (ov_json_object_get(container->users, key))
         return true;
 
@@ -1481,14 +1484,6 @@ static bool update_users(ov_vocs_db *self, ov_json_value *parent,
         data = ov_json_object();
         ov_json_object_set(parent, OV_KEY_USERS, data);
     }
-/*
-    struct container_parent c =
-        (struct container_parent){.db = self, .parent = data};
-*/
-    /*
-    if (!ov_json_object_for_each((ov_json_value *)users, &c, user_already_set))
-        goto error;
-    */
 
     if (data && !ov_json_object_for_each(data, self, unindex_users))
         goto error;
