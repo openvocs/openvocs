@@ -2222,9 +2222,8 @@ static void client_permit_call(void *userdata, const char *name,
     data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
-    const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
-    if (!user || !role) {
+    if (!user) {
 
         send_error_response(
             vocs, input, socket, OV_ERROR_CODE_AUTH, OV_ERROR_DESC_AUTH);
@@ -2281,9 +2280,8 @@ static void client_revoke_call(void *userdata, const char *name,
     data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
-    const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
-    if (!user || !role) {
+    if (!user) {
 
         send_error_response(
             vocs, input, socket, OV_ERROR_CODE_AUTH, OV_ERROR_DESC_AUTH);
