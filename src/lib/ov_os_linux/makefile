@@ -48,7 +48,6 @@ OV_LIBS       += -l ov_arch$(OV_EDITION)
 OV_LIBS       += -l ov_base$(OV_EDITION)
 OV_LIBS       += -l ov_os_linux$(OV_EDITION)
 OV_LIBS       += -l ov_test$(OV_EDITION)
-OV_LIBS       += -l ov_core$(OV_EDITION)
 OV_LIBS       += -l ov_encryption$(OV_EDITION)
 OV_LIBS       += -l ov_log$(OV_EDITION)
 
