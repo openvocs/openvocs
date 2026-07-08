@@ -5077,6 +5077,7 @@ bool ov_vocs_db_add_permission(ov_vocs_db *self, ov_sip_permission permission) {
     }
 
 done:
+    ov_thread_lock_unlock(&self->lock);
     return true;
 error:
     return false;
