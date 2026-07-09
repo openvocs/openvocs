@@ -46,7 +46,6 @@ OV_LIBS       += -l ov_os$(OV_EDITION)
 OV_LIBS       += -l ov_pcm16s$(OV_EDITION)
 OV_LIBS       += -l ov_pcm_gen$(OV_EDITION)
 OV_LIBS       += -l ov_codec$(OV_EDITION)
-OV_LIBS       += -l ov_backend$(OV_EDITION)
 OV_LIBS       += -l ov_vocs$(OV_EDITION)
 
 #-----------------------------------------------------------------------------

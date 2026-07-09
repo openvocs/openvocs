@@ -169,14 +169,11 @@ static ssize_t resample_if_necessary_nocheck(
     ov_pcm_16_resampler *resampler = get_resampler_for(resampling, direction);
 
     if (0 == resampler) {
-        // ov_log_info("Resampling not required");
         goto finish;
     }
 
     int16_t *data = resampling->data;
     size_t capacity_samples = resampling->data_capacity_samples;
-
-    ov_log_info("Resampling ...");
 
     OV_ASSERT(0 != resampler);
     OV_ASSERT(0 != data);
@@ -187,12 +184,10 @@ static ssize_t resample_if_necessary_nocheck(
                                      num_input_samples, data, capacity_samples);
 
     if (0 > out_samples) {
-        ov_log_error("Resampling failed");
         goto error;
     }
 
     if (0 == out_samples) {
-        ov_log_info("No resampling required");
         *resampled = (uint8_t *)input;
         *resampled_length_bytes = length_bytes;
         goto finish;

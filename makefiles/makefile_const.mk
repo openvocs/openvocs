@@ -158,13 +158,12 @@ OV_LOCAL_DIST_DIR=$(OV_BUILDDIR)/localdist
 OV_SIP_LOCAL_DIST_DIR=$(OV_BUILDDIR)/localdist_sip
 OV_PLUGINS_LOCAL_DIST_DIR=$(OV_BUILDDIR)/localdist_plugins
 
-OV_LIBS_TO_PACKAGE=arch backend base codec core database encryption format ice ldap \
-            log os os_linux pcm16s pcm_gen sip snmp stun test value vm vocs vocs_db \
+OV_LIBS_TO_PACKAGE=arch base codec core database encryption format ice ldap \
+            log os os_linux pcm16s pcm_gen snmp stun test vocs vocs_db \
             ice ice_proxy vad interconnect
 
-OV_BINARIES_TO_PACKAGE=stun_server \
-    alsa_gateway mc_ice_proxy mc_mixer mc_vocs mc_interconnect \
-    mc_socket_debug alsa_cli rtp_cli test_mc mc_vad mc_cli\
+OV_BINARIES_TO_PACKAGE=stun_server mc_ice_proxy mc_mixer mc_vocs mc_interconnect \
+    mc_socket_debug rtp_cli test_mc mc_vad mc_cli\
     domain_config_verify \
     ldap_test ldap_test_auth ldap_user_import ldap_role_import password \
     stun_client \
