@@ -98,10 +98,6 @@ export function refresh() {
     DOM.graph.render_edges();
 }
 
-export function collect() {
-    return DOM.graph.collect();
-}
-
 export function users() {
     return DOM.graph.users;
 }

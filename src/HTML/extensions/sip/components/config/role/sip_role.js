@@ -140,6 +140,10 @@ export default class ov_SIP_Role extends HTMLElement {
         this.#update_name();
         this.#update_value();
         this.#update_disabled();
+
+        this.shadowRoot.querySelector("#sip_rights").addEventListener("change", () => {
+            this.dispatchEvent(new CustomEvent("change"));
+        });
     }
 
     async #render() {

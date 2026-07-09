@@ -51,6 +51,16 @@ export function init(view_id) {
             let loop = get_current_loop();
             let recording = await ov_Recorder.stop_recording(loop.id);
             if (!recording.error) {
+                let node = {
+                    node_id: loop.id,
+                    type: "loop",
+                    data: {
+                        recorded: false
+                    }
+                }
+                DOM.loops.dispatchEvent(new CustomEvent("save_node", {
+                    detail: { node: node, update: true }, bubbles: true, composed: true
+                }));
                 loop.active = false;
                 DOM.start_recording.classList.toggle("recording", false);
                 DOM.message.innerText = "Recording was stopped. Please remember to save project.";
@@ -67,6 +77,16 @@ export function init(view_id) {
             let loop = get_current_loop();
             let recording = await ov_Recorder.start_recording(loop.id);
             if (!recording.error) {
+                let node = {
+                    node_id: loop.id,
+                    type: "loop",
+                    data: {
+                        recorded: true
+                    }
+                }
+                DOM.loops.dispatchEvent(new CustomEvent("save_node", {
+                    detail: { node: node, update: true }, bubbles: true, composed: true
+                }));
                 loop.active = true;
                 DOM.start_recording.classList.toggle("recording", true);
                 DOM.message.innerText = "Recording was started. Please remember to save project.";
@@ -140,16 +160,4 @@ export function select_loop(loop) {
     // DOM.stop_recording.disabled = !loop.active;
     DOM.playback_search.click();
     DOM.loading_screen.hide();
-}
-
-export function collect() {
-    let result = {};
-
-    let loops = document.querySelectorAll("ov-recorder-config-loop");
-    for (let loop of loops) {
-        if (loop.active)
-            result[loop.id] = { "recorded": true };
-    }
-
-    return result;
 }

@@ -44,36 +44,18 @@ export function init(view_id) {
     DOM.add_whitelist.addEventListener("click", () => {
         let element = document.createElement("ov-sip-whitelist");
         DOM.whitelist.appendChild(element);
+        let loop = get_current_loop();
+        let index = loop.add_whitelist_entry("", "");
         element.addEventListener("delete_entry", () => {
             DOM.whitelist.removeChild(element);
+            loop.delete_whitelist_entry(index);
+            trigger_update(loop);
+        });
+        element.addEventListener("change", () => {
+            loop.update_whitelist_entry(index, element.caller, element.callee);
+            trigger_update(loop);
         });
     });
-}
-
-export function collect() {
-    let result = {};
-
-    save_settings_of_current_loop();
-
-    let loops = document.querySelectorAll("ov-sip-config-loop");
-    for (let loop of loops) {
-
-        let whitelist = loop.whitelist;
-        for (let entry of whitelist) {
-            if (entry.callee === undefined || entry.callee === "")
-                delete entry.callee;
-            if (entry.caller === undefined || entry.caller === "")
-                delete entry.caller;
-        }
-
-        let roles = {};
-        for (let role_id of Object.keys(loop.roles)) {
-            if (loop.roles[role_id].value !== undefined)
-                roles[role_id] = loop.roles[role_id].value;
-        }
-        result[loop.id] = { whitelist: whitelist, roles: roles };
-    }
-    return result;
 }
 
 export function add_loop(id, data, roles_data) {
@@ -87,11 +69,11 @@ export function add_loop(id, data, roles_data) {
             loop.add_whitelist_entry(entry.caller, entry.callee);
 
     for (let role_id of Object.keys(data.roles)) {
-        if (roles_data[role_id]){
+        if (roles_data[role_id]) {
             let name = roles_data[role_id].name ? roles_data[role_id].name : roles_data[role_id].id;
-            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, name);
+            loop.add_role(role_id, data.sip && data.sip.roles ? data.sip.roles[role_id] : undefined, name);
         } else
-            loop.add_role(role_id, data.sip ? data.sip.roles[role_id] : undefined, role_id, true);
+            loop.add_role(role_id, data.sip && data.sip.roles ? data.sip.roles[role_id] : undefined, role_id, true);
     }
 
     loop.addEventListener("click", () => {
@@ -114,26 +96,8 @@ function get_current_loop() {
     }
 }
 
-function save_settings_of_current_loop() {
-    let loop = get_current_loop();
-    if (loop) {
-        loop.clear_whitelist();
-        for (let whitelist of DOM.whitelist.children)
-            if (whitelist.callee || whitelist.caller)
-                loop.add_whitelist_entry(whitelist.caller, whitelist.callee);
-
-        for (let role of DOM.roles.children) {
-            if (role.value !== "none")
-                loop.add_role(role.id, role.value === "callout", role.name, role.hidden);
-            else
-                loop.add_role(role.id, undefined, role.name, role.hidden);
-        }
-    }
-    return loop;
-}
-
 export function select_loop(loop) {
-    let prev_loop = save_settings_of_current_loop();
+    let prev_loop = get_current_loop();
     if (prev_loop)
         prev_loop.selected = false;
 
@@ -141,7 +105,7 @@ export function select_loop(loop) {
     DOM.add_whitelist.disabled = loop.disabled;
 
     DOM.whitelist.replaceChildren();
-    for (let entry of loop.whitelist) {
+    for (const [index, entry] of loop.whitelist.entries()) {
         let element = document.createElement("ov-sip-whitelist");
         DOM.whitelist.appendChild(element);
 
@@ -152,11 +116,16 @@ export function select_loop(loop) {
 
         element.addEventListener("delete_entry", () => {
             DOM.whitelist.removeChild(element);
+            loop.delete_whitelist_entry(index);
+            trigger_update(loop);
+        });
+        element.addEventListener("change", (event) => {
+            loop.update_whitelist_entry(index, element.caller, element.callee);
+            trigger_update(loop);
         });
     }
 
     DOM.roles.replaceChildren();
-
     for (let role_id of Object.keys(loop.roles)) {
         let element = document.createElement("ov-sip-config-role");
         DOM.roles.appendChild(element);
@@ -173,6 +142,42 @@ export function select_loop(loop) {
             value = "callout";
         else if (loop.roles[role_id].value === false)
             value = "hangup";
-        element.value = value
+        element.value = value;
+
+        element.addEventListener("change", (event) => {
+            let value = element.value === "none" ? undefined : element.value === "callout";
+            loop.add_role(element.id, value, element.name, element.hidden);
+            trigger_update(loop);
+        });
     }
+}
+
+function collect_loop(loop) {
+    let whitelist = loop.whitelist;
+    for (let entry of whitelist) {
+        if (entry.callee === undefined || entry.callee === "")
+            delete entry.callee;
+        if (entry.caller === undefined || entry.caller === "")
+            delete entry.caller;
+    }
+
+    let roles = {};
+    for (let role_id of Object.keys(loop.roles)) {
+        if (loop.roles[role_id].value !== undefined)
+            roles[role_id] = loop.roles[role_id].value;
+    }
+    return { whitelist: whitelist, roles: roles };
+}
+
+function trigger_update(loop) {
+    let node = {
+        node_id: loop.id,
+        type: "loop",
+        data: {
+            sip: collect_loop(loop)
+        }
+    }
+    DOM.loops.dispatchEvent(new CustomEvent("save_node", {
+        detail: { node: node, update: true }, bubbles: true, composed: true
+    }));
 }

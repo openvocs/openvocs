@@ -29,7 +29,7 @@
 */
 import * as View from "./view.js";
 
-export { collect_page_layout, collect_role_layout, disable_settings } from "./view.js";
+export { disable_settings } from "./view.js";
 
 export const VIEW_ID = "vocs_loop_layout";
 var view_container;

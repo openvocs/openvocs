@@ -43,7 +43,7 @@ export function render(domain, project_id) {
     console.log("(settings) View rendered");
 }
 
-export { collect, offline_mode } from "./view.js";
+export { offline_mode } from "./view.js";
 
 export function remove() {
     console.log("(settings) unload");

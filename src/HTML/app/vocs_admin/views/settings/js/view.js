@@ -233,19 +233,6 @@ function new_project() {
     }));
 }
 
-export function collect() {
-    let data = {};
-    data.domain = {
-        id: DOM.domain_list.value,
-        name: DOM.domain_name.value ? DOM.domain_name.value : null
-    }
-    data.project = {
-        id: DOM.project_id.value,
-        name: DOM.project_name.value ? DOM.project_name.value : null,
-    }
-    return data;
-}
-
 export function offline_mode(value) {
     value = !value && !DOM.id.disabled ? true : value;
     DOM.delete_button.disabled = value;

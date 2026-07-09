@@ -28,6 +28,7 @@
     ---------------------------------------------------------------------------
 */
 import ov_Loop_Pages from "/components/loops/pages/loop_pages.js";
+import * as ov_DB from "/lib/ov_db.js";
 const DOM = {};
 
 var VIEW_ID;
@@ -97,7 +98,7 @@ export function init(view_id) {
                     node_id: current_role,
                     type: "role",
                     data: {
-                        layout: collect_layout()
+                        layout: collect_role_layout()
                     }
                 }
                 DOM.loops.dispatchEvent(new CustomEvent("save_node", {
@@ -124,7 +125,11 @@ export function init(view_id) {
 }
 
 export async function render(domain_data, project_id, view_domain_only) {
-    let settings = domain_data.layout[project_id] ? domain_data.layout[project_id] : collect_page_layout();
+    let settings = collect_page_layout();
+    if (view_domain_only && isNaN(settings.grid_columns) || isNaN(settings.grid_rows))
+        settings = await ov_DB.collect_keyset_layout(project_id);
+    else
+        settings = domain_data.layout[project_id] ? domain_data.layout[project_id] : settings;
 
     let project = domain_data.projects[project_id];
     loops_data = domain_data.loops && project && project.loops ? { ...project.loops, ...domain_data.loops } :
@@ -212,7 +217,7 @@ async function show_page() {
 }
 
 function save_role() {
-    let layout = collect_layout();
+    let layout = collect_role_layout();
     if (current_role) {
         let role = roles_data[current_role];
         if (role)
@@ -220,17 +225,15 @@ function save_role() {
     }
 }
 
-function collect_layout() {
+function collect_role_layout() {
     let layout = {};
-    if (DOM.loops.pages) {
-        for (let page of DOM.loops.pages) {
+    if (DOM.loops.pages)
+        for (let page of DOM.loops.pages)
             for (let loop of page.values) {
                 if (!layout[loop.loop_id])
                     layout[loop.loop_id] = [];
                 layout[loop.loop_id].push(loop.layout_pos)
             }
-        }
-    }
     return layout;
 }
 
@@ -285,15 +288,6 @@ function change_setting() {
         DOM.grid_columns.value = layout.columns;
         DOM.grid_rows.value = layout.rows;
     }
-}
-
-export function collect_role_layout() {
-    save_role();
-    let roles = {}
-    if (roles_data)
-        for (let role_id of Object.keys(roles_data))
-            roles[role_id] = roles_data[role_id].layout;
-    return roles;
 }
 
 export function offline_mode(value) {

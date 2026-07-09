@@ -38,7 +38,7 @@ export async function init(container, ldap_auth) {
     View.init(VIEW_ID, ldap_auth);
 }
 
-export { collect, render, refresh, users } from "./view.js";
+export { render, refresh, users } from "./view.js";
 
 export function remove() {
     console.log("(project rbac) unload");

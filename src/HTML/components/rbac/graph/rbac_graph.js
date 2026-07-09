@@ -349,21 +349,6 @@ export default class ov_RBAC_Graph extends HTMLElement {
         Graph.group_nodes(this.shadowRoot, Graph.nodes);
     }
 
-    collect() {
-        let domain = { users: {}, roles: {}, loops: {} }, project = { users: {}, roles: {}, loops: {} };
-        for (let subset of this.#subsets) {
-            if (subset.domain)
-                domain = this.collect_node_subset(subset.id, domain);
-            else
-                project = this.collect_node_subset(subset.id, project);
-        }
-        let config = {
-            domain: domain,
-            project: project
-        }
-        return config;
-    }
-
     collect_node_subset(id, data) {
         data = data ? data : {
             users: {},

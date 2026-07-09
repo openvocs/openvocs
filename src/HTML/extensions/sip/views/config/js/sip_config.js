@@ -32,8 +32,6 @@ import * as View from "./view.js";
 export const VIEW_ID = "vocs_admin_sip";
 var view_container;
 
-export { collect } from "./view.js";
-
 export async function init(container) {
     view_container = container;
     view_container.replaceChildren(await loadCSS(), await loadHtml());

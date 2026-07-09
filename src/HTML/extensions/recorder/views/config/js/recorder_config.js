@@ -31,8 +31,6 @@ import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Recorder from "/extensions/recorder/ov_recorder.js";
 import * as View from "./view.js";
 
-export { collect } from "./view.js";
-
 export const VIEW_ID = "vocs_admin_recorder";
 var view_container;
 
