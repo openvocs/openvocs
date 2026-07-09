@@ -22,7 +22,7 @@
 - Change storage and handling of the domain data in admin interface.
 - Changed saving routine of domain config in admin interface. Only save changes not everything all the time. 
 - Only allow access to SIP admin interface, if SIP server is online.
-- Auth for LDAP import is now configured inside ov_mc_vocs/config.json. Removed input mask in vocs admin interface.
+- Auth for LDAP import is now configured inside ov_mc_vocs/config.json. Removed input mask in vocs admin interface. Reload domain from server after manual ldap import.
 - Added graphical feedback to manual LDAP import.
 - Changed layout of GUI screen keyboard. Added "Space" to keyboard. Removed "Enter". Added an upper shift option.
 - Only display roles in the GUI authorization list that have a defined loop layout. Added scrolling to this list.

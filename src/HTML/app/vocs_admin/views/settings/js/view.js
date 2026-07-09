@@ -28,8 +28,10 @@
     ---------------------------------------------------------------------------
 */
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import ov_Domain from "/lib/ov_object_model/ov_domain_model.js"
 import ov_Domain_Map from "/lib/ov_data_structure/ov_domain_map.js";
 import create_uuid from "/lib/ov_utils/ov_uuid.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 const DOM = {};
 
@@ -120,8 +122,7 @@ export function init(view_id, ldap_auth) {
 
     DOM.ldap_button.addEventListener("click", async () => {
         DOM.ldap_notice.innerText = "Importing...";
-        let ldap_import = await ov_DB.user_ldap_import(DOM.ldap_host.value, DOM.ldap_base.value,
-            DOM.id.value, DOM.ldap_user.value, DOM.ldap_password.value);
+        let ldap_import = await ov_DB.ldap_import(DOM.domain_list.value);
         if (ldap_import.error) {
             DOM.error_dialog_title.innerText = "LDAP import failed";
             DOM.error_report.innerText = ldap_import.error.description;
@@ -129,13 +130,11 @@ export function init(view_id, ldap_auth) {
             DOM.ldap_notice.innerText = "";
         } else {
             DOM.ldap_notice.innerText = "Imported from LDAP";
-            let domain_config = await ov_DB.get_config('domain', DOM.id.value);
-            DOM.ldap_button.dispatchEvent(new CustomEvent("ui_update_domain_users", {
-                detail: domain_config.users,
+            DOM.ldap_button.dispatchEvent(new CustomEvent("change_domain", {
+                detail: DOM.domain_list.value,
                 bubbles: true
             }));
         }
-        DOM.ldap_password.value = "";
     });
 
     DOM.project_list.addEventListener("change", (event) => {
@@ -214,6 +213,7 @@ export async function render(domain_data, project_id) {
     let domain = domains.get(domain_data.id);
     if (domain.projects.size !== 0) {
         domain.projects.sort();
+        DOM.project_list.clear();
         for (let project of domain.projects.values()) {
             let name = project.name ? project.name : project.id;
             await DOM.project_list.add_item(project.dom_id, name, project.id, project_id === project.id);
@@ -234,8 +234,6 @@ function new_project() {
 }
 
 export function offline_mode(value) {
-    value = !value && !DOM.id.disabled ? true : value;
-    DOM.delete_button.disabled = value;
 }
 
 function extract_all_domains(user) {
