@@ -32,6 +32,7 @@
 - Re-add setting to have a locked PTT screen button.
 - Change position of "server" and "roles" labels.
 - Reorganize settings slider.
+- Change defaults to not log events send to and from the server.
 
 ### FIXED
 - Fixed issues with interconnect.

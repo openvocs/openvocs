@@ -45,8 +45,8 @@ SIGNALING_SERVERS = [
 //time to wait before resending a signaling request
 SIGNALING_REQUEST_TIMEOUT = 10000;
 
-DEBUG_LOG_INCOMING_EVENTS = true;
-DEBUG_LOG_OUTGOING_EVENTS = true;
+DEBUG_LOG_INCOMING_EVENTS = false;
+DEBUG_LOG_OUTGOING_EVENTS = false;
 
 SIP = false;
 RECORDER = false;
