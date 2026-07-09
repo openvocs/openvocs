@@ -67,6 +67,7 @@ export default class ov_Websocket {
         DELETE_KEY: "db_delete_key",
 
         GET: "db_get", //domain, project, user details
+        GET_KEY: "db_get_key",
         USER_ROLES: "db_get_user_roles",
         LOOPS: "db_get_all_loops",
         ROLE_LOOPS: "db_get_role_loops",

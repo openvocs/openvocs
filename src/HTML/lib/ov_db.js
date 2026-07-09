@@ -160,7 +160,24 @@ export async function update(type, config, ws) {
     }
 }
 
-// update_key
+export async function update_key(type, id, key, config, ws) {
+    ws = ws ? ws : ov_Websockets.prime_websocket;
+    try {
+        console.log(log_prefix(ws) + "update " + key + " of " + type + " " + id + "...");
+        let parameter = {
+            type: type,
+            id: id,
+            key: key,
+            data: config
+        };
+        await ws.send_event(ov_Websocket.EVENT.UPDATE_KEY, parameter);
+        console.log(log_prefix(ws) + "update " + key + " of " + type + " " + id);
+        return { updated: true };
+    } catch (error) {
+        console.warn(log_prefix(ws) + "update " + key + " of " + type + " " + id + " failed.", error.error);
+        return { updated: false, error: error.error };
+    }
+}
 
 export async function update_password(id, password, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
@@ -211,6 +228,24 @@ export async function get_config(type, id, ws) {
         return result.data;
     } catch (error) {
         console.warn(log_prefix(ws) + "collect " + type + " " + id + " config failed.", error.error);
+        return false;
+    }
+}
+
+export async function get_key(type, id, key, ws) {
+    ws = ws ? ws : ov_Websockets.prime_websocket;
+    try {
+        console.log(log_prefix(ws) + "collecting " + type + " " + id + " " + key + "...");
+        let parameter = {
+            type: type,
+            key: key,
+            id: id
+        };
+        let result = await ws.send_event(ov_Websocket.EVENT.GET_KEY, parameter);
+        console.log(log_prefix(ws) + "received " + type + " " + key + " for " + id);
+        return result.data;
+    } catch (error) {
+        console.warn(log_prefix(ws) + "collect " + type + " " + id + " " + key + " failed.", error.error);
         return false;
     }
 }
