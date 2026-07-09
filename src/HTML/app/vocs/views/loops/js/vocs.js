@@ -41,7 +41,7 @@ var view_container;
 
 export async function render(container) {
     view_container = container;
-    view_container.appendChild(await loadCSS());
+    view_container.replaceChildren(await loadCSS());
     view_container.appendChild(await loadHtml());
 
     console.log("(vc) voice client loaded");

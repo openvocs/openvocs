@@ -37,7 +37,7 @@ var removed = false;
 
 export async function render(container) {
     view_container = container;
-    view_container.appendChild(await loadCSS());
+    view_container.replaceChildren(await loadCSS());
     view_container.appendChild(await loadHtml());
 
     ov_Websockets.on_disconnect(disconnect_handler);

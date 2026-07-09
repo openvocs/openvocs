@@ -14,7 +14,9 @@
 </head>
 
 <body>
-    <div class="container" id="view_container"></div>
+    <div class="container" id="view_container">
+        <button id="initial_logout_button" class="red_button">LOGOUT</button>
+    </div>
 
     <ov-loading id="loading_screen"></ov-loading>
 
@@ -38,6 +40,11 @@
         import ov_Loading from "/components/loading/loading_screen.js";
 
         document.addEventListener("DOMContentLoaded", async function () {
+            document.getElementById("initial_logout_button").onclick = async () => {
+                await ov_Auth.logout();
+                ov_Websockets.reload_page();
+            }
+
             let view_container = document.getElementById("view_container");
             let loading_screen = document.getElementById("loading_screen");
             view_container.addEventListener("switch_view", async (event) => {
@@ -78,8 +85,6 @@
                         ov_Websockets.user().domain = session.domain;
                         ov_Websockets.user().project = session.project;
                         loading_screen.show("Loading data from server...")
-                        await ov_DB.domains();
-                        await ov_DB.projects();
                         console.log("switch to view", session.domain, session.project);
                         await Config_View.render(view_container, session.page);
                         loading_screen.hide();

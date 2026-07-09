@@ -39,13 +39,13 @@ const DOMAIN = "domain";
 
 export async function render(container, page) {
     view_container = container;
-    view_container.appendChild(await loadCSS());
+    view_container.replaceChildren(await loadCSS());
     view_container.appendChild(await loadHtml());
 
     ov_Websockets.on_disconnect(on_disconnect);
 
     if (!await ov_DB.domains() || !await ov_DB.projects())
-        ov_Websockets.prime_websocket.disconnect();
+        ov_Websockets.prime_websocket.disconnect(); 
 
     let user = ov_Websockets.user();
     if (!user.project){
