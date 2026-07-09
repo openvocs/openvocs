@@ -119,6 +119,7 @@ export default class ov_SIP_Loop extends ov_Loop {
 
         this.#sip_number_pad_dialog.onclick = (event) => {
             if (event.target === this.#sip_number_pad_dialog) {
+                this.#sip_number_pad.clear_number();
                 this.#sip_number_pad_dialog.close();
             }
         }
