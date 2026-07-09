@@ -3,12 +3,16 @@
 
     <section id="sip_settings">
         <fieldset id="whitelist">
-            <h3>Whitelist</h3>
+            <h3>Rules for incoming calls</h3>
+            <details>
+                <summary>Explanation</summary>
+                <p>caller only = if this number calls one of the pool numbers, it will be routed to this loop</p>
+                <p>callee only = if any number calls this number, it will be routed to this loop</p>
+                <p>caller & callee = if the caller number calls the callee number, it will be routed to this loop</p>
+            </details>
             <div id="whitelist_entries"></div>
-
             <button id="add_whitelist_entry">
                 <div class="icon">
-
                     <svg>
                         <use xlink:href="/images/ov_icons.svg#ov_plus"></use>
                     </svg>
@@ -16,9 +20,7 @@
             </button>
         </fieldset>
         <fieldset>
-            <h3>
-                Rights
-            </h3>
+            <h3>Role rights</h3>
             <div id="sip_roles"></div>
         </fieldset>
     </section>

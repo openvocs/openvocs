@@ -6,6 +6,7 @@
 - Implemented mixer spawning ?
 - Added autostart for mixers in interconnect ? 
 - Added option to import roles from LDAP. Configuration inside ov_mc_vocs/config.json.
+- Added explanation on how SIP whitelisting works to SIP admin interface.
 #### GUI
 - Added fluent UI system icons as font for symbols.
 - Users, roles and loops can now be moved between domain and projects scope.
