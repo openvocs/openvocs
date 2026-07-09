@@ -29,11 +29,12 @@
 */
 // import custom HTML elements
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
-import ov_Recorder_Loop from "/extensions/recorder/components/config/loop/recorder_loop.js";
 import * as ov_Recorder from "/extensions/recorder/ov_recorder.js";
+import ov_Recorder_Loop from "/extensions/recorder/components/config/loop/recorder_loop.js";
 import ov_Player_List from '/extensions/recorder/components/player_list/recorder.js';
 
 var DOM = {};
+export var current_loop;
 
 export function init(view_id) {
 
@@ -48,11 +49,10 @@ export function init(view_id) {
 
     DOM.start_recording.addEventListener("click", async () => {
         if (DOM.start_recording.classList.contains("recording")) {
-            let loop = get_current_loop();
-            let recording = await ov_Recorder.stop_recording(loop.id);
+            let recording = await ov_Recorder.stop_recording(current_loop.id);
             if (!recording.error) {
                 let node = {
-                    node_id: loop.id,
+                    node_id: current_loop.id,
                     type: "loop",
                     data: {
                         recorded: false
@@ -61,7 +61,7 @@ export function init(view_id) {
                 DOM.loops.dispatchEvent(new CustomEvent("save_node", {
                     detail: { node: node, update: true }, bubbles: true, composed: true
                 }));
-                loop.active = false;
+                current_loop.active = false;
                 DOM.start_recording.classList.toggle("recording", false);
                 DOM.message.innerText = "Recording was stopped. Please remember to save project.";
                 DOM.message.className = "success";
@@ -74,11 +74,10 @@ export function init(view_id) {
                 DOM.message.className = "error";
             }
         } else {
-            let loop = get_current_loop();
-            let recording = await ov_Recorder.start_recording(loop.id);
+            let recording = await ov_Recorder.start_recording(current_loop.id);
             if (!recording.error) {
                 let node = {
-                    node_id: loop.id,
+                    node_id: current_loop.id,
                     type: "loop",
                     data: {
                         recorded: true
@@ -87,7 +86,7 @@ export function init(view_id) {
                 DOM.loops.dispatchEvent(new CustomEvent("save_node", {
                     detail: { node: node, update: true }, bubbles: true, composed: true
                 }));
-                loop.active = true;
+                current_loop.active = true;
                 DOM.start_recording.classList.toggle("recording", true);
                 DOM.message.innerText = "Recording was started. Please remember to save project.";
                 DOM.message.className = "success";
@@ -113,8 +112,7 @@ export function init(view_id) {
         let finish = Math.floor(new Date(DOM.playback_search_stop.value).getTime() / 1000);
         for (let ws of ov_Websockets.list) {
             if (ws.record === true) {
-                let loop = get_current_loop();
-                let recorded_loops = await ov_Recorder.get_recordings(loop.id, start, finish, ws);
+                let recorded_loops = await ov_Recorder.get_recordings(current_loop.id, start, finish, ws);
                 DOM.playback_list.draw_recordings(recorded_loops, ws.server_url + "audio/");
             }
         }
@@ -138,21 +136,14 @@ export function add_loop(id, data, active) {
 
 export function clear_loops() {
     DOM.loops.replaceChildren();
-}
-
-function get_current_loop() {
-    let loops = document.querySelectorAll("ov-recorder-config-loop");
-    for (let element of loops) {
-        if (element.disabled)
-            return element;
-    }
+    current_loop = undefined;
 }
 
 export function select_loop(loop) {
     DOM.loading_screen.show("Load loop " + loop.id + "...");
-    let prev_loop = get_current_loop();
-    if (prev_loop)
-        prev_loop.disabled = false;
+    if (current_loop)
+        current_loop.disabled = false;
+    current_loop = loop;
 
     loop.disabled = true;
     DOM.start_recording.classList.toggle("recording", loop.active);

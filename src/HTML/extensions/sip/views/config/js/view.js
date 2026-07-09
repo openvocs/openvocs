@@ -33,6 +33,7 @@ import ov_SIP_Whitelist from "/extensions/sip/components/config/whitelist_entry/
 import ov_SIP_Role from "/extensions/sip/components/config/role/sip_role.js";
 
 var DOM = {};
+export var current_loop;
 
 export function init(view_id) {
 
@@ -44,16 +45,15 @@ export function init(view_id) {
     DOM.add_whitelist.addEventListener("click", () => {
         let element = document.createElement("ov-sip-whitelist");
         DOM.whitelist.appendChild(element);
-        let loop = get_current_loop();
-        let index = loop.add_whitelist_entry("", "");
+        let index = current_loop.add_whitelist_entry("", "");
         element.addEventListener("delete_entry", () => {
             DOM.whitelist.removeChild(element);
-            loop.delete_whitelist_entry(index);
-            trigger_update(loop);
+            current_loop.delete_whitelist_entry(index);
+            trigger_update(current_loop);
         });
         element.addEventListener("change", () => {
-            loop.update_whitelist_entry(index, element.caller, element.callee);
-            trigger_update(loop);
+            current_loop.update_whitelist_entry(index, element.caller, element.callee);
+            trigger_update(current_loop);
         });
     });
 }
@@ -86,20 +86,13 @@ export function add_loop(id, data, roles_data) {
 
 export function clear_loops() {
     DOM.loops.replaceChildren();
-}
-
-function get_current_loop() {
-    let loops = document.querySelectorAll("ov-sip-config-loop");
-    for (let element of loops) {
-        if (element.selected)
-            return element;
-    }
+    current_loop = undefined;
 }
 
 export function select_loop(loop) {
-    let prev_loop = get_current_loop();
-    if (prev_loop)
-        prev_loop.selected = false;
+    if (current_loop)
+        current_loop.selected = false;
+    current_loop = loop;
 
     loop.selected = true;
     DOM.add_whitelist.disabled = loop.disabled;

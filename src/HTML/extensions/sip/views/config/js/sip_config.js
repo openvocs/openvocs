@@ -39,7 +39,8 @@ export async function init(container) {
 }
 
 export function render(domain_data, project_id, view_domain_only) {
-    let first_loop;
+    let current_loop_id = View.current_loop ? View.current_loop.id : undefined;
+    let selected_loop;
 
     View.clear_loops();
 
@@ -51,8 +52,8 @@ export function render(domain_data, project_id, view_domain_only) {
     if (proj.loops)
         for (let id of Object.keys(proj.loops)) {
             let loop = View.add_loop(id, proj.loops[id], roles);
-            if (!first_loop)
-                first_loop = loop;
+            if (loop.id === current_loop_id || !selected_loop)
+                selected_loop = loop;
         }
 
     if (domain_data.loops)
@@ -61,12 +62,12 @@ export function render(domain_data, project_id, view_domain_only) {
             loop.global = true;
             if (view_domain_only)
                 loop.disabled = true;
-            if (!first_loop)
-                first_loop = loop;
+            if (loop.id === current_loop_id || !selected_loop)
+                selected_loop = loop;
         }
 
-    if (first_loop)
-        View.select_loop(first_loop);
+    if (selected_loop)
+        View.select_loop(selected_loop);
 }
 
 export function remove() {
