@@ -36,8 +36,6 @@ static void async_timedout_sip(void *userdata, ov_event_async_data data) {
     env_send(self, data.socket, out);
     out = ov_json_value_free(out);
 
-    drop_connection(self, data.socket, true, true);
-
 error:
     ov_event_async_data_clear(&data);
     return;
