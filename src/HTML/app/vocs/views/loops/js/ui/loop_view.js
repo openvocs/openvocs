@@ -77,7 +77,6 @@ export async function init() {
 // init
 //-----------------------------------------------------------------------------
 export async function draw() {
-
     current_talk_loop = undefined;
 
     let loops_data = await ov_DB.collect_loops(ov_Websockets.current_lead_websocket);
@@ -126,8 +125,6 @@ export async function draw() {
     }
 
     DOM.loading_screen.hide();
-
-
 }
 
 // export function resize(settings) {
@@ -253,7 +250,6 @@ function show_loop_activity(loop_id, state) {
 export async function update_loop_state(loop, new_state, websocket) {
     DOM.loading_screen.show("Updating loop state...");
 
-    let result = true;
     let mute = ov_WebRTCs.local_stream() ? !ov_WebRTCs.local_stream().mute : true;
     let response = await ov_Vocs.switch_loop_state(loop.loop_id, loop.state, new_state, mute, websocket);
     if (response.response) {
@@ -266,17 +262,17 @@ export async function update_loop_state(loop, new_state, websocket) {
         } else if (current_talk_loop && current_talk_loop.loop_id === loop.loop_id)
             current_talk_loop = null;
 
-        loop.participants = response.response.participants.length;
-        if (response.response.activity.state)
-            loop.add_active_speaker(response.response.activity.client, response.response.activity);
-        else
-            loop.remove_active_speaker(response.response.activity.client);
-        result = response.response;
-    } else
-        result = !response.error;
+        loop.participants = response.response.participants ? response.response.participants.length : 0;
+        if (response.response.activity) {
+            if (response.response.activity.state)
+                loop.add_active_speaker(response.response.activity.client, response.response.activity);
+            else
+                loop.remove_active_speaker(response.response.activity.client);
+        }
+    }
 
     DOM.loading_screen.hide();
-    return result
+    return !response.error;
 }
 
 export async function talk(unmute) {
@@ -308,7 +304,6 @@ async function update_activity(loop, unmute) {
 }
 
 export async function show_page(new_page) {
-
     DOM.loading_screen.show("Switching Page...");
     let role = ov_Websockets.user().role;
 
@@ -353,7 +348,7 @@ export async function show_page(new_page) {
         settings[role] = role_settings;
         await ov_Vocs.update_user_role_settings(settings);
     }
-    
+
     DOM.loops.show_page(new_page);
     console.log("show page", new_page);
 
