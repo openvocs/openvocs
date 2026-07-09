@@ -149,6 +149,7 @@ export async function logout(websocket) {
     for (let ws of ov_Websockets.list)
         promises.push(ws_logout(ws));
     await Promise.allSettled(promises);
+    clear_session();
     return true;
 }
 

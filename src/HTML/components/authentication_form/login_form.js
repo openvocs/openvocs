@@ -110,7 +110,8 @@ export default class ov_Login_Form extends HTMLElement {
                     "{hold}": '&#xea89',
                     "{bksp}": "&#xe1c9"
                 },
-                disableButtonHold: true
+                disableButtonHold: true,
+                preventMouseDownDefault: true
             });
         }
 
@@ -164,6 +165,12 @@ export default class ov_Login_Form extends HTMLElement {
     #on_change(input) {
         this.#current_input.value = input;
         this.#current_input.dispatchEvent(new CustomEvent("value_changed"));
+
+        let caretPosition = this.#login_keyboard.caretPosition;
+        if (caretPosition !== null && this.#current_input.setSelectionRange) {
+            this.#current_input.focus();
+            this.#current_input.setSelectionRange(caretPosition, caretPosition);
+        }
     }
 
     #last_press_time = 0;
@@ -195,8 +202,8 @@ export default class ov_Login_Form extends HTMLElement {
             this.#login_keyboard.setOptions({
                 layoutName: "default"
             });
-        } else if (button === "{space}"){
-            
+        } else if (button === "{space}") {
+
         }
     }
 

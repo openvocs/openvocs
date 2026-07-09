@@ -245,7 +245,7 @@ export default class ov_RBAC_Node extends HTMLElement {
         this.#subsets = subsets;
         let select = this.shadowRoot.querySelector("#edit_subset");
 
-        if(select){
+        if (select) {
             select.replaceChildren();
             for (let subset of subsets) {
                 let element = document.createElement("option");
@@ -267,13 +267,14 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     #update_view_only(boolean) {
         this.#view_only = boolean;
-        this.edit_id = this.shadowRoot.querySelector("#edit_id");
+        let edit_id = this.shadowRoot.querySelector("#edit_id");
         let edit_name = this.shadowRoot.querySelector("#edit_name");
         let edit_pass = this.shadowRoot.querySelector("#edit_password");
         let edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         let edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
         let edit_highlight_color = this.shadowRoot.querySelector("#edit_highlight_color");
         let delete_button = this.shadowRoot.querySelector("#delete_element");
+        let edit_subset = this.shadowRoot.querySelector("#edit_subset");
         if (edit_id)
             edit_id.disabled = boolean;
         if (edit_name)
@@ -288,6 +289,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             edit_highlight_color.disabled = boolean;
         if (delete_button)
             delete_button.disabled = boolean;
+        if (edit_subset)
+            edit_subset.disabled = boolean;
 
     }
 

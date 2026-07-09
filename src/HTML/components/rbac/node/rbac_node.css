@@ -59,7 +59,7 @@
 }
 
 :host([view_only][global]) #node_name::before {
-    content: "\e97c";
+    content: "\eb6e \e968";
 }
 
 :host(.highlight) #node_name,
@@ -119,17 +119,18 @@
 }
 
 :host(:hover) #edit_icon,
-:host(:hover) #network_icon,
+:host(:not(.edges_view_only):hover) #network_icon,
 :host(.highlight_talk) #microphone_icon,
 :host(.highlight_monitor) #headphone_icon,
 :host(.select_talk) #microphone_icon,
-:host(.select_monitor) #headphone_icon {
+:host(.select_monitor) #headphone_icon,
+:host([type=loop].edit_role_edges:not(.select_talk):hover) #microphone_icon,
+:host([type=loop].edit_role_edges:not(.select_monitor):hover) #headphone_icon,
+:host([type=loop].edit_role_edges.select:hover) #deconnect_icon,
+:host([type=role].edit_loop_edges:not(.select_talk):hover) #microphone_icon,
+:host([type=role].edit_loop_edges:not(.select_monitor):hover) #headphone_icon,
+:host([type=role].edit_loop_edges.select:hover) #deconnect_icon {
     display: initial;
-}
-
-:host(:hover.edit) #exit_network_icon {
-    display: initial;
-    width: 14.9rem;
 }
 
 :host(.edit_loop_edges:hover) #edit_icon,
@@ -145,21 +146,14 @@
     display: none !important;
 }
 
+:host(:hover.edit) #exit_network_icon,
+:host(.edges_view_only:hover) #edit_icon,
 :host([type=role].edit_user_edges:not(.select):hover) #connect_icon,
 :host([type=role].edit_user_edges.select:hover) #deconnect_icon,
-:host([type=user].edit_role_edges:not(.select):hover) #connect_icon,
-:host([type=user].edit_role_edges.select:hover) #deconnect_icon {
+:host([type=user].edit_role_edges:not(.select):not(.edges_view_only):hover) #connect_icon,
+:host([type=user].edit_role_edges.select:not(.edges_view_only):hover) #deconnect_icon {
     display: initial;
     width: 14.9rem;
-}
-
-:host([type=loop].edit_role_edges:not(.select_talk):hover) #microphone_icon,
-:host([type=loop].edit_role_edges:not(.select_monitor):hover) #headphone_icon,
-:host([type=loop].edit_role_edges.select:hover) #deconnect_icon,
-:host([type=role].edit_loop_edges:not(.select_talk):hover) #microphone_icon,
-:host([type=role].edit_loop_edges:not(.select_monitor):hover) #headphone_icon,
-:host([type=role].edit_loop_edges.select:hover) #deconnect_icon {
-    display: initial;
 }
 
 :host([type=loop].edit_user_edges),

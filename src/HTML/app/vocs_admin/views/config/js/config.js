@@ -77,7 +77,8 @@ async function on_disconnect(websocket, error) {
         await ov_Auth.login(session.user, session.session, websocket);
         await ov_DB.domains();
         await ov_DB.projects();
-        ov_Websockets.user().admin = user.domains.has(user.domain) ? DOMAIN : PROJECT; //do we need this?
+        let user = ov_Websockets.user();
+        user.admin = user.domains && user.domains.has(user.domain) ? DOMAIN : PROJECT;
         if (websocket.authenticated && ov_Websockets.disconnected_websockets.size === 0) {
             View.offline_mode(false);
         }

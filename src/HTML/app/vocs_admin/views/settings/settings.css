@@ -27,8 +27,7 @@ h3 {
     margin-bottom: 0.5rem;
 }
 
-#domain_settings label,
-#ldap_import_button {
+#domain_settings label {
     display: block;
 }
 
