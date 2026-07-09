@@ -20,7 +20,8 @@
 - Merge domain settings and project settings views in admin interface. 
 - Changed Admin interface to now display and a edit the whole domain including its projects without having to return to the landing page.
 - Change storage and handling of the domain data in admin interface.
-- Changed saving routine of domain config in admin interface.
+- Changed saving routine of domain config in admin interface. Only save changes not everything all the time. 
+- Only allow access to SIP admin interface, if SIP server is online.
 - Auth for LDAP import is now configured inside ov_mc_vocs/config.json. Removed input mask in vocs admin interface.
 - Added graphical feedback to manual LDAP import.
 - Changed layout of GUI screen keyboard. Added "Space" to keyboard. Removed "Enter". Added an upper shift option.

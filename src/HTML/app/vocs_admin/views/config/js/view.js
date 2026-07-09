@@ -35,8 +35,6 @@ import * as Config_Layout from "../../layout/js/layout.js";
 
 import * as ov_DB from "/lib/ov_db.js";
 import * as ov_Auth from "/lib/ov_auth.js";
-import * as ov_Vocs from "/lib/ov_vocs.js";
-import * as FileIO from "./file_handler.js";
 
 // import custom HTML elements
 import ov_Nav from "/components/nav/nav.js";
@@ -45,7 +43,10 @@ import ov_Dialog from "/components/dialog/dialog.js";
 import * as CSS from "/css/css.js";
 
 var Config_SIP;
+var ov_SIP;
 var Config_Recorder;
+
+var SIP_ONLINE;
 
 const DOM = {
 };
@@ -53,11 +54,15 @@ const DOM = {
 var VIEW_ID;
 var view_container;
 
+var orig_domain;
 var domain;
 
 export async function init(view_id, container) {
-    if (SIP)
+    SIP_ONLINE = await ov_DB.check_sip(ov_Websockets.current_lead_websocket);
+    if (SIP) {
         Config_SIP = await import("/extensions/sip/views/config/js/sip_config.js");
+        ov_SIP = await import("/extensions/sip/ov_SIP.js")
+    }
     if (RECORDER)
         Config_Recorder = await import("/extensions/recorder/views/config/js/recorder_config.js");
 
@@ -94,6 +99,8 @@ export async function init(view_id, container) {
     if (!SIP) {
         document.getElementById("sip_page_button").style.display = "none";
         document.querySelector("#sip_page_button+label").style.display = "none";
+    } else if (!SIP_ONLINE) {
+        document.getElementById("sip_page_button").disabled = true;
     }
 
     if (!RECORDER) {
@@ -143,13 +150,6 @@ export async function init(view_id, container) {
     //     FileIO.save_as_json_file(JSON.stringify(config), name);
     // };
 
-    DOM.sub_view.addEventListener("ui_update_domain_users", (event) => {
-        // let proj_config = collect_config();
-        // let dom_config = collect_config({ id: proj_config.domain });
-        // dom_config.users = event.detail;
-        // Config_RBAC.render(dom_config, proj_config); -> Graph.clear() does not work properly
-    });
-
     let auth_ldap = await ov_DB.check_ldap();
     await Settings.init(document.getElementById("settings_page"), auth_ldap);
     await Config_RBAC.init(document.getElementById("rbac_page"), auth_ldap);
@@ -160,11 +160,15 @@ export async function init(view_id, container) {
         await Config_Recorder.init(document.getElementById("recorder_page"));
 
     DOM.save_button.addEventListener("click", async () => {
-        // await save(collect_config());
         await save();
     });
 
     let user = ov_Websockets.user();
+
+    DOM.sub_view.addEventListener("change_domain", async (event) => {
+        let domain_config = await ov_DB.get_config('domain', event.detail);
+        render(domain_config, DOM.sub_view_nav.value);
+    });
 
     DOM.sub_view.addEventListener("new_project", (event) => {
         domain.projects[event.detail] = {};
@@ -274,7 +278,7 @@ export async function init(view_id, container) {
         domain.layout[user.project] = event.detail;
     });
 
-    DOM.sub_view_nav.addEventListener("change", () => {
+    DOM.sub_view_nav.addEventListener("change", async () => {
         for (let ws of ov_Websockets.list)
             ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
         DOM.sub_view.className = DOM.sub_view_nav.value;
@@ -282,7 +286,7 @@ export async function init(view_id, container) {
             Config_RBAC.render(domain, user.project, !user.domains.has(user.domain));
         else if (DOM.sub_view_nav.value === "layout")
             Config_Layout.render(domain, user.project, !user.domains.has(user.domain));
-        else if (DOM.sub_view_nav.value === "sip" && SIP)
+        else if (DOM.sub_view_nav.value === "sip" && SIP && SIP_ONLINE)
             Config_SIP.render(domain, user.project, !user.domains.has(user.domain));
         else if (DOM.sub_view_nav.value === "recorder" && RECORDER)
             Config_Recorder.render(domain, user.project, !user.domains.has(user.domain));
@@ -342,88 +346,82 @@ function update_edge(source, target, project) {
 
 async function save() {
     let errors = [];
+    let result;
     let user = ov_Websockets.user();
-    if (user.admin === "domain") {
-        if (domain.id) {
+    if (domain.id) {
+        if (user.admin === "domain") {
             DOM.loading_screen.show("Saving domain " + domain.id + " on server(s)...");
-            let orig_domain = await ov_DB.get_config("domain", user.domain);
-            await delete_from_server("user", orig_domain, domain);
-            await delete_from_server("role", orig_domain, domain);
-            await delete_from_server("loop", orig_domain, domain)
-            for (let project_id of Object.keys(orig_domain.projects)) {
+            if (domain.name !== orig_domain.name) {
+                result = await ov_DB.update_key("domain", domain.id, "name", domain.name);
+                if (!result.updated)
+                    errors.push("Failed to update domain name: " + result.error.description);
+            }
+            if (!deep_equal(orig_domain.layout, domain.layout)) {
+                result = await ov_DB.update_key("domain", domain.id, "layout", domain.layout);
+                if (!result.updated)
+                    errors.push("Failed to update layouts: " + result.error.description);
+            }
+            await delete_from_server("user", orig_domain, domain, errors);
+            await delete_from_server("role", orig_domain, domain, errors);
+            await delete_from_server("loop", orig_domain, domain, errors)
+        }
+
+        for (let project_id of Object.keys(domain.projects)) {
+            if (user.admin === "domain" || user.projects.has(project_id)) {
                 let project = domain.projects[project_id];
                 if (!project) {
-                    await ov_DB.remove("project", project_id);
+                    DOM.loading_screen.show("Delete project " + project.id + " on server(s)...");
+                    result = await ov_DB.remove("project", project_id);
+                    if (!result.updated)
+                        errors.push("Failed to delete project " + id + ": " + result.error.description);
                     continue;
-                }
-                let orig_project = orig_domain.projects[project_id];
-                await delete_from_server("user", orig_project, project);
-                await delete_from_server("role", orig_project, project);
-                await delete_from_server("loop", orig_project, project);
-            }
-            // update domain name
-            await update_on_server("user", orig_domain, domain, "domain");
-            await update_on_server("role", orig_domain, domain, "domain");
-            await update_on_server("loop", orig_domain, domain, "domain");
-
-            for (let project_id of Object.keys(domain.projects)) {
-                let project = domain.projects[project_id];
-                if (project.id) {
+                } else if (project.id) {
                     DOM.loading_screen.show("Saving project " + project.id + " on server(s)...");
-                    let orig_project = orig_domain.projects[project_id];
+                    let orig_project = orig_domain.projects[project.id];
                     if (!orig_project) {
-                        await ov_DB.create("project", project.id, "domain", domain.id);
-                        await ov_DB.update("project", project);
+                        result = await ov_DB.create("project", project.id, "domain", domain.id);
+                        if (!result.updated) {
+                            errors.push("Failed to create project " + project.id + ": " + result.error.description);
+                            continue;
+                        }
+                        result = await ov_DB.update("project", project);
+                        if (!result.updated) {
+                            errors.push("Failed to update project " + project.id + ": " + result.error.description);
+                            continue;
+                        }
+                        for (let id of Object.keys(project.users)) {
+                            if (project.user[id].password) {
+                                result = await ov_DB.update_password(id, project.user[id].password);
+                                if (!result.updated)
+                                    errors.push("Failed to update password of " + id + ": " + result.error.description);
+                            }
+                        }
                     } else {
-                        //update project name
-                        await update_on_server("user", orig_project, project, "project");
-                        await update_on_server("role", orig_project, project, "project");
-                        await update_on_server("loop", orig_project, project, "project");
+                        if (project.name !== orig_project.name) {
+                            result = await ov_DB.update_key("project", project.id, "name", project.name);
+                            if (!result.updated)
+                                errors.push("Failed to update project " + project.id + " name: " + result.error.description);
+                        }
+                        await delete_from_server("user", orig_project, project, errors);
+                        await delete_from_server("role", orig_project, project, errors);
+                        await delete_from_server("loop", orig_project, project, errors);
+                        await update_on_server("user", orig_project, project, "project", errors);
+                        await update_on_server("role", orig_project, project, "project", errors);
+                        await update_on_server("loop", orig_project, project, "project", errors);
                     }
                 } else
                     errors.push("Project ID is missing\n\n");
             }
+        }
 
-            // let result = { updated: true };
-            // if (Object.keys(domain.users).length || Object.keys(domain.roles).length || Object.keys(domain.loops).length) {
-            //     let tmp_domain_data = {
-            //         id: domain.id,
-            //         name: domain.name,
-            //         users: domain.users,
-            //         roles: domain.roles,
-            //         loops: domain.loops,
-            //         layout: domain.layout
-            //     };
-            //     result = await ov_DB.update("domain", tmp_domain_data);
-            // }
-
-            // if (domain.users)
-            //     for (let user_id of Object.keys(domain.users))
-            //         if (result.updated && domain.users[user_id].password)
-            //             result = await ov_DB.update_password(user_id, domain.users[user_id].password);
-
-            // for (let project_id of Object.keys(domain.projects)) {
-            //     let project = domain.projects[project_id];
-            //     if (project.id) {
-            //         DOM.loading_screen.show("Saving project " + project.id + " on server(s)...");
-            //         if (result.updated && !await ov_DB.check_id(project.id, "project"))
-            //             result = await ov_DB.create("project", project.id, "domain", domain.id);
-            //         if (result.updated)
-            //             result = await ov_DB.update("project", project);
-
-            //         if (project.users)
-            //             for (let user_id of Object.keys(project.users))
-            //                 if (result.updated && project.users[user_id].password)
-            //                     result = await ov_DB.update_password(user_id, project.users[user_id].password);
-            //     } else
-            //         errors.push("Project ID is missing\n\n");
-            // }
-
-            // if (!result.updated)
-            //     errors.push(result.error.description + "\n\n");
-        } else
-            errors.push("Domain ID is missing\n\n");
-    }
+        if (user.admin === "domain") {
+            DOM.loading_screen.show("Saving domain " + domain.id + " on server(s)...");
+            await update_on_server("user", orig_domain, domain, "domain", errors);
+            await update_on_server("role", orig_domain, domain, "domain", errors);
+            await update_on_server("loop", orig_domain, domain, "domain", errors);
+        }
+    } else
+        errors.push("Domain ID is missing\n\n");
 
     await ov_DB.persist();
 
@@ -431,13 +429,14 @@ async function save() {
 
     if (errors.length > 0) {
         DOM.error_dialog_title.innerText = "Saving failed:";
-        DOM.error_report.innerText = "";
+        DOM.error_report.innerHTML = "";
         for (let error of errors) {
             console.error(error);
-            DOM.error_report.innerText += error + "\n\n"
+            DOM.error_report.innerHTML += error + "<br/>"
         }
         DOM.error_dialog.showModal();
-    }
+    } else
+        render(await ov_DB.get_config("domain", user.domain), DOM.sub_view_nav.value);
 }
 
 function deep_equal(a, b) {
@@ -477,31 +476,109 @@ function deep_equal(a, b) {
     return false;
 }
 
-async function delete_from_server(type, orig, update) {
+function contains_whitelist_rule(rule_set, rule) {
+    for (let set_rule of rule_set)
+        if (rule.caller === set_rule.caller && rule.callee === set_rule.callee)
+            return true;
+    return false;
+}
+
+async function permit_whitelist_rule(id, caller, callee, errors) {
+    let result = await ov_SIP.sip_permit(id, caller, callee);
+    if (!result.updated)
+        errors.push("Failed to permit sip rule for loop " + id + " with caller " + caller +
+            " and callee " + callee + ": " + result.error.description);
+    return result;
+}
+
+async function permit_whitelist_rule_set(loop_id, rule_set, errors) {
+    let sip = Object.create(rule_set);
+    let sip_error = false;
+    for (let [index, rule] of rule_set.whitelist.entries()) {
+        let result = await permit_whitelist_rule(loop_id, rule.caller, rule.callee, errors);
+        if (!result) {
+            sip.whitelist.splice(index, 1);
+            sip_error = true;
+        }
+    }
+    if (sip_error)
+        await ov_DB.update_key("loop", loop_id, "sip", sip);
+}
+
+async function revoke_whitelist_rule(id, caller, callee, errors) {
+    let result = await ov_SIP.sip_revoke(id, caller, callee);
+    if (!result.updated)
+        errors.push("Failed to revoke sip rule for loop " + id + " with caller " + caller +
+            " and callee " + callee + ": " + result.error.description);
+}
+
+async function delete_from_server(type, orig, update, errors) {
     let collection = type + "s";
     if (orig[collection])
         for (let id of Object.keys(orig[collection])) {
-            if (!update[collection][id])
-                await ov_DB.remove(type, id);
+            if (!update[collection][id]) {
+                if (type === "loop" && SIP_ONLINE && orig[collection][id].sip) //todo prevent deletion in config if SIP is offline
+                    for (let rule of orig[collection][id].sip.whitelist)
+                        await revoke_whitelist_rule(id, rule.caller, rule.callee, errors);
+                let result = await ov_DB.remove(type, id);
+                if (!result.updated)
+                    errors.push("Failed to delete " + type + " " + id + ": " + result.error.description);
+            }
         }
 }
 
-async function update_on_server(type, orig, update, scope) {
+async function update_on_server(type, orig, update, scope, errors) {
     let collection = type + "s";
+    let result;
     if (update[collection])
         for (let id of Object.keys(update[collection])) {
             let password;
             if (!(orig[collection] && orig[collection][id])) {
-                await ov_DB.create(type, id, scope, orig.id);
+                result = await ov_DB.create(type, id, scope, orig.id);
+                if (!result.updated) {
+                    errors.push("Failed to create " + type + " " + id + ": " + result.error.description);
+                    continue;
+                }
                 if (update[collection][id].password) {
                     password = update[collection][id].password;
                     delete update[collection][id].password;
                 }
-                await ov_DB.update(type, update[collection][id]);
-            } else if (!deep_equal(orig[collection][id], update[collection][id]))
-                await ov_DB.update(type, update[collection][id]);
-            if (password)
-                await ov_DB.update_password(id, password);
+                result = await ov_DB.update(type, update[collection][id]);
+                if (!result.updated) {
+                    errors.push("Failed to update " + type + " " + id + ": " + result.error.description);
+                    continue;
+                }
+                if (type === "loop" && SIP_ONLINE && update[collection][id].sip && update[collection][id].sip.whitelist)
+                    await permit_whitelist_rule_set(id, update[collection][id].sip, errors);
+            } else if (!deep_equal(orig[collection][id], update[collection][id])) {
+                result = await ov_DB.update(type, update[collection][id]);
+                if (!result.updated) {
+                    errors.push("Failed to update " + type + " " + id + ": " + result.error.description);
+                    continue;
+                }
+                if (type === "loop" && SIP_ONLINE) {
+                    if (!orig[collection][id].sip) {
+                        if (update[collection][id].sip && update[collection][id].sip.whitelist)
+                            await permit_whitelist_rule_set(id, update[collection][id].sip, errors);
+                    } else if (!update[collection][id].sip) {
+                        for (let orig_rule of orig[collection][id].sip.whitelist)
+                            await revoke_whitelist_rule(id, orig_rule.caller, orig_rule.callee, errors);
+                    } else if (!deep_equal(orig[collection][id].sip.whitelist, update[collection][id].sip.whitelist)) {
+                        for (let orig_rule of orig[collection][id].sip.whitelist)
+                            if (!contains_whitelist_rule(update[collection][id].sip.whitelist, orig_rule))
+                                await revoke_whitelist_rule(id, orig_rule.caller, orig_rule.callee, errors);
+                        for (let new_rule of update[collection][id].sip.whitelist)
+                            if (!contains_whitelist_rule(orig[collection][id].sip.whitelist, new_rule))
+                                await permit_whitelist_rule(id, new_rule.caller, new_rule.callee, errors);
+                    }
+                }
+            }
+            if (password) {
+                result = await ov_DB.update_password(id, password);
+                if (!result.updated)
+                    errors.push("Failed to update password of " + id + ": " + result.error.description);
+            }
+
         }
 }
 
@@ -510,11 +587,14 @@ export function render_user(user) {
 }
 
 export function render(domain_data, page) {
-    domain = domain_data;
+    orig_domain = domain_data;
+    domain = structuredClone(orig_domain);
     let user = ov_Websockets.user();
     let domain_name = domain.name ? domain.name : user.domain;
     if (domain_name)
         DOM.config_domain_name.innerText = domain_name;
+
+    console.log(user.project)
 
     Settings.render(domain, user.project);
 
