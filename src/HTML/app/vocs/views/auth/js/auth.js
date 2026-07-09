@@ -114,7 +114,6 @@ async function disconnect_handler(websocket, error) {
         if (await ov_Auth.connect(websocket)) {
             View.set_message("");
             let session = websocket.session;
-            console.log(session);
             if (!session) {
                 if (ov_Websockets.current_lead_websocket === websocket || !ov_Websockets.current_lead_websocket.connected)
                     View.display_authentication();
