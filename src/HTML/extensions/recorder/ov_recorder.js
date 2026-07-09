@@ -108,7 +108,7 @@ async function ws_start_recording(loop_id, websocket) {
         return { started: result };
     } catch (error) {
         console.warn(log_prefix(websocket) + "requesting to start recorder for loop " + loop_id + " failed.", error.error);
-        return { error: error };
+        return { error: error.error };
     }
 }
 
@@ -118,10 +118,10 @@ async function ws_stop_recording(loop_id, websocket) {
         console.log(log_prefix(websocket) + "requesting to stop recorder for loop " + loop_id + "...");
         let result = await websocket.send_event(EVENT.STOP_RECORD, parameter);
         console.log(log_prefix(websocket) + "recorder for loop " + loop_id + " stopped");
-        return result;
+        return { stopt: result };
     } catch (error) {
         console.warn(log_prefix(websocket) + "requesting to stop recorder for loop " + loop_id + " failed.", error.error);
-        return false;
+        return { error: error.error };
     }
 }
 

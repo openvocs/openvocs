@@ -52,9 +52,9 @@ export default class ov_RBAC_Graph extends HTMLElement {
         if (oldValue === newValue)
             return;
         if (name === "managed_users")
-            this.#managed_users = newValue;
+            this.#managed_users = this.hasAttribute("managed_users");
         if (name === "managed_roles")
-            this.#managed_roles = newValue;
+            this.#managed_roles = this.hasAttribute("managed_roles");
     }
 
     // -----------------------------------------------------------------
@@ -171,7 +171,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
             let subset = this.#subsets.find(subset => subset.id === event.detail.value);
             node.subset = subset.id;
             node.global = subset.domain;
-            node.view_only = subset.view_only || (node.type === "role" && this.#managed_roles) || (node.type === "user" && this.#managed_users);
+            node.view_only = subset.view_only || (node.type === "user" && this.#managed_users);
         });
 
         this.#dom.add_user.addEventListener("click", () => {
@@ -400,12 +400,13 @@ export default class ov_RBAC_Graph extends HTMLElement {
         let container;
         if (type === "user") {
             container = this.#dom.node_layer_1;
-            if (this.#managed_users)
+            if (this.#managed_users){
                 element.view_only = true;
+                if (this.managed_roles)
+                    element.classList.add("edges_view_only");
+            }
         } else if (type === "role") {
             container = this.#dom.node_layer_2;
-            if (this.#managed_roles)
-                element.view_only = true;
         } else if (type === "loop")
             container = this.#dom.node_layer_3;
         if (!prepend)

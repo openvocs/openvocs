@@ -37,14 +37,14 @@ export async function check_ldap(ws) {
     try {
         console.log(log_prefix(ws) + "checking auth version...");
         let result = await ws.send_event(ov_Websocket.EVENT.LDAP_CHECK);
-        if (result.response)
+        if (result.user)
             console.log(log_prefix(ws) + "this instant uses LDAP auth");
         else
             console.log(log_prefix(ws) + "this instant uses openvocs auth");
-        return result.response;
+        return result;
     } catch (error) {
         console.warn(log_prefix(ws) + "checking auth version failed. Assuming openvocs auth.", error.error);
-        return false;
+        return { users: false, roles: false };
     }
 }
 
@@ -117,10 +117,10 @@ export async function create(type, id, scope, scope_id, ws) {
         };
         await ws.send_event(ov_Websocket.EVENT.CREATE, parameter);
         console.log(log_prefix(ws) + "created new " + type + " " + id);
-        return true;
+        return { updated: true };
     } catch (error) {
         console.warn(log_prefix(ws) + "creating " + type + " failed.", error.error);
-        return false;
+        return { updated: false, error: error.error };
     }
 }
 
@@ -206,10 +206,10 @@ export async function remove(type, id, ws) {
         };
         let result = await ws.send_event(ov_Websocket.EVENT.DELETE, parameter);
         console.log(log_prefix(ws) + "deleted " + type + " " + id);
-        return result;
+        return { updated: true };
     } catch (error) {
         console.warn(log_prefix(ws) + "delete " + type + " " + id + " failed.", error.error);
-        return false;
+        return { updated: false, error: error.error };
     }
 }
 

@@ -63,7 +63,7 @@ export function init(view_id, ldap_auth) {
     DOM.project_list = document.querySelector("#project_list .projects");
     DOM.new_project = document.querySelector("#new_project")
 
-    if (!ldap_auth) {
+    if (!ldap_auth.users) {
         DOM.ldap_button.style.display = "none";
         DOM.ldap_notice.style.display = "none";
     }

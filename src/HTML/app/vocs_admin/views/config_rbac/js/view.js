@@ -68,8 +68,8 @@ export function init(view_id, ldap_auth) {
     VIEW_ID = view_id;
 
     DOM.graph.allow_highlighted_loops = ALLOW_HIGHLIGHTED_LOOPS;
-    DOM.graph.managed_users = ldap_auth;
-    DOM.graph.managed_roles = ldap_auth;
+    DOM.graph.managed_users = ldap_auth.users;
+    DOM.graph.managed_roles = ldap_auth.roles;
 }
 
 export function render(domain_data, project_id, view_domain_only) {

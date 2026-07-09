@@ -108,7 +108,7 @@ export async function sip_permit(loop_id, caller, callee, websocket) {
     let lead_promise;
     for (let ws of ov_Websockets.list) {
         if (ws.authenticated) {
-            let promise = ws_sip_permit(loop_id, caller, callee, websocket);
+            let promise = ws_sip_permit(loop_id, caller, callee, ws);
             if (ws === ov_Websockets.prime_websocket)
                 lead_promise = promise;
         }
@@ -123,7 +123,7 @@ export async function sip_revoke(loop_id, caller, callee, websocket) {
     let lead_promise;
     for (let ws of ov_Websockets.list) {
         if (ws.authenticated) {
-            let promise = ws_sip_revoke(loop_id, caller, callee, websocket);
+            let promise = ws_sip_revoke(loop_id, caller, callee, ws);
             if (ws === ov_Websockets.prime_websocket)
                 lead_promise = promise;
         }
@@ -181,12 +181,12 @@ async function ws_sip_permit(loop_id, caller, callee, websocket) {
     try {
         console.log(log_prefix(websocket) + "add sip permit...");
         let parameter = { loop: loop_id, caller: caller, callee: callee };
-        let result = await websocket.send_event(EVENT.SIP_PERMIT, parameter);
+        await websocket.send_event(EVENT.SIP_PERMIT, parameter);
         console.log(log_prefix(websocket) + "added sip permit");
-        return result;
+        return { updated: true };
     } catch (error) {
         console.warn(log_prefix(websocket) + "adding sip permit failed.", error);
-        return false;
+        return { updated: false, error: error.error };
     }
 }
 
@@ -194,12 +194,12 @@ async function ws_sip_revoke(loop_id, caller, callee, websocket) {
     try {
         console.log(log_prefix(websocket) + "revoke sip permit...");
         let parameter = { loop: loop_id, caller: caller, callee: callee };
-        let result = await websocket.send_event(EVENT.SIP_REVOKE, parameter);
+        await websocket.send_event(EVENT.SIP_REVOKE, parameter);
         console.log(log_prefix(websocket) + "revoked sip permit");
-        return result;
+        return { updated: true };
     } catch (error) {
         console.warn(log_prefix(websocket) + "revoking sip permit failed.", error);
-        return false;
+        return { updated: false, error: error.error };
     }
 }
 
