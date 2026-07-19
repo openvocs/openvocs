@@ -195,6 +195,7 @@ export default class ov_Loop_Pages extends HTMLElement {
         this.#pages[this.#current_page_index].add(loop);
 
         this.set_layout(this.#settings);
+        return loop;
     }
 
     reset_grid() {

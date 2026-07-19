@@ -30,6 +30,7 @@
 import * as ov_WebRTCs from "/lib/ov_media/ov_webrtc_list.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Auth from "/lib/ov_auth.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 import * as Loop_View from "./loop_view.js";
 
@@ -300,9 +301,9 @@ export function init() {
 
 async function login(username, password, websocket) {
     let result = await ov_Auth.login(username, password, websocket);
-    if (result)
-        result = await ov_Auth.collect_roles(websocket);
-    if (result && ov_Websockets.user().role)
+    if (result.authenticated)
+        result = await ov_DB.collect_roles(websocket);
+    if (result.roles_collected && ov_Websockets.user().role)
         result = await ov_Auth.authorize_role(ov_Websockets.user().role, websocket)
     return result;
 }
@@ -322,26 +323,32 @@ export async function ask_for_relogin() {
                     promises.push(login(event.detail.username, event.detail.password, ws));
 
 
-            let result = await Promise.all(promises);
+            let results = await Promise.all(promises);
 
             DOM.login_form.clear_password_field();
             DOM.login_form.stop_loading_animation();
 
-            if (!result.includes(false)) {
+            let success = true;
+            for (let result of results) {
+                if (!result.authorized) {
+                    success = false;
+                    let error_code = result.error ? result.error.code : undefined;
+                    if (error_code === 5000)
+                        DOM.login_message.innerText = "You have entered an invalid username or password.";
+                    else if (error_code === undefined)
+                        DOM.login_message.innerText = "Connection to server(s) lost. Please wait.";
+                    else
+                        DOM.login_message.innerText = "Error: " + result.error.description + " (Code: " + error_code + ")";
+                    break;
+                }
+            }
+
+            if (success) {
                 DOM.login_dialog.hide();
                 DOM.menu_warning.style.display = "none";
-                resolve(true);
-            } else {
-                let error = ov_Websockets.prime_websocket.server_error;
-                let error_code = error ? error.code : undefined;
-                if (error_code === 5000)
-                    DOM.login_message.innerText = "You have entered an invalid username or password.";
-                else if (error_code === undefined)
-                    DOM.login_message.innerText = "Connection to server(s) lost. Please wait.";
-                else
-                    DOM.login_message.innerText = "Error: " + error.description + " (Code: " + error.code + ")";
-                resolve(false);
-            }
+                resolve({ authorized: true });
+            } else
+                resolve({ authorized: false });
         }
         DOM.login_form.addEventListener("login_triggered", handle_login);
     });

@@ -17,6 +17,23 @@
 			"type" : "UDP"
 		},
 
+		"events" : 
+		{
+			"host" : "localhost",
+			"port" : 60000,
+			"type" : "TCP"
+		},
+
+		"session" : 
+		{
+			"path" : "/tmp/openvocs/sessions"
+		},
+
+		"password" : 
+		{
+			"path" : "./src/service/ov_mc_vocs/config/password"
+		},
+
 		"sip" :
 		{
 			"timeout":
@@ -56,19 +73,6 @@
 					"host" : "127.0.0.1",
 					"type" : "TCP",
 					"port" : 12345
-				}
-			}
-		},
-
-		"events" :
-		{
-			"socket" :
-			{
-				"manager" :
-				{
-					"host" : "127.0.0.1",
-					"type" : "TCP",
-					"port" : 44444
 				}
 			}
 		},
@@ -198,24 +202,11 @@
 
     "webserver":
 	{
-		"name":"ov_vocs_service",
-
-		"domains" : 
-		{
-			"localhost" : "./src/HTML/"
-		},
-
 		"socket":
 		{
 			"host":"0.0.0.0",
 			"port":1443,
 			"type":"TCP"
-		},
-		"stun":
-		{
-			"host":"0.0.0.0",
-			"port":33533,
-			"type":"UDP"
 		}
 	}
 }

@@ -33,6 +33,7 @@ import ov_Websocket from "/lib/ov_websocket.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_WebRTCs from "/lib/ov_media/ov_webrtc_list.js";
 import * as ov_Vocs from "/lib/ov_vocs.js";
+import * as ov_DB from "/lib/ov_db.js";
 
 import ov_Loop_Pages from "/components/loops/pages/loop_pages.js";
 import ov_Loop from "/components/loops/loop/loop.js";
@@ -76,12 +77,11 @@ export async function init() {
 // init
 //-----------------------------------------------------------------------------
 export async function draw() {
-
     current_talk_loop = undefined;
 
-    let loops_data = await ov_Vocs.collect_loops(ov_Websockets.current_lead_websocket);
+    let loops_data = await ov_DB.collect_loops(ov_Websockets.current_lead_websocket);
 
-    let settings = await ov_Vocs.collect_keyset_layout(ov_Websockets.user().project, ov_Websockets.current_lead_websocket);
+    let settings = await ov_DB.collect_keyset_layout(ov_Websockets.user().project, ov_Websockets.current_lead_websocket);
 
     DOM.loops.draw(loops_data, settings, ov_Websockets.current_lead_websocket.server_name);
 
@@ -112,8 +112,7 @@ export async function draw() {
     await Promise.allSettled(promises);
 
     if (pages[0].sip) {
-        let sip = await ov_SIP.sip(ov_Websockets.current_lead_websocket);
-        if (sip.connected) {
+        if (await ov_DB.check_sip(ov_Websockets.current_lead_websocket)) {
             let calls = await ov_SIP.sip_list_calls(ov_Websockets.current_lead_websocket);
             for (let call of Object.keys(calls)) {
                 for (let page of pages) {
@@ -122,16 +121,10 @@ export async function draw() {
                         loop.add_call(call, calls[call]);
                 }
             }
-        } else {
-            for (let page of pages)
-                for (let loop of page.values)
-                    loop.sip_offline = true;
         }
     }
 
     DOM.loading_screen.hide();
-
-
 }
 
 // export function resize(settings) {
@@ -196,9 +189,9 @@ function handle_talk_in_loop(event) {
             if (loop) {
                 if (event.detail.message.user || event.detail.message.role) {
                     if (event.detail.message.state)
-                        loop.add_active_participant(event.detail.message.client, event.detail.message);
+                        loop.add_active_speaker(event.detail.message.client, event.detail.message);
                     else
-                        loop.remove_active_participant(event.detail.message.client);
+                        loop.remove_active_speaker(event.detail.message.client);
                 }
             }
         }
@@ -257,7 +250,6 @@ function show_loop_activity(loop_id, state) {
 export async function update_loop_state(loop, new_state, websocket) {
     DOM.loading_screen.show("Updating loop state...");
 
-    let result = true;
     let mute = ov_WebRTCs.local_stream() ? !ov_WebRTCs.local_stream().mute : true;
     let response = await ov_Vocs.switch_loop_state(loop.loop_id, loop.state, new_state, mute, websocket);
     if (response.response) {
@@ -270,17 +262,17 @@ export async function update_loop_state(loop, new_state, websocket) {
         } else if (current_talk_loop && current_talk_loop.loop_id === loop.loop_id)
             current_talk_loop = null;
 
-        loop.participants = response.response.participants.length;
-        if (response.response.activity.state)
-            loop.add_active_participant(response.response.activity.client, response.response.activity);
-        else
-            loop.remove_active_participant(response.response.activity.client);
-        result = response.response;
-    } else
-        result = !response.error;
+        loop.participants = response.response.participants ? response.response.participants.length : 0;
+        if (response.response.activity) {
+            if (response.response.activity.state)
+                loop.add_active_speaker(response.response.activity.client, response.response.activity);
+            else
+                loop.remove_active_speaker(response.response.activity.client);
+        }
+    }
 
     DOM.loading_screen.hide();
-    return result
+    return !response.error;
 }
 
 export async function talk(unmute) {
@@ -302,9 +294,9 @@ async function update_activity(loop, unmute) {
     let response = await ov_Vocs.talk_in_loop(loop.loop_id, !!unmute);
     if (response) {
         if (response.state)
-            loop.add_active_participant(response.client, response);
+            loop.add_active_speaker(response.client, response);
         else
-            loop.remove_active_participant(response.client);
+            loop.remove_active_speaker(response.client);
         DOM.loading_screen.hide();
         return true;
     }
@@ -312,12 +304,11 @@ async function update_activity(loop, unmute) {
 }
 
 export async function show_page(new_page) {
-
     DOM.loading_screen.show("Switching Page...");
     let role = ov_Websockets.user().role;
 
     if (new_page === undefined) {
-        loop_settings = await ov_Vocs.collect_user_settings();
+        loop_settings = await ov_DB.collect_user_settings();
         new_page = loop_settings && loop_settings.roles && loop_settings.roles[role] ? loop_settings.roles[role].page : 0;
     }
 
@@ -357,7 +348,7 @@ export async function show_page(new_page) {
         settings[role] = role_settings;
         await ov_Vocs.update_user_role_settings(settings);
     }
-    
+
     DOM.loops.show_page(new_page);
     console.log("show page", new_page);
 
@@ -370,5 +361,5 @@ export async function sync_loops(websocket) {
     for (let page of pages)
         for (let loop of page.values)
             await update_loop_state(loop, loop.state, websocket);
-    await ov_Vocs.update_user_settings(loop_settings, websocket);
+    await ov_DB.update_user_settings(loop_settings, websocket);
 }

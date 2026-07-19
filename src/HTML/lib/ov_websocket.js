@@ -37,20 +37,52 @@ import ov_Project_Map from "./ov_data_structure/ov_project_map.js";
 import ov_Domain_Map from "./ov_data_structure/ov_domain_map.js";
 
 export default class ov_Websocket {
-    // core events
     static EVENT = {
-        REGISTER: "register",
+        EVENTS: "get_events",
+
+        //auth events
         LOGIN: "login",
-        EXTEND_SESSION: "update_login",
+        EXTEND_SESSION: "extend_login_session",
         AUTHORIZE_ROLE: "authorize",
         LOGOUT: "logout",
 
-        GET: "get", //domain, project, user details
-        USER_ROLES: "user_roles",
-        ADMIN_DOMAINS: "admin_domains",
-        ADMIN_PROJECTS: "admin_projects",
+        //system events
+        REGISTER: "register",
+        BROADCAST: "broadcast",
+        LDAP_CHECK: "is_ldap_enabled",
+        SIP: "sip_is_enabled",
 
-        BROADCAST: "broadcast"
+        //DB events
+        CHECK_ID: "db_check_id_exists",
+        VERIFY: "db_verify",
+
+        CREATE: "db_create", //project, user, role, loop
+        LDAP_IMPORT: "db_ldap_import",
+
+        UPDATE: "db_update", //project, user, role, loop
+        UPDATE_KEY: "db_update_key",
+        UPDATE_PASSWORD: "db_update_password",
+
+        DELETE: "db_delete", //project, user, role, loop
+        DELETE_KEY: "db_delete_key",
+
+        GET: "db_get", //domain, project, user details
+        GET_KEY: "db_get_key",
+        USER_ROLES: "db_get_user_roles",
+        LOOPS: "db_get_all_loops",
+        ROLE_LOOPS: "db_get_role_loops",
+        ADMIN_DOMAINS: "db_get_admin_domains",
+        ADMIN_PROJECTS: "db_get_admin_projects",
+        HIGHEST_MULTICAST_PORT: "db_get_highest_port",
+
+        SET_KEYSET_LAYOUT: "db_set_keyset_layout",
+        KEYSET_LAYOUT: "db_get_keyset_layout",
+
+        UPDATE_USER_SETTINGS: "db_set_user_data",
+        USER_SETTINGS: "db_get_user_data",
+
+        PERSIST: "db_save",
+        LOAD_DB_CONTENT: "db_load"
     };
 
     static REQUEST_SCOPE = {
@@ -69,9 +101,12 @@ export default class ov_Websocket {
 
     static WEBSOCKET_STATE = {
         DISCONNECTED: 0,
-        CONNECTED: 1,
-        AUTHENTICATED: 2,
-        AUTHORIZED: 3
+        CONNECTING: 1,
+        CONNECTED: 2,
+        AUTHENTICATING: 3,
+        AUTHENTICATED: 4,
+        AUTHORIZING: 5,
+        AUTHORIZED: 6
     }
 
     static #EXTEND_SESSION_INTERVAL = 1800000; // 30min
@@ -87,6 +122,7 @@ export default class ov_Websocket {
 
     #websocket = null;
     #ws_state;
+    #session;
 
     #resend_events;
 
@@ -99,10 +135,11 @@ export default class ov_Websocket {
 
     #record;
 
-    constructor(name, url, client_id, record) {
+    constructor(name, url, session, record) {
         this.#name = name;
         this.#url = url;
-        this.#client_id = client_id ? client_id : create_uuid();
+        this.#session = session;
+        this.#client_id = session ? session.client : create_uuid();
         this.resend_events_after_timeout = false;
         this.log_incoming_events = false;
         this.log_outgoing_events = false;
@@ -111,6 +148,7 @@ export default class ov_Websocket {
         this.#record = record;
 
         this.#event_target = new EventTarget();
+        this.#event_target.websocket = this;
         this.addEventListener = this.#event_target.addEventListener.bind(this.#event_target);
         this.removeEventListener = this.#event_target.removeEventListener.bind(this.#event_target);
     }
@@ -152,12 +190,24 @@ export default class ov_Websocket {
         return this.#url;
     }
 
+    get disconnected() {
+        return this.#ws_state === ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
+    }
+
+    get connecting() {
+        return this.#ws_state === ov_Websocket.WEBSOCKET_STATE.CONNECTING;
+    }
+
+    get connected() {
+        return this.#ws_state > ov_Websocket.WEBSOCKET_STATE.CONNECTING;
+    }
+
     get authenticated() {
-        return this.#ws_state === ov_Websocket.WEBSOCKET_STATE.AUTHENTICATED || this.authorized;
+        return this.#ws_state > ov_Websocket.WEBSOCKET_STATE.AUTHENTICATING;
     }
 
     get authorized() {
-        return this.#ws_state === ov_Websocket.WEBSOCKET_STATE.AUTHORIZED;
+        return this.#ws_state > ov_Websocket.WEBSOCKET_STATE.AUTHORIZING;
     }
 
     get server_error() {
@@ -168,14 +218,17 @@ export default class ov_Websocket {
         return this.#user;
     }
 
-    get tasks_running() {
-        if (!this.is_connecting)
-            return -1;
-        return this.#pending_requests.size;
-    }
-
     get record() {
         return this.#record;
+    }
+
+    get session() {
+        if (this.#session) {
+            let current_time = new Date().getTime();
+            if (current_time > this.#session.expiration)
+                this.#session = null;
+        }
+        return this.#session;
     }
 
     //-----------------------------------------------------------------------------
@@ -183,16 +236,17 @@ export default class ov_Websocket {
     //-----------------------------------------------------------------------------
     connect() {
         return new Promise((resolve, reject) => {
-            if (!this.is_connecting) {
+            if (!this.connecting && !this.connected) {
                 console.log(this.#log_prefix() + "client id: " + this.#client_id);
                 console.log(this.#log_prefix() + "connect to websocket " + this.#url);
                 this.#pending_requests = new Set();
 
+                let error;
+                this.#ws_state = ov_Websocket.WEBSOCKET_STATE.CONNECTING;
                 this.#websocket = new WebSocket(this.#url);
 
                 this.#websocket.onclose = (event) => {
-                    console.log(this.#log_prefix() + "close")
-                    this.#handel_close_websocket(event);
+                    this.#handel_close_websocket(event, error);
                     reject(false);
                 };
 
@@ -200,42 +254,33 @@ export default class ov_Websocket {
                     this.#handle_websocket_event(JSON.parse(response.data));
                 };
 
-                this.#websocket.onopen = () => {
+                this.#websocket.onopen = async () => {
                     console.log(this.#log_prefix() + "connected");
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.CONNECTED;
                     this.#event_target.dispatchEvent(new CustomEvent("connected"));
                     this.#error = undefined;
+                    if (BROADCAST_REGISTRATION)
+                        this.send_event(ov_Websocket.EVENT.REGISTER);
                     resolve(true);
                 };
 
                 this.#websocket.onerror = (error) => {
-                    console.error(this.#log_prefix() + "websocket error", error);
+                    console.error(this.#log_prefix() + "websocket error");
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
-                    this.#error = { description: "Websocket Error. Websocket closed with", code: 1006 };
+                    error = { description: "Websocket Error" };
                     reject(false);
                 };
             } else
-                resolve(this.is_ready);
+                resolve(this.connected);
         });
     }
-
-
 
     disconnect() {
         console.log(this.#log_prefix() + "disconnect websocket");
         this.#websocket.close();
     }
 
-    get is_connecting() {
-        return this.#websocket && (this.#websocket.readyState === WebSocket.CONNECTING ||
-            this.#websocket.readyState === WebSocket.OPEN);
-    }
-
-    get is_ready() {
-        return this.#websocket && this.#websocket.readyState === WebSocket.OPEN;
-    }
-
-    #handel_close_websocket(event) {
+    #handel_close_websocket(event, error) {
         if (event)
             console.warn(this.#log_prefix() + "Websocket closed. Code: " + event.code +
                 ", reason: " + event.reason, + ", clean: " + event.wasClean);
@@ -256,21 +301,18 @@ export default class ov_Websocket {
 
         clearInterval(this.#extend_session_interval_id);
 
-        this.#event_target.dispatchEvent(new CustomEvent("disconnected"));
+        this.#event_target.dispatchEvent(new CustomEvent("disconnected", { detail: error }));
 
     }
 
     //-----------------------------------------------------------------------------
     // response handling
     //-----------------------------------------------------------------------------
-    #handle_websocket_event(event) {
+    async #handle_websocket_event(event) {
         if (this.#log_incoming_events) {
             if (event.event === ov_Websocket.EVENT.LOGIN)
-                console.log(this.#log_prefix() + "incoming event: LOGIN (content hidden)");
-            else if (event.event === "ldap_import")
-                console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
-            else
-                console.log(this.#log_prefix() + "incoming event", JSON.stringify(event));
+                event.request.parameter.password = "***";
+            console.log(this.#log_prefix() + "incoming event", JSON.stringify(event));
         }
 
         if (!event.hasOwnProperty("event")) {
@@ -295,7 +337,6 @@ export default class ov_Websocket {
         if (event.hasOwnProperty("error")) {
             this.#error = event.error;
             error = event.error;
-            error.temp_error = error.code >= 50000;
             console.error(this.#log_prefix() + "Error " + this.#error.code + ": " + this.#error.description);
 
             if (error.code === 5000) { // Auth error
@@ -312,7 +353,7 @@ export default class ov_Websocket {
             return;
         }
 
-        let message = this.#process_incoming_event(event, error);
+        let message = await this.#process_incoming_event(event, error);
         if (error)
             this.#event_target.dispatchEvent(new CustomEvent(event.event, { detail: { message: message, sender: sender, error: error } }));
         else
@@ -327,12 +368,13 @@ export default class ov_Websocket {
             let message = JSON.stringify(event);
             if (this.#log_outgoing_events) {
                 if (event.event === ov_Websocket.EVENT.LOGIN)
-                    console.log(this.#log_prefix() + "outgoing event: LOGIN (content hidden)");
-                else if (event.event === "ldap_import")
-                    console.log(this.#log_prefix() + "incoming event: LDAP IMPORT (content hidden)");
-                else
-                    console.log(this.#log_prefix() + "outgoing event", message);
+                    event.parameter.password = "***";
+                console.log(this.#log_prefix() + "outgoing event", JSON.stringify(event));
             }
+            if (event.event === ov_Websocket.EVENT.LOGIN)
+                this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHENTICATING;
+            if (event.event === ov_Websocket.EVENT.AUTHORIZE_ROLE)
+                this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHORIZING;
             this.#pending_requests.add(event.uuid);
             this.#websocket.send(message);
         } else
@@ -389,7 +431,7 @@ export default class ov_Websocket {
                 reject({ error: "server disconnected" });
             }
 
-            if (!this.is_ready)
+            if (!this.connected)
                 reject({ error: "not connected to server" });
 
             this.addEventListener(event.event, event_handler);
@@ -404,7 +446,7 @@ export default class ov_Websocket {
     //-----------------------------------------------------------------------------
     // implementation of ov signaling protocol
     //-----------------------------------------------------------------------------
-    #process_incoming_event(event, error) {
+    async #process_incoming_event(event, error) {
         let message = !!event.response || event.response === false ? event.response : event.parameter;
 
         if (event.type !== ov_Websocket.MESSAGE_TYPE.LOOP_BROADCAST) {
@@ -417,18 +459,16 @@ export default class ov_Websocket {
             case ov_Websocket.EVENT.LOGIN:
                 if (!error) {
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHENTICATED;
-                    let session = !message.session ? event.session : message.session;
-                    ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, session);
+                    this.#session = ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, message.session);
                     clearInterval(this.#extend_session_interval_id);
                     this.#extend_session_interval_id = setInterval(async () => {
-                        let session = ov_Web_Storage.get_session(APP, this.#url);
-                        if (session === null) {
+                        if (this.session === null) {
                             console.warn("(" + this.server_name + ") session not found or expired.");
                         } else {
                             try {
                                 console.log("(" + this.server_name + ") extend session...");
-                                let result = await this.send_event(ov_Websocket.EVENT.EXTEND_SESSION, { session: session.session, user: this.#user.id });
-                                ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, result.session);
+                                let result = await this.send_event(ov_Websocket.EVENT.EXTEND_SESSION, { session: this.#session.session, user: this.#user.id });
+                                this.#session = ov_Web_Storage.extend_session(APP, this.#url, this.#client_id, this.#user.id, result.session);
                                 console.log("(" + this.server_name + ") extended session");
                             } catch (error) {
                                 console.warn("(" + this.server_name + ") extend session failed.", error);
@@ -436,46 +476,46 @@ export default class ov_Websocket {
                         }
 
                     }, ov_Websocket.#EXTEND_SESSION_INTERVAL);
-                }
+                } else
+                    this.#ws_state = ov_Websocket.WEBSOCKET_STATE.CONNECTED;
                 break;
             case ov_Websocket.EVENT.AUTHORIZE_ROLE:
                 if (!error) {
                     this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHORIZED;
-                    this.#user.role = event.response.id;
+                    this.#user.role = message.id;
+                    if (!this.#user.roles)
+                        await this.send_event(ov_Websocket.EVENT.USER_ROLES);
                     if (this.#user.roles) {
                         let role = this.#user.roles.find(this.#user.role);
-                        if (role)
+                        if (role && role.project)
                             this.#user.project = role.project;
                     }
-                    ov_Web_Storage.add_role_to_session(APP, this.#url, this.#user.role);
-                }
-                message = event.response.id;
+                    this.#session = ov_Web_Storage.add_role_to_session(APP, this.#url, this.#user.role);
+                } else
+                    this.#ws_state = ov_Websocket.WEBSOCKET_STATE.AUTHENTICATED;
                 break;
             case ov_Websocket.EVENT.LOGOUT:
                 this.#ws_state = ov_Websocket.WEBSOCKET_STATE.DISCONNECTED;
                 break;
 
             case ov_Websocket.EVENT.GET:
-                if (event.response.type === ov_Websocket.REQUEST_SCOPE.USER) {
-                    this.#user.parse_values(event.response.result);
-                    if (event.response.result.domain) {
-                        this.#user.domain = event.response.result.domain.domain;
-                        if (!this.#user.project)
-                            this.#user.project = event.response.result.domain.project;
-                    }
-                    message = this.#user;
-                } else if (event.response.type === ov_Websocket.REQUEST_SCOPE.PROJECT)
-                    message = event.response.result;
+                if (message.type === ov_Websocket.REQUEST_SCOPE.USER && message.data.id === this.#user.id) {
+                    this.#user.parse_values(message.data);
+                    // if (message.data.domain) {
+                    //     this.#user.domain = message.data.domain.domain;
+                    //     if (!this.#user.project)
+                    //         this.#user.project = message.data.domain.project;
+                    // }
+                }
                 break;
-
             case ov_Websocket.EVENT.ADMIN_DOMAINS:
-                this.#user.domains = ov_Domain_Map.parse(event.response.domains);
+                this.#user.domains = ov_Domain_Map.parse(message.domains);
                 break;
             case ov_Websocket.EVENT.ADMIN_PROJECTS:
-                this.#user.projects = ov_Project_Map.parse(event.response.projects);
+                this.#user.projects = ov_Project_Map.parse(message.projects);
                 break;
             case ov_Websocket.EVENT.USER_ROLES:
-                this.#user.roles = ov_Role_List.parse(event.response.roles);
+                this.#user.roles = ov_Role_List.parse(message.roles);
                 message = this.#user.roles;
                 break;
         }
@@ -500,7 +540,8 @@ export default class ov_Websocket {
 
     logout() {
         ov_Web_Storage.clear(APP, this.websocket_url);
-        if (this.is_ready || this.authenticated)
+        this.#session = null;
+        if (this.connected || this.authenticated)
             return this.#request(this.#create_event(ov_Websocket.EVENT.LOGOUT));
         return true;
     }

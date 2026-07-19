@@ -31,8 +31,6 @@ import * as ov_Websockets from "/lib/ov_websocket_list.js";
 import * as ov_Recorder from "/extensions/recorder/ov_recorder.js";
 import * as View from "./view.js";
 
-export { collect } from "./view.js";
-
 export const VIEW_ID = "vocs_admin_recorder";
 var view_container;
 
@@ -42,7 +40,7 @@ export async function init(container) {
     View.init(VIEW_ID);
 }
 
-export async function render(loops) {
+export async function render(domain_data, project_id, view_domain_only) {
     let websocket;
     for (let ws of ov_Websockets.list) {
         if (ws.record === true) {
@@ -56,35 +54,39 @@ export async function render(loops) {
         if (recorded_loops)
             recorded_loops = recorded_loops.map((x) => x.loop);
 
-        let first_loop;
+        let current_loop_id = View.current_loop ? View.current_loop.id : undefined;
+        let selected_loop;
 
         View.clear_loops();
-        if (loops)
-            for (let id of Object.keys(loops)) {
-                let active = recorded_loops.includes(id)
-                let loop = View.add_loop(id, loops[id], active);
-                if (!first_loop)
-                    first_loop = loop;
+
+        let proj = domain_data.projects[project_id];
+
+        if (proj.loops)
+            for (let id of Object.keys(proj.loops)) {
+                let active = recorded_loops.includes(id);
+                let loop = View.add_loop(id, proj.loops[id], active);
+                if (loop.id === current_loop_id || !selected_loop)
+                    selected_loop = loop;
             }
 
-        if (first_loop)
-            View.select_loop(first_loop);
+        if (domain_data.loops)
+            for (let id of Object.keys(domain_data.loops)) {
+                let active = recorded_loops.includes(id);
+                let loop = View.add_loop(id, domain_data.loops[id], active);
+                loop.domain = true;
+                if (view_domain_only)
+                    loop.disabled = true;
+                if (loop.id === current_loop_id || !selected_loop)
+                    selected_loop = loop;
+            }
 
-        /*if (!await ov_DB.domains() || !await ov_DB.projects()){
-            ov_Websockets.prime_websocket.disconnect();
-        }
-    
-        View.draw(ov_Websockets.user());
-    
-        console.log("(overview) View rendered");
-    
-        ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);*/
+        if (selected_loop)
+            View.select_loop(selected_loop);
     }
 }
 
 export function remove() {
     console.log("(recorder config) unload");
-    ov_Websockets.prime_websocket.removeEventListener("disconnected", on_disconnect);
     if (view_container)
         view_container.replaceChildren();
 }
@@ -100,15 +102,4 @@ async function loadCSS() {
     const style = document.createElement('style');
     style.textContent = await response.text();
     return style;
-}
-
-async function on_disconnect() {
-    /*if (View.logout_triggered) {
-        ov_Websockets.reload_page();
-        return;
-    }
-    console.warn("Disconnected from prime server. Trying to reconnect...");
-    View.display_loading_screen(true, "Disconnected from prime server. Trying to reconnect...");
-    if (await ov_Auth.relogin(ov_Websockets.prime_websocket))
-        View.display_loading_screen(false);*/
 }

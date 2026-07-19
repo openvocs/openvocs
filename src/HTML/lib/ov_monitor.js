@@ -28,87 +28,44 @@
 
     ---------------------------------------------------------------------------
 */
-
+import ov_Websocket from "./ov_websocket.js";
 import * as ov_Websockets from "./ov_websocket_list.js";
 
-var RETRIES_ON_TEMP_ERROR = 5;
-
 const EVENT = {
-    AUTHORIZE: "authorize",
-    BROADCAST: "broadcast",
-    LOOPS: "get_all_loops"
+    CLIENTS: "monitor_get_clients",
+    MIXER_STATES: "monitor_mixer_state",
+    CONNECTIONS_STATE: "monitor_connections_state",
+    MIXER_OVERVIEW: "monitor_mixer_overview",
+    SESSION_STATE: "monitor_session_state",
+
 }
 
 export async function broadcast_switch_server(server_id, ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
-    let params = { type: "server_switch", server: server_id }
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "broadcast server switch to server " + server_id + "...");
-            await ws.send_event(EVENT.BROADCAST, params);
-            console.log(log_prefix(ws) + "server switch broadcast successful");
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to broadcast server switch again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "broadcast server switch failed.", error);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(ws) + "broadcast server switch to server " + server_id + "...");
+        let params = { type: "server_switch", server: server_id }
+        await ws.send_event(ov_Websocket.EVENT.BROADCAST, params);
+        console.log(log_prefix(ws) + "server switch broadcast successful");
+        return true;
+    } catch (error) {
+        console.warn(log_prefix(ws) + "broadcast server switch failed.", error.error);
+        return false;
     }
-    return true;
 }
 
 export async function broadcast_update(ws) {
     ws = ws ? ws : ov_Websockets.prime_websocket;
-    let params = { type: "page_update" }
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "broadcast update page...");
-            await ws.send_event(EVENT.BROADCAST, params);
-            console.log(log_prefix(ws) + "page update broadcast successful");
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to broadcast update page again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "broadcast update page failed.", error);
-                return false;
-            }
-        }
+    try {
+        console.log(log_prefix(ws) + "broadcast update page...");
+        let params = { type: "page_update" }
+        await ws.send_event(ov_Websocket.EVENT.BROADCAST, params);
+        console.log(log_prefix(ws) + "page update broadcast successful");
+        return true;
+    } catch (error) {
+        console.warn(log_prefix(ws) + "broadcast update page failed.", error.error);
+        return false;
     }
-    return true;
-}
-
-export async function get_loops(ws) {
-    let result;
-    ws = ws ? ws : ov_Websockets.prime_websocket;
-    for (let count = 0; count <= RETRIES_ON_TEMP_ERROR; count++) {
-        try {
-            console.log(log_prefix(ws) + "get all loops...");
-            result = await ws.send_event(EVENT.LOOPS);
-            console.log(log_prefix(ws) + "get all loops successful");
-            break;
-        } catch (error) {
-            if (ws.is_connecting && error.temp_error) {
-                console.log(log_prefix(ws) +
-                    "temp error - try to get all loops again after timeout");
-                await ov_Websockets.sleep(TEMP_ERROR_TIMEOUT, ws);
-            } else {
-                console.warn(log_prefix(ws) +
-                    "get all loops failed.", error);
-                return false;
-            }
-        }
-    }
-    return result.result;
 }
 
 //-----------------------------------------------------------------------------

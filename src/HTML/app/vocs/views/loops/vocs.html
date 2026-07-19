@@ -33,7 +33,7 @@
                 <input checked type="checkbox" id="menu_fullscreen_checkbox">
                 <label for="menu_fullscreen_checkbox">fullscreen<br>PTT</label>
                 <div id="fptt_area">
-                    <div id="fptt_text_wrapper">
+                    <div id="fptt_text_wrapper" class="removed">
                         <p id="fptt_text">Fullscreen PTT</p>
                         <p id="fptt_close_hint">Press ESC to close</p>
                     </div>
@@ -66,19 +66,11 @@
                 </template>
             </div>
             <div>
-                <button id="page_reload_button">
-                    <div class="icon">
-                        <svg>
-                            <use xlink:href="/images/ov_icons.svg#ov_reload"></use>
-                        </svg>
-                    </div>
+                <button id="page_reload_button" class="fluentui_icon">
+                    &#xe16d;
                 </button>
-                <button id="open_settings_button">
-                    <div class="icon">
-                        <svg>
-                            <use xlink:href="/images/ov_icons.svg#ov_cog"></use>
-                        </svg>
-                    </div>
+                <button id="open_settings_button" class="fluentui_icon">
+                    &#xefc4;
                 </button>
                 <button id="logout_button" class="red_button">LOGOUT</button>
             </div>
@@ -87,10 +79,17 @@
 
     <ov-dialog id="settings_slider" position="right">
         <div slot="dialog-content">
+            <div id="imprint">
+                <div>Keyset: <span id="keyset_name"></span> </div>
+                <div class="logo logo_openvocs"></div>
+                <span>OPENVOCS<span id="R">®</span> <span id="version_number"></span></span>
+                <span>by<span id="R"></span></span>
+                <div class="logo logo_dlr"></div>
+            </div>
             <details open id="audio_options" class="fieldset main_fieldset">
                 <summary>audio</summary>
                 <label for="speaker_test">Speaker</label>
-                <button id="speaker_test">&#8227;</button>
+                <button id="speaker_test" class="fluentui_icon"></button>
                 <div id="speaker_list"></div>
                 <audio loop src="/app/vocs/resources/sounds/bass.ogg" id="speaker_test_audio"></audio>
                 <label for="microphone_test">Microphone</label>
@@ -100,6 +99,8 @@
 
             <details open id="ptt_options" class="fieldset main_fieldset">
                 <summary>PTT</summary>
+                <input type="checkbox" id="ptt_checkbox">
+                <label for="ptt_checkbox" class="checkbox_label"><span>lock PTT</span></label>
                 <p>registered HID: <span id="hid_devices"></span></p>
                 <button id="add_HID">Add HID</button>
             </details>
@@ -135,13 +136,6 @@
                     </div>
                 </div>
             </details>
-
-            <div id="imprint">
-                <div>Keyset: <span id="keyset_name"></span> </div>
-                <div class="logo logo_openvocs"></div>
-                <span>OPENVOCS<span id="R">®</span> <span id="version_number"></span></span><br />
-                <div class="logo logo_dlr"></div>
-            </div>
         </div>
     </ov-dialog>
 

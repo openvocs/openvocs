@@ -71,10 +71,15 @@ export default class ov_SIP_Loop extends HTMLElement {
     add_whitelist_entry(caller, callee) {
         this.#whitelist.push({ caller: caller, callee: callee });
         this.#update_sip_indicator();
+        return this.#whitelist.length - 1;
     }
 
-    delete_whitelist_entry(entry) {
-        let index = this.#whitelist.indexOf(entry);
+    update_whitelist_entry(index, caller, callee) {
+        this.#whitelist[index].caller = caller;
+        this.#whitelist[index].callee = callee;
+    }
+
+    delete_whitelist_entry(index) {
         this.#whitelist.splice(index, 1);
         this.#update_sip_indicator();
     }

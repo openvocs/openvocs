@@ -41,8 +41,8 @@ export function set_session(app, url, client_id, user_id, session_id) {
         client: client_id,
         expiration: current_time + SESSION_ID_DURATION
     }
-    console.log(id, item)
     localStorage.setItem(id, JSON.stringify(item));
+    return item;
 }
 
 /* based on https://www.sohamkamani.com/javascript/localstorage-with-ttl-expiry/ */
@@ -58,14 +58,14 @@ export function get_session(app, url) {
         return null;
     }
     console.log("got session", id, item);
-    return { user: item.user, session: item.session, client: item.client, role: item.role, domain: item.domain, project: item.project, page: item.page };
+    return item;
 }
 
 export function extend_session(app, url, client_id, user_id, session_id) {
     let id = app + "_" + url;
     let session = get_session(app, url);
     if (session === null)
-        set_session(app, url, client_id, user_id, session_id);
+        session = set_session(app, url, client_id, user_id, session_id);
     else {
         let current_time = new Date().getTime();
         session.user = user_id;
@@ -75,6 +75,7 @@ export function extend_session(app, url, client_id, user_id, session_id) {
         console.log("new session information", id, session);
         localStorage.setItem(id, JSON.stringify(session));
     }
+    return session;
 }
 
 export function add_role_to_session(app, url, role_id) {
@@ -86,6 +87,7 @@ export function add_role_to_session(app, url, role_id) {
     item.role = role_id;
     console.log("new session information", id, item);
     localStorage.setItem(id, JSON.stringify(item));
+    return item;
 }
 
 export function add_anchor_to_session(app, url, domain, project, page) {
@@ -99,6 +101,7 @@ export function add_anchor_to_session(app, url, domain, project, page) {
     item.page = page;
     console.log("new session information", id, item);
     localStorage.setItem(id, JSON.stringify(item));
+    return item;
 }
 
 export function clear(app, url) {

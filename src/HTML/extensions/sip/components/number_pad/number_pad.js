@@ -33,7 +33,6 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
     #error;
     #loop;
     #keyboard;
-    #current_pointer_pos;
     #dom = {};
 
     constructor() {
@@ -83,9 +82,9 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
         if (this.#loop)
             this.shadowRoot.querySelector('#loop').innerHTML = this.#loop;
 
-        const dialButtons = this.shadowRoot.querySelector(".number_pad");
         const callButton = this.shadowRoot.querySelector('#sip-call-button');
         this.#dom.phoneNumberField = this.shadowRoot.querySelector('#sip-phone-number-field');
+        this.#dom.phoneNumberField.focus();
 
         callButton.onclick = (event) => {
             this.removeAttribute("error");
@@ -98,58 +97,31 @@ export default class ov_SIP_Number_Pad extends HTMLElement {
             this.dispatchEvent(new CustomEvent("show_calls"));
         }
 
-        this.#dom.phoneNumberField.addEventListener("click", (e) => {
-            this.#current_pointer_pos = e.target.selectionStart;
-            if (this.#keyboard)
-                this.#keyboard.setCaretPosition(e.target.selectionStart);
-        });
-
-        if (SCREEN_KEYBOARD && window.SimpleKeyboard && matchMedia("(width > 480px)").matches) {
-            let Keyboard = window.SimpleKeyboard.default;
-
-            this.#keyboard = new Keyboard(dialButtons, {
-                onChange: input => this.#on_change(input),
-                onKeyPress: button => this.#on_key_press(button),
-                layout: {
-                    default: ["1 2 3", "4 5 6", "7 8 9", "+ 0 {bksp}"]
-                },
-                theme: "hg-theme-default ov_sip_keyboard numeric-theme",
-                buttonTheme: [
-                    {
-                        class: "fluentui_icon",
-                        buttons: "{bksp}"
-                    }
-                ],
-                display: {
-                    "{bksp}": "&#xe1c9"
-                },
-                preventMouseDownDefault: false
-            });
+        if (window.SimpleKeyboard && matchMedia("(width <= 480px)").matches) {
+            this.shadowRoot.querySelector(".ov_sip_keyboard").style.display = none;
+        } else {
+            this.#keyboard = this.shadowRoot.querySelector(".ov_sip_keyboard");
+            this.#keyboard.addEventListener("click", (event) => {
+                let input = this.#dom.phoneNumberField;
+                let index = input.selectionStart;
+                if (event.target.dataset.func === "backspace" && index !== 0) {
+                    input.value = input.value.slice(0, index - 1) + input.value.slice(index);
+                    index--;
+                }
+                if (event.target.dataset.value !== undefined) {
+                    input.value = input.value.slice(0, index) + event.target.dataset.value + input.value.slice(index);
+                    index++;
+                }
+                input.focus();
+                input.selectionStart = index;
+                input.selectionEnd = index;
+            })
         }
 
-    }
-
-    #on_change(input) {
-        this.#dom.phoneNumberField.value = input;
-    }
-
-    #on_key_press(button) {
-        if (this.#current_pointer_pos !== undefined)
-            if (button === "{bksp}") {
-                this.#keyboard.setCaretPosition(this.#current_pointer_pos);
-                if (this.#current_pointer_pos > 0)
-                    this.#current_pointer_pos--;
-            } else
-                this.#keyboard.setCaretPosition(this.#current_pointer_pos++);
     }
 
     clear_number() {
         this.#dom.phoneNumberField.value = "";
-        this.#current_pointer_pos = 0;
-        if (this.#keyboard){
-            this.#keyboard.clearInput();
-            this.#keyboard.setCaretPosition(this.#current_pointer_pos);
-        }
     }
 
     async #render() {

@@ -84,6 +84,7 @@ typedef struct ov_ldap_config {
     char host[OV_HOST_NAME_MAX];
     char user_dn_tree[OV_LDAP_USER_DN_TREE];
     char role_dn_tree[OV_LDAP_USER_DN_TREE];
+    char filter[1024];
     char user[1024];
     char pass[1024];
     char domain[1024];

@@ -1889,6 +1889,7 @@ bool handle_in_thread(ov_thread_loop *loop, ov_thread_message *msg) {
     ov_callback cb = ov_callback_registry_unregister(self->callbacks, uuid);
 
     if (!users) {
+        
         ov_log_error("Failed to import LDAP users from %s as %s", host, user);
         
         if (cb.function){

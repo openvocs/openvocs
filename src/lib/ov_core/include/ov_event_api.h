@@ -88,50 +88,47 @@
 #define OV_EVENT_API_LOGIN "login"
 #define OV_EVENT_API_AUTHENTICATE "authenticate" // alternative to login
 
-#define OV_EVENT_API_UPDATE_LOGIN "update_login"
+#define OV_EVENT_API_UPDATE_LOGIN "extend_login_session"
 
 #define OV_EVENT_API_AUTHORISE "authorise"
 #define OV_EVENT_API_AUTHORIZE "authorize" // alternative to authorise
 
 #define OV_EVENT_API_PERMISSION "permission" // loop permissions
 
-#define OV_EVENT_API_USER_ROLES "user_roles"
-#define OV_EVENT_API_USER_LOOPS "user_loops"
-#define OV_EVENT_API_ROLE_LOOPS "role_loops"
-#define OV_EVENT_API_ADMIN_PROJECTS "admin_projects"
-#define OV_EVENT_API_ADMIN_DOMAINS "admin_domains"
+#define OV_EVENT_API_USER_ROLES "db_get_user_roles"
+#define OV_EVENT_API_USER_LOOPS "db_get_user_loops"
+#define OV_EVENT_API_ROLE_LOOPS "db_get_role_loops"
+#define OV_EVENT_API_ADMIN_PROJECTS "db_get_admin_projects"
+#define OV_EVENT_API_ADMIN_DOMAINS "db_get_admin_domains"
 
-#define OV_EVENT_API_SET_LAYOUT "set_layout"
-#define OV_EVENT_API_GET_LAYOUT "get_layout"
+#define OV_EVENT_API_SET_LAYOUT "db_set_layout"
+#define OV_EVENT_API_GET_LAYOUT "db_get_layout"
 
-#define OV_EVENT_API_DELETE "delete"
-#define OV_EVENT_API_CREATE "create"
-#define OV_EVENT_API_UPDATE "update"
-#define OV_EVENT_API_GET "get"
-#define OV_EVENT_API_GET_KEY "get_key"
-#define OV_EVENT_API_UPDATE_KEY "update_key"
-#define OV_EVENT_API_DELETE_KEY "delete_key"
-#define OV_EVENT_API_UPDATE_PASSWORD "update_password"
+#define OV_EVENT_API_DELETE "db_delete"
+#define OV_EVENT_API_CREATE "db_create"
+#define OV_EVENT_API_UPDATE "db_update"
+#define OV_EVENT_API_GET "db_get"
+#define OV_EVENT_API_GET_KEY "db_get_key"
+#define OV_EVENT_API_UPDATE_KEY "db_update_key"
+#define OV_EVENT_API_DELETE_KEY "db_delete_key"
+#define OV_EVENT_API_UPDATE_PASSWORD "db_update_password"
 
-#define OV_EVENT_API_LDAP_IMPORT "ldap_import"
-
-#define OV_EVENT_API_REGISTER "register"
-#define OV_EVENT_API_MEDIA "media"
-
-#define OV_EVENT_API_CREATE "create"
-#define OV_EVENT_API_UPDATE "update"
-#define OV_EVENT_API_GET "get"
+#define OV_EVENT_API_LDAP_IMPORT "client_ldap_import"
 
 #define OV_EVENT_API_REGISTER "register"
 #define OV_EVENT_API_MEDIA "media"
 
-#define OV_EVENT_API_SWITCH_LOOP_STATE "switch_loop_state"
-#define OV_EVENT_API_SWITCH_LOOP_VOLUME "switch_loop_volume"
-#define OV_EVENT_API_TALKING "talking"
+#define OV_EVENT_API_CREATE "db_create"
+#define OV_EVENT_API_UPDATE "db_update"
+#define OV_EVENT_API_GET "db_get"
 
-#define OV_EVENT_API_STATE_MIXER "state_mixer"
-#define OV_EVENT_API_STATE_CONNECTIONS "state_connections"
-#define OV_EVENT_API_STATE_SESSION "state_session"
+#define OV_EVENT_API_SWITCH_LOOP_STATE "client_switch_loop_state"
+#define OV_EVENT_API_SWITCH_LOOP_VOLUME "client_switch_loop_volume"
+#define OV_EVENT_API_TALKING "client_talking"
+
+#define OV_EVENT_API_STATE_MIXER "monitor_state_mixer"
+#define OV_EVENT_API_STATE_CONNECTIONS "monitor_state_connections"
+#define OV_EVENT_API_STATE_SESSION "monitor_state_session"
 
 /*
  *      ------------------------------------------------------------------------

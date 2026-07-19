@@ -50,8 +50,6 @@ const DOM = {
     }
 };
 
-export var logout_triggered = false;
-
 export function init() {
     DOM.slider_button = document.getElementById("open_menu_button");
 
@@ -86,11 +84,10 @@ export function init() {
         await Loop_View.talk(false);
         try {
             DOM.loading_screen.show("Saving data and logging out...");
-            ov_Auth.logout();
-            logout_triggered = true;
+            await ov_Auth.logout();
             DOM.loading_screen.hide();
             console.log("(vc) logged out");
-            //rest is handled in disconnect
+            ov_Websockets.reload_page();
         } catch (error) {
             console.warn("(vc) failed to log out, error:", error);
         }
@@ -210,11 +207,11 @@ function redraw_lead_server(new_lead) {
 
 function redraw_server_status(ws) {
     let server_element = document.getElementById("server-" + ws.client_id);
-    if (!ws.authorized || (ws.error && !ws.error.temp_error)) { // disconnected
+    if (!ws.authorized) { // disconnected
         server_element.classList.remove(DOM.CLASS.working);
         server_element.classList.add(DOM.CLASS.disconnected);
         server_element.disabled = true;
-    } else if (ws.error && ws.error.temp_error) { // working
+    } else if (ws.server_error) { // working
         server_element.classList.add(DOM.CLASS.working);
         server_element.classList.remove(DOM.CLASS.disconnected);
         server_element.disabled = false;

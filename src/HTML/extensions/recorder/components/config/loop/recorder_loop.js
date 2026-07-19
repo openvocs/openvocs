@@ -44,6 +44,7 @@ export default class ov_Recorder_Loop extends HTMLElement {
     }
 
     static get observedAttributes() {
+        return ["domain"]
     }
 
     #update_name() {
@@ -69,8 +70,11 @@ export default class ov_Recorder_Loop extends HTMLElement {
         return this.#project;
     }
 
-    set domain(domain) {
-        this.#domain = domain;
+    set domain(value) {
+        if (!value)
+            this.removeAttribute("domain")
+        else
+            this.setAttribute("domain", value);
     }
 
     get domain() {

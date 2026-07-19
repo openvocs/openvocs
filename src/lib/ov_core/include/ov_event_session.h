@@ -48,7 +48,7 @@ typedef struct ov_event_session_config {
 
     ov_event_loop *loop;
 
-    char path[PATH_MAX];
+    char path[PATH_MAX + 100];
 
     struct {
 

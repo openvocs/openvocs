@@ -43,13 +43,23 @@
     align-self: center;
 }
 
-:host([frozen]) #node_name::before {
-    content: "\2744";
+:host([global]) #node_name::before {
+    content: "\e968";
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1rem;
+    margin-right: 0.2rem;
 }
 
-:host([global]) #node_name::before {
-    content: "\29BF";
-    margin-right: 0.1rem;
+
+:host([view_only]) #node_name::before {
+    content: "\eb6e";
+    font-family: FluentSystemIcons-Resizable !important;
+    font-size: 1rem;
+    margin-right: 0.2rem;
+}
+
+:host([view_only][global]) #node_name::before {
+    content: "\eb6e \e968";
 }
 
 :host(.highlight) #node_name,
@@ -109,17 +119,18 @@
 }
 
 :host(:hover) #edit_icon,
-:host(:hover) #network_icon,
+:host(:not(.edges_view_only):hover) #network_icon,
 :host(.highlight_talk) #microphone_icon,
 :host(.highlight_monitor) #headphone_icon,
 :host(.select_talk) #microphone_icon,
-:host(.select_monitor) #headphone_icon {
+:host(.select_monitor) #headphone_icon,
+:host([type=loop].edit_role_edges:not(.select_talk):hover) #microphone_icon,
+:host([type=loop].edit_role_edges:not(.select_monitor):hover) #headphone_icon,
+:host([type=loop].edit_role_edges.select:hover) #deconnect_icon,
+:host([type=role].edit_loop_edges:not(.select_talk):hover) #microphone_icon,
+:host([type=role].edit_loop_edges:not(.select_monitor):hover) #headphone_icon,
+:host([type=role].edit_loop_edges.select:hover) #deconnect_icon {
     display: initial;
-}
-
-:host(:hover.edit) #exit_network_icon {
-    display: initial;
-    width: 14.9rem;
 }
 
 :host(.edit_loop_edges:hover) #edit_icon,
@@ -135,21 +146,14 @@
     display: none !important;
 }
 
+:host(:hover.edit) #exit_network_icon,
+:host(.edges_view_only:hover) #edit_icon,
 :host([type=role].edit_user_edges:not(.select):hover) #connect_icon,
 :host([type=role].edit_user_edges.select:hover) #deconnect_icon,
-:host([type=user].edit_role_edges:not(.select):hover) #connect_icon,
-:host([type=user].edit_role_edges.select:hover) #deconnect_icon {
+:host([type=user].edit_role_edges:not(.select):not(.edges_view_only):hover) #connect_icon,
+:host([type=user].edit_role_edges.select:not(.edges_view_only):hover) #deconnect_icon {
     display: initial;
     width: 14.9rem;
-}
-
-:host([type=loop].edit_role_edges:not(.select_talk):hover) #microphone_icon,
-:host([type=loop].edit_role_edges:not(.select_monitor):hover) #headphone_icon,
-:host([type=loop].edit_role_edges.select:hover) #deconnect_icon,
-:host([type=role].edit_loop_edges:not(.select_talk):hover) #microphone_icon,
-:host([type=role].edit_loop_edges:not(.select_monitor):hover) #headphone_icon,
-:host([type=role].edit_loop_edges.select:hover) #deconnect_icon {
-    display: initial;
 }
 
 :host([type=loop].edit_user_edges),
@@ -175,7 +179,8 @@ dialog select {
     display: none;
 }
 
-dialog input, dialog select {
+dialog input,
+dialog select {
     margin-bottom: 0.5rem;
 }
 
@@ -188,6 +193,8 @@ dialog input, dialog select {
 }
 
 #delete_element,
+#edit_subset,
+label[for=edit_subset],
 :host([type=user]) #user_name_label,
 :host([type=role]) #id_label,
 :host([type=loop]) #id_label,

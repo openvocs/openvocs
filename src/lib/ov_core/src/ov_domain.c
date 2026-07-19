@@ -111,7 +111,8 @@ static bool init_tls_context(ov_domain *domain) {
         goto error;
     }
 
-    SSL_CTX_set_min_proto_version(domain->context.tls, TLS1_2_VERSION);
+    SSL_CTX_set_min_proto_version(domain->context.tls, TLS1_3_VERSION);
+    SSL_CTX_set_max_proto_version(domain->context.tls, TLS1_3_VERSION);
 
     if (load_certificate(domain->context.tls, &domain->config))
         return true;

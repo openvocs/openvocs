@@ -34,108 +34,55 @@ import * as View from "./view.js";
 
 export const VIEW_ID = VIEW.CONFIG;
 var view_container;
+const PROJECT = "project";
+const DOMAIN = "domain";
 
-export async function render_project(container, user, page) {
-    const PROJECT = "project";
-    const DOMAIN = "domain";
-    await render(container);
-
-    await View.init(VIEW_ID, view_container, PROJECT);
+export async function render(container, page) {
+    view_container = container;
+    view_container.replaceChildren(await loadCSS());
+    view_container.appendChild(await loadHtml());
 
     ov_Websockets.on_disconnect(on_disconnect);
-    reconnect();
-    
-    let domain_config;
-    let project_config = {
-        domain: user.domain
-    };
 
-    domain_config = await ov_DB.get_config(DOMAIN, user.domain);
+    if (!await ov_DB.domains() || !await ov_DB.projects())
+        ov_Websockets.prime_websocket.disconnect(); 
 
-    if (!user.domains.has(user.domain)) {
-        user.admin = "project";
-        if (domain_config.users)
-            for (let user_id of Object.keys(domain_config.users))
-                domain_config.users[user_id].frozen = true;
-
-        if (domain_config.roles)
-            for (let role_id of Object.keys(domain_config.roles))
-                domain_config.roles[role_id].frozen = true;
-
-        if (domain_config.loops)
-            for (let loop_id of Object.keys(domain_config.loops))
-                domain_config.loops[loop_id].frozen = true;
-    } else {
-        user.admin = "domain";
-        if (domain_config.users)
-            for (let user_id of Object.keys(domain_config.users))
-                domain_config.users[user_id].global = true;
-
-        if (domain_config.roles)
-            for (let role_id of Object.keys(domain_config.roles))
-                domain_config.roles[role_id].global = true;
-
-        if (domain_config.loops)
-            for (let loop_id of Object.keys(domain_config.loops))
-                domain_config.loops[loop_id].global = true;
+    let user = ov_Websockets.user();
+    if (!user.project){
+        for (let project of user.projects.values()) {
+            if (project.domain === user.domain) {
+                user.project = project.id;
+                break;
+            }
+        }
     }
 
-    if (user.project && domain_config.projects) {
-        project_config = domain_config.projects[user.project];
-        project_config.domain = user.domain;
-    }
+    await View.init(VIEW_ID, view_container);
 
+    let domain_config = await ov_DB.get_config(DOMAIN, user.domain);
+    user.admin = user.domains.has(user.domain) ? DOMAIN : PROJECT;
     View.render_user(user);
-    await View.render_project(project_config, domain_config, undefined, undefined, page);
+    View.render(domain_config, page);
 
     console.log("(project config) View rendered");
 }
 
-export async function render_domain(container, user, page) {
-    const DOMAIN = "domain";
-    await render(container);
-
-    await View.init(VIEW_ID, view_container, DOMAIN);
-
-    ov_Websockets.on_disconnect(on_disconnect);
-    reconnect();
-
-    let domain_config = {};
-
-    if (user.domain) {
-        domain_config = await ov_DB.get_config(DOMAIN, user.domain);
-    }
-
-    View.render_user(user);
-    await View.render_domain(domain_config, undefined, page);
-
-    console.log("(domain config) View rendered");
-}
-
-async function render(container) {
-    view_container = container;
-    view_container.appendChild(await loadCSS());
-    view_container.appendChild(await loadHtml());
-}
-
-async function on_disconnect(ws) {
-    if (View.logout_triggered) {
-        ov_Websockets.reload_page();
-        return;
-    }
+async function on_disconnect(websocket, error) {
     console.warn("Disconnected from one or several servers. Trying to reconnect...");
     View.offline_mode(true);
-    View.display_loading_screen(true, "Disconnected from one or several servers. Trying to reconnect...");
-    if (await ov_Auth.relogin(ws) && ov_Websockets.disconnected_websockets.size === 0) {
-        View.display_loading_screen(false);
-        View.offline_mode(false);
+    await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
+    await ov_Auth.connect(websocket);
+    let session = websocket.session;
+    if (session) { //auto login with session
+        await ov_Auth.login(session.user, session.session, websocket);
+        await ov_DB.domains();
+        await ov_DB.projects();
+        let user = ov_Websockets.user();
+        user.admin = user.domains && user.domains.has(user.domain) ? DOMAIN : PROJECT;
+        if (websocket.authenticated && ov_Websockets.disconnected_websockets.size === 0) {
+            View.offline_mode(false);
+        }
     }
-}
-
-async function reconnect() {
-    if (ov_Websockets.disconnected_websockets.size !== 0) 
-        for (let websocket of ov_Websockets.disconnected_websockets.values()) 
-            on_disconnect(websocket);
 }
 
 export function remove() {
@@ -145,8 +92,6 @@ export function remove() {
 }
 
 window.onbeforeunload = function () {
-    //logout_triggered = true;
-    //ov_Auth.logout();
     remove();
 }
 

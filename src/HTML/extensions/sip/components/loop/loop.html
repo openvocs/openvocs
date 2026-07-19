@@ -24,15 +24,10 @@
         <div id="loop_activity" class="small_print"></div>
     </button>
     <div id="loop_volume" class="button small_print">
-        <div class="icon">
-            <svg>
-                <use xlink:href="/images/ov_icons.svg#ov_speaker_loud"></use>
-            </svg>
-        </div>
-        <span id="loop_volume_indicator_value"></span>
-        <div id="loop_volume_input_container">
+        <div class="fluentui_icon"></div>
+        <dialog id="loop_volume_input_container">
             <input min="0" max="100" step="10" id="loop_volume_input" type="range">
-        </div>
+        </dialog>
     </div>
     <button id="loop_sip" class="small_print">
         <div class="icon sip-phone-icon">

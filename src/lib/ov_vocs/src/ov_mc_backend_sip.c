@@ -159,7 +159,7 @@ static bool drop_mixer(const void *key, void *val, void *data) {
 
 /*----------------------------------------------------------------------------*/
 
-static void asign_sip_mixer(ov_mc_backend_sip *self, int socket,
+static void assign_sip_mixer(ov_mc_backend_sip *self, int socket,
                             const char *name) {
 
     if (!ov_thread_lock_try_lock(&self->mixer.lock))
@@ -637,7 +637,7 @@ static void cb_event_acquire(void *userdata, const char *name, int socket,
         goto error;
     }
 
-    asign_sip_mixer(self, socket, user);
+    assign_sip_mixer(self, socket, user);
 
     if (!ov_event_async_set(
             self->async, uuid,

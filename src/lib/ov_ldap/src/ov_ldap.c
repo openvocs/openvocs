@@ -540,6 +540,10 @@ ov_ldap_config ov_ldap_config_from_json(const ov_json_value *val) {
     if (str)
         strncpy(config.pass, str, 1024);
 
+    str = ov_json_string_get(ov_json_get(conf, "/filter"));
+    if (str)
+        strncpy(config.filter, str, 1024);
+
     config.timeout.network_timeout_usec = ov_json_number_get(
         ov_json_get(conf, "/" OV_KEY_TIMEOUT "/" OV_KEY_NETWORK));
 

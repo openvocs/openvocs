@@ -16,7 +16,9 @@
 </head>
 
 <body>
-	<div class="container" id="view_container"></div>
+	<div class="container" id="view_container">
+		<button id="initial_logout_button" class="red_button">LOGOUT</button>
+	</div>
 
 	<script type="text/javascript" src="/VERSION.js"></script>
 	<script type="text/javascript" src="./views/auth/js/default_config.js"></script> <!-- default login config -->
@@ -53,7 +55,15 @@
 		import * as Voice_Client from "./views/loops/js/vocs.js";
 		import * as ov_Auth from "/lib/ov_auth.js";
 
+		let initial_logout_button;
+
 		document.addEventListener("DOMContentLoaded", async function () {
+			initial_logout_button = document.getElementById("initial_logout_button");
+			initial_logout_button.onclick = async () => {
+				await ov_Auth.logout();
+				ov_Websockets.reload_page();
+			}
+
 			let view_container = document.getElementById("view_container");
 			view_container.addEventListener("switch_view", () => {
 				Auth_View.remove();
@@ -62,30 +72,40 @@
 			});
 
 			await ov_Websockets.setup_connections(ov_Websocket);
-			if (ov_Websockets.auto_login) {
 
-				let promises = [];
-				for (let websocket of ov_Websockets.list) {
-					promises.push(login(websocket));
-				}
+			//initial disconnect handler gets overwritten
+			ov_Websockets.on_disconnect(async (websocket, error) => {
+				if (error && error.code !== 5000)
+					await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
+				authorize(websocket);
+			});
 
-				if (await Promise.any(promises) || (await Promise.all(promises)).includes(true)) {
-					for (let ws of ov_Websockets.list)
-						if (ws.authorized) {
-							if (ws !== ov_Websockets.current_lead_websocket)
-								ov_Websockets.switch_lead_websocket(ws);
-							break;
-						}
-					await Voice_Client.render(view_container);
-					return;
-				}
-			}
-			await Auth_View.render(view_container); // + set user name
+			for (let websocket of ov_Websockets.list)
+				authorize(websocket);
 		});
 
-		async function login(websocket) {
-			let result = await ov_Auth.relogin(websocket);
-			return result;
+		async function authorize(websocket) {
+			await ov_Auth.connect(websocket);
+
+			let session = websocket.session;
+			if (session) { //auto login with session
+				await ov_Auth.login(session.user, session.session, websocket);
+				if (websocket.authenticated && session.role) {
+					await ov_Auth.authorize_role(session.role, websocket);
+					if (websocket.authorized && view_container.children.length === 1 && view_container.children[0] === initial_logout_button) {
+						if (ov_Websockets.current_lead_websocket !== websocket && !ov_Websockets.current_lead_websocket.connected)
+							ov_Websockets.switch_lead_websocket(websocket);
+						if (ov_Websockets.current_lead_websocket === websocket)
+							await Voice_Client.render(view_container);
+					}
+				}
+			}
+			if (view_container.children.length === 1 && view_container.children[0] === initial_logout_button ) {
+				if (ov_Websockets.current_lead_websocket !== websocket && !ov_Websockets.current_lead_websocket.connected)
+					ov_Websockets.switch_lead_websocket(websocket);
+				if (ov_Websockets.current_lead_websocket === websocket)
+					await Auth_View.render(view_container);
+			}
 		}
 	</script>
 </body>

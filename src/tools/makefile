@@ -51,6 +51,7 @@ OV_TOOL_DIRS   += ov_mc_socket_debug
 OV_TOOL_DIRS   += ov_json_test
 OV_TOOL_DIRS   += ov_sip_replay
 OV_TOOL_DIRS   += ov_timestamp
+OV_TOOL_DIRS   += ov_event_broker_functions
 
 ifeq ($(OV_UNAME), Linux)
 	OV_TOOL_DIRS   += ov_alsa_cli

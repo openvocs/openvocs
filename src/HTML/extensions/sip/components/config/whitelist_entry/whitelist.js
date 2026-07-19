@@ -119,6 +119,14 @@ export default class ov_SIP_Whitelist extends HTMLElement {
         this.shadowRoot.querySelector("#delete_whitelist_entry").addEventListener("click", () => {
             this.dispatchEvent(new CustomEvent("delete_entry"));
         });
+
+        this.shadowRoot.querySelector("#callee").addEventListener("change", () => {
+            this.dispatchEvent(new CustomEvent("change"));
+        });
+
+        this.shadowRoot.querySelector("#caller").addEventListener("change", () => {
+            this.dispatchEvent(new CustomEvent("change"));
+        });
     }
 
     async #render() {

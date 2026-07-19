@@ -524,8 +524,8 @@ bool ov_event_session_save(ov_event_session *self) {
 
     ov_thread_lock_unlock(&self->lock);
 
-    char path[PATH_MAX + 20] = {0};
-    snprintf(path, PATH_MAX + 20, "%s/%s", self->config.path,
+    char path[2 * PATH_MAX] = {0};
+    snprintf(path, 2 * PATH_MAX, "%s/%s", self->config.path,
              OV_EVENT_SESSIONS_FILE);
 
     if (!ov_json_write_file(path, out)) {
@@ -577,8 +577,8 @@ bool ov_event_session_load(ov_event_session *self) {
     if (!self)
         goto error;
 
-    char path[PATH_MAX + 20] = {0};
-    snprintf(path, PATH_MAX + 20, "%s/%s", self->config.path,
+    char path[2 * PATH_MAX] = {0};
+    snprintf(path, 2 * PATH_MAX, "%s/%s", self->config.path,
              OV_EVENT_SESSIONS_FILE);
 
     data = ov_json_read_file(path);

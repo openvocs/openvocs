@@ -82,7 +82,7 @@ export default class ov_SIP_Loop extends ov_Loop {
                 }
         } else {
             this.setAttribute("sip_status", "waiting");
-            if ((this.state === ov_Loop.STATE.MONITOR || this.state === ov_Loop.STATE.TALK) && this.sip_permission !== undefined)
+            if ((this.state === ov_Loop.STATE.MONITOR || this.state === ov_Loop.STATE.TALK) /*&& this.sip_permission !== undefined*/)
                 this.shadowRoot.querySelector("#loop_sip").disabled = false;
         }
     }
@@ -119,6 +119,7 @@ export default class ov_SIP_Loop extends ov_Loop {
 
         this.#sip_number_pad_dialog.onclick = (event) => {
             if (event.target === this.#sip_number_pad_dialog) {
+                this.#sip_number_pad.clear_number();
                 this.#sip_number_pad_dialog.close();
             }
         }
@@ -175,18 +176,19 @@ export default class ov_SIP_Loop extends ov_Loop {
         });
 
         let volume = this.shadowRoot.querySelector("#loop_volume");
+        let volume_input = this.shadowRoot.querySelector("#loop_volume_input_container");
         volume.onclick = () => {
             if (window.matchMedia("(width > 480px)").matches && !volume.classList.contains("disabled")) {
-                let input = this.shadowRoot.querySelector("#loop_volume_input_container");
-                if (getComputedStyle(input).display === "none")
-                    input.style.display = "inherit";
+                if (!volume_input.open)
+                    volume_input.show();
                 else
-                    input.style.display = "none";
+                    volume_input.close();
             }
         }
 
-        ov_Websockets.addEventListener(ov_SIP.EVENT.SIP, this.#on_server_status.bind(this));
+        ov_Websockets.addEventListener(ov_Websocket.EVENT.SIP, this.#on_server_status.bind(this));
         ov_Websockets.addEventListener(ov_SIP.EVENT.SIP_CALL, this.#on_call.bind(this));
+        ov_Websockets.addEventListener("call", this.#on_call.bind(this));
         ov_Websockets.addEventListener(ov_SIP.EVENT.SIP_HANGUP, this.#on_hangup.bind(this));
     }
 
@@ -196,9 +198,9 @@ export default class ov_SIP_Loop extends ov_Loop {
         if (sip) {
             if ((this.state === ov_Loop.STATE.MONITOR || this.state === ov_Loop.STATE.TALK) && this.sip_permission !== undefined)
                 this.shadowRoot.querySelector("#loop_sip").disabled = false;
-            else{
+            else {
                 this.shadowRoot.querySelector("#loop_sip").disabled = true;
-                this.shadowRoot.querySelector("#loop_volume_input_container").style.display = "none";
+                this.shadowRoot.querySelector("#loop_volume_input_container").close();
             }
         }
     }
@@ -260,7 +262,7 @@ export default class ov_SIP_Loop extends ov_Loop {
     }
 
     #on_server_status(event) {
-        if (event.detail.message.connected)
+        if (event.detail.message.response)
             this.sip_offline = false;
         else
             this.sip_offline = true;

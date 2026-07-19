@@ -3,6 +3,7 @@
     border-right: solid 0.1rem var(--element_art_color);
     margin-right: 0.5rem;
     padding-right: 1rem;
+    line-height: 4rem;
 }
 
 .offline #config_name::after {

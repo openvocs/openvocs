@@ -107,8 +107,8 @@
     --element_background_color: var(--white_transparent_78);
     --element_border_color: var(--black_transparent_92);
     --element_inset_box_shadow: inset 0.125rem 0.125rem 0.125rem var(--white_transparent_92), 0.063rem 0.063rem 0.125rem var(--black_transparent_64);
-    --element_hover_background_color: var(--white_transparent_92);
-    --element_hover_border_color: var(--white_transparent_50);
+    --element_hover_background_color: var(--white_transparent_50);
+    --element_hover_border_color: var(--white_transparent_64);
     --element_disabled_text_color: var(--white_transparent_64);
     --element_disabled_background_color: var(--white_transparent_100);
     --element_disabled_inset_box_shadow: inset 0.125rem 0.125rem 0.125rem var(--black_transparent_92), 0.063rem 0.063rem 0.125rem var(--black_transparent_78);
@@ -184,13 +184,14 @@
     font-size: 1.2rem;
 }
 
-.small_print, .small_print * {
+.small_print,
+.small_print * {
     font-size: 1rem;
 }
 
-.fluentui_icon, 
-.fluentui_icon::before, 
-.fluentui_icon::after, 
+.fluentui_icon,
+.fluentui_icon::before,
+.fluentui_icon::after,
 .fluentui_icon * {
     font-family: FluentSystemIcons-Resizable !important;
     font-size: 1.5rem;
@@ -287,6 +288,21 @@ h2,
 h3 {
     font-weight: normal;
     margin: 0;
+}
+
+h1,
+h1 * {
+    font-size: 2rem;
+}
+
+h2,
+h2 * {
+    font-size: 1.8rem;
+}
+
+h3,
+h3 * {
+    font-size: 1.5rem;
 }
 
 code {

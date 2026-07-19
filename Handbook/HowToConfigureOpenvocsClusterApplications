@@ -1,0 +1,30 @@
+# How to configure a cluster based application for ov_mc_vocs
+
+A cluster based application is automatically forwarding any config changes 
+to a multicast group. Each cluster node listens on the multicast group and 
+applying the changes received within it's local configuration. This way it 
+doesn't matter which node is the prime node. Any config received at any node 
+will be automatically duplicated to any other node. 
+
+## Configuration example
+
+Within the vocs section of a configuration a cluster section must be added 
+with the socket configuration of the cluster. This cluster socket must be 
+used in any other configuration of the cluster too. 
+
+Any changes will be automatically distributed via this cluster address.
+
+{
+	...
+	"vocs" : {
+
+		"cluster" : 
+		{
+			"host" : "224.0.0.1",
+			"port" : 60000,
+			"type" : "UDP"
+		}
+		...
+	}
+}
+

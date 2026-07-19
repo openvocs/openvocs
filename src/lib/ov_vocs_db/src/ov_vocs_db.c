@@ -1419,6 +1419,9 @@ static bool add_user_to_drop(const void *key, void *val, void *data) {
     UNUSED(val);
     struct container_users *container = (struct container_users *)data;
 
+    if (0 == ov_string_compare(key, "admin"))
+        return true;
+
     if (ov_json_object_get(container->users, key))
         return true;
 
@@ -1481,14 +1484,6 @@ static bool update_users(ov_vocs_db *self, ov_json_value *parent,
         data = ov_json_object();
         ov_json_object_set(parent, OV_KEY_USERS, data);
     }
-/*
-    struct container_parent c =
-        (struct container_parent){.db = self, .parent = data};
-*/
-    /*
-    if (!ov_json_object_for_each((ov_json_value *)users, &c, user_already_set))
-        goto error;
-    */
 
     if (data && !ov_json_object_for_each(data, self, unindex_users))
         goto error;
@@ -5082,6 +5077,7 @@ bool ov_vocs_db_add_permission(ov_vocs_db *self, ov_sip_permission permission) {
     }
 
 done:
+    ov_thread_lock_unlock(&self->lock);
     return true;
 error:
     return false;
@@ -5405,10 +5401,12 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static ov_json_value *ldap_get_roles(const char *host, const char *base,
+                              const char *filter_input,
                               const char *user, const char *pass,
                               uint64_t timeout_usec) {
 
     char name[PATH_MAX] = {0};
+    char filter[1024] = {0};
 
     ov_json_value *out = NULL;
     ov_json_value *username = NULL;
@@ -5421,9 +5419,15 @@ static ov_json_value *ldap_get_roles(const char *host, const char *base,
     if (!base || !user || !host || !pass)
         goto error;
 
+    if (NULL == filter_input)
+        filter_input = "*";
+
+    if (filter_input[0] == 0)
+        filter_input = "*";
+
     ov_log_debug("searching roles at %s %s", host, base);
 
-    char *filter = "(&(objectClass=*))";
+    snprintf(filter, 1024, "(&(objectClass=%s))", filter_input);
 
     char *attrs[3] = {0};
     attrs[0] = "member";
@@ -5719,6 +5723,7 @@ bool ov_vocs_db_ldap_import(ov_vocs_db *self, ov_ldap_config config){
 
         roles = ldap_get_roles(config.host, 
                            config.role_dn_tree, 
+                           config.filter,
                            config.user, 
                            config.pass,
                            self->config.timeout.ldap_request_usec);

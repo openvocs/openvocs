@@ -84,4 +84,4 @@ export function indicate_loading(value, message) {
 
 export { ask_for_relogin } from "./ptt_bar.js";
 
-export { logout_triggered, switch_server } from "./menu_slider.js";
+export { switch_server } from "./menu_slider.js";

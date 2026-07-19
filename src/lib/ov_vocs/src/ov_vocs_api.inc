@@ -1,3 +1,73 @@
+static bool set_async(ov_vocs *vocs, const char *uuid, int socket, const ov_json_value *msg){
+
+    ov_json_value *out = NULL;
+
+    if (!vocs || !uuid || !msg) goto error;
+
+    if (!ov_json_value_copy((void**)&out, (void*)msg)) goto error;
+
+    if (!ov_event_async_set(
+        vocs->async,
+        uuid,
+        (ov_event_async_data){.socket = socket,
+                              .value = out,
+                              .timedout.userdata = vocs,
+                              .timedout.callback = async_timedout},
+            vocs->config.timeout.response_usec)) {
+            goto error;
+    }
+
+    return true;
+error:
+    ov_json_value_free(out);
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void async_timedout_sip(void *userdata, ov_event_async_data data) {
+
+    ov_vocs *self = ov_vocs_cast(userdata);
+    if (!self)
+        goto error;
+
+    ov_json_value *out = ov_event_api_create_error_response(
+        data.value, OV_ERROR_TIMEOUT, OV_ERROR_DESC_TIMEOUT);
+    env_send(self, data.socket, out);
+    out = ov_json_value_free(out);
+
+error:
+    ov_event_async_data_clear(&data);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool set_async_sip(ov_vocs *vocs, const char *uuid, int socket, const ov_json_value *msg){
+
+    ov_json_value *out = NULL;
+
+    if (!vocs || !uuid || !msg) goto error;
+
+    if (!ov_json_value_copy((void**)&out, (void*)msg)) goto error;
+
+    if (!ov_event_async_set(
+        vocs->async,
+        uuid,
+        (ov_event_async_data){.socket = socket,
+                              .value = out,
+                              .timedout.userdata = vocs,
+                              .timedout.callback = async_timedout_sip},
+            vocs->config.timeout.response_usec)) {
+            goto error;
+    }
+
+    return true;
+error:
+    ov_json_value_free(out);
+    return false;
+}
+
 /*
  *      ------------------------------------------------------------------------
  *
@@ -40,11 +110,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_start_recording(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_start_recording(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
-    if (!vocs || !input) goto error;
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     const char *uuid = ov_event_api_get_uuid(input);
     if (!uuid) goto error;
@@ -60,22 +130,10 @@ static bool admin_start_recording(ov_vocs *vocs,
                             OV_ERROR_CODE_PARAMETER_ERROR,
                             OV_ERROR_DESC_PARAMETER_ERROR);
 
-        input = ov_json_value_free(input);
         goto done;
     }
 
-    if (!ov_event_async_set(
-        vocs->async,
-        uuid,
-        (ov_event_async_data){.socket = socket,
-                              .value = input,
-                              .timedout.userdata = vocs,
-                              .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-            goto error;
-    }
-
-    input = NULL;
+    if (!set_async(vocs, uuid, socket, input)) goto error;
 
     if (!ov_vocs_recorder_start_loop_recording(
         vocs->recorder, uuid, loop, vocs, socket, cb_start_recording)) {
@@ -83,10 +141,9 @@ static bool admin_start_recording(ov_vocs *vocs,
     }
 
 done:
-    return true;
+    return;
 error:
-    ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -124,9 +181,11 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_stop_recording(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_stop_recording(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
@@ -144,22 +203,10 @@ static bool admin_stop_recording(ov_vocs *vocs,
                             OV_ERROR_CODE_PARAMETER_ERROR,
                             OV_ERROR_DESC_PARAMETER_ERROR);
 
-        input = ov_json_value_free(input);
         goto done;
     }
 
-    if (!ov_event_async_set(
-        vocs->async,
-        uuid,
-        (ov_event_async_data){.socket = socket,
-                              .value = input,
-                              .timedout.userdata = vocs,
-                              .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-            goto error;
-    }
-
-    input = NULL;
+    if (!set_async(vocs, uuid, socket, input)) goto error;
 
     if (!ov_vocs_recorder_stop_loop_recording(
         vocs->recorder, uuid, loop, vocs, socket, cb_stop_recording)) {
@@ -172,21 +219,22 @@ static bool admin_stop_recording(ov_vocs *vocs,
     }
 
 done:
-    return true;
+    return ;
 error:
-    ov_json_value_free(input);
-    return false;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_broadcast(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_broadcast(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
-    if (!ov_event_api_set_type(input, OV_BROADCAST_KEY_SYSTEM_BROADCAST))
+    if (!ov_event_api_set_type((ov_json_value*)input, OV_BROADCAST_KEY_SYSTEM_BROADCAST))
         goto error;
 
     ov_event_parameter parameter =
@@ -207,21 +255,21 @@ static bool admin_broadcast(ov_vocs *vocs,
         
     }
     
-    ov_json_value_free(input);
-    return true;
+    return ;
 error:
-    ov_json_value_free(input);
-    return false;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_get_recorded_loops(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_get_recorded_loops(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
@@ -238,23 +286,23 @@ static bool admin_get_recorded_loops(ov_vocs *vocs,
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_get_all_loops(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_get_all_loops(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
@@ -265,19 +313,17 @@ static bool admin_get_all_loops(ov_vocs *vocs,
 
     out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
-    if (!ov_json_object_set(res, OV_KEY_RESULT, val)) goto error;
+    if (!ov_json_object_set(res, "loops", val)) goto error;
 
     val = NULL;
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -287,7 +333,7 @@ struct mixer_data {
     ov_vocs *vocs;
     int socket;
     const char *user;
-    ov_json_value *input;
+    const ov_json_value *input;
 
 };
 
@@ -361,18 +407,7 @@ static bool call_mixer_state(const void *key, void *val, void *data){
     if (role)
         ov_json_object_set(res, OV_KEY_ROLE, ov_json_string(role));
 
-    if (!ov_event_async_set(
-                container->vocs->async,
-                uuid,
-                (ov_event_async_data){.socket = container->socket,
-                                      .value = out,
-                                      .timedout.userdata = container->vocs,
-                                      .timedout.callback = async_timedout},
-                container->vocs->config.timeout.response_usec)) {
-
-            ov_log_error("failed to set async");
-            goto error;
-    }
+    if (!set_async(container->vocs, uuid, container->socket, out)) goto error;
 
     return true;
 
@@ -382,11 +417,13 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_get_mixer_state(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_get_mixer_state(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
@@ -412,7 +449,7 @@ static bool admin_get_mixer_state(ov_vocs *vocs,
         .input = input
     };
 
-    if (!ov_socket_json_for_each(vocs->connections, &container, call_mixer_state)){
+    if (!ov_socket_storage_for_each(vocs->connections, &container, call_mixer_state)){
 
         send_error_response(
             vocs,
@@ -424,23 +461,24 @@ static bool admin_get_mixer_state(ov_vocs *vocs,
         goto error;
     }
 
-    return true;
+    return ;
 error:
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    return false;
+    return ;
 }
 
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_state_mixer(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_state_mixer(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *res = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
@@ -459,25 +497,25 @@ static bool admin_state_mixer(ov_vocs *vocs,
     env_send(vocs, socket, out);
 
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    return true;
+    return;
 error:
     ov_json_value_free(out);
     ov_json_value_free(val);
-    ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_state_connections(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_state_connections(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *obj = NULL;
     ov_json_value *val = NULL;
     ov_json_value *res = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
@@ -490,25 +528,25 @@ static bool admin_state_connections(ov_vocs *vocs,
         goto error;
     }
 
-    if (!ov_socket_json_for_each_set_data(vocs->connections, obj)) goto error;
+    if (!ov_socket_storage_for_each_set_data(vocs->connections, obj)) goto error;
 
     env_send(vocs, socket, out);
 
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    return true;
+    return;
 error:
     ov_json_value_free(val);
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_state_session(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_state_session(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
@@ -525,8 +563,6 @@ static bool admin_state_session(ov_vocs *vocs,
                             socket,
                             OV_ERROR_CODE_PARAMETER_ERROR,
                             OV_ERROR_DESC_PARAMETER_ERROR);
-
-        input = ov_json_value_free(input);
         goto done;
     }
 
@@ -538,29 +574,15 @@ static bool admin_state_session(ov_vocs *vocs,
                             OV_ERROR_CODE_SESSION_UNKNOWN,
                             OV_ERROR_DESC_SESSION_UNKNOWN);
 
-        input = ov_json_value_free(input);
         goto done;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-
-        goto error;
-    }
-
-    input = NULL;
+    if (!set_async(vocs, uuid, socket, input)) goto error;
 
 done:
-    return true;
+    return;
 error:
-    ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -580,18 +602,20 @@ static bool add_connection_data(const void *key, void *val, void *data){
 
 /*----------------------------------------------------------------------------*/
 
-static bool admin_get_clients(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void admin_get_clients(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input) goto error;
 
     val = ov_json_array();
 
-    if (!ov_socket_json_for_each(
+    if (!ov_socket_storage_for_each(
         vocs->connections, val, add_connection_data)) goto error;
 
     out = ov_event_api_create_success_response(input);
@@ -601,43 +625,74 @@ static bool admin_get_clients(ov_vocs *vocs,
     env_send(vocs, socket, out);
     ov_json_value_free(out);
 
-    return true;
+    return;
 error:
-    ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool enable_api_admin(ov_vocs *vocs){
 
-	if (!set_function(vocs->io, OV_EVENT_START_RECORD, admin_start_recording)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "recorder_start",
+        vocs,
+        admin_start_recording)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_STOP_RECORD, admin_stop_recording)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "recorder_stop",
+        vocs,
+        admin_stop_recording)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_STATE_MIXER, admin_state_mixer))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_STATE_MIXER,
+        vocs,
+        admin_state_mixer)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_STATE_CONNECTIONS, admin_state_connections))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_STATE_CONNECTIONS,
+        vocs,
+        admin_state_connections)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_STATE_SESSION, admin_state_session))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_STATE_SESSION,
+        vocs,
+        admin_state_session)) goto error;
 
-    if (!set_function(vocs->io, "get_mixer_state", admin_get_mixer_state))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "admin_get_mixer_state",
+        vocs,
+        admin_get_mixer_state)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_BROADCAST, admin_broadcast))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_KEY_BROADCAST,
+        vocs,
+        admin_broadcast)) goto error;
 
-    if (!set_function(vocs->io, "get_recorded_loops", admin_get_recorded_loops))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "recorder_get_recorded_loops",
+        vocs,
+        admin_get_recorded_loops)) goto error;
 
-    if (!set_function(vocs->io, "get_all_loops", admin_get_all_loops))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "db_get_all_loops",
+        vocs,
+        admin_get_all_loops)) goto error;
 
-    if (!set_function(vocs->io, "get_clients", admin_get_clients))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "db_get_clients",
+        vocs,
+        admin_get_clients)) goto error;
 
     return true;
 error:
@@ -652,17 +707,17 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static bool client_logout(ov_vocs *vocs,
-                          int socket,
-                          ov_json_value *input) {
+static void client_logout(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
-    bool result = false;
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
@@ -676,13 +731,10 @@ static bool client_logout(ov_vocs *vocs,
     ov_event_session_delete(vocs->user_sessions, client);
 
     /* Close connection socket if drop is not successfull */
-    result = drop_connection(vocs, socket, true, true);
-    data = ov_json_value_free(data);
+    drop_connection(vocs, socket, true, true);
 
 error:
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return result;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -703,7 +755,7 @@ static void cb_ldap_authentication(void *userdata,
     adata = ov_event_async_unset(vocs->async, uuid);
     if (!adata.value) goto error;
 
-    data = ov_socket_json_get(vocs->connections, adata.socket);
+    data = ov_socket_storage_get(vocs->connections, adata.socket);
 
     const char *client_id =
         ov_json_string_get(ov_json_object_get(adata.value, OV_KEY_CLIENT));
@@ -755,8 +807,6 @@ static void cb_ldap_authentication(void *userdata,
     ov_json_object_set(data, OV_KEY_CLIENT, ov_json_string(client_id));
     ov_json_object_set(data, OV_KEY_USER, ov_json_string(user));
 
-    ov_socket_json_set(vocs->connections, adata.socket, &data);
-
     out = ov_json_object();
     if (!ov_vocs_json_set_id(out, user)) goto error;
     if (!ov_vocs_json_set_session_id(out, session_id)) goto error;
@@ -771,25 +821,25 @@ static void cb_ldap_authentication(void *userdata,
 
 error:
     ov_json_value_free(out);
-    ov_event_async_data_clear(&adata);
-    ov_json_value_free(data);
+    ov_event_async_data_clear(&adata);    
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_login(ov_vocs *vocs,
-                         int socket,
-                         ov_json_value *input) {
+static void client_login(void *userdata, const char *name,
+                                            int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
     ov_json_value *out = NULL;
 
     bool result = false;
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     if(!data) goto error;
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
@@ -844,34 +894,32 @@ static bool client_login(ov_vocs *vocs,
         goto error;
     }
 
+    if (!ov_vocs_db_check_id_exists(vocs->config.db, user)){
+
+        send_error_response(vocs,
+                            input,
+                            socket,
+                            OV_ERROR_CODE_AUTH,
+                            OV_ERROR_DESC_AUTH);
+
+        goto error;
+    }
+
     if (vocs->config.ldap.enable) {
 
         ov_log_debug("Requesting LDAP authentication for user %s", user);
 
-        if (!ov_event_async_set(
-                vocs->async,
-                uuid,
-                (ov_event_async_data){.socket = socket,
-                                      .value = input,
-                                      .timedout.userdata = vocs,
-                                      .timedout.callback = async_timedout},
-                vocs->config.timeout.response_usec)) {
+        if (!set_async(vocs, uuid, socket, input)) goto error;
 
-            char *str = ov_json_value_to_string(input);
-            ov_log_error(
-                "failed to set async msg - closing %i | %s", socket, str);
-            str = ov_data_pointer_free(str);
-
-            goto error;
-        }
-
-        return ov_ldap_authenticate_password(
+        ov_ldap_authenticate_password(
             vocs->ldap,
             user,
             pass,
             uuid,
             (ov_ldap_auth_callback){
                 .userdata = vocs, .callback = cb_ldap_authentication});
+
+        return;
     }
 
     if (!ov_vocs_db_authenticate(vocs->config.db, user, pass)) {
@@ -904,8 +952,6 @@ login_session_user:
     ov_json_object_set(data, OV_KEY_CLIENT, ov_json_string(client_id));
     ov_json_object_set(data, OV_KEY_USER, ov_json_string(user));
 
-    ov_socket_json_set(vocs->connections, socket, &data);
-
     out = ov_json_object();
     if (!ov_vocs_json_set_id(out, user)) goto error;
     if (!ov_vocs_json_set_session_id(out, session_id)) goto error;
@@ -920,19 +966,18 @@ login_session_user:
     /* close socket if authentication messaging failed */
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return result;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool update_client_login(ov_vocs *vocs,
-                                int socket,
-                                ov_json_value *input) {
+static void update_client_login(void *userdata, const char *name,
+                                            int socket, const ov_json_value *input) {
 
-    bool result = false;
     ov_json_value *out = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input || socket < 0) goto error;
 
@@ -975,58 +1020,82 @@ static bool update_client_login(ov_vocs *vocs,
 
     if (!ov_vocs_json_set_session_id(out, session_id)) goto error;
 
-    result = send_success_response(vocs, input, socket, &out);
-    return true;
+    send_success_response(vocs, input, socket, &out);
+    return;
 
     /* close socket if authentication messaging failed */
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    return result;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool check_ldap_enabled(ov_vocs *vocs,
-                                int socket,
-                                ov_json_value *input) {
+static void check_ldap_enabled(void *userdata, const char *name,
+                            int socket, const ov_json_value *input) {
 
-    bool result = false;
     ov_json_value *val = NULL;
+
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    UNUSED(name);
 
     if (!vocs || !input || socket < 0) goto error;
 
+    val = ov_json_object();
+
     if (vocs->config.ldap.enable) {
-        val = ov_json_true();
+        ov_json_object_set(val, "users", ov_json_true());
     } else {
-        val = ov_json_false();
+        ov_json_object_set(val, "users", ov_json_false());
     }
 
-    result = send_success_response(vocs, input, socket, &val);
-    return true;
+    if (vocs->config.ldap.config.roles) {
+        ov_json_object_set(val, "roles", ov_json_true());
+    } else {
+        ov_json_object_set(val, "roles", ov_json_false());
+    }
+
+    send_success_response(vocs, input, socket, &val);
+    return;
 
 error:
     ov_json_value_free(val);
-    ov_json_value_free(input);
-    return result;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool enable_api_auth(ov_vocs *vocs){
 
-    if (!set_function(vocs->io, OV_EVENT_API_LOGOUT, client_logout)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_LOGOUT,
+        vocs,
+        client_logout)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_LOGIN, client_login)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_LOGIN,
+        vocs,
+        client_login)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_AUTHENTICATE, client_login))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_AUTHENTICATE,
+        vocs,
+        client_login)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_UPDATE_LOGIN, update_client_login))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_UPDATE_LOGIN,
+        vocs,
+        update_client_login)) goto error;
 
-    if (!set_function(vocs->io, "is_ldap_enabled", check_ldap_enabled))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "is_ldap_enabled",
+        vocs,
+        check_ldap_enabled)) goto error;
 
     return true;
 error:
@@ -1043,15 +1112,17 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_media(ov_vocs *vocs,
-                         int socket,
-                         ov_json_value *input) {
+static void client_media(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1144,43 +1215,26 @@ static bool client_media(ov_vocs *vocs,
             goto error;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
+    if (!set_async(vocs, uuid, socket, input)) goto error;
 
-        char *str = ov_json_value_to_string(input);
-        ov_log_error("failed to set async msg - closing %i | %s", socket, str);
-        str = ov_data_pointer_free(str);
-
-        goto error;
-    }
-
-    input = NULL;
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
-    /* let socket close in case of media setup errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_candidate(ov_vocs *vocs,
-                             int socket,
-                             ov_json_value *input) {
+static void client_candidate(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1224,43 +1278,26 @@ static bool client_candidate(ov_vocs *vocs,
         goto error;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-
-        char *str = ov_json_value_to_string(input);
-        ov_log_error("failed to set async msg - closing %i | %s", socket, str);
-        str = ov_data_pointer_free(str);
-
-        goto error;
-    }
-
-    data = ov_json_value_free(data);
-    return true;
+    if (!set_async(vocs, uuid, socket, input)) goto error;
+    return;
 
 error:
-    /* let socket close in case of media setup errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_end_of_candidates(ov_vocs *vocs,
-                                     int socket,
-                                     ov_json_value *input) {
+static void client_end_of_candidates(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1302,45 +1339,28 @@ static bool client_end_of_candidates(ov_vocs *vocs,
         goto error;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-
-        char *str = ov_json_value_to_string(input);
-        ov_log_error("failed to set async msg - closing %i | %s", socket, str);
-        str = ov_data_pointer_free(str);
-
-        goto error;
-    }
-
-    data = ov_json_value_free(data);
-    return true;
+    if (!set_async(vocs, uuid, socket, input)) goto error;
+    return;
 
 error:
-    /* let socket close in case of media setup errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return false;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_authorize(ov_vocs *vocs,
-                             int socket,
-                             ov_json_value *input) {
+static void client_authorize(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
     ov_json_value *out = NULL;
     bool result = false;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1398,30 +1418,26 @@ static bool client_authorize(ov_vocs *vocs,
     } else {
         ov_log_error("VOCS AUTHORIZE failed at %i | %s", socket, user);
     }
-
-    ov_socket_json_set(vocs->connections, socket, &data);
-
-    /* close socket if authorization messaging failed */
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return result;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_get(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void client_get(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *val = NULL;
     ov_json_value *out = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+    
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) {
@@ -1470,7 +1486,7 @@ static bool client_get(ov_vocs *vocs,
         val = ov_vocs_db_get_entity_domain(
             vocs->config.db, OV_VOCS_DB_USER, user);
 
-        if (val) ov_json_object_set(result_obj, OV_KEY_DOMAIN, val);
+        if (val) ov_json_object_set(result_obj, "origin", val);
 
         val = NULL;
 
@@ -1486,7 +1502,7 @@ static bool client_get(ov_vocs *vocs,
 
     out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
-    if (!ov_json_object_set(res, OV_KEY_RESULT, result_obj)) goto error;
+    if (!ov_json_object_set(res, "data", result_obj)) goto error;
 
     val = ov_json_string(type);
     if (!ov_json_object_set(res, OV_KEY_TYPE, val)) goto error;
@@ -1497,32 +1513,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return ;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_user_roles(ov_vocs *vocs,
-                              int socket,
-                              ov_json_value *input) {
+static void client_user_roles(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
-    bool result = false;
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
     ov_json_value *data = NULL;
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) goto error;
@@ -1542,14 +1554,12 @@ static bool client_user_roles(ov_vocs *vocs,
 
     val = NULL;
 
-    result = send_success_response(vocs, input, socket, &out);
+    send_success_response(vocs, input, socket, &out);
 
 error:
     ov_json_value_free(val);
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return result;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1584,18 +1594,19 @@ static bool add_loop_broadcast_and_state(const void *key,
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_role_loops(ov_vocs *vocs,
-                              int socket,
-                              ov_json_value *input) {
+static void client_role_loops(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
-    bool result = false;
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1628,28 +1639,28 @@ static bool client_role_loops(ov_vocs *vocs,
 
     val = NULL;
 
-    result = send_success_response(vocs, input, socket, &out);
+    send_success_response(vocs, input, socket, &out);
 
 error:
     ov_json_value_free(val);
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return result;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_event_get_recording(ov_vocs *vocs,
-                                       int socket,
-                                       ov_json_value *input) {
+static void client_event_get_recording(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     //const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1693,24 +1704,23 @@ static bool client_event_get_recording(ov_vocs *vocs,
 
 error:
     ov_json_value_free(val);
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return true;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_event_sip_status(ov_vocs *vocs,
-                                    int socket,
-                                    ov_json_value *input) {
+static void client_event_sip_status(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *val = NULL;
-    ov_json_value *out = NULL;
     ov_json_value *data = NULL;
+
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) {
@@ -1723,38 +1733,33 @@ static bool client_event_sip_status(ov_vocs *vocs,
 
     bool status = ov_mc_backend_sip_get_connect_status(vocs->sip);
 
-    out = ov_json_object();
-
     if (status) {
         val = ov_json_true();
     } else {
         val = ov_json_false();
     }
 
-    ov_json_object_set(out, OV_KEY_CONNECTED, val);
-
-    send_success_response(vocs, input, socket, &out);
+    send_success_response(vocs, input, socket, &val);
 
 error:
-    ov_json_value_free(out);
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return true;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_switch_loop_state(ov_vocs *vocs,
-                                     int socket,
-                                     ov_json_value *input) {
+static void client_switch_loop_state(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *sess =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1854,8 +1859,6 @@ static bool client_switch_loop_state(ov_vocs *vocs,
         send_success_response(vocs, input, socket, &out);
 
         out = ov_json_value_free(out);
-        input = ov_json_value_free(input);
-
         goto done;
     }
 
@@ -1871,48 +1874,31 @@ static bool client_switch_loop_state(ov_vocs *vocs,
         goto error;
     }
 
-    /* we requested either some loop aquisition or switch loop */
-
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-
-        char *str = ov_json_value_to_string(input);
-        ov_log_error("failed to set async msg - closing %i | %s", socket, str);
-        str = ov_data_pointer_free(str);
-
-        goto error;
-    }
+    if (!set_async(vocs, uuid, socket, input)) goto error;
 
 done:
-    data = ov_json_value_free(data);
-    return true;
+    return;
 
 error:
     /* let socket close in case of switch media errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
     out = ov_json_value_free(out);
     val = ov_json_value_free(val);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_switch_loop_volume(ov_vocs *vocs,
-                                      int socket,
-                                      ov_json_value *input) {
+static void client_switch_loop_volume(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -1972,46 +1958,30 @@ static bool client_switch_loop_volume(ov_vocs *vocs,
         goto error;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-
-        char *str = ov_json_value_to_string(input);
-        ov_log_error("failed to set async msg - closing %i | %s", socket, str);
-        str = ov_data_pointer_free(str);
-
-        goto error;
-    }
+    if (!set_async(vocs, uuid, socket, input)) goto error;
 
     send_switch_volume_user_broadcast(vocs, socket, loop, percent);
 
-    ov_json_value_free(data);
-    return true;
+    return;
 error:
-    /* let socket close in case of switch media errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_talking(ov_vocs *vocs,
-                           int socket,
-                           ov_json_value *input) {
+static void client_talking(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2092,24 +2062,24 @@ error:
     /* Do not close socket in case of broadcasting errors */
     ov_json_value_free(val);
     ov_json_value_free(out);
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return true;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_calling(ov_vocs *vocs,
-                           int socket,
-                           ov_json_value *input) {
+static void client_calling(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
     char *uuid_request = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2161,41 +2131,26 @@ static bool client_calling(ov_vocs *vocs,
         goto error;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid_request,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout},
-            vocs->config.timeout.response_usec)) {
-
-        ov_log_error("failed to reset async");
-        OV_ASSERT(1 == 0);
-        goto error;
-    }
-
-    input = NULL;
+    if (!set_async(vocs, uuid_request, socket, input)) goto error;
 
 error:
-    /* Do not close socket in case of call errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
     uuid_request = ov_data_pointer_free(uuid_request);
-    return true;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_hangup(ov_vocs *vocs,
-                          int socket,
-                          ov_json_value *input) {
+static void client_hangup(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2247,28 +2202,26 @@ static bool client_hangup(ov_vocs *vocs,
     }
 
 error:
-    /* Do not close socket in case of call errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return true;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_permit_call(ov_vocs *vocs,
-                               int socket,
-                               ov_json_value *input) {
+static void client_permit_call(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
-    const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
-    if (!user || !role) {
+    if (!user) {
 
         send_error_response(
             vocs, input, socket, OV_ERROR_CODE_AUTH, OV_ERROR_DESC_AUTH);
@@ -2307,28 +2260,26 @@ static bool client_permit_call(ov_vocs *vocs,
     }
 
 error:
-    /* Do not close socket in case of call errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return true;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_revoke_call(ov_vocs *vocs,
-                               int socket,
-                               ov_json_value *input) {
+static void client_revoke_call(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
-    const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
-    if (!user || !role) {
+    if (!user) {
 
         send_error_response(
             vocs, input, socket, OV_ERROR_CODE_AUTH, OV_ERROR_DESC_AUTH);
@@ -2367,27 +2318,6 @@ static bool client_revoke_call(ov_vocs *vocs,
     }
 
 error:
-    /* Do not close socket in case of call errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void async_timedout_sip(void *userdata, ov_event_async_data data) {
-
-    ov_vocs *self = ov_vocs_cast(userdata);
-    if (!self)
-        goto error;
-
-    ov_json_value *out = ov_event_api_create_error_response(
-        data.value, OV_ERROR_TIMEOUT, OV_ERROR_DESC_TIMEOUT);
-    env_send(self, data.socket, out);
-    out = ov_json_value_free(out);
-
-error:
-    ov_event_async_data_clear(&data);
     return;
 }
 
@@ -2395,7 +2325,7 @@ error:
 
 static bool client_call_function(ov_vocs *vocs,
                                  int socket,
-                                 ov_json_value *input,
+                                 const ov_json_value *input,
                                  bool (*function)(ov_mc_backend_sip *sip,
                                                   const char *uuid)) {
 
@@ -2403,7 +2333,7 @@ static bool client_call_function(ov_vocs *vocs,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2417,19 +2347,7 @@ static bool client_call_function(ov_vocs *vocs,
         goto error;
     }
 
-    if (!ov_event_async_set(
-            vocs->async,
-            uuid,
-            (ov_event_async_data){.socket = socket,
-                                  .value = input,
-                                  .timedout.userdata = vocs,
-                                  .timedout.callback = async_timedout_sip},
-            vocs->config.timeout.response_usec)) {
-
-        goto error;
-    }
-
-    input = NULL;
+    set_async_sip(vocs, uuid, socket, input);
 
     if (!function(vocs->sip, uuid)) {
 
@@ -2446,50 +2364,65 @@ static bool client_call_function(ov_vocs *vocs,
         goto error;
     }
 
-error:
-    /* Do not close socket in case of call errors */
-    ov_json_value_free(input);
-    ov_json_value_free(data);
     return true;
+
+error:
+    return false;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_list_calls(ov_vocs *vocs,
-                              int socket,
-                              ov_json_value *input) {
+static void client_list_calls(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
-    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
-    return client_call_function(
+    client_call_function(
         vocs, socket, input, ov_mc_backend_sip_list_calls);
+
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_list_call_permissions(ov_vocs *vocs,
-                                         int socket,
-                                         ov_json_value *input) {
+static void client_list_call_permissions(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
-    return client_call_function(
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
+    client_call_function(
         vocs, socket, input, ov_mc_backend_sip_list_permissions);
+
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_list_sip_status(ov_vocs *vocs,
-                                   int socket,
-                                   ov_json_value *input) {
+static void client_list_sip_status(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
-    return client_call_function(
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
+    client_call_function(
         vocs, socket, input, ov_mc_backend_sip_get_status);
+
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_event_set_keyset_layout(ov_vocs *vocs,
-                                           int socket,
-                                           ov_json_value *input) {
+static void client_event_set_keyset_layout(void *userdata, const char *eventname,
+        int socket, const ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+    ov_json_value *data = NULL;
+
+    UNUSED(eventname);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     /* checking input:
 
@@ -2505,13 +2438,9 @@ static bool client_event_set_keyset_layout(ov_vocs *vocs,
 
    */
 
-    ov_json_value *out = NULL;
-    ov_json_value *val = NULL;
-    ov_json_value *data = NULL;
-
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2559,22 +2488,24 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_event_get_keyset_layout(ov_vocs *vocs,
-                                           int socket,
-                                           ov_json_value *input) {
+static void client_event_get_keyset_layout(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+    ov_json_value *data = NULL;
+
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     /* checking input:
 
@@ -2589,13 +2520,9 @@ static bool client_event_get_keyset_layout(ov_vocs *vocs,
 
    */
 
-    ov_json_value *out = NULL;
-    ov_json_value *val = NULL;
-    ov_json_value *data = NULL;
-
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2637,42 +2564,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_event_set_user_data(ov_vocs *vocs,
-                                       int socket,
-                                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "set_user_data",
-           "parameter" :
-           {
-                // data to set
-           }
-       }
-
-   */
+static void client_event_set_user_data(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) {
@@ -2720,41 +2633,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return ;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_event_get_user_data(ov_vocs *vocs,
-                                       int socket,
-                                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "get_user_data",
-           "parameter" :
-           {
-           }
-       }
-
-   */
+static void client_event_get_user_data(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2786,40 +2686,31 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool client_event_register(ov_vocs *vocs,
-                                  int socket,
-                                  ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "register",
-           "parameter" :
-           {
-           }
-       }
-
-   */
+static void client_event_register(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    ov_json_value *data = ov_socket_json_get(vocs->connections, socket);
+    const char *uuid = ov_json_string_get(ov_json_get(input, "/client_id"));
+
+    ov_client_registry_register(vocs->client_registry, uuid, socket);
+
+    ov_json_value *data = ov_socket_storage_get(vocs->connections, socket);
     if (!data) data = ov_json_object();
 
     ov_socket_data remote ={0};
@@ -2827,8 +2718,9 @@ static bool client_event_register(ov_vocs *vocs,
 
     ov_json_value *sock = ov_socket_data_to_json(&remote);
     ov_json_object_set(data, "remote", sock);
-
-    ov_socket_json_set(vocs->connections, socket, &data);
+    
+    sock = ov_socket_data_to_json(&remote);
+    ov_client_registry_set_data(vocs->client_registry, uuid, sock);
 
     if (!ov_broadcast_registry_set(vocs->broadcasts,
                                    OV_BROADCAST_KEY_SYSTEM_BROADCAST,
@@ -2841,103 +2733,166 @@ static bool client_event_register(ov_vocs *vocs,
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    return true;
+    return ;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static bool enable_api_client(ov_vocs *vocs){
 
-    if (!set_function(vocs->io, OV_EVENT_API_MEDIA, client_media)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_MEDIA,
+        vocs,
+        client_media)) goto error;
 
-    if (!set_function(vocs->io, OV_ICE_STRING_CANDIDATE, client_candidate))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_ICE_STRING_CANDIDATE,
+        vocs,
+        client_candidate)) goto error;
 
-    if (!set_function(vocs->io,
-                      OV_ICE_STRING_END_OF_CANDIDATES,
-                      client_end_of_candidates))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_ICE_STRING_END_OF_CANDIDATES,
+        vocs,
+        client_end_of_candidates)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_AUTHORISE, client_authorize))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_AUTHORISE,
+        vocs,
+        client_authorize)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_AUTHORIZE, client_authorize))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_AUTHORIZE,
+        vocs,
+        client_authorize)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_GET, client_get)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_GET,
+        vocs,
+        client_get)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_USER_ROLES, client_user_roles))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_USER_ROLES,
+        vocs,
+        client_user_roles)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_ROLE_LOOPS, client_role_loops))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_ROLE_LOOPS,
+        vocs,
+        client_role_loops)) goto error;
 
-    if (!set_function(
-            vocs->io, OV_EVENT_API_SWITCH_LOOP_STATE, client_switch_loop_state))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_SWITCH_LOOP_STATE,
+        vocs,
+        client_switch_loop_state)) goto error;
 
-    if (!set_function(vocs->io,
-                      OV_EVENT_API_SWITCH_LOOP_VOLUME,
-                      client_switch_loop_volume))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_SWITCH_LOOP_VOLUME,
+        vocs,
+        client_switch_loop_volume)) goto error;
 
-    if (!set_function(vocs->io, OV_EVENT_API_TALKING, client_talking))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_EVENT_API_TALKING,
+        vocs,
+        client_talking)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_CALL, client_calling)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_call",
+        vocs,
+        client_calling)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_HANGUP, client_hangup)) goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_hangup",
+        vocs,
+        client_hangup)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_PERMIT_CALL, client_permit_call))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_permit_call",
+        vocs,
+        client_permit_call)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_REVOKE_CALL, client_revoke_call))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_revoke_call",
+        vocs,
+        client_revoke_call)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_LIST_CALLS, client_list_calls))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_get_calls",
+        vocs,
+        client_list_calls)) goto error;
 
-    if (!set_function(vocs->io,
-                      OV_KEY_LIST_CALL_PERMISSIONS,
-                      client_list_call_permissions))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_get_call_permissions",
+        vocs,
+        client_list_call_permissions)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_LIST_SIP_STATUS, client_list_sip_status))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_get_status",
+        vocs,
+        client_list_sip_status)) goto error;
 
-    if (!set_function(vocs->io,
-                      OV_VOCS_DB_SET_KEYSET_LAYOUT,
-                      client_event_set_keyset_layout))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_SET_KEYSET_LAYOUT,
+        vocs,
+        client_event_set_keyset_layout)) goto error;
 
-    if (!set_function(vocs->io,
-                      OV_VOCS_DB_GET_KEYSET_LAYOUT,
-                      client_event_get_keyset_layout))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_GET_KEYSET_LAYOUT,
+        vocs,
+        client_event_get_keyset_layout)) goto error;
 
-    if (!set_function(
-            vocs->io, OV_VOCS_DB_SET_USER_DATA, client_event_set_user_data))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_SET_USER_DATA,
+        vocs,
+        client_event_set_user_data)) goto error;
 
-    if (!set_function(
-            vocs->io, OV_VOCS_DB_GET_USER_DATA, client_event_get_user_data))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_GET_USER_DATA,
+        vocs,
+        client_event_get_user_data)) goto error;
 
-    if (!set_function(
-            vocs->io, OV_KEY_GET_RECORDING, client_event_get_recording))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "recorder_get_recordings",
+        vocs,
+        client_event_get_recording)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_SIP, client_event_sip_status))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "sip_is_enabled",
+        vocs,
+        client_event_sip_status)) goto error;
 
-    if (!set_function(vocs->io, OV_KEY_REGISTER, client_event_register))
-        goto error;
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_KEY_REGISTER,
+        vocs,
+        client_event_register)) goto error;
 
     return true;
 error:
@@ -2962,7 +2917,7 @@ static bool authorize_connection_for_id(ov_vocs *vocs,
 
     if (!vocs || !socket || !id) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
 
@@ -2994,11 +2949,9 @@ static bool authorize_connection_for_id(ov_vocs *vocs,
     }
 
     ov_vocs_db_parent_clear(&parent);
-    data = ov_json_value_free(data);
     return true;
 error:
     ov_vocs_db_parent_clear(&parent);
-    data = ov_json_value_free(data);
     return false;
 }
 
@@ -3012,16 +2965,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_update_password(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input)  {
+static void cb_event_update_password(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *user = ov_json_string_get(
@@ -3128,29 +3083,27 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_get_admin_domains(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void cb_event_get_admin_domains(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *user = ov_json_string_get(
@@ -3179,29 +3132,27 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
-    input = ov_json_value_free(input);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_get_admin_projects(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void cb_event_get_admin_projects(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *user = ov_json_string_get(
@@ -3230,29 +3181,27 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_check_id_exists(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void cb_event_check_id_exists(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3305,50 +3254,34 @@ static bool cb_event_check_id_exists(ov_vocs *vocs,
     }
 
     out = ov_event_api_create_success_response(input);
-    ov_json_value *res = ov_event_api_get_response(out);
-    ov_json_object_set(res, OV_KEY_RESULT, val);
+    ov_json_object_set(out, "response", val);
 
 response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_delete(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "delete",
-           "parameter" :
-           {
-               "type" : "<domain | project | user | role | loop >",
-               "id" : "<id to get>",
-           }
-       }
-
-   */
+static void cb_event_delete(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3410,48 +3343,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_create(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "create",
-           "parameter" :
-           {
-               "type" : "<domain | project | user | role | loop >",
-               "id" : "<id to get>",
-               "scope" :
-               {
-                   "type": "<domain | project>",
-                   "id" : "<parent scope id>"
-               }
-           }
-       }
-
-   */
+static void cb_event_create(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3536,44 +3449,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_get_key(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "get_key",
-           "parameter" :
-           {
-               "type"     : "<domain | project | user | role | loop >",
-               "id" : "<id to get>",
-               "key" : "<key to get>"
-           }
-       }
-
-   */
+static void cb_event_get_key(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3639,45 +3536,27 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return ;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_update_key(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "update_key",
-           "parameter" :
-           {
-               "type"     : "<domain | project | user | role | loop >",
-               "id" : "<id to get>",
-               "key" : "<key to get>"
-               "data"  : { <data to update> }
-           }
-       }
-
-   */
+static void cb_event_update_key(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
-
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3747,44 +3626,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_delete_key(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "delete_key",
-           "parameter" :
-           {
-               "type"     : "<domain | project | user | role | loop >",
-               "id" : "<id to get>",
-               "key" : "<key to get>"
-           }
-       }
-
-   */
+static void cb_event_delete_key(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3849,46 +3712,30 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_verify(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "verify",
-           "parameter" :
-           {
-               "type"     : "<domain | project | user | role | loop >",
-               "id" : "<id to get>",
-               "data" : "<object to verify>"
-           }
-       }
-
-   */
-
-    ov_json_value *errors = NULL;
+static void cb_event_verify(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    ov_json_value *errors = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3960,45 +3807,30 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_update(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void cb_event_update(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
-    /* checking input:
-
-       {
-           "event" : "update",
-           "parameter" :
-           {
-               "type" : "<domain | project | user | role | loop >",
-               "id"   : "<id to get>",
-               "data" : "<data to update>"
-           }
-       }
-
-   */
-
-    ov_json_value *errors = NULL;
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
 
+    ov_json_value *errors = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4095,39 +3927,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_load(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "load",
-           "parameter" : {}
-       }
-
-   */
+static void cb_event_load(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4169,39 +3990,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_save(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "save",
-           "parameter" : {}
-       }
-
-   */
+static void cb_event_save(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4242,43 +4052,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return ;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_set_layout(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "set_layout",
-           "parameter" :
-           {
-                "role"   : "<role_id>"
-                "layout" : <layout to set>
-           }
-       }
-
-   */
+static void cb_event_set_layout(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4330,42 +4125,29 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_get_layout(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
 
-    /* checking input:
-
-       {
-           "event" : "get_layout",
-           "parameter" :
-           {
-                "role"   : "<role_id>"
-           }
-       }
-
-   */
+static void cb_event_get_layout(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4410,43 +4192,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_add_domain_admin(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "add_domain_admin",
-           "parameter" :
-           {
-                "domain" : "<domain_id>"
-                "user"   : <user id to add>
-           }
-       }
-
-   */
+static void cb_event_add_domain_admin(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4500,43 +4267,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_add_project_admin(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "add_project_admin",
-           "parameter" :
-           {
-                "project" : "<project_id>"
-                "user"    : <user id to add>
-           }
-       }
-
-   */
+static void cb_event_add_project_admin(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4588,30 +4340,29 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return ;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_ldap_import(ov_vocs *vocs,
+static void cb_event_ldap_import(void *userdata,const char *name,
                        int socket,
-                       ov_json_value *input) {
+                       const ov_json_value *input) {
 
 
     ov_json_value *out = NULL;
     ov_json_value *data = NULL;
 
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
+
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *domain = ov_json_string_get(ov_json_get(input, "/parameter/domain"));
@@ -4655,41 +4406,27 @@ response:
 
     if (out) env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_set_user_data(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "set_user_data",
-           "parameter" :
-           {
-                // data to set
-           }
-       }
-
-   */
+static void cb_event_set_user_data(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4737,41 +4474,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_get_user_data(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
-
-    /* checking input:
-
-       {
-           "event" : "get_user_data",
-           "parameter" :
-           {
-           }
-       }
-
-   */
+static void cb_event_get_user_data(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4811,30 +4535,28 @@ response:
 
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_event_get_highest_port(ov_vocs *vocs,
-                       int socket,
-                       ov_json_value *input) {
+static void cb_event_get_highest_port(void *userdata, const char *name,
+        int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
     ov_json_value *data = NULL;
+    
+    UNUSED(name);
+    ov_vocs *vocs = ov_vocs_cast(userdata);
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_json_get(vocs->connections, socket);
+    data = ov_socket_storage_get(vocs->connections, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4855,15 +4577,11 @@ static bool cb_event_get_highest_port(ov_vocs *vocs,
 response:
     env_send(vocs, socket, out);
     out = ov_json_value_free(out);
-    data = ov_json_value_free(data);
-    input = ov_json_value_free(input);
-    return true;
+    return;
 error:
     val = ov_json_value_free(val);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
-    data = ov_json_value_free(data);
-    return false;
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -4872,88 +4590,130 @@ static bool enable_api_db(ov_vocs *vocs){
 
     if (!vocs) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_UPDATE_PASSWORD, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_UPDATE_PASSWORD,
+        vocs,
         cb_event_update_password)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_ADMIN_DOMAINS, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_ADMIN_DOMAINS,
+        vocs,
         cb_event_get_admin_domains)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_ADMIN_PROJECTS, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_ADMIN_PROJECTS,
+        vocs,
         cb_event_get_admin_projects)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_ID_EXISTS, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_ID_EXISTS,
+        vocs,
         cb_event_check_id_exists)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_DELETE, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_DELETE,
+        vocs,
         cb_event_delete)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_CREATE, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_CREATE,
+        vocs,
         cb_event_create)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_GET_KEY, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_GET_KEY,
+        vocs,
         cb_event_get_key)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_UPDATE_KEY, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_UPDATE_KEY,
+        vocs,
         cb_event_update_key)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_DELETE_KEY, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_DELETE_KEY,
+        vocs,
         cb_event_delete_key)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_VERIFY, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_VERIFY,
+        vocs,
         cb_event_verify)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_UPDATE, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_UPDATE,
+        vocs,
         cb_event_update)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_LOAD, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_LOAD,
+        vocs,
         cb_event_load)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_SAVE, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_SAVE,
+        vocs,
         cb_event_save)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_SET_LAYOUT, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_SET_LAYOUT,
+        vocs,
         cb_event_set_layout)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_GET_LAYOUT, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_GET_LAYOUT,
+        vocs,
         cb_event_get_layout)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_ADD_DOMAIN_ADMIN, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_ADD_DOMAIN_ADMIN,
+        vocs,
         cb_event_add_domain_admin)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_ADD_PROJECT_ADMIN, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_ADD_PROJECT_ADMIN,
+        vocs,
         cb_event_add_project_admin)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_LDAP_IMPORT, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_LDAP_IMPORT,
+        vocs,
         cb_event_ldap_import)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_SET_USER_DATA, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_SET_USER_DATA,
+        vocs,
         cb_event_set_user_data)) goto error;
 
-    if (!set_function(vocs->io, 
-        OV_VOCS_DB_GET_USER_DATA, 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        OV_VOCS_DB_GET_USER_DATA,
+        vocs,
         cb_event_get_user_data)) goto error;
 
-    if (!set_function(vocs->io, 
-        "get_highest_port", 
+    if (!ov_event_broker_register(
+        vocs->broker,
+        "db_get_highest_port",
+        vocs,
         cb_event_get_highest_port)) goto error;
 
     return true;

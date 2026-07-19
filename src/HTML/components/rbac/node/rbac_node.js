@@ -37,9 +37,10 @@ import * as ov_DB from "/lib/ov_db.js";
 export default class ov_RBAC_Node extends HTMLElement {
     #type;
     #value;
-    #frozen;
+    #view_only;
     #global;
     #subset;
+    #subsets;
     #allow_highlighting;
 
     #node_name;
@@ -70,7 +71,7 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["type", "value", "frozen", "global", "allow_highlighting"];
+        return ["type", "value", "view_only", "global", "allow_highlighting"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -80,8 +81,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#type = newValue;
         } else if (name === "value") {
             this.#update_value(newValue);
-        } else if (name === "frozen") {
-            this.#update_frozen(this.hasAttribute("frozen"));
+        } else if (name === "view_only") {
+            this.#update_view_only(this.hasAttribute("view_only"));
         } else if (name === "global") {
             this.#update_global(this.hasAttribute("global"));
         } else if (name === "allow_highlighting") {
@@ -105,15 +106,15 @@ export default class ov_RBAC_Node extends HTMLElement {
         return this.#value;
     }
 
-    set frozen(boolean) {
+    set view_only(boolean) {
         if (boolean)
-            this.setAttribute("frozen", "");
+            this.setAttribute("view_only", "");
         else
-            this.removeAttribute("frozen")
+            this.removeAttribute("view_only")
     }
 
-    get frozen() {
-        return this.hasAttribute("frozen");
+    get view_only() {
+        return this.hasAttribute("view_only");
     }
 
     set global(boolean) {
@@ -127,8 +128,8 @@ export default class ov_RBAC_Node extends HTMLElement {
         return this.hasAttribute("global");
     }
 
-    set subset(id) {
-        this.#subset = id;
+    set subset(subset) {
+        this.#subset = subset;
     }
 
     get subset() {
@@ -240,6 +241,23 @@ export default class ov_RBAC_Node extends HTMLElement {
         return this.#allow_highlighting;
     }
 
+    populate_subset_options(subsets) {
+        this.#subsets = subsets;
+        let select = this.shadowRoot.querySelector("#edit_subset");
+
+        if (select) {
+            select.replaceChildren();
+            for (let subset of subsets) {
+                let element = document.createElement("option");
+                element.label = subset.name;
+                element.value = subset.id;
+                if (subset.id === this.#subset)
+                    element.selected = true;
+                select.appendChild(element);
+            }
+        }
+    }
+
     #update_value(text) {
         this.#value = text;
         let name = this.shadowRoot.querySelector("#node_name");
@@ -247,15 +265,16 @@ export default class ov_RBAC_Node extends HTMLElement {
             name.innerText = text;
     }
 
-    #update_frozen(boolean) {
-        this.#frozen = boolean;
-        this.edit_id = this.shadowRoot.querySelector("#edit_id");
+    #update_view_only(boolean) {
+        this.#view_only = boolean;
+        let edit_id = this.shadowRoot.querySelector("#edit_id");
         let edit_name = this.shadowRoot.querySelector("#edit_name");
         let edit_pass = this.shadowRoot.querySelector("#edit_password");
         let edit_multicast_ip = this.shadowRoot.querySelector("#edit_multicast_ip");
         let edit_multicast_port = this.shadowRoot.querySelector("#edit_multicast_port");
         let edit_highlight_color = this.shadowRoot.querySelector("#edit_highlight_color");
         let delete_button = this.shadowRoot.querySelector("#delete_element");
+        let edit_subset = this.shadowRoot.querySelector("#edit_subset");
         if (edit_id)
             edit_id.disabled = boolean;
         if (edit_name)
@@ -270,6 +289,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             edit_highlight_color.disabled = boolean;
         if (delete_button)
             delete_button.disabled = boolean;
+        if (edit_subset)
+            edit_subset.disabled = boolean;
 
     }
 
@@ -326,7 +347,7 @@ export default class ov_RBAC_Node extends HTMLElement {
 
         this.shadowRoot.querySelector("#network_icon").onclick = (event) => {
             this.dispatchEvent(new CustomEvent("edit_edges", {
-                detail: { node: this, value: true }, bubbles: true
+                detail: { node: this, value: true }, bubbles: true, composed: true
             }));
         };
 
@@ -338,30 +359,36 @@ export default class ov_RBAC_Node extends HTMLElement {
 
         this.shadowRoot.querySelector("#headphone_icon").onclick = (event) => {
             this.dispatchEvent(new CustomEvent("add_edge", {
-                detail: { target: this, value: false }, bubbles: true
+                detail: { target: this, value: false }, bubbles: true, composed: true
             }));
         };
 
         this.shadowRoot.querySelector("#microphone_icon").onclick = (event) => {
             this.dispatchEvent(new CustomEvent("add_edge", {
-                detail: { target: this, value: true }, bubbles: true
+                detail: { target: this, value: true }, bubbles: true, composed: true
             }));
         };
 
         this.shadowRoot.querySelector("#deconnect_icon").onclick = (event) => {
             this.dispatchEvent(new CustomEvent("delete_edge", {
-                detail: { target: this }, bubbles: true
+                detail: { target: this }, bubbles: true, composed: true
             }));
         };
 
         this.shadowRoot.querySelector("#connect_icon").onclick = (event) => {
             this.dispatchEvent(new CustomEvent("add_edge", {
-                detail: { target: this, value: null }, bubbles: true
+                detail: { target: this, value: null }, bubbles: true, composed: true
             }));
         };
 
-        if (this.frozen)
-            this.#update_frozen(this.frozen);
+        this.shadowRoot.querySelector("#edit_subset").onchange = (event) => {
+            this.dispatchEvent(new CustomEvent("change_subset", {
+                detail: { node: this, value: event.target.value }, bubbles: true, composed: true
+            }));
+        }
+
+        if (this.view_only)
+            this.#update_view_only(this.view_only);
 
         if (this.global)
             this.#update_global(this.global);
@@ -370,6 +397,8 @@ export default class ov_RBAC_Node extends HTMLElement {
             this.#update_value(this.value);
         else
             this.show_settings();
+
+        this.populate_subset_options(this.#subsets);
     }
 
     async show_settings(error) {
@@ -410,7 +439,7 @@ export default class ov_RBAC_Node extends HTMLElement {
     }
 
     #save() {
-        if (this.frozen)
+        if (this.view_only)
             this.#dom.dialog.close();
         if (!this.#dom.edit_id.disabled && this.type === "user" && (!this.#dom.edit_id.value || !this.#dom.edit_pass.value)) {
             this.#dom.error_msg.innerText = "Please set username and password."
@@ -444,7 +473,7 @@ export default class ov_RBAC_Node extends HTMLElement {
 
     #delete() {
         this.dispatchEvent(new CustomEvent("delete_node", {
-            detail: { node: this }, bubbles: true
+            detail: { node: this }, bubbles: true, composed: true
         }));
     }
 

@@ -115,9 +115,11 @@ export default class ov_SIP_Calls extends HTMLElement {
     }
 
     change_call_status(call_id, status) {
-        let call_status = this.#calls.get(call_id).querySelector(".call_status");
-        if (call_status)
-            call_status.innerHTML = status;
+        if (this.#calls.get(call_id)) {
+            let call_status = this.#calls.get(call_id).querySelector(".call_status");
+            if (call_status)
+                call_status.innerHTML = status;
+        }
     }
 
     deactivate_call(call_id) {

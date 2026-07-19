@@ -28,6 +28,7 @@
     ---------------------------------------------------------------------------
 */
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_Auth from "/lib/ov_auth.js";
 import * as View from "./view.js";
 
 export const VIEW_ID = VIEW.AUTH;
@@ -35,10 +36,10 @@ var view_container;
 
 export async function render(container) {
     view_container = container;
-    view_container.appendChild(await loadCSS());
+    view_container.replaceChildren(await loadCSS());
     view_container.appendChild(await loadHtml());
 
-    ov_Websockets.prime_websocket.addEventListener("disconnected", disconnect_handler);
+    ov_Websockets.on_disconnect(disconnect_handler);
 
     View.init(VIEW_ID);
 
@@ -47,7 +48,6 @@ export async function render(container) {
 
 export function remove() {
     console.log("(login) unload login client");
-    ov_Websockets.prime_websocket.removeEventListener("disconnected", disconnect_handler);
     if (view_container !== undefined)
         view_container.replaceChildren();
 }
@@ -69,8 +69,12 @@ async function loadCSS() {
     return style;
 }
 
-function disconnect_handler(ws) {
+async function disconnect_handler(websocket, error) {
     console.log("(login) logged out");
     console.warn("(login) Lead server disconnected.");
-    View.display_disconnect_notice(ws.server_error);
+    View.display_disconnect_notice(error);
+    if (error && error.code !== 5000)
+        await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
+    await ov_Auth.connect(websocket);
+    View.set_message("");
 }

@@ -37,12 +37,19 @@ var removed = false;
 
 export async function render(container) {
     view_container = container;
-    view_container.appendChild(await loadCSS());
+    view_container.replaceChildren(await loadCSS());
     view_container.appendChild(await loadHtml());
 
-    ov_Websockets.on_disconnect(disconnect_handler);// prime_websocket.addEventListener("disconnected", disconnect_handler);
+    ov_Websockets.on_disconnect(disconnect_handler);
 
-    View.init(VIEW_ID);
+    let authenticated = true;
+    for (let ws of ov_Websockets.list)
+        if (!ws.authenticated) {
+            authenticated = false;
+            break;
+        }
+
+    View.init(VIEW_ID, authenticated);
 
     console.log("(auth) View rendered");
     removed = false;
@@ -66,7 +73,6 @@ export function remove() {
     ov_Websockets.removeEventListeners();//prime_websocket.removeEventListener("disconnected", disconnect_handler);
     if (!!view_container)
         view_container.replaceChildren();
-    removed = true;
 }
 
 window.onbeforeunload = function () {
@@ -86,13 +92,13 @@ async function loadCSS() {
     return style;
 }
 
-async function disconnect_handler(websocket) {
+async function disconnect_handler(websocket, error) {
     if (ov_Websockets.list.length === ov_Websockets.disconnected_websockets.size) {
         console.log("(auth) Logged out");
         console.warn("(auth) Lead server disconnected.");
-        View.display_disconnect_notice(websocket.server_error);
+        View.display_disconnect_notice(error);
     }
-    if (websocket.server_error && (websocket.server_error.code === 5000))
+    if (error && error.code === 5000)
         ov_Auth.connect(websocket);
     else {
         if (websocket === ov_Websockets.current_lead_websocket) {
@@ -105,7 +111,23 @@ async function disconnect_handler(websocket) {
             });
         }
         await ov_Websockets.sleep(PERS_ERROR_TIMEOUT, websocket);
-        if (!removed && await ov_Auth.connect(websocket))
+        if (await ov_Auth.connect(websocket)) {
             View.set_message("");
+            let session = websocket.session;
+            if (!session) {
+                if (ov_Websockets.current_lead_websocket === websocket || !ov_Websockets.current_lead_websocket.connected)
+                    View.display_authentication();
+                else
+                    websocket.disconnect(); //we wait till registrations is complete and ask for login in next loop view
+            }
+            else {
+                await ov_Auth.login(session.user, session.session, websocket);
+                if (ov_Websockets.current_lead_websocket !== websocket) {
+                    let lead_session = ov_Websockets.current_lead_websocket.session;
+                    if (lead_session && lead_session.role)
+                        await ov_Auth.authorize_role(role, websocket);
+                }
+            }
+        }
     }
 }

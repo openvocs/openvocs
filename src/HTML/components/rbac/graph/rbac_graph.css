@@ -66,7 +66,11 @@ button,
     margin: 0.3rem 0.2rem 0.2rem -3rem;
 }
 
-:host([no_new_users]) #user_header .add_entry {
+:host([managed_users]) #user_header .add_entry {
+    display: none;
+}
+
+:host([managed_roles]) #role_header .add_entry {
     display: none;
 }
 

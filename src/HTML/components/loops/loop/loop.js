@@ -49,7 +49,7 @@ export default class ov_Loop extends HTMLElement {
     #layout_row;
     #layout_column;
     #participants;
-    #active_participants;
+    #active_speakers;
     #links;
 
     static CONTENT = {
@@ -70,7 +70,7 @@ export default class ov_Loop extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.#active_participants = new Map();
+        this.#active_speakers = new Map();
     }
 
     toString() {
@@ -79,7 +79,7 @@ export default class ov_Loop extends HTMLElement {
 
     // attributes -------------------------------------------------------------
     static get observedAttributes() {
-        return ["layout", "state", "name", "permission", "color"];
+        return ["state", "name", "permission", "color", "volume"];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -102,6 +102,10 @@ export default class ov_Loop extends HTMLElement {
 
         if (name === "color") {
             this.#highlight_color = newValue;
+        }
+
+        if (name === "volume") {
+            this.#volume = newValue;
         }
     }
 
@@ -162,12 +166,10 @@ export default class ov_Loop extends HTMLElement {
     }
 
     set volume(volume) {
-        this.#volume = volume;
-        let vol_indicator = this.shadowRoot.querySelector("#loop_volume_indicator_value");
-        if (vol_indicator) {
-            vol_indicator.textContent = this.#volume;
-            this.shadowRoot.querySelector("#loop_volume_input").value = this.#volume;
-        }
+        this.setAttribute("volume", volume);
+        let vol_slider = this.shadowRoot.querySelector("#loop_volume_input");
+        if (vol_slider) 
+            vol_slider.value = this.#volume;
     }
 
     get volume() {
@@ -194,8 +196,8 @@ export default class ov_Loop extends HTMLElement {
     }
 
     set participants(participants) {
-        if (!participants && participants !== 0)
-            return;
+        if (!participants)
+            participants = 0;
         this.#participants = participants;
         if (this.shadowRoot.isConnected) {
             this.shadowRoot.querySelector("#loop_participants_indicator_value").textContent = this.#participants;
@@ -204,40 +206,40 @@ export default class ov_Loop extends HTMLElement {
     }
 
     get participants() {
-        if (this.#participants === undefined)
+        if (!this.#participants)
             return 0;
         return this.#participants;
     }
 
-    add_active_participant(key, active_participant) {
-        if (!(active_participant instanceof ov_User)) {
-            let role = active_participant.role;
-            active_participant = ov_User.parse(active_participant.user, active_participant);
-            active_participant.role = role;
+    add_active_speaker(key, active_speaker) {
+        if (!(active_speaker instanceof ov_User)) {
+            let role = active_speaker.role;
+            active_speaker = ov_User.parse(active_speaker.user, active_speaker);
+            active_speaker.role = role;
         }
-        this.#active_participants.set(key, active_participant);
-        this.update_active_participants_list();
+        this.#active_speakers.set(key, active_speaker);
+        this.update_active_speakers_list();
 
-        console.log("voice activity: " + active_participant.id + " starts speaking in loop " + this.#loop_id);
+        console.log("voice activity: " + active_speaker.id + " starts speaking in loop " + this.#loop_id);
     }
 
-    remove_active_participant(key) {
+    remove_active_speaker(key) {
         if (key) {
-            this.#active_participants.delete(key);
-            this.update_active_participants_list();
+            this.#active_speakers.delete(key);
+            this.update_active_speakers_list();
             console.log("voice activity: " + key + " finished speaking in loop " + this.#loop_id);
         }
     }
 
-    update_active_participants_list() {
+    update_active_speakers_list() {
         let value;
         if (ACTIVITY_CONTENT === "display_name")
-            value = this.active_participants.map(participant => participant["name"]).toString();
+            value = this.active_speakers.map(participant => participant["name"]).toString();
         else
-            value = this.active_participants.map(participant => participant["id"]).toString();
+            value = this.active_speakers.map(participant => participant["id"]).toString();
         if (this.shadowRoot.isConnected)
             this.shadowRoot.querySelector("#loop_activity").textContent = value;
-        this.shadowRoot.host.classList.toggle("activity", this.has_active_participants());
+        this.shadowRoot.host.classList.toggle("activity", this.has_active_speakers());
     }
 
     vad(value) {
@@ -245,15 +247,15 @@ export default class ov_Loop extends HTMLElement {
     }
 
     get is_highlighted() {
-        return (this.shadowRoot.host.classList.contains("vad") || this.has_active_participants()) && this.state !== ov_Loop.STATE.NONE;
+        return (this.shadowRoot.host.classList.contains("vad") || this.has_active_speakers()) && this.state !== ov_Loop.STATE.NONE;
     }
 
-    get active_participants() {
-        return Array.from(this.#active_participants.values());
+    get active_speakers() {
+        return Array.from(this.#active_speakers.values());
     }
 
-    has_active_participants() {
-        return this.#active_participants.size > 0;
+    has_active_speakers() {
+        return this.#active_speakers.size > 0;
     }
 
     set roles(links) {
@@ -273,9 +275,9 @@ export default class ov_Loop extends HTMLElement {
 
     setup() {
         this.update_name();
-        this.participants = this.participants;
-        this.update_state();
+        this.participants = this.#participants;
         this.volume = this.#volume;
+        this.update_state();
         if (this.#highlight_color)
             this.highlight_color = this.#highlight_color;
 
@@ -381,8 +383,6 @@ export default class ov_Loop extends HTMLElement {
             json.permission = ov_Loop.STATE.MONITOR;
 
         if (!json.hasOwnProperty("volume"))
-            json.volume = DEFAULT_LOOP_VOLUME;
-        else if (json.volume === 0 && DEFAULT_LOOP_VOLUME)
             json.volume = DEFAULT_LOOP_VOLUME;
 
         if (!position)

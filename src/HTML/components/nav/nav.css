@@ -31,10 +31,18 @@ ov-nav label.button {
 
 ov-nav input[type="radio"]:checked+label {
     cursor: default;
+    color: var(--base_text_color) !important;
+    background-color: var(--element_hover_background_color) !important;
+    box-shadow: var(--element_disabled_inset_box_shadow) !important;
+    border: var(--element_hover_border_color) solid 0.1rem;
+}
+
+ov-nav input[type="radio"]:disabled+label {
+    cursor: default;
     color: var(--element_disabled_text_color) !important;
     background-color: var(--element_disabled_background_color) !important;
     box-shadow: var(--element_disabled_inset_box_shadow) !important;
-    border: var(--black_transparent_75) solid 0.1rem;
+    border: var(--element_disabled_background_color) solid 0.1rem;
 }
 
 /* waiting*/

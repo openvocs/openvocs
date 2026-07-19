@@ -29,13 +29,12 @@
 */
 // import custom HTML elements
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
-import ov_Recorder_Loop from "/extensions/recorder/components/config/loop/recorder_loop.js";
 import * as ov_Recorder from "/extensions/recorder/ov_recorder.js";
+import ov_Recorder_Loop from "/extensions/recorder/components/config/loop/recorder_loop.js";
 import ov_Player_List from '/extensions/recorder/components/player_list/recorder.js';
 
 var DOM = {};
-
-export var logout_triggered;
+export var current_loop;
 
 export function init(view_id) {
 
@@ -50,42 +49,54 @@ export function init(view_id) {
 
     DOM.start_recording.addEventListener("click", async () => {
         if (DOM.start_recording.classList.contains("recording")) {
-            for (let ws of ov_Websockets.list) {
-                if (ws.record === true) {
-                    let loop = get_current_loop();
-                    if (await ov_Recorder.stop_record(loop.id, ws)) {
-                        loop.active = false;
-                        DOM.start_recording.classList.toggle("recording", false);
-                        DOM.message.innerText = "Recording was stopped. Please remember to save project.";
-                        DOM.message.className = "success";
-                        setTimeout(() => {
-                            DOM.message.innerText = "";
-                            DOM.message.className = "";
-                        }, 30000);
-                    } else {
-                        DOM.message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
-                        DOM.message.className = "error";
+            let recording = await ov_Recorder.stop_recording(current_loop.id);
+            if (!recording.error) {
+                let node = {
+                    node_id: current_loop.id,
+                    type: "loop",
+                    data: {
+                        recorded: false
                     }
                 }
+                DOM.loops.dispatchEvent(new CustomEvent("save_node", {
+                    detail: { node: node, update: true }, bubbles: true, composed: true
+                }));
+                current_loop.active = false;
+                DOM.start_recording.classList.toggle("recording", false);
+                DOM.message.innerText = "Recording was stopped. Please remember to save project.";
+                DOM.message.className = "success";
+                setTimeout(() => {
+                    DOM.message.innerText = "";
+                    DOM.message.className = "";
+                }, 30000);
+            } else {
+                DOM.message.innerText = "Error " + recording.error.code + ": " + recording.error.description;
+                DOM.message.className = "error";
             }
         } else {
-            for (let ws of ov_Websockets.list) {
-                if (ws.record === true) {
-                    let loop = get_current_loop();
-                    if (await ov_Recorder.start_record(loop.id, ws)) {
-                        loop.active = true;
-                        DOM.start_recording.classList.toggle("recording", true);
-                        DOM.message.innerText = "Recording was started. Please remember to save project.";
-                        DOM.message.className = "success";
-                        setTimeout(() => {
-                            DOM.message.innerText = "";
-                            DOM.message.className = "";
-                        }, 30000);
-                    } else {
-                        DOM.message.innerText = "Error " + ws.server_error.code + ": " + ws.server_error.description;
-                        DOM.message.className = "error";
+            let recording = await ov_Recorder.start_recording(current_loop.id);
+            if (!recording.error) {
+                let node = {
+                    node_id: current_loop.id,
+                    type: "loop",
+                    data: {
+                        recorded: true
                     }
                 }
+                DOM.loops.dispatchEvent(new CustomEvent("save_node", {
+                    detail: { node: node, update: true }, bubbles: true, composed: true
+                }));
+                current_loop.active = true;
+                DOM.start_recording.classList.toggle("recording", true);
+                DOM.message.innerText = "Recording was started. Please remember to save project.";
+                DOM.message.className = "success";
+                setTimeout(() => {
+                    DOM.message.innerText = "";
+                    DOM.message.className = "";
+                }, 30000);
+            } else {
+                DOM.message.innerText = "Error " + recording.error.code + ": " + recording.error.description;
+                DOM.message.className = "error";
             }
         }
     });
@@ -101,8 +112,7 @@ export function init(view_id) {
         let finish = Math.floor(new Date(DOM.playback_search_stop.value).getTime() / 1000);
         for (let ws of ov_Websockets.list) {
             if (ws.record === true) {
-                let loop = get_current_loop();
-                let recorded_loops = await ov_Recorder.get_recordings(loop.id, start, finish, ws);
+                let recorded_loops = await ov_Recorder.get_recordings(current_loop.id, start, finish, ws);
                 DOM.playback_list.draw_recordings(recorded_loops, ws.server_url + "audio/");
             }
         }
@@ -126,21 +136,14 @@ export function add_loop(id, data, active) {
 
 export function clear_loops() {
     DOM.loops.replaceChildren();
-}
-
-function get_current_loop() {
-    let loops = document.querySelectorAll("ov-recorder-config-loop");
-    for (let element of loops) {
-        if (element.disabled)
-            return element;
-    }
+    current_loop = undefined;
 }
 
 export function select_loop(loop) {
     DOM.loading_screen.show("Load loop " + loop.id + "...");
-    let prev_loop = get_current_loop();
-    if (prev_loop)
-        prev_loop.disabled = false;
+    if (current_loop)
+        current_loop.disabled = false;
+    current_loop = loop;
 
     loop.disabled = true;
     DOM.start_recording.classList.toggle("recording", loop.active);
@@ -148,16 +151,4 @@ export function select_loop(loop) {
     // DOM.stop_recording.disabled = !loop.active;
     DOM.playback_search.click();
     DOM.loading_screen.hide();
-}
-
-export function collect() {
-    let result = {};
-
-    let loops = document.querySelectorAll("ov-recorder-config-loop");
-    for (let loop of loops) {
-        if (loop.active)
-            result[loop.id] = { "recorded": true };
-    }
-
-    return result;
 }

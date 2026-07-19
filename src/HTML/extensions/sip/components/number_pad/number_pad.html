@@ -3,10 +3,51 @@
     <div id="sip-dial-pad">
         <span id="number-field-wrapper">
             <span>&#8801;</span>
-            <input type="text" id="sip-phone-number-field" name="phone_number" class="sip-text-field" placeholder="Enter phone number...">
+            <input type="text" id="sip-phone-number-field" name="phone_number" class="sip-text-field"
+                placeholder="Enter phone number...">
         </span>
 
-        <div class="simple-keyboard number_pad"></div>
+        <div class="simple-keyboard hg-theme-default ov_sip_keyboard numeric-theme hg-layout-default">
+            <div class="hg-rows">
+                <div class="hg-row">
+                    <div class="hg-button hg-standardBtn" data-value="*"><span>*</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="+"><span>+</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="#"><span>#</span>
+                    </div>
+                </div>
+                <div class="hg-row">
+                    <div class="hg-button hg-standardBtn" data-value="1"><span>1</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="2"><span>2</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="3"><span>3</span>
+                    </div>
+                </div>
+                <div class="hg-row">
+                    <div class="hg-button hg-standardBtn" data-value="4"><span>4</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="5"><span>5</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="6"><span>6</span>
+                    </div>
+                </div>
+                <div class="hg-row">
+                    <div class="hg-button hg-standardBtn" data-value="7"><span>7</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="8"><span>8</span>
+                    </div>
+                    <div class="hg-button hg-standardBtn" data-value="9"><span>9</span>
+                    </div>
+                </div>
+                <div class="hg-row">
+                    <div class="hg-button hg-standardBtn" data-value="0"><span>0</span>
+                    </div>
+                    <div class="hg-button hg-functionBtn hg-button-bksp fluentui_icon" data-func="backspace"><span>&#xe1c9;</span></div>
+                </div>
+            </div>
+        </div>
 
         <button id="sip-call-button" class="sip-clickable">
             <div class="icon sip-phone-icon">

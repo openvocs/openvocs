@@ -59,13 +59,12 @@ export async function init(view_id) {
         DOM.login_form.clear_password_field();
         DOM.login_form.stop_loading_animation();
 
-        if (result) {
+        if (result.authenticated) {
             DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                detail: { origin: view_id, target: VIEW.OVERVIEW }
+                detail: { origin: view_id, target: VIEW.CONFIG }
             }));
-        } else {
-            display_disconnect_notice(ov_Websockets.current_lead_websocket.server_error);
-        }
+        } else 
+            display_disconnect_notice(result.error);
     });
 
     document.getElementById("version").innerText = VERSION_NUMBER;
@@ -81,7 +80,7 @@ export function display_disconnect_notice(error) {
         set_message("Error: " + error.description + " (Code: " + error.code + ")");
 }
 
-function set_message(message) {
+export function set_message(message) {
     DOM.message.innerHTML = message;
 }
 

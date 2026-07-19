@@ -1,0 +1,67 @@
+#broadcasts {
+    display: flex;
+    align-items: end;
+    gap: 1rem;
+}
+
+.divider {
+    border: 0.06rem var(--element_art_color) solid;
+    align-self: stretch;
+}
+
+label {
+    margin-top: 0.5rem;
+}
+
+#settings button {
+    width: 9rem;
+}
+
+h3 {
+    margin-top: 0.5rem;
+}
+
+#domain_settings input[type=text],
+#domain_settings select {
+    width: 20rem;
+    margin-bottom: 0.5rem;
+}
+
+#domain_settings label {
+    display: block;
+}
+
+#ldap_import_button {
+    margin-bottom: 1.5rem;
+}
+
+#ldap_import {
+    margin-top: 2rem;
+}
+
+#ldap_notice {
+    display: inline;
+}
+
+#project {
+    display: flex;
+    gap: 0.7rem;
+}
+
+#project_list {
+    flex-grow: 0;
+    overflow-y: auto;
+}
+
+#settings #new_project {
+    width: 4.5rem;
+    margin-left: 0;
+}
+
+#project_settings {
+    flex-grow: 1;
+}
+
+#delete_project {
+    margin-top: 0.5rem;
+}

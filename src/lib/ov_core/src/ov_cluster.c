@@ -175,7 +175,7 @@ ov_cluster *ov_cluster_create(ov_cluster_config config){
     
     } else {
 
-        ov_log_error("cluster opened multicast recv %s:%i",
+        ov_log_info("cluster opened multicast recv %s:%i",
             config.multicast.host,
             config.multicast.port);
 
@@ -271,11 +271,11 @@ ov_cluster *ov_cluster_free(ov_cluster *self){
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_cluster_send(ov_cluster *self, ov_json_value *msg){
+bool ov_cluster_send(ov_cluster *self, const ov_json_value *msg){
 
     if (!self || !msg) goto error;
 
-    ov_json_object_set(msg, "cluster_id", ov_json_string(self->uuid));
+    ov_json_object_set((ov_json_value*) msg, "cluster_id", ov_json_string(self->uuid));
 
     char *str = ov_json_value_to_string(msg);
     if (!str) goto error;

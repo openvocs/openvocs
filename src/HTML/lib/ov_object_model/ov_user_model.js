@@ -90,12 +90,12 @@ export default class ov_User {
     }
 
     set password(password) {
-		this.#password = password;
-	}
+        this.#password = password;
+    }
 
-	get password() {
-		return this.#password;
-	}
+    get password() {
+        return this.#password;
+    }
 
     set avatar(avatar) {
         this.#avatar = avatar;
@@ -164,9 +164,9 @@ export default class ov_User {
         return this.#admin;
     }
 
-	get dom_id(){
-		return this.#dom_id;
-	}
+    get dom_id() {
+        return this.#dom_id;
+    }
 
     static parse(id, json) {
         if (!id)
@@ -176,8 +176,14 @@ export default class ov_User {
     }
 
     parse_values(json) {
-        for(let prop in json){
-            this[prop] = json[prop];
+        for (let prop in json) {
+            if (this.hasOwnProperty(prop))
+                this[prop] = json[prop];
+            else if (prop === "origin") {
+                this.domain = json.origin.domain;
+                if (json.origin.project)
+                    this.project = json.origin.project;
+            }
         }
     }
 }

@@ -100,7 +100,7 @@ loops for grid layout ---------------------------------------------------------
         justify-content: center;
     }
 
-    #loop_volume .icon {
+    #loop_volume .fluentui_icon {
         width: 1em;
     }
 
@@ -132,9 +132,9 @@ loops for grid layout ---------------------------------------------------------
         border-image: inherit;
         box-shadow: inherit;
         border-bottom: 0px;
-        display: none;
         bottom: 100%;
         height: 65cqh;
+        overflow: hidden;
     }
 
     #loop_volume #loop_volume_input {

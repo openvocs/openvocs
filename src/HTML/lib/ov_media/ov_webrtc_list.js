@@ -39,7 +39,7 @@ export function setup_connections() {
         let media = new ov_WebRTC(ws);
         media.on_disconnect(() => {
             console.log(log_prefix(ws) + "media disconnected");
-            if (ws.is_connecting)
+            if (ws.connecting || ws.connected)
                 ws.disconnect();
         });
         list.set(ws.client_id, media);

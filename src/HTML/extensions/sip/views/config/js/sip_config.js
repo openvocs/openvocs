@@ -19,23 +19,18 @@
 
     ---------------------------------------------------------------------------
 *//**
-    @file           overview.js
+    @file           sip_config.js
 
-    @ingroup        vocs_admin/views/overview
+    @ingroup        extensions/sip
 
-    @brief          init and load overview view
+    @brief          init and load sip view
     	
     ---------------------------------------------------------------------------
 */
-import * as ov_Websockets from "/lib/ov_websocket_list.js";
-import * as ov_Auth from "/lib/ov_auth.js";
-import * as ov_DB from "/lib/ov_db.js";
 import * as View from "./view.js";
 
 export const VIEW_ID = "vocs_admin_sip";
 var view_container;
-
-export { collect } from "./view.js";
 
 export async function init(container) {
     view_container = container;
@@ -43,39 +38,40 @@ export async function init(container) {
     View.init(VIEW_ID);
 }
 
-export function render(loops, roles) {
-    let first_loop;
+export function render(domain_data, project_id, view_domain_only) {
+    let current_loop_id = View.current_loop ? View.current_loop.id : undefined;
+    let selected_loop;
 
     View.clear_loops();
 
-    if (loops)
-        for (let id of Object.keys(loops)) {
-            let loop = View.add_loop(id, loops[id], roles);
-            if(loops[id].global)
-                loop.global = true;
-            if (loops[id].frozen)
-                loop.disabled = true;
-            if (!first_loop)
-                first_loop = loop;
+    let proj = domain_data.projects[project_id];
+
+    let roles = proj && proj.roles && domain_data.roles ? { ...proj.roles, ...domain_data.roles } :
+        proj && proj.roles ? proj.roles : domain_data.roles ? domain_data.roles : {};
+
+    if (proj.loops)
+        for (let id of Object.keys(proj.loops)) {
+            let loop = View.add_loop(id, proj.loops[id], roles);
+            if (loop.id === current_loop_id || !selected_loop)
+                selected_loop = loop;
         }
 
-    if (first_loop)
-        View.select_loop(first_loop);
+    if (domain_data.loops)
+        for (let id of Object.keys(domain_data.loops)) {
+            let loop = View.add_loop(id, domain_data.loops[id], roles);
+            loop.global = true;
+            if (view_domain_only)
+                loop.disabled = true;
+            if (loop.id === current_loop_id || !selected_loop)
+                selected_loop = loop;
+        }
 
-    /*if (!await ov_DB.domains() || !await ov_DB.projects()){
-        ov_Websockets.prime_websocket.disconnect();
-    }
-
-    View.draw(ov_Websockets.user());
-
-    console.log("(overview) View rendered");
-
-    ov_Websockets.prime_websocket.addEventListener("disconnected", on_disconnect);*/
+    if (selected_loop)
+        View.select_loop(selected_loop);
 }
 
 export function remove() {
-    console.log("(overview) unload");
-    ov_Websockets.prime_websocket.removeEventListener("disconnected", on_disconnect);
+    console.log("(sip) unload");
     if (view_container)
         view_container.replaceChildren();
 }
@@ -91,15 +87,4 @@ async function loadCSS() {
     const style = document.createElement('style');
     style.textContent = await response.text();
     return style;
-}
-
-async function on_disconnect() {
-    /*if (View.logout_triggered) {
-        ov_Websockets.reload_page();
-        return;
-    }
-    console.warn("Disconnected from prime server. Trying to reconnect...");
-    View.display_loading_screen(true, "Disconnected from prime server. Trying to reconnect...");
-    if (await ov_Auth.relogin(ov_Websockets.prime_websocket))
-        View.display_loading_screen(false);*/
 }

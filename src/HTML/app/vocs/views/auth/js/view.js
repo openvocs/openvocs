@@ -27,8 +27,9 @@
     	
     ---------------------------------------------------------------------------
 */
-import * as ov_Auth from "/lib/ov_auth.js";
 import * as ov_Websockets from "/lib/ov_websocket_list.js";
+import * as ov_Auth from "/lib/ov_auth.js";
+import * as ov_DB from "/lib/ov_db.js";
 import * as CSS from "/css/css.js";
 
 // import custom HTML elements
@@ -43,7 +44,9 @@ const DOM = {
     }
 };
 
-export async function init(view_id) {
+var switch_triggered;
+
+export async function init(view_id, authenticated) {
     if (!document.adoptedStyleSheets.includes(await ov_Login_Form.style_sheet))
         document.adoptedStyleSheets = [...document.adoptedStyleSheets, await ov_Login_Form.style_sheet];
 
@@ -71,9 +74,12 @@ export async function init(view_id) {
     //-------------------------------------------------------------------------
     // set view state
     //-------------------------------------------------------------------------
-    await ov_Auth.connect();
+    switch_triggered = false;
 
-    activate_stepper(DOM.authentication_step);
+    if (!authenticated)
+        display_authentication();
+    else
+        display_authorization();
     set_server_id();
 
     document.getElementById("reload_page").onclick = async () => {
@@ -86,36 +92,38 @@ export async function init(view_id) {
         DOM.login_form.clear_password_field();
         DOM.login_form.stop_loading_animation();
 
-        if (result) {
-            set_message("");
-            set_server_id();
-            if (await ov_Auth.collect_roles())
-                populate_role_list();
-            else
-                set_message("We failed to get the information to which roles " +
-                    "you have access from the server. " +
-                    "For more info please see the console output.");
-        } else {
-            let error = ov_Websockets.current_lead_websocket.server_error;
-            display_disconnect_notice(error);
-        }
+        if (result.authenticated) {
+            display_authorization();
+        } else
+            display_disconnect_notice(result.error);
     });
 
     DOM.role_list.addEventListener("click", async (event) => {
         if (event.target.tagName === "INPUT") {
             DOM.role_list.indicate_loading(event.target.id, true);
-            if (await ov_Auth.authorize_role(DOM.role_list.value)) {
-                DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
-                    detail: { origin: view_id }
-                }));
-            } else
-                set_message("Authorization failed.");
-            DOM.role_list.indicate_loading(event.target.id, false);
+            for (let ws of ov_Websockets.list) {
+                ov_Auth.authorize_role(DOM.role_list.value, ws).then((result) => {
+                    if (!switch_triggered) {
+                        if (ov_Websockets.current_lead_websocket !== ws && !ov_Websockets.current_lead_websocket.connected)
+                            ov_Websockets.switch_lead_websocket(ws);
+                        if (ov_Websockets.current_lead_websocket === ws) {
+                            switch_triggered = true;
+                            if (result.authorized) {
+                                DOM.view_container.dispatchEvent(new CustomEvent("switch_view", {
+                                    detail: { origin: view_id }
+                                }));
+                            } else
+                                set_message("Authorization failed.");
+                            DOM.role_list.indicate_loading(event.target.id, false);
+                        }
+                    }
+                });
+            }
         }
     });
 
     const urlParams = new URLSearchParams(window.location.search);
-    const keyset = urlParams.get('keysetname')
+    const keyset = urlParams.get('keysetname');
     document.getElementById("keyset").innerText = keyset;
     document.getElementById("version").innerText = VERSION_NUMBER;
 
@@ -164,18 +172,27 @@ function populate_role_list() {
             }
         }
     }
-    activate_stepper(DOM.authorization_step);
 }
 
 //-----------------------------------------------------------------------------
 // Stepper
 //-----------------------------------------------------------------------------
-function activate_stepper(stepper) {
-    if (stepper === DOM.authentication_step) {
-        DOM.authentication_step.classList.add(DOM.CLASS.active);
-        DOM.authorization_step.classList.remove(DOM.CLASS.active);
-    } else if (stepper === DOM.authorization_step) {
-        DOM.authentication_step.classList.remove(DOM.CLASS.active);
-        DOM.authorization_step.classList.add(DOM.CLASS.active);
-    }
+export function display_authentication() {
+    DOM.authentication_step.classList.add(DOM.CLASS.active);
+    DOM.authorization_step.classList.remove(DOM.CLASS.active);
+}
+
+export async function display_authorization() {
+    set_message("");
+    set_server_id();
+    let result = await ov_DB.collect_roles();
+    if (result.roles_collected)
+        populate_role_list();
+    else
+        set_message("We failed to get the information to which roles " +
+            "you have access from the server. " +
+            "For more info please see the console output.");
+
+    DOM.authentication_step.classList.remove(DOM.CLASS.active);
+    DOM.authorization_step.classList.add(DOM.CLASS.active);
 }
