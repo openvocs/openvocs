@@ -131,6 +131,7 @@ static void broker_login(void *userdata, const char *name, int socket,
     const ov_json_value *msg){
 
     ov_json_value *out = NULL;
+    char *str = NULL;
 
     char buffer[2048] = {0};
     size_t size = 2048;
@@ -184,7 +185,7 @@ static void broker_login(void *userdata, const char *name, int socket,
 
 response:
     
-    char *str = ov_json_value_to_string(out);
+    str = ov_json_value_to_string(out);
     if (!str) goto error;
 
     ov_io_send(self->config.io, socket, (ov_memory_pointer){
@@ -204,6 +205,7 @@ static void broker_publish(void *userdata, const char *name, int socket,
     const ov_json_value *msg){
 
     ov_json_value *out = NULL;
+    char *str = NULL;
 
     ov_event_broker *self = ov_event_broker_cast(userdata);
     if (!self || !name || !msg) goto error;
@@ -249,7 +251,7 @@ static void broker_publish(void *userdata, const char *name, int socket,
 
 response:
 
-    char *str = ov_json_value_to_string(out);
+    str = ov_json_value_to_string(out);
     if (!str) goto error;
 
     ov_io_send(self->config.io, socket, (ov_memory_pointer){
@@ -269,6 +271,7 @@ static void broker_subscribe(void *userdata, const char *name, int socket,
     const ov_json_value *msg){
 
     ov_json_value *out = NULL;
+    char *str = NULL;
 
     ov_event_broker *self = ov_event_broker_cast(userdata);
     if (!self || !name || !msg) goto error;
@@ -316,7 +319,7 @@ static void broker_subscribe(void *userdata, const char *name, int socket,
 
 response:
 
-    char *str = ov_json_value_to_string(out);
+    str = ov_json_value_to_string(out);
     if (!str) goto error;
 
     ov_io_send(self->config.io, socket, (ov_memory_pointer){
@@ -337,6 +340,7 @@ static void broker_functions(void *userdata, const char *name, int socket,
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
+    char *str = NULL;
 
     ov_event_broker *self = ov_event_broker_cast(userdata);
     if (!self || !name || !msg) goto error;
@@ -360,7 +364,7 @@ static void broker_functions(void *userdata, const char *name, int socket,
 
 response:
 
-    char *str = ov_json_value_to_string(out);
+    str = ov_json_value_to_string(out);
     if (!str) goto error;
 
     ov_io_send(self->config.io, socket, (ov_memory_pointer){
