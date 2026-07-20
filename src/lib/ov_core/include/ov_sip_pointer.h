@@ -252,4 +252,11 @@ ov_sip_message *ov_sip_message_response(uint64_t code, const char *phrase);
 
 ov_sip_message *ov_sip_message_copy(const ov_sip_message *in);
 
+ov_sip_message *ov_sip_message_copy_header(const ov_sip_message *in);
+
+ov_sip_message *ov_sip_message_ack_from_msg(
+    const ov_sip_message *in,
+    const char *via);
+
+
 #endif /* ov_sip_pointer_h */

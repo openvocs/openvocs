@@ -1945,3 +1945,113 @@ ov_sip_message *ov_sip_message_copy(const ov_sip_message *in){
     UNUSED(next);
     return out;
 }
+
+/*----------------------------------------------------------------------------*/
+
+ov_sip_message *ov_sip_message_copy_header(const ov_sip_message *in){
+
+    char msg[1024] = {0};
+
+    snprintf(msg, 1024, "%.*s %.*s SIP/2.0\r\n",
+        (int) in->request.method.length,
+        (char*) in->request.method.start,
+        (int)in->request.uri.length,
+        (char*) in->request.uri.start);
+
+    ov_sip_message *out = sip_message(msg);
+
+    const ov_sip_header *header = NULL;
+    for (size_t i = 0; i < in->config.header.capacity; i++){
+
+        header = &in->header[i];
+
+        if (!header)
+            continue;
+
+        if (!header->name.start)
+            continue;
+
+        ov_sip_message_add_header_copy(out, header);
+
+    }
+    
+    return out;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool process_cseq(const ov_sip_message *msg, 
+    uint64_t *cseq, 
+    char **method){
+
+    const ov_sip_header *header = ov_sip_header_get_unique(
+        msg->header, msg->config.header.capacity, "Cseq");
+
+    if (!header) goto error;
+
+    char *end = NULL;
+    uint64_t cs = strtol((char*)header->value.start, &end, 10);
+    if (!end) goto error;
+
+    *cseq = cs;
+
+    if (end[0] != ' ') goto error;
+    *method = end + 2;
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_sip_message *ov_sip_message_ack_from_msg(
+    const ov_sip_message *in,
+    const char *via){
+
+    char msg[1024] = {0};
+
+    snprintf(msg, 1024, "ACK %.*s SIP/2.0\r\n",
+        (int)in->request.uri.length,
+        (char*) in->request.uri.start);
+
+    uint64_t cseq = 0;
+    char *method = NULL;
+
+    if (!process_cseq(in, &cseq, &method)) goto error;
+
+    ov_sip_message *out = sip_message(msg);
+
+    const ov_sip_header *header = NULL;
+    for (size_t i = 0; i < in->config.header.capacity; i++){
+
+        header = &in->header[i];
+
+        if (!header)
+            continue;
+
+        if (!header->name.start)
+            continue;
+
+        if (0 == strncmp("Via", (char*)header->name.start, header->name.length))
+            continue;
+
+        if (0 == strncmp("Cseq", (char*)header->name.start, header->name.length))
+            continue;
+
+        ov_sip_message_add_header_copy(out, header);
+
+    }
+
+    memset(msg, 0, 1024);
+    snprintf(msg, 1024, "%"PRIu64" ACK", cseq);
+    ov_sip_message_add_header(out, "Cseq", msg);
+
+    ov_sip_message_add_header(out, "Via", via);
+    ov_sip_message_close_header(out);
+
+    ov_sip_parse_message(out, NULL);
+    return out;
+error:
+    return NULL;
+}
