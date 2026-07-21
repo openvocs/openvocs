@@ -173,6 +173,8 @@ int main(int argc, char **argv) {
         domain,
         "/api")) goto error;
 
+    ov_io_debug_websocket(io, true);
+
     /*  Run event loop */
     loop->run(loop, OV_RUN_MAX);
 

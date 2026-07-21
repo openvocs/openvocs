@@ -677,6 +677,9 @@ bool ov_event_broker_push(ov_event_broker *self, int socket, ov_json_value *msg)
     const char *name = ov_event_api_get_event(msg);
     if (!name) goto error;
 
+    char *str = ov_json_value_to_string(msg);
+    ov_log_debug("%s", str);
+
     Event *event = ov_dict_get(self->events, name);
 
     if (!event) {
@@ -695,7 +698,7 @@ bool ov_event_broker_push(ov_event_broker *self, int socket, ov_json_value *msg)
         ev = ov_node_next(ev);
     }
 
-    char *str = ov_json_value_to_string(msg);
+
 
     struct container1 container = (struct container1){
         .self = self,
@@ -710,6 +713,7 @@ bool ov_event_broker_push(ov_event_broker *self, int socket, ov_json_value *msg)
     ov_json_value_free(msg);
     return true;
 error:
+    ov_data_pointer_free(str);
     ov_json_value_free(msg);
     return false;
 }

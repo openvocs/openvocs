@@ -2722,12 +2722,10 @@ static void client_event_register(void *userdata, const char *name,
     sock = ov_socket_data_to_json(&remote);
     ov_client_registry_set_data(vocs->client_registry, uuid, sock);
 
-    if (!ov_broadcast_registry_set(vocs->broadcasts,
+    ov_broadcast_registry_set(vocs->broadcasts,
                                    OV_BROADCAST_KEY_SYSTEM_BROADCAST,
                                    socket,
-                                   OV_SYSTEM_BROADCAST)) {
-        goto error;
-    }
+                                   OV_SYSTEM_BROADCAST);
 
     out = ov_event_api_create_success_response(input);
 

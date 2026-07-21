@@ -61,7 +61,7 @@ export async function init(view_id, container) {
     SIP_ONLINE = await ov_DB.check_sip(ov_Websockets.current_lead_websocket);
     if (SIP) {
         Config_SIP = await import("/extensions/sip/views/config/js/sip_config.js");
-        ov_SIP = await import("/extensions/sip/ov_SIP.js")
+        ov_SIP = await import("/extensions/sip/ov_sip.js")
     }
     if (RECORDER)
         Config_Recorder = await import("/extensions/recorder/views/config/js/recorder_config.js");

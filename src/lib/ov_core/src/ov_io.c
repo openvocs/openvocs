@@ -184,8 +184,6 @@ static void *connection_free(void *self) {
         return NULL;
     Connection *conn = (Connection *)self;
 
-    ov_log_debug("FREE connection %i", conn->socket);
-
     ov_thread_lock_clear(&conn->lock);
 
     if (conn->timer_id != OV_TIMER_INVALID) {
@@ -724,15 +722,21 @@ static void json_success(void *userdata, int socket, ov_json_value *val) {
     ov_io *self = (ov_io *)userdata;
 
     Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    if (!conn) ov_log_debug("JSON IO - connection gone.");
 
     if (!self || !conn)
         goto error;
 
     ov_domain *domain = ov_io_get_domain(self, conn->domain);
-    if (!domain) goto error;
+    if (!domain) {
+        ov_log_debug("JSON IO - domain %s not found", conn->domain);
+        goto error;
+    }
 
     Callback *cb = ov_dict_get(domain->event_handler.uri, conn->uri);
     if (!cb) {
+
+        ov_log_debug("JSON IO - domain %s URI %s no callback", conn->domain, conn->uri);
         goto error;
     }
 
@@ -3351,8 +3355,11 @@ static bool defragmented_callback(Connection *conn) {
     // we expect only JSON websocket frames
     if (!ov_json_io_buffer_push(conn->io->json_io_buffer, conn->socket,
                                 (ov_memory_pointer){.start = buffer->start,
-                                                    .length = buffer->length}))
+                                                    .length = buffer->length})){
+
+        ov_log_error("NO JSON input - dropping.");
         goto error;
+    }
 
     buffer = ov_buffer_free(buffer);
     conn->websocket.counter = 0;
@@ -3377,8 +3384,11 @@ static bool process_non_fragmented_frame(Connection *conn,
     if (!ov_json_io_buffer_push(
             conn->io->json_io_buffer, conn->socket,
             (ov_memory_pointer){.start = frame->content.start,
-                                .length = frame->content.length}))
+                                .length = frame->content.length})){
+
+        ov_log_error("NO JSON input - dropping.");
         goto error;
+    }
 
     frame = ov_websocket_frame_free(frame);
     return true;
@@ -3577,11 +3587,11 @@ static bool process_websocket_input(ov_io *self, Connection *conn) {
 
         case OV_WEBSOCKET_PARSER_PROGRESS:
 
-            if (msg)
-                msg = ov_websocket_frame_free(msg);
+            if (msg) msg = ov_websocket_frame_free(msg);
             goto done;
 
         default:
+            if (msg) msg = ov_websocket_frame_free(msg);
             goto error;
         }
 
@@ -3614,9 +3624,11 @@ static bool process_https_io(ov_io *self, Connection *conn,
 
         case OV_IO_WEB_CONNECTION:
             result = process_https_input(self, conn);
+            if (!result) ov_log_error("HTTPs failed");
             break;
         case OV_IO_WEBSOCKET_CONNECTION:
             result = process_websocket_input(self, conn);
+            if (!result) ov_log_error("WSS failed");
             break;
         default:
             goto error;
@@ -3626,7 +3638,6 @@ static bool process_https_io(ov_io *self, Connection *conn,
     return result;
 
 error:
-    ov_log_debug("process_https_io failed");
     if (self && conn)
         ov_dict_del(self->connections, (void*)(intptr_t)conn->socket);
     return false;
@@ -3880,7 +3891,6 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
 
     } else if (bytes == 0) {
 
-        ov_log_debug("SSL returned close.");
         ov_thread_lock_unlock(&conn->lock);
         ov_dict_del(self->connections, (void *)(intptr_t)socket);
         return true;
@@ -3901,7 +3911,6 @@ static bool io_stream_https(int socket, uint8_t events, void *data) {
 
         case SSL_ERROR_ZERO_RETURN:
             // connection close
-            ov_log_debug("SSL returned close.");
             ov_thread_lock_unlock(&conn->lock);
             ov_dict_del(self->connections, (void *)(intptr_t)socket);
             return true;
