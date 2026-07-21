@@ -51,7 +51,6 @@ rm -rf $RPM_BUILD_ROOT
 %config /etc/openvocs/certificate
 %config /etc/openvocs/ov_mc_alsa
 %config /etc/openvocs/ov_mc_ice_proxy
-%config /etc/openvocs/ov_mc_mixer
 %config /etc/openvocs/ov_mc_vocs
 %config /etc/openvocs/ov_mc_vad
 %config /etc/openvocs/ov_mc_interconnect
@@ -85,8 +84,6 @@ rm -rf $RPM_BUILD_ROOT
 /etc/systemd/system/ov_mc_alsa.service
 /etc/systemd/system/ov_mc_ice_proxy.service
 /etc/systemd/system/ov_mc_interconnect.service
-/etc/systemd/system/ov_mc_mixer@.service
-/etc/systemd/system/ov_mc_mixer.target
 /etc/systemd/system/ov_mc.target
 /etc/systemd/system/ov_mc_vocs.service
 /etc/systemd/system/ov_mc_vad.service
