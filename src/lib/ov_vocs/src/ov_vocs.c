@@ -46,6 +46,8 @@
 #include <ov_core/ov_socket_json.h>
 #include <ov_core/ov_cluster.h>
 
+#include <ov_os/ov_os.h>
+
 #include "../include/ov_mc_sip_msg.h"
 #include "../include/ov_vocs_loop.h"
 #include <ov_base/ov_error_codes.h>
@@ -3150,6 +3152,47 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
     if (vocs->ldap)
         set_timed_ldap_callback(vocs);
 
+    if (0 != config.mixer){
+
+        char host[1024] = {0};
+        snprintf(host, 1024, "%s", vocs->config.module.backend.socket.manager.host);
+    
+        char port[1024] = {0};
+        snprintf(port, 1024, "%i", vocs->config.module.backend.socket.manager.port);
+    
+        char const *args[] = {"-h", host, "-p", port, NULL}; 
+    
+        const char *working_dir = "/tmp";
+        const char *procname = "/usr/bin/ov_mc_mixer";
+    
+        for (size_t i = 0; i < config.mixer; i++){
+    
+            int r = ov_os_spawn(working_dir, procname, args, false);
+            if (r <= 0){
+                ov_log_error("failed to start a mixer process.");
+            }
+    
+        }
+    }
+
+    if (0 != config.recorder.amount){
+    
+        char const *args[] = {"-c", config.recorder.config, NULL}; 
+    
+        const char *working_dir = "/tmp";
+        const char *procname = "/usr/bin/ov_recorder";
+    
+        for (size_t i = 0; i < config.recorder.amount; i++){
+    
+            int r = ov_os_spawn(working_dir, procname, args, false);
+
+            if (r <= 0){
+                ov_log_error("failed to start a recorder process.");
+            }
+    
+        }
+    }
+
     return vocs;
 error:
     ov_vocs_free(vocs);
@@ -3241,6 +3284,12 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val) {
     const ov_json_value *cluster = ov_json_object_get(config, "cluster");
     out.socket.cluster = ov_socket_configuration_from_json(cluster, 
         (ov_socket_configuration){0});
+
+    out.mixer = ov_json_number_get(ov_json_get(config, "/mixer"));
+    out.recorder.amount = ov_json_number_get(ov_json_get(config, "/recorder/amount"));
+    const char *str = ov_json_string_get(ov_json_get(config, "/recorder/config"));
+    if (str)
+        strncpy(out.recorder.config, str, PATH_MAX);
 
     return out;
 error:

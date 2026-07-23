@@ -37,6 +37,7 @@
 #include <ov_base/ov_config_keys.h>
 #include <ov_base/ov_json.h>
 #include <ov_base/ov_utils.h>
+#include <ov_base/ov_string.h>
 
 #define CONFIG_PATH                                                            \
     OPENVOCS_ROOT                                                              \
@@ -331,11 +332,37 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-struct users_search {
+struct container_users {
 
-    ov_json_value const *active_users;
-    ov_list *outdated;
+    const ov_json_value *users;
+    ov_list *list;
 };
+
+/*----------------------------------------------------------------------------*/
+
+static bool add_user_to_drop(const void *key, void *val, void *data) {
+
+    if (!key)
+        return true;
+    UNUSED(val);
+    struct container_users *container = (struct container_users *)data;
+
+    if (0 == ov_string_compare(key, "admin"))
+        return true;
+
+    if (ov_json_object_get(container->users, key))
+        return true;
+
+    return ov_list_push(container->list, (void *)key);
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool drop_user(void *val, void *data) {
+
+    ov_json_value *users = ov_json_value_cast(data);
+    return ov_json_object_del(users, val);
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -343,42 +370,23 @@ static bool add_new_user(const void *key, void *val, void *data) {
 
     if (!key)
         return true;
+    UNUSED(val);
 
-    char *user_id = (char *)key;
-    ov_json_value *user = ov_json_value_cast(val);
+    ov_json_value *users = ov_json_value_cast(data);
 
-    struct users_search *u = (struct users_search *)data;
-
-    ov_json_value *active_users = ov_json_value_cast(u->active_users);
-
-    if (ov_json_object_get(active_users, user_id)) {
+    if (ov_json_object_get(users, key))
         return true;
-    } else {
-        return ov_list_push(u->outdated, user_id);
-    }
 
-    ov_json_value *out = NULL;
+    ov_json_value *copy = NULL;
 
-    if (!ov_json_value_copy((void **)&out, user))
+    if (!ov_json_value_copy((void **)&copy, val))
         goto error;
-
-    if (!ov_json_object_set(active_users, user_id, out)) {
-        out = ov_json_value_free(out);
+    if (!ov_json_object_set(users, key, copy))
         goto error;
-    }
 
     return true;
 error:
     return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool drop_outdated(void *item, void *data) {
-
-    char *key = (char *)item;
-    ov_json_value *users = ov_json_value_cast(data);
-    return ov_json_object_del(users, key);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -418,32 +426,29 @@ static bool write_users_object(const ov_json_value *users, const char *domain,
         goto error;
     }
 
-    ov_json_value const *active_users = ov_json_get(current, "/"OV_KEY_USERS);
-    if (!active_users) {
+    ov_json_value *data =
+        (ov_json_value *)ov_json_get(current, "/" OV_KEY_USERS);
 
-        out = NULL;
-        if (!ov_json_value_copy((void **)&out, users))
-            goto error;
-
-        if (!ov_json_object_set(current, OV_KEY_USERS, out))
-            goto error;
-
-    } else {
-
-        list = ov_list_create((ov_list_config){0});
-
-        struct users_search container = (struct users_search){
-            .active_users = active_users, .outdated = list};
-
-        if (!ov_json_object_for_each((ov_json_value *)users, &container,
-                                     add_new_user))
-            goto error;
-
-        if (!ov_list_for_each(list, (void *)active_users, drop_outdated))
-            goto error;
-
-        list = ov_list_free(list);
+    if (!data) {
+        data = ov_json_object();
+        ov_json_object_set(current, OV_KEY_USERS, data);
     }
+
+    list = ov_list_create((ov_list_config){0});
+
+    struct container_users container =
+        (struct container_users){.users = (ov_json_value *)users, .list = list};
+
+    if (!ov_json_object_for_each(data, &container, add_user_to_drop))
+        goto error;
+
+    if (!ov_list_for_each(list, data, drop_user))
+        goto error;
+
+    if (!ov_json_object_for_each((ov_json_value *)users, data, add_new_user))
+        goto error;
+
+    ov_list_free(list);
 
     if (!ov_json_write_file(path, current))
         goto error;

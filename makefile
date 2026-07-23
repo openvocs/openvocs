@@ -41,7 +41,6 @@
 
 # define (sub)directories to dive in
 OV_DIRECTORIES   = src/lib
-OV_DIRECTORIES  += src/os
 OV_DIRECTORIES  += src/service
 OV_DIRECTORIES  += src/tools
 OV_DIRECTORIES  += src/samples

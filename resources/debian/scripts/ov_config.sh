@@ -253,33 +253,6 @@ generate_config_ice_proxy() {
 
 #-------------------------------------------------------------------------------
 
-generate_config_mixers() {
-
-   echo "{
-     \"log\" : {
-       \"systemd\" : true,
-       \"file\" : \"stdout\",
-       \"level\" : \"debug\"
-     },
-     \"app\" :
-     {
-       \"resource_manager\" :
-       {
-         \"host\" : \"$MIXER_HOST\",
-         \"port\" : $MIXER_PORT,
-         \"type\" : \"TCP\"
-       },
-       \"limit\":
-       {
-         \"reconnect_interval_secs\" : 3
-       }
-     }
-   }" > $DIR_OV_MC_MIXER"/config.json"
-
-}
-
-#-------------------------------------------------------------------------------
-
 generate_config_vad() {
 
    echo "{
@@ -315,6 +288,7 @@ generate_config_ov_vocs() {
      \"vocs\" :
      {
        \"domain\" : \"$IP\",
+       \"mixer\"  : 50,
 
        \"cluster\":
         {
@@ -420,6 +394,8 @@ generate_config_ov_vocs() {
        },
        \"recorder\" :
        {
+          \"amount\" : 50,
+          \"config\" : \"/etc/openvocs/ov_mc_recorder/config.json\",
           \"socket\":
           {
             \"manager\" :
@@ -563,7 +539,6 @@ fi
 
 generate_config_domain
 generate_config_ice_proxy
-generate_config_mixers
 generate_config_ov_vocs
 generate_config_vad
 generate_certificates

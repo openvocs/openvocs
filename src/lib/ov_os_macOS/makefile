@@ -51,4 +51,4 @@ OV_LIBS       += -l ov_log$(OV_EDITION)
 
 #-----------------------------------------------------------------------------
 
-include $(OPENVOCS_ROOT)/makefile_targets.mk
+include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk

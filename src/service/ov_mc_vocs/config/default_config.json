@@ -8,6 +8,7 @@
 	"vocs" : {
 
 		"domain" : "localhost",
+		"mixer"  : 50,
 
 		"cluster" : 
 		{
@@ -102,6 +103,9 @@
 		},
 
 		"recorder" : {
+
+			"amount" : 10,
+			"config" : "/etc/openvocs/ov_mc_recorder/config.json",
 
 			"socket" : {
 				"manager" :
@@ -204,7 +208,7 @@
 		"socket":
 		{
 			"host":"0.0.0.0",
-			"port":443,
+			"port":1443,
 			"type":"TCP"
 		},
 		"stun":
