@@ -139,6 +139,9 @@ ov_ice_proxy_generic_config_from_json(const ov_json_value *input) {
     out.external = ov_socket_configuration_from_json(
         ov_json_get(config, "/" OV_KEY_EXTERNAL), (ov_socket_configuration){0});
 
+    out.bind = ov_socket_configuration_from_json(
+        ov_json_get(config, "/bind"), out.external);
+
     out.dynamic.stun.server = ov_socket_configuration_from_json(
         ov_json_get(config,
                     "/" OV_KEY_DYNAMIC "/" OV_KEY_STUN "/" OV_KEY_SERVER),

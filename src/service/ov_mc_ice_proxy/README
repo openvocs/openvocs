@@ -40,6 +40,13 @@ Manager is the ov_mc_vocs application to be used with the ov_ice_proxy instance.
 
 External is the external host socket configuration. Im multiplexing configurations the port of this socket configuration will be used to provide all ICE services. In dynamic configuration the host will be used with the port range configured in the dynamic section. 
 
+Bind is an optional local socket configuration for multiplexing. It defaults to external and can be used when the advertised external address is not assigned to a local interface, for example:
+
+        "external": { "host": "203.0.113.10", "port": 30001, "type": "UDP" },
+        "bind": { "host": "0.0.0.0" }
+
+The external address is advertised to ICE peers, while bind controls the local address used by the UDP socket.
+
 ## Configure internal
 
 Internal is the internal core network, where your mixers life. You need to configure the host, ports will be used dynamically. 

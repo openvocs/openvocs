@@ -48,7 +48,7 @@ function setup_sip_gateway() {
             },
             \"reconnect_interval_secs\": 5,
             \"local_sip_tcp_socket\": {
-                \"host\": \"$IP\",
+                \"host\": \"$BIND_HOST\",
                 \"port\": 5060,
                 \"type\": \"TCP\"
             }
@@ -118,6 +118,13 @@ CWD=$PWD
 
 IP=$1
 
+BIND_HOST=$IP
+if [ "X" != "X$3" ]; then
+    BIND_HOST=$3
+fi
+
+EXTERNAL_IP=$IP
+
 DIR_HTML="/srv/openvocs/HTML"
 DIR_CONFIG="/etc/openvocs"
 
@@ -142,7 +149,7 @@ ICE_PROXY_HOST=$ICE_INTERNAL_HOST
 ICE_PROXY_PORT=30000
 EVENTS_PORT=30002
 
-ICE_PROXY_EXTERNAL_HOST=$IP
+ICE_PROXY_EXTERNAL_HOST=$EXTERNAL_IP
 ICE_PROXY_EXTERNAL_PORT=30001
 
 MIXER_HOST=$ICE_INTERNAL_HOST
@@ -228,9 +235,13 @@ generate_config_ice_proxy() {
             \"port\" : $ICE_PROXY_EXTERNAL_PORT,
             \"type\" : \"UDP\"
        },
+       \"bind\" :
+       {
+            \"host\" : \"$BIND_HOST\"
+       },
        \"internal\" :
        {
-            \"host\" : \"$ICE_PROXY_EXTERNAL_HOST\",
+            \"host\" : \"$BIND_HOST\",
             \"port\" : 0,
             \"type\" : \"UDP\"
        },
@@ -333,7 +344,7 @@ generate_config_ov_vocs() {
          {
            \"manager\" :
            {
-             \"host\" : \"$SIP_HOST\",
+             \"host\" : \"$BIND_HOST\",
              \"type\" : \"TCP\",
              \"port\" : $SIP_PORT
            }
@@ -345,7 +356,7 @@ generate_config_ov_vocs() {
          {
            \"manager\" :
            {
-             \"host\" : \"$SIP_HOST\",
+             \"host\" : \"$BIND_HOST\",
              \"type\" : \"TCP\",
              \"port\" : $SIP_STATIC_PORT
            }
@@ -479,7 +490,7 @@ generate_config_ov_vocs() {
        },
        \"socket\":
        {
-           \"host\":\"$IP\",
+           \"host\":\"$BIND_HOST\",
            \"port\":443,
            \"type\":\"TCP\"
         }

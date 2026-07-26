@@ -4421,16 +4421,20 @@ ov_ice_proxy_multiplexing_create(ov_ice_proxy_generic_config config) {
             "Cannot create ICE Proxy - Could not create fingerprint cert"))
         goto error;
 
-    self->socket = ov_socket_create(self->public.config.external, false, NULL);
+    self->socket = ov_socket_create(self->public.config.bind, false, NULL);
 
     if (-1 == self->socket) {
 
-        ov_log_error("Could not open socket %s:%i",
+        ov_log_error("Could not bind socket %s:%i (external address %s:%i)",
+                     self->public.config.bind.host,
+                     self->public.config.bind.port,
                      self->public.config.external.host,
                      self->public.config.external.port);
         goto error;
     }
-    ov_log_debug("opened socket %s:%i", self->public.config.external.host,
+    ov_log_debug("opened socket %s:%i (external address %s:%i)",
+                 self->public.config.bind.host, self->public.config.bind.port,
+                 self->public.config.external.host,
                  self->public.config.external.port);
 
     uint8_t event = OV_EVENT_IO_IN | OV_EVENT_IO_ERR | OV_EVENT_IO_CLOSE;
@@ -4475,7 +4479,8 @@ ov_ice_proxy_multiplexing_create(ov_ice_proxy_generic_config config) {
     if (!ov_ice_string_fill_random((char *)self->candidate.foundation, 32))
         goto error;
 
-    memcpy(self->candidate.addr, self->local.host, OV_HOST_NAME_MAX);
+    memcpy(self->candidate.addr, self->public.config.external.host,
+           OV_HOST_NAME_MAX);
     self->candidate.port = self->local.port;
 
     self->candidate.string = ov_ice_candidate_to_string(&self->candidate);
