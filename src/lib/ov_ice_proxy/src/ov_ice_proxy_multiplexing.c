@@ -851,11 +851,9 @@ static bool send_stun_binding_request(ov_ice_proxy *self, Pair *pair) {
     uint8_t buffer[size];
     memset(buffer, 0, size);
 
-    if (!self || !pair)
+    if (!self || !pair || !pair->stream || !pair->stream->session)
         goto error;
 
-    OV_ASSERT(pair->stream);
-    OV_ASSERT(pair->stream->session);
     Stream *stream = pair->stream;
     Session *session = stream->session;
 
@@ -2785,12 +2783,21 @@ static bool io_stun_success(ov_ice_proxy *self, uint8_t *buffer, size_t size,
 
         /* We received some peer reflexive response */
 
-        pair = stream_add_peer_reflexive_pair(stream, remote, priority);
+        Pair *existing = get_pair_by_remote(stream, remote);
 
-        OV_ASSERT(pair);
+        if (existing) {
 
-        stream_order(stream);
-        stream_prune(stream);
+            pair = existing;
+
+        } else {
+
+            pair = stream_add_peer_reflexive_pair(stream, remote, priority);
+
+            OV_ASSERT(pair);
+
+            stream_order(stream);
+            stream_prune(stream);
+        }
     }
 
     pair->state = OV_ICE_PAIR_SUCCESS;
