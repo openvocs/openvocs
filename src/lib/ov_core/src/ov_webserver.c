@@ -163,7 +163,7 @@ static bool answer_range(Webserver *self, int socket, const char *path,
         goto error;
 
     if (to == 0)
-        to = all;
+        to = all - 1;
 
     if (!ov_http_message_set_content_range(response, all, from, to))
         goto error;
