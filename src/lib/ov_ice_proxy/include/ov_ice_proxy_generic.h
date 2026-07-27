@@ -65,6 +65,7 @@ typedef struct ov_ice_proxy_generic_config {
     ov_event_loop *loop;
 
     ov_socket_configuration external;
+    ov_socket_configuration bind;
 
     struct {
 

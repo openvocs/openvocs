@@ -48,7 +48,7 @@ function setup_sip_gateway() {
             },
             \"reconnect_interval_secs\": 5,
             \"local_sip_tcp_socket\": {
-                \"host\": \"$IP\",
+                \"host\": \"$BIND_HOST\",
                 \"port\": 5060,
                 \"type\": \"TCP\"
             }
@@ -105,7 +105,7 @@ fi
 
 
 if [[ -z "$1" ]]; then
-    echo "You need to provide some IP/HOST to generate the config."
+    echo "You need to provide some IP to generate the config."
     exit
 fi
 
@@ -117,6 +117,32 @@ fi
 CWD=$PWD
 
 IP=$1
+
+BIND_HOST=$IP
+if [ "X" != "X$3" ]; then
+    BIND_HOST=$3
+fi
+
+EXTERNAL_IP=$IP
+
+# The domain name is what TLS SNI matching and virtual host lookup key off
+# of, so it must be whatever hostname clients actually connect with (e.g.
+# because DNS resolves it to $IP) - this can differ from $IP, so it must
+# be settable independently of it.
+DOMAIN=$IP
+if [ "X" != "X$4" ]; then
+    DOMAIN=$4
+fi
+
+# If a path to an existing Let's Encrypt certificate directory (e.g.
+# /etc/letsencrypt/live/<domain>) is given, generate_certificates() links
+# that certificate in instead of generating a new self signed one - this
+# makes re-running ov_config.sh no longer clobber a previously installed
+# certificate.
+LE_CERT_DIR=""
+if [ "X" != "X$5" ]; then
+    LE_CERT_DIR=$5
+fi
 
 DIR_HTML="/srv/openvocs/HTML"
 DIR_CONFIG="/etc/openvocs"
@@ -142,7 +168,7 @@ ICE_PROXY_HOST=$ICE_INTERNAL_HOST
 ICE_PROXY_PORT=30000
 EVENTS_PORT=30002
 
-ICE_PROXY_EXTERNAL_HOST=$IP
+ICE_PROXY_EXTERNAL_HOST=$EXTERNAL_IP
 ICE_PROXY_EXTERNAL_PORT=30001
 
 MIXER_HOST=$ICE_INTERNAL_HOST
@@ -160,11 +186,11 @@ SIP_STATIC_PORT=12343
 function generate_config_domain() {
 
 echo "{
-   \"name\":\"$IP\",
+   \"name\":\"$DOMAIN\",
    \"path\":\"$DIR_HTML\",
    \"certificate\": {
-    \"file\" : \"$DIR_OV_MC_VOCS/$IP.crt\",
-    \"key\": \"$DIR_OV_MC_VOCS/$IP.key\"
+    \"file\" : \"$DIR_OV_MC_VOCS/$DOMAIN.crt\",
+    \"key\": \"$DIR_OV_MC_VOCS/$DOMAIN.key\"
   }
 }" > $DIR_DOMAINS"/domain.json"
 }
@@ -212,9 +238,9 @@ generate_config_ice_proxy() {
        },
        \"ssl\" :
        {
-         \"certificate\" : \"$DIR_OV_MC_VOCS/$IP.crt\",
-         \"key\" :  \"$DIR_OV_MC_VOCS/$IP.key\",
-         \"CA file\" : \"$DIR_OV_MC_VOCS/$IP.crt\"
+         \"certificate\" : \"$DIR_OV_MC_VOCS/$DOMAIN.crt\",
+         \"key\" :  \"$DIR_OV_MC_VOCS/$DOMAIN.key\",
+         \"CA file\" : \"$DIR_OV_MC_VOCS/$DOMAIN.crt\"
        },
        \"manager\" :
        {
@@ -228,9 +254,13 @@ generate_config_ice_proxy() {
             \"port\" : $ICE_PROXY_EXTERNAL_PORT,
             \"type\" : \"UDP\"
        },
+       \"bind\" :
+       {
+            \"host\" : \"$BIND_HOST\"
+       },
        \"internal\" :
        {
-            \"host\" : \"$ICE_PROXY_EXTERNAL_HOST\",
+            \"host\" : \"$BIND_HOST\",
             \"port\" : 0,
             \"type\" : \"UDP\"
        },
@@ -314,7 +344,7 @@ generate_config_ov_vocs() {
      },
      \"vocs\" :
      {
-       \"domain\" : \"$IP\",
+       \"domain\" : \"$DOMAIN\",
 
        \"cluster\":
         {
@@ -333,7 +363,7 @@ generate_config_ov_vocs() {
          {
            \"manager\" :
            {
-             \"host\" : \"$SIP_HOST\",
+             \"host\" : \"$BIND_HOST\",
              \"type\" : \"TCP\",
              \"port\" : $SIP_PORT
            }
@@ -345,7 +375,7 @@ generate_config_ov_vocs() {
          {
            \"manager\" :
            {
-             \"host\" : \"$SIP_HOST\",
+             \"host\" : \"$BIND_HOST\",
              \"type\" : \"TCP\",
              \"port\" : $SIP_STATIC_PORT
            }
@@ -475,11 +505,11 @@ generate_config_ov_vocs() {
        \"name\":\"VOCS GATEWAY\",
        \"domains\":
        {
-         \"$IP\" : \"/srv/openvocs/HTML\"
+         \"$DOMAIN\" : \"/srv/openvocs/HTML\"
        },
        \"socket\":
        {
-           \"host\":\"$IP\",
+           \"host\":\"$BIND_HOST\",
            \"port\":443,
            \"type\":\"TCP\"
         }
@@ -491,6 +521,37 @@ generate_config_ov_vocs() {
 #-------------------------------------------------------------------------------
 
 function generate_certificates() {
+
+   NAME=$DOMAIN
+
+   # $NAME.crt/.key may currently be symlinks (e.g. left behind by a
+   # previous run of this function) - opening them for writing would follow
+   # the symlink and overwrite whatever real file it points to instead of
+   # replacing the symlink itself. Remove them first so both branches below
+   # always create fresh, independent links/files.
+   rm -f "$NAME.crt" "$NAME.key"
+
+   if [ "X" != "X$LE_CERT_DIR" ]; then
+
+       if [ ! -f "$LE_CERT_DIR/fullchain.pem" ] || [ ! -f "$LE_CERT_DIR/privkey.pem" ]; then
+           echo "$LE_CERT_DIR does not contain fullchain.pem/privkey.pem, aborting."
+           exit 1
+       fi
+
+       echo "Using existing Let's Encrypt certificate from $LE_CERT_DIR instead of generating a self signed one."
+
+       ln -sf "$LE_CERT_DIR/fullchain.pem" "$DIR_OV_MC_VOCS/$NAME.crt"
+       ln -sf "$LE_CERT_DIR/privkey.pem" "$DIR_OV_MC_VOCS/$NAME.key"
+
+       return
+   fi
+
+   # IP.N SAN entries require a literal IP address - if $DOMAIN is a hostname
+   # (e.g. because it is used for TLS/SNI), it must go in as DNS.N instead.
+   SAN_PRIMARY="IP.1 = $DOMAIN"
+   if ! [[ $DOMAIN =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+       SAN_PRIMARY="DNS.1 = $DOMAIN"
+   fi
 
    echo "#
    # Standart OpenSSL configuration file to generate the ov.test
@@ -513,20 +574,19 @@ function generate_certificates() {
    localityName    = Berlin
    organizationName  = DLR e.V.
    organizationalUnitName=openvocs
-   commonName      = $IP self signed for ov.test
+   commonName      = $DOMAIN
    emailAddress    = dlr@openvocs.de
-   
+
    [ req_ext ]
-   
+
    subjectAltName = @alt_names[v3_req]
    subjectAltName=@alt_names
-   
+
    [ alt_names ]
-   
-   IP.1 = $IP
+
+   $SAN_PRIMARY
    IP.2 = 127.0.0.1" > $DIR_OV_MC_VOCS"/ssl.cnf"
-   
-   NAME=$IP
+
    CONF=$DIR_OV_MC_VOCS"/ssl.cnf"
    DAYS=365
    RSA=4096
@@ -577,7 +637,11 @@ cd $CWD
 echo ""
 echo "!!! NOTE !!!"
 echo ""
-echo "The generated certificate key file is readable by anyone."
-echo "(1) This is desired for test runs."
-echo "(2) This is NOGO FOR ALL OPERATIONAL SCENARIOS."
+if [ "X" != "X$LE_CERT_DIR" ]; then
+    echo "Linked the existing certificate from $LE_CERT_DIR."
+else
+    echo "The generated certificate key file is readable by anyone."
+    echo "(1) This is desired for test runs."
+    echo "(2) This is NOGO FOR ALL OPERATIONAL SCENARIOS."
+fi
 echo ""
