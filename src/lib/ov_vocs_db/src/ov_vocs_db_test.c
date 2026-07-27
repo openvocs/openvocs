@@ -224,16 +224,11 @@ int test_ov_vocs_db_create() {
     testrun(db);
     testrun(ov_vocs_db_cast(db));
 
-    testrun(IMPL_DEFAULT_LOCK_USEC == db->config.timeout.thread_lock_usec);
-
     testrun(db->index.domains);
     testrun(db->index.projects);
     testrun(db->index.users);
     testrun(db->index.roles);
     testrun(db->index.loops);
-
-    testrun(ov_thread_lock_try_lock(&db->lock));
-    testrun(ov_thread_lock_unlock(&db->lock));
 
     testrun(NULL == ov_vocs_db_free(db));
     return testrun_log_success();
