@@ -139,10 +139,12 @@ error:
 /*----------------------------------------------------------------------------*/
 
 ov_json_value *ldap_get_roles(const char *host, const char *base,
+                              const char *filter_input,
                               const char *user, const char *pass,
                               uint64_t timeout_usec) {
 
     char name[PATH_MAX] = {0};
+    char filter[1024] = {0};
 
     ov_json_value *out = NULL;
     ov_json_value *username = NULL;
@@ -155,7 +157,11 @@ ov_json_value *ldap_get_roles(const char *host, const char *base,
     if (!base || !user || !host || !pass)
         goto error;
 
-    char *filter = "(&(objectClass=*))";
+    ov_log_debug("searching roles at %s %s", host, base);
+
+    snprintf(filter, 1024, "(&(objectClass=%s))", filter_input);
+
+    fprintf(stdout, "\n%s\n", filter);
 
     char *attrs[3] = {0};
     attrs[0] = "member";
@@ -522,6 +528,9 @@ int main(int argc, char **argv) {
     const char *domain =
         ov_json_string_get(ov_json_get(config, "/" OV_KEY_DOMAIN));
 
+    const char *filter =
+        ov_json_string_get(ov_json_get(config,  "/" OV_KEY_LDAP "/filter"));
+
     const char *target_path =
         ov_json_string_get(ov_json_get(config, "/" OV_KEY_PATH));
 
@@ -531,10 +540,10 @@ int main(int argc, char **argv) {
     if (0 == timeout)
         timeout = 5000000;
 
-    fprintf(stdout, "using host %s user %s pass %s path %s\n", host, user, pass,
+    fprintf(stdout, "using host %s user %s path %s\n", host, user,
             target_path);
 
-    roles = ldap_get_roles(host, base, user, pass, timeout);
+    roles = ldap_get_roles(host, base, filter, user, pass, timeout);
     if (!roles) {
         fprintf(stderr, "failed to generate roles object");
         goto error;

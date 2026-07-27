@@ -38,13 +38,80 @@
  *      ------------------------------------------------------------------------
  */
 
-int test_case(){
-        testrun(1 == 1);
+int test_ov_timed_create(){
+    
+    ov_event_loop *loop = ov_event_loop_default(ov_event_loop_config_default());
+    testrun(loop);
 
-        return testrun_log_success();
+    ov_timed *timed = ov_timed_create((ov_timed_config){.loop = loop});
+    testrun(timed);
+
+    timed = ov_timed_free(timed);
+    loop = ov_event_loop_free(loop);
+
+    return testrun_log_success();
 }
 
 /*----------------------------------------------------------------------------*/
+
+struct dummy {
+
+    ov_id id;
+};
+
+/*----------------------------------------------------------------------------*/
+
+static void callback(void *userdata, const char *uuid){
+
+    ov_log_debug("CALLBACK CALLED");
+
+    struct dummy *dummy = (struct dummy*) userdata;
+    ov_id_set(dummy->id, uuid);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+int test_ov_timed_add(){
+
+    struct dummy dummy = {0};
+    
+    ov_event_loop *loop = ov_event_loop_default(
+        (ov_event_loop_config){.max.sockets = 100, .max.timers = 100});
+
+    ov_timed *timed = ov_timed_create((ov_timed_config){.loop = loop});
+    testrun(timed);
+
+    ov_id id = {0};
+    ov_id_fill_with_uuid(id);
+
+    ov_time time = ov_timestamp_create();
+    time.second += 5;
+
+    testrun(ov_timed_add(timed, time, id, &dummy, callback));
+
+    sleep(1);
+    ov_event_loop_run(loop, OV_RUN_ONCE);
+    testrun(0 == dummy.id[0]);
+    sleep(1);
+    ov_event_loop_run(loop, OV_RUN_ONCE);
+    testrun(0 == dummy.id[0]);
+    sleep(1);
+    ov_event_loop_run(loop, OV_RUN_ONCE);
+    testrun(0 == dummy.id[0]);
+
+    sleep(3);
+    ov_event_loop_run(loop, OV_RUN_ONCE);
+    testrun(0 != dummy.id[0]);
+
+    timed = ov_timed_free(timed);
+    loop = ov_event_loop_free(loop);
+
+    return testrun_log_success();
+}
+
+/*----------------------------------------------------------------------------*/
+
 
 /*
  *      ------------------------------------------------------------------------
@@ -56,10 +123,11 @@ int test_case(){
 
 int all_tests() {
 
-        testrun_init();
-        testrun_test(test_case);
+    testrun_init();
+    testrun_test(test_ov_timed_create);
+    testrun_test(test_ov_timed_add);
 
-        return testrun_counter;
+    return testrun_counter;
 }
 
 /*

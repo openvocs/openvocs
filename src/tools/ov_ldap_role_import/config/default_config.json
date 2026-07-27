@@ -1,10 +1,11 @@
 {
 	"ldap" : 
 	{
-		"host" : "localhost",
-		"user" : "cn=admin,dc=ldap,dc=rb",
-		"password" : "admin",
-		"base" : "ou=Roles,ou=GSOC Multi Mission,ou=Columbus,ou=Projects,dc=ldap,dc=rb",
+		"host" : "ldap.dmz1sec.office",
+		"user" :  "uid=toepfer,ou=people,dc=ldap,dc=rb",
+		"filter" : "VoCSRoleExtension",
+		"password" : "",
+		"base" : "ou=project,dc=ldap,dc=rb",
 		"timeout (usec)" : 5000000
 	},
 

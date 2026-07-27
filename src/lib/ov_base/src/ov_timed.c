@@ -75,6 +75,7 @@ ov_timed *ov_timed_create(ov_timed_config config){
 
     self = calloc(1, sizeof(ov_timed));
     if (!self) goto error;
+    self->config = config;
 
     ov_dict_config d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = callback_free;
@@ -155,7 +156,8 @@ bool ov_timed_add(
     if (epoch_new < epoch_now)
         goto error;
 
-    uint64_t rel_timeout_usecs = epoch_new - epoch_now;
+    uint64_t rel_timeout_secs = epoch_new - epoch_now;
+    uint64_t rel_timeout_usecs = rel_timeout_secs * 1000 * 1000;
 
     Callback *cb = calloc(1, sizeof(Callback));
     if (!cb) goto error;

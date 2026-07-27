@@ -5429,6 +5429,8 @@ static ov_json_value *ldap_get_roles(const char *host, const char *base,
 
     snprintf(filter, 1024, "(&(objectClass=%s))", filter_input);
 
+    ov_log_debug("GET ROLES with filter %s", filter);
+
     char *attrs[3] = {0};
     attrs[0] = "member";
     attrs[1] = "cn";
