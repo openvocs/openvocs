@@ -100,8 +100,8 @@ export async function draw() {
         let response = await ov_Vocs.switch_loop_volume(loop.loop_id, parseInt(volume));
         if (response) {
             loop.volume = response.volume;
-            DOM.loading_screen.hide();
         }
+        DOM.loading_screen.hide();
     });
 
     let promises = [];

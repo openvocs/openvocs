@@ -48,6 +48,8 @@ var Config_Recorder;
 
 var SIP_ONLINE;
 
+var LDAP;
+
 const DOM = {
 };
 
@@ -150,9 +152,9 @@ export async function init(view_id, container) {
     //     FileIO.save_as_json_file(JSON.stringify(config), name);
     // };
 
-    let auth_ldap = await ov_DB.check_ldap();
-    await Settings.init(document.getElementById("settings_page"), auth_ldap);
-    await Config_RBAC.init(document.getElementById("rbac_page"), auth_ldap);
+    LDAP = await ov_DB.check_ldap();
+    await Settings.init(document.getElementById("settings_page"), LDAP);
+    await Config_RBAC.init(document.getElementById("rbac_page"), LDAP);
     await Config_Layout.init(document.getElementById("layout_page"));
     if (SIP)
         await Config_SIP.init(document.getElementById("sip_page"));
@@ -366,53 +368,55 @@ async function save() {
             await delete_from_server("loop", orig_domain, domain, errors)
         }
 
-        for (let project_id of Object.keys(domain.projects)) {
-            if (user.admin === "domain" || user.projects.has(project_id)) {
-                let project = domain.projects[project_id];
-                if (!project) {
-                    DOM.loading_screen.show("Delete project " + project.id + " on server(s)...");
-                    result = await ov_DB.remove("project", project_id);
-                    if (!result.updated)
-                        errors.push("Failed to delete project " + id + ": " + result.error.description);
-                    continue;
-                } else if (project.id) {
-                    DOM.loading_screen.show("Saving project " + project.id + " on server(s)...");
-                    let orig_project = orig_domain.projects[project.id];
-                    if (!orig_project) {
-                        result = await ov_DB.create("project", project.id, "domain", domain.id);
-                        if (!result.updated) {
-                            errors.push("Failed to create project " + project.id + ": " + result.error.description);
-                            continue;
-                        }
-                        result = await ov_DB.update("project", project);
-                        if (!result.updated) {
-                            errors.push("Failed to update project " + project.id + ": " + result.error.description);
-                            continue;
-                        }
-                        for (let id of Object.keys(project.users)) {
-                            if (project.user[id].password) {
-                                result = await ov_DB.update_password(id, project.user[id].password);
-                                if (!result.updated)
-                                    errors.push("Failed to update password of " + id + ": " + result.error.description);
+        if (domain.projects)
+            for (let project_id of Object.keys(domain.projects)) {
+                if (user.admin === "domain" || user.projects.has(project_id)) {
+                    let project = domain.projects[project_id];
+                    if (!project) {
+                        DOM.loading_screen.show("Delete project " + project.id + " on server(s)...");
+                        result = await ov_DB.remove("project", project_id);
+                        if (!result.updated)
+                            errors.push("Failed to delete project " + id + ": " + result.error.description);
+                        continue;
+                    } else if (project.id) {
+                        DOM.loading_screen.show("Saving project " + project.id + " on server(s)...");
+                        let orig_project = orig_domain.projects[project.id];
+                        if (!orig_project) {
+                            result = await ov_DB.create("project", project.id, "domain", domain.id);
+                            if (!result.updated) {
+                                errors.push("Failed to create project " + project.id + ": " + result.error.description);
+                                continue;
                             }
+                            result = await ov_DB.update("project", project);
+                            if (!result.updated) {
+                                errors.push("Failed to update project " + project.id + ": " + result.error.description);
+                                continue;
+                            }
+                            if (project.users)
+                                for (let id of Object.keys(project.users)) {
+                                    if (project.user[id].password) {
+                                        result = await ov_DB.update_password(id, project.user[id].password);
+                                        if (!result.updated)
+                                            errors.push("Failed to update password of " + id + ": " + result.error.description);
+                                    }
+                                }
+                        } else {
+                            if (project.name !== orig_project.name) {
+                                result = await ov_DB.update_key("project", project.id, "name", project.name);
+                                if (!result.updated)
+                                    errors.push("Failed to update project " + project.id + " name: " + result.error.description);
+                            }
+                            await delete_from_server("user", orig_project, project, errors);
+                            await delete_from_server("role", orig_project, project, errors);
+                            await delete_from_server("loop", orig_project, project, errors);
+                            await update_on_server("user", orig_project, project, "project", errors);
+                            await update_on_server("role", orig_project, project, "project", errors);
+                            await update_on_server("loop", orig_project, project, "project", errors);
                         }
-                    } else {
-                        if (project.name !== orig_project.name) {
-                            result = await ov_DB.update_key("project", project.id, "name", project.name);
-                            if (!result.updated)
-                                errors.push("Failed to update project " + project.id + " name: " + result.error.description);
-                        }
-                        await delete_from_server("user", orig_project, project, errors);
-                        await delete_from_server("role", orig_project, project, errors);
-                        await delete_from_server("loop", orig_project, project, errors);
-                        await update_on_server("user", orig_project, project, "project", errors);
-                        await update_on_server("role", orig_project, project, "project", errors);
-                        await update_on_server("loop", orig_project, project, "project", errors);
-                    }
-                } else
-                    errors.push("Project ID is missing\n\n");
+                    } else
+                        errors.push("Project ID is missing\n\n");
+                }
             }
-        }
 
         if (user.admin === "domain") {
             DOM.loading_screen.show("Saving domain " + domain.id + " on server(s)...");
@@ -588,6 +592,16 @@ export function render_user(user) {
 
 export function render(domain_data, page) {
     orig_domain = domain_data;
+    if (orig_domain.users && orig_domain.roles && LDAP.roles && LDAP.users) {
+        let used_users = new Set();
+        for (let role_id of Object.keys(orig_domain.roles))
+            if (orig_domain.roles[role_id].users)
+                for (let user of Object.keys(orig_domain.roles[role_id].users))
+                    used_users.add(user);
+        for (let user of Object.keys(orig_domain.users))
+            if (!used_users.has(user))
+                delete orig_domain.users[user];
+    }
     domain = structuredClone(orig_domain);
     let user = ov_Websockets.user();
     let domain_name = domain.name ? domain.name : user.domain;
