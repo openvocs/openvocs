@@ -86,6 +86,11 @@ export async function init(view_id, authenticated) {
         ov_Websockets.reload_page();
     }
 
+    document.getElementById("logout_button").onclick = async () => {
+        await ov_Auth.logout();
+        ov_Websockets.reload_page();
+    }
+
     DOM.login_form.addEventListener("login_triggered", async (event) => {
         let result = await ov_Auth.login(event.detail.username, event.detail.password);
 
@@ -157,10 +162,7 @@ export function set_server_id(server_url, server_name) {
 
 function populate_role_list() {
     let user = ov_Websockets.user();
-    if (user.roles.length === 0) {
-        set_message("You have no roles. " +
-            "To gain access to roles please contact the project or domain admin.");
-    } else {
+    if (user.roles.length !== 0) {
         user.roles.sort();
         for (let role of user.roles.values) {
             if (role.id !== "admin") {

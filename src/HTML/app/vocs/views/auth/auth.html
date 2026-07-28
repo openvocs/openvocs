@@ -1,8 +1,8 @@
 <main id="login_area" class="view">
     <button id="reload_page" class="fluentui_icon">
-            &#xe16d
+        &#xe16d
     </button>
-    <div id="dlr_logo" class="logo logo_dlr"></div> 
+    <div id="dlr_logo" class="logo logo_dlr"></div>
     <ov-branding></ov-branding>
 
     <section id="login">
@@ -14,15 +14,18 @@
 
         <div id="authorization_step" class="step">
             <div class="step_body">
+                <button id="logout_button" class="red_button">
+                    LOGOUT
+                </button>
                 <ov-nav direction="column" id="authorization_list"></ov-nav>
             </div>
         </div>
 
         <div id="server" class="small_print">
             <p>server: <span id="server_address"></span></p>
-            
+
             <p>keyset: <span id="keyset"></span></p>
-            
+
             <p>version: <span id="version"></span></p>
         </div>
         <div id="login_message"></div>
