@@ -202,6 +202,7 @@ export async function init(view_id, container) {
         for (let ws of ov_Websockets.list)
             ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
         update_project_name_display(project.name, project.id);
+        domain.layout[project.id] = { grid_columns: 6, grid_rows: 5 }
     });
 
     DOM.sub_view.addEventListener("changed_project_name", (event) => {
