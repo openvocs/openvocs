@@ -436,9 +436,15 @@ generate_config_ov_vocs() {
      },
      \"ldap\" : {
        \"enabled\" : false,
+       \"roles\" : false,
        \"threads\" : 4,
        \"host\": \"localhost\",
        \"user_dn_tree\" : \"ou=people,dc=openvocs,dc=org\",
+       \"role_dn_tree\" : \"ou=roles,dc=openvocs,dc=org\",
+       \"domain\" : \"localhost\",
+       \"user\" : \"user\",
+       \"password\" : \"password\",
+       \"update_time\" : \"00:00:00\",
        \"timeout\":
        {
          \"network\" : 3000000
