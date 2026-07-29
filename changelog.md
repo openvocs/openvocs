@@ -49,7 +49,8 @@
 
 ### REMOVED
 #### GUI
-- Remove landing page in admin interface. 
+- Remove landing page in admin interface.
+- Remove grouping (and resorting) of nodes in rbac view
 
 ## Version 2.6.2 - 2026-05-08
 

@@ -104,7 +104,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
             this.#adjust_grid_size();
 
-            Graph.group_nodes(this.shadowRoot, Graph.nodes);
+            //Graph.group_nodes(this.shadowRoot, Graph.nodes);
             this.render_edges();
         });
 
@@ -132,7 +132,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
             Graph.add_link(source_node, event.detail.target, event.detail.value);
 
-            Graph.group_nodes(this.shadowRoot, Graph.nodes);
+            //Graph.group_nodes(this.shadowRoot, Graph.nodes);
             this.render_edges();
 
             Graph.highlight_node(source_node, "highlight", true);
@@ -145,7 +145,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
             Graph.delete_link(source_node, event.detail.target);
 
-            Graph.group_nodes(this.shadowRoot, Graph.nodes);
+            //Graph.group_nodes(this.shadowRoot, Graph.nodes);
             this.render_edges();
 
             Graph.highlight_node(source_node, "highlight", true);
@@ -346,7 +346,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
 
     fill_out_links() {
         Graph.fill_out_links();
-        Graph.group_nodes(this.shadowRoot, Graph.nodes);
+        //Graph.group_nodes(this.shadowRoot, Graph.nodes);
     }
 
     collect_node_subset(id, data) {
