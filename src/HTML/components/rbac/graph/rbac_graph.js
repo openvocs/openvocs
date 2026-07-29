@@ -400,7 +400,7 @@ export default class ov_RBAC_Graph extends HTMLElement {
         let container;
         if (type === "user") {
             container = this.#dom.node_layer_1;
-            if (this.#managed_users){
+            if (this.#managed_users) {
                 element.view_only = true;
                 if (this.managed_roles)
                     element.classList.add("edges_view_only");

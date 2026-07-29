@@ -37,6 +37,7 @@ const DOM = {};
 var VIEW_ID;
 
 var domain_id;
+var current_project_id;
 
 export function init(view_id, ldap_auth) {
     DOM.graph = document.querySelector("ov-rbac-graph");
@@ -69,27 +70,30 @@ export function init(view_id, ldap_auth) {
 
     DOM.graph.allow_highlighted_loops = ALLOW_HIGHLIGHTED_LOOPS;
     DOM.graph.managed_users = ldap_auth.users;
-    DOM.graph.managed_roles = ldap_auth.roles;
+    DOM.graph.managed_roles = (ldap_auth.roles && ldap_auth.users);
 }
 
 export function render(domain_data, project_id, view_domain_only) {
-    let project_data = domain_data.projects[project_id];
-    DOM.graph.clear();
-    if (project_data) {
-        DOM.graph.add_node_subset(project_data, project_data.id, project_data.name, false, false);
-    } else {
-        document.querySelector("#hide_roles + label").style.display = "none";
-        document.querySelector("#hide_loops + label").style.display = "none";
-    }
-    if (domain_data) {
-        DOM.graph.add_node_subset(domain_data, domain_data.id, domain_data.name, true, !!view_domain_only);
-        domain_id = domain_data.id;
-    }
-    DOM.graph.fill_out_links();
+    if (project_id !== current_project_id) {
+        current_project_id = project_id;
+        let project_data = domain_data.projects[project_id];
+        DOM.graph.clear();
+        if (project_data) {
+            DOM.graph.add_node_subset(project_data, project_data.id, project_data.name, false, false);
+        } else {
+            document.querySelector("#hide_roles + label").style.display = "none";
+            document.querySelector("#hide_loops + label").style.display = "none";
+        }
+        if (domain_data) {
+            DOM.graph.add_node_subset(domain_data, domain_data.id, domain_data.name, true, !!view_domain_only);
+            domain_id = domain_data.id;
+        }
+        DOM.graph.fill_out_links();
 
-    DOM.graph.filter_unused_users(DOM.filter_users.checked);
-    DOM.graph.filter_unused_subset_roles(DOM.filter_roles.checked, domain_id);
-    DOM.graph.filter_unused_subset_loops(DOM.filter_loops.checked, domain_id);
+        DOM.graph.filter_unused_users(DOM.filter_users.checked);
+        DOM.graph.filter_unused_subset_roles(DOM.filter_roles.checked, domain_id);
+        DOM.graph.filter_unused_subset_loops(DOM.filter_loops.checked, domain_id);
+    }
     DOM.graph.render_edges();
     console.log("(project rbac) View rendered");
 }
