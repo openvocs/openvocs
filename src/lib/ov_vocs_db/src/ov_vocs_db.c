@@ -2011,6 +2011,8 @@ bool ov_vocs_db_update_entity_key(ov_vocs_db *self, ov_vocs_db_entity entity,
 
     bool result = false;
 
+    ov_json_value *msg = NULL;
+
     if (!self || !id || !key || !val)
         goto error;
 
@@ -2058,8 +2060,7 @@ bool ov_vocs_db_update_entity_key(ov_vocs_db *self, ov_vocs_db_entity entity,
 
 done:
 
-    ov_json_value *msg =
-        ov_event_api_message_create("update_db", NULL, 0);
+    msg = ov_event_api_message_create("update_db", NULL, 0);
 
     if (!ov_event_trigger_send(self->config.trigger, "VOCS", msg))
         msg = ov_json_value_free(msg);
@@ -2661,6 +2662,7 @@ bool ov_vocs_db_update_entity_item(ov_vocs_db *self, ov_vocs_db_entity entity,
 
     bool result = false;
 
+    ov_json_value *msg = NULL;
     ov_json_value *out = NULL;
 
     if (!ov_vocs_db_verify_entity_item(self, entity, id, val, errors))
@@ -2720,8 +2722,7 @@ bool ov_vocs_db_update_entity_item(ov_vocs_db *self, ov_vocs_db_entity entity,
 
 done:
 
-    ov_json_value *msg =
-        ov_event_api_message_create("update_db", NULL, 0);
+    msg = ov_event_api_message_create("update_db", NULL, 0);
 
     if (out) {
 
