@@ -181,7 +181,8 @@ export async function init(view_id, container) {
         for (let ws of ov_Websockets.list)
             ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
         let project = domain.projects[event.detail];
-        update_project_name_display(project.name, project.id);
+        if (project)
+            update_project_name_display(project.name, project.id);
     });
 
     DOM.sub_view.addEventListener("delete_project", async (event) => {
@@ -195,19 +196,24 @@ export async function init(view_id, container) {
 
     DOM.sub_view.addEventListener("changed_project_id", (event) => {
         let project = domain.projects[event.detail.old_id];
-        delete domain.projects[event.detail.old_id];
-        project.id = event.detail.new_id;
-        domain.projects[event.detail.new_id] = project;
-        user.project = project.id;
-        for (let ws of ov_Websockets.list)
-            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
-        update_project_name_display(project.name, project.id);
-        domain.layout[project.id] = { grid_columns: 6, grid_rows: 5 }
+        if (project) {
+            delete domain.projects[event.detail.old_id];
+            project.id = event.detail.new_id;
+            domain.projects[event.detail.new_id] = project;
+            user.project = project.id;
+            for (let ws of ov_Websockets.list)
+                ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
+            update_project_name_display(project.name, project.id);
+            domain.layout[project.id] = { grid_columns: 6, grid_rows: 5 }
+        }
     });
 
     DOM.sub_view.addEventListener("changed_project_name", (event) => {
-        domain.projects[event.detail.id].name = event.detail.name;
-        update_project_name_display(event.detail.name, event.detail.id);
+        let project = domain.projects[event.detail.id];
+        if (project) {
+            project.name = event.detail.name;
+            update_project_name_display(event.detail.name, event.detail.id);
+        }
     });
 
     DOM.sub_view.addEventListener("save_node", (event) => {
