@@ -89,7 +89,7 @@
 }
 
 #loop_volume .fluentui_icon::before {
-    content: "\f0b5";
+    content: "\f0b7";
 }
 
 :host([volume="0"]) #loop_volume .fluentui_icon::before {
@@ -99,13 +99,16 @@
 :host([volume="10"]) #loop_volume .fluentui_icon::before,
 :host([volume="20"]) #loop_volume .fluentui_icon::before,
 :host([volume="30"]) #loop_volume .fluentui_icon::before {
-    content: "\f0b3";
+    content: "\f0b5";
 }
 
 :host([volume="80"]) #loop_volume .fluentui_icon::before,
 :host([volume="90"]) #loop_volume .fluentui_icon::before,
 :host([volume="100"]) #loop_volume .fluentui_icon::before {
-    content: "\f0b7";
+    content: url(/images/speaker_3.svg);
+    display: inline-block;
+    width: 1.55rem;
+    height: 1.55rem;
 }
 
 /* #loop_volume #loop_volume_indicator_value {
