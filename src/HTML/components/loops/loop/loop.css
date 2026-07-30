@@ -39,6 +39,12 @@
     min-height: 5em;
     border-bottom-width: 0.063em;
     border-bottom-style: solid;
+    outline: none;
+}
+
+#join_loop:focus,
+#join_loop:focus-visible {
+    outline: none;
 }
 
 #join_loop .icon {
@@ -142,6 +148,12 @@
     height: 95%;
     cursor: pointer;
     background: var(--black_transparent_50);
+}
+
+#loop_volume #loop_volume_input::-webkit-slider-runnable-track {
+    width: 100%;
+    cursor: pointer;
+    background: transparent;
 }
 
 #loop_volume #loop_volume_input::-moz-range-thumb {
