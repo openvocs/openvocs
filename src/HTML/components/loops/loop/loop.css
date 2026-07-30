@@ -63,6 +63,7 @@
     line-height: 1.2em;
     text-align: left;
     padding-left: 0.25em;
+    text-transform: uppercase;
 }
 
 #join_loop #loop_permission {
