@@ -143,22 +143,22 @@
     outline: none;
 }
 
-#loop_volume #loop_volume_input::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 1.5em;
-    height: 95%;
-    cursor: pointer;
-    background: var(--black_transparent_50);
-}
-
 #loop_volume #loop_volume_input::-webkit-slider-runnable-track {
     width: 100%;
+    height: 100%;
     cursor: pointer;
     background: transparent;
 }
 
-#loop_volume #loop_volume_input::-moz-range-thumb {
+#loop_volume #loop_volume_input::-webkit-slider-thumb {
+    width: 1.5em;
+    height: 95%;
+    cursor: pointer;
+    background: var(--black_transparent_50); 
     -webkit-appearance: none;
+}
+
+#loop_volume #loop_volume_input::-moz-range-thumb {
     width: 1.5em;
     height: 95%;
     cursor: pointer;
