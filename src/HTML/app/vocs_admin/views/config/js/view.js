@@ -601,13 +601,21 @@ export function render(domain_data, page) {
     orig_domain = domain_data;
     if (orig_domain.users && orig_domain.roles && LDAP.roles && LDAP.users) {
         let used_users = new Set();
-        for (let role_id of Object.keys(orig_domain.roles))
-            if (orig_domain.roles[role_id].users)
-                for (let user of Object.keys(orig_domain.roles[role_id].users))
-                    used_users.add(user);
-        for (let user of Object.keys(orig_domain.users))
-            if (!used_users.has(user))
-                delete orig_domain.users[user];
+        if (orig_domain.roles)
+            for (let role_id of Object.keys(orig_domain.roles))
+                if (orig_domain.roles[role_id].users)
+                    for (let user_id of Object.keys(orig_domain.roles[role_id].users))
+                        used_users.add(user_id);
+        if (orig_domain.projects)
+            for (let proj_id of Object.keys(orig_domain.projects))
+                if (orig_domain.projects[proj_id].roles)
+                    for (let role_id of Object.keys(orig_domain.projects[proj_id].roles))
+                        if (orig_domain.projects[proj_id].roles[role_id].users)
+                            for (let user_id of Object.keys(orig_domain.projects[proj_id].roles[role_id].users))
+                                used_users.add(user_id);
+        for (let user_id of Object.keys(orig_domain.users))
+            if (!used_users.has(user_id))
+                delete orig_domain.users[user_id];
     }
     domain = structuredClone(orig_domain);
     let user = ov_Websockets.user();
