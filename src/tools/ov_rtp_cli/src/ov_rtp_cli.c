@@ -7,35 +7,34 @@
   you may not use this file except in compliance with the License.
   You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+  http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 
-This file is part of the openvocs project. http://openvocs.org
+  This file is part of the openvocs project. http://openvocs.org
 
- ***/
+***/
 /**
 
   This is a test client for sending/receiving RTP streams.
   It will function in one of 4 modes:
 
   - PCM  GENERATION: Generates PCM data and sends it as RTP to some socket -
- default if no other mode is selected
+                     default if no other mode is selected
   - FILE GENERATION: Loops over content of a file and sends it as RTP to some
- socket - triggered by switch -a
+                     socket - triggered by switch -a
   - PULSE AUDIO OUTPUT: Receives RTP frames and plays them to a pa server -
- triggered by switch -d
+                        triggered by switch -d
   - FILE OUTPUT: Receives RTP frames and writes the payload to a file -
- triggered by switch -o
+                 triggered by switch -o
 
   See parse_command_line_args of a thorough list of possible command line
   switches / arguments.
 
-  \file               ov_test_rtp_client.c
   \author             Michael J. Beer, DLR/GSOC <michael.beer@dlr.de>
   \date               2018-09-03
 
@@ -126,7 +125,7 @@ static const ov_rtp_client_parameters default_client_parameters = {
     .remote_port = 55555,
 
     .max_jitter_usec = 0,
-    .ssrc_id = 0,
+    .ssrc_id = 12345,
     .sequence_number = 0,
 
 };
@@ -343,6 +342,23 @@ static bool parse_command_line_args(int argc, char **argv,
 
 /*---------------------------------------------------------------------------*/
 
+static bool parameters_are_valid(ov_rtp_client_parameters *params) {
+
+    OV_ASSERT(0 != params);
+
+    if((SEND == params->mode) && (0 == params->ssrc_id)) {
+
+        fprintf(stderr, "\nSSID 0 has special meaning and "
+                "is not intended to be used for actual streams\n\n");
+        return false;
+    }
+
+    return true;
+
+}
+
+/*---------------------------------------------------------------------------*/
+
 int main(int argc, char *argv[]) {
 
     ov_rtp_client *client = 0;
@@ -361,6 +377,11 @@ int main(int argc, char *argv[]) {
                                  &audio_parameters)) {
         fprintf(stderr, "Could not parse command line\n");
         goto error;
+    }
+
+    if(! parameters_are_valid(&client_parameters)) {
+        goto error;
+
     }
 
     fprintf(stdout, "Client configuration:\n");
