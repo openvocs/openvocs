@@ -126,11 +126,14 @@ static size_t encode_string(char const *str, uint8_t *write_ptr,
                             Q7.8 Fixed point format
  ****************************************************************************/
 
+const uint16_t UNITY_GAIN = 0x0000;
+
 static uint16_t to_q7_8(float f) {
 
     TODO("IMPLEMENT");
+    UNUSED(f);
+    return UNITY_GAIN;
 
-    const uint16_t UNITY_GAIN = 0x0000;
 
     // Formally, conversion has to be done like:
 
@@ -151,17 +154,17 @@ static uint16_t to_q7_8(float f) {
     //
     // Return
 
-    double whole_number_double = 0;
-    modf(f, &whole_number_double);
+    // double whole_number_double = 0;
+    // modf(f, &whole_number_double);
 
-    if (ov_cond_valid(whole_number_double != whole_number_double,
-                      "OGG OPUS gain is NaN") &&
-        ov_cond_valid(whole_number_double < 128.0,
-                      "OGG OPUS gain too high, must not exceed 128")) {
-        return UNITY_GAIN;
-    } else {
-        return UNITY_GAIN;
-    }
+    // if (ov_cond_valid(whole_number_double != whole_number_double,
+    //                   "OGG OPUS gain is NaN") &&
+    //     ov_cond_valid(whole_number_double < 128.0,
+    //                   "OGG OPUS gain too high, must not exceed 128")) {
+    //     return UNITY_GAIN;
+    // } else {
+    //     return UNITY_GAIN;
+    // }
 }
 
 /*----------------------------------------------------------------------------*/
@@ -170,7 +173,7 @@ static float from_q_7_8(uint16_t q7_8_val) {
 
     TODO("IMPLEMENT");
     UNUSED(q7_8_val);
-    return 0.0;
+    return UNITY_GAIN;
 }
 
 /*****************************************************************************
