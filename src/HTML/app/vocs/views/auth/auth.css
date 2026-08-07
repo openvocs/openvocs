@@ -19,21 +19,26 @@
 }
 
 .step:not(.active) {
-    height: 0;
-}
-
-.step_body {
-    width: 200%;
     display: none;
 }
 
-.step.active .step_body {
-    display: inherit;
+.step_body {
+    width: 22rem;
 }
 
 #authorization_step .step_body {
-    margin-left: -100%;
     overflow-y: auto;
+}
+
+#authorization_list label span {
+    text-transform: uppercase;
+}
+
+#authorization_list:empty::before {
+    content: "You have no roles. To gain access to roles please contact the project or domain admin.";
+    text-align: center;
+    color: var(--red);
+    margin-top: 0.5rem;
 }
 
 #server {
@@ -52,6 +57,12 @@
     position: absolute;
     left: 0.5rem;
     font-size: 2.5rem;
+}
+
+#logout_button {
+    position: absolute;
+    left: 0.5rem;
+    font-size: 1.1rem;
 }
 
 p {

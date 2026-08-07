@@ -85,6 +85,10 @@
     margin-top: var(--default_space);
 }
 
+#menu_slider #switch_role_select input[type="radio"]+label {
+    text-transform: uppercase;
+}
+
 #menu_slider #switch_role_select input[type="radio"]:checked+label {
     background-color: var(--blue) !important;
     box-shadow: var(--element_inset_box_shadow) !important;
@@ -141,6 +145,7 @@
     overflow-wrap: break-word;
     hyphens: auto;
     hyphenate-character: "";
+    text-transform: uppercase;
 }
 
 #server_list .server_button .server_sync_level {
@@ -175,7 +180,8 @@
     /* font-size: 1.1rem; */
 }
 
-#settings_slider #audio_options, #settings_slider #ptt_options {
+#settings_slider #audio_options,
+#settings_slider #ptt_options {
     flex: 1 1;
 }
 

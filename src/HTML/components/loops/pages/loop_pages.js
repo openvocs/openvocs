@@ -211,6 +211,8 @@ export default class ov_Loop_Pages extends HTMLElement {
 
     set_layout(settings) {
         this.#settings = settings;
+        settings.grid_rows = settings.grid_rows ? settings.grid_rows : 5;
+        settings.grid_columns = settings.grid_columns ? settings.grid_columns : 6;
         this.reset_grid();
         this.rows = settings.grid_rows > this.rows ? settings.grid_rows : this.rows;
         this.columns = settings.grid_columns > this.columns ? settings.grid_columns : this.columns;

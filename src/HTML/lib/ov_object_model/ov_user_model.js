@@ -176,14 +176,12 @@ export default class ov_User {
     }
 
     parse_values(json) {
-        for (let prop in json) {
-            if (this.hasOwnProperty(prop))
-                this[prop] = json[prop];
-            else if (prop === "origin") {
-                this.domain = json.origin.domain;
-                if (json.origin.project)
-                    this.project = json.origin.project;
-            }
+        if (json.hasOwnProperty("name"))
+            this.name = json.name;
+        if (json.hasOwnProperty("origin")) {
+            this.domain = json.origin.domain;
+            if (json.origin.project)
+                this.project = json.origin.project;
         }
     }
 }

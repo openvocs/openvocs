@@ -181,7 +181,8 @@ export async function init(view_id, container) {
         for (let ws of ov_Websockets.list)
             ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
         let project = domain.projects[event.detail];
-        update_project_name_display(project.name, project.id);
+        if (project)
+            update_project_name_display(project.name, project.id);
     });
 
     DOM.sub_view.addEventListener("delete_project", async (event) => {
@@ -195,18 +196,24 @@ export async function init(view_id, container) {
 
     DOM.sub_view.addEventListener("changed_project_id", (event) => {
         let project = domain.projects[event.detail.old_id];
-        delete domain.projects[event.detail.old_id];
-        project.id = event.detail.new_id;
-        domain.projects[event.detail.new_id] = project;
-        user.project = project.id;
-        for (let ws of ov_Websockets.list)
-            ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
-        update_project_name_display(project.name, project.id);
+        if (project) {
+            delete domain.projects[event.detail.old_id];
+            project.id = event.detail.new_id;
+            domain.projects[event.detail.new_id] = project;
+            user.project = project.id;
+            for (let ws of ov_Websockets.list)
+                ov_Web_Storage.add_anchor_to_session(APP, ws.websocket_url, user.domain, user.project, DOM.sub_view_nav.value);
+            update_project_name_display(project.name, project.id);
+            domain.layout[project.id] = { grid_columns: 6, grid_rows: 5 }
+        }
     });
 
     DOM.sub_view.addEventListener("changed_project_name", (event) => {
-        domain.projects[event.detail.id].name = event.detail.name;
-        update_project_name_display(event.detail.name, event.detail.id);
+        let project = domain.projects[event.detail.id];
+        if (project) {
+            project.name = event.detail.name;
+            update_project_name_display(event.detail.name, event.detail.id);
+        }
     });
 
     DOM.sub_view.addEventListener("save_node", (event) => {
@@ -594,13 +601,21 @@ export function render(domain_data, page) {
     orig_domain = domain_data;
     if (orig_domain.users && orig_domain.roles && LDAP.roles && LDAP.users) {
         let used_users = new Set();
-        for (let role_id of Object.keys(orig_domain.roles))
-            if (orig_domain.roles[role_id].users)
-                for (let user of Object.keys(orig_domain.roles[role_id].users))
-                    used_users.add(user);
-        for (let user of Object.keys(orig_domain.users))
-            if (!used_users.has(user))
-                delete orig_domain.users[user];
+        if (orig_domain.roles)
+            for (let role_id of Object.keys(orig_domain.roles))
+                if (orig_domain.roles[role_id].users)
+                    for (let user_id of Object.keys(orig_domain.roles[role_id].users))
+                        used_users.add(user_id);
+        if (orig_domain.projects)
+            for (let proj_id of Object.keys(orig_domain.projects))
+                if (orig_domain.projects[proj_id].roles)
+                    for (let role_id of Object.keys(orig_domain.projects[proj_id].roles))
+                        if (orig_domain.projects[proj_id].roles[role_id].users)
+                            for (let user_id of Object.keys(orig_domain.projects[proj_id].roles[role_id].users))
+                                used_users.add(user_id);
+        for (let user_id of Object.keys(orig_domain.users))
+            if (!used_users.has(user_id))
+                delete orig_domain.users[user_id];
     }
     domain = structuredClone(orig_domain);
     let user = ov_Websockets.user();

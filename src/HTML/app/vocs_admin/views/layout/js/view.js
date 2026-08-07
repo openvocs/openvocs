@@ -128,14 +128,13 @@ export async function render(domain_data, project_id, view_domain_only) {
     let settings = collect_page_layout();
     if (view_domain_only && isNaN(settings.grid_columns) || isNaN(settings.grid_rows))
         settings = await ov_DB.collect_keyset_layout(project_id);
-    else    
+    else
         settings = domain_data.layout && domain_data.layout[project_id] ? domain_data.layout[project_id] : settings;
 
     let project = domain_data.projects[project_id];
     loops_data = domain_data.loops && project && project.loops ? { ...project.loops, ...domain_data.loops } :
         domain_data.loops ? domain_data.loops : project && project.loops ? project.loops : {};
-    roles_data = domain_data.roles && project && project.roles ? { ...project.roles, ...domain_data.roles } :
-        domain_data.roles ? domain_data.roles : project && project.roles ? project.roles : {};
+    roles_data = project && project.roles ? project.roles : {};
     // roles_data = !view_domain_only && domain_data.roles && project ? { ...project.roles, ...domain_data.roles } :
     //     view_domain_only && project ? project : !view_domain_only && domain_data.roles ? domain_data.roles : {};
 

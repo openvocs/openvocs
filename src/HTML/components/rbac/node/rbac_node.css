@@ -33,6 +33,11 @@
     color: var(--orange);
 }
 
+:host([type=role]) #node_name,
+:host([type=loop]) #node_name {
+    text-transform: uppercase;
+}
+
 :host #node_name {
     grid-area: node_name;
     pointer-events: none;

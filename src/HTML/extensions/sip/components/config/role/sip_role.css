@@ -4,6 +4,7 @@ select {
 
 label {
     min-width: 11rem;
+    text-transform: uppercase;
 }
 
 :host([hidden=true]) {

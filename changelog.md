@@ -10,7 +10,8 @@
 #### GUI
 - Added fluent UI system icons as font for symbols.
 - Users, roles and loops can now be moved between domain and projects scope.
-- Added logout button on initial (empty) page to clean session, in case session reconnection fails  
+- Added logout button on initial (empty) page to clean session, in case session reconnection fails
+- Added logout button on role selection page in vocs ui
 
 ### CHANGED
 - SSL/ov_io ?
@@ -25,6 +26,7 @@
 - Only allow access to SIP admin interface, if SIP server is online.
 - Auth for LDAP import is now configured inside ov_mc_vocs/config.json. Removed input mask in vocs admin interface. Reload domain from server after manual ldap import.
 - Added graphical feedback to manual LDAP import.
+- Remove unused users if users and roles are managed over LDAP.
 - Changed layout of GUI screen keyboard. Added "Space" to keyboard. Removed "Enter". Added an upper shift option.
 - Only display roles in the GUI authorization list that have a defined loop layout. Added scrolling to this list.
 - Volume icon in loops change depending on volume.
@@ -34,6 +36,7 @@
 - Change position of "server" and "roles" labels.
 - Reorganize settings slider.
 - Change defaults to not log events send to and from the server.
+- Use default grid layout (5x6), if non was provided by server. 
 
 ### FIXED
 - Fixed issues with interconnect.
@@ -42,10 +45,12 @@
 - Fixed unintentional deleting of users imported from LDAP during project save.
 - It is no longer possible to authenticate with LDAP if the user is not imported into openvocs.
 - When opening login page the caret is now displayed inside the user field.
+- Fixed name display.
 
 ### REMOVED
 #### GUI
-- Remove landing page in admin interface. 
+- Remove landing page in admin interface.
+- Remove grouping (and resorting) of nodes in rbac view
 
 ## Version 2.6.2 - 2026-05-08
 

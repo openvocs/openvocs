@@ -51,6 +51,7 @@ h3 {
 #project_list {
     flex-grow: 0;
     overflow-y: auto;
+    max-height: 20rem;
 }
 
 #settings #new_project {

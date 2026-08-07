@@ -104,7 +104,7 @@ export default class ov_Role {
     }
 
     get has_layout() {
-        return !!this.#layout;
+        return !!this.#layout && Object.keys(this.#layout).length !== 0;
     }
 
     get dom_id() {

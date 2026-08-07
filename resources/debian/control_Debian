@@ -1,5 +1,5 @@
 Package: openvocs
-Version: @OV_VERSION@
+Version: @OV_VERSION@-@OV_BUILD_ID@
 Architecture: @OV_DEB_ARCH@
 Maintainer: Internal Pointers <info@openvocs.org>
 Description: The Openvocs Audio Conferencing Core.

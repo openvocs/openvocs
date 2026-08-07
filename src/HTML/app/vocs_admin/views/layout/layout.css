@@ -22,6 +22,7 @@
     top: 0.6rem;
     left: 5rem;
     width: 10rem;
+    text-transform: uppercase;
 }
 
 #choose_page {
