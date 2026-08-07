@@ -1610,8 +1610,15 @@ static bool add_new_role(const void *key, void *val, void *data) {
     struct roles_search *u = (struct roles_search *)data;
 
     ov_json_value *active_roles = ov_json_value_cast(u->active_roles);
+    ov_json_value *active_role = ov_json_object_get(active_roles, role_id);
 
-    if (ov_json_object_get(active_roles, role_id)) {
+    if (active_role) {
+
+        ov_json_value *users = ov_json_object_get(role, "users");
+        ov_json_value *copy = NULL;
+        ov_json_value_copy((void**)&copy, users);
+        ov_json_object_set(active_role, "users", copy);
+
         return true;
     } 
 
