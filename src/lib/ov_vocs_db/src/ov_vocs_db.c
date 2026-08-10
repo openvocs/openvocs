@@ -5178,7 +5178,7 @@ static bool update_role_from_ldap(const void *key, void *val, void *data){
         ov_json_value *users = ov_json_object_get(role, "users");
         ov_json_value *copy = NULL;
         ov_json_value_copy((void**)&copy, users);
-        ov_json_object_set(value, "users", users);
+        ov_json_object_set(value, "users", copy);
         ov_json_object_set(value, "ldap", ov_json_true());
 
         ov_log_debug("updated users for role %s", key);
