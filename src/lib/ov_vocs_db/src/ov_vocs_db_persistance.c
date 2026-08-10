@@ -1619,6 +1619,8 @@ static bool add_new_role(const void *key, void *val, void *data) {
         ov_json_value_copy((void**)&copy, users);
         ov_json_object_set(active_role, "users", copy);
 
+        ov_log_debug("updated users of role %s", role_id);
+
         return true;
     } 
 
