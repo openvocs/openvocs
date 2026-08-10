@@ -45,24 +45,29 @@ export async function render(container, page) {
     ov_Websockets.on_disconnect(on_disconnect);
 
     if (!await ov_DB.domains() || !await ov_DB.projects())
-        ov_Websockets.prime_websocket.disconnect(); 
+        ov_Websockets.prime_websocket.disconnect();
 
     let user = ov_Websockets.user();
-    if (!user.project){
-        for (let project of user.projects.values()) {
-            if (project.domain === user.domain) {
-                user.project = project.id;
-                break;
+    await View.init(VIEW_ID, view_container);
+    View.render_user(user);
+    if (user.domains.size || user.projects.size) {
+
+        if (!user.project) {
+            for (let project of user.projects.values()) {
+                if (project.domain === user.domain) {
+                    user.project = project.id;
+                    break;
+                }
             }
         }
+
+
+        let domain_config = await ov_DB.get_config(DOMAIN, user.domain);
+        user.admin = user.domains.has(user.domain) ? DOMAIN : PROJECT;
+        View.render(domain_config, page);
+    } else {
+        View.no_admin();
     }
-
-    await View.init(VIEW_ID, view_container);
-
-    let domain_config = await ov_DB.get_config(DOMAIN, user.domain);
-    user.admin = user.domains.has(user.domain) ? DOMAIN : PROJECT;
-    View.render_user(user);
-    View.render(domain_config, page);
 
     console.log("(project config) View rendered");
 }

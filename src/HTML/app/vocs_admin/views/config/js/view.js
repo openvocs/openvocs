@@ -80,8 +80,11 @@ export async function init(view_id, container) {
 
     DOM.loading_screen = document.getElementById("loading_screen");
 
+    DOM.no_admin = document.getElementById("no_admin");
+
     DOM.sub_view_nav = document.getElementById("select_subview");
     DOM.sub_view = document.getElementById("config_administration");
+    DOM.config_name = document.getElementById("config_name");
     DOM.config_project_name = document.getElementById("config_project_name");
     DOM.config_domain_name = document.getElementById("config_domain_name");
     DOM.menu_slider = document.getElementById("menu_slider");
@@ -593,6 +596,13 @@ async function update_on_server(type, orig, update, scope, errors) {
         }
 }
 
+export function no_admin(){
+    DOM.no_admin.style.display = "flex";
+    DOM.config_name.style.display = "none";
+    DOM.save_button.style.display = "none";
+    DOM.sub_view_nav.style.display = "none";
+}
+
 export function render_user(user) {
     DOM.menu_slider.value = user.name;
 }
@@ -619,11 +629,10 @@ export function render(domain_data, page) {
     }
     domain = structuredClone(orig_domain);
     let user = ov_Websockets.user();
+    
     let domain_name = domain.name ? domain.name : user.domain;
     if (domain_name)
         DOM.config_domain_name.innerText = domain_name;
-
-    console.log(user.project)
 
     Settings.render(domain, user.project);
 
