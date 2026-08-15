@@ -434,4 +434,9 @@ bool ov_string_replace_all(char **result, size_t *const size,
 
 /*----------------------------------------------------------------------------*/
 
+char *ov_string_from_memory_pointer(const ov_memory_pointer *ptr);
+
+/*----------------------------------------------------------------------------*/
+
+
 #endif /* ov_string_h */

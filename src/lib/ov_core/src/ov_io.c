@@ -184,8 +184,6 @@ static void *connection_free(void *self) {
         return NULL;
     Connection *conn = (Connection *)self;
 
-    ov_log_debug("FREE connection %i", conn->socket);
-
     ov_thread_lock_clear(&conn->lock);
 
     if (conn->timer_id != OV_TIMER_INVALID) {

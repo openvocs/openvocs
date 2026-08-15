@@ -926,3 +926,18 @@ error:
 
     return 0;
 }
+
+/*----------------------------------------------------------------------------*/
+
+char *ov_string_from_memory_pointer(const ov_memory_pointer *ptr){
+
+    if (!ptr) goto error;
+
+    char dummy[ptr->length + 1];
+    memset(dummy,0,ptr->length + 1);
+    strncat(dummy, (char*)ptr->start, ptr->length +1);
+
+    return ov_string_dup(dummy);
+error:
+    return NULL;
+}
