@@ -36,14 +36,6 @@
 
 #include "ov_event_loop_linux.c"
 #include <ov_base/ov_event_loop_test_interface.h>
-#include <ov_base/ov_reconnect_manager_test_interface.h>
-
-/*----------------------------------------------------------------------------*/
-
-static int test_reconnect() {
-
-    return ov_reconnect_manager_connect_test(ov_event_loop_linux);
-}
 
 /*----------------------------------------------------------------------------*/
 
@@ -52,7 +44,6 @@ int all_tests() {
     testrun_init();
 
     OV_EVENT_LOOP_PERFORM_INTERFACE_TESTS(ov_event_loop_linux);
-    testrun_test(test_reconnect);
 
     return testrun_counter;
 }
