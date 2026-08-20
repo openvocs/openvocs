@@ -48,6 +48,7 @@
 #include "ov_convert.h"
 #include "ov_data_function.h"
 #include "ov_list.h"
+#include "ov_memory_pointer.h"
 
 #define OV_STRING_DEFAULT_SIZE 255
 #define OV_DEFAULT_LINEBREAK "\n"

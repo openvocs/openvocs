@@ -947,6 +947,7 @@ static void cb_event_notify(void *userdata, const char *name, int socket,
 
         if (!ov_thread_lock_try_lock(&self->call.lock))
             goto error;
+        
         Call *call = ov_dict_get(self->call.data, id);
         if (call) {
 

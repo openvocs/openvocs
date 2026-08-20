@@ -1456,6 +1456,72 @@ error:
     return false;
 }
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_sip_message_add_ptr_header(ov_sip_message *msg, const char *key,
+                                       const ov_memory_pointer *val) {
+
+    if (!msg || !key || !val)
+        goto error;
+
+    /* Message MUST have some valid startline */
+
+    uint8_t *ptr = NULL;
+
+    if (OV_SIP_PARSER_SUCCESS != parse_status_line(
+                                      msg->buffer->start, msg->buffer->length,
+                                      &msg->status, &msg->version, &ptr))
+        if (OV_SIP_PARSER_SUCCESS !=
+            parse_request_line(
+                msg->buffer->start, msg->buffer->length, &msg->request,
+                &msg->version, msg->config.header.max_bytes_method_name, &ptr))
+            goto error;
+
+    ssize_t open = msg->buffer->capacity - msg->buffer->length;
+    ssize_t bytes = -1;
+
+    /*  Some headers may have been added previously.
+     *
+     *  We do NOT recheck the whole buffer for performance,
+     *  as it is expected to be done by the user of the function
+     *  for final verification of the message, before sending.
+     */
+    ptr = msg->buffer->start + msg->buffer->length;
+
+    while (true) {
+
+        bytes = snprintf((char *)ptr, open, "%s:%.*s\r\n", key, 
+            (int)val->length,
+            (char*)val->start);
+
+        if (bytes < 0)
+            goto error;
+
+        if (bytes > (ssize_t)msg->config.header.max_bytes_line) {
+            memset(ptr, 0, open);
+            goto error;
+        }
+
+        if (bytes < open)
+            break;
+
+        open += msg->config.buffer.default_size;
+
+        if (!ov_sip_message_ensure_open_capacity(msg, open))
+            goto error;
+
+        ptr = msg->buffer->start + msg->buffer->length;
+        open = msg->buffer->capacity - msg->buffer->length;
+    }
+
+    msg->buffer->length += bytes;
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 bool ov_sip_message_add_header_copy(ov_sip_message *msg, const ov_sip_header *header){
 
     /* Message MUST have some valid startline */

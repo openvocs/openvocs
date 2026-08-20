@@ -228,6 +228,9 @@ ov_sip_message *ov_sip_create_status(ov_sip_message_config config,
 bool ov_sip_message_add_header(ov_sip_message *msg, const char *key,
                                        const char *val);
 
+bool ov_sip_message_add_ptr_header(ov_sip_message *msg, const char *key,
+                                       const ov_memory_pointer *val);
+
 bool ov_sip_message_add_header_copy(ov_sip_message *msg, const ov_sip_header *header);
 
 bool ov_sip_message_close_header(ov_sip_message *msg);

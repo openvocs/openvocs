@@ -2510,8 +2510,6 @@ ov_io_https_config ov_io_https_config_from_json(const ov_json_value *input){
 
 bool ov_io_close(ov_io *self, int socket) {
 
-    ov_log_debug("ov_io_close");
-
     if (!self)
         goto error;
 
