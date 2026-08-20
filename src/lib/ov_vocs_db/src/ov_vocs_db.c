@@ -4626,7 +4626,7 @@ bool ov_vocs_db_add_permission(ov_vocs_db *self, ov_sip_permission permission) {
     if (!loop)
         goto done;
 
-    ov_json_value *sip = ov_json_object_get(loop, "/" OV_KEY_SIP);
+    ov_json_value *sip = ov_json_object_get(loop, OV_KEY_SIP);
     if (!sip) {
 
         sip = ov_json_object();
