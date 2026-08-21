@@ -66,6 +66,7 @@ typedef struct ov_vocs_recorder_config {
     struct {
 
         ov_socket_configuration manager;
+        ov_socket_configuration cc;
 
     } socket;
 
@@ -76,6 +77,12 @@ typedef struct ov_vocs_recorder_config {
     } timeout;
 
     ov_database_info db;
+
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
 
 } ov_vocs_recorder_config;
 

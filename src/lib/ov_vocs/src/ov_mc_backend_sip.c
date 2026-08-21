@@ -219,18 +219,6 @@ done:
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_accept(void *userdata, int listener, int connection) {
-
-    // accept any connection
-
-    UNUSED(userdata);
-    UNUSED(listener);
-    UNUSED(connection);
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static void cb_close(void *userdata, int connection) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
@@ -282,7 +270,7 @@ error:
  */
 
 static void cb_event_get_multicast(void *userdata, const char *name, int socket,
-                                   ov_json_value *input) {
+                                   const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -328,7 +316,6 @@ response:
 
 error:
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
     return;
 }
 
@@ -431,7 +418,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_register(void *userdata, const char *name, int socket,
-                              ov_json_value *input) {
+                              const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -466,7 +453,6 @@ static void cb_event_register(void *userdata, const char *name, int socket,
     out = ov_json_value_free(out);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -596,7 +582,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_acquire(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -639,25 +625,26 @@ static void cb_event_acquire(void *userdata, const char *name, int socket,
 
     assign_sip_mixer(self, socket, user);
 
+    ov_json_value *value = NULL;
+    ov_json_value_copy((void**)&value, input);
+
     if (!ov_event_async_set(
             self->async, uuid,
             (ov_event_async_data){.socket = socket,
-                                  .value = input,
+                                  .value = value,
                                   .timedout.userdata = self,
                                   .timedout.callback = cb_async_timedout},
             self->config.timeout.response_usec))
         goto error;
 
-    input = NULL;
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_release(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -686,19 +673,20 @@ static void cb_event_release(void *userdata, const char *name, int socket,
 
     drop_sip_mixer_assignment(self, socket, user);
 
+    ov_json_value *value = NULL;
+    ov_json_value_copy((void**)&value, input);
+
     if (!ov_event_async_set(
             self->async, uuid,
             (ov_event_async_data){.socket = socket,
-                                  .value = input,
+                                  .value = value,
                                   .timedout.userdata = self,
                                   .timedout.callback = cb_async_timedout},
             self->config.timeout.response_usec))
         goto error;
 
-    input = NULL;
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -789,7 +777,7 @@ static void cb_loop_joined(void *userdata, const char *uuid,
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_set_singlecast(void *userdata, const char *name,
-                                    int socket, ov_json_value *input) {
+                                    int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -853,26 +841,26 @@ static void cb_event_set_singlecast(void *userdata, const char *name,
         ov_log_error("Failed to send join loop %s for %s", data.name, user);
     }
 
+    ov_json_value *value = NULL;
+    ov_json_value_copy((void**)&value, input);
+
     if (!ov_event_async_set(
             self->async, uuid,
             (ov_event_async_data){.socket = socket,
-                                  .value = input,
+                                  .value = value,
                                   .timedout.userdata = self,
                                   .timedout.callback = cb_async_timedout},
             self->config.timeout.response_usec))
         goto error;
 
-    input = NULL;
-
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_notify(void *userdata, const char *name, int socket,
-                            ov_json_value *input) {
+                            const ov_json_value *input) {
 
     /*
 
@@ -967,14 +955,13 @@ static void cb_event_notify(void *userdata, const char *name, int socket,
     }
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_call_response(ov_mc_backend_sip *self, int socket,
-                                   ov_json_value *input) {
+                                   const ov_json_value *input) {
 
     if (!self || !input || socket < 0)
         goto error;
@@ -1041,14 +1028,13 @@ static void cb_event_call_response(ov_mc_backend_sip *self, int socket,
                                         desc);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_call(void *userdata, const char *name, int socket,
-                          ov_json_value *input) {
+                          const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -1062,14 +1048,13 @@ static void cb_event_call(void *userdata, const char *name, int socket,
     // we do not expect a non response here
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_permit_response(ov_mc_backend_sip *self, int socket,
-                                     ov_json_value *input) {
+                                     const ov_json_value *input) {
 
     if (!self || !input || socket < 0)
         goto error;
@@ -1091,14 +1076,13 @@ static void cb_event_permit_response(ov_mc_backend_sip *self, int socket,
                                           permission, error_code, error_desc);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_permit(void *userdata, const char *name, int socket,
-                            ov_json_value *input) {
+                            const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -1112,14 +1096,13 @@ static void cb_event_permit(void *userdata, const char *name, int socket,
     // we do not expect a non response here
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_revoke_response(ov_mc_backend_sip *self, int socket,
-                                     ov_json_value *input) {
+                                     const ov_json_value *input) {
 
     if (!self || !input || socket < 0)
         goto error;
@@ -1141,14 +1124,13 @@ static void cb_event_revoke_response(ov_mc_backend_sip *self, int socket,
                                           permission, error_code, error_desc);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_revoke(void *userdata, const char *name, int socket,
-                            ov_json_value *input) {
+                           const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -1162,14 +1144,13 @@ static void cb_event_revoke(void *userdata, const char *name, int socket,
     // we do not expect a non response here
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_hangup_response(ov_mc_backend_sip *self, int socket,
-                                     ov_json_value *input) {
+                                     const ov_json_value *input) {
 
     if (!self || !input || socket < 0)
         goto error;
@@ -1191,14 +1172,13 @@ static void cb_event_hangup_response(ov_mc_backend_sip *self, int socket,
     ov_thread_lock_unlock(&self->call.lock);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_hangup(void *userdata, const char *name, int socket,
-                            ov_json_value *input) {
+                            const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -1212,14 +1192,13 @@ static void cb_event_hangup(void *userdata, const char *name, int socket,
     // we do not expect a non response here
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_list_calls_response(ov_mc_backend_sip *self, int socket,
-                                         ov_json_value *input) {
+                                         const ov_json_value *input) {
 
     if (!self || !input || socket < 0)
         goto error;
@@ -1238,14 +1217,13 @@ static void cb_event_list_calls_response(ov_mc_backend_sip *self, int socket,
                                          calls, error_code, error_desc);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_list_calls(void *userdata, const char *name, int socket,
-                                ov_json_value *input) {
+                                const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -1259,7 +1237,6 @@ static void cb_event_list_calls(void *userdata, const char *name, int socket,
     // we do not expect a non response here
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -1267,7 +1244,7 @@ error:
 
 static void cb_event_list_permissions_response(ov_mc_backend_sip *self,
                                                int socket,
-                                               ov_json_value *input) {
+                                               const ov_json_value *input) {
 
     if (!self || !input || socket < 0)
         goto error;
@@ -1286,14 +1263,13 @@ static void cb_event_list_permissions_response(ov_mc_backend_sip *self,
             self->config.callback.userdata, uuid, perm, error_code, error_desc);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_list_permissions(void *userdata, const char *name,
-                                      int socket, ov_json_value *input) {
+                                      int socket, const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -1307,14 +1283,13 @@ static void cb_event_list_permissions(void *userdata, const char *name,
     // we do not expect a non response here
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_get_status_response(ov_mc_backend_sip *self, int socket,
-                                         ov_json_value *input) {
+                                         const ov_json_value *input) {
 
     if (!self || !input || socket < 0)
         goto error;
@@ -1333,14 +1308,13 @@ static void cb_event_get_status_response(ov_mc_backend_sip *self, int socket,
                                          status, error_code, error_desc);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_get_status(void *userdata, const char *name, int socket,
-                                ov_json_value *input) {
+                                const ov_json_value *input) {
 
     ov_mc_backend_sip *self = ov_mc_backend_sip_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -1354,7 +1328,6 @@ static void cb_event_get_status(void *userdata, const char *name, int socket,
     // we do not expect a non response here
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -1446,12 +1419,16 @@ ov_mc_backend_sip *ov_mc_backend_sip_create(ov_mc_backend_sip_config config) {
     self->magic_bytes = OV_MC_BACKEND_SIP_MAGIC_BYTES;
     self->config = config;
 
-    ov_event_app_config app_config = (ov_event_app_config){
+    ov_event_app_config app_config =
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = config.socket.cc,
+            .callbacks.userdata = self,
+            .callbacks.close = cb_close};
 
-        .io = config.io,
-        .callbacks.userdata = self,
-        .callbacks.accept = cb_accept,
-        .callbacks.close = cb_close};
+    strncat(app_config.name, "SIP BACKEND", OV_HOST_NAME_MAX -1);
+    strncat(app_config.password_path, config.password.path, PATH_MAX -1);
 
     self->app = ov_event_app_create(app_config);
     if (!self->app)

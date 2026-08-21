@@ -52,6 +52,7 @@ typedef struct ov_ice_proxy_vocs_app_config {
     ov_ice_proxy_vocs_config proxy;
 
     ov_socket_configuration manager;
+    ov_socket_configuration cc;
 
     struct {
 
@@ -61,6 +62,12 @@ typedef struct ov_ice_proxy_vocs_app_config {
         uint64_t client_connect_sec;
 
     } timer;
+
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
 
 } ov_ice_proxy_vocs_app_config;
 

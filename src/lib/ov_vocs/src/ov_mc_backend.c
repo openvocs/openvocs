@@ -76,18 +76,6 @@ struct ov_mc_backend {
 
 /*----------------------------------------------------------------------------*/
 
-static bool cb_accept(void *userdata, int listener, int connection) {
-
-    // accept any connection
-
-    UNUSED(userdata);
-    UNUSED(listener);
-    UNUSED(connection);
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static void close_mixer_data(ov_mc_backend *self, int socket) {
 
     ov_mc_mixer_data out = {0};
@@ -154,13 +142,21 @@ static void cb_close(void *userdata, int connection) {
  */
 
 static void cb_event_register(void *userdata, const char *name, int socket,
-                              ov_json_value *input) {
+                              const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
         goto error;
+
+    out = ov_event_api_create_success_response(input);
+    ov_json_value *cc = NULL;
+    ov_socket_configuration_to_json(self->config.socket.cc, &cc);
+    ov_json_value *rs = ov_event_api_get_response(out);
+    ov_json_object_set(rs, "cc", cc);
+    ov_event_app_send(self->app, socket, out);
+    out = ov_json_value_free(out);
 
     const char *uuid = ov_json_string_get(
         ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_UUID));
@@ -191,14 +187,12 @@ static void cb_event_register(void *userdata, const char *name, int socket,
     if (!ov_event_app_send(self->app, socket, out))
         goto error;
 
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -255,7 +249,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_acquire_response(ov_mc_backend *self, int socket,
-                                      ov_json_value *input) {
+                                      const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -290,20 +284,18 @@ static void cb_event_acquire_response(ov_mc_backend *self, int socket,
         close_mixer(self, socket);
     }
 
-    input = ov_json_value_free(input);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_acquire(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     ov_mc_backend *self = ov_mc_backend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -317,14 +309,13 @@ static void cb_event_acquire(void *userdata, const char *name, int socket,
 error:
     if (self)
         close_mixer(self, socket);
-    input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_release_response(ov_mc_backend *self, int socket,
-                                      ov_json_value *input) {
+                                      const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -358,20 +349,18 @@ static void cb_event_release_response(ov_mc_backend *self, int socket,
         function((void *)cb.userdata, uuid, user_uuid, code, desc);
     }
 
-    input = ov_json_value_free(input);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_release(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -387,7 +376,6 @@ static void cb_event_release(void *userdata, const char *name, int socket,
 error:
     if (self)
         close_mixer(self, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -428,7 +416,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_join_response(ov_mc_backend *self, int socket,
-                                   ov_json_value *input) {
+                                   const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -462,20 +450,18 @@ static void cb_event_join_response(ov_mc_backend *self, int socket,
         close_mixer(self, socket);
     }
 
-    input = ov_json_value_free(input);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_join(void *userdata, const char *name, int socket,
-                          ov_json_value *input) {
+                          const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -491,7 +477,6 @@ static void cb_event_join(void *userdata, const char *name, int socket,
 error:
     if (self)
         close_mixer(self, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -499,7 +484,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_state_response(ov_mc_backend *self, int socket,
-                                    ov_json_value *input) {
+                                    const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -514,20 +499,18 @@ static void cb_event_state_response(ov_mc_backend *self, int socket,
         function((void *)cb.userdata, uuid, ov_event_api_get_response(input));
     }
 
-    input = ov_json_value_free(input);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_state(void *userdata, const char *name, int socket,
-                           ov_json_value *input) {
+                           const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -543,7 +526,6 @@ static void cb_event_state(void *userdata, const char *name, int socket,
 error:
     if (self)
         close_mixer(self, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -551,7 +533,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_leave_response(ov_mc_backend *self, int socket,
-                                    ov_json_value *input) {
+                                    const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -577,20 +559,18 @@ static void cb_event_leave_response(ov_mc_backend *self, int socket,
         function((void *)cb.userdata, uuid, mdata.user, loop, code, desc);
     }
 
-    input = ov_json_value_free(input);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_leave(void *userdata, const char *name, int socket,
-                           ov_json_value *input) {
+                           const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -606,7 +586,6 @@ static void cb_event_leave(void *userdata, const char *name, int socket,
 error:
     if (self)
         close_mixer(self, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -614,7 +593,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_volume_response(ov_mc_backend *self, int socket,
-                                     ov_json_value *input) {
+                                     const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -639,20 +618,18 @@ static void cb_event_volume_response(ov_mc_backend *self, int socket,
         function((void *)cb.userdata, uuid, mdata.user, loop, vol, code, desc);
     }
 
-    input = ov_json_value_free(input);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    input = ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_volume(void *userdata, const char *name, int socket,
-                            ov_json_value *input) {
+                            const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -668,7 +645,6 @@ static void cb_event_volume(void *userdata, const char *name, int socket,
 error:
     if (self)
         close_mixer(self, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -676,7 +652,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_forward(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -700,14 +676,12 @@ static void cb_event_forward(void *userdata, const char *name, int socket,
         function((void *)cb.userdata, uuid, mdata.user, NULL, code, desc);
     }
 
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 
 error:
     if (self)
         close_mixer(self, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -779,10 +753,15 @@ ov_mc_backend *ov_mc_backend_create(ov_mc_backend_config config) {
     self->config = config;
 
     ov_event_app_config app_config =
-        (ov_event_app_config){.io = config.io,
-                              .callbacks.userdata = self,
-                              .callbacks.accept = cb_accept,
-                              .callbacks.close = cb_close};
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = config.socket.cc,
+            .callbacks.userdata = self,
+            .callbacks.close = cb_close};
+
+    strncat(app_config.name, "VOCS BACKEND", OV_HOST_NAME_MAX -1);
+    strncat(app_config.password_path, config.password.path, PATH_MAX -1);
 
     self->app = ov_event_app_create(app_config);
     if (!self->app)
@@ -1231,6 +1210,10 @@ ov_mc_backend_config ov_mc_backend_config_from_json(const ov_json_value *val) {
 
     config.socket.manager = ov_socket_configuration_from_json(
         ov_json_get(data, "/" OV_KEY_SOCKET "/" OV_KEY_MANAGER),
+        (ov_socket_configuration){0});
+
+    config.socket.cc = ov_socket_configuration_from_json(
+        ov_json_get(data, "/" OV_KEY_SOCKET "/cc"),
         (ov_socket_configuration){0});
 
     const ov_json_value *par = ov_json_get(data, "/" OV_KEY_MIXER);

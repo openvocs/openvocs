@@ -84,15 +84,6 @@ typedef struct Proxy {
  *      ------------------------------------------------------------------------
  */
 
-static bool cb_accept(void *userdata, int listener, int connection) {
-
-    // accept any connection
-
-    UNUSED(userdata);
-    UNUSED(listener);
-    UNUSED(connection);
-    return true;
-}
 
 /*----------------------------------------------------------------------------*/
 
@@ -187,7 +178,7 @@ error:
  */
 
 static void cb_event_register(void *userdata, const char *name, int socket,
-                              ov_json_value *input) {
+                              const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -214,12 +205,10 @@ static void cb_event_register(void *userdata, const char *name, int socket,
 
     ov_thread_lock_unlock(&self->proxy.lock);
 
-    input = ov_json_value_free(input);
     return;
 error:
     if (self)
         ov_event_app_close(self->app, socket);
-    ov_json_value_free(input);
     ov_json_value_free(out);
     return;
 }
@@ -255,7 +244,7 @@ static bool proxy_json_array_to_forward_data_array(void *item, void *data) {
 
 static void cb_event_ice_session_create_response(ov_mc_frontend *self,
                                                  int socket,
-                                                 ov_json_value *input) {
+                                                 const ov_json_value *input) {
 
     bool drop_session = false;
     bool drop_proxy = false;
@@ -263,7 +252,6 @@ static void cb_event_ice_session_create_response(ov_mc_frontend *self,
     char *str = NULL;
 
     if (!self || !input) {
-        input = ov_json_value_free(input);
         return;
     }
 
@@ -386,7 +374,6 @@ static void cb_event_ice_session_create_response(ov_mc_frontend *self,
         goto close_proxy;
 
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
     return;
 
 close_proxy:
@@ -398,14 +385,13 @@ close_proxy:
 
     ov_event_app_close(self->app, socket);
     out = ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_create(void *userdata, const char *name,
-                                        int socket, ov_json_value *input) {
+                                        int socket, const ov_json_value *input) {
 
     ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -419,14 +405,13 @@ static void cb_event_ice_session_create(void *userdata, const char *name,
 error:
     if (self)
         ov_event_app_close(self->app, socket);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_completed(void *userdata, const char *name,
-                                           int socket, ov_json_value *input) {
+                                           int socket, const ov_json_value *input) {
 
     ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -465,14 +450,13 @@ static void cb_event_ice_session_completed(void *userdata, const char *name,
     }
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_drop_response(ov_mc_frontend *self, int socket,
-                                               ov_json_value *input) {
+                                               const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -492,13 +476,13 @@ static void cb_event_ice_session_drop_response(ov_mc_frontend *self, int socket,
     self->config.callback.session.dropped(self->config.callback.userdata, id);
 
 error:
-    ov_json_value_free(input);
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_drop(void *userdata, const char *name,
-                                      int socket, ov_json_value *input) {
+                                      int socket, const ov_json_value *input) {
 
     ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -520,7 +504,6 @@ static void cb_event_ice_session_drop(void *userdata, const char *name,
     self->config.callback.session.dropped(self->config.callback.userdata, id);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -528,7 +511,7 @@ error:
 
 static void cb_event_ice_session_update_response(ov_mc_frontend *self,
                                                  int socket,
-                                                 ov_json_value *input) {
+                                                 const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -549,14 +532,13 @@ static void cb_event_ice_session_update_response(ov_mc_frontend *self,
                                          id);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_update(void *userdata, const char *name,
-                                        int socket, ov_json_value *input) {
+                                        int socket, const ov_json_value *input) {
 
     ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -568,14 +550,13 @@ static void cb_event_ice_session_update(void *userdata, const char *name,
     // we do not expect some update event from the proxy
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_state_response(ov_mc_frontend *self, int socket,
-                                    ov_json_value *input) {
+                                    const ov_json_value *input) {
 
     if (!self || !input)
         goto error;
@@ -596,14 +577,13 @@ static void cb_event_state_response(ov_mc_frontend *self, int socket,
                                         id, ov_event_api_get_response(input));
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_state(void *userdata, const char *name, int socket,
-                           ov_json_value *input) {
+                           const ov_json_value *input) {
 
     ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -615,13 +595,12 @@ static void cb_event_state(void *userdata, const char *name, int socket,
     // we do not expect some update event from the proxy
 
 error:
-    ov_json_value_free(input);
     return;
 }
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_candidate_response(ov_mc_frontend *self, int socket,
-                                            ov_json_value *input) {
+                                            const ov_json_value *input) {
 
     ov_response_state state = {0};
 
@@ -645,13 +624,13 @@ static void cb_event_ice_candidate_response(ov_mc_frontend *self, int socket,
                                     session_id, &info);
 
 error:
-    ov_json_value_free(input);
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_candidate(void *userdata, const char *name, int socket,
-                                   ov_json_value *input) {
+                                   const ov_json_value *input) {
 
     ov_response_state state = {0};
 
@@ -676,7 +655,6 @@ static void cb_event_ice_candidate(void *userdata, const char *name, int socket,
                                     session_id, &info);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -684,7 +662,7 @@ error:
 
 static void cb_event_ice_end_of_candidates_response(ov_mc_frontend *self,
                                                     int socket,
-                                                    ov_json_value *input) {
+                                                    const ov_json_value *input) {
 
     ov_response_state state = {0};
 
@@ -705,13 +683,13 @@ static void cb_event_ice_end_of_candidates_response(ov_mc_frontend *self,
                                             state, session_id, &info);
 
 error:
-    ov_json_value_free(input);
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_end_of_candidates(void *userdata, const char *name,
-                                           int socket, ov_json_value *input) {
+                                           int socket, const ov_json_value *input) {
 
     ov_response_state state = {0};
 
@@ -736,14 +714,13 @@ static void cb_event_ice_end_of_candidates(void *userdata, const char *name,
                                             state, session_id, &info);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_talk_response(ov_mc_frontend *self, int socket,
-                                   ov_json_value *input) {
+                                   const ov_json_value *input) {
 
     ov_response_state state = {0};
     bool on = false;
@@ -772,13 +749,13 @@ static void cb_event_talk_response(ov_mc_frontend *self, int socket,
                                session_id, data, on);
 
 error:
-    ov_json_value_free(input);
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_talk(void *userdata, const char *name, int socket,
-                          ov_json_value *input) {
+                          const ov_json_value *input) {
 
     ov_mc_frontend *self = ov_mc_frontend_cast(userdata);
     if (!self || !name || socket < 0 || !input)
@@ -789,7 +766,6 @@ static void cb_event_talk(void *userdata, const char *name, int socket,
 
     // we dont expect a non response talk message
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -867,12 +843,16 @@ ov_mc_frontend *ov_mc_frontend_create(ov_mc_frontend_config config) {
     self->magic_bytes = OV_MC_FRONTEND_MAGIC_BYTES;
     self->config = config;
 
-    ov_event_app_config app_config = (ov_event_app_config){
+    ov_event_app_config app_config =
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = config.socket.cc,
+            .callbacks.userdata = self,
+            .callbacks.close = cb_close};
 
-        .io = config.io,
-        .callbacks.userdata = self,
-        .callbacks.accept = cb_accept,
-        .callbacks.close = cb_close};
+    strncat(app_config.name, "VOCS FRONTEND", OV_HOST_NAME_MAX -1);
+    strncat(app_config.password_path, config.password.path, PATH_MAX -1);
 
     self->app = ov_event_app_create(app_config);
     if (!self->app)

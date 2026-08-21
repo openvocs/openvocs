@@ -42,8 +42,15 @@ typedef struct ov_vad_app_config {
     ov_io *io;
 
     ov_socket_configuration manager;
+    ov_socket_configuration cc;
 
     ov_vad_core_config core;
+
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
 
 } ov_vad_app_config;
 

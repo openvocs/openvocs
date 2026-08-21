@@ -52,8 +52,15 @@ typedef struct ov_mc_backend_sip_static_config {
     struct {
 
         ov_socket_configuration manager; // manager liege socket
+        ov_socket_configuration cc;
 
     } socket;
+
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
 
 } ov_mc_backend_sip_static_config;
 

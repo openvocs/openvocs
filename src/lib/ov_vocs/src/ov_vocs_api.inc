@@ -339,137 +339,6 @@ struct mixer_data {
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_mixer_state(void *userdata, const char *uuid, const ov_json_value *state){
-
-    ov_vocs *vocs = ov_vocs_cast(userdata);
-    if (!vocs || !uuid || !state) goto error;
-
-    ov_event_async_data adata = ov_event_async_unset(vocs->async, uuid);
-    if (!adata.value) goto error;
-
-    ov_json_value *res = ov_event_api_get_response(adata.value);
-    ov_json_value *out = NULL;
-    ov_json_value_copy((void**)&out, state);
-    ov_json_object_set(res, OV_KEY_STATE, out);
-
-    env_send(vocs, adata.socket, adata.value);
-
-    adata.value = ov_json_value_free(adata.value);
-
-
-error:
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool call_mixer_state(const void *key, void *val, void *data){
-
-    if (!key) return true;
-
-    struct mixer_data *container = (struct mixer_data*) data;
-
-    const char *user = ov_json_string_get(ov_json_get(
-        ov_json_value_cast(val), "/"OV_KEY_USER));
-
-    if (!user) return true;
-
-    if (0 != ov_string_compare(user, container->user))
-        return true;
-
-    const char *session = ov_json_string_get(ov_json_get(
-        ov_json_value_cast(val), "/"OV_KEY_SESSION));
-
-    if (!session) return true;
-
-    ov_id uuid = {0};
-    ov_id_fill_with_uuid(uuid);
-
-    ov_json_value *out = ov_event_api_create_success_response(container->input);
-    if (!out) goto error;
-
-    if (!ov_mc_backend_get_session_state(container->vocs->backend,
-        uuid, session, container->vocs, cb_mixer_state)) {
-
-        out = ov_json_value_free(out);
-        goto error;
-    
-    }
-
-    const char *role = ov_json_string_get(ov_json_get(
-        ov_json_value_cast(val), "/"OV_KEY_ROLE));
-
-    ov_json_value *res = ov_event_api_get_response(out);
-
-    ov_json_object_set(res, OV_KEY_USER, ov_json_string(user));
-    ov_json_object_set(res, OV_KEY_SESSION, ov_json_string(session));
-
-    if (role)
-        ov_json_object_set(res, OV_KEY_ROLE, ov_json_string(role));
-
-    if (!set_async(container->vocs, uuid, container->socket, out)) goto error;
-
-    return true;
-
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void admin_get_mixer_state(void *userdata, const char *name,
-        int socket, const ov_json_value *input) {
-
-    ov_json_value *out = NULL;
-
-    ov_vocs *vocs = ov_vocs_cast(userdata);
-    UNUSED(name);
-
-    if (!vocs || !input) goto error;
-
-    const char *user = ov_json_string_get(
-        ov_json_get(input, "/"OV_KEY_PARAMETER"/"OV_KEY_USER));
-
-    if (!user) {
-
-        send_error_response(
-            vocs,
-            input,
-            socket,
-            OV_ERROR_CODE_PARAMETER_ERROR,
-            OV_ERROR_DESC_PARAMETER_ERROR);
-
-        goto error;
-    }
-
-    struct mixer_data container = (struct mixer_data){
-        .vocs = vocs,
-        .user = user,
-        .socket = socket,
-        .input = input
-    };
-
-    if (!ov_socket_storage_for_each(vocs->connections, &container, call_mixer_state)){
-
-        send_error_response(
-            vocs,
-            input,
-            socket,
-            OV_ERROR_CODE_PROCESSING_ERROR,
-            OV_ERROR_DESC_PROCESSING_ERROR);
-
-        goto error;
-    }
-
-    return ;
-error:
-    out = ov_json_value_free(out);
-    return ;
-}
-
-
-/*----------------------------------------------------------------------------*/
-
 static void admin_state_mixer(void *userdata, const char *name,
         int socket, const ov_json_value *input) {
 
@@ -501,42 +370,6 @@ static void admin_state_mixer(void *userdata, const char *name,
 error:
     ov_json_value_free(out);
     ov_json_value_free(val);
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void admin_state_connections(void *userdata, const char *name,
-        int socket, const ov_json_value *input) {
-
-    ov_json_value *out = NULL;
-    ov_json_value *obj = NULL;
-    ov_json_value *val = NULL;
-    ov_json_value *res = NULL;
-
-    ov_vocs *vocs = ov_vocs_cast(userdata);
-    UNUSED(name);
-
-    if (!vocs || !input) goto error;
-
-    out = ov_event_api_create_success_response(input);
-    res = ov_event_api_get_response(out);
-
-    obj = ov_json_object();
-    if (!ov_json_object_set(res, OV_KEY_CONNECTIONS, obj)) {
-        obj = ov_json_value_free(obj);
-        goto error;
-    }
-
-    if (!ov_socket_storage_for_each_set_data(vocs->connections, obj)) goto error;
-
-    env_send(vocs, socket, out);
-
-    ov_json_value_free(out);
-    return;
-error:
-    ov_json_value_free(val);
-    ov_json_value_free(out);
     return;
 }
 
@@ -587,21 +420,6 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool add_connection_data(const void *key, void *val, void *data){
-
-    if (!key) return true;
-
-    ov_json_value *array = ov_json_value_cast(data);
-    ov_json_value *copy = NULL;
-    ov_json_value *item = ov_json_value_cast(val);
-
-    ov_json_value_copy((void**)&copy, item);
-    ov_json_array_push(array, copy);
-    return true;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static void admin_get_clients(void *userdata, const char *name,
         int socket, const ov_json_value *input) {
 
@@ -613,10 +431,7 @@ static void admin_get_clients(void *userdata, const char *name,
 
     if (!vocs || !input) goto error;
 
-    val = ov_json_array();
-
-    if (!ov_socket_storage_for_each(
-        vocs->connections, val, add_connection_data)) goto error;
+    val = ov_event_app_get_clients(vocs->app);
 
     out = ov_event_api_create_success_response(input);
     ov_json_value *res = ov_event_api_get_response(out);
@@ -634,62 +449,50 @@ error:
 
 static bool enable_api_admin(ov_vocs *vocs){
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "recorder_start",
         vocs,
         admin_start_recording)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "recorder_stop",
         vocs,
         admin_stop_recording)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_STATE_MIXER,
         vocs,
         admin_state_mixer)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
-        OV_EVENT_API_STATE_CONNECTIONS,
-        vocs,
-        admin_state_connections)) goto error;
-
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_STATE_SESSION,
         vocs,
         admin_state_session)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
-        "admin_get_mixer_state",
-        vocs,
-        admin_get_mixer_state)) goto error;
-
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_KEY_BROADCAST,
         vocs,
         admin_broadcast)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "recorder_get_recorded_loops",
         vocs,
         admin_get_recorded_loops)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "db_get_all_loops",
         vocs,
         admin_get_all_loops)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "db_get_clients",
         vocs,
         admin_get_clients)) goto error;
@@ -717,7 +520,7 @@ static void client_logout(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
@@ -755,7 +558,7 @@ static void cb_ldap_authentication(void *userdata,
     adata = ov_event_async_unset(vocs->async, uuid);
     if (!adata.value) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, adata.socket);
+    data = ov_event_app_get_socket_data(vocs->app, adata.socket);
 
     const char *client_id =
         ov_json_string_get(ov_json_object_get(adata.value, OV_KEY_CLIENT));
@@ -839,7 +642,7 @@ static void client_login(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     if(!data) goto error;
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
@@ -1067,32 +870,32 @@ error:
 
 static bool enable_api_auth(ov_vocs *vocs){
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_LOGOUT,
         vocs,
         client_logout)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_LOGIN,
         vocs,
         client_login)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_AUTHENTICATE,
         vocs,
         client_login)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_UPDATE_LOGIN,
         vocs,
         update_client_login)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "is_ldap_enabled",
         vocs,
         check_ldap_enabled)) goto error;
@@ -1122,7 +925,7 @@ static void client_media(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1234,7 +1037,7 @@ static void client_candidate(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1297,7 +1100,7 @@ static void client_end_of_candidates(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1360,7 +1163,7 @@ static void client_authorize(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1437,7 +1240,7 @@ static void client_get(void *userdata, const char *name,
     
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) {
@@ -1534,7 +1337,7 @@ static void client_user_roles(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) goto error;
@@ -1606,7 +1409,7 @@ static void client_role_loops(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1660,7 +1463,7 @@ static void client_event_get_recording(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     //const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1720,7 +1523,7 @@ static void client_event_sip_status(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) {
@@ -1759,7 +1562,7 @@ static void client_switch_loop_state(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *sess =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
@@ -1898,7 +1701,7 @@ static void client_switch_loop_volume(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -1981,7 +1784,7 @@ static void client_talking(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2079,7 +1882,7 @@ static void client_calling(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2150,7 +1953,7 @@ static void client_hangup(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2217,7 +2020,7 @@ static void client_permit_call(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2275,7 +2078,7 @@ static void client_revoke_call(void *userdata, const char *name,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2333,7 +2136,7 @@ static bool client_call_function(ov_vocs *vocs,
 
     if (!vocs || !input || socket < 0) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2440,7 +2243,7 @@ static void client_event_set_keyset_layout(void *userdata, const char *eventname
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2522,7 +2325,7 @@ static void client_event_get_keyset_layout(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2585,7 +2388,7 @@ static void client_event_set_user_data(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
     if (!user) {
@@ -2654,7 +2457,7 @@ static void client_event_get_user_data(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
 
@@ -2708,9 +2511,7 @@ static void client_event_register(void *userdata, const char *name,
 
     const char *uuid = ov_json_string_get(ov_json_get(input, "/client_id"));
 
-    ov_client_registry_register(vocs->client_registry, uuid, socket);
-
-    ov_json_value *data = ov_socket_storage_get(vocs->connections, socket);
+    ov_json_value *data = ov_event_app_get_socket_data(vocs->app, socket);
     if (!data) data = ov_json_object();
 
     ov_socket_data remote ={0};
@@ -2718,9 +2519,7 @@ static void client_event_register(void *userdata, const char *name,
 
     ov_json_value *sock = ov_socket_data_to_json(&remote);
     ov_json_object_set(data, "remote", sock);
-    
-    sock = ov_socket_data_to_json(&remote);
-    ov_client_registry_set_data(vocs->client_registry, uuid, sock);
+    ov_json_object_set(data, "client_id", ov_json_string(uuid));
 
     if (!ov_broadcast_registry_set(vocs->broadcasts,
                                    OV_BROADCAST_KEY_SYSTEM_BROADCAST,
@@ -2744,152 +2543,152 @@ error:
 
 static bool enable_api_client(ov_vocs *vocs){
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_MEDIA,
         vocs,
         client_media)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_ICE_STRING_CANDIDATE,
         vocs,
         client_candidate)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_ICE_STRING_END_OF_CANDIDATES,
         vocs,
         client_end_of_candidates)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_AUTHORISE,
         vocs,
         client_authorize)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_AUTHORIZE,
         vocs,
         client_authorize)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_GET,
         vocs,
         client_get)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_USER_ROLES,
         vocs,
         client_user_roles)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_ROLE_LOOPS,
         vocs,
         client_role_loops)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_SWITCH_LOOP_STATE,
         vocs,
         client_switch_loop_state)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_SWITCH_LOOP_VOLUME,
         vocs,
         client_switch_loop_volume)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_EVENT_API_TALKING,
         vocs,
         client_talking)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_call",
         vocs,
         client_calling)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_hangup",
         vocs,
         client_hangup)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_permit_call",
         vocs,
         client_permit_call)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_revoke_call",
         vocs,
         client_revoke_call)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_get_calls",
         vocs,
         client_list_calls)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_get_call_permissions",
         vocs,
         client_list_call_permissions)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_get_status",
         vocs,
         client_list_sip_status)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_SET_KEYSET_LAYOUT,
         vocs,
         client_event_set_keyset_layout)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_GET_KEYSET_LAYOUT,
         vocs,
         client_event_get_keyset_layout)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_SET_USER_DATA,
         vocs,
         client_event_set_user_data)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_GET_USER_DATA,
         vocs,
         client_event_get_user_data)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "recorder_get_recordings",
         vocs,
         client_event_get_recording)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "sip_is_enabled",
         vocs,
         client_event_sip_status)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_KEY_REGISTER,
         vocs,
         client_event_register)) goto error;
@@ -2917,7 +2716,7 @@ static bool authorize_connection_for_id(ov_vocs *vocs,
 
     if (!vocs || !socket || !id) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
 
@@ -2976,7 +2775,7 @@ static void cb_event_update_password(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *user = ov_json_string_get(
@@ -3103,7 +2902,7 @@ static void cb_event_get_admin_domains(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *user = ov_json_string_get(
@@ -3152,7 +2951,7 @@ static void cb_event_get_admin_projects(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *user = ov_json_string_get(
@@ -3201,7 +3000,7 @@ static void cb_event_check_id_exists(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3281,7 +3080,7 @@ static void cb_event_delete(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3364,7 +3163,7 @@ static void cb_event_create(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3470,7 +3269,7 @@ static void cb_event_get_key(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3556,7 +3355,7 @@ static void cb_event_update_key(void *userdata, const char *name,
     ov_vocs *vocs = ov_vocs_cast(userdata);
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3647,7 +3446,7 @@ static void cb_event_delete_key(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3735,7 +3534,7 @@ static void cb_event_verify(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3830,7 +3629,7 @@ static void cb_event_update(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -3948,7 +3747,7 @@ static void cb_event_load(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4011,7 +3810,7 @@ static void cb_event_save(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4073,7 +3872,7 @@ static void cb_event_set_layout(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4147,7 +3946,7 @@ static void cb_event_get_layout(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4213,7 +4012,7 @@ static void cb_event_add_domain_admin(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4288,7 +4087,7 @@ static void cb_event_add_project_admin(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4362,7 +4161,7 @@ static void cb_event_ldap_import(void *userdata,const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     const char *domain = ov_json_string_get(ov_json_get(input, "/parameter/domain"));
@@ -4426,7 +4225,7 @@ static void cb_event_set_user_data(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4495,7 +4294,7 @@ static void cb_event_get_user_data(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4556,7 +4355,7 @@ static void cb_event_get_highest_port(void *userdata, const char *name,
 
     if (!vocs || !socket || !input) goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *conn_user = ov_json_string_get(ov_json_get(data, "/"OV_KEY_USER));
 
     if (!conn_user) {
@@ -4590,128 +4389,128 @@ static bool enable_api_db(ov_vocs *vocs){
 
     if (!vocs) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_UPDATE_PASSWORD,
         vocs,
         cb_event_update_password)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_ADMIN_DOMAINS,
         vocs,
         cb_event_get_admin_domains)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_ADMIN_PROJECTS,
         vocs,
         cb_event_get_admin_projects)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_ID_EXISTS,
         vocs,
         cb_event_check_id_exists)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_DELETE,
         vocs,
         cb_event_delete)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_CREATE,
         vocs,
         cb_event_create)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_GET_KEY,
         vocs,
         cb_event_get_key)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_UPDATE_KEY,
         vocs,
         cb_event_update_key)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_DELETE_KEY,
         vocs,
         cb_event_delete_key)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_VERIFY,
         vocs,
         cb_event_verify)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_UPDATE,
         vocs,
         cb_event_update)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_LOAD,
         vocs,
         cb_event_load)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_SAVE,
         vocs,
         cb_event_save)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_SET_LAYOUT,
         vocs,
         cb_event_set_layout)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_GET_LAYOUT,
         vocs,
         cb_event_get_layout)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_ADD_DOMAIN_ADMIN,
         vocs,
         cb_event_add_domain_admin)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_ADD_PROJECT_ADMIN,
         vocs,
         cb_event_add_project_admin)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_LDAP_IMPORT,
         vocs,
         cb_event_ldap_import)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_SET_USER_DATA,
         vocs,
         cb_event_set_user_data)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         OV_VOCS_DB_GET_USER_DATA,
         vocs,
         cb_event_get_user_data)) goto error;
 
-    if (!ov_event_broker_register(
-        vocs->broker,
+    if (!ov_event_app_register(
+        vocs->app,
         "db_get_highest_port",
         vocs,
         cb_event_get_highest_port)) goto error;

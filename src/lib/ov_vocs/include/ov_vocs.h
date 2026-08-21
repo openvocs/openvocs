@@ -96,6 +96,7 @@ typedef struct {
 
         ov_socket_configuration cluster;
         ov_socket_configuration events;
+        ov_socket_configuration cc;
 
     } socket;
 

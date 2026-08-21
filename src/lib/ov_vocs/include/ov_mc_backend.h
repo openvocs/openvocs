@@ -72,6 +72,7 @@ typedef struct ov_mc_backend_config {
     struct {
 
         ov_socket_configuration manager; // manager liege socket
+        ov_socket_configuration cc;
 
     } socket;
 
@@ -99,6 +100,12 @@ typedef struct ov_mc_backend_config {
         } mixer;
 
     } callback;
+
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
 
 } ov_mc_backend_config;
 

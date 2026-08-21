@@ -55,6 +55,7 @@ typedef struct ov_mc_backend_sip_config {
     struct {
 
         ov_socket_configuration manager; // manager liege socket
+        ov_socket_configuration cc;
 
     } socket;
 
@@ -105,6 +106,12 @@ typedef struct ov_mc_backend_sip_config {
         void (*connected)(void *userdata, bool status);
 
     } callback;
+
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
 
 } ov_mc_backend_sip_config;
 

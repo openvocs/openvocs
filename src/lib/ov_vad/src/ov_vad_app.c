@@ -78,7 +78,7 @@ static void cb_socket_connected(void *userdata, int socket) {
 /*---------------------------------------------------------------------------*/
 
 static void cb_register_response(ov_vad_app *self, int socket,
-                                 ov_json_value *input) {
+                                 const ov_json_value *input) {
 
     if (!self || !socket || !input)
         goto error;
@@ -93,14 +93,13 @@ static void cb_register_response(ov_vad_app *self, int socket,
     ov_vad_core_set_vad(self->vad, conf);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static void cb_register(void *userdata, const char *name, int socket,
-                        ov_json_value *input) {
+                        const ov_json_value *input) {
 
     ov_vad_app *self = ov_vad_app_cast(userdata);
     if (!self || !name || !socket || !input)
@@ -112,7 +111,6 @@ static void cb_register(void *userdata, const char *name, int socket,
     // WE DO NOT EXPECT A NON RESPONSE FOR REGISTER
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -140,7 +138,7 @@ static bool add_loop_vad(const void *key, void *val, void *data) {
 /*---------------------------------------------------------------------------*/
 
 static void cb_loops(void *userdata, const char *name, int socket,
-                     ov_json_value *input) {
+                     const ov_json_value *input) {
 
     ov_vad_app *self = ov_vad_app_cast(userdata);
     if (!self || !name || !socket || !input)
@@ -155,7 +153,6 @@ static void cb_loops(void *userdata, const char *name, int socket,
     ov_json_object_for_each(loops, self, add_loop_vad);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -225,11 +222,15 @@ ov_vad_app *ov_vad_app_create(ov_vad_app_config config) {
     config.core.loop = config.loop;
 
     self->vad = ov_vad_core_create(config.core);
+
     self->app = ov_event_app_create(
-        (ov_event_app_config){.io = config.io,
-                              .callbacks.userdata = self,
-                              .callbacks.close = cb_socket_close,
-                              .callbacks.connected = cb_socket_connected});
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = config.cc,
+            .callbacks.userdata = self,
+            .callbacks.close = cb_socket_close,
+            .callbacks.connected = cb_socket_connected});
 
     if (!self->app)
         goto error;
@@ -286,7 +287,16 @@ ov_vad_app_config ov_vad_app_config_from_json(const ov_json_value *v) {
     config.manager = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET), (ov_socket_configuration){0});
 
+    config.cc = ov_socket_configuration_from_json(
+        ov_json_get(conf, "/cc"), (ov_socket_configuration){0});
+
     config.core = ov_vad_core_config_from_json(conf);
+
+    const char *password_path = ov_json_string_get(
+        ov_json_get(conf, "/password/path"));
+
+    if (password_path)
+        strncpy(config.password.path, password_path, PATH_MAX);
 
     return config;
 }

@@ -307,7 +307,7 @@ static bool event_app_send(void *userdata, int socket, const ov_json_value *data
 /*----------------------------------------------------------------------------*/
 
 static void event_recorder_register(void *userdata, const char *name, int socket,
-    ov_json_value *input) {
+    const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -368,20 +368,17 @@ response:
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
 
-    ov_json_value_free(input);
-
     assign_recording(self);
 
     return;
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void event_recorder_unregister(void *userdata, const char *name, int socket,
-    ov_json_value *input) {
+    const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -412,18 +409,15 @@ response:
 
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
-
-    ov_json_value_free(input);
     return;
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void start_record(void *userdata, const char *name, int socket,
-    ov_json_value *input) {
+    const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -491,10 +485,8 @@ static void start_record(void *userdata, const char *name, int socket,
 
 done:
     ov_recorder_response_start_clear(&resp);
-    ov_json_value_free(input);
     return;
 error:
-    ov_json_value_free(input);
     ov_recorder_response_start_clear(&resp);
     return;
 }
@@ -502,7 +494,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void stop_record(void *userdata, const char *name, int socket,
-    ov_json_value *input) {
+    const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -591,11 +583,9 @@ unblock:
     ov_log_debug("deactivated recording of loop %s", loop);
 
 done:
-    input = ov_json_value_free(input);
     return;
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -616,7 +606,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static void handle_error(ov_vocs_recorder *self, ov_json_value *input) {
+static void handle_error(ov_vocs_recorder *self, const ov_json_value *input) {
 
     UNUSED(self);
 
@@ -628,7 +618,7 @@ static void handle_error(ov_vocs_recorder *self, ov_json_value *input) {
 
 /*----------------------------------------------------------------------------*/
 
-static void handle_unexpected(ov_vocs_recorder *self, ov_json_value *input) {
+static void handle_unexpected(ov_vocs_recorder *self, const ov_json_value *input) {
 
     UNUSED(self);
 
@@ -641,7 +631,7 @@ static void handle_unexpected(ov_vocs_recorder *self, ov_json_value *input) {
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_notify(void *userdata, const char *name, int socket,
-    ov_json_value *input) {
+    const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -673,11 +663,9 @@ static void cb_event_notify(void *userdata, const char *name, int socket,
         handle_unexpected(self, input);
     };
 
-    ov_json_value_free(input);
     return;
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -794,6 +782,21 @@ ov_vocs_recorder *ov_vocs_recorder_create(ov_vocs_recorder_config config) {
     d_config.value.data_function.free = ov_vocs_record_free_void;
     self->recordings = ov_dict_create(d_config);
     if (!self->recordings)
+        goto error;
+
+    ov_event_app_config app_config =
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = config.socket.cc,
+            .callbacks.userdata = self,
+            .callbacks.close = cb_recorder_socket_close};
+
+    strncat(app_config.name, "RECORDER", OV_HOST_NAME_MAX -1);
+    strncat(app_config.password_path, config.password.path, PATH_MAX -1);
+
+    self->app = ov_event_app_create(app_config);
+    if (!self->app)
         goto error;
 
 

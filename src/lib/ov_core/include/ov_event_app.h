@@ -1,7 +1,7 @@
 /***
         ------------------------------------------------------------------------
 
-        Copyright (c) 2024 German Aerospace Center DLR e.V. (GSOC)
+        Copyright (c) 2026 German Aerospace Center DLR e.V. (GSOC)
 
         Licensed under the Apache License, Version 2.0 (the "License");
         you may not use this file except in compliance with the License.
@@ -20,32 +20,43 @@
         ------------------------------------------------------------------------
 *//**
         @file           ov_event_app.h
-        @author         Markus Töpfer
+        @author         Töpfer, Markus
 
-        @date           2024-12-28
+        @date           2026-08-21
+
 
         ------------------------------------------------------------------------
 */
 #ifndef ov_event_app_h
 #define ov_event_app_h
 
+#include <ov_base/ov_event_loop.h>
+#include <ov_base/ov_json.h>
+#include <ov_base/ov_socket.h>
+
 #include "ov_io.h"
+
+/*----------------------------------------------------------------------------*/
 
 typedef struct ov_event_app ov_event_app;
 
+/*----------------------------------------------------------------------------*/
+
 typedef struct ov_event_app_config {
 
+    ov_event_loop *loop;
     ov_io *io;
+
+    ov_socket_configuration command_and_control;
+
+    char name[OV_HOST_NAME_MAX];
+    char password_path[PATH_MAX];
 
     struct {
 
-        /* Socket level callbacks for non IO messages (if required) */
-
         void *userdata;
-
-        bool (*accept)(void *userdata, int listener, int connection);
-        void (*close)(void *userdata, int connection);
-        void (*connected)(void *userdata, int connection);
+        void (*connected)(void *userdata, int socket);
+        void (*close)(void *userdata, int socket);
 
     } callbacks;
 
@@ -60,23 +71,8 @@ typedef struct ov_event_app_config {
  */
 
 ov_event_app *ov_event_app_create(ov_event_app_config config);
-ov_event_app *ov_event_app_free(ov_event_app *self);
+ov_event_app *ov_event_app_free(ov_event_app *app);
 ov_event_app *ov_event_app_cast(const void *data);
-
-/*----------------------------------------------------------------------------*/
-
-int ov_event_app_open_listener(ov_event_app *self, ov_io_socket_config config);
-int ov_event_app_open_connection(ov_event_app *self,
-                                 ov_io_socket_config config);
-
-/*----------------------------------------------------------------------------*/
-
-bool ov_event_app_close(ov_event_app *self, int socket);
-
-/*----------------------------------------------------------------------------*/
-
-bool ov_event_app_send(ov_event_app *self, int socket,
-                       const ov_json_value *msg);
 
 /*
  *      ------------------------------------------------------------------------
@@ -86,34 +82,61 @@ bool ov_event_app_send(ov_event_app *self, int socket,
  *      ------------------------------------------------------------------------
  */
 
-/**
-    Standard register for event messages.
-
-    @param app          instance pointer
-    @param name         event name
-    @param callback     event callback, userdata will be the userdata set in
-                        config of ov_event_app.
-
-    NOTE If no event handler is set for some incoming event name, the input
-    JSON will be freed in ov_event_app. If some event callback is defined, that
-    callback MUST free the input JSON transported.
-*/
-bool ov_event_app_register(ov_event_app *app, const char *name, void *userdata,
-                           void (*callback)(void *userdata, const char *name,
-                                            int socket, ov_json_value *input));
+bool ov_event_app_push(ov_event_app *self, int socket, ov_json_value *msg);
 
 /*----------------------------------------------------------------------------*/
 
-/**
-    Standard deregister for event messages.
-
-    @param app          instance pointer
-    @param name         event name
-*/
-bool ov_event_app_deregister(ov_event_app *app, const char *name);
+bool ov_event_app_register(ov_event_app *self, 
+                              const char *name, 
+                              void *userdata,
+                              void (*callback)(void *userdata, const char *name,
+                                            int socket, const ov_json_value *input));
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_app_push(ov_event_app *self, int socket, ov_json_value *json);
+bool ov_event_app_enable_websocket_events(ov_event_app *self,
+                                       const char *domain,
+                                       const char *uri);
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_event_app_get_functions(const ov_event_app *self);
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      SOCKET FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+bool ov_event_app_close(ov_event_app *self, int socket);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_event_app_open_cc(ov_event_app *self, 
+    ov_io_socket_config config);
+
+/*----------------------------------------------------------------------------*/
+
+int ov_event_app_open_listener(ov_event_app *self, 
+    ov_io_socket_config config);
+
+/*----------------------------------------------------------------------------*/
+
+int ov_event_app_open_connection(ov_event_app *self, 
+    ov_io_socket_config config);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_event_app_send(ov_event_app *self, int socket, const ov_json_value *msg);
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_event_app_get_socket_data(ov_event_app *self, int socket);
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_event_app_get_clients(ov_event_app *self);
 
 #endif /* ov_event_app_h */

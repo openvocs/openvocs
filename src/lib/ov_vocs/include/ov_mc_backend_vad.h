@@ -51,6 +51,7 @@ typedef struct ov_mc_backend_vad_config {
     ov_vocs_db *db;
 
     ov_socket_configuration socket;
+    ov_socket_configuration cc;
 
     ov_vad_config vad;
 
@@ -61,6 +62,12 @@ typedef struct ov_mc_backend_vad_config {
         void (*vad)(void *userdata, const char *loop, bool on);
 
     } callbacks;
+
+    struct {
+
+        char path[PATH_MAX];
+
+    } password;
 
 } ov_mc_backend_vad_config;
 

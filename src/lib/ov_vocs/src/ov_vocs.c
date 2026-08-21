@@ -41,7 +41,7 @@
 #include <ov_core/ov_event_async.h>
 #include <ov_core/ov_event_session.h>
 #include <ov_core/ov_cluster.h>
-#include <ov_core/ov_event_broker.h>
+#include <ov_core/ov_event_app.h>
 #include <ov_core/ov_socket_storage.h>
 
 #include <ov_os/ov_os.h>
@@ -78,14 +78,12 @@ struct ov_vocs {
 
     ov_dict *sessions; // sessions spanning over ice proxy and resmgr
     ov_dict *loops;    // loops aquired (name dict)
-    ov_event_broker *broker; // event broker;
+    ov_event_app *app; // event broker;
 
-    ov_socket_storage *connections;
     ov_cluster *cluster;
 
-    int broker_socket;
+    int socket;
 
-    ov_client_registry *client_registry;
     ov_timed *timed;
 };
 
@@ -232,7 +230,7 @@ static bool send_switch_loop_broadcast(ov_vocs *vocs, int socket,
     if (!vocs || !loop)
         goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *state = ov_vocs_permission_to_string(current);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -316,7 +314,7 @@ static bool send_switch_loop_user_broadcast(ov_vocs *vocs, int socket,
     if (!vocs || !loop)
         goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
     const char *client =
@@ -400,7 +398,7 @@ static bool send_switch_volume_user_broadcast(ov_vocs *vocs, int socket,
     if (!vocs || !loop)
         goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
     const char *client =
@@ -477,7 +475,7 @@ static bool send_talking_loop_broadcast(ov_vocs *vocs, int socket,
     if (!vocs || !loop)
         goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -599,7 +597,7 @@ static bool drop_connection(ov_vocs *vocs, int socket, bool frontend,
     if (!vocs)
         goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *session =
         ov_json_string_get(ov_json_get(data, "/" OV_KEY_SESSION));
 
@@ -631,8 +629,7 @@ static bool drop_connection(ov_vocs *vocs, int socket, bool frontend,
         .vocs = vocs, .socket = socket, .data = data};
 
     ov_dict_for_each(vocs->loops, &container, close_participation);
-
-    ov_socket_storage_drop(vocs->connections, socket);
+    ov_event_app_close(vocs->app, socket);
 
     return true;
 error:
@@ -647,13 +644,11 @@ static void cb_socket_close(void *userdata, int socket) {
     if (!vocs || socket < 0)
         goto error;
 
-    ov_json_value *data = ov_socket_storage_get(vocs->connections, socket);
+    ov_json_value *data = ov_event_app_get_socket_data(vocs->app, socket);
 
     if (data) {
         drop_connection(vocs, socket, true, true);
     }
-
-    ov_client_registry_unregister(vocs->client_registry, socket);
 
 error:
     return;
@@ -736,7 +731,7 @@ static void cb_backend_mixer_acquired(void *userdata, const char *uuid,
     if (0 == socket)
         goto drop_mixer_acquisition;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     ov_event_async_data adata = ov_event_async_unset(vocs->async, uuid);
     orig = adata.value;
@@ -954,7 +949,7 @@ static void cb_backend_mixer_join(void *userdata, const char *uuid,
         goto switch_off_loop;
 
     intptr_t socket = (intptr_t)ov_dict_get(vocs->sessions, session_id);
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -1103,7 +1098,7 @@ static void cb_backend_mixer_leave(void *userdata, const char *uuid,
     if (0 == socket)
         goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1196,7 +1191,7 @@ static void cb_backend_mixer_volume(void *userdata, const char *uuid,
     if (0 == socket)
         goto error;
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
 
@@ -1284,10 +1279,13 @@ static bool module_load_backend(ov_vocs *self) {
 
     OV_ASSERT(self);
 
+    self->config.module.backend.socket.cc = self->config.socket.cc;
     self->config.module.backend.io = self->config.io;
     self->config.module.backend.loop = self->config.loop;
     self->config.module.backend.callback.userdata = self;
     self->config.module.backend.callback.mixer.lost = cb_backend_mixer_lost;
+
+    strncat(self->config.module.backend.password.path, self->config.password.path, PATH_MAX -1);
 
     self->backend = ov_mc_backend_create(self->config.module.backend);
     if (!self->backend)
@@ -1414,7 +1412,7 @@ static void cb_frontend_session_created(
     OV_ASSERT(1 == array_size);
     OV_ASSERT(array);
 
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     char *key = strdup(session_id);
     if (!key)
@@ -1494,7 +1492,7 @@ static void cb_frontend_session_completed(void *userdata,
         goto error;
 
     intptr_t socket = (intptr_t)ov_dict_get(vocs->sessions, session_id);
-    data = ov_socket_storage_get(vocs->connections, socket);
+    data = ov_event_app_get_socket_data(vocs->app, socket);
 
     if (success && ov_json_is_true(ov_json_get(data, "/" OV_KEY_ICE))) {
         return;
@@ -1918,7 +1916,7 @@ static void cb_frontend_talk(void *userdata, const ov_response_state event,
         current = OV_VOCS_RECV;
     }
 
-    data = ov_socket_storage_get(vocs->connections, adata.socket);
+    data = ov_event_app_get_socket_data(vocs->app, adata.socket);
     set_loop_state_in_data(data, loop, current);
     const char *user = ov_json_string_get(ov_json_get(data, "/" OV_KEY_USER));
     const char *role = ov_json_string_get(ov_json_get(data, "/" OV_KEY_ROLE));
@@ -2019,6 +2017,9 @@ static bool module_load_frontend(ov_vocs *self) {
     OV_ASSERT(self);
 
     self->config.module.frontend.io = self->config.io;
+
+    self->config.module.frontend.socket.cc = self->config.socket.cc;
+    strncat(self->config.module.frontend.password.path, self->config.password.path, PATH_MAX -1);
 
     self->config.module.frontend.loop = self->config.loop;
     self->config.module.frontend.callback.userdata = self;
@@ -2576,6 +2577,9 @@ static bool module_load_sip(ov_vocs *self) {
     self->config.module.sip.loop = self->config.loop;
     self->config.module.sip.db = self->config.db;
 
+    self->config.module.sip.socket.cc = self->config.socket.cc;
+    strncat(self->config.module.sip.password.path, self->config.password.path, PATH_MAX -1);
+
     self->config.module.sip.callback.userdata = self;
     self->config.module.sip.callback.call.init = cb_call_init;
     self->config.module.sip.callback.call.new = cb_sip_new;
@@ -2605,6 +2609,9 @@ static bool module_load_sip_static(ov_vocs *self) {
     self->config.module.sip_static.loop = self->config.loop;
     self->config.module.sip_static.db = self->config.db;
 
+    self->config.module.sip.socket.cc = self->config.socket.cc;
+    strncat(self->config.module.sip.password.path, self->config.password.path, PATH_MAX -1);
+
     self->sip_static =
         ov_mc_backend_sip_static_create(self->config.module.sip_static);
     if (!self->sip_static)
@@ -2627,11 +2634,14 @@ static bool module_load_recorder(ov_vocs *self) {
 
     OV_ASSERT(self);
 
+    self->config.module.recorder.socket.cc = self->config.socket.cc;
     self->config.module.recorder.loop = self->config.loop;
     self->config.module.recorder.vocs_db = self->config.db;
     self->config.module.recorder.io = self->config.io,
     self->config.module.recorder.timeout.response_usec =
         self->config.timeout.response_usec;
+
+    strncat(self->config.module.recorder.password.path, self->config.password.path, PATH_MAX -1);
 
     self->recorder = ov_vocs_recorder_create(self->config.module.recorder);
     if (!self->recorder)
@@ -2703,6 +2713,9 @@ static bool module_load_vad(ov_vocs *self) {
     self->config.module.vad.loop = self->config.loop;
     self->config.module.vad.db = self->config.db;
     self->config.module.vad.io = self->config.io;
+
+    self->config.module.vad.cc = self->config.socket.cc;
+    strncat(self->config.module.vad.password.path, self->config.password.path, PATH_MAX -1);
 
     self->config.module.vad.callbacks.userdata = self;
     self->config.module.vad.callbacks.vad = io_vad;
@@ -2870,11 +2883,25 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
     vocs->magic_bytes = OV_VOCS_MAGIC_BYTES;
     vocs->config = config;
 
-    vocs->connections = ov_socket_storage_create();
-    if (!vocs->connections)
-        goto error;
+    ov_event_app_config app = (ov_event_app_config){
+        .loop = vocs->config.loop,
+        .io = vocs->config.io,
+        .command_and_control = vocs->config.socket.cc,
+    };
 
-    vocs->client_registry = ov_client_registry_create();
+    strncat(app.name, "VOCS-CORE", OV_HOST_NAME_MAX -1 );
+    strncat(app.password_path, vocs->config.password.path, PATH_MAX - 1);
+
+    vocs->app = ov_event_app_create(app);
+    if (!vocs->app) goto error;
+
+    vocs->socket = ov_event_app_open_listener(vocs->app, (ov_io_socket_config){
+        .socket = vocs->config.socket.events
+    });
+
+    if (-1 == vocs->socket){
+        ov_log_error("Failed to enable event socket for VOCS.");
+    }
 
     vocs->async = ov_event_async_store_create(
         (ov_event_async_store_config){.loop = config.loop});
@@ -2947,32 +2974,6 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
             config.trigger, "VOCS",
             (ov_event_trigger_data){.userdata = vocs,
                                     .process = process_trigger});
-
-    ov_event_broker_config broker_config = (ov_event_broker_config){
-        .loop = config.loop,
-        .io = config.io,
-        .registry = vocs->client_registry,
-        .connections = vocs->connections
-    };
-
-    if (0 != vocs->config.password.path[0])
-        strncpy(broker_config.password_path, vocs->config.password.path, PATH_MAX);
-
-    vocs->broker = ov_event_broker_create(broker_config);
-    if (!vocs->broker){
-        ov_log_error("Failed to create event broker.");
-        goto error;
-    }
-
-    vocs->broker_socket = ov_event_broker_open_listener(vocs->broker, (ov_io_socket_config){
-        .socket = vocs->config.socket.events
-    });
-
-    if (-1 == vocs->broker_socket) {
-
-        ov_log_error("Failed to create event broker socket.");
-
-    }
 
     if (!enable_websocket_function(vocs)) {
         ov_log_error("Failed to enable websocket.");
@@ -3070,7 +3071,7 @@ void *ov_vocs_free(void *self) {
 
     vocs->timed = ov_timed_free(vocs->timed);
 
-    vocs->client_registry = ov_client_registry_free(vocs->client_registry);
+    vocs->app = ov_event_app_free(vocs->app);
     vocs->backend = ov_mc_backend_free(vocs->backend);
     vocs->frontend = ov_mc_frontend_free(vocs->frontend);
     vocs->sip = ov_mc_backend_sip_free(vocs->sip);
@@ -3084,9 +3085,7 @@ void *ov_vocs_free(void *self) {
     vocs->async = ov_event_async_store_free(vocs->async);
     vocs->sessions = ov_dict_free(vocs->sessions);
     vocs->loops = ov_dict_free(vocs->loops);
-    vocs->broker = ov_event_broker_free(vocs->broker);
     vocs->broadcasts = ov_broadcast_registry_free(vocs->broadcasts);
-    vocs->connections = ov_socket_storage_free(vocs->connections);
     vocs->cluster = ov_cluster_free(vocs->cluster);
 
     self = ov_data_pointer_free(self);
@@ -3150,6 +3149,10 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val) {
     out.socket.events = ov_socket_configuration_from_json(events, 
         (ov_socket_configuration){0});
 
+    const ov_json_value *cc = ov_json_object_get(config, "cc");
+    out.socket.cc = ov_socket_configuration_from_json(cc, 
+        (ov_socket_configuration){0});
+
     return out;
 error:
     return (ov_vocs_config){0};
@@ -3162,5 +3165,5 @@ bool ov_vocs_enable_websocket_events(ov_vocs *vocs,
 
     if (!vocs || !domain || !uri) return false;
 
-    return ov_event_broker_enable_websocket_events(vocs->broker, domain, uri);
+    return ov_event_app_enable_websocket_events(vocs->app, domain, uri);
 }

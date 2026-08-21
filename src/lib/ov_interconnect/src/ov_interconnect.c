@@ -215,7 +215,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void event_mixer_register(void *userdata, const char *event_name,
-                                 int socket, ov_json_value *input) {
+                                 int socket, const ov_json_value *input) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
     if (!self || !event_name || !input)
@@ -236,10 +236,8 @@ static void event_mixer_register(void *userdata, const char *event_name,
 
     assign_mixer_to_loops(self, socket);
 
-    input = ov_json_value_free(input);
     return;
 error:
-    input = ov_json_value_free(input);
     return;
 }
 
@@ -275,7 +273,7 @@ static bool find_loop_by_mixer(const void *key, void *val, void *data) {
 /*----------------------------------------------------------------------------*/
 
 static void event_mixer_acquire(void *userdata, const char *event_name,
-                                int socket, ov_json_value *input) {
+                                int socket, const ov_json_value *input) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
     if (!self || !event_name || !input)
@@ -308,17 +306,15 @@ static void event_mixer_acquire(void *userdata, const char *event_name,
         ov_log_error("Aquire not successfull - TBD");
     }
 
-    ov_json_value_free(input);
     return;
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void event_mixer_join(void *userdata, const char *event_name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
     if (!self || !event_name || !input)
@@ -348,10 +344,8 @@ static void event_mixer_join(void *userdata, const char *event_name, int socket,
         ov_log_error("join not successfull - TBD");
     }
 
-    ov_json_value_free(input);
     return;
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -364,7 +358,7 @@ error:
  */
 
 static void event_register_response(ov_interconnect *self, int socket,
-                                    ov_json_value *input) {
+                                    const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -401,18 +395,16 @@ static void event_register_response(ov_interconnect *self, int socket,
         ov_json_value_free(out);
     }
 
-    ov_json_value_free(input);
 
     return;
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void event_signaling_register(void *userdata, const char *event_name,
-                                     int socket, ov_json_value *input) {
+                                     int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -466,13 +458,11 @@ send_response:
 
     ov_event_app_send(self->app.signaling, socket, out);
     ov_json_value_free(out);
-    ov_json_value_free(input);
 
     return;
 error:
     ov_json_value_free(out);
     ov_json_value_free(val);
-    ov_json_value_free(input);
     return;
 }
 
@@ -509,7 +499,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void event_connect_media_response(ov_interconnect *self, int socket,
-                                         ov_json_value *input) {
+                                         const ov_json_value *input) {
 
     ov_interconnect_session *session = NULL;
 
@@ -579,10 +569,8 @@ static void event_connect_media_response(ov_interconnect *self, int socket,
 
     }
 
-    ov_json_value_free(input);
     return;
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -590,7 +578,7 @@ error:
 
 static void event_signaling_connect_media(void *userdata,
                                           const char *event_name, int socket,
-                                          ov_json_value *input) {
+                                          const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -683,13 +671,11 @@ send_response:
 
     ov_event_app_send(self->app.signaling, socket, out);
     ov_json_value_free(out);
-    ov_json_value_free(input);
 
     return;
 error:
     ov_json_value_free(out);
     ov_json_value_free(val);
-    ov_json_value_free(input);
     return;
 }
 
@@ -742,7 +728,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void event_connect_loops_response(ov_interconnect *self, int socket,
-                                         ov_json_value *input) {
+                                         const ov_json_value *input) {
 
     if (!self || !socket || !input)
         goto error;
@@ -767,11 +753,9 @@ static void event_connect_loops_response(ov_interconnect *self, int socket,
         goto error;
     }
 
-    ov_json_value_free(input);
     return;
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -831,7 +815,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void event_signaling_connect_loops(void *userdata, const char *name,
-                                          int socket, ov_json_value *input) {
+                                          int socket, const ov_json_value *input) {
 
     ov_json_value *out = NULL;
     ov_json_value *val = NULL;
@@ -897,12 +881,10 @@ send_response:
 
     ov_event_app_send(self->app.signaling, socket, out);
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 error:
     ov_json_value_free(out);
     ov_json_value_free(val);
-    ov_json_value_free(input);
     return;
 }
 
@@ -1369,16 +1351,34 @@ ov_interconnect *ov_interconnect_create(ov_interconnect_config config) {
     if (!self->dtls)
         goto error;
 
-    self->app.signaling = ov_event_app_create(
-        (ov_event_app_config){.io = config.io,
-                              .callbacks.userdata = self,
-                              .callbacks.close = cb_signaling_close,
-                              .callbacks.connected = cb_signaling_connected});
+    ov_event_app_config app_config =
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = self->config.socket.cc,
+            .callbacks.userdata = self,
+            .callbacks.connected = cb_signaling_connected,
+            .callbacks.close = cb_signaling_close};
 
-    self->app.mixer = ov_event_app_create(
-        (ov_event_app_config){.io = config.io,
-                              .callbacks.userdata = self,
-                              .callbacks.close = cb_mixer_close});
+    strncat(app_config.name, "INTERCONNECT", OV_HOST_NAME_MAX -1);
+
+    self->app.signaling = ov_event_app_create(app_config);
+    if (!self->app.signaling)
+        goto error;
+
+    app_config =
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = self->config.socket.cc,
+            .callbacks.userdata = self,
+            .callbacks.close = cb_mixer_close};
+
+    strncat(app_config.name, "INTERCONNECT MIXER", OV_HOST_NAME_MAX -1);
+
+    self->app.mixer = ov_event_app_create(app_config);
+    if (!self->app.mixer)
+        goto error;
 
     ov_dict_config d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_interconnect_loop_free;
@@ -1500,6 +1500,11 @@ ov_interconnect_config_from_json(const ov_json_value *val) {
 
     config.socket.signaling = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET "/" OV_KEY_SIGNALING),
+        (ov_socket_configuration){
+            .type = TLS, .host = "localhost", .port = 12345});
+
+    config.socket.cc = ov_socket_configuration_from_json(
+        ov_json_get(conf, "/" OV_KEY_SOCKET "/cc"),
         (ov_socket_configuration){
             .type = TLS, .host = "localhost", .port = 12345});
 

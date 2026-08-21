@@ -71,7 +71,7 @@ static void cb_socket_close(void *userdata, int socket) {
 /*---------------------------------------------------------------------------*/
 
 static void cb_register(void *userdata, const char *name, int socket,
-                        ov_json_value *input) {
+                        const ov_json_value *input) {
 
     ov_mc_backend_vad *self = ov_mc_backend_vad_cast(userdata);
     if (!self || !name || !socket || !input)
@@ -97,14 +97,13 @@ static void cb_register(void *userdata, const char *name, int socket,
     out = ov_json_value_free(out);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static void cb_loops(void *userdata, const char *name, int socket,
-                     ov_json_value *input) {
+                     const ov_json_value *input) {
 
     ov_mc_backend_vad *self = ov_mc_backend_vad_cast(userdata);
     if (!self || !name || !socket || !input)
@@ -122,14 +121,13 @@ static void cb_loops(void *userdata, const char *name, int socket,
     out = ov_json_value_free(out);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*---------------------------------------------------------------------------*/
 
 static void cb_vad(void *userdata, const char *name, int socket,
-                   ov_json_value *input) {
+                   const ov_json_value *input) {
 
     bool vad_on = false;
 
@@ -151,7 +149,6 @@ static void cb_vad(void *userdata, const char *name, int socket,
                                    vad_on);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -209,11 +206,18 @@ ov_mc_backend_vad *ov_mc_backend_vad_create(ov_mc_backend_vad_config config) {
     self->magic_bytes = OV_MC_BACKEND_VAD_MAGIC_BYTES;
     self->config = config;
 
-    self->app = ov_event_app_create(
-        (ov_event_app_config){.io = config.io,
-                              .callbacks.userdata = self,
-                              .callbacks.close = cb_socket_close});
+    ov_event_app_config app_config =
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .command_and_control = config.cc,
+            .callbacks.userdata = self,
+            .callbacks.close = cb_socket_close};
 
+    strncat(app_config.name, "VAD BACKEND", OV_HOST_NAME_MAX -1);
+    strncat(app_config.password_path, config.password.path, PATH_MAX -1);
+
+    self->app = ov_event_app_create(app_config);
     if (!self->app)
         goto error;
 

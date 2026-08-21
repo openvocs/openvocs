@@ -74,8 +74,8 @@ struct ov_ice_proxy_vocs_app {
  */
 
 static void cb_event_ice_session_create(void *userdata, const char *name, 
-                                        const int socket,
-                                        ov_json_value *input) {
+                                        int socket,
+                                        const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -135,7 +135,6 @@ static void cb_event_ice_session_create(void *userdata, const char *name,
 
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
-    ov_json_value_free(input);
 
     session = ov_ice_proxy_vocs_session_data_clear(&session);
     return;
@@ -150,15 +149,14 @@ error_response:
 error:
     out = ov_json_value_free(out);
     session = ov_ice_proxy_vocs_session_data_clear(&session);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_drop(void *userdata, const char *name, 
-                                        const int socket,
-                                        ov_json_value *input){
+                                         int socket,
+                                        const ov_json_value *input){
 
     UNUSED(name);
 
@@ -201,15 +199,14 @@ static void cb_event_ice_session_drop(void *userdata, const char *name,
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_update(void *userdata, const char *name, 
-                                        const int socket,
-                                        ov_json_value *input) {
+                                         int socket,
+                                        const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -285,7 +282,6 @@ static void cb_event_ice_session_update(void *userdata, const char *name,
 
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
-    ov_json_value_free(input);
     sdp = ov_sdp_session_free(sdp);
     return;
 
@@ -297,15 +293,14 @@ error_response:
     out = ov_json_value_free(out);
 
 error:
-    ov_json_value_free(input);
     return ;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_session_state(void *userdata, const char *name, 
-                                        const int socket,
-                                        ov_json_value *input) {
+                                        int socket,
+                                        const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -314,15 +309,14 @@ static void cb_event_ice_session_state(void *userdata, const char *name,
         goto error;
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_candidate(void *userdata, const char *name, 
-                                        const int socket,
-                                        ov_json_value *input) {
+                                        int socket,
+                                        const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -380,7 +374,6 @@ static void cb_event_ice_candidate(void *userdata, const char *name,
 
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
     return;
 
 error_response:
@@ -391,15 +384,14 @@ error_response:
     out = ov_json_value_free(out);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_ice_end_of_candidates(void *userdata, const char *name, 
-                                        const int socket,
-                                        ov_json_value *input) {
+                                        int socket,
+                                        const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -442,7 +434,6 @@ static void cb_event_ice_end_of_candidates(void *userdata, const char *name,
 
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
     return;
 
 error_response:
@@ -453,15 +444,14 @@ error_response:
     out = ov_json_value_free(out);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_talk(void *userdata, const char *name, 
-                                        const int socket,
-                                        ov_json_value *input) {
+                                        int socket,
+                                        const ov_json_value *input) {
 
     UNUSED(name);
 
@@ -525,7 +515,6 @@ static void cb_event_talk(void *userdata, const char *name,
 
     ov_event_app_send(self->app, socket, out);
     out = ov_json_value_free(out);
-    input = ov_json_value_free(input);
     return;
 
 error_response:
@@ -536,7 +525,6 @@ error_response:
     out = ov_json_value_free(out);
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
@@ -718,11 +706,16 @@ ov_ice_proxy_vocs_app_create(ov_ice_proxy_vocs_app_config config) {
     app->proxy = ov_ice_proxy_vocs_create(config.proxy);
 
     ov_event_app_config app_config = (ov_event_app_config){
+        .loop = config.loop,
         .io = config.io,
+        .command_and_control = config.cc,
         .callbacks.userdata = app,
         .callbacks.close = cb_close,
         .callbacks.connected = cb_connected
     };
+
+    strncat(app_config.password_path, config.password.path, PATH_MAX - 1);
+    strncat(app_config.name, "ICE PROXY", OV_HOST_NAME_MAX - 1);
 
     app->app = ov_event_app_create(app_config);
     if (!app->app) goto error;
@@ -841,6 +834,9 @@ ov_ice_proxy_vocs_app_config_from_json(const ov_json_value *v) {
     config.manager = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_MANAGER), (ov_socket_configuration){0});
 
+    config.manager = ov_socket_configuration_from_json(
+        ov_json_get(conf, "/cc"), (ov_socket_configuration){0});
+
     ov_json_value *limits = ov_json_object_get(conf, OV_KEY_LIMITS);
 
     config.timer.io_timeout_usec =
@@ -851,6 +847,12 @@ ov_ice_proxy_vocs_app_config_from_json(const ov_json_value *v) {
         ov_json_object_get(limits, OV_KEY_RECONNECT_TIMEOUT_USEC));
     config.timer.client_connect_sec =
         ov_json_number_get(ov_json_object_get(limits, OV_KEY_CLIENT));
+
+    const char *password_path = ov_json_string_get(
+        ov_json_get(conf, "/password/path"));
+
+    if (password_path)
+        strncpy(config.password.path, password_path, PATH_MAX);
 
     return config;
 error:

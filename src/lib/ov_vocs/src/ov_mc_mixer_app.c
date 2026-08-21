@@ -102,21 +102,28 @@ static void cb_connected(void *userdata, int socket) {
  */
 
 static void cb_event_register(void *userdata, const char *name, int socket,
-                              ov_json_value *input) {
+                              const ov_json_value *input) {
 
     ov_mc_mixer_app *app = ov_mc_mixer_app_cast(userdata);
     if (!app || !name || socket < 0 || !input)
         goto error;
 
+    ov_socket_configuration s = ov_socket_configuration_from_json(
+        ov_json_get(input, "/response/cc"), (ov_socket_configuration){0});
+
+    if (0 != s.host[0])
+        ov_event_app_open_cc(app->app, (ov_io_socket_config){
+            .socket = s
+        });
+
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_configure(void *userdata, const char *name, int socket,
-                               ov_json_value *input) {
+                               const ov_json_value *input) {
 
     ov_mc_mixer_app *app = ov_mc_mixer_app_cast(userdata);
     if (!app || !name || socket < 0 || !input)
@@ -133,14 +140,13 @@ static void cb_event_configure(void *userdata, const char *name, int socket,
     }
 
 error:
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_acquire(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     /* acquire the mixer with some user and forward data */
 
@@ -195,14 +201,13 @@ send_response:
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_forward(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     /* acquire the mixer with some user and forward data */
     // char *str = ov_json_value_to_string(input);
@@ -262,13 +267,12 @@ send_response:
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_release(void *userdata, const char *name, int socket,
-                             ov_json_value *input) {
+                             const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -298,14 +302,13 @@ static void cb_event_release(void *userdata, const char *name, int socket,
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_join(void *userdata, const char *name, int socket,
-                          ov_json_value *input) {
+                          const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -348,14 +351,13 @@ send_response:
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_leave(void *userdata, const char *name, int socket,
-                           ov_json_value *input) {
+                           const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -389,14 +391,13 @@ static void cb_event_leave(void *userdata, const char *name, int socket,
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_volume(void *userdata, const char *name, int socket,
-                            ov_json_value *input) {
+                            const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -427,14 +428,13 @@ static void cb_event_volume(void *userdata, const char *name, int socket,
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_shutdown(void *userdata, const char *name, int socket,
-                              ov_json_value *input) {
+                              const ov_json_value *input) {
 
     ov_mc_mixer_app *app = ov_mc_mixer_app_cast(userdata);
     if (!app || !name || socket < 0 || !input)
@@ -453,7 +453,6 @@ static void cb_event_shutdown(void *userdata, const char *name, int socket,
     /* no response to shutdown */
 
 error:
-    ov_json_value_free(input);
     exit(EXIT_SUCCESS);
     return;
 }
@@ -461,7 +460,7 @@ error:
 /*----------------------------------------------------------------------------*/
 
 static void cb_event_state(void *userdata, const char *name, int socket,
-                           ov_json_value *input) {
+                           const ov_json_value *input) {
 
     ov_json_value *out = NULL;
 
@@ -485,7 +484,6 @@ static void cb_event_state(void *userdata, const char *name, int socket,
 
 error:
     ov_json_value_free(out);
-    ov_json_value_free(input);
     return;
 }
 
@@ -566,20 +564,21 @@ ov_mc_mixer_app *ov_mc_mixer_app_create(ov_mc_mixer_app_config config) {
     app->magic_bytes = OV_MC_MIXER_APP_MAGIC_BYTES;
     app->config = config;
 
-    ov_event_app_config app_config = (ov_event_app_config){
+    ov_event_app_config app_config =
+        (ov_event_app_config){
+            .loop = config.loop,
+            .io = config.io,
+            .callbacks.userdata = app,
+            .callbacks.connected = cb_connected,
+            .callbacks.close = cb_close};
 
-        .io = config.io,
-        .callbacks.userdata = app,
-        .callbacks.close = cb_close,
-        .callbacks.connected = cb_connected
-
-    };
-
-    ov_id_fill_with_uuid(app->uuid);
+    strncat(app_config.name, "MIXER", OV_HOST_NAME_MAX -1);
 
     app->app = ov_event_app_create(app_config);
     if (!app->app)
         goto error;
+
+    ov_id_fill_with_uuid(app->uuid);
 
     if (!register_app_callbacks(app))
         goto error;
