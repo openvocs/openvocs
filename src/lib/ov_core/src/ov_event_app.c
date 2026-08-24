@@ -561,6 +561,11 @@ static void cb_connected_cc(void *userdata, int connection){
 
     self->cc = connection;
     ov_log_info("Connection to CC established.");
+
+    ov_json_value *out = ov_event_api_message_create("Register", NULL, 0);
+    send_to_cc(self, connection, out);
+    out = ov_json_value_free(out);
+
     return;
 }
 
@@ -704,6 +709,11 @@ static void send_to_cc(ov_event_app *self, int socket, const ov_json_value *msg)
     ov_json_object_set(out, "socket", ov_json_number(socket));
     ov_json_object_set(out, "uuid", ov_json_string(self->id));
     ov_json_object_set(out, "pid", ov_json_number(self->pid));
+    ov_json_object_set(out, "name", ov_json_string(self->config.name));
+
+    char *timestamp = ov_timestamp(false);
+    ov_json_object_set(out, "time", ov_json_string(timestamp));
+    timestamp = ov_data_pointer_free(timestamp);
 
     if (-1 != self->cc){
 
