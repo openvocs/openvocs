@@ -422,7 +422,10 @@ export default class ov_RBAC_Node extends HTMLElement {
                 let port = null;
                 if (DEFAULT_MULTICAST_ADDRESS && DEFAULT_MULTICAST_ADDRESS !== "") {
                     port = await ov_DB.get_highest_multicast_port();
-                    port = MIN_MULTICAST_PORT > port ? parseInt(MIN_MULTICAST_PORT) + 1 : port + 1;
+                    if (port)
+                        port = parseInt(port);
+                    let current_highest_port = parseInt(MIN_MULTICAST_PORT);
+                    port = current_highest_port > port ? current_highest_port + 1 : port + 1;
                 }
                 if (port > 65535) {
                     port = null;
