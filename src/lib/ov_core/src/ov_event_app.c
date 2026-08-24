@@ -38,6 +38,7 @@
 #include <ov_base/ov_dict.h>
 #include <ov_base/ov_string.h>
 #include <ov_base/ov_file.h>
+#include <ov_base/ov_time.h>
 #include <ov_base/ov_error_codes.h>
 
 #include <unistd.h>
@@ -117,6 +118,37 @@ static void *event_free(void *self){
 
     event = ov_data_pointer_free(event);
     return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void send_to_cc(ov_event_app *self, int socket, const ov_json_value *msg){
+
+    ov_json_value *out = ov_json_object();
+    ov_json_value *val = NULL;
+    ov_json_value_copy((void**)&val, msg);
+    ov_json_object_set(out, "message", val);
+    ov_json_object_set(out, "socket", ov_json_number(socket));
+    ov_json_object_set(out, "uuid", ov_json_string(self->id));
+    ov_json_object_set(out, "pid", ov_json_number(self->pid));
+    ov_json_object_set(out, "name", ov_json_string(self->config.name));
+
+    char *timestamp = ov_timestamp(false);
+    ov_json_object_set(out, "time", ov_json_string(timestamp));
+    timestamp = ov_data_pointer_free(timestamp);
+
+    if (-1 != self->cc){
+
+        char *str = ov_json_value_to_string(out);
+        ov_io_send(self->config.io, self->cc, (ov_memory_pointer){
+            .start = (uint8_t*) str,
+            .length = strlen(str)
+        });
+        ov_data_pointer_free(str);
+    }
+
+    ov_json_value_free(out);
+    return;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -699,35 +731,6 @@ ov_event_app *ov_event_app_cast(const void *data){
  *
  *      ------------------------------------------------------------------------
  */
-
-static void send_to_cc(ov_event_app *self, int socket, const ov_json_value *msg){
-
-    ov_json_value *out = ov_json_object();
-    ov_json_value *val = NULL;
-    ov_json_value_copy((void**)&val, msg);
-    ov_json_object_set(out, "message", val);
-    ov_json_object_set(out, "socket", ov_json_number(socket));
-    ov_json_object_set(out, "uuid", ov_json_string(self->id));
-    ov_json_object_set(out, "pid", ov_json_number(self->pid));
-    ov_json_object_set(out, "name", ov_json_string(self->config.name));
-
-    char *timestamp = ov_timestamp(false);
-    ov_json_object_set(out, "time", ov_json_string(timestamp));
-    timestamp = ov_data_pointer_free(timestamp);
-
-    if (-1 != self->cc){
-
-        char *str = ov_json_value_to_string(out);
-        ov_io_send(self->config.io, self->cc, (ov_memory_pointer){
-            .start = (uint8_t*) str,
-            .length = strlen(str)
-        });
-        ov_data_pointer_free(str);
-    }
-
-    ov_json_value_free(out);
-    return;
-}
 
 /*----------------------------------------------------------------------------*/
 
