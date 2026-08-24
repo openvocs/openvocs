@@ -114,8 +114,7 @@ bool ov_event_app_close(ov_event_app *self, int socket);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_app_open_cc(ov_event_app *self, 
-    ov_io_socket_config config);
+bool ov_event_app_connect_cc(ov_event_app *self, ov_socket_configuration config);
 
 /*----------------------------------------------------------------------------*/
 

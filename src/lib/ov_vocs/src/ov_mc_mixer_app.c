@@ -112,9 +112,7 @@ static void cb_event_register(void *userdata, const char *name, int socket,
         ov_json_get(input, "/response/cc"), (ov_socket_configuration){0});
 
     if (0 != s.host[0])
-        ov_event_app_open_cc(app->app, (ov_io_socket_config){
-            .socket = s
-        });
+        ov_event_app_connect_cc(app->app, s);
 
 error:
     return;

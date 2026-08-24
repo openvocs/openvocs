@@ -31,6 +31,7 @@
 #include "../include/ov_event_api.h"
 #include "../include/ov_socket_storage.h"
 #include "../include/ov_client_registry.h"
+#include "../include/ov_event_cc.h"
 
 #include <ov_base/ov_json_io_buffer.h>
 #include <ov_base/ov_node.h>
@@ -53,17 +54,14 @@ struct ov_event_app {
 
     uint16_t magic_bytes;
     ov_event_app_config config;
-
-    ov_id id;
-    pid_t pid;
+    ov_event_cc *cc;
 
     ov_dict *events;
+
     ov_json_io_buffer *json_io_buffer;
 
     ov_client_registry *registry;
     ov_socket_storage *connections;
-
-    int cc;
 
 };
 
@@ -124,30 +122,7 @@ static void *event_free(void *self){
 
 static void send_to_cc(ov_event_app *self, int socket, const ov_json_value *msg){
 
-    ov_json_value *out = ov_json_object();
-    ov_json_value *val = NULL;
-    ov_json_value_copy((void**)&val, msg);
-    ov_json_object_set(out, "message", val);
-    ov_json_object_set(out, "socket", ov_json_number(socket));
-    ov_json_object_set(out, "uuid", ov_json_string(self->id));
-    ov_json_object_set(out, "pid", ov_json_number(self->pid));
-    ov_json_object_set(out, "name", ov_json_string(self->config.name));
-
-    char *timestamp = ov_timestamp(false);
-    ov_json_object_set(out, "time", ov_json_string(timestamp));
-    timestamp = ov_data_pointer_free(timestamp);
-
-    if (-1 != self->cc){
-
-        char *str = ov_json_value_to_string(out);
-        ov_io_send(self->config.io, self->cc, (ov_memory_pointer){
-            .start = (uint8_t*) str,
-            .length = strlen(str)
-        });
-        ov_data_pointer_free(str);
-    }
-
-    ov_json_value_free(out);
+    ov_event_cc_log(self->cc, socket, msg);
     return;
 }
 
@@ -542,6 +517,18 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+static void json_io_failure(void *userdata, int socket){
+
+    ov_event_app *self = ov_event_app_cast(userdata);
+    if (!self) goto error;
+
+    ov_io_close(self->config.io, socket);
+error:
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
 static void json_io_success(void *userdata, int socket, ov_json_value *msg){
 
     ov_event_app *self = ov_event_app_cast(userdata);
@@ -551,18 +538,6 @@ static void json_io_success(void *userdata, int socket, ov_json_value *msg){
     return;
 error:
     ov_json_value_free(msg);
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void json_io_failure(void *userdata, int socket){
-
-    ov_event_app *self = ov_event_app_cast(userdata);
-    if (!self) goto error;
-
-    ov_io_close(self->config.io, socket);
-error:
     return;
 }
 
@@ -585,50 +560,6 @@ error:
     return false;
 }
 
-/*----------------------------------------------------------------------------*/
-
-static void cb_connected_cc(void *userdata, int connection){
-
-    ov_event_app *self = ov_event_app_cast(userdata);
-
-    self->cc = connection;
-    ov_log_info("Connection to CC established.");
-
-    ov_json_value *out = ov_event_api_message_create("Register", NULL, 0);
-    send_to_cc(self, connection, out);
-    out = ov_json_value_free(out);
-
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
-static bool cb_io_cc(void *userdata, int connection, const char *domain, 
-    const ov_memory_pointer buffer){
-
-    UNUSED(domain);
-
-    ov_event_app *self = ov_event_app_cast(userdata);
-    return ov_json_io_buffer_push(self->json_io_buffer, connection, buffer);
-}
-
-/*----------------------------------------------------------------------------*/
-
-static void cb_close_cc(void *userdata, int socket){
-
-    UNUSED(socket);
-
-    ov_event_app *self = ov_event_app_cast(userdata);
-
-    self->cc = -1;
-    ov_log_error("Connection to CC lost.");
-
-    if (self->config.callbacks.close)
-        self->config.callbacks.close(self->config.callbacks.userdata, socket);
-
-    return;
-}
-
 /*
  *      ------------------------------------------------------------------------
  *
@@ -648,9 +579,6 @@ ov_event_app *ov_event_app_create(ov_event_app_config config){
 
     self->magic_bytes = OV_EVENT_APP_MAGIC_BYTES;
     self->config = config;
-
-    ov_id_fill_with_uuid(self->id);
-    self->pid = getpid();
 
     ov_dict_config d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = event_free;
@@ -675,18 +603,18 @@ ov_event_app *ov_event_app_create(ov_event_app_config config){
 
     self->registry = ov_client_registry_create();
 
-    if (0 != self->config.command_and_control.host[0]){
+    ov_event_cc_config cc = (ov_event_cc_config){
+        .loop = config.loop,
+        .io = config.io
+    };
 
-        self->cc = ov_io_open_connection(self->config.io,
-            (ov_io_socket_config){
-                .auto_reconnect = true,
-                .socket = self->config.command_and_control,
-                .callbacks.userdata = self,
-                .callbacks.accept = NULL,
-                .callbacks.io = cb_io_cc,
-                .callbacks.close = cb_close_cc,
-                .callbacks.connected = cb_connected_cc
-            });
+    strncat(cc.name, self->config.name, OV_HOST_NAME_MAX -1);
+
+    self->cc = ov_event_cc_create(cc);
+    if (!self->cc) goto error;
+
+    if (0 != self->config.command_and_control.host[0]){
+        ov_event_cc_connect(self->cc, self->config.command_and_control);
     }
 
     return self;
@@ -943,22 +871,11 @@ bool ov_event_app_close(ov_event_app *self, int socket){
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_app_open_cc(ov_event_app *self, 
-    ov_io_socket_config config){
+bool ov_event_app_connect_cc(ov_event_app *self, 
+    ov_socket_configuration config){
 
     if (!self) goto error;
-
-    if (self->cc > 0)
-        goto error;
-
-    config.callbacks.userdata = self,
-    config.callbacks.accept = NULL;
-    config.callbacks.connected = cb_connected_cc;
-    config.callbacks.io = cb_io_cc;
-    config.callbacks.close = cb_close_cc;
-
-    self->cc = ov_io_open_listener(self->config.io, config);
-    return true;
+    return ov_event_cc_connect(self->cc, config);
 error:
     return false;
 }
