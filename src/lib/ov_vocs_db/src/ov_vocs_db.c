@@ -4580,7 +4580,7 @@ bool ov_vocs_db_remove_permission(ov_vocs_db *self,
     if (!loop)
         goto done;
 
-    ov_json_value *sip = ov_json_object_get(loop, "/" OV_KEY_SIP);
+    ov_json_value *sip = ov_json_object_get(loop, OV_KEY_SIP);
     if (!sip)
         goto done;
 
