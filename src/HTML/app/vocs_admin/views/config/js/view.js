@@ -508,10 +508,10 @@ async function permit_whitelist_rule(id, caller, callee, errors) {
 async function permit_whitelist_rule_set(loop_id, rule_set, errors) {
     let sip = Object.create(rule_set);
     let sip_error = false;
-    for (let [index, rule] of rule_set.whitelist.entries()) {
+    for (let [index, rule] of rule_set.entries()) {
         let result = await permit_whitelist_rule(loop_id, rule.caller, rule.callee, errors);
         if (!result) {
-            sip.whitelist.splice(index, 1);
+            sip.splice(index, 1);
             sip_error = true;
         }
     }
@@ -547,6 +547,7 @@ async function update_on_server(type, orig, update, scope, errors) {
     if (update[collection])
         for (let id of Object.keys(update[collection])) {
             let password;
+            let white_list = update[collection][id].sip && update[collection][id].sip.whitelist ? update[collection][id].sip.whitelist : [];
             if (!(orig[collection] && orig[collection][id])) {
                 result = await ov_DB.create(type, id, scope, orig.id);
                 if (!result.updated) {
@@ -557,14 +558,18 @@ async function update_on_server(type, orig, update, scope, errors) {
                     password = update[collection][id].password;
                     delete update[collection][id].password;
                 }
+                if (white_list.length)
+                    update[collection][id].sip.whitelist = [];
                 result = await ov_DB.update(type, update[collection][id]);
                 if (!result.updated) {
                     errors.push("Failed to update " + type + " " + id + ": " + result.error.description);
                     continue;
                 }
-                if (type === "loop" && SIP_ONLINE && update[collection][id].sip && update[collection][id].sip.whitelist)
-                    await permit_whitelist_rule_set(id, update[collection][id].sip, errors);
+                if (type === "loop" && SIP_ONLINE && white_list.length)
+                    await permit_whitelist_rule_set(id, white_list, errors);
             } else if (!deep_equal(orig[collection][id], update[collection][id])) {
+                if (white_list.length)
+                    update[collection][id].sip.whitelist = orig[collection][id].sip ? orig[collection][id].sip.whitelist : [];
                 result = await ov_DB.update(type, update[collection][id]);
                 if (!result.updated) {
                     errors.push("Failed to update " + type + " " + id + ": " + result.error.description);
@@ -572,16 +577,16 @@ async function update_on_server(type, orig, update, scope, errors) {
                 }
                 if (type === "loop" && SIP_ONLINE) {
                     if (!orig[collection][id].sip) {
-                        if (update[collection][id].sip && update[collection][id].sip.whitelist)
-                            await permit_whitelist_rule_set(id, update[collection][id].sip, errors);
+                        if (white_list.length)
+                            await permit_whitelist_rule_set(id, white_list, errors);
                     } else if (!update[collection][id].sip) {
                         for (let orig_rule of orig[collection][id].sip.whitelist)
                             await revoke_whitelist_rule(id, orig_rule.caller, orig_rule.callee, errors);
-                    } else if (!deep_equal(orig[collection][id].sip.whitelist, update[collection][id].sip.whitelist)) {
+                    } else if (!deep_equal(orig[collection][id].sip.whitelist, white_list)) {
                         for (let orig_rule of orig[collection][id].sip.whitelist)
-                            if (!contains_whitelist_rule(update[collection][id].sip.whitelist, orig_rule))
+                            if (!contains_whitelist_rule(white_list, orig_rule))
                                 await revoke_whitelist_rule(id, orig_rule.caller, orig_rule.callee, errors);
-                        for (let new_rule of update[collection][id].sip.whitelist)
+                        for (let new_rule of white_list)
                             if (!contains_whitelist_rule(orig[collection][id].sip.whitelist, new_rule))
                                 await permit_whitelist_rule(id, new_rule.caller, new_rule.callee, errors);
                     }
@@ -596,7 +601,7 @@ async function update_on_server(type, orig, update, scope, errors) {
         }
 }
 
-export function no_admin(){
+export function no_admin() {
     DOM.no_admin.style.display = "flex";
     DOM.config_name.style.display = "none";
     DOM.save_button.style.display = "none";
@@ -629,7 +634,7 @@ export function render(domain_data, page) {
     }
     domain = structuredClone(orig_domain);
     let user = ov_Websockets.user();
-    
+
     let domain_name = domain.name ? domain.name : user.domain;
     if (domain_name)
         DOM.config_domain_name.innerText = domain_name;
