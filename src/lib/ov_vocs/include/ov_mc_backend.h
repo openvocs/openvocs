@@ -72,7 +72,6 @@ typedef struct ov_mc_backend_config {
     struct {
 
         ov_socket_configuration manager; // manager liege socket
-        ov_socket_configuration cc;
 
     } socket;
 
@@ -254,5 +253,7 @@ bool ov_mc_backend_get_session_state(ov_mc_backend *self, const char *uuid,
                                      ov_mc_backend_cb_state callback);
 
 /*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_connect_cc(ov_mc_backend *self, ov_io_socket_config config);
 
 #endif /* ov_mc_backend_h */

@@ -47,8 +47,6 @@ typedef struct ov_event_app_config {
     ov_event_loop *loop;
     ov_io *io;
 
-    ov_socket_configuration command_and_control;
-
     char name[OV_HOST_NAME_MAX];
     char password_path[PATH_MAX];
 
@@ -105,16 +103,22 @@ ov_json_value *ov_event_app_get_functions(const ov_event_app *self);
 /*
  *      ------------------------------------------------------------------------
  *
+ *      COMMAND AND CONTROL FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+bool ov_event_app_connect_cc(ov_event_app *self, ov_io_socket_config config);
+
+/*
+ *      ------------------------------------------------------------------------
+ *
  *      SOCKET FUNCTIONS
  *
  *      ------------------------------------------------------------------------
  */
 
 bool ov_event_app_close(ov_event_app *self, int socket);
-
-/*----------------------------------------------------------------------------*/
-
-bool ov_event_app_connect_cc(ov_event_app *self, ov_socket_configuration config);
 
 /*----------------------------------------------------------------------------*/
 

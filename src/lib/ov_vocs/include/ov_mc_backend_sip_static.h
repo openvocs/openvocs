@@ -52,8 +52,6 @@ typedef struct ov_mc_backend_sip_static_config {
     struct {
 
         ov_socket_configuration manager; // manager liege socket
-        ov_socket_configuration cc;
-
     } socket;
 
     struct {
@@ -82,5 +80,9 @@ ov_mc_backend_sip_static *ov_mc_backend_sip_static_cast(const void *self);
 
 ov_mc_backend_sip_static_config
 ov_mc_backend_sip_static_config_from_json(const ov_json_value *val);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_sip_static_connect_cc(ov_mc_backend_sip_static *self, ov_io_socket_config config);
 
 #endif /* ov_mc_backend_sip_static_h */

@@ -81,6 +81,8 @@ typedef struct {
     ov_event_trigger *trigger;
     ov_vocs_env env;
 
+    ov_io_socket_config cc;
+
     struct {
 
         ov_mc_backend_config backend;
@@ -96,7 +98,6 @@ typedef struct {
 
         ov_socket_configuration cluster;
         ov_socket_configuration events;
-        ov_socket_configuration cc;
 
     } socket;
 

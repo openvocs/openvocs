@@ -63,6 +63,8 @@ typedef struct ov_interconnect_config {
     ov_event_loop *loop;
     ov_io *io;
 
+    ov_io_socket_config cc;
+
     char name[OV_INTERCONNECT_INTERFACE_NAME_MAX];
     char password[OV_INTERCONNECT_PASSWORD_MAX];
 
@@ -73,7 +75,6 @@ typedef struct ov_interconnect_config {
         ov_socket_configuration media;
         ov_socket_configuration internal;
         ov_socket_configuration mixer;
-        ov_socket_configuration cc;
 
     } socket;
 

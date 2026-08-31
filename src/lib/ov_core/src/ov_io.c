@@ -4070,3 +4070,115 @@ bool ov_io_debug_ssl(ov_io *self, bool on){
     self->debug.ssl = on;
     return true;
 }
+
+/*----------------------------------------------------------------------------*/
+
+ov_io_socket_config ov_io_socket_config_from_json(const ov_json_value *val){
+
+    ov_io_socket_config config = {0};
+
+    const ov_json_value *conf = val;
+
+    config.socket = ov_socket_configuration_from_json(
+        ov_json_object_get(conf, "socket"), (ov_socket_configuration){0});
+
+    const char *str = NULL;
+
+    str = ov_json_string_get(ov_json_object_get(conf, "domain"));
+    if (str) strncat(config.ssl.domain, str, PATH_MAX -1);
+
+    const ov_json_value *cert = ov_json_object_get(conf, "certificate");
+    if (!cert) goto done;
+
+    str = ov_json_string_get(ov_json_object_get(cert, "certificate"));
+    if (str) strncat(config.ssl.certificate.cert, str, PATH_MAX -1);
+
+    str = ov_json_string_get(ov_json_object_get(cert, "key"));
+    if (str) strncat(config.ssl.certificate.key, str, PATH_MAX -1);
+
+    const ov_json_value *ca = ov_json_object_get(cert, "ca");
+
+    str = ov_json_string_get(ov_json_object_get(ca, "file"));
+    if (str) strncat(config.ssl.ca.file, str, PATH_MAX -1);
+
+    str = ov_json_string_get(ov_json_object_get(ca, "path"));
+    if (str) strncat(config.ssl.ca.path, str, PATH_MAX -1);
+
+    str = ov_json_string_get(ov_json_object_get(ca, "client_ca"));
+    if (str) strncat(config.ssl.ca.client_ca, str, PATH_MAX -1);
+
+    if (ov_json_is_true(ov_json_object_get(conf, "auto_reconnect")))
+        config.auto_reconnect = true;
+
+done:
+    return config;
+}
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_io_socket_config_to_json(ov_io_socket_config config){
+
+    ov_json_value *out = ov_json_object();
+    ov_json_value *val = NULL;
+
+    ov_socket_configuration_to_json(config.socket, &val);
+    ov_json_object_set(out, "socket", val);
+
+    if (0 != config.ssl.domain[0]){
+        val = ov_json_string(config.ssl.domain);
+    } else {
+        val = ov_json_null();
+    }
+    ov_json_object_set(out, "domain", val);
+
+    ov_json_value *cert = ov_json_object();
+    ov_json_object_set(out, "certificate", cert);
+
+    if (0 != config.ssl.certificate.cert[0]){
+        val = ov_json_string(config.ssl.certificate.cert);
+    } else {
+        val = ov_json_null();
+    }
+    ov_json_object_set(cert, "certificate", val);
+
+    if (0 != config.ssl.certificate.key[0]){
+        val = ov_json_string(config.ssl.certificate.key);
+    } else {
+        val = ov_json_null();
+    }
+    ov_json_object_set(cert, "key", val);
+
+    ov_json_value *ca = ov_json_object();
+    ov_json_object_set(cert, "ca", ca);
+
+    if (0 != config.ssl.ca.file[0]){
+        val = ov_json_string(config.ssl.ca.file);
+    } else {
+        val = ov_json_null();
+    }
+    ov_json_object_set(ca, "file", val);
+
+    if (0 != config.ssl.ca.path[0]){
+        val = ov_json_string(config.ssl.ca.path);
+    } else {
+        val = ov_json_null();
+    }
+    ov_json_object_set(ca, "path", val);
+
+    if (0 != config.ssl.ca.client_ca[0]){
+        val = ov_json_string(config.ssl.ca.client_ca);
+    } else {
+        val = ov_json_null();
+    }
+    ov_json_object_set(ca, "client_ca", val);
+
+    if (config.auto_reconnect){
+        val = ov_json_true();
+    } else {
+        val = ov_json_false();
+    }
+    ov_json_object_set(out, "auto_reconnect", val);
+    
+    return out;
+
+}

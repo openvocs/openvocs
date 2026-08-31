@@ -120,14 +120,6 @@ static void *event_free(void *self){
 
 /*----------------------------------------------------------------------------*/
 
-static void send_to_cc(ov_event_app *self, int socket, const ov_json_value *msg){
-
-    ov_event_cc_log(self->cc, socket, msg);
-    return;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static bool check_user_login(ov_event_app *self, int socket){
 
     ov_json_value *data = ov_socket_storage_get(self->connections, socket);
@@ -613,10 +605,6 @@ ov_event_app *ov_event_app_create(ov_event_app_config config){
     self->cc = ov_event_cc_create(cc);
     if (!self->cc) goto error;
 
-    if (0 != self->config.command_and_control.host[0]){
-        ov_event_cc_connect(self->cc, self->config.command_and_control);
-    }
-
     return self;
 error:
     ov_event_app_free(self);
@@ -753,7 +741,7 @@ bool ov_event_app_push(ov_event_app *self, int socket, ov_json_value *msg){
 
     ov_dict_for_each(event->remote, &container, send_to_remote);
 
-    send_to_cc(self, socket, msg);
+    ov_event_cc_log(self->cc, socket, msg);
     ov_data_pointer_free(str);
     ov_json_value_free(msg);
     return true;
@@ -871,17 +859,6 @@ bool ov_event_app_close(ov_event_app *self, int socket){
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_app_connect_cc(ov_event_app *self, 
-    ov_socket_configuration config){
-
-    if (!self) goto error;
-    return ov_event_cc_connect(self->cc, config);
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
 int ov_event_app_open_listener(ov_event_app *self, 
     ov_io_socket_config config){
 
@@ -961,7 +938,7 @@ bool ov_event_app_send(ov_event_app *self, int socket, const ov_json_value *msg)
         .length = strlen(out)
     });
 
-    send_to_cc(self, socket, msg);
+    if (result) ov_event_cc_log(self->cc, socket, msg);
     out = ov_data_pointer_free(out);
     return result;
 error:
@@ -1006,3 +983,21 @@ error:
     ov_json_value_free(array);
     return NULL;
 }
+
+/*
+ *      ------------------------------------------------------------------------
+ *
+ *      COMMAND AND CONTROL FUNCTIONS
+ *
+ *      ------------------------------------------------------------------------
+ */
+
+bool ov_event_app_connect_cc(ov_event_app *self, ov_io_socket_config config){
+
+    if (!self) return false;
+
+    if (0 == config.ssl.certificate.cert[0]) return false;
+    return ov_event_cc_connect(self->cc, config);
+}
+
+/*----------------------------------------------------------------------------*/

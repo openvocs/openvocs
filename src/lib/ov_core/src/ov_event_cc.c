@@ -57,6 +57,8 @@ struct ov_event_cc {
     ov_dict *events;
 };
 
+/*----------------------------------------------------------------------------*/
+
 typedef struct Event {
 
     void (*callback)(ov_event_cc *self, int socket, const ov_json_value *msg);
@@ -103,8 +105,6 @@ static void cb_io_connected(void *userdata, int connection){
         .start = (uint8_t*) str,
         .length = strlen(str)
     });
-
-    ov_log_debug("send %s", str);
 
     str = ov_data_pointer_free(str);
     msg = ov_json_value_free(msg);
@@ -300,7 +300,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_cc_connect(ov_event_cc *self, ov_socket_configuration socket){
+bool ov_event_cc_connect(ov_event_cc *self, ov_io_socket_config socket){
 
     if (!self) goto error;
 
@@ -309,14 +309,13 @@ bool ov_event_cc_connect(ov_event_cc *self, ov_socket_configuration socket){
         self->socket = -1;
     }
 
-    ov_io_socket_config config = (ov_io_socket_config){
-        .auto_reconnect = true,
-        .socket = socket,
-        .callbacks.userdata = self,
-        .callbacks.connected = cb_io_connected,
-        .callbacks.io = cb_io,
-        .callbacks.close = cb_io_close
-    };
+    ov_io_socket_config config = socket;
+
+    config.auto_reconnect = true;
+    config.callbacks.userdata = self;
+    config.callbacks.connected = cb_io_connected;
+    config.callbacks.io = cb_io;
+    config.callbacks.close = cb_io_close;
 
     ov_io_open_connection(self->config.io, config);
 

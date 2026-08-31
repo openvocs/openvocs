@@ -788,7 +788,6 @@ ov_vocs_recorder *ov_vocs_recorder_create(ov_vocs_recorder_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = config.socket.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_recorder_socket_close};
 
@@ -1302,4 +1301,12 @@ bool ov_vocs_recorder_stop_loop_recording(
 
 error:
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_recorder_connect_cc(ov_vocs_recorder *self, ov_io_socket_config config){
+
+    if (!self) return false;
+    return ov_event_app_connect_cc(self->app, config);
 }

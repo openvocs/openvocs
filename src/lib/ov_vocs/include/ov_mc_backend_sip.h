@@ -55,7 +55,6 @@ typedef struct ov_mc_backend_sip_config {
     struct {
 
         ov_socket_configuration manager; // manager liege socket
-        ov_socket_configuration cc;
 
     } socket;
 
@@ -173,5 +172,9 @@ bool ov_mc_backend_sip_get_connect_status(ov_mc_backend_sip *self);
 /*----------------------------------------------------------------------------*/
 
 bool ov_mc_backend_sip_configure(ov_mc_backend_sip *self);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_sip_connect_cc(ov_mc_backend_sip *self, ov_io_socket_config config);
 
 #endif /* ov_mc_backend_sip_h */

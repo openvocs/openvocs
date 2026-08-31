@@ -53,7 +53,6 @@ typedef struct ov_mc_frontend_config {
     struct {
 
         ov_socket_configuration manager; // manager liege socket
-        ov_socket_configuration cc;
 
     } socket;
 
@@ -229,5 +228,9 @@ bool ov_mc_frontend_talk(ov_mc_frontend *self, char const *uuid,
 
 bool ov_mc_frontened_get_session_state(ov_mc_frontend *self, const char *uuid,
                                        const char *session_id);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_frontend_connect_cc(ov_mc_frontend *self, ov_io_socket_config config);
 
 #endif /* ov_mc_frontend_h */

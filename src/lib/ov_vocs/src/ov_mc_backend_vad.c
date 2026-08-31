@@ -210,7 +210,6 @@ ov_mc_backend_vad *ov_mc_backend_vad_create(ov_mc_backend_vad_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = config.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_socket_close};
 
@@ -301,4 +300,12 @@ ov_mc_backend_vad_config_from_json(const ov_json_value *in) {
     }
 
     return config;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_vad_connect_cc(ov_mc_backend_vad *self, ov_io_socket_config config){
+
+    if (!self) return false;
+    return ov_event_app_connect_cc(self->app, config);
 }

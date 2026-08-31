@@ -66,7 +66,6 @@ typedef struct ov_vocs_recorder_config {
     struct {
 
         ov_socket_configuration manager;
-        ov_socket_configuration cc;
 
     } socket;
 
@@ -162,5 +161,9 @@ bool ov_vocs_recorder_stop_loop_recording(
     ov_vocs_recorder *self, const char *uuid, const char *loop, void *userdata,
     int socket,
     void (*callback)(void *, int, const char *, const char *, ov_result));
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_vocs_recorder_connect_cc(ov_vocs_recorder *self, ov_io_socket_config config);
 
 #endif /* ov_vocs_recorder_h */

@@ -1423,7 +1423,6 @@ ov_mc_backend_sip *ov_mc_backend_sip_create(ov_mc_backend_sip_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = config.socket.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_close};
 
@@ -1869,4 +1868,12 @@ bool ov_mc_backend_sip_configure(ov_mc_backend_sip *self) {
     return true;
 error:
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_sip_connect_cc(ov_mc_backend_sip *self, ov_io_socket_config config){
+
+    if (!self) return false;
+    return ov_event_app_connect_cc(self->app, config);
 }

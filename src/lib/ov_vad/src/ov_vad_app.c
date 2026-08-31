@@ -227,13 +227,14 @@ ov_vad_app *ov_vad_app_create(ov_vad_app_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = config.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_socket_close,
             .callbacks.connected = cb_socket_connected});
 
     if (!self->app)
         goto error;
+
+    ov_event_app_connect_cc(self->app, self->config.cc);
 
     ov_event_app_open_connection(
         self->app, (ov_io_socket_config){.auto_reconnect = true,
@@ -287,8 +288,7 @@ ov_vad_app_config ov_vad_app_config_from_json(const ov_json_value *v) {
     config.manager = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET), (ov_socket_configuration){0});
 
-    config.cc = ov_socket_configuration_from_json(
-        ov_json_get(conf, "/cc"), (ov_socket_configuration){0});
+    config.cc = ov_io_socket_config_from_json(ov_json_get(conf, "/cc"));
 
     config.core = ov_vad_core_config_from_json(conf);
 

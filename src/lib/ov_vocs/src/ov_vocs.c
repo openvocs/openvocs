@@ -1279,7 +1279,6 @@ static bool module_load_backend(ov_vocs *self) {
 
     OV_ASSERT(self);
 
-    self->config.module.backend.socket.cc = self->config.socket.cc;
     self->config.module.backend.io = self->config.io;
     self->config.module.backend.loop = self->config.loop;
     self->config.module.backend.callback.userdata = self;
@@ -1290,6 +1289,8 @@ static bool module_load_backend(ov_vocs *self) {
     self->backend = ov_mc_backend_create(self->config.module.backend);
     if (!self->backend)
         return false;
+
+    ov_mc_backend_connect_cc(self->backend, self->config.cc);
 
     return true;
 }
@@ -2018,7 +2019,6 @@ static bool module_load_frontend(ov_vocs *self) {
 
     self->config.module.frontend.io = self->config.io;
 
-    self->config.module.frontend.socket.cc = self->config.socket.cc;
     strncat(self->config.module.frontend.password.path, self->config.password.path, PATH_MAX -1);
 
     self->config.module.frontend.loop = self->config.loop;
@@ -2041,6 +2041,8 @@ static bool module_load_frontend(ov_vocs *self) {
     self->frontend = ov_mc_frontend_create(self->config.module.frontend);
     if (!self->frontend)
         return false;
+
+    ov_mc_frontend_connect_cc(self->frontend, self->config.cc);
 
     return true;
 }
@@ -2577,7 +2579,6 @@ static bool module_load_sip(ov_vocs *self) {
     self->config.module.sip.loop = self->config.loop;
     self->config.module.sip.db = self->config.db;
 
-    self->config.module.sip.socket.cc = self->config.socket.cc;
     strncat(self->config.module.sip.password.path, self->config.password.path, PATH_MAX -1);
 
     self->config.module.sip.callback.userdata = self;
@@ -2595,6 +2596,8 @@ static bool module_load_sip(ov_vocs *self) {
     if (!self->sip)
         return false;
 
+    ov_mc_backend_sip_connect_cc(self->sip, self->config.cc);
+
     return true;
 }
 
@@ -2609,13 +2612,14 @@ static bool module_load_sip_static(ov_vocs *self) {
     self->config.module.sip_static.loop = self->config.loop;
     self->config.module.sip_static.db = self->config.db;
 
-    self->config.module.sip.socket.cc = self->config.socket.cc;
     strncat(self->config.module.sip.password.path, self->config.password.path, PATH_MAX -1);
 
     self->sip_static =
         ov_mc_backend_sip_static_create(self->config.module.sip_static);
     if (!self->sip_static)
         return false;
+
+    ov_mc_backend_sip_static_connect_cc(self->sip_static, self->config.cc);
 
     return true;
 }
@@ -2634,7 +2638,6 @@ static bool module_load_recorder(ov_vocs *self) {
 
     OV_ASSERT(self);
 
-    self->config.module.recorder.socket.cc = self->config.socket.cc;
     self->config.module.recorder.loop = self->config.loop;
     self->config.module.recorder.vocs_db = self->config.db;
     self->config.module.recorder.io = self->config.io,
@@ -2646,6 +2649,8 @@ static bool module_load_recorder(ov_vocs *self) {
     self->recorder = ov_vocs_recorder_create(self->config.module.recorder);
     if (!self->recorder)
         return false;
+
+    ov_vocs_recorder_connect_cc(self->recorder, self->config.cc);
 
     return true;
 }
@@ -2714,7 +2719,6 @@ static bool module_load_vad(ov_vocs *self) {
     self->config.module.vad.db = self->config.db;
     self->config.module.vad.io = self->config.io;
 
-    self->config.module.vad.cc = self->config.socket.cc;
     strncat(self->config.module.vad.password.path, self->config.password.path, PATH_MAX -1);
 
     self->config.module.vad.callbacks.userdata = self;
@@ -2723,6 +2727,8 @@ static bool module_load_vad(ov_vocs *self) {
     self->vad = ov_mc_backend_vad_create(self->config.module.vad);
     if (!self->vad)
         return false;
+
+    ov_mc_backend_vad_connect_cc(self->vad, self->config.cc);
 
     return true;
 }
@@ -2885,8 +2891,7 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
 
     ov_event_app_config app = (ov_event_app_config){
         .loop = vocs->config.loop,
-        .io = vocs->config.io,
-        .command_and_control = vocs->config.socket.cc,
+        .io = vocs->config.io
     };
 
     strncat(app.name, "VOCS-CORE", OV_HOST_NAME_MAX -1 );
@@ -2894,6 +2899,8 @@ ov_vocs *ov_vocs_create(ov_vocs_config config) {
 
     vocs->app = ov_event_app_create(app);
     if (!vocs->app) goto error;
+
+    ov_event_app_connect_cc(vocs->app, vocs->config.cc);
 
     vocs->socket = ov_event_app_open_listener(vocs->app, (ov_io_socket_config){
         .socket = vocs->config.socket.events
@@ -3150,8 +3157,7 @@ ov_vocs_config ov_vocs_config_from_json(const ov_json_value *val) {
         (ov_socket_configuration){0});
 
     const ov_json_value *cc = ov_json_object_get(config, "cc");
-    out.socket.cc = ov_socket_configuration_from_json(cc, 
-        (ov_socket_configuration){0});
+    out.cc = ov_io_socket_config_from_json(cc);
 
     return out;
 error:

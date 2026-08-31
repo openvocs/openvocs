@@ -847,7 +847,6 @@ ov_mc_frontend *ov_mc_frontend_create(ov_mc_frontend_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = config.socket.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_close};
 
@@ -1205,4 +1204,12 @@ bool ov_mc_frontened_get_session_state(ov_mc_frontend *self, const char *uuid,
 error:
     out = ov_json_value_free(out);
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_frontend_connect_cc(ov_mc_frontend *self, ov_io_socket_config config){
+
+    if (!self) return false;
+    return ov_event_app_connect_cc(self->app, config);
 }

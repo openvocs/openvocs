@@ -108,10 +108,10 @@ static void cb_event_register(void *userdata, const char *name, int socket,
     if (!app || !name || socket < 0 || !input)
         goto error;
 
-    ov_socket_configuration s = ov_socket_configuration_from_json(
-        ov_json_get(input, "/response/cc"), (ov_socket_configuration){0});
+    ov_io_socket_config s = ov_io_socket_config_from_json(
+        ov_json_get(input, "/response/cc"));
 
-    if (0 != s.host[0])
+    if (0 != s.socket.host[0])
         ov_event_app_connect_cc(app->app, s);
 
 error:

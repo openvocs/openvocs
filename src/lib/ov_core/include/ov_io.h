@@ -153,6 +153,11 @@ struct ov_io_socket_config {
 
 /*----------------------------------------------------------------------------*/
 
+ov_io_socket_config ov_io_socket_config_from_json(const ov_json_value *val);
+ov_json_value *ov_io_socket_config_to_json(ov_io_socket_config config);
+
+/*----------------------------------------------------------------------------*/
+
 /**
  *  open a listener socket.
  *

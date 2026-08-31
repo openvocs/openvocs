@@ -1355,22 +1355,23 @@ ov_interconnect *ov_interconnect_create(ov_interconnect_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = self->config.socket.cc,
             .callbacks.userdata = self,
             .callbacks.connected = cb_signaling_connected,
             .callbacks.close = cb_signaling_close};
 
     strncat(app_config.name, "INTERCONNECT", OV_HOST_NAME_MAX -1);
 
+
     self->app.signaling = ov_event_app_create(app_config);
     if (!self->app.signaling)
         goto error;
+
+    ov_event_app_connect_cc(self->app.signaling, self->config.cc);
 
     app_config =
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = self->config.socket.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_mixer_close};
 
@@ -1379,6 +1380,8 @@ ov_interconnect *ov_interconnect_create(ov_interconnect_config config) {
     self->app.mixer = ov_event_app_create(app_config);
     if (!self->app.mixer)
         goto error;
+
+    ov_event_app_connect_cc(self->app.mixer, self->config.cc);
 
     ov_dict_config d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_interconnect_loop_free;
@@ -1498,13 +1501,10 @@ ov_interconnect_config_from_json(const ov_json_value *val) {
         config.socket.client = false;
     }
 
+    config.cc = ov_io_socket_config_from_json(ov_json_object_get(conf, "cc"));
+
     config.socket.signaling = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET "/" OV_KEY_SIGNALING),
-        (ov_socket_configuration){
-            .type = TLS, .host = "localhost", .port = 12345});
-
-    config.socket.cc = ov_socket_configuration_from_json(
-        ov_json_get(conf, "/" OV_KEY_SOCKET "/cc"),
         (ov_socket_configuration){
             .type = TLS, .host = "localhost", .port = 12345});
 

@@ -697,7 +697,6 @@ ov_mc_backend_sip_static_create(ov_mc_backend_sip_static_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = config.socket.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_close};
 
@@ -793,4 +792,12 @@ ov_mc_backend_sip_static_config_from_json(const ov_json_value *val) {
         (ov_socket_configuration){0});
 
     return config;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_sip_static_connect_cc(ov_mc_backend_sip_static *self, ov_io_socket_config config){
+
+    if (!self) return false;
+    return ov_event_app_connect_cc(self->app, config);
 }

@@ -49,6 +49,8 @@ struct ov_mc_backend {
     uint16_t magic_bytes;
     ov_mc_backend_config config;
 
+    ov_io_socket_config cc;
+
     ov_callback_registry *callbacks;
 
     struct {
@@ -151,8 +153,7 @@ static void cb_event_register(void *userdata, const char *name, int socket,
         goto error;
 
     out = ov_event_api_create_success_response(input);
-    ov_json_value *cc = NULL;
-    ov_socket_configuration_to_json(self->config.socket.cc, &cc);
+    ov_json_value *cc = ov_io_socket_config_to_json(self->cc);
     ov_json_value *rs = ov_event_api_get_response(out);
     ov_json_object_set(rs, "cc", cc);
     ov_event_app_send(self->app, socket, out);
@@ -756,7 +757,6 @@ ov_mc_backend *ov_mc_backend_create(ov_mc_backend_config config) {
         (ov_event_app_config){
             .loop = config.loop,
             .io = config.io,
-            .command_and_control = config.socket.cc,
             .callbacks.userdata = self,
             .callbacks.close = cb_close};
 
@@ -1212,10 +1212,6 @@ ov_mc_backend_config ov_mc_backend_config_from_json(const ov_json_value *val) {
         ov_json_get(data, "/" OV_KEY_SOCKET "/" OV_KEY_MANAGER),
         (ov_socket_configuration){0});
 
-    config.socket.cc = ov_socket_configuration_from_json(
-        ov_json_get(data, "/" OV_KEY_SOCKET "/cc"),
-        (ov_socket_configuration){0});
-
     const ov_json_value *par = ov_json_get(data, "/" OV_KEY_MIXER);
 
     config.mixer.config.vad.zero_crossings_rate_threshold_hertz =
@@ -1340,3 +1336,12 @@ error:
 }
 
 /*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_connect_cc(ov_mc_backend *self, ov_io_socket_config config){
+
+    if (!self) return false;
+    
+    self->cc = config;
+
+    return ov_event_app_connect_cc(self->app, config);
+}

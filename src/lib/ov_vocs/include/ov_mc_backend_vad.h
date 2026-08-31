@@ -51,7 +51,6 @@ typedef struct ov_mc_backend_vad_config {
     ov_vocs_db *db;
 
     ov_socket_configuration socket;
-    ov_socket_configuration cc;
 
     ov_vad_config vad;
 
@@ -85,5 +84,9 @@ ov_mc_backend_vad *ov_mc_backend_vad_cast(const void *data);
 
 ov_mc_backend_vad_config
 ov_mc_backend_vad_config_from_json(const ov_json_value *in);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_mc_backend_vad_connect_cc(ov_mc_backend_vad *self, ov_io_socket_config config);
 
 #endif /* ov_mc_backend_vad_h */

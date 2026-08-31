@@ -50,9 +50,9 @@ typedef struct ov_ice_proxy_vocs_app_config {
     ov_io *io;
 
     ov_ice_proxy_vocs_config proxy;
+    ov_io_socket_config cc;
 
     ov_socket_configuration manager;
-    ov_socket_configuration cc;
 
     struct {
 

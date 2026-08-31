@@ -708,7 +708,6 @@ ov_ice_proxy_vocs_app_create(ov_ice_proxy_vocs_app_config config) {
     ov_event_app_config app_config = (ov_event_app_config){
         .loop = config.loop,
         .io = config.io,
-        .command_and_control = config.cc,
         .callbacks.userdata = app,
         .callbacks.close = cb_close,
         .callbacks.connected = cb_connected
@@ -729,6 +728,8 @@ ov_ice_proxy_vocs_app_create(ov_ice_proxy_vocs_app_config config) {
 
     if (!register_event_callbacks(app))
         goto error;
+
+    ov_event_app_connect_cc(app->app, config.cc);
 
     return app;
 error:
@@ -853,6 +854,9 @@ ov_ice_proxy_vocs_app_config_from_json(const ov_json_value *v) {
 
     if (password_path)
         strncpy(config.password.path, password_path, PATH_MAX);
+
+    const ov_json_value *cc = ov_json_object_get(conf, "cc");
+    if (cc) config.cc = ov_io_socket_config_from_json(cc);
 
     return config;
 error:

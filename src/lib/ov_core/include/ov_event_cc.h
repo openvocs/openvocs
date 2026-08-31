@@ -63,7 +63,7 @@ ov_event_cc *ov_event_cc_cast(const void *data);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_event_cc_connect(ov_event_cc *self, ov_socket_configuration socket);
+bool ov_event_cc_connect(ov_event_cc *self, ov_io_socket_config socket);
 
 /*----------------------------------------------------------------------------*/
 
