@@ -444,10 +444,6 @@ ov_file_handle_state ov_file_write(const char *path, const uint8_t *buffer,
 
         if (count == size) {
 
-            ov_log_debug("WRITE, file (%s), "
-                         "wrote %jd bytes.",
-                         path, count);
-
             state = OV_FILE_SUCCESS;
 
         } else {

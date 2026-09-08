@@ -996,7 +996,7 @@ bool ov_event_app_connect_cc(ov_event_app *self, ov_io_socket_config config){
 
     if (!self) return false;
 
-    if (0 == config.ssl.certificate.cert[0]) return false;
+    if (0 == config.socket.host[0]) return false;
     return ov_event_cc_connect(self->cc, config);
 }
 
