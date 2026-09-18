@@ -1,0 +1,16 @@
+{
+    "web audio" : {
+        "mime" : "audio/webm",
+        "extension" : [ "weba" ]
+    },
+
+    "web video" : {
+        "mime" : "video/webm",
+        "extension" : [ "webm"]
+    },
+
+    "web picture" : {
+        "mime" : "image/webm",
+        "extension" : [ "webp"]
+    }
+}

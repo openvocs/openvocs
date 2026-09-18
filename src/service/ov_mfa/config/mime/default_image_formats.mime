@@ -1,0 +1,30 @@
+{
+    "jpeg" : {
+        "mime" : "image/jpeg",
+        "extension" : [ "jpg" , "jpeg" ]
+    },
+    "png" : {
+        "mime" : "image/png",
+        "extension" : [ "png" ]
+    },
+    "bmp" : {
+        "mime" : "image/bmp",
+        "extension" : [ "bmp" ]
+    },
+    "gif" : {
+        "mime" : "image/gif",
+        "extension" : [ "gif" ]
+    },
+    "ico" : {
+        "mime" : "image/vnd.microsoft.icon",
+        "extension" : [ "ico" ]
+    },
+    "tiff" : {
+        "mime" : "image/tiff",
+        "extension" : [ "tiff", "tif" ]
+    },
+    "svg" : {
+        "mime" : "image/svg+xml",
+        "extension" : [ "svg" ]
+    }
+}

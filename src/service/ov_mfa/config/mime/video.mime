@@ -1,0 +1,7 @@
+{
+    "avi" : {
+        "mime" : "video/avi",
+        "extension" : [ "avi" ]
+    }
+
+}

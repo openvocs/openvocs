@@ -4626,6 +4626,32 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+ov_cbor *ov_cbor_map_get_utf8_string(const ov_cbor *map, const char *key) {
+
+    ov_cbor *k = NULL;
+
+    if (!map || !key)
+        goto error;
+
+    if (map->type != ov_CBOR_MAP)
+        goto error;
+
+    k = ov_cbor_create(ov_CBOR_UTF8);
+    if (!k)
+        goto error;
+
+    ov_cbor_set_utf8(k, (uint8_t*) key, strlen(key));
+
+    ov_cbor *out = ov_dict_get(map->data, k);
+    k = cbor_free(k);
+
+    return out;
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
 uint64_t ov_cbor_map_count(const ov_cbor *map) {
 
     if (map->type != ov_CBOR_MAP)

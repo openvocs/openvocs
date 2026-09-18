@@ -24,43 +24,37 @@
 #
 #       ------------------------------------------------------------------------
 
+
 include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
-OV_SERVICE_DIRS   += ov_mc_mixer
-OV_SERVICE_DIRS   += ov_mc_ice_proxy
-OV_SERVICE_DIRS   += ov_mc_vocs
-OV_SERVICE_DIRS   += ov_mc_interconnect
-OV_SERVICE_DIRS   += ov_mc_vad
-OV_SERVICE_DIRS   += ov_mfa
+L_TEST_SOURCES = $(wildcard **/**/*_test.c **/*_test.c *_test.c)
+L_HEADERS      = $(wildcard **/**/*.h **/*.h *.h)
+L_SOURCES_C    = $(wildcard **/**/*.c **/*.c *.c)
+L_SOURCES      = $(filter-out $(L_TEST_SOURCES), $(L_SOURCES_C))
 
-all    : target_build_all
-depend : target_depend
+include $(OPENVOCS_ROOT)/makefiles/makefile_const.mk
 
 #-----------------------------------------------------------------------------
-target_depend:
-	@echo "[DEPEND ] src/lib: scanning dependencies"
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[DEPEND ] entering $$dir ..."; \
-		$(MAKE) depend -C $$dir || exit 1; \
-		echo "[DEPEND ] leaving $$dir ."; \
-	done
-	@echo "[DEPEND ] src/lib: dependencies done"
-#-----------------------------------------------------------------------------
-target_build_all:
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) -C $$dir || exit 1; \
-		echo "[BUILD  ] leaving $$dir ."; \
-	done
-	@echo "[BUILD  ] build done"
-#-----------------------------------------------------------------------------
-target_test:
-	@echo "[BUILD  ] building tests"
-	@for dir in $(OV_SERVICE_DIRS); do \
-		echo "[BUILD  ] entering $$dir ..."; \
-		$(MAKE) $(OV_QUIET_MAKE) target_test -C $$dir || exit 1; \
-		echo "[BUILD  ] leaving $$dir ."; \
-	done
-	@echo "[BUILD  ] build tests done"
+
+OV_FLAGS       += `pkg-config --cflags openssl`
+
 #-----------------------------------------------------------------------------
 
+OV_LIBS        = -L$(OV_LIBDIR)
+
+OV_LIBS       += -l ov_arch$(OV_EDITION)
+OV_LIBS       += -l ov_test$(OV_EDITION)
+OV_LIBS       += -l ov_log$(OV_EDITION)
+OV_LIBS       += -l ov_base$(OV_EDITION)
+OV_LIBS       += -l ov_core$(OV_EDITION)
+OV_LIBS       += -l ov_vocs_db$(OV_EDITION)
+
+OV_LIBS       += -l m
+OV_LIBS       += -pthread
+
+OV_LIBS       += `pkg-config --libs openssl`
+
+
+#-----------------------------------------------------------------------------
+
+include $(OPENVOCS_ROOT)/makefiles/makefile_targets.mk

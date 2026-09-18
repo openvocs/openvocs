@@ -77,6 +77,15 @@ bool ov_base64_encode(const uint8_t *source, size_t src_length,
 bool ov_base64_url_encode(const uint8_t *buffer, size_t length,
                           uint8_t **result, size_t *result_length);
 
+/*----------------------------------------------------------------------------*/
+
+bool ov_base64_url_strip_equals(uint8_t *buffer, size_t *length);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_base64_url_add_equals(const uint8_t *buffer, size_t length,
+        uint8_t **result, size_t *result_length);
+
 /*
  *      ------------------------------------------------------------------------
  *

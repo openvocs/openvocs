@@ -1,0 +1,27 @@
+<!doctype html>
+
+<html class="no-js" lang="en">
+
+<title>ov_mfa</title>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- generic JS should be changed to www.openvocs.org/js/* for final version-->
+<script src="ov_websocket.js"></script>
+<script src="ov_mfa.js"></script>
+
+<body>
+
+	<div>
+		<img src="logo.png" alt="openvocs logo" width="200">
+	</div>
+
+	<div>
+		<input type="text" id="username" value="user1">
+		<input type="password" id="password" value="user1">
+		<button id="register" onclick="ov_mfa.register(document.getElementById('username').value)">Register</button>
+		<button id="login" onclick="ov_mfa.login(document.getElementById('username').value,document.getElementById('password').value)">Login</button>
+	</div>
+
+</body>

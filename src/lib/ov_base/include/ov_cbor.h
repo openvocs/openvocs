@@ -199,7 +199,7 @@ uint64_t ov_cbor_encoding_size(const ov_cbor *value);
 bool ov_cbor_is_map(const ov_cbor *self);
 bool ov_cbor_is_array(const ov_cbor *self);
 bool ov_cbor_is_string(const ov_cbor *self);
-bool ov_cbor_is_uft8(const ov_cbor *self);
+bool ov_cbor_is_utf8(const ov_cbor *self);
 bool ov_cbor_is_true(const ov_cbor *self);
 bool ov_cbor_is_false(const ov_cbor *self);
 bool ov_cbor_is_null(const ov_cbor *self);
@@ -266,6 +266,17 @@ bool ov_cbor_map_set_string(ov_cbor *map, const char *key, ov_cbor *val);
  *  @param key  keystring to search
  */
 ov_cbor *ov_cbor_map_get_string(const ov_cbor *map, const char *key);
+
+/*----------------------------------------------------------------------------*/
+
+/**
+ *  Get some string based key using the string instead of a ov_cbor string.
+ *  This is a convinience function for usage of string key based maps.
+ *
+ *  @param map  map instance
+ *  @param key  keystring to search
+ */
+ov_cbor *ov_cbor_map_get_utf8_string(const ov_cbor *map, const char *key);
 
 /*----------------------------------------------------------------------------*/
 

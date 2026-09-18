@@ -1,0 +1,18 @@
+{
+    "html" : {
+        "mime" : "text/html",
+        "extension" : [ "html" , "htm" ]
+    },
+    "js" : {
+        "mime" : "text/javascript",
+        "extension" : [ "js" ]
+    },
+    "css" : {
+        "mime" : "text/css",
+        "extension" : [ "css" ]
+    },
+    "txt" : {
+        "mime" : "text/plain",
+        "extension" : [ "txt" ]
+    }
+}

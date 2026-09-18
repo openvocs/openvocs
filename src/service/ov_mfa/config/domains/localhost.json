@@ -1,0 +1,8 @@
+{
+	"name" : "localhost",
+	"path" : "./src/service/ov_mfa/HTML/",
+	"certificate": {
+		"file" : "./resources/certificate/openvocs.test.crt",
+		"key": "./resources/certificate/openvocs.test.key"
+	}
+}

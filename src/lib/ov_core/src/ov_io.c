@@ -4182,3 +4182,16 @@ ov_json_value *ov_io_socket_config_to_json(ov_io_socket_config config){
     return out;
 
 }
+
+const char *ov_io_get_socket_domain(ov_io *self, int socket){
+
+    if (!self) goto error;
+
+    Connection *conn = ov_dict_get(self->connections, (void *)(intptr_t)socket);
+    if (!conn) goto error;
+
+    return conn->domain;
+error:
+    return NULL;
+
+}

@@ -183,6 +183,10 @@ bool ov_io_send(ov_io *self, int socket, const ov_memory_pointer buffer);
 
 ov_domain *ov_io_get_domain(ov_io *self, const char *name);
 
+/*----------------------------------------------------------------------------*/
+
+const char *ov_io_get_socket_domain(ov_io *self, int socket);
+
 /*
  *      ------------------------------------------------------------------------
  *

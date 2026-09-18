@@ -1,0 +1,16 @@
+{
+	"domain":"localhost",
+	"id":"test",
+	"loops":{},
+	"name":null,
+	"roles":
+	{
+		"8844b949-63bd-d2ee-25e8-46feae4286c1":
+		{
+			"id":"8844b949-63bd-d2ee-25e8-46feae4286c1",
+			"name":"test",
+			"users":{}
+		}
+	},
+	"users":{}
+}

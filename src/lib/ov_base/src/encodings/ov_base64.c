@@ -32,6 +32,8 @@
         ------------------------------------------------------------------------
 */
 #include "../../include/ov_base64.h"
+#include <string.h>
+#include <stdio.h>
 
 /*----------------------------------------------------------------------------*/
 
@@ -180,6 +182,51 @@ bool ov_base64_url_encode(const uint8_t *buffer, size_t length,
 
     return ov_base64_encode_with_alphabet(buffer, length, result, result_length,
                                           base64urlAlphabet);
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_base64_url_strip_equals(uint8_t *buffer, size_t *length){
+
+    uint8_t *ptr = buffer + *length;
+    ptr--;
+
+    while(ptr[0] == '='){
+
+        ptr[0] = 0;
+        ptr--;
+
+    }
+
+    *length = ptr - buffer +1;
+    return true;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_base64_url_add_equals(const uint8_t *buffer, size_t length,
+        uint8_t **result, size_t *result_length){
+
+    char *data = calloc(1, length + 5);
+    if (!data) goto error;
+
+    memcpy(data, buffer, length);
+    data[length] = '=';
+    data[length + 1] = '=';
+    data[length + 2] = '=';
+    data[length + 3] = '=';
+
+    while( 0 != (length % 4)){
+        length++;
+    }
+
+    data[length] = 0;
+
+    *result = (uint8_t*) data;
+    *result_length = length;
+    return true;
+error:
+    return false;
 }
 
 /*
