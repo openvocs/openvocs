@@ -496,111 +496,111 @@ int test_cbor_copy() {
 
 /*----------------------------------------------------------------------------*/
 
-int test_cbor_dump() {
+int test_ov_cbor_dump() {
 
     ov_cbor *self = ov_cbor_create(ov_CBOR_UNDEF);
     testrun(cbor_clear(self));
     testrun(self->type == ov_CBOR_UNDEF);
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_FALSE);
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_TRUE);
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_NULL);
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_UINT64);
     self->nbr_uint = 1234;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_INT64);
     self->nbr_int = 1234;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_STRING);
     self->string = ov_string_dup("test");
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_UTF8);
     self->string = ov_string_dup("test");
     self->nbr_uint = 4;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_ARRAY);
     self->data =
         ov_linked_list_create((ov_list_config){.item.free = cbor_free});
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_MAP);
     self->data = ov_dict_create(ov_cbor_dict_config(255));
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_DATE_TIME);
     self->string = ov_string_dup("timestamp");
     self->nbr_uint = strlen("timestamp");
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_DATE_TIME_EPOCH);
     self->nbr_uint = 12345;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_UBIGNUM);
     self->string = ov_string_dup("ov_CBOR_UBIGNUM");
     self->nbr_uint = strlen("ov_CBOR_UBIGNUM");
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_IBIGNUM);
     self->string = ov_string_dup("ov_CBOR_IBIGNUM");
     self->nbr_uint = strlen("ov_CBOR_IBIGNUM");
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_DEC_FRACTION);
     self->data =
         ov_linked_list_create((ov_list_config){.item.free = cbor_free});
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_BIGFLOAT);
     self->data =
         ov_linked_list_create((ov_list_config){.item.free = cbor_free});
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_TAG);
     self->nbr_uint = 1234;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_SIMPLE);
     self->nbr_uint = 1234;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_FLOAT);
     self->nbr_float = 1.2;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     self = ov_cbor_create(ov_CBOR_DOUBLE);
     self->nbr_double = 1.2e4;
-    testrun(cbor_dump(stdout, self));
+    testrun(ov_cbor_dump(stdout, self));
     testrun(NULL == cbor_free(self));
 
     return testrun_log_success();
@@ -1025,11 +1025,11 @@ int test_ov_cbor_dict_config() {
     testrun(config.key.data_function.clear == cbor_clear);
     testrun(config.key.data_function.copy == cbor_copy);
     testrun(config.key.data_function.free == cbor_free);
-    testrun(config.key.data_function.dump == cbor_dump);
+    testrun(config.key.data_function.dump == ov_cbor_dump);
     testrun(config.value.data_function.clear == cbor_clear);
     testrun(config.value.data_function.copy == cbor_copy);
     testrun(config.value.data_function.free == cbor_free);
-    testrun(config.value.data_function.dump == cbor_dump);
+    testrun(config.value.data_function.dump == ov_cbor_dump);
 
     return testrun_log_success();
 }
@@ -1433,7 +1433,7 @@ int test_decode_int() {
         testrun(match == ov_CBOR_MATCH_FULL);
         testrun(out);
         testrun(out->type == ov_CBOR_INT64);
-        testrun(out->nbr_int == -(int64_t)i);
+        testrun(out->nbr_int == -1 - (int64_t)(i & 0x1F));
         testrun(next);
         testrun(next == buffer + 1);
         out = cbor_free(out);
@@ -6934,7 +6934,7 @@ int all_tests() {
     testrun_test(test_cbor_clear);
     testrun_test(test_cbor_free);
     testrun_test(test_cbor_copy);
-    testrun_test(test_cbor_dump);
+    testrun_test(test_ov_cbor_dump);
     testrun_test(test_cbor_hash);
     testrun_test(test_cbor_match);
     testrun_test(test_ov_cbor_dict_config);

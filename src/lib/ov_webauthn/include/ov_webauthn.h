@@ -66,11 +66,22 @@ ov_webauthn_config ov_webauthn_config_from_json(const ov_json_value *input);
 
 /*----------------------------------------------------------------------------*/
 
-ov_json_value *ov_webauthn_create_challenge(ov_webauthn *self, 
+ov_json_value *ov_webauthn_create_registration_challenge(ov_webauthn *self, 
     const char *user, const char *domain);
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_webauthn_process_challenge(ov_webauthn *self, const ov_json_value *data);
+bool ov_webauthn_process_registration_challenge(ov_webauthn *self, 
+    const ov_json_value *data);
+
+/*----------------------------------------------------------------------------*/
+
+ov_json_value *ov_webauthn_create_login_challenge(ov_webauthn *self, 
+    const char *user, const char *domain);
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_webauthn_process_login_challenge(ov_webauthn *self, 
+    const ov_json_value *data);
 
 #endif /* ov_webauthn_h */

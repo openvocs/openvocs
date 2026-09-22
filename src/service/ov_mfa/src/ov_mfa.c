@@ -78,7 +78,7 @@ static void register_mfa(dummy_user_data *data, int socket, const ov_json_value 
 
     ov_log_debug("MFA - REGISTER for user %s", user);
 
-    ov_json_value *val = ov_webauthn_create_challenge(data->auth, user, domain);
+    ov_json_value *val = ov_webauthn_create_registration_challenge(data->auth, user, domain);
 
     if (!val){
 
@@ -113,11 +113,7 @@ static void register_mfa_second_factor(dummy_user_data *data, int socket, const 
 
     if (!data || !socket || !msg) goto error;
 
-    char *in = ov_json_value_to_string(msg);
-    ov_log_debug("%s", in);
-    in = ov_data_pointer_free(in);
-
-    if (ov_webauthn_process_challenge(data->auth, ov_event_api_get_parameter(msg))){
+    if (ov_webauthn_process_registration_challenge(data->auth, ov_event_api_get_parameter(msg))){
 
         out = ov_event_api_create_success_response(msg);
 
@@ -149,6 +145,7 @@ static void login_password(dummy_user_data *data, int socket, const ov_json_valu
 
     const char *user = ov_json_string_get(ov_json_get(msg, "/parameter/user"));
     const char *pass = ov_json_string_get(ov_json_get(msg, "/parameter/password"));
+    const char *domain = ov_io_get_socket_domain(data->io, socket);
 
     if (!user || !pass) {
 
@@ -165,11 +162,18 @@ static void login_password(dummy_user_data *data, int socket, const ov_json_valu
         goto response;
     }
 
+    ov_json_value *val = ov_webauthn_create_login_challenge(data->auth,user, domain);
+
+    if (!val){
+
+        out = ov_event_api_create_error_response(msg, 6, "MFA CHALLENGE FAILED.");
+        goto response;
+
+    }
+
     out = ov_event_api_create_success_response(msg);
     ov_json_value *res = ov_event_api_get_response(out);
-
-    // TODO add second factor in reponse
-    UNUSED(res);
+    ov_json_object_set(res, "mfa", val);
 
 response:
 
@@ -193,22 +197,17 @@ static void login_second_factor(dummy_user_data *data, int socket, const ov_json
 
     if (!data || !socket || !msg) goto error;
 
-    const char *user = ov_json_string_get(ov_json_get(msg, "/parameter/user"));
+    ov_log_debug("MFA - AUTH 2 - WEBAUTHN");
 
-    if (!user) {
+    if (!ov_webauthn_process_login_challenge(data->auth,
+        ov_event_api_get_parameter(msg))){
 
-        out = ov_event_api_create_error_response(msg, 1, "parameter error");
+        out = ov_event_api_create_error_response(msg, 7, "second factor error");
         goto response;
-    
+
     }
 
-    ov_log_debug("MFA - AUTH 2 - WEBAUTHN for user %s", user);
-
     out = ov_event_api_create_success_response(msg);
-    ov_json_value *res = ov_event_api_get_response(out);
-
-    // TODO add second factor in reponse
-    UNUSED(res);
 
 response:
 
@@ -241,13 +240,13 @@ static void callback_event(void *userdata, int socket, ov_json_value *msg){
 
         login_password(data, socket, msg);
 
-    } else if (ov_event_api_event_is(msg, "second_factor")){
-
-        login_second_factor(data, socket, msg);
-
     } else if (ov_event_api_event_is(msg, "mfa_register")){
 
         register_mfa_second_factor(data, socket, msg);
+
+    } else if (ov_event_api_event_is(msg, "mfa_login")){
+
+        login_second_factor(data, socket, msg);
     }
 
 error:

@@ -86,6 +86,9 @@ var ov_mfa = {
         if (msg.response.challenge)
             ov_mfa.process_challenge(msg.response.challenge);
 
+        if (msg.response.mfa)
+            ov_mfa.process_mfa(msg.response.mfa);
+
     },
 
     register: function(username){
@@ -145,10 +148,40 @@ var ov_mfa = {
 
         request.parameter = credentialPayload;
         ov_websocket.send(JSON.stringify(request));
+    },
+
+    process_mfa: async function (options) {
+
+        options.challenge = base64urlToBuffer(options.challenge);
+        options.allowCredentials.forEach(c => {
+            c.id = base64urlToBuffer(c.id);
+        });
+
+        // Authenticator (YubiKey, TouchID, etc.) auffordern, die Challenge zu signieren
+        let assertion = await navigator.credentials.get({ publicKey: options });
+
+        let assertionPayload = {
+            id: assertion.id,
+            rawId: bufferToBase64url(assertion.rawId),
+            type: assertion.type,
+            response: {
+                clientDataJSON: bufferToBase64url(assertion.response.clientDataJSON),
+                authenticatorData: bufferToBase64url(assertion.response.authenticatorData),
+                signature: bufferToBase64url(assertion.response.signature),
+                userHandle: assertion.response.userHandle ? bufferToBase64url(assertion.response.userHandle) : null
+            }
+        };
+
+        let request = {
+            uuid : this.create_uuid(),
+            client: this.client,
+            event: "mfa_login",
+            parameter: {}
+        }
+
+        request.parameter = assertionPayload;
+        ov_websocket.send(JSON.stringify(request));
     }
-
-    
-
 };
 
 ov_mfa.init();

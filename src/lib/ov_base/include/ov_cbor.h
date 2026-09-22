@@ -34,6 +34,8 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdio.h>
+
 
 /*----------------------------------------------------------------------------*/
 
@@ -116,6 +118,8 @@ ov_cbor *ov_cbor_free(ov_cbor *self);
 ov_cbor_type ov_cbor_get_type(const ov_cbor *self);
 
 void *ov_cbor_copy(void **copy, void *self);
+
+bool ov_cbor_dump(FILE *stream, const void *source);
 
 /*----------------------------------------------------------------------------*/
 
@@ -277,6 +281,10 @@ ov_cbor *ov_cbor_map_get_string(const ov_cbor *map, const char *key);
  *  @param key  keystring to search
  */
 ov_cbor *ov_cbor_map_get_utf8_string(const ov_cbor *map, const char *key);
+
+/*----------------------------------------------------------------------------*/
+
+ov_cbor *ov_cbor_map_get_int_key(const ov_cbor *map, int key);
 
 /*----------------------------------------------------------------------------*/
 

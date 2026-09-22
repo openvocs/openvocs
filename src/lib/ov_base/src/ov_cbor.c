@@ -193,7 +193,7 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool cbor_dump(FILE *stream, const void *source) {
+bool ov_cbor_dump(FILE *stream, const void *source) {
 
     if (!stream || !source)
         return false;
@@ -234,7 +234,7 @@ static bool cbor_dump(FILE *stream, const void *source) {
         break;
     case ov_CBOR_DEC_FRACTION:
         fprintf(stream, "\nov_CBOR_DEC_FRACTION\n");
-        return cbor_dump(stream, self->data);
+        return ov_cbor_dump(stream, self->data);
         break;
     case ov_CBOR_DATE_TIME_EPOCH:
         fprintf(stream, "\nov_CBOR_DATE_TIME_EPOCH\n");
@@ -242,13 +242,13 @@ static bool cbor_dump(FILE *stream, const void *source) {
         break;
     case ov_CBOR_BIGFLOAT:
         fprintf(stream, "\nov_CBOR_BIGFLOAT\n");
-        return cbor_dump(stream, self->data);
+        return ov_cbor_dump(stream, self->data);
         break;
     case ov_CBOR_TAG:
         fprintf(stream, "\nov_CBOR_TAG\n");
         fprintf(stream, "%" PRIu64, self->nbr_uint);
         if (self->data)
-            cbor_dump(stream, self->data);
+            ov_cbor_dump(stream, self->data);
         break;
     case ov_CBOR_FALSE:
         fprintf(stream, "\nov_CBOR_FALSE\n");
@@ -571,14 +571,14 @@ static ov_dict_config ov_cbor_dict_config(uint64_t slots) {
         .key.data_function = (ov_data_function){.clear = cbor_clear,
                                                  .copy = cbor_copy,
                                                  .free = cbor_free,
-                                                 .dump = cbor_dump},
+                                                 .dump = ov_cbor_dump},
         .key.hash = cbor_hash,
         .key.match = cbor_match,
 
         .value.data_function = (ov_data_function){.clear = cbor_clear,
                                                    .copy = cbor_copy,
                                                    .free = cbor_free,
-                                                   .dump = cbor_dump}};
+                                                   .dump = ov_cbor_dump}};
 }
 
 /*----------------------------------------------------------------------------*/
@@ -829,8 +829,8 @@ static ov_cbor_match decode_int(const uint8_t *buffer, size_t size,
         if (!self)
             goto error;
 
-        self->nbr_int = buffer[0];
-        self->nbr_int *= -1;
+        uint8_t additional_info = buffer[0] & 0x1F;
+        self->nbr_int = -1 - additional_info;
         len = 1;
         goto done;
         break;
@@ -2908,6 +2908,7 @@ static bool encode_int(const ov_cbor *self, uint8_t *buffer, size_t size,
 
         if (size < 1)
             goto error;
+        
         buffer[0] = nbr;
         buffer[0] |= 0x20;
         *next = buffer + 1;
@@ -4652,6 +4653,32 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+ov_cbor *ov_cbor_map_get_int_key(const ov_cbor *map, int key) {
+
+    ov_cbor *k = NULL;
+
+    if (!map)
+        goto error;
+
+    if (map->type != ov_CBOR_MAP)
+        goto error;
+
+    k = ov_cbor_create(ov_CBOR_INT64);
+    if (!k)
+        goto error;
+
+    ov_cbor_set_int(k, key);
+
+    ov_cbor *out = ov_dict_get(map->data, k);
+    k = cbor_free(k);
+
+    return out;
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
 uint64_t ov_cbor_map_count(const ov_cbor *map) {
 
     if (map->type != ov_CBOR_MAP)
@@ -4695,7 +4722,7 @@ ov_cbor *ov_cbor_array() {
         ov_linked_list_create((ov_list_config){.item.copy = cbor_copy,
                                                  .item.clear = cbor_clear,
                                                  .item.free = cbor_free,
-                                                 .item.dump = cbor_dump});
+                                                 .item.dump = ov_cbor_dump});
 
     if (!out->data)
         goto error;
