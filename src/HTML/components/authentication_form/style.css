@@ -72,7 +72,8 @@
     color: var(--base_text_color);
 }
 
-.simple-keyboard.ov_dark_keyboard .hg-button:active {
+
+.simple-keyboard.ov_dark_keyboard .hg-button.hg-activeButton {
     background: var(--white);
     color: var(--black);
 }
