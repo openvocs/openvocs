@@ -370,11 +370,13 @@ function button_release() {
     }
 }
 
-function activate_mic_soft() {
+async function activate_mic_soft() {
     if (!soft_mic_active) {
         soft_mic_active = true;
-        if (ov_WebRTCs.local_stream())
+        if (ov_WebRTCs.local_stream()){
+            await ov_Websockets.sleep(DELAY_STREAM_UNMUTE);
             ov_WebRTCs.mute_outbound_stream(false);
+        }
         DOM.ptt_button.classList.add(DOM.CLASS.ptt_active, "dark");
         DOM.mute_button.classList.add(DOM.CLASS.ptt_active, "dark");
         DOM.fptt_area.classList.add(DOM.CLASS.ptt_active, "dark");

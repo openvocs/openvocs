@@ -58,6 +58,7 @@ SECURE_VOICE_PTT = false; //e.g. when using hardware ptt button with secure voic
 
 PTT = false; // if ptt is false an mute/unmute button is displayed instead
 HIDE_PTT_MENU = false; //hide ptt buttons on website
+DELAY_STREAM_UNMUTE = 0; //ms to delay unmute of voice stream after trigger
 
 MUTE_ON_MOUSE_MIDDLE_CLICK = true;
 MUTE_KEY = true;
