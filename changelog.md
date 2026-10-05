@@ -12,6 +12,7 @@
 - Users, roles and loops can now be moved between domain and projects scope.
 - Added logout button on initial (empty) page to clean session, in case session reconnection fails
 - Added logout button on role selection page in vocs ui
+- Added optional delay for opening microphone when pressing PTT. Per default DELAY_STREAM_UNMUTE = 0. You can overwriting this value in config_vocs.js.
 
 ### CHANGED
 - SSL/ov_io ?
