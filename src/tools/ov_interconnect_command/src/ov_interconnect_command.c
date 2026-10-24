@@ -176,6 +176,10 @@ static void cb_register(void *userdata, const char *event_name, int socket,
 
     struct userdata *self = (struct userdata*) userdata;
 
+    char *str = ov_json_value_to_string(input);
+    ov_log_debug("%s", str);
+    str = ov_data_pointer_free(str);
+
     ov_json_value *msg = ov_event_api_message_create("loop", NULL, 0);
     ov_json_value *par = ov_event_api_set_parameter(msg);
     ov_json_object_set(par, "loop1", ov_json_string(self->loop1));

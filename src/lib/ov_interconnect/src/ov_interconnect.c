@@ -414,13 +414,10 @@ static void event_cc_register(void *userdata, const char *event_name, int socket
     if (!self || !event_name || !input)
         goto error;
 
-    const char *name = ov_json_string_get(
-        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_NAME));
-
     const char *pass = ov_json_string_get(
         ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
 
-    if (!name || !pass) {
+    if (!pass) {
 
         out = ov_event_api_create_error_response(input,
                                                  OV_ERROR_CODE_PARAMETER_ERROR,

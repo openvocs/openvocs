@@ -490,348 +490,6 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
-static bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata);
-
-/*----------------------------------------------------------------------------*/
-
-static bool perform_ssl_client_handshake(ov_interconnect_session *self) {
-
-    int r = 0, n = 0;
-
-    bool shutdown = true;
-
-    OV_ASSERT(self);
-    if (!self)
-        goto error;
-
-    ov_event_loop *loop = self->config.loop;
-
-    if (OV_TIMER_INVALID != self->timer.handshake) {
-
-        loop->timer.unset(loop, self->timer.handshake, NULL);
-        self->timer.handshake = OV_TIMER_INVALID;
-    }
-
-    r = SSL_connect(self->dtls.ssl);
-
-    switch (r) {
-
-    case 1:
-
-        r = check_cert(self);
-        switch (r) {
-
-        case 1:
-            goto success;
-
-        case 0:
-            goto close;
-        default:
-            OV_ASSERT(1 == 0);
-            goto error;
-        }
-
-    default:
-
-        n = SSL_get_error(self->dtls.ssl, r);
-        switch (n) {
-
-        case SSL_ERROR_NONE:
-            OV_ASSERT(1 == 0);
-            break;
-
-        case SSL_ERROR_ZERO_RETURN:
-            // ov_log_debug("SSL_ERROR_ZERO_RETURN");
-            goto close;
-            break;
-
-        case SSL_ERROR_WANT_READ:
-            // ov_log_debug("SSL_ERROR_WANT_READ");
-            break;
-        case SSL_ERROR_WANT_WRITE:
-            // ov_log_debug("SSL_ERROR_WANT_WRITE");
-            break;
-        case SSL_ERROR_WANT_CONNECT:
-            // ov_log_debug("SSL_ERROR_WANT_CONNECT");
-            break;
-        case SSL_ERROR_WANT_X509_LOOKUP:
-            // ov_log_debug("SSL_ERROR_WANT_X509_LOOKUP");
-            break;
-        case SSL_ERROR_WANT_ASYNC:
-            // ov_log_debug("SSL_ERROR_WANT_ASYNC");
-            break;
-        case SSL_ERROR_WANT_ASYNC_JOB:
-            // ov_log_debug("SSL_ERROR_WANT_ASYNC_JOB");
-            break;
-        case SSL_ERROR_WANT_CLIENT_HELLO_CB:
-            // ov_log_debug("SSL_ERROR_WANT_CLIENT_HELLO_CB");
-            goto call_again_later;
-            break;
-
-        case SSL_ERROR_SYSCALL:
-            goto close;
-            break;
-
-        case SSL_ERROR_SSL:
-            shutdown = false;
-
-            goto close;
-            break;
-
-        case SSL_ERROR_WANT_ACCEPT:
-            break;
-        }
-        break;
-    }
-
-call_again_later:
-
-    /*
-     *      Handshake not successfull, but also not failed yet.
-     *      Need to recall the function. This will be done
-     *      via a timed callback.
-     */
-
-    self->timer.handshake =
-        loop->timer.set(loop, self->config.reconnect_interval_usecs, self,
-                        perform_ssl_client_handshake_triggered);
-
-    if (OV_TIMER_INVALID == self->timer.handshake)
-        goto error;
-
-success:
-    self->dtls.handshaked = true;
-    return true;
-
-close:
-
-    if (shutdown)
-        SSL_shutdown(self->dtls.ssl);
-
-error:
-    return false;
-}
-
-/*----------------------------------------------------------------------------*/
-
-bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata) {
-
-    if (!userdata)
-        return false;
-
-    ov_interconnect_session *session = (ov_interconnect_session *)(userdata);
-    session->timer.handshake = OV_TIMER_INVALID;
-    UNUSED(id);
-    // handshake function MUST reset any timer if required
-    return perform_ssl_client_handshake(session);
-}
-
-/*----------------------------------------------------------------------------*/
-
-bool ov_interconnect_session_handshake_active(ov_interconnect_session *self,
-                                              const char *fingerprint) {
-
-    int r = 0;
-
-    if (!self || !fingerprint)
-        goto error;
-
-    ov_dtls *dtls = self->config.dtls;
-
-    memcpy(self->remote.fingerprint, fingerprint, OV_DTLS_FINGERPRINT_MAX);
-
-    if (self->dtls.ssl) {
-
-        SSL_free(self->dtls.ssl);
-        self->dtls.ssl = NULL;
-    }
-
-    self->dtls.dtls = dtls;
-    self->dtls.handshaked = false;
-    self->dtls.type = OV_DTLS_ACTIVE;
-
-    self->dtls.ctx = SSL_CTX_new(DTLS_client_method());
-    if (!self->dtls.ctx)
-        goto error;
-
-    if (1 != SSL_CTX_set_min_proto_version(self->dtls.ctx, DTLS1_2_VERSION))
-        goto error;
-
-    // use default SSL verify
-    SSL_CTX_set_verify(self->dtls.ctx, SSL_VERIFY_PEER, NULL);
-
-    // load verify data path from ov_ice_ssl config
-
-    const char *file = ov_dtls_get_verify_file(dtls);
-    const char *path = ov_dtls_get_verify_path(dtls);
-
-    if (file || path) {
-
-        if (0 == ov_string_len(file))
-            file = NULL;
-        if (0 == ov_string_len(path))
-            path = NULL;
-
-        r = SSL_CTX_load_verify_locations(self->dtls.ctx, file, path);
-
-        if (r != 1) {
-            goto error;
-        }
-    }
-
-    // create the DTLS session context
-    self->dtls.ssl = SSL_new(self->dtls.ctx);
-    if (!self->dtls.ssl)
-        goto error;
-
-    r = SSL_set_tlsext_use_srtp(self->dtls.ssl, ov_dtls_get_srtp_profile(dtls));
-    if (0 != r)
-        goto error;
-
-    self->dtls.read = BIO_new(BIO_s_mem());
-    self->dtls.write = ov_interconnect_dtls_bio_create(self);
-    BIO_set_mem_eof_return(self->dtls.read, -1);
-    BIO_set_mem_eof_return(self->dtls.write, -1);
-
-    SSL_set_bio(self->dtls.ssl, self->dtls.read, self->dtls.write);
-
-    SSL_set_options(self->dtls.ssl, SSL_OP_COOKIE_EXCHANGE);
-    SSL_set_connect_state(self->dtls.ssl);
-    SSL_CTX_set_client_hello_cb(self->dtls.ctx, dummy_client_hello_cb, NULL);
-
-    ov_event_loop *loop = self->config.loop;
-    self->timer.handshake =
-        loop->timer.set(loop, self->config.reconnect_interval_usecs, self,
-                        perform_ssl_client_handshake_triggered);
-
-    if (OV_TIMER_INVALID == self->timer.handshake)
-        goto error;
-
-    ov_log_debug("started DTLS handshake");
-
-    return true;
-error:
-    return false;
-}
-
-/*---------------------------------------------------------------------------*/
-
-static bool
-srtp_get_key_length_of_profile(const SRTP_PROTECTION_PROFILE *profile,
-                               uint32_t *keylen, uint32_t *saltlen) {
-
-    if (!profile || !keylen || !saltlen)
-        goto error;
-
-    if (!profile->id)
-        goto error;
-
-    switch (profile->id) {
-
-    case SRTP_AES128_CM_SHA1_80:
-        *keylen = 16;
-        *saltlen = 14;
-        break;
-
-    case SRTP_AES128_CM_SHA1_32:
-        *keylen = 16;
-        *saltlen = 14;
-        break;
-
-    case SRTP_AEAD_AES_128_GCM:
-        *keylen = 16;
-        *saltlen = 12;
-        break;
-
-    case SRTP_AEAD_AES_256_GCM:
-        *keylen = 32;
-        *saltlen = 12;
-        break;
-
-    default:
-        goto error;
-    }
-
-    return true;
-error:
-    return false;
-}
-
-/*---------------------------------------------------------------------------*/
-
-static const char *session_get_srtp_keys(ov_interconnect_session *self,
-                                         uint32_t *key_len, uint32_t *salt_len,
-                                         uint8_t *server_key,
-                                         uint8_t *server_salt,
-                                         uint8_t *client_key,
-                                         uint8_t *client_salt) {
-
-    size_t size = 2 * OV_DTLS_KEY_MAX + 2 * OV_DTLS_SALT_MAX + 1;
-
-    uint8_t buffer[size];
-    memset(buffer, 0, size);
-
-    if (!self || !self->dtls.ssl || !key_len || !salt_len || !server_key ||
-        !server_salt || !client_key || !client_salt)
-        goto error;
-
-    uint32_t keylen = 0;
-    uint32_t saltlen = 0;
-
-    SRTP_PROTECTION_PROFILE *profile =
-        SSL_get_selected_srtp_profile(self->dtls.ssl);
-
-    if (!srtp_get_key_length_of_profile(profile, &keylen, &saltlen))
-        goto error;
-
-    if (keylen > *key_len)
-        goto error;
-
-    if (saltlen > *salt_len)
-        goto error;
-
-    /*      The total length of keying material obtained
-            should be equal to two times the sum of
-            the master key length and the salt length
-            as defined for the protection profile in use.
-
-            This provides the client write master key,
-            the server write master key,
-            the client write master salt and
-            the server write master salt in that order.
-
-    */
-
-    if (1 != SSL_export_keying_material(
-                 self->dtls.ssl, buffer, size, label_extractor_srtp,
-                 strlen(label_extractor_srtp), NULL, 0, 0))
-        goto error;
-
-    *key_len = keylen;
-    *salt_len = saltlen;
-
-    uint8_t *ptr = buffer;
-
-    if (!memcpy(client_key, ptr, keylen))
-        return false;
-    ptr += keylen;
-    if (!memcpy(server_key, ptr, keylen))
-        return false;
-    ptr += keylen;
-    if (!memcpy(client_salt, ptr, saltlen))
-        return false;
-    ptr += saltlen;
-    if (!memcpy(server_salt, ptr, saltlen))
-        return false;
-    ptr += saltlen;
-
-    return profile->name;
-error:
-    return NULL;
-}
-
-/*----------------------------------------------------------------------------*/
-
 static bool srtp_unset_data(ov_interconnect_session *self) {
 
     if (!self)
@@ -1028,6 +686,383 @@ static bool prepare_streams(ov_interconnect_session *session) {
         goto error;
 
 done:
+    return true;
+error:
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool
+srtp_get_key_length_of_profile(const SRTP_PROTECTION_PROFILE *profile,
+                               uint32_t *keylen, uint32_t *saltlen) {
+
+    if (!profile || !keylen || !saltlen)
+        goto error;
+
+    if (!profile->id)
+        goto error;
+
+    switch (profile->id) {
+
+    case SRTP_AES128_CM_SHA1_80:
+        *keylen = 16;
+        *saltlen = 14;
+        break;
+
+    case SRTP_AES128_CM_SHA1_32:
+        *keylen = 16;
+        *saltlen = 14;
+        break;
+
+    case SRTP_AEAD_AES_128_GCM:
+        *keylen = 16;
+        *saltlen = 12;
+        break;
+
+    case SRTP_AEAD_AES_256_GCM:
+        *keylen = 32;
+        *saltlen = 12;
+        break;
+
+    default:
+        goto error;
+    }
+
+    return true;
+error:
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static const char *session_get_srtp_keys(ov_interconnect_session *self,
+                                         uint32_t *key_len, uint32_t *salt_len,
+                                         uint8_t *server_key,
+                                         uint8_t *server_salt,
+                                         uint8_t *client_key,
+                                         uint8_t *client_salt) {
+
+    size_t size = 2 * OV_DTLS_KEY_MAX + 2 * OV_DTLS_SALT_MAX + 1;
+
+    uint8_t buffer[size];
+    memset(buffer, 0, size);
+
+    if (!self || !self->dtls.ssl || !key_len || !salt_len || !server_key ||
+        !server_salt || !client_key || !client_salt)
+        goto error;
+
+    uint32_t keylen = 0;
+    uint32_t saltlen = 0;
+
+    SRTP_PROTECTION_PROFILE *profile =
+        SSL_get_selected_srtp_profile(self->dtls.ssl);
+
+    if (!srtp_get_key_length_of_profile(profile, &keylen, &saltlen))
+        goto error;
+
+    if (keylen > *key_len)
+        goto error;
+
+    if (saltlen > *salt_len)
+        goto error;
+
+    /*      The total length of keying material obtained
+            should be equal to two times the sum of
+            the master key length and the salt length
+            as defined for the protection profile in use.
+
+            This provides the client write master key,
+            the server write master key,
+            the client write master salt and
+            the server write master salt in that order.
+
+    */
+
+    if (1 != SSL_export_keying_material(
+                 self->dtls.ssl, buffer, size, label_extractor_srtp,
+                 strlen(label_extractor_srtp), NULL, 0, 0))
+        goto error;
+
+    *key_len = keylen;
+    *salt_len = saltlen;
+
+    uint8_t *ptr = buffer;
+
+    if (!memcpy(client_key, ptr, keylen))
+        return false;
+    ptr += keylen;
+    if (!memcpy(server_key, ptr, keylen))
+        return false;
+    ptr += keylen;
+    if (!memcpy(client_salt, ptr, saltlen))
+        return false;
+    ptr += saltlen;
+    if (!memcpy(server_salt, ptr, saltlen))
+        return false;
+    ptr += saltlen;
+
+    return profile->name;
+error:
+    return NULL;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata);
+
+/*----------------------------------------------------------------------------*/
+
+static bool perform_ssl_client_handshake(ov_interconnect_session *self) {
+
+    int r = 0, n = 0;
+
+    bool shutdown = true;
+
+    OV_ASSERT(self);
+    if (!self)
+        goto error;
+
+    ov_event_loop *loop = self->config.loop;
+
+    if (OV_TIMER_INVALID != self->timer.handshake) {
+
+        loop->timer.unset(loop, self->timer.handshake, NULL);
+        self->timer.handshake = OV_TIMER_INVALID;
+    }
+
+    r = SSL_connect(self->dtls.ssl);
+
+    switch (r) {
+
+    case 1:
+
+        r = check_cert(self);
+        switch (r) {
+
+        case 1:
+            goto success;
+
+        case 0:
+            goto close;
+        default:
+            OV_ASSERT(1 == 0);
+            goto error;
+        }
+
+    default:
+
+        n = SSL_get_error(self->dtls.ssl, r);
+        switch (n) {
+
+        case SSL_ERROR_NONE:
+            OV_ASSERT(1 == 0);
+            break;
+
+        case SSL_ERROR_ZERO_RETURN:
+            // ov_log_debug("SSL_ERROR_ZERO_RETURN");
+            goto close;
+            break;
+
+        case SSL_ERROR_WANT_READ:
+            // ov_log_debug("SSL_ERROR_WANT_READ");
+            break;
+        case SSL_ERROR_WANT_WRITE:
+            // ov_log_debug("SSL_ERROR_WANT_WRITE");
+            break;
+        case SSL_ERROR_WANT_CONNECT:
+            // ov_log_debug("SSL_ERROR_WANT_CONNECT");
+            break;
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            // ov_log_debug("SSL_ERROR_WANT_X509_LOOKUP");
+            break;
+        case SSL_ERROR_WANT_ASYNC:
+            // ov_log_debug("SSL_ERROR_WANT_ASYNC");
+            break;
+        case SSL_ERROR_WANT_ASYNC_JOB:
+            // ov_log_debug("SSL_ERROR_WANT_ASYNC_JOB");
+            break;
+        case SSL_ERROR_WANT_CLIENT_HELLO_CB:
+            // ov_log_debug("SSL_ERROR_WANT_CLIENT_HELLO_CB");
+            goto call_again_later;
+            break;
+
+        case SSL_ERROR_SYSCALL:
+            goto close;
+            break;
+
+        case SSL_ERROR_SSL:
+            shutdown = false;
+
+            goto close;
+            break;
+
+        case SSL_ERROR_WANT_ACCEPT:
+            break;
+        }
+        break;
+    }
+
+call_again_later:
+
+    /*
+     *      Handshake not successfull, but also not failed yet.
+     *      Need to recall the function. This will be done
+     *      via a timed callback.
+     */
+
+    self->timer.handshake =
+        loop->timer.set(loop, self->config.reconnect_interval_usecs, self,
+                        perform_ssl_client_handshake_triggered);
+
+    if (OV_TIMER_INVALID == self->timer.handshake)
+        goto error;
+
+success:
+    self->dtls.handshaked = true;
+
+    srtp_unset_data(self);
+
+    const char *profile = session_get_srtp_keys(
+        self, &self->srtp.key_len, &self->srtp.salt_len,
+        self->srtp.server.key, self->srtp.server.salt,
+        self->srtp.client.key, self->srtp.client.salt);
+    
+    if (profile) {
+    
+        self->srtp.ready = true;
+        self->srtp.profile = ov_data_pointer_free(self->srtp.profile);
+        self->srtp.profile = strdup(profile);
+    
+        if (!self->srtp.local.session) {
+    
+            srtp_err_status_t r =
+                srtp_create(&self->srtp.local.session, NULL);
+    
+            switch (r) {
+    
+            case srtp_err_status_ok:
+                ov_log_debug("Session %s SRTP READY", self->id);
+                prepare_streams(self);
+                ov_interconnect_srtp_ready(self->config.base, self);
+    
+                break;
+    
+            default:
+                ov_log_error("Session %s srtp failed %i", self->id, r);
+                goto error;
+            }
+        }
+    }
+    
+    return true;
+
+close:
+
+    if (shutdown)
+        SSL_shutdown(self->dtls.ssl);
+
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool perform_ssl_client_handshake_triggered(uint32_t id, void *userdata) {
+
+    if (!userdata)
+        return false;
+
+    ov_interconnect_session *session = (ov_interconnect_session *)(userdata);
+    session->timer.handshake = OV_TIMER_INVALID;
+    UNUSED(id);
+    // handshake function MUST reset any timer if required
+    return perform_ssl_client_handshake(session);
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_interconnect_session_handshake_active(ov_interconnect_session *self,
+                                              const char *fingerprint) {
+
+    int r = 0;
+
+    if (!self || !fingerprint)
+        goto error;
+
+    ov_dtls *dtls = self->config.dtls;
+
+    memcpy(self->remote.fingerprint, fingerprint, OV_DTLS_FINGERPRINT_MAX);
+
+    if (self->dtls.ssl) {
+
+        SSL_free(self->dtls.ssl);
+        self->dtls.ssl = NULL;
+    }
+
+    self->dtls.dtls = dtls;
+    self->dtls.handshaked = false;
+    self->dtls.type = OV_DTLS_ACTIVE;
+
+    self->dtls.ctx = SSL_CTX_new(DTLS_client_method());
+    if (!self->dtls.ctx)
+        goto error;
+
+    if (1 != SSL_CTX_set_min_proto_version(self->dtls.ctx, DTLS1_2_VERSION))
+        goto error;
+
+    // use default SSL verify
+    SSL_CTX_set_verify(self->dtls.ctx, SSL_VERIFY_PEER, NULL);
+
+    // load verify data path from ov_ice_ssl config
+
+    const char *file = ov_dtls_get_verify_file(dtls);
+    const char *path = ov_dtls_get_verify_path(dtls);
+
+    if (file || path) {
+
+        if (0 == ov_string_len(file))
+            file = NULL;
+        if (0 == ov_string_len(path))
+            path = NULL;
+
+        r = SSL_CTX_load_verify_locations(self->dtls.ctx, file, path);
+
+        if (r != 1) {
+            goto error;
+        }
+    }
+
+    // create the DTLS session context
+    self->dtls.ssl = SSL_new(self->dtls.ctx);
+    if (!self->dtls.ssl)
+        goto error;
+
+    r = SSL_set_tlsext_use_srtp(self->dtls.ssl, ov_dtls_get_srtp_profile(dtls));
+    if (0 != r)
+        goto error;
+
+    self->dtls.read = BIO_new(BIO_s_mem());
+    self->dtls.write = ov_interconnect_dtls_bio_create(self);
+    BIO_set_mem_eof_return(self->dtls.read, -1);
+    BIO_set_mem_eof_return(self->dtls.write, -1);
+
+    SSL_set_bio(self->dtls.ssl, self->dtls.read, self->dtls.write);
+
+    SSL_set_options(self->dtls.ssl, SSL_OP_COOKIE_EXCHANGE);
+    SSL_set_connect_state(self->dtls.ssl);
+    SSL_CTX_set_client_hello_cb(self->dtls.ctx, dummy_client_hello_cb, NULL);
+
+    ov_event_loop *loop = self->config.loop;
+    self->timer.handshake =
+        loop->timer.set(loop, self->config.reconnect_interval_usecs, self,
+                        perform_ssl_client_handshake_triggered);
+
+    if (OV_TIMER_INVALID == self->timer.handshake)
+        goto error;
+
+    ov_log_debug("started DTLS handshake");
+
     return true;
 error:
     return false;
