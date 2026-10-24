@@ -1491,7 +1491,7 @@ bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
         switch (r) {
 
         case srtp_err_status_ok:
-            ov_log_debug("SRTP protect success.");
+            //ov_log_debug("SRTP protect success.");
             break;
 
         default:
@@ -1593,7 +1593,7 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
         goto error;
 
     // ov_log_debug("IO send %s %zu bytes", name, bytes);
-
+/*
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
         name,
@@ -1601,7 +1601,7 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-
+*/
 done:
     return true;
 error:

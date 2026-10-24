@@ -340,11 +340,6 @@ bool ov_interconnect_loop_send(ov_interconnect_loop *self,
 
     ssize_t out =
         sendto(self->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
-    
-    ov_log_debug("send %zi bytes to %s:%i", out,
-            self->config.multicast.host,
-            self->config.multicast.port);
-    
 
     if (self->loop.on) {
 
@@ -354,10 +349,6 @@ bool ov_interconnect_loop_send(ov_interconnect_loop *self,
                                          self->loop.dest.socket.port);
 
         out = sendto(self->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
-
-        ov_log_debug("send %zi bytes to %s:%i", out,
-            self->loop.dest.socket.host,
-            self->loop.dest.socket.port);
 
     }
 
