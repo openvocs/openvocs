@@ -1375,7 +1375,7 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     if (!ov_interconnect_loop_has_mixer(loop)) {
         ov_interconnect_loop_assign_mixer((ov_interconnect_loop *)loop);
     }
-/*
+
     uint32_t local_ssrc = ov_interconnect_loop_get_ssrc(loop);
     if (0 == local_ssrc)
         goto done;
@@ -1395,16 +1395,9 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     int count = 0;
     int r = 0;
 
-    while(count < 10){
+    r = srtp_err_status_ok;
 
-        r = srtp_err_status_ok;
-
-        count++;
-
-        r = srtp_add_stream(srtp_session, &self->srtp.local.policy);
-        if (r == srtp_err_status_ok) break;
-
-    }
+    r = srtp_add_stream(srtp_session, &self->srtp.local.policy);
     
     switch (r) {
 
@@ -1413,35 +1406,10 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
             break;
 
         default:
-            //ov_log_error("Failed to add srtp_stream local policy %s", loop_name);
+            ov_log_error("Failed to add srtp_stream local policy %s", loop_name);
             break;
-    }
-
-    count = 0;
-    r = 0;
-    
-    while(count < 10){
-
-        r = srtp_err_status_ok;
-
-        count++;
-
-        r = srtp_add_stream(srtp_session, &self->srtp.remote.policy);
-        if (r == srtp_err_status_ok) break;
-
     }
     
-    switch (r) {
-
-        case srtp_err_status_ok:
-            ov_log_debug("add srtp_stream remote policy %s", loop_name);
-            break;
-
-        default:
-            ov_log_error("Failed to add srtp_stream remote policy %s", loop_name);
-            break;
-    }
-*/
 done:
 
     ov_log_info("%s added loop %s|%" PRIu32, self->id, loop_name, remote_ssrc);
@@ -1511,11 +1479,11 @@ bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
         switch (r) {
 
         case srtp_err_status_ok:
-            // ov_log_debug("SRTP protect success.");
+            ov_log_debug("SRTP protect success.");
             break;
 
         default:
-            // ov_log_error("SRTP unprotect error");
+            ov_log_error("SRTP unprotect error");
             goto ignore;
             break;
         }
@@ -1598,11 +1566,11 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
         switch (r) {
 
         case srtp_err_status_ok:
-            // ov_log_debug("SRTP protect success.");
+            ov_log_debug("SRTP protect success.");
             break;
 
         default:
-            // ov_log_error("SRTP protect error cannot send.");
+            ov_log_error("SRTP protect error cannot send.");
             goto done;
             break;
         }
@@ -1613,7 +1581,7 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
         goto error;
 
     // ov_log_debug("IO send %s %zu bytes", name, bytes);
-/*
+
     ov_log_debug("%s to %s external SRTP send %zi bytes for %s to %s:%i",
         self->id,
         name,
@@ -1621,7 +1589,7 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
         name,
         self->config.remote.media.host,
         self->config.remote.media.port);
-*/
+
 done:
     return true;
 error:
