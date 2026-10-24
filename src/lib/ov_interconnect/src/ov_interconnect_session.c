@@ -1392,7 +1392,6 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     self->srtp.remote.policy.key = self->srtp.remote.key;
     self->srtp.remote.policy.next = NULL;
 
-    int count = 0;
     int r = 0;
 
     r = srtp_err_status_ok;
@@ -1409,7 +1408,7 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
             ov_log_error("Failed to add srtp_stream local policy %s", loop_name);
             break;
     }
-    
+
 done:
 
     ov_log_info("%s added loop %s|%" PRIu32, self->id, loop_name, remote_ssrc);
