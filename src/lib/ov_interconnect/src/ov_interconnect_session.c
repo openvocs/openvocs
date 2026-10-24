@@ -1409,6 +1409,19 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
             break;
     }
 
+    r = srtp_add_stream(srtp_session, &self->srtp.remote.policy);
+    
+    switch (r) {
+
+        case srtp_err_status_ok:
+            ov_log_debug("add srtp_stream remote policy %s", loop_name);
+            break;
+
+        default:
+            ov_log_error("Failed to add srtp_stream remote policy %s", loop_name);
+            break;
+    }
+
 done:
 
     ov_log_info("%s added loop %s|%" PRIu32, self->id, loop_name, remote_ssrc);
@@ -1565,7 +1578,7 @@ bool ov_interconnect_session_forward_loop_io(ov_interconnect_session *self,
         switch (r) {
 
         case srtp_err_status_ok:
-            ov_log_debug("SRTP protect success.");
+            // ov_log_debug("SRTP protect success.");
             break;
 
         default:
