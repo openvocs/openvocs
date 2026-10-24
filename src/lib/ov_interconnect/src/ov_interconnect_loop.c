@@ -48,6 +48,13 @@ struct ov_interconnect_loop {
     ov_mixer_data mixer;
 
     uint16_t sequence_number;
+
+    struct {
+
+        bool on;
+        ov_mc_loop_data dest;
+
+    } loop;
 };
 
 /*----------------------------------------------------------------------------*/
@@ -248,6 +255,22 @@ error:
 
 /*----------------------------------------------------------------------------*/
 
+bool ov_interconnect_loop_unassign_mixer(ov_interconnect_loop *self, int socket) {
+
+    if (!self) goto error;
+
+    if (self->mixer.socket == socket)
+        self->mixer.socket = 0;
+
+    ov_log_error("Loop %s lost mixer", self->config.name);
+
+    return true;
+error:
+    return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
 int ov_interconnect_loop_get_mixer(const ov_interconnect_loop *self) {
 
     if (!self)
@@ -297,7 +320,7 @@ ov_interconnect_loop_get_loop_data(const ov_interconnect_loop *self) {
 
 /*----------------------------------------------------------------------------*/
 
-bool ov_interconnect_loop_send(const ov_interconnect_loop *self,
+bool ov_interconnect_loop_send(ov_interconnect_loop *self,
                                const uint8_t *buffer, size_t size) {
 
     if (!self || !buffer || !size)
@@ -322,10 +345,34 @@ bool ov_interconnect_loop_send(const ov_interconnect_loop *self,
             self->config.multicast.host,
             self->config.multicast.port);
     */
+
+    if (self->loop.on) {
+
+        dest = (struct sockaddr_storage) {0};
+        ov_socket_fill_sockaddr_storage(&dest, self->local.sa.ss_family,
+                                         self->loop.dest.socket.host,
+                                         self->loop.dest.socket.port);
+
+        out = sendto(self->socket, buffer, size, 0, (struct sockaddr *)&dest, len);
+
+    }
+
     if (out != (ssize_t)size)
         goto error;
 
     return true;
 error:
     return false;
+}
+
+/*----------------------------------------------------------------------------*/
+
+bool ov_interconnect_loop_duplicate(ov_interconnect_loop *self,
+                               ov_mc_loop_data dest, bool on){
+
+    if (!self) return false;
+
+    self->loop.on = on;
+    self->loop.dest = dest;
+    return true;   
 }

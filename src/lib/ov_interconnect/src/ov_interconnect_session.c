@@ -1088,6 +1088,41 @@ static bool handshake_passive(ov_interconnect_session *self,
     if (r >= 1) {
 
         self->dtls.handshaked = true;
+
+        srtp_unset_data(self);
+
+        const char *profile = session_get_srtp_keys(
+            self, &self->srtp.key_len, &self->srtp.salt_len,
+            self->srtp.server.key, self->srtp.server.salt,
+            self->srtp.client.key, self->srtp.client.salt);
+        
+        if (profile) {
+        
+            self->srtp.ready = true;
+            self->srtp.profile = ov_data_pointer_free(self->srtp.profile);
+            self->srtp.profile = strdup(profile);
+        
+            if (!self->srtp.local.session) {
+        
+                srtp_err_status_t r =
+                    srtp_create(&self->srtp.local.session, NULL);
+        
+                switch (r) {
+        
+                case srtp_err_status_ok:
+                    ov_log_debug("Session %s SRTP READY", self->id);
+                    prepare_streams(self);
+                    ov_interconnect_srtp_ready(self->config.base, self);
+        
+                    break;
+        
+                default:
+                    ov_log_error("Session %s srtp failed %i", self->id, r);
+                    goto error;
+                }
+            }
+        }
+
         goto done;
 
     } else if (r == 0) {
@@ -1177,7 +1212,42 @@ bool ov_interconnect_session_media_io_ssl_external(
             r = SSL_do_handshake(self->dtls.ssl);
 
             if (SSL_is_init_finished(self->dtls.ssl)) {
+                
                 self->dtls.handshaked = true;
+
+                srtp_unset_data(self);
+
+                const char *profile = session_get_srtp_keys(
+                    self, &self->srtp.key_len, &self->srtp.salt_len,
+                    self->srtp.server.key, self->srtp.server.salt,
+                    self->srtp.client.key, self->srtp.client.salt);
+        
+                if (profile) {
+        
+                    self->srtp.ready = true;
+                    self->srtp.profile = ov_data_pointer_free(self->srtp.profile);
+                    self->srtp.profile = strdup(profile);
+        
+                    if (!self->srtp.local.session) {
+        
+                        srtp_err_status_t r =
+                            srtp_create(&self->srtp.local.session, NULL);
+        
+                        switch (r) {
+        
+                        case srtp_err_status_ok:
+                            ov_log_debug("Session %s SRTP READY", self->id);
+                            prepare_streams(self);
+                            ov_interconnect_srtp_ready(self->config.base, self);
+        
+                            break;
+        
+                        default:
+                            ov_log_error("Session %s srtp failed %i", self->id, r);
+                            goto error;
+                        }
+                    }
+                }
             }
 
             break;
@@ -1185,40 +1255,6 @@ bool ov_interconnect_session_media_io_ssl_external(
         case OV_DTLS_ACTIVE:
             perform_ssl_client_handshake(self);
             break;
-        }
-
-        srtp_unset_data(self);
-
-        const char *profile = session_get_srtp_keys(
-            self, &self->srtp.key_len, &self->srtp.salt_len,
-            self->srtp.server.key, self->srtp.server.salt,
-            self->srtp.client.key, self->srtp.client.salt);
-
-        if (profile) {
-
-            self->srtp.ready = true;
-            self->srtp.profile = ov_data_pointer_free(self->srtp.profile);
-            self->srtp.profile = strdup(profile);
-
-            if (!self->srtp.local.session) {
-
-                srtp_err_status_t r =
-                    srtp_create(&self->srtp.local.session, NULL);
-
-                switch (r) {
-
-                case srtp_err_status_ok:
-                    ov_log_debug("Session %s SRTP READY", self->id);
-                    prepare_streams(self);
-                    ov_interconnect_srtp_ready(self->config.base, self);
-
-                    break;
-
-                default:
-                    ov_log_error("Session %s srtp failed %i", self->id, r);
-                    goto error;
-                }
-            }
         }
 
     } else {
@@ -1471,7 +1507,7 @@ bool ov_interconnect_session_media_io_external(ov_interconnect_session *self,
     uint32_t u32 = htonl(ssrc_to_set);
     memcpy(buffer + 8, &u32, 4);
 
-    if (!ov_interconnect_loop_send(loop, buffer, l)) {
+    if (!ov_interconnect_loop_send((ov_interconnect_loop*)loop, buffer, l)) {
         ov_log_error("Could not send at loop %s", loop_name);
         goto ignore;
     }

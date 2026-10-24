@@ -63,6 +63,7 @@ struct ov_interconnect {
 
         ov_event_app *signaling;
         ov_event_app *mixer;
+        ov_event_app *cc;
 
     } app;
 
@@ -71,6 +72,7 @@ struct ov_interconnect {
         int signaling;
         int media;
         int mixer;
+        int cc;
 
     } socket;
 
@@ -156,7 +158,51 @@ error:
     return false;
 }
 
+/*----------------------------------------------------------------------------*/
 
+static void cb_cc_close(void *userdata, int socket) {
+
+    ov_interconnect *self = ov_interconnect_cast(userdata);
+    UNUSED(self);
+
+    ov_dict_del(self->registered, (void*)(intptr_t)socket);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_signaling_close(void *userdata, int socket) {
+
+    ov_interconnect *self = ov_interconnect_cast(userdata);
+    drop_session_by_signaling_socket(self, socket);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void cb_signaling_connected(void *userdata, int socket) {
+
+    ov_interconnect *self = ov_interconnect_cast(userdata);
+    if (!self)
+        goto error;
+
+    ov_log_debug("opened connection %i to %s:%i", socket,
+                 self->config.socket.signaling.host,
+                 self->config.socket.signaling.port);
+
+    ov_json_value *msg =
+        ov_interconnect_msg_register(self->config.name, self->config.password);
+
+    ov_event_app_send(self->app.signaling, socket, msg);
+    msg = ov_json_value_free(msg);
+
+    // client initiated connection to remote, so we need to
+    // register that connection to allow access within the responses
+    intptr_t key = socket;
+    ov_dict_set(self->registered, (void *)key, NULL, NULL);
+error:
+    return;
+}
 
 /*
  *      ------------------------------------------------------------------------
@@ -351,6 +397,205 @@ static void event_mixer_join(void *userdata, const char *event_name, int socket,
     ov_json_value_free(input);
     return;
 error:
+    ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void event_cc_register(void *userdata, const char *event_name, int socket,
+                             ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+    ov_json_value *val = NULL;
+    ov_json_value *res = NULL;
+
+    ov_interconnect *self = ov_interconnect_cast(userdata);
+    if (!self || !event_name || !input)
+        goto error;
+
+    const char *name = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_NAME));
+
+    const char *pass = ov_json_string_get(
+        ov_json_get(input, "/" OV_KEY_PARAMETER "/" OV_KEY_PASSWORD));
+
+    if (!name || !pass) {
+
+        out = ov_event_api_create_error_response(input,
+                                                 OV_ERROR_CODE_PARAMETER_ERROR,
+                                                 OV_ERROR_DESC_PARAMETER_ERROR);
+
+        goto send_response;
+    }
+
+    if (0 != strcmp(pass, self->config.password)) {
+
+        out = ov_event_api_create_error_response(input, OV_ERROR_CODE_AUTH,
+                                                 OV_ERROR_DESC_AUTH);
+
+        goto send_response;
+    }
+
+    intptr_t key = (intptr_t)socket;
+    ov_dict_set(self->registered, (void *)key, NULL, NULL);
+
+    out = ov_event_api_create_success_response(input);
+    res = ov_event_api_get_response(out);
+    val = ov_json_string(self->config.name);
+    if (!ov_json_object_set(res, OV_KEY_NAME, val))
+        goto error;
+    val = NULL;
+
+send_response:
+
+    ov_event_app_send(self->app.cc, socket, out);
+    ov_json_value_free(out);
+    ov_json_value_free(input);
+
+    return;
+error:
+    ov_json_value_free(out);
+    ov_json_value_free(val);
+    ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void event_cc_restart(void *userdata, const char *event_name, int socket,
+                             ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+
+    ov_interconnect *self = ov_interconnect_cast(userdata);
+    if (!self || !event_name || !input)
+        goto error;
+
+    if (!ov_dict_is_set(self->registered, (void*)(intptr_t) socket)){
+
+        out = ov_event_api_create_error_response(input, OV_ERROR_CODE_AUTH,
+                                                 OV_ERROR_DESC_AUTH);
+
+        goto send_response;
+    }
+
+    ov_event_app_close(self->app.signaling, self->socket.signaling);
+    
+    if (false == self->config.socket.client){
+
+        ov_io_socket_config sig =
+        (ov_io_socket_config){.auto_reconnect = false,
+                              .socket = self->config.socket.signaling,
+                              .callbacks =
+                                  (ov_io_callback){
+                                      .userdata = self,
+                                      .accept = NULL,
+                                      .io = NULL, // done in app
+                                      .close = cb_signaling_close,
+                                      .connected = cb_signaling_connected,
+                                  },
+                              .ssl = (ov_io_ssl_config){0}};
+
+        if (self->config.tls.client.domain[0] != 0)
+            strncpy(sig.ssl.domain, self->config.tls.client.domain, PATH_MAX);
+    
+        if (self->config.tls.client.ca.file[0] != 0)
+            strncpy(sig.ssl.ca.file, self->config.tls.client.ca.file, PATH_MAX);
+    
+        if (self->config.tls.client.ca.path[0] != 0)
+            strncpy(sig.ssl.ca.path, self->config.tls.client.ca.path, PATH_MAX);
+    
+        self->socket.signaling =
+            ov_event_app_open_listener(self->app.signaling, sig);
+
+        if (-1 == self->socket.signaling) {
+
+            ov_log_error("Could not open signaling socket %s:%i",
+                         self->config.socket.signaling.host,
+                         self->config.socket.signaling.port);
+
+            goto error;
+
+        } else {
+
+            ov_log_info("opened signaling socket %s:%i",
+                        self->config.socket.signaling.host,
+                        self->config.socket.signaling.port);
+        }
+    }
+
+    out = ov_event_api_create_success_response(input); 
+
+send_response:
+
+    ov_event_app_send(self->app.cc, socket, out);
+    ov_json_value_free(out);
+    ov_json_value_free(input);
+
+    return;
+error:
+    ov_json_value_free(out);
+    ov_json_value_free(input);
+    return;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static void event_cc_loop(void *userdata, const char *event_name, int socket,
+                             ov_json_value *input) {
+
+    ov_json_value *out = NULL;
+
+    ov_interconnect *self = ov_interconnect_cast(userdata);
+    if (!self || !event_name || !input)
+        goto error;
+
+    if (!ov_dict_is_set(self->registered, (void*)(intptr_t) socket)){
+
+        out = ov_event_api_create_error_response(input, OV_ERROR_CODE_AUTH,
+                                                 OV_ERROR_DESC_AUTH);
+
+        goto send_response;
+    }
+
+    bool on = false;
+    if (ov_json_is_true(ov_json_get(input, "/parameter/on")))
+        on = true;
+
+    const char *loop1 = ov_json_string_get(ov_json_get(input, "/parameter/loop1"));
+    const char *loop2 = ov_json_string_get(ov_json_get(input, "/parameter/loop2"));
+
+    ov_interconnect_loop *loopA = ov_dict_get(self->loops, loop1);
+    ov_interconnect_loop *loopB = ov_dict_get(self->loops, loop2);
+
+    if (!loopA || !loopB){
+
+        out = ov_event_api_create_error_response(input, OV_ERROR_CODE_PARAMETER_ERROR,
+                                                 "loop not found.");
+
+        goto send_response;
+    }
+
+    ov_mc_loop_data dataA = ov_interconnect_loop_get_loop_data(loopA);
+    ov_mc_loop_data dataB = ov_interconnect_loop_get_loop_data(loopB);
+
+    ov_interconnect_loop_duplicate(loopA, dataB, on);
+    ov_interconnect_loop_duplicate(loopB, dataA, on);
+
+    out = ov_event_api_create_success_response(input); 
+
+    ov_log_info("bridging Loop %s and %s %s", loop1, loop2, on?"On":"Off");
+
+send_response:
+
+    ov_event_app_send(self->app.cc, socket, out);
+    ov_json_value_free(out);
+    ov_json_value_free(input);
+
+    return;
+error:
+    ov_json_value_free(out);
     ov_json_value_free(input);
     return;
 }
@@ -1104,37 +1349,33 @@ error:
  *      ------------------------------------------------------------------------
  */
 
-static void cb_signaling_close(void *userdata, int socket) {
+/*----------------------------------------------------------------------------*/
 
-    ov_interconnect *self = ov_interconnect_cast(userdata);
-    drop_session_by_signaling_socket(self, socket);
-    return;
+static bool unassign_mixer(const void *key, void *val, void *data){
+
+    if (!key) return true;
+
+    ov_interconnect_loop *loop = (ov_interconnect_loop *)val;
+
+    ov_interconnect_loop_unassign_mixer(loop, (intptr_t) data);
+    return true;
+
 }
 
 /*----------------------------------------------------------------------------*/
 
-static void cb_signaling_connected(void *userdata, int socket) {
+static bool assign_new_mixer(const void *key, void *val, void *data){
 
-    ov_interconnect *self = ov_interconnect_cast(userdata);
-    if (!self)
-        goto error;
+    if (!key) return true;
+    UNUSED(data);
 
-    ov_log_debug("opened connection %i to %s:%i", socket,
-                 self->config.socket.signaling.host,
-                 self->config.socket.signaling.port);
+    ov_interconnect_loop *loop = (ov_interconnect_loop *)val;
 
-    ov_json_value *msg =
-        ov_interconnect_msg_register(self->config.name, self->config.password);
+    if (!ov_interconnect_loop_has_mixer(loop)) {
+        ov_interconnect_loop_assign_mixer(loop);
+    }
 
-    ov_event_app_send(self->app.signaling, socket, msg);
-    msg = ov_json_value_free(msg);
-
-    // client initiated connection to remote, so we need to
-    // register that connection to allow access within the responses
-    intptr_t key = socket;
-    ov_dict_set(self->registered, (void *)key, NULL, NULL);
-error:
-    return;
+    return true;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -1143,10 +1384,24 @@ static void cb_mixer_close(void *userdata, int socket) {
 
     ov_interconnect *self = ov_interconnect_cast(userdata);
 
-    UNUSED(self);
-    UNUSED(socket);
+    intptr_t id = socket;
+    ov_dict_for_each(self->loops, &id, unassign_mixer);
+    ov_mixer_registry_unregister_mixer(self->mixers, socket);
 
-    TODO("... mixer socket closed.");
+    ov_dict_for_each(self->loops, NULL, assign_new_mixer);
+
+    char port[1024] = {0};
+    snprintf(port, 1024, "%i", self->config.socket.mixer.port);
+
+    char const *args[] = {"-h", self->config.socket.mixer.host, "-p", port, NULL}; 
+
+    const char *working_dir = "/tmp";
+    const char *procname = "/usr/bin/ov_mc_mixer";
+
+    int r = ov_os_spawn(working_dir, procname, args, false);
+    if (r <= 0){
+        ov_log_error("failed to start a mixer process.");
+    }
 
     return;
 }
@@ -1268,6 +1523,22 @@ static bool open_sockets(ov_interconnect *self) {
                     self->config.socket.media.port);
     }
 
+    if (0 != self->config.socket.cc.host[0]) {
+
+        ov_io_socket_config cc = (ov_io_socket_config){
+            .auto_reconnect = false,
+            .socket = self->config.socket.cc,
+            .callbacks = (ov_io_callback){.userdata = self,
+                                      .accept = NULL,
+                                      .io = NULL, // done in app
+                                      .close = cb_cc_close,
+                                      .connected = NULL},
+            .ssl = (ov_io_ssl_config){0}};
+
+        self->socket.cc = ov_event_app_open_listener(self->app.cc, cc);
+
+    }
+
     return true;
 
 error:
@@ -1304,6 +1575,21 @@ static bool register_events(ov_interconnect *self) {
     if (!ov_event_app_register(self->app.mixer, "acquire", self,
                                event_mixer_acquire))
         goto error;
+
+    // events cc signaling
+
+    if (!ov_event_app_register(self->app.cc, "register", self,
+                               event_cc_register))
+        goto error;
+
+    if (!ov_event_app_register(self->app.cc, "loop", self,
+                               event_cc_loop))
+        goto error;
+
+    if (!ov_event_app_register(self->app.cc, "restart", self,
+                               event_cc_restart))
+        goto error;
+
     /*
         if (!ov_event_app_register(
             self->app.mixer,
@@ -1380,6 +1666,11 @@ ov_interconnect *ov_interconnect_create(ov_interconnect_config config) {
                               .callbacks.userdata = self,
                               .callbacks.close = cb_mixer_close});
 
+    self->app.cc = ov_event_app_create(
+        (ov_event_app_config){.io = config.io,
+                              .callbacks.userdata = self,
+                              .callbacks.close = cb_cc_close});
+
     ov_dict_config d_config = ov_dict_string_key_config(255);
     d_config.value.data_function.free = ov_interconnect_loop_free;
 
@@ -1438,6 +1729,10 @@ ov_interconnect *ov_interconnect_free(ov_interconnect *self) {
         ov_event_app_close(self->app.mixer, self->socket.mixer);
     }
 
+    if (-1 != self->socket.cc) {
+        ov_event_app_close(self->app.cc, self->socket.cc);
+    }
+
     if (-1 != self->socket.media) {
         ov_event_loop_unset(self->config.loop, self->socket.media, NULL);
         close(self->socket.media);
@@ -1450,6 +1745,7 @@ ov_interconnect *ov_interconnect_free(ov_interconnect *self) {
     self->session.by_media_remote = ov_dict_free(self->session.by_media_remote);
 
     self->dtls = ov_dtls_free(self->dtls);
+    self->app.cc = ov_event_app_free(self->app.cc);
     self->app.signaling = ov_event_app_free(self->app.signaling);
     self->app.mixer = ov_event_app_free(self->app.mixer);
     self->mixers = ov_mixer_registry_free(self->mixers);
@@ -1515,6 +1811,11 @@ ov_interconnect_config_from_json(const ov_json_value *val) {
 
     config.socket.internal = ov_socket_configuration_from_json(
         ov_json_get(conf, "/" OV_KEY_SOCKET "/" OV_KEY_INTERNAL),
+        (ov_socket_configuration){
+            .type = UDP, .host = "localhost", .port = 12346});
+
+    config.socket.cc = ov_socket_configuration_from_json(
+        ov_json_get(conf, "/" OV_KEY_SOCKET "/cc"),
         (ov_socket_configuration){
             .type = UDP, .host = "localhost", .port = 12346});
 

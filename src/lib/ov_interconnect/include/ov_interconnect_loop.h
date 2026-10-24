@@ -67,6 +67,7 @@ const char *ov_interconnect_loop_get_name(const ov_interconnect_loop *self);
 bool ov_interconnect_loop_has_mixer(const ov_interconnect_loop *self);
 
 bool ov_interconnect_loop_assign_mixer(ov_interconnect_loop *self);
+bool ov_interconnect_loop_unassign_mixer(ov_interconnect_loop *self, int socket);
 
 int ov_interconnect_loop_get_mixer(const ov_interconnect_loop *self);
 
@@ -76,7 +77,10 @@ ov_interconnect_loop_get_forward(const ov_interconnect_loop *self);
 ov_mc_loop_data
 ov_interconnect_loop_get_loop_data(const ov_interconnect_loop *self);
 
-bool ov_interconnect_loop_send(const ov_interconnect_loop *self,
+bool ov_interconnect_loop_send(ov_interconnect_loop *self,
                                const uint8_t *buffer, size_t size);
+
+bool ov_interconnect_loop_duplicate(ov_interconnect_loop *self,
+                               ov_mc_loop_data dest, bool on);
 
 #endif /* ov_interconnect_loop_h */

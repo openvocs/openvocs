@@ -73,6 +73,7 @@ typedef struct ov_interconnect_config {
         ov_socket_configuration media;
         ov_socket_configuration internal;
         ov_socket_configuration mixer;
+        ov_socket_configuration cc;
 
     } socket;
 

@@ -167,7 +167,7 @@ OV_BINARIES_TO_PACKAGE=stun_server \
     mc_socket_debug alsa_cli rtp_cli test_mc mc_vad mc_cli\
     domain_config_verify \
     ldap_test ldap_test_auth ldap_user_import ldap_role_import password \
-    stun_client \
+    stun_client interconnect_command\
 
 OV_SIP_BINARIES_TO_PACKAGE=sip_gateway
 
