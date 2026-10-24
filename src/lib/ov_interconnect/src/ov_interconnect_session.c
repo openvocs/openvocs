@@ -533,12 +533,12 @@ static bool add_srtp_stream(const void *key, void *val, void *data) {
 
     srtp_t srtp_session = self->srtp.local.session;
 
-    self->srtp.local.policy.ssrc.type = ssrc_any_inbound;
+    self->srtp.local.policy.ssrc.type = ssrc_specific;
     self->srtp.local.policy.ssrc.value = remote_ssrc;
     self->srtp.local.policy.key = self->srtp.local.key;
     self->srtp.local.policy.next = NULL;
 
-    self->srtp.remote.policy.ssrc.type = ssrc_any_inbound;
+    self->srtp.remote.policy.ssrc.type = ssrc_specific;
     self->srtp.remote.policy.ssrc.value = local_ssrc;
     self->srtp.remote.policy.key = self->srtp.remote.key;
     self->srtp.remote.policy.next = NULL;
@@ -548,9 +548,11 @@ static bool add_srtp_stream(const void *key, void *val, void *data) {
     switch (r) {
 
     case srtp_err_status_ok:
+        ov_log_debug("SRTP %s OK local stream", name);
         break;
 
     default:
+        ov_log_debug("SRTP %s NOK local stream", name);
         goto done;
         break;
     }
@@ -560,9 +562,11 @@ static bool add_srtp_stream(const void *key, void *val, void *data) {
     switch (r) {
 
     case srtp_err_status_ok:
+        ov_log_debug("SRTP %s OK remote stream", name);
         break;
 
     default:
+        ov_log_debug("SRTP %s NOK remote stream", name);
         goto done;
         break;
     }
@@ -918,6 +922,8 @@ call_again_later:
     if (OV_TIMER_INVALID == self->timer.handshake)
         goto error;
 
+    return true;
+
 success:
     self->dtls.handshaked = true;
 
@@ -954,7 +960,7 @@ success:
             }
         }
     }
-    
+
     return true;
 
 close:
@@ -1147,7 +1153,6 @@ static bool handshake_passive(ov_interconnect_session *self,
                 case srtp_err_status_ok:
                     ov_log_debug("Session %s SRTP READY", self->id);
                     prepare_streams(self);
-                    ov_interconnect_srtp_ready(self->config.base, self);
         
                     break;
         
@@ -1246,7 +1251,7 @@ bool ov_interconnect_session_media_io_ssl_external(
 
             r = SSL_do_handshake(self->dtls.ssl);
 
-            if (SSL_is_init_finished(self->dtls.ssl)) {
+            if (1 == SSL_is_init_finished(self->dtls.ssl)) {
                 
                 self->dtls.handshaked = true;
 
@@ -1273,8 +1278,6 @@ bool ov_interconnect_session_media_io_ssl_external(
                         case srtp_err_status_ok:
                             ov_log_debug("Session %s SRTP READY", self->id);
                             prepare_streams(self);
-                            ov_interconnect_srtp_ready(self->config.base, self);
-        
                             break;
         
                         default:
@@ -1372,7 +1375,7 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     if (!ov_interconnect_loop_has_mixer(loop)) {
         ov_interconnect_loop_assign_mixer((ov_interconnect_loop *)loop);
     }
-
+/*
     uint32_t local_ssrc = ov_interconnect_loop_get_ssrc(loop);
     if (0 == local_ssrc)
         goto done;
@@ -1406,11 +1409,11 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     switch (r) {
 
         case srtp_err_status_ok:
-            //ov_log_debug("add srtp_stream local policy %s", loop_name);
+            ov_log_debug("add srtp_stream local policy %s", loop_name);
             break;
 
         default:
-            ov_log_error("Failed to add srtp_stream local policy %s", loop_name);
+            //ov_log_error("Failed to add srtp_stream local policy %s", loop_name);
             break;
     }
 
@@ -1431,14 +1434,14 @@ bool ov_interconnect_session_add(ov_interconnect_session *self,
     switch (r) {
 
         case srtp_err_status_ok:
-            //ov_log_debug("add srtp_stream remote policy %s", loop_name);
+            ov_log_debug("add srtp_stream remote policy %s", loop_name);
             break;
 
         default:
             ov_log_error("Failed to add srtp_stream remote policy %s", loop_name);
             break;
     }
-
+*/
 done:
 
     ov_log_info("%s added loop %s|%" PRIu32, self->id, loop_name, remote_ssrc);
