@@ -78,6 +78,7 @@ rm -rf $RPM_BUILD_ROOT
 /usr/bin/ov_stun_server
 /usr/bin/ov_mc_vad
 /usr/bin/ov_mc_socket_debug
+/usr/bin/ov_interconnect_command
 
 /usr/lib/libov_*.so*
 
