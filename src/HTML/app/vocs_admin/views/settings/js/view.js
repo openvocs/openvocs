@@ -215,14 +215,15 @@ export async function render(domain_data, project_id) {
     if (domain.projects.size !== 0) {
         domain.projects.sort();
         DOM.project_list.clear();
+        let first_proj;
         for (let project of domain.projects.values()) {
             let name = project.name ? project.name : project.id;
+            if (!first_proj)
+                first_proj = project.id;
             await DOM.project_list.add_item(project.dom_id, name, project.id, project_id === project.id);
         }
-    }
-
-    if (!DOM.project_list.value || !project_id) {
-        new_project();
+        if (!DOM.project_list.value)
+            DOM.project_list.value = first_proj;
     }
 }
 

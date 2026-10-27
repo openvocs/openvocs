@@ -31,10 +31,6 @@ h3 {
     display: block;
 }
 
-#ldap_import_button {
-    margin-bottom: 1.5rem;
-}
-
 #ldap_import {
     margin-top: 2rem;
 }
@@ -48,10 +44,20 @@ h3 {
     gap: 0.7rem;
 }
 
+#project_title {
+    display: flex;
+    align-items: end;
+}
+
+#project_title h3 {
+    flex-grow: 1;
+}
+
 #project_list {
     flex-grow: 0;
     overflow-y: auto;
-    max-height: 20rem;
+    max-height: 80vh;
+    min-width: 10rem;
 }
 
 #settings #new_project {
