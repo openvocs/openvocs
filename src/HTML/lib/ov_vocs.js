@@ -42,7 +42,7 @@ export var EVENT = {
     SWITCH_LOOP_STATE: "client_switch_loop_state",
     SWITCH_LOOP_VOLUME: "client_switch_loop_volume",
     TALKING: "client_talking",
-    VAD: "client_vad"
+    VAD: "vad"
 };
 
 export async function update_user_role_settings(role_settings, websocket) {
