@@ -66,4 +66,3 @@ SCREEN_KEYBOARD = false;
 // admin interface ------------------------------------------------------------
 DEFAULT_MULTICAST_ADDRESS = "";
 
-// ALLOW_IMPORT_EXPORT = false;

@@ -113,11 +113,6 @@ export async function init(view_id, container) {
         document.querySelector("#recorder_page_button+label").style.display = "none";
     }
 
-    if (!ALLOW_IMPORT_EXPORT) {
-        DOM.import_button.style.display = "none";
-        DOM.export_button.style.display = "none";
-    }
-
     DOM.loading_screen.addEventListener("loading_button_clicked", () => {
         DOM.menu_slider.toggle();
     });
