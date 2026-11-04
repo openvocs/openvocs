@@ -243,3 +243,29 @@ todo: stop single instance? (only ice? or gateway or mixer?)
 
 * [ ] logout
 * [ ] login page should be displayed
+
+## Test session reconnect
+* [ ] login as user1 (user1)
+* [ ] stop server
+* [ ] activate LDAP
+* [ ] start server
+* [ ] -> user should automatically get logged in again
+
+## Test session reconnect for removed user
+* [ ] login as user1 (user1)
+* [ ] stop server
+* [ ] activate LDAP
+* [ ] start server
+* [ ] -> user should get logged out (user is no longer valid)
+
+## Test Login for users not imported from LDAP
+* [ ] create a new user in LDAP
+* [ ] DON'T trigger an import, ensure no automatic import is triggered
+* [ ] login as this new user
+* [ ] -> login should fail
+
+## Logout removed users
+* [ ] login as a user
+* [ ] remove this user from the LDAP/configuration
+* [ ] save configuration
+* [ ] -> user should get logged out (user is no longer valid)
